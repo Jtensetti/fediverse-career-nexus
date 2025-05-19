@@ -3,7 +3,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { UsersRound } from "lucide-react";
 
-type ConnectionDegree = 1 | 2 | 3 | null;
+export type ConnectionDegree = 1 | 2 | 3 | null;
 
 interface ConnectionBadgeProps {
   degree: ConnectionDegree;
@@ -37,10 +37,10 @@ const ConnectionBadge = ({
   return (
     <Badge 
       variant="outline" 
-      className={`${badgeStyles[degree]} ${sizeClasses} flex items-center gap-1 font-medium ${className}`}
+      className={`${badgeStyles[degree as 1 | 2 | 3]} ${sizeClasses} flex items-center gap-1 font-medium ${className}`}
     >
       {showIcon && <UsersRound size={size === "sm" ? 12 : 14} />}
-      {degreeText[degree]}
+      {degreeText[degree as 1 | 2 | 3]}
     </Badge>
   );
 };

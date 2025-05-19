@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -9,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users } from "lucide-react";
-import ConnectionBadge from "@/components/ConnectionBadge";
+import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import { mockUserProfile, mockNetworkData } from "@/data/mockData";
 
 const ProfilePage = () => {
@@ -81,8 +82,12 @@ const ProfilePage = () => {
               <div className="flex flex-wrap gap-2 mt-4">
                 {viewingOwnProfile ? (
                   <>
-                    <Button variant="outline" as={Link} to="/profile/edit">Edit Profile</Button>
-                    <Button variant="outline" as={Link} to="/connections">Manage Connections</Button>
+                    <Button variant="outline">
+                      <Link to="/profile/edit">Edit Profile</Link>
+                    </Button>
+                    <Button variant="outline">
+                      <Link to="/connections">Manage Connections</Link>
+                    </Button>
                   </>
                 ) : (
                   <>

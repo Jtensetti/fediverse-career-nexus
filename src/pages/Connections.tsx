@@ -9,13 +9,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserRoundPlus, Search, Filter, UsersRound } from "lucide-react";
-import ConnectionBadge from "@/components/ConnectionBadge";
+import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import { mockNetworkData } from "@/data/mockData";
+
+// Define the interface for connections and suggestions
+interface NetworkConnection {
+  id: string;
+  username: string;
+  displayName: string;
+  headline: string;
+  avatarUrl: string;
+  connectionDegree: ConnectionDegree;
+  isVerified: boolean;
+  mutualConnections: number;
+}
+
+interface NetworkSuggestion {
+  id: string;
+  username: string;
+  displayName: string;
+  headline: string;
+  avatarUrl: string;
+  connectionDegree: ConnectionDegree;
+  mutualConnections: number;
+}
 
 const ConnectionsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [connections, setConnections] = useState(mockNetworkData.connections);
-  const [suggestions, setSuggestions] = useState(mockNetworkData.suggestions);
+  const [connections, setConnections] = useState<NetworkConnection[]>(mockNetworkData.connections);
+  const [suggestions, setSuggestions] = useState<NetworkSuggestion[]>(mockNetworkData.suggestions);
   
   // Filter connections based on search query
   const filteredConnections = connections.filter(connection => 
@@ -34,7 +56,11 @@ const ConnectionsPage = () => {
     // For demo purposes, we'll move the user from suggestions to connections
     const suggestionToConnect = suggestions.find(s => s.id === userId);
     if (suggestionToConnect) {
-      const updatedSuggestion = { ...suggestionToConnect, connectionDegree: 1 as const };
+      const updatedSuggestion: NetworkConnection = { 
+        ...suggestionToConnect, 
+        connectionDegree: 1 as const,
+        isVerified: false // Add the missing isVerified property
+      };
       setConnections([...connections, updatedSuggestion]);
       setSuggestions(suggestions.filter(s => s.id !== userId));
     }
