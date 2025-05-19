@@ -67,13 +67,12 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				federation: {
-					blue: '#0A66C2',
-					darkBlue: '#004182',
-					lightBlue: '#E8F3FF',
-					gray: '#F3F2F0',
-					darkGray: '#6E6E6E',
-					success: '#057642',
+				bondy: {
+					primary: '#264653',
+					accent: '#2A9D8F',
+					highlight: '#E9C46A',
+					secondary: '#F4A261',
+					background: '#F5F5F7',
 				}
 			},
 			borderRadius: {

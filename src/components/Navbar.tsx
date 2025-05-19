@@ -10,8 +10,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          <a href="/" className="text-2xl font-display font-bold text-federation-blue flex items-center">
-            <span className="mr-1">Federation</span>
+          <a href="/" className="text-2xl font-display font-bold text-bondy-primary flex items-center">
+            <span className="mr-1">Bondy</span>
           </a>
         </div>
 
@@ -19,8 +19,8 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-8">
           <NavLinks />
           <div className="flex space-x-3">
-            <Button variant="outline" className="font-medium">Sign In</Button>
-            <Button className="font-medium bg-federation-blue hover:bg-federation-darkBlue">Join Now</Button>
+            <Button variant="outline" className="font-medium border-bondy-primary text-bondy-primary">Sign In</Button>
+            <Button className="font-medium bg-bondy-primary hover:bg-bondy-primary/90">Join Now</Button>
           </div>
         </div>
         
@@ -39,8 +39,8 @@ const Navbar = () => {
           <div className="flex flex-col space-y-4">
             <NavLinks mobile />
             <div className="flex flex-col space-y-2 pt-4 border-t border-gray-100">
-              <Button variant="outline" className="font-medium w-full">Sign In</Button>
-              <Button className="font-medium w-full bg-federation-blue hover:bg-federation-darkBlue">Join Now</Button>
+              <Button variant="outline" className="font-medium w-full border-bondy-primary text-bondy-primary">Sign In</Button>
+              <Button className="font-medium w-full bg-bondy-primary hover:bg-bondy-primary/90">Join Now</Button>
             </div>
           </div>
         </div>
@@ -51,8 +51,8 @@ const Navbar = () => {
 
 const NavLinks = ({ mobile = false }: { mobile?: boolean }) => {
   const linkClasses = mobile 
-    ? "py-2 font-medium text-gray-600 hover:text-federation-blue"
-    : "font-medium text-gray-600 hover:text-federation-blue";
+    ? "py-2 font-medium text-gray-600 hover:text-bondy-accent"
+    : "font-medium text-gray-600 hover:text-bondy-accent";
   
   return (
     <div className={mobile ? "flex flex-col" : "flex items-center space-x-8"}>
