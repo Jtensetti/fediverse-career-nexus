@@ -11,6 +11,7 @@ export const mockUserProfile = {
   domain: "example.com",
   connections: 342,
   profileViews: 1289,
+  networkVisibilityEnabled: true,
   contact: {
     email: "john@example.com",
     phone: "+1 (555) 123-4567",
@@ -67,5 +68,81 @@ export const mockUserProfile = {
     { id: "skill4", name: "ActivityPub", endorsements: 43 },
     { id: "skill5", name: "TypeScript", endorsements: 38 },
     { id: "skill6", name: "Web Development", endorsements: 29 }
+  ]
+};
+
+// Mock network data
+export const mockNetworkData = {
+  connections: [
+    {
+      id: "user456",
+      username: "janedoe",
+      displayName: "Jane Doe",
+      headline: "Product Manager | UX Designer",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=janedoe",
+      connectionDegree: 1,
+      isVerified: true,
+      mutualConnections: 15
+    },
+    {
+      id: "user789",
+      username: "bobsmith",
+      displayName: "Bob Smith",
+      headline: "Frontend Developer | React Expert",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=bobsmith",
+      connectionDegree: 1,
+      isVerified: false,
+      mutualConnections: 8
+    },
+    {
+      id: "user101",
+      username: "alicejohnson",
+      displayName: "Alice Johnson",
+      headline: "Data Scientist | Machine Learning",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=alicejohnson",
+      connectionDegree: 1,
+      isVerified: true,
+      mutualConnections: 5
+    },
+    {
+      id: "user202",
+      username: "mikewilson",
+      displayName: "Mike Wilson",
+      headline: "CTO | Blockchain Enthusiast",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=mikewilson",
+      connectionDegree: 2,
+      isVerified: true,
+      mutualConnections: 3
+    },
+    {
+      id: "user303",
+      username: "sarahlee",
+      displayName: "Sarah Lee",
+      headline: "UI/UX Designer | Design Systems",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarahlee",
+      connectionDegree: 2,
+      isVerified: false,
+      mutualConnections: 2
+    }
+  ],
+  suggestions: [
+    {
+      id: "user404",
+      username: "davidbrown",
+      displayName: "David Brown",
+      headline: "Backend Developer | Node.js Expert",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=davidbrown",
+      connectionDegree: 2,
+      mutualConnections: 7
+    },
+    {
+      id: "user505",
+      username: "emmadavis",
+      displayName: "Emma Davis",
+      headline: "DevOps Engineer | Cloud Infrastructure",
+      avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=emmadavis",
+      connectionDegree: 2,
+      mutualConnections: 4
+    }
   ]
 };

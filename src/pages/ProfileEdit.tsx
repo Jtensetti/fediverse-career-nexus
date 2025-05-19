@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -22,8 +21,9 @@ import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Briefcase, School, Star, Trash, Plus } from "lucide-react";
+import { Briefcase, School, Star, Trash, Plus, Settings } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import NetworkVisibilityToggle from "@/components/NetworkVisibilityToggle";
 
 // We'll use the same mock data structure from the Profile page
 import { mockUserProfile } from "@/data/mockData";
@@ -184,6 +184,7 @@ const ProfileEditPage = () => {
             <TabsTrigger value="experience">Experience</TabsTrigger>
             <TabsTrigger value="education">Education</TabsTrigger>
             <TabsTrigger value="skills">Skills</TabsTrigger>
+            <TabsTrigger value="privacy">Privacy</TabsTrigger>
           </TabsList>
           
           <TabsContent value="basic">
@@ -590,6 +591,53 @@ const ProfileEditPage = () => {
                       Save Changes
                     </Button>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="privacy">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings size={20} className="text-bondy-primary" />
+                  Privacy Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <NetworkVisibilityToggle 
+                  initialValue={profile.networkVisibilityEnabled} 
+                  onChange={(value) => setProfile({...profile, networkVisibilityEnabled: value})}
+                />
+                
+                <Separator />
+                
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="profile-visibility" className="font-medium">Show profile views</Label>
+                      <p className="text-sm text-gray-600 mt-1">Allow others to see when you've viewed their profile</p>
+                    </div>
+                    <Switch id="profile-visibility" defaultChecked />
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="message-privacy" className="font-medium">Message privacy</Label>
+                      <p className="text-sm text-gray-600 mt-1">Only allow messages from your connections</p>
+                    </div>
+                    <Switch id="message-privacy" defaultChecked />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end mt-6">
+                  <Button className="bg-bondy-primary hover:bg-bondy-primary/90">
+                    Save Privacy Settings
+                  </Button>
                 </div>
               </CardContent>
             </Card>

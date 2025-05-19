@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -9,81 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Briefcase, School, Award, Star, Link, Mail, Phone, MapPin, Check } from "lucide-react";
-
-// Mock data for development
-const mockUserProfile = {
-  id: "user123",
-  username: "johndoe",
-  displayName: "John Doe",
-  headline: "Senior Software Engineer | Web3 | ActivityPub Developer",
-  bio: "Building decentralized social networks with a focus on privacy and user autonomy. Passionate about open web standards and federation protocols.",
-  avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=johndoe",
-  isVerified: true,
-  domain: "example.com",
-  connections: 342,
-  profileViews: 1289,
-  contact: {
-    email: "john@example.com",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA"
-  },
-  experience: [
-    {
-      id: "exp1",
-      title: "Senior Software Engineer",
-      company: "Decentralized Labs",
-      isCurrentRole: true,
-      startDate: "2020-06",
-      location: "San Francisco, CA (Remote)",
-      description: "Leading development of ActivityPub-based social networking platform.",
-      isVerified: true
-    },
-    {
-      id: "exp2",
-      title: "Web Developer",
-      company: "Tech Solutions Inc",
-      isCurrentRole: false,
-      startDate: "2016-03",
-      endDate: "2020-05",
-      location: "Portland, OR",
-      description: "Developed and maintained client websites and web applications.",
-      isVerified: true
-    }
-  ],
-  education: [
-    {
-      id: "edu1",
-      institution: "University of Technology",
-      degree: "Master of Computer Science",
-      field: "Distributed Systems",
-      startYear: 2014,
-      endYear: 2016,
-      isVerified: true
-    },
-    {
-      id: "edu2",
-      institution: "State College",
-      degree: "Bachelor of Science",
-      field: "Computer Science",
-      startYear: 2010,
-      endYear: 2014,
-      isVerified: false
-    }
-  ],
-  skills: [
-    { id: "skill1", name: "JavaScript", endorsements: 78 },
-    { id: "skill2", name: "React", endorsements: 65 },
-    { id: "skill3", name: "Node.js", endorsements: 52 },
-    { id: "skill4", name: "ActivityPub", endorsements: 43 },
-    { id: "skill5", name: "TypeScript", endorsements: 38 },
-    { id: "skill6", name: "Web Development", endorsements: 29 }
-  ]
-};
+import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users } from "lucide-react";
+import ConnectionBadge from "@/components/ConnectionBadge";
+import { mockUserProfile, mockNetworkData } from "@/data/mockData";
 
 const ProfilePage = () => {
   const { username } = useParams();
   const [profile] = useState(mockUserProfile);
+  
+  // Simulate viewing another user's profile if username parameter exists
+  const viewingOwnProfile = !username || username === profile.username;
+  
+  // If viewing another user's profile, find their connection degree
+  const connectionDegree = !viewingOwnProfile 
+    ? mockNetworkData.connections.find(c => c.username === username)?.connectionDegree || null
+    : null;
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -93,10 +32,17 @@ const ProfilePage = () => {
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-6">
-            <Avatar className="h-32 w-32 border-4 border-white shadow-md">
-              <AvatarImage src={profile.avatarUrl} alt={profile.displayName} />
-              <AvatarFallback>{profile.displayName.substring(0, 2)}</AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-32 w-32 border-4 border-white shadow-md">
+                <AvatarImage src={profile.avatarUrl} alt={profile.displayName} />
+                <AvatarFallback>{profile.displayName.substring(0, 2)}</AvatarFallback>
+              </Avatar>
+              {connectionDegree && (
+                <div className="absolute -bottom-2 -right-2">
+                  <ConnectionBadge degree={connectionDegree} />
+                </div>
+              )}
+            </div>
             
             <div className="flex-grow">
               <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -105,6 +51,9 @@ const ProfilePage = () => {
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
                     <Check size={14} /> Verified
                   </Badge>
+                )}
+                {connectionDegree && (
+                  <ConnectionBadge degree={connectionDegree} />
                 )}
               </div>
               
@@ -118,11 +67,11 @@ const ProfilePage = () => {
                   </div>
                 )}
                 <div className="flex items-center gap-1">
-                  <User size={16} />
-                  <span>{profile.connections} connections</span>
+                  <Users size={16} />
+                  <Link to="/connections" className="hover:underline">{profile.connections} connections</Link>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Link size={16} />
+                  <LinkIcon size={16} />
                   <span>@{profile.username}</span>
                 </div>
               </div>
@@ -130,9 +79,18 @@ const ProfilePage = () => {
               <p className="text-gray-700 mb-4">{profile.bio}</p>
               
               <div className="flex flex-wrap gap-2 mt-4">
-                <Button className="bg-bondy-primary hover:bg-bondy-primary/90">Connect</Button>
-                <Button variant="outline">Message</Button>
-                <Button variant="outline">Share Profile</Button>
+                {viewingOwnProfile ? (
+                  <>
+                    <Button variant="outline" as={Link} to="/profile/edit">Edit Profile</Button>
+                    <Button variant="outline" as={Link} to="/connections">Manage Connections</Button>
+                  </>
+                ) : (
+                  <>
+                    <Button className="bg-bondy-primary hover:bg-bondy-primary/90">Connect</Button>
+                    <Button variant="outline">Message</Button>
+                    <Button variant="outline">Share Profile</Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -145,6 +103,7 @@ const ProfilePage = () => {
             <TabsTrigger value="education">Education</TabsTrigger>
             <TabsTrigger value="skills">Skills</TabsTrigger>
             <TabsTrigger value="articles">Articles</TabsTrigger>
+            <TabsTrigger value="connections">Connections</TabsTrigger>
           </TabsList>
           
           <TabsContent value="experience">
@@ -237,6 +196,56 @@ const ProfilePage = () => {
                 <div className="text-center text-gray-500">
                   <p>No articles published yet</p>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="connections">
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Users size={20} className="text-bondy-primary" />
+                  Connections ({profile.connections})
+                </h3>
+                
+                {profile.networkVisibilityEnabled ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {mockNetworkData.connections.slice(0, 8).map((connection) => (
+                      <Link 
+                        to={`/profile/${connection.username}`} 
+                        key={connection.id} 
+                        className="flex flex-col items-center p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <Avatar className="h-16 w-16 mb-2">
+                          <AvatarImage src={connection.avatarUrl} alt={connection.displayName} />
+                          <AvatarFallback>{connection.displayName.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <p className="font-medium">{connection.displayName}</p>
+                            <ConnectionBadge degree={connection.connectionDegree} showIcon={false} size="sm" />
+                          </div>
+                          <p className="text-xs text-gray-500 line-clamp-2">{connection.headline}</p>
+                        </div>
+                      </Link>
+                    ))}
+                    
+                    <Link 
+                      to="/connections" 
+                      className="flex flex-col items-center justify-center p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                        <Users size={24} className="text-gray-500" />
+                      </div>
+                      <p className="font-medium text-bondy-primary">View All</p>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="text-center p-8 text-gray-500">
+                    <Users size={48} className="mx-auto mb-4 opacity-30" />
+                    <p className="mb-2">This user has chosen not to display their network connections</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
