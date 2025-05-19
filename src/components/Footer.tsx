@@ -9,7 +9,14 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           <div className="col-span-1">
-            <h3 className="text-lg font-bold text-bondy-primary mb-4">Bondy</h3>
+            <div className="flex items-center mb-4">
+              <img 
+                src="/mascot.png" 
+                alt="Bondy Mascot" 
+                className="w-12 h-12 mr-3"
+              />
+              <h3 className="text-lg font-bold text-bondy-primary">Bondy</h3>
+            </div>
             <p className="text-gray-600 mb-4">
               A professional social network built on the ActivityPub federation protocol.
             </p>
