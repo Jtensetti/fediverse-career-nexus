@@ -11,9 +11,9 @@ const Footer = () => {
           <div className="col-span-1">
             <div className="flex items-center mb-4">
               <img 
-                src="/mascot.png" 
+                src="https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=48&h=48&fit=crop&auto=format"
                 alt="Bondy Mascot" 
-                className="w-12 h-12 mr-3"
+                className="w-12 h-12 mr-3 object-cover rounded-full"
               />
               <h3 className="text-lg font-bold text-bondy-primary">Bondy</h3>
             </div>
