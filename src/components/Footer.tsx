@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Github, Twitter, Linkedin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -11,9 +10,9 @@ const Footer = () => {
           <div className="col-span-1">
             <div className="flex items-center mb-4">
               <img 
-                src="https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=48&h=48&fit=crop&auto=format"
+                src="/mascot.png" 
                 alt="Bondy Mascot" 
-                className="w-12 h-12 mr-3 object-cover rounded-full"
+                className="w-12 h-12 mr-3"
               />
               <h3 className="text-lg font-bold text-bondy-primary">Bondy</h3>
             </div>
