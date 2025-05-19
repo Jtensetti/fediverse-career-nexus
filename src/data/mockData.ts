@@ -1,4 +1,6 @@
 
+import { ConnectionDegree } from "@/components/ConnectionBadge";
+
 // Mock data for development
 export const mockUserProfile = {
   id: "user123",
@@ -80,7 +82,7 @@ export const mockNetworkData = {
       displayName: "Jane Doe",
       headline: "Product Manager | UX Designer",
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=janedoe",
-      connectionDegree: 1,
+      connectionDegree: 1 as ConnectionDegree,
       isVerified: true,
       mutualConnections: 15
     },
@@ -90,7 +92,7 @@ export const mockNetworkData = {
       displayName: "Bob Smith",
       headline: "Frontend Developer | React Expert",
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=bobsmith",
-      connectionDegree: 1,
+      connectionDegree: 1 as ConnectionDegree,
       isVerified: false,
       mutualConnections: 8
     },
@@ -100,7 +102,7 @@ export const mockNetworkData = {
       displayName: "Alice Johnson",
       headline: "Data Scientist | Machine Learning",
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=alicejohnson",
-      connectionDegree: 1,
+      connectionDegree: 1 as ConnectionDegree,
       isVerified: true,
       mutualConnections: 5
     },
@@ -110,7 +112,7 @@ export const mockNetworkData = {
       displayName: "Mike Wilson",
       headline: "CTO | Blockchain Enthusiast",
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=mikewilson",
-      connectionDegree: 2,
+      connectionDegree: 2 as ConnectionDegree,
       isVerified: true,
       mutualConnections: 3
     },
@@ -120,7 +122,7 @@ export const mockNetworkData = {
       displayName: "Sarah Lee",
       headline: "UI/UX Designer | Design Systems",
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarahlee",
-      connectionDegree: 2,
+      connectionDegree: 2 as ConnectionDegree,
       isVerified: false,
       mutualConnections: 2
     }
@@ -132,7 +134,7 @@ export const mockNetworkData = {
       displayName: "David Brown",
       headline: "Backend Developer | Node.js Expert",
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=davidbrown",
-      connectionDegree: 2,
+      connectionDegree: 2 as ConnectionDegree,
       mutualConnections: 7
     },
     {
@@ -141,7 +143,7 @@ export const mockNetworkData = {
       displayName: "Emma Davis",
       headline: "DevOps Engineer | Cloud Infrastructure",
       avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=emmadavis",
-      connectionDegree: 2,
+      connectionDegree: 2 as ConnectionDegree,
       mutualConnections: 4
     }
   ]

@@ -58,7 +58,7 @@ const ConnectionsPage = () => {
     if (suggestionToConnect) {
       const updatedSuggestion: NetworkConnection = { 
         ...suggestionToConnect, 
-        connectionDegree: 1 as const,
+        connectionDegree: 1 as ConnectionDegree,
         isVerified: false // Add the missing isVerified property
       };
       setConnections([...connections, updatedSuggestion]);
