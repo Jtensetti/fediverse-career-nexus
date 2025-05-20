@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -278,7 +279,7 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
         is_primary,
         can_edit,
         created_at,
-        profile:profiles!inner(
+        profile:profiles(
           username,
           fullname,
           avatar_url
