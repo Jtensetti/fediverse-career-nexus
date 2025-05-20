@@ -45,6 +45,44 @@ export type Database = {
         }
         Relationships: []
       }
+      ap_objects: {
+        Row: {
+          attributed_to: string | null
+          content: Json
+          created_at: string
+          id: string
+          published_at: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          attributed_to?: string | null
+          content: Json
+          created_at?: string
+          id?: string
+          published_at?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          attributed_to?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          published_at?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       article_authors: {
         Row: {
           article_id: string
