@@ -24,6 +24,7 @@ import * as z from "zod";
 import { Briefcase, School, Star, Trash, Plus, Settings } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import NetworkVisibilityToggle from "@/components/NetworkVisibilityToggle";
+import ProfileVisitsToggle from "@/components/ProfileVisitsToggle";
 
 // We'll use the same mock data structure from the Profile page
 import { mockUserProfile } from "@/data/mockData";
@@ -605,22 +606,11 @@ const ProfileEditPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <NetworkVisibilityToggle 
-                  initialValue={profile.networkVisibilityEnabled} 
-                  onChange={(value) => setProfile({...profile, networkVisibilityEnabled: value})}
-                />
+                <NetworkVisibilityToggle />
                 
                 <Separator />
                 
-                <div className="flex flex-col space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="profile-visibility" className="font-medium">Show profile views</Label>
-                      <p className="text-sm text-gray-600 mt-1">Allow others to see when you've viewed their profile</p>
-                    </div>
-                    <Switch id="profile-visibility" defaultChecked />
-                  </div>
-                </div>
+                <ProfileVisitsToggle />
                 
                 <Separator />
                 

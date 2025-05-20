@@ -8,8 +8,13 @@ import {
   updateProfileVisibilitySettings 
 } from "@/services/profileViewService";
 
-const NetworkVisibilityToggle = () => {
-  const [enabled, setEnabled] = useState(true);
+interface NetworkVisibilityToggleProps {
+  initialValue?: boolean;
+  onChange?: (value: boolean) => void;
+}
+
+const NetworkVisibilityToggle = ({ initialValue, onChange }: NetworkVisibilityToggleProps) => {
+  const [enabled, setEnabled] = useState(initialValue ?? true);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   
@@ -17,28 +22,39 @@ const NetworkVisibilityToggle = () => {
     const fetchSettings = async () => {
       setLoading(true);
       try {
-        const showVisitors = await getProfileVisibilitySettings();
-        setEnabled(showVisitors);
+        // Only fetch from service if initialValue is not provided
+        if (initialValue === undefined) {
+          const showVisitors = await getProfileVisibilitySettings();
+          setEnabled(showVisitors);
+        } else {
+          setLoading(false);
+        }
       } catch (error) {
         console.error("Error fetching profile visibility settings:", error);
-      } finally {
         setLoading(false);
       }
     };
     
     fetchSettings();
-  }, []);
+  }, [initialValue]);
   
   const handleToggle = async (checked: boolean) => {
     setUpdating(true);
     try {
-      const success = await updateProfileVisibilitySettings(checked);
-      if (success) {
+      // If onChange is provided, use it, otherwise update service
+      if (onChange) {
+        onChange(checked);
         setEnabled(checked);
+        setUpdating(false);
+      } else {
+        const success = await updateProfileVisibilitySettings(checked);
+        if (success) {
+          setEnabled(checked);
+        }
+        setUpdating(false);
       }
     } catch (error) {
       console.error("Error updating profile visibility settings:", error);
-    } finally {
       setUpdating(false);
     }
   };
