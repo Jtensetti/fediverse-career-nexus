@@ -1,6 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
+// Profile view types
+export interface ProfileView {
+  id: string;
+  viewed_id: string;
+  viewer_id?: string;
+  viewed_at: string;
+  opted_in: boolean;
+}
+
+export interface ProfileViewStats {
+  totalViews: number;
+  uniqueViewers: number;
+  recentViews: ProfileView[];
+}
+
 // Experience Types
 export interface Experience {
   id?: string;
@@ -41,6 +56,80 @@ export interface Skill {
   created_at?: string;
   updated_at?: string;
 }
+
+// Record a profile view
+export const recordProfileView = async (viewedUserId: string): Promise<boolean> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false; // Don't record anonymous views
+    
+    const profileView = {
+      viewed_id: viewedUserId,
+      viewer_id: user.id,
+      opted_in: true // Default to opted in
+    };
+    
+    const { error } = await supabase
+      .from('profile_views')
+      .insert(profileView);
+    
+    if (error) throw error;
+    
+    return true;
+  } catch (error) {
+    console.error('Error recording profile view:', error);
+    return false;
+  }
+};
+
+// Get profile view statistics
+export const getProfileViewStats = async (): Promise<ProfileViewStats | null> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+    
+    // Get total views
+    const { count: totalViews, error: countError } = await supabase
+      .from('profile_views')
+      .select('*', { count: 'exact', head: false })
+      .eq('viewed_id', user.id);
+    
+    if (countError) throw countError;
+    
+    // Get unique viewers
+    const { count: uniqueViewers, error: uniqueError } = await supabase
+      .from('profile_views')
+      .select('viewer_id', { count: 'exact', head: false })
+      .eq('viewed_id', user.id)
+      .not('viewer_id', 'is', null);
+    
+    if (uniqueError) throw uniqueError;
+    
+    // Get recent views (last 30)
+    const { data: recentViews, error: recentError } = await supabase
+      .from('profile_views')
+      .select('*')
+      .eq('viewed_id', user.id)
+      .order('viewed_at', { ascending: false })
+      .limit(30);
+    
+    if (recentError) throw recentError;
+    
+    return {
+      totalViews: totalViews || 0,
+      uniqueViewers: uniqueViewers || 0,
+      recentViews: recentViews || []
+    };
+  } catch (error) {
+    console.error('Error fetching profile view stats:', error);
+    toast({
+      variant: "destructive",
+      title: "Failed to load profile view statistics",
+      description: "There was an error loading your profile view data."
+    });
+    return null;
+  }
+};
 
 // Experience Services
 export const getUserExperiences = async (userId?: string) => {

@@ -71,25 +71,50 @@ export const getConnectionSuggestions = async (limit = 10) => {
 
     // This is a simplified approach - in a real app with lots of users,
     // you might want a more sophisticated recommendation algorithm
-    const { data, error } = await supabase.rpc('get_connection_suggestions', { 
-      current_user_id: user.id,
-      limit_count: limit 
-    });
+    // Since we don't have the stored function yet, let's do a direct query
+    const { data, error } = await supabase
+      .from('user_settings')  // Use an existing table
+      .select('user_id')
+      .neq('user_id', user.id)
+      .limit(limit);
     
     if (error) {
-      console.error('Error in RPC:', error);
+      console.error('Error in suggestion query:', error);
       // Fallback to a simple query
       const { data: fallbackData, error: fallbackError } = await supabase
-        .from('profiles')
-        .select('*')
-        .neq('id', user.id)
+        .from('user_settings')
+        .select('user_id')
+        .neq('user_id', user.id)
         .limit(limit);
       
       if (fallbackError) throw fallbackError;
-      return fallbackData || [];
+      
+      // Convert to required format
+      const suggestions = (fallbackData || []).map(item => ({
+        id: item.user_id,
+        username: `user_${item.user_id.substring(0, 6)}`, // Placeholder
+        displayName: `User ${item.user_id.substring(0, 6)}`, // Placeholder
+        headline: "User on the network", // Placeholder
+        avatarUrl: "", // Placeholder
+        connectionDegree: null as ConnectionDegree, // Use null for users not in your network
+        mutualConnections: 0
+      }));
+      
+      return suggestions;
     }
     
-    return data || [];
+    // Convert to required format
+    const suggestions = (data || []).map(item => ({
+      id: item.user_id,
+      username: `user_${item.user_id.substring(0, 6)}`, // Placeholder
+      displayName: `User ${item.user_id.substring(0, 6)}`, // Placeholder
+      headline: "User on the network", // Placeholder
+      avatarUrl: "", // Placeholder
+      connectionDegree: null as ConnectionDegree, // Use null for users not in your network
+      mutualConnections: 0
+    }));
+    
+    return suggestions;
   } catch (error) {
     console.error('Error fetching connection suggestions:', error);
     toast({

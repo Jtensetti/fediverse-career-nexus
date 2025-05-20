@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -36,8 +35,20 @@ interface NetworkSuggestion {
 
 const ConnectionsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [connections, setConnections] = useState<NetworkConnection[]>(mockNetworkData.connections);
-  const [suggestions, setSuggestions] = useState<NetworkSuggestion[]>(mockNetworkData.suggestions);
+  
+  // Convert mock data to ensure it matches the ConnectionDegree type
+  const transformedConnections: NetworkConnection[] = mockNetworkData.connections.map(conn => ({
+    ...conn,
+    connectionDegree: conn.connectionDegree as ConnectionDegree
+  }));
+  
+  const transformedSuggestions: NetworkSuggestion[] = mockNetworkData.suggestions.map(sugg => ({
+    ...sugg,
+    connectionDegree: sugg.connectionDegree as ConnectionDegree
+  }));
+  
+  const [connections, setConnections] = useState<NetworkConnection[]>(transformedConnections);
+  const [suggestions, setSuggestions] = useState<NetworkSuggestion[]>(transformedSuggestions);
   
   // Filter connections based on search query
   const filteredConnections = connections.filter(connection => 

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -43,7 +44,7 @@ const ProfilePage = () => {
   
   // If viewing another user's profile, find their connection degree
   const connectionDegree = !viewingOwnProfile 
-    ? mockNetworkData.connections.find(c => c.username === username)?.connectionDegree || null
+    ? mockNetworkData.connections.find(c => c.username === username)?.connectionDegree as ConnectionDegree || null
     : null;
     
   // Record profile view when visiting another user's profile
@@ -263,7 +264,7 @@ const ProfilePage = () => {
                             <div className="text-center">
                               <div className="flex items-center justify-center gap-1">
                                 <p className="font-medium">{connection.displayName}</p>
-                                <ConnectionBadge degree={connection.connectionDegree} showIcon={false} size="sm" />
+                                <ConnectionBadge degree={connection.connectionDegree as ConnectionDegree} showIcon={false} size="sm" />
                               </div>
                               <p className="text-xs text-gray-500 line-clamp-2">{connection.headline}</p>
                             </div>
