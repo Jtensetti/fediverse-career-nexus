@@ -15,3 +15,4 @@ verify_jwt = false
 
 [functions.federation]
 verify_jwt = true
+
