@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 import { verifySignature } from "npm:http-signature@1.3.6";
 import { decode as decodeBase64 } from "https://deno.land/std@0.167.0/encoding/base64.ts";
@@ -9,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Function to fetch public key from remote host or local DB
+// Function to fetch public key from remote host or local DB with improved caching
 async function fetchPublicKey(keyId: string): Promise<string | null> {
   try {
     // Initialize Supabase client
@@ -17,54 +16,46 @@ async function fetchPublicKey(keyId: string): Promise<string | null> {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // First check if we already have this key cached
-    const { data: keyData, error: keyError } = await supabase
+    // Check if we have a non-expired cached key
+    const { data } = await supabase
       .from('remote_keys')
-      .select('pem')
+      .select('pem,fetched_at')
       .eq('key_id', keyId)
       .single();
     
-    if (keyData && keyData.pem) {
+    // Use cached key if it exists and is less than 24 hours old
+    if (data && Date.now() - Date.parse(data.fetched_at) < 86_400_000) {
       console.log('Using cached public key for:', keyId);
-      return keyData.pem;
+      return data.pem;
     }
     
     console.log('Fetching public key from remote server:', keyId);
     
-    // Parse the keyId URL to get the actor URL
-    const keyIdUrl = new URL(keyId);
-    const actorUrl = keyIdUrl.protocol + '//' + keyIdUrl.host + keyIdUrl.pathname.split('#')[0];
-    
-    // Fetch the actor object
-    const actorResponse = await fetch(actorUrl, {
-      headers: {
-        'Accept': 'application/activity+json'
+    // Fetch the actor object (using the base URL without the fragment)
+    const res = await fetch(keyId.split('#')[0], { 
+      headers: { 
+        'Accept': 'application/activity+json' 
       }
     });
     
-    if (!actorResponse.ok) {
-      throw new Error(`Failed to fetch actor: ${actorResponse.status}`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch actor: ${res.status}`);
     }
     
-    const actor = await actorResponse.json();
+    const actor = await res.json();
+    const pem = actor.publicKey?.publicKeyPem;
     
-    // Extract the public key from the actor object
-    let publicKeyPem = null;
-    if (actor.publicKey && actor.publicKey.publicKeyPem) {
-      publicKeyPem = actor.publicKey.publicKeyPem;
-    }
-    
-    if (!publicKeyPem) {
+    if (!pem) {
       throw new Error('No public key found in actor object');
     }
     
-    // Store the key in our database for future use
-    await supabase.from('remote_keys').insert({
+    // Store or update the key in our database
+    await supabase.from('remote_keys').upsert({
       key_id: keyId,
-      pem: publicKeyPem
+      pem
     });
     
-    return publicKeyPem;
+    return pem;
   } catch (error) {
     console.error('Error fetching public key:', error);
     return null;
