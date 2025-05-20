@@ -1,6 +1,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
-import { verify } from "https://deno.land/x/httpsig@0.1.7/mod.ts";
+import verifier from "npm:@small-tech/https-signature-verifier@0.3.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,8 +14,8 @@ async function verifySignature(request: Request): Promise<{ valid: boolean; keyI
     // Clone the request to avoid consuming the body
     const reqClone = request.clone();
     
-    // Use the Deno httpsig verification
-    const result = await verify(reqClone);
+    // Use the npm package for verification
+    const result = await verifier.verify(reqClone);
     console.log('Signature verification result:', result);
     
     return {
