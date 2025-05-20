@@ -3,3 +3,6 @@ project_id = "tvvrdoklywxllcpzxdls"
 
 [functions.webfinger]
 verify_jwt = false
+
+[functions.actor]
+verify_jwt = false

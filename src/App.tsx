@@ -28,6 +28,7 @@ import EventEdit from "./pages/EventEdit";
 import Messages from "./pages/Messages"; 
 import MessageConversation from "./pages/MessageConversation";
 import Moderation from "./pages/Moderation";
+import ActorProfile from "./pages/ActorProfile";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/messages" element={<Messages />} />
               <Route path="/messages/:conversationId" element={<MessageConversation />} />
               <Route path="/moderation" element={<Moderation />} />
+              <Route path="/:username" element={<ActorProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
