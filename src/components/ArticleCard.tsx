@@ -2,16 +2,15 @@
 import { Article } from "@/services/articleService";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { FileText } from "lucide-react";
+import ArticleAuthors from "./ArticleAuthors";
 
 interface ArticleCardProps {
   article: Article;
-  authorName?: string;
 }
 
-const ArticleCard = ({ article, authorName = "Author" }: ArticleCardProps) => {
+const ArticleCard = ({ article }: ArticleCardProps) => {
   const publishDate = article.published_at 
     ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true })
     : formatDistanceToNow(new Date(article.created_at), { addSuffix: true });
@@ -20,10 +19,7 @@ const ArticleCard = ({ article, authorName = "Author" }: ArticleCardProps) => {
     <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <Avatar className="h-6 w-6">
-            <AvatarFallback className="text-xs bg-gray-100">{authorName.substring(0, 2)}</AvatarFallback>
-          </Avatar>
-          <span>{authorName}</span>
+          <ArticleAuthors articleId={article.id} size="sm" showLabels={false} />
           <span>•</span>
           <span>{publishDate}</span>
         </div>

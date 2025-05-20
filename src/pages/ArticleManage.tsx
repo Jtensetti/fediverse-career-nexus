@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getUserArticles, deleteArticle } from "@/services/articleService";
-import { Search, Plus, Edit, Trash, BookText } from "lucide-react";
+import { Search, Plus, Edit, Trash, BookText, FileText, Filter } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,10 +23,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ArticleManage = () => {
   const navigate = useNavigate();
@@ -34,6 +41,7 @@ const ArticleManage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
 
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ['user-articles'],
@@ -41,11 +49,20 @@ const ArticleManage = () => {
   });
   
   const filteredArticles = articles.filter((article) => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      article.title.toLowerCase().includes(searchLower) ||
-      article.slug.toLowerCase().includes(searchLower)
-    );
+    // Filter by search query
+    const matchesSearchQuery = 
+      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      article.slug.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter by publication status if "drafts" or "published" tab is active
+    if (activeTab === 'drafts') {
+      return matchesSearchQuery && !article.published;
+    } else if (activeTab === 'published') {
+      return matchesSearchQuery && article.published;
+    }
+    
+    // Show all articles that match search query
+    return matchesSearchQuery;
   });
   
   const handleDeleteClick = (id: string) => {
@@ -76,7 +93,7 @@ const ArticleManage = () => {
                 <BookText className="h-6 w-6" />
                 My Articles
               </h1>
-              <p className="text-gray-600">Manage your articles</p>
+              <p className="text-gray-600">Manage your articles and drafts</p>
             </div>
             
             <div className="flex gap-4 mt-4 sm:mt-0">
@@ -92,8 +109,8 @@ const ArticleManage = () => {
             </div>
           </div>
           
-          <div className="mb-6">
-            <div className="relative">
+          <div className="mb-6 flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-grow">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
               <Input
                 type="text"
@@ -103,6 +120,14 @@ const ArticleManage = () => {
                 className="pl-10"
               />
             </div>
+            
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="drafts">Drafts</TabsTrigger>
+                <TabsTrigger value="published">Published</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           
           {isLoading ? (
@@ -124,12 +149,16 @@ const ArticleManage = () => {
                   {filteredArticles.map((article) => (
                     <TableRow key={article.id}>
                       <TableCell className="font-medium">
-                        <Link 
-                          to={`/articles/${article.slug}`}
-                          className="hover:text-primary transition-colors hover:underline"
-                        >
-                          {article.title}
-                        </Link>
+                        {article.published ? (
+                          <Link 
+                            to={`/articles/${article.slug}`}
+                            className="hover:text-primary transition-colors hover:underline"
+                          >
+                            {article.title}
+                          </Link>
+                        ) : (
+                          <span>{article.title}</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {article.published ? (
@@ -166,17 +195,21 @@ const ArticleManage = () => {
             </div>
           ) : (
             <div className="text-center py-12 border rounded-md">
-              <BookText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No articles yet</h2>
+              <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">No articles found</h2>
               <p className="text-gray-600 mb-6">
                 {searchQuery
                   ? "No articles match your search query."
+                  : activeTab === "drafts"
+                  ? "You haven't created any draft articles yet."
+                  : activeTab === "published"
+                  ? "You haven't published any articles yet."
                   : "You haven't created any articles yet."}
               </p>
               <Link to="/articles/create">
                 <Button className="flex items-center gap-2">
                   <Plus size={16} />
-                  Create Your First Article
+                  Create New Article
                 </Button>
               </Link>
             </div>

@@ -7,15 +7,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArticleFormData, updateArticle, getArticleById, generateSlug } from "@/services/articleService";
+import { 
+  ArticleFormData, 
+  updateArticle, 
+  getArticleById, 
+  generateSlug, 
+  getArticleAuthors, 
+  addCoAuthor, 
+  removeCoAuthor,
+  searchUsers 
+} from "@/services/articleService";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { toast } from "sonner";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, UserPlus, X, Users, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 
 const ArticleEdit = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [article, setArticle] = useState<ArticleFormData>({
@@ -25,12 +53,25 @@ const ArticleEdit = () => {
     slug: "",
     published: false,
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showAddCoAuthorDialog, setShowAddCoAuthorDialog] = useState(false);
 
-  const { data: originalArticle, isLoading } = useQuery({
+  const { data: originalArticle, isLoading: articleLoading } = useQuery({
     queryKey: ['article', id],
     queryFn: () => getArticleById(id || ''),
     enabled: !!id,
   });
+
+  const { data: authors = [], isLoading: authorsLoading } = useQuery({
+    queryKey: ['article-authors', id],
+    queryFn: () => getArticleAuthors(id || ''),
+    enabled: !!id,
+  });
+
+  const isPrimaryAuthor = authors.some(
+    author => author.is_primary && author.user_id === (window as any).supabase?.auth?.user()?.id
+  );
 
   useEffect(() => {
     if (originalArticle) {
@@ -102,6 +143,8 @@ const ArticleEdit = () => {
       const result = await updateArticle(id, article);
       if (result) {
         toast.success("Article updated successfully!");
+        queryClient.invalidateQueries({ queryKey: ['article', id] });
+        queryClient.invalidateQueries({ queryKey: ['user-articles'] });
         navigate("/articles/manage");
       }
     } finally {
@@ -109,7 +152,43 @@ const ArticleEdit = () => {
     }
   };
 
-  if (isLoading) {
+  const handleSearchUsers = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchTerm(query);
+    
+    if (query.length >= 3) {
+      const results = await searchUsers(query);
+      // Filter out users who are already authors
+      const filteredResults = results.filter(
+        user => !authors.some(author => author.user_id === user.id)
+      );
+      setSearchResults(filteredResults);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const handleAddCoAuthor = async (userId: string) => {
+    if (!id) return;
+    
+    const success = await addCoAuthor(id, userId);
+    if (success) {
+      setSearchTerm("");
+      setSearchResults([]);
+      queryClient.invalidateQueries({ queryKey: ['article-authors', id] });
+    }
+  };
+
+  const handleRemoveCoAuthor = async (userId: string) => {
+    if (!id) return;
+    
+    const success = await removeCoAuthor(id, userId);
+    if (success) {
+      queryClient.invalidateQueries({ queryKey: ['article-authors', id] });
+    }
+  };
+
+  if (articleLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -158,6 +237,138 @@ const ArticleEdit = () => {
             </Button>
           </div>
           
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-medium flex items-center gap-2">
+                  <Users size={18} />
+                  Authors
+                </h2>
+                <Dialog open={showAddCoAuthorDialog} onOpenChange={setShowAddCoAuthorDialog}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex items-center gap-1"
+                      disabled={!isPrimaryAuthor && authors.length > 0}
+                    >
+                      <UserPlus size={16} />
+                      Add Co-Author
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Co-Author</DialogTitle>
+                      <DialogDescription>
+                        Search for users to add as co-authors to this article.
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="relative mt-2">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={16} />
+                      <Input 
+                        placeholder="Search users by name or username..." 
+                        value={searchTerm}
+                        onChange={handleSearchUsers}
+                        className="pl-10"
+                      />
+                    </div>
+                    
+                    <div className="max-h-60 overflow-y-auto">
+                      {searchResults.length > 0 ? (
+                        <div className="space-y-2">
+                          {searchResults.map((user) => (
+                            <div key={user.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                              <div className="flex items-center gap-3">
+                                <Avatar>
+                                  <AvatarImage src={user.avatar_url} />
+                                  <AvatarFallback className="bg-primary/10">
+                                    {user.fullname ? user.fullname.substring(0, 2).toUpperCase() : 
+                                     user.username ? user.username.substring(0, 2).toUpperCase() : '??'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="font-medium">{user.fullname || user.username || "Unnamed User"}</p>
+                                  {user.username && <p className="text-sm text-gray-500">@{user.username}</p>}
+                                </div>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                onClick={() => {
+                                  handleAddCoAuthor(user.id);
+                                  setShowAddCoAuthorDialog(false);
+                                }}
+                              >
+                                Add
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : searchTerm.length >= 3 ? (
+                        <p className="text-center py-4 text-gray-500">No users found</p>
+                      ) : searchTerm.length > 0 ? (
+                        <p className="text-center py-4 text-gray-500">Type at least 3 characters to search</p>
+                      ) : (
+                        <p className="text-center py-4 text-gray-500">Search for users to add as co-authors</p>
+                      )}
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowAddCoAuthorDialog(false)}>
+                        Cancel
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              
+              {authorsLoading ? (
+                <p className="text-center py-2 text-gray-500">Loading authors...</p>
+              ) : authors.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {authors.map((author) => (
+                    <div key={author.id} className="flex items-center gap-2 px-3 py-2 rounded-full bg-gray-100">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={author.profile?.avatar_url || undefined} />
+                        <AvatarFallback className="text-xs">
+                          {author.profile?.fullname ? author.profile.fullname.substring(0, 2).toUpperCase() : 
+                           author.profile?.username ? author.profile.username.substring(0, 2).toUpperCase() : '??'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">
+                        {author.profile?.fullname || author.profile?.username || "Unnamed User"}
+                      </span>
+                      {author.is_primary && (
+                        <Badge variant="outline" className="text-xs ml-1">Primary</Badge>
+                      )}
+                      {!author.is_primary && isPrimaryAuthor && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-5 w-5 ml-1 text-gray-500 hover:text-red-500"
+                                onClick={() => handleRemoveCoAuthor(author.user_id)}
+                              >
+                                <X size={12} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Remove co-author</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center py-2 text-gray-500">No authors found</p>
+              )}
+            </CardContent>
+          </Card>
+          
           <Card>
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -192,12 +403,13 @@ const ArticleEdit = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="excerpt">Excerpt (Optional)</Label>
-                  <Input
+                  <Textarea
                     id="excerpt"
                     name="excerpt"
                     value={article.excerpt || ""}
                     onChange={handleChange}
                     placeholder="Brief summary of the article"
+                    rows={3}
                   />
                   <p className="text-xs text-gray-500">
                     A short summary that appears in article listings. If not provided, the beginning of the content will be used.
@@ -216,7 +428,7 @@ const ArticleEdit = () => {
                     checked={article.published}
                     onCheckedChange={handlePublishedChange}
                   />
-                  <Label htmlFor="published">{article.published ? "Published" : "Unpublished"}</Label>
+                  <Label htmlFor="published">{article.published ? "Published" : "Draft"}</Label>
                 </div>
                 
                 <div className="pt-4 flex justify-end">

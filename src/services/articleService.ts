@@ -15,6 +15,20 @@ export interface Article {
   user_id: string;
 }
 
+export interface ArticleAuthor {
+  id: string;
+  article_id: string;
+  user_id: string;
+  is_primary: boolean;
+  can_edit: boolean;
+  created_at: string;
+  profile?: {
+    username: string | null;
+    fullname: string | null;
+    avatar_url: string | null;
+  };
+}
+
 export interface ArticleFormData {
   title: string;
   content: string;
@@ -147,12 +161,33 @@ export const getPublishedArticles = async (): Promise<Article[]> => {
   }
 };
 
-// Get user's articles
+// Get user's articles (both drafts and published)
 export const getUserArticles = async (): Promise<Article[]> => {
   try {
+    // Get articles where user is an author (either primary or collaborator)
+    const { data: authoredArticles, error: authorError } = await supabase
+      .from('article_authors')
+      .select(`
+        article_id
+      `)
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id || '')
+      .eq('can_edit', true);
+    
+    if (authorError) {
+      console.error('Error fetching authored articles:', authorError);
+      return [];
+    }
+    
+    if (!authoredArticles || authoredArticles.length === 0) {
+      return [];
+    }
+    
+    // Get the full article data
+    const articleIds = authoredArticles.map(article => article.article_id);
     const { data, error } = await supabase
       .from('articles')
       .select('*')
+      .in('id', articleIds)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -163,6 +198,48 @@ export const getUserArticles = async (): Promise<Article[]> => {
     return data || [];
   } catch (error) {
     console.error('Error fetching user articles:', error);
+    return [];
+  }
+};
+
+// Get user's draft articles
+export const getUserDraftArticles = async (): Promise<Article[]> => {
+  try {
+    // Get articles where user is an author (either primary or collaborator)
+    const { data: authoredArticles, error: authorError } = await supabase
+      .from('article_authors')
+      .select(`
+        article_id
+      `)
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id || '')
+      .eq('can_edit', true);
+    
+    if (authorError) {
+      console.error('Error fetching authored articles:', authorError);
+      return [];
+    }
+    
+    if (!authoredArticles || authoredArticles.length === 0) {
+      return [];
+    }
+    
+    // Get the full article data filtered to drafts only
+    const articleIds = authoredArticles.map(article => article.article_id);
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .in('id', articleIds)
+      .eq('published', false)
+      .order('updated_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching user draft articles:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching user draft articles:', error);
     return [];
   }
 };
@@ -189,6 +266,105 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
   }
 };
 
+// Get article authors
+export const getArticleAuthors = async (articleId: string): Promise<ArticleAuthor[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('article_authors')
+      .select(`
+        *,
+        profile:user_id (
+          username,
+          fullname,
+          avatar_url
+        )
+      `)
+      .eq('article_id', articleId);
+    
+    if (error) {
+      console.error('Error fetching article authors:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching article authors:', error);
+    return [];
+  }
+};
+
+// Add co-author to article
+export const addCoAuthor = async (articleId: string, userId: string, canEdit: boolean = true): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('article_authors')
+      .insert({
+        article_id: articleId,
+        user_id: userId,
+        is_primary: false,
+        can_edit: canEdit
+      });
+    
+    if (error) {
+      toast.error(`Error adding co-author: ${error.message}`);
+      return false;
+    }
+    
+    toast.success('Co-author added successfully!');
+    return true;
+  } catch (error) {
+    console.error('Error adding co-author:', error);
+    toast.error('Failed to add co-author. Please try again.');
+    return false;
+  }
+};
+
+// Remove co-author from article
+export const removeCoAuthor = async (articleId: string, userId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('article_authors')
+      .delete()
+      .eq('article_id', articleId)
+      .eq('user_id', userId)
+      .eq('is_primary', false);
+    
+    if (error) {
+      toast.error(`Error removing co-author: ${error.message}`);
+      return false;
+    }
+    
+    toast.success('Co-author removed successfully!');
+    return true;
+  } catch (error) {
+    console.error('Error removing co-author:', error);
+    toast.error('Failed to remove co-author. Please try again.');
+    return false;
+  }
+};
+
+// Update author permissions
+export const updateAuthorPermissions = async (authorId: string, canEdit: boolean): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('article_authors')
+      .update({ can_edit: canEdit })
+      .eq('id', authorId);
+    
+    if (error) {
+      toast.error(`Error updating author permissions: ${error.message}`);
+      return false;
+    }
+    
+    toast.success('Author permissions updated successfully!');
+    return true;
+  } catch (error) {
+    console.error('Error updating author permissions:', error);
+    toast.error('Failed to update author permissions. Please try again.');
+    return false;
+  }
+};
+
 // Generate a slug from a title
 export const generateSlug = (title: string): string => {
   return title
@@ -197,4 +373,27 @@ export const generateSlug = (title: string): string => {
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
     .trim();
+};
+
+// Search for users to add as co-authors
+export const searchUsers = async (query: string): Promise<any[]> => {
+  try {
+    if (!query || query.length < 3) return [];
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, fullname, avatar_url')
+      .or(`username.ilike.%${query}%,fullname.ilike.%${query}%`)
+      .limit(10);
+    
+    if (error) {
+      console.error('Error searching users:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error searching users:', error);
+    return [];
+  }
 };
