@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -317,7 +318,8 @@ export async function getConversationParticipants(conversationId: string): Promi
  */
 export async function getOtherParticipant(conversation: Conversation, currentUserId: string): Promise<any> {
   try {
-    const { data, error } = await supabase
+    // First get the participant record
+    const { data: participantData, error: participantError } = await supabase
       .from('conversation_participants')
       .select('user_id')
       .eq('conversation_id', conversation.id)
@@ -325,20 +327,23 @@ export async function getOtherParticipant(conversation: Conversation, currentUse
       .eq('is_active', true)
       .single();
 
-    if (error) throw error;
+    if (participantError) throw participantError;
     
-    if (data) {
-      // Since we don't have a profiles table, we'll just return the user ID
-      // In a real app, you would query a profiles table if available
-      return { 
-        id: data.user_id,
-        username: `User-${data.user_id.substring(0, 6)}`, // Generate a placeholder username
-        fullname: null,
-        avatar_url: null
-      };
+    if (!participantData) return null;
+    
+    // Then get the user profile information
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, username, fullname, avatar_url')
+      .eq('id', participantData.user_id)
+      .single();
+      
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      return { id: participantData.user_id };
     }
     
-    return null;
+    return profileData;
   } catch (error) {
     console.error('Error fetching other participant:', error);
     return null;
