@@ -1,17 +1,18 @@
 
 {
   "common": {
-    "loading": "Loading...",
-    "error": "An error occurred",
-    "submit": "Submit",
     "cancel": "Cancel",
     "save": "Save",
-    "edit": "Edit",
     "delete": "Delete",
-    "search": "Search",
-    "back": "Back",
-    "next": "Next",
-    "previous": "Previous"
+    "edit": "Edit",
+    "submit": "Submit",
+    "success": "Success",
+    "error": "Error"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to content",
+    "darkMode": "Toggle dark mode",
+    "navigationMenu": "Navigation menu"
   },
   "nav": {
     "home": "Home",
@@ -21,51 +22,64 @@
     "jobs": "Jobs",
     "events": "Events",
     "messages": "Messages",
-    "editProfile": "Edit Profile",
-    "signIn": "Sign In",
-    "signOut": "Sign Out"
+    "moderation": "Moderation"
   },
-  "accessibility": {
-    "skipToContent": "Skip to content",
-    "darkMode": "Toggle dark mode",
-    "menuOpen": "Open menu",
-    "menuClose": "Close menu",
-    "profileMenu": "Profile menu",
-    "searchInput": "Search",
-    "notification": "Notification"
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Register",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password"
   },
-  "profile": {
-    "title": "Profile",
-    "edit": "Edit Profile",
-    "connections": "Connections",
-    "articles": "Articles",
-    "showWhoViewed": "Show who viewed my profile",
-    "profileViewsAnonymous": "Profile views will be anonymous, and you won't see who viewed your profile.",
-    "profileViewsVisible": "You'll see who viewed your profile, and others will know when you view theirs."
+  "codeOfConduct": {
+    "title": "Code of Conduct",
+    "description": "Our community guidelines and ethical standards",
+    "principles": "Core Principles",
+    "respectful": "Be respectful and inclusive in all interactions",
+    "harassment": "No harassment or discrimination of any kind",
+    "privacy": "Respect privacy and confidentiality",
+    "truthful": "Share truthful information and avoid spreading misinformation",
+    "constructive": "Engage in constructive criticism and dialogue",
+    "prohibited": "Prohibited Content",
+    "hate": "Hate speech and content that promotes violence or discrimination",
+    "harassment2": "Harassment, bullying, or intimidation",
+    "illegal": "Illegal content or activities",
+    "private": "Sharing private information without consent",
+    "spam": "Spam or deceptive practices",
+    "enforcement": "Enforcement",
+    "enforcementDesc": "Violation of these guidelines may result in content removal, account warnings, temporary suspension, or permanent banning depending on the severity and frequency of violations.",
+    "agree": "I agree to follow the Code of Conduct"
   },
-  "network": {
-    "showConnections": "Show my network connections to others",
-    "connectionsVisible": "Your connections can see your network and your degree of connection with other members.",
-    "connectionsHidden": "Your connections will not be visible to others and you won't appear in others' connection lists."
-  },
-  "verification": {
-    "verified": "Verified",
-    "pending": "Verification pending",
-    "rejected": "Verification failed",
-    "verifiedTooltip": "This information has been verified",
-    "pendingTooltip": "Verification is in progress",
-    "rejectedTooltip": "This information could not be verified"
+  "moderation": {
+    "title": "Community Moderation",
+    "log": "Moderation Log",
+    "codeOfConduct": "Code of Conduct",
+    "action": "Action",
+    "user": "User",
+    "reason": "Reason",
+    "moderator": "Moderator",
+    "time": "Time",
+    "warn": "Warning",
+    "silence": "Silence",
+    "block": "Block",
+    "noActions": "No moderation actions to display",
+    "newAction": "New Moderation Action",
+    "newActionTitle": "New Moderation Action",
+    "newActionDesc": "Take moderation action against a user who has violated community guidelines",
+    "actionType": "Action Type",
+    "targetUser": "Target User",
+    "reasonLabel": "Public Reason",
+    "reasonPlaceholder": "Please provide a clear reason for this action",
+    "public": "Make this action visible in the public log",
+    "takeAction": "Take Action",
+    "error": "Error",
+    "fillFields": "Please fill all required fields",
+    "success": "Success",
+    "actionCreated": "Moderation action created successfully"
   },
   "events": {
     "create": "Create Event",
-    "edit": "Edit Event",
-    "createTitle": "Create Event",
-    "editTitle": "Edit Event",
-    "createDescription": "Fill in the form below to create a new event.",
-    "editDescription": "Make changes to your event details below.",
-    "loading": "Loading event details...",
-    "notFound": "Event not found",
-    "notFoundDescription": "The event you're trying to edit doesn't exist or has been removed.",
-    "backToEvents": "Back to Events"
+    "createTitle": "Create a New Event",
+    "createDescription": "Share an event with your professional network"
   }
 }

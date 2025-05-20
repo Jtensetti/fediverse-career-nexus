@@ -1,217 +1,138 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useTheme } from "next-themes";
-import { Moon, Sun, Menu, X } from "lucide-react";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useTranslation } from "react-i18next";
+import { Link as RouterLink } from "react-router-dom";
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/ModeToggle";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { AlignJustify, User } from "lucide-react";
 
-export default function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { setTheme, theme } = useTheme();
-  const { toast } = useToast();
-  const supabaseClient = useSupabaseClient();
-  const session = useSession();
+const Navbar = () => {
   const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
-  const handleSignOut = async () => {
-    await supabaseClient.auth.signOut();
-    toast({
-      title: "Signed out",
-      description: "See you soon!",
-    });
-  };
+  const navigationItems = [
+    {
+      name: t("nav.home", "Home"),
+      href: "/",
+    },
+    {
+      name: t("nav.profile", "Profile"),
+      href: "/profile",
+    },
+    {
+      name: t("nav.connections", "Connections"),
+      href: "/connections",
+    },
+    {
+      name: t("nav.articles", "Articles"),
+      href: "/articles",
+    },
+    {
+      name: t("nav.jobs", "Jobs"),
+      href: "/jobs",
+    },
+    {
+      name: t("nav.events", "Events"),
+      href: "/events",
+    },
+    {
+      name: t("nav.messages", "Messages"),
+      href: "/messages",
+    },
+    {
+      name: t("nav.moderation", "Moderation"),
+      href: "/moderation",
+    }
+  ];
 
   return (
-    <header className="bg-background sticky top-0 z-40 w-full border-b">
-      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
-        <Link to="/" className="flex items-center font-semibold">
-          Bondy
-        </Link>
-
-        <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <Link to="/" className={navigationMenuTriggerStyle()}>
-                {t('nav.home')}
-              </Link>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <Link to="/connections" className={navigationMenuTriggerStyle()}>
-                {t('nav.connections')}
-              </Link>
-            </NavigationMenuItem>
-            
-            <NavigationMenuItem>
-              <Link to="/articles" className={navigationMenuTriggerStyle()}>
-                {t('nav.articles')}
-              </Link>
-            </NavigationMenuItem>
-
-            {session ? (
-              <NavigationMenuItem>
-                <Link
-                  to="/profile/edit"
-                  className={navigationMenuTriggerStyle()}
-                >
-                  {t('nav.editProfile')}
-                </Link>
-              </NavigationMenuItem>
-            ) : null}
-          </NavigationMenuList>
-        </NavigationMenu>
-
-        <div className="flex items-center space-x-2 md:space-x-4">
-          <LanguageSwitcher />
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              setTheme((prev: string) => (prev === "light" ? "dark" : "light"))
-            }
-            aria-label={t('accessibility.darkMode')}
-          >
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">{t('accessibility.darkMode')}</span>
-          </Button>
-
-          {session ? (
+    <div className="border-b">
+      <div className="flex h-16 items-center px-4">
+        <div className="container mx-auto flex w-full items-center justify-between">
+          <div className="flex items-center gap-4">
+            <RouterLink to="/" className="font-bold">
+              {t("appTitle", "My App")}
+            </RouterLink>
+            <nav className="mx-6 hidden w-full space-x-4 md:flex">
+              {navigationItems.map((item) => (
+                <RouterLink key={item.href} to={item.href}>
+                  {item.name}
+                </RouterLink>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ModeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  className="relative h-8 w-8 rounded-full"
-                  aria-label={t('accessibility.profileMenu')}
-                >
+                <Button variant="ghost" className="h-8 w-8 p-0">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={session?.user?.user_metadata?.avatar_url as string} alt={session?.user?.user_metadata?.full_name as string} />
-                    <AvatarFallback>{(session?.user?.user_metadata?.full_name as string)?.substring(0, 2)}</AvatarFallback>
+                    <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.href = `/profile/${session?.user?.user_metadata?.username}`}>{t('profile.title')}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.location.href = "/profile/edit"}>{t('profile.edit')}</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  {t('nav.signOut')}
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <RouterLink to="/profile">
+                    {t("nav.profile", "Profile")}
+                  </RouterLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <RouterLink to="/profile/edit">
+                    {t("common.edit", "Edit")} {t("nav.profile", "Profile")}
+                  </RouterLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  {t("auth.logout", "Log out")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
-            <Link to="/login">
-              <Button variant="outline" size="sm">
-                {t('nav.signIn')}
-              </Button>
-            </Link>
-          )}
-
-          <Button
-            variant="outline"
-            size="icon"
-            className={cn("ml-2 flex md:hidden")}
-            onClick={toggleMobileMenu}
-            aria-expanded={isMobileMenuOpen}
-            aria-label={isMobileMenuOpen ? t('accessibility.menuClose') : t('accessibility.menuOpen')}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-            <span className="sr-only">
-              {isMobileMenuOpen ? t('accessibility.menuClose') : t('accessibility.menuOpen')}
-            </span>
-          </Button>
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="md:hidden">
+                  <AlignJustify className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="sm:max-w-sm">
+                <SheetHeader>
+                  <SheetTitle>{t("appTitle", "My App")}</SheetTitle>
+                  <SheetDescription>
+                    {t("accessibility.navigationMenu", "Navigation menu")}
+                  </SheetDescription>
+                </SheetHeader>
+                <nav className="grid gap-6 text-lg">
+                  {navigationItems.map((item) => (
+                    <RouterLink key={item.href} to={item.href}>
+                      {item.name}
+                    </RouterLink>
+                  ))}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
-
-      {isMobileMenuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-background border-b z-50 md:hidden" role="dialog" aria-modal="true">
-          <nav className="container flex flex-col py-4">
-            <Link
-              to="/"
-              className="px-4 py-2 hover:bg-accent rounded-md"
-              onClick={closeMobileMenu}
-            >
-              {t('nav.home')}
-            </Link>
-            <Link
-              to="/connections"
-              className="px-4 py-2 hover:bg-accent rounded-md"
-              onClick={closeMobileMenu}
-            >
-              {t('nav.connections')}
-            </Link>
-            <Link
-              to="/articles"
-              className="px-4 py-2 hover:bg-accent rounded-md"
-              onClick={closeMobileMenu}
-            >
-              {t('nav.articles')}
-            </Link>
-            {session ? (
-              <>
-                <Link
-                  to="/profile/edit"
-                  className="px-4 py-2 hover:bg-accent rounded-md"
-                  onClick={closeMobileMenu}
-                >
-                  {t('nav.editProfile')}
-                </Link>
-                <Button variant="outline" size="sm" className="mt-2" onClick={handleSignOut}>
-                  {t('nav.signOut')}
-                </Button>
-              </>
-            ) : (
-              <Link
-                to="/login"
-                className="px-4 py-2 hover:bg-accent rounded-md"
-                onClick={closeMobileMenu}
-              >
-                {t('nav.signIn')}
-              </Link>
-            )}
-          </nav>
-        </div>
-      )}
-    </header>
+    </div>
   );
-}
+};
+
+export default Navbar;
