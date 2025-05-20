@@ -132,11 +132,21 @@ async function processQueueItem(item: any) {
   } catch (error) {
     console.error(`Error processing queue item ${item.id}:`, error);
     
-    // Mark item as failed
+    // Calculate exponential backoff for retry
+    const retryDelay = Math.min(Math.pow(2, item.attempts) * 5000, 3600000); // Max 1 hour
+    const nextAttemptAt = new Date(Date.now() + retryDelay).toISOString();
+    
+    // Mark item for retry with exponential backoff
     await supabaseClient
       .from("federation_queue")
-      .update({ status: "failed" })
+      .update({ 
+        status: "pending",
+        last_attempted_at: new Date().toISOString(),
+        next_attempt_at: nextAttemptAt
+      })
       .eq("id", item.id);
+    
+    console.log(`Scheduled item ${item.id} for retry at ${nextAttemptAt}`);
   }
 }
 
