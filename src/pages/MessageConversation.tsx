@@ -9,7 +9,7 @@ import { Send, Lock, LockOpen } from 'lucide-react';
 import { 
   getConversationWithMessages, 
   sendMessage, 
-  DirectMessage,
+  Message as DirectMessage,
   MessageContent,
   subscribeToMessages,
   unsubscribeFromMessages,

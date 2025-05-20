@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -45,6 +44,24 @@ export interface Message {
     avatar_url?: string;
   };
 }
+
+// Additional types needed for MessageConversation.tsx
+export type DirectMessage = Message;
+
+export interface MessageContent {
+  content: string;
+  isEncrypted: boolean;
+  encryptedContent?: string;
+}
+
+// Conversation with messages interface
+export interface ConversationWithMessages {
+  conversation: Conversation;
+  messages: Message[];
+}
+
+// Store active channel subscriptions
+const activeSubscriptions: Record<string, any> = {};
 
 /**
  * Get all conversations for the current user
@@ -147,9 +164,86 @@ export async function getMessages(conversationId: string): Promise<Message[]> {
 }
 
 /**
+ * Get conversation with messages in a single call
+ */
+export async function getConversationWithMessages(conversationId: string): Promise<ConversationWithMessages | null> {
+  try {
+    // Get conversation details
+    const conversation = await getConversation(conversationId);
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+
+    // Get messages for the conversation
+    const messages = await getMessages(conversationId);
+
+    // Mark messages as read
+    await markMessagesAsRead(conversationId);
+
+    return {
+      conversation,
+      messages
+    };
+  } catch (error) {
+    console.error('Error fetching conversation with messages:', error);
+    toast.error('Failed to load conversation');
+    return null;
+  }
+}
+
+/**
+ * Subscribe to messages in a conversation
+ */
+export function subscribeToMessages(
+  conversationId: string,
+  onNewMessage: (message: Message) => void,
+  onError: (error: any) => void
+): void {
+  // Check if already subscribed
+  if (activeSubscriptions[conversationId]) {
+    console.log('Already subscribed to this conversation');
+    return;
+  }
+
+  // Create a new subscription
+  const channel = supabase
+    .channel(`conversation-${conversationId}`)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'direct_messages',
+      filter: `conversation_id=eq.${conversationId}`,
+    }, (payload) => {
+      const newMessage = payload.new as Message;
+      onNewMessage(newMessage);
+      // Mark message as read if not sent by current user
+      markMessagesAsRead(conversationId).catch(console.error);
+    })
+    .subscribe((status) => {
+      if (status !== 'SUBSCRIBED') {
+        onError(new Error(`Failed to subscribe: ${status}`));
+      }
+    });
+
+  // Store the subscription
+  activeSubscriptions[conversationId] = channel;
+}
+
+/**
+ * Unsubscribe from messages
+ */
+export function unsubscribeFromMessages(conversationId: string): void {
+  const channel = activeSubscriptions[conversationId];
+  if (channel) {
+    supabase.removeChannel(channel);
+    delete activeSubscriptions[conversationId];
+  }
+}
+
+/**
  * Send a message in a conversation
  */
-export async function sendMessage(conversationId: string, content: string, isEncrypted = false, encryptedContent = ''): Promise<Message | null> {
+export async function sendMessage(conversationId: string, messageContent: MessageContent): Promise<Message | null> {
   try {
     const session = await supabase.auth.getSession();
     const userId = session.data.session?.user.id;
@@ -163,9 +257,9 @@ export async function sendMessage(conversationId: string, content: string, isEnc
       .from('direct_messages')
       .insert({
         conversation_id: conversationId,
-        content,
-        encrypted_content: encryptedContent,
-        is_encrypted: isEncrypted,
+        content: messageContent.content,
+        encrypted_content: messageContent.encryptedContent || null,
+        is_encrypted: messageContent.isEncrypted,
         sender_id: userId
       })
       .select()
@@ -235,9 +329,18 @@ export async function getOtherParticipant(conversation: Conversation, currentUse
     
     if (data) {
       // Get user profile data
-      // Note: You need to create a profiles table if you want to use it here
-      // For now, we'll just return the user ID since we don't have a user profile table yet
-      return { id: data.user_id };
+      const { data: userData, error: userError } = await supabase
+        .from('profiles') // Ensure this table exists in your database
+        .select('id, username, fullname, avatar_url')
+        .eq('id', data.user_id)
+        .single();
+        
+      if (userError) {
+        console.error('Error fetching user profile:', userError);
+        return { id: data.user_id };
+      }
+      
+      return userData || { id: data.user_id };
     }
     
     return null;
