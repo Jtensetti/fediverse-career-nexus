@@ -34,7 +34,10 @@
   "theme": {
     "light": "Light",
     "dark": "Dark",
-    "system": "System"
+    "system": "System",
+    "preferences": "Theme Preferences",
+    "preferenceSaved": "Theme preference saved",
+    "preferenceError": "Failed to save theme preference"
   },
   "codeOfConduct": {
     "title": "Code of Conduct",
@@ -80,7 +83,10 @@
     "error": "Error",
     "fillFields": "Please fill all required fields",
     "success": "Success",
-    "actionCreated": "Moderation action created successfully"
+    "actionCreated": "Moderation action created successfully",
+    "notAuthorized": "You are not authorized to take moderation actions",
+    "loginRequired": "You must be logged in to view this page",
+    "loading": "Loading moderation data..."
   },
   "events": {
     "create": "Create Event",
@@ -88,3 +94,4 @@
     "createDescription": "Share an event with your professional network"
   }
 }
+

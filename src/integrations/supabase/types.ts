@@ -497,6 +497,36 @@ export type Database = {
         }
         Relationships: []
       }
+      moderation_actions: {
+        Row: {
+          created_at: string
+          id: string
+          is_public: boolean
+          moderator_id: string
+          reason: string
+          target_user_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          moderator_id: string
+          reason: string
+          target_user_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          moderator_id?: string
+          reason?: string
+          target_user_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
       newsletter_subscriptions: {
         Row: {
           email: string
@@ -658,11 +688,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
           show_network_connections: boolean
           show_profile_visitors: boolean
+          theme: string | null
           updated_at: string
           user_id: string
         }
@@ -670,6 +722,7 @@ export type Database = {
           created_at?: string
           show_network_connections?: boolean
           show_profile_visitors?: boolean
+          theme?: string | null
           updated_at?: string
           user_id: string
         }
@@ -677,6 +730,7 @@ export type Database = {
           created_at?: string
           show_network_connections?: boolean
           show_profile_visitors?: boolean
+          theme?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -702,6 +756,14 @@ export type Database = {
       get_connection_degree: {
         Args: { source_user_id: string; target_user_id: string }
         Returns: number
+      }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_moderator: {
+        Args: { user_id: string }
+        Returns: boolean
       }
       request_education_verification: {
         Args: { education_id: string }
