@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.actor]
 verify_jwt = false
+
+[functions.outbox]
+verify_jwt = false

@@ -505,6 +505,44 @@ export type Database = {
         }
         Relationships: []
       }
+      federation_queue: {
+        Row: {
+          activity: Json
+          actor_id: string
+          attempts: number
+          created_at: string
+          id: string
+          last_attempted_at: string | null
+          status: string
+        }
+        Insert: {
+          activity: Json
+          actor_id: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          actor_id?: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_queue_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_posts: {
         Row: {
           application_url: string | null
