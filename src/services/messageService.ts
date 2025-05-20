@@ -328,19 +328,14 @@ export async function getOtherParticipant(conversation: Conversation, currentUse
     if (error) throw error;
     
     if (data) {
-      // Get user profile data
-      const { data: userData, error: userError } = await supabase
-        .from('profiles') // Ensure this table exists in your database
-        .select('id, username, fullname, avatar_url')
-        .eq('id', data.user_id)
-        .single();
-        
-      if (userError) {
-        console.error('Error fetching user profile:', userError);
-        return { id: data.user_id };
-      }
-      
-      return userData || { id: data.user_id };
+      // Since we don't have a profiles table, we'll just return the user ID
+      // In a real app, you would query a profiles table if available
+      return { 
+        id: data.user_id,
+        username: `User-${data.user_id.substring(0, 6)}`, // Generate a placeholder username
+        fullname: null,
+        avatar_url: null
+      };
     }
     
     return null;
