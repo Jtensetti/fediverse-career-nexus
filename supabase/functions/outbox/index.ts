@@ -1,6 +1,6 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { signRequest, generateRsaKeyPair } from "./http-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,7 +78,7 @@ serve(async (req) => {
     if (req.method === "GET") {
       return await handleGetOutbox(req, actor.id, profile.username);
     } else if (req.method === "POST") {
-      return await handlePostOutbox(req, actor.id);
+      return await handlePostOutbox(req, actor.id, profile.username);
     } else {
       return new Response(
         JSON.stringify({ error: "Method not allowed" }),
@@ -258,7 +258,7 @@ async function getOutboxPage(actorId: string, username: string, page: string, or
   );
 }
 
-async function handlePostOutbox(req: Request, actorId: string): Promise<Response> {
+async function handlePostOutbox(req: Request, actorId: string, username: string): Promise<Response> {
   // Check if request is authorized
   const authHeader = req.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -336,6 +336,67 @@ async function handlePostOutbox(req: Request, actorId: string): Promise<Response
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
+  }
+  
+  // Check if actor has RSA keys, generate if not
+  const { data: actorData, error: actorError } = await supabaseClient
+    .from("actors")
+    .select("id, private_key, public_key")
+    .eq("id", actorId)
+    .single();
+    
+  if (actorError) {
+    console.error("Error retrieving actor keys:", actorError);
+    return new Response(
+      JSON.stringify({ error: "Error retrieving actor data" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      }
+    );
+  }
+  
+  let privateKey = actorData.private_key;
+  let publicKey = actorData.public_key;
+  
+  // Generate keys if they don't exist
+  if (!privateKey || !publicKey) {
+    try {
+      console.log(`Generating new RSA key pair for actor ${actorId}`);
+      const keyPair = await generateRsaKeyPair();
+      
+      // Save keys to the database
+      const { error: updateError } = await supabaseClient
+        .from("actors")
+        .update({
+          private_key: keyPair.privateKey,
+          public_key: keyPair.publicKey
+        })
+        .eq("id", actorId);
+      
+      if (updateError) {
+        console.error("Error saving key pair:", updateError);
+        return new Response(
+          JSON.stringify({ error: "Error generating keys" }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
+      
+      privateKey = keyPair.privateKey;
+      publicKey = keyPair.publicKey;
+    } catch (error) {
+      console.error("Error generating key pair:", error);
+      return new Response(
+        JSON.stringify({ error: "Error generating keys" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
   }
   
   // Add to federation queue

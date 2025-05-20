@@ -1,29 +1,95 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
+import { verify } from 'https://esm.sh/@small-tech/https-signature-verifier@0.3.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, signature, digest, date, host',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Function to verify HTTP signatures
-// In a production implementation, this would be more robust
-async function verifyHttpSignature(request: Request): Promise<boolean> {
-  const signature = request.headers.get('signature')
-  if (!signature) {
+// Function to verify HTTP signatures for ActivityPub
+async function verifyHttpSignature(request: Request, supabase: any): Promise<boolean> {
+  try {
+    // Get required headers for verification
+    const signature = request.headers.get('signature')
+    const digest = request.headers.get('digest')
+    const date = request.headers.get('date')
+    
+    // Check if required headers are present
+    if (!signature || !digest || !date) {
+      console.log('Missing required headers for signature verification')
+      return false
+    }
+    
+    // Parse the actor URL from the signature header
+    const keyIdMatch = signature.match(/keyId="([^"]+)"/)
+    if (!keyIdMatch || !keyIdMatch[1]) {
+      console.log('Could not extract keyId from signature header')
+      return false
+    }
+    
+    const keyId = keyIdMatch[1]
+    const actorUrl = keyId.split('#')[0]
+    
+    // Fetch the actor's public key
+    console.log(`Fetching public key for actor: ${actorUrl}`)
+    const response = await fetch(actorUrl, {
+      headers: {
+        'Accept': 'application/activity+json'
+      }
+    })
+    
+    if (!response.ok) {
+      console.log(`Failed to fetch actor data: ${response.status}`)
+      return false
+    }
+    
+    const actorData = await response.json()
+    
+    // Extract the public key
+    let publicKey = null
+    if (actorData.publicKey && actorData.publicKey.publicKeyPem) {
+      publicKey = actorData.publicKey.publicKeyPem
+    } else if (Array.isArray(actorData.publicKey)) {
+      // Some implementations use an array of keys
+      const mainKey = actorData.publicKey.find((key: any) => key.id === keyId)
+      if (mainKey && mainKey.publicKeyPem) {
+        publicKey = mainKey.publicKeyPem
+      }
+    }
+    
+    if (!publicKey) {
+      console.log('Could not find public key in actor data')
+      return false
+    }
+    
+    // Get request body for verification
+    const requestBody = await request.clone().text()
+    
+    // Create verification object
+    const options = {
+      url: request.url,
+      method: request.method,
+      headers: {
+        'signature': signature,
+        'digest': digest,
+        'date': date,
+        'host': new URL(request.url).host
+      },
+      body: requestBody,
+      publicKey: publicKey
+    }
+    
+    // Verify the signature
+    const isValid = await verify(options)
+    console.log(`Signature verification result: ${isValid}`)
+    
+    return isValid
+  } catch (error) {
+    console.error('Error during signature verification:', error)
     return false
   }
-  
-  // TODO: Implement proper signature verification
-  // This is a placeholder - actual implementation would:
-  // 1. Parse the signature header
-  // 2. Get the actor's public key
-  // 3. Verify the signature against the request
-  
-  // For now, we're just accepting all signatures
-  console.log('Signature verification is a placeholder')
-  return true
 }
 
 Deno.serve(async (req) => {
@@ -81,7 +147,7 @@ Deno.serve(async (req) => {
     }
 
     // Verify HTTP signature
-    const isSignatureValid = await verifyHttpSignature(req)
+    const isSignatureValid = await verifyHttpSignature(req, supabase)
     
     // Store the activity in the inbox_events table
     const { data, error } = await supabase
