@@ -66,9 +66,9 @@ const JobForm = ({
   // Convert skills array to comma-separated string for form
   const formattedDefaultValues = {
     ...defaultValues,
-    skills: defaultValues.skills?.join(", ") || "",
-    salary_min: defaultValues.salary_min?.toString() || "",
-    salary_max: defaultValues.salary_max?.toString() || "",
+    skills: defaultValues.skills ? defaultValues.skills.join(", ") : "",
+    salary_min: defaultValues.salary_min ? defaultValues.salary_min.toString() : "",
+    salary_max: defaultValues.salary_max ? defaultValues.salary_max.toString() : "",
   };
   
   const form = useForm<z.infer<typeof jobFormSchema>>({

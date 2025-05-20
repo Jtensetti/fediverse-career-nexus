@@ -6,7 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Remote, Link as LinkIcon } from "lucide-react";
+import { Calendar, MapPin, Globe, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 
 const JobTypeLabels: Record<string, string> = {
@@ -121,7 +121,7 @@ const JobView = () => {
             
             {job.remote_allowed && (
               <div className="flex items-center gap-2">
-                <Remote className="h-4 w-4" />
+                <Globe className="h-4 w-4" />
                 <span>Remote available</span>
               </div>
             )}

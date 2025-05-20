@@ -2,7 +2,7 @@
 import { JobPost } from "@/services/jobPostsService";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Remote } from "lucide-react";
+import { Calendar, MapPin, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -61,7 +61,7 @@ const JobCard = ({ job }: JobCardProps) => {
             {job.remote_allowed && (
               <>
                 <span className="mx-1">•</span>
-                <Remote className="h-4 w-4" />
+                <Globe className="h-4 w-4" />
                 <span>Remote available</span>
               </>
             )}

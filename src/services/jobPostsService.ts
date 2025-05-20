@@ -25,7 +25,7 @@ export interface JobPost {
 }
 
 export interface JobPostFilter {
-  job_type?: string;
+  job_type?: 'full_time' | 'part_time' | 'contract' | 'internship' | 'temporary';
   location?: string;
   remote_allowed?: boolean;
   search?: string;
