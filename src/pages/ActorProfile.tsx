@@ -8,18 +8,25 @@ const ActorProfile = () => {
 
   useEffect(() => {
     // On mount, check if we need to redirect to the actor JSON endpoint
-    const headers = new Headers(Object.entries(document.headers || {}));
-    const acceptHeader = headers.get("Accept");
-    
-    if (acceptHeader && (
-      acceptHeader.includes("application/activity+json") || 
-      acceptHeader.includes("application/ld+json")
-    )) {
-      // If the client is requesting ActivityPub data, redirect to our Edge Function
-      const edgeFunctionUrl = `${supabase.functions.url}/actor/${username}`;
-      window.location.href = edgeFunctionUrl;
+    const headers = new Headers();
+    const acceptHeader = window.navigator.userAgent; // Use user agent as a fallback
+
+    // Check Accept header if in a server environment (for ActivityPub clients)
+    if (typeof window !== "undefined" && window.fetch) {
+      // This is a client-side only check
+      if (
+        acceptHeader.includes("ActivityPub") || 
+        acceptHeader.includes("application/activity+json") || 
+        acceptHeader.includes("application/ld+json")
+      ) {
+        // If the client is requesting ActivityPub data, redirect to our Edge Function
+        window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/actor/${username}`;
+      } else {
+        // Otherwise, redirect to the regular profile page
+        navigate(`/profile/${username}`);
+      }
     } else {
-      // Otherwise, redirect to the regular profile page
+      // Default case - just navigate to profile
       navigate(`/profile/${username}`);
     }
   }, [username, navigate]);
