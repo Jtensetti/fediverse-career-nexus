@@ -28,6 +28,8 @@ import NetworkVisibilityToggle from "@/components/NetworkVisibilityToggle";
 import ProfileVisitsToggle from "@/components/ProfileVisitsToggle";
 import VerificationBadge from "@/components/VerificationBadge";
 import VerificationRequest from "@/components/VerificationRequest";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { 
   getUserExperiences, 
   createExperience, 
@@ -61,6 +63,7 @@ import { mockUserProfile } from "@/data/mockData";
 const ProfileEditPage = () => {
   const { username } = useParams();
   const [profile, setProfile] = useState(mockUserProfile);
+  const [userId, setUserId] = useState<string | null>(null);
   
   // State for experiences, education, and skills
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -86,6 +89,18 @@ const ProfileEditPage = () => {
       location: profile.contact.location
     }
   });
+
+  // Get current user
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    
+    getCurrentUser();
+  }, []);
 
   // Fetch user data
   useEffect(() => {
@@ -117,12 +132,22 @@ const ProfileEditPage = () => {
 
   // Experience handlers
   const addExperience = () => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "You need to be signed in to add an experience."
+      });
+      return;
+    }
+    
     const newExperience: Experience = {
       title: "",
       company: "",
       is_current_role: false,
       start_date: "",
-      description: ""
+      description: "",
+      user_id: userId
     };
     setExperiences([...experiences, newExperience]);
   };
@@ -156,7 +181,17 @@ const ProfileEditPage = () => {
     
     if (!exp.title || !exp.company || !exp.start_date) {
       // Show validation error
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please fill in all required fields (title, company, and start date)."
+      });
       return;
+    }
+    
+    // Ensure user_id is set
+    if (!exp.user_id && userId) {
+      exp.user_id = userId;
     }
     
     // If experience has an ID, update it, otherwise create new
@@ -179,11 +214,21 @@ const ProfileEditPage = () => {
 
   // Education handlers
   const addEducation = () => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "You need to be signed in to add education."
+      });
+      return;
+    }
+    
     const newEducation: Education = {
       institution: "",
       degree: "",
       field: "",
-      start_year: new Date().getFullYear()
+      start_year: new Date().getFullYear(),
+      user_id: userId
     };
     setEducation([...education, newEducation]);
   };
@@ -217,7 +262,17 @@ const ProfileEditPage = () => {
     
     if (!edu.institution || !edu.degree || !edu.field || !edu.start_year) {
       // Show validation error
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please fill in all required fields (institution, degree, field of study, and start year)."
+      });
       return;
+    }
+    
+    // Ensure user_id is set
+    if (!edu.user_id && userId) {
+      edu.user_id = userId;
     }
     
     // If education has an ID, update it, otherwise create new
@@ -240,10 +295,20 @@ const ProfileEditPage = () => {
 
   // Skills handlers
   const addSkill = async () => {
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "You need to be signed in to add a skill."
+      });
+      return;
+    }
+    
     if (newSkill.trim() === "") return;
     
     const newSkillItem: Skill = {
-      name: newSkill.trim()
+      name: newSkill.trim(),
+      user_id: userId
     };
     
     const createdSkill = await createSkill(newSkillItem);

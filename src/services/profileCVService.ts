@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 // Experience Types
 export interface Experience {
   id?: string;
-  user_id?: string;
+  user_id: string; // Changed from optional to required
   title: string;
   company: string;
   company_domain?: string;
@@ -22,7 +22,7 @@ export interface Experience {
 // Education Types
 export interface Education {
   id?: string;
-  user_id?: string;
+  user_id: string; // Changed from optional to required
   institution: string;
   degree: string;
   field: string;
@@ -36,7 +36,7 @@ export interface Education {
 // Skill Types
 export interface Skill {
   id?: string;
-  user_id?: string;
+  user_id: string; // Changed from optional to required
   name: string;
   endorsements?: number;
   created_at?: string;
@@ -67,6 +67,16 @@ export const getUserExperiences = async (userId?: string) => {
 
 export const createExperience = async (experience: Experience) => {
   try {
+    // Ensure user_id is set
+    if (!experience.user_id) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        experience.user_id = user.id;
+      } else {
+        throw new Error("User not authenticated");
+      }
+    }
+    
     const { data, error } = await supabase
       .from('experiences')
       .insert(experience)
@@ -169,6 +179,16 @@ export const getUserEducation = async (userId?: string) => {
 
 export const createEducation = async (education: Education) => {
   try {
+    // Ensure user_id is set
+    if (!education.user_id) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        education.user_id = user.id;
+      } else {
+        throw new Error("User not authenticated");
+      }
+    }
+    
     const { data, error } = await supabase
       .from('education')
       .insert(education)
@@ -271,6 +291,16 @@ export const getUserSkills = async (userId?: string) => {
 
 export const createSkill = async (skill: Skill) => {
   try {
+    // Ensure user_id is set
+    if (!skill.user_id) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        skill.user_id = user.id;
+      } else {
+        throw new Error("User not authenticated");
+      }
+    }
+    
     const { data, error } = await supabase
       .from('skills')
       .insert(skill)
