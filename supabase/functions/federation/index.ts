@@ -157,11 +157,12 @@ serve(async (req) => {
   }
   
   try {
-    // Get pending queue items
+    // Get pending queue items that are ready for processing (next_attempt_at is null or in the past)
     const { data: queueItems, error } = await supabaseClient
       .from("federation_queue")
       .select("*")
       .eq("status", "pending")
+      .or(`next_attempt_at.is.null,next_attempt_at.lte.${new Date().toISOString()}`)
       .order("created_at", { ascending: true })
       .limit(10);
     

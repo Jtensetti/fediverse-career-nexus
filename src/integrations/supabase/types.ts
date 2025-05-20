@@ -513,6 +513,7 @@ export type Database = {
           created_at: string
           id: string
           last_attempted_at: string | null
+          next_attempt_at: string | null
           status: string
         }
         Insert: {
@@ -522,6 +523,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_attempted_at?: string | null
+          next_attempt_at?: string | null
           status?: string
         }
         Update: {
@@ -531,6 +533,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_attempted_at?: string | null
+          next_attempt_at?: string | null
           status?: string
         }
         Relationships: [
