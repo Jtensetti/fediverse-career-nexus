@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -272,8 +271,13 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
     const { data, error } = await supabase
       .from('article_authors')
       .select(`
-        *,
-        profile:profiles(
+        id,
+        article_id,
+        user_id,
+        is_primary,
+        can_edit,
+        created_at,
+        profiles!inner(
           username,
           fullname,
           avatar_url
@@ -286,10 +290,15 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
       return [];
     }
     
-    // Transform the data to match the ArticleAuthor interface
-    const authors = data.map(author => ({
-      ...author,
-      profile: author.profile || undefined
+    // Map the data to match the ArticleAuthor interface
+    const authors: ArticleAuthor[] = (data || []).map(row => ({
+      id: row.id,
+      article_id: row.article_id,
+      user_id: row.user_id,
+      is_primary: row.is_primary,
+      can_edit: row.can_edit,
+      created_at: row.created_at,
+      profile: row.profiles
     }));
     
     return authors;
