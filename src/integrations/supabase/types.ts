@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      actors: {
+        Row: {
+          created_at: string
+          id: string
+          inbox_url: string | null
+          outbox_url: string | null
+          preferred_username: string
+          private_key: string | null
+          public_key: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inbox_url?: string | null
+          outbox_url?: string | null
+          preferred_username: string
+          private_key?: string | null
+          public_key?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inbox_url?: string | null
+          outbox_url?: string | null
+          preferred_username?: string
+          private_key?: string | null
+          public_key?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       article_authors: {
         Row: {
           article_id: string
