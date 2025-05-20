@@ -1,3 +1,4 @@
+
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Features from "../components/Features";
@@ -5,13 +6,9 @@ import Technology from "../components/Technology";
 import FAQ from "../components/FAQ";
 import CallToAction from "../components/CallToAction";
 import Footer from "../components/Footer";
-import Card from "../components/Card";
-import CardHeader from "../components/CardHeader";
-import CardTitle from "../components/CardTitle";
-import CardContent from "../components/CardContent";
-import CardFooter from "../components/CardFooter";
-import Button from "../components/Button";
-import Link from "../components/Link";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -38,9 +35,9 @@ const Index = () => {
                   <p>Read and share insightful articles from industry experts.</p>
                 </CardContent>
                 <CardFooter>
-                  <Link to="/articles">
-                    <Button>Browse Articles</Button>
-                  </Link>
+                  <Button asChild>
+                    <Link to="/articles">Browse Articles</Link>
+                  </Button>
                 </CardFooter>
               </Card>
               
@@ -52,9 +49,9 @@ const Index = () => {
                   <p>Find career opportunities or post job openings.</p>
                 </CardContent>
                 <CardFooter>
-                  <Link to="/jobs">
-                    <Button>Explore Jobs</Button>
-                  </Link>
+                  <Button asChild>
+                    <Link to="/jobs">Explore Jobs</Link>
+                  </Button>
                 </CardFooter>
               </Card>
               
@@ -66,9 +63,9 @@ const Index = () => {
                   <p>Attend professional events, webinars, and livestreams.</p>
                 </CardContent>
                 <CardFooter>
-                  <Link to="/events">
-                    <Button>Browse Events</Button>
-                  </Link>
+                  <Button asChild>
+                    <Link to="/events">Browse Events</Link>
+                  </Button>
                 </CardFooter>
               </Card>
             </div>
