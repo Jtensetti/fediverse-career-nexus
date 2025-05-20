@@ -1,0 +1,71 @@
+
+{
+  "common": {
+    "loading": "Laddar...",
+    "error": "Ett fel inträffade",
+    "submit": "Skicka",
+    "cancel": "Avbryt",
+    "save": "Spara",
+    "edit": "Redigera",
+    "delete": "Ta bort",
+    "search": "Sök",
+    "back": "Tillbaka",
+    "next": "Nästa",
+    "previous": "Föregående"
+  },
+  "nav": {
+    "home": "Hem",
+    "profile": "Profil",
+    "connections": "Kontakter",
+    "articles": "Artiklar",
+    "jobs": "Jobb",
+    "events": "Evenemang",
+    "messages": "Meddelanden",
+    "editProfile": "Redigera profil",
+    "signIn": "Logga in",
+    "signOut": "Logga ut"
+  },
+  "accessibility": {
+    "skipToContent": "Hoppa till innehåll",
+    "darkMode": "Växla mörkt läge",
+    "menuOpen": "Öppna meny",
+    "menuClose": "Stäng meny",
+    "profileMenu": "Profilmeny",
+    "searchInput": "Sök",
+    "notification": "Meddelande"
+  },
+  "profile": {
+    "title": "Profil",
+    "edit": "Redigera profil",
+    "connections": "Kontakter",
+    "articles": "Artiklar",
+    "showWhoViewed": "Visa vem som såg min profil",
+    "profileViewsAnonymous": "Profilvisningar kommer att vara anonyma, och du ser inte vem som har tittat på din profil.",
+    "profileViewsVisible": "Du ser vem som tittat på din profil, och andra vet när du tittar på deras."
+  },
+  "network": {
+    "showConnections": "Visa mina nätverkskontakter för andra",
+    "connectionsVisible": "Dina kontakter kan se ditt nätverk och din koppling till andra medlemmar.",
+    "connectionsHidden": "Dina kontakter kommer inte att vara synliga för andra och du visas inte i andras kontaktlistor."
+  },
+  "verification": {
+    "verified": "Verifierad",
+    "pending": "Verifiering pågår",
+    "rejected": "Verifiering misslyckades",
+    "verifiedTooltip": "Denna information har verifierats",
+    "pendingTooltip": "Verifiering pågår",
+    "rejectedTooltip": "Denna information kunde inte verifieras"
+  },
+  "events": {
+    "create": "Skapa evenemang",
+    "edit": "Redigera evenemang",
+    "createTitle": "Skapa evenemang",
+    "editTitle": "Redigera evenemang",
+    "createDescription": "Fyll i formuläret nedan för att skapa ett nytt evenemang.",
+    "editDescription": "Gör ändringar i dina evenemangsuppgifter nedan.",
+    "loading": "Laddar evenemangsuppgifter...",
+    "notFound": "Evenemanget hittades inte",
+    "notFoundDescription": "Evenemanget du försöker redigera finns inte eller har tagits bort.",
+    "backToEvents": "Tillbaka till evenemang"
+  }
+}

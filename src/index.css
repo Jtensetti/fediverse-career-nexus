@@ -79,6 +79,30 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   
+  /* Improved focus styles for accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  /* Skip to content link styles */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+  }
+  
+  .sr-only:focus,
+  .sr-only:active {
+    @apply w-auto h-auto m-0 overflow-visible whitespace-normal static;
+  }
+  
+  /* Improved focus indicators for interactive elements */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    @apply ring-2 ring-primary ring-offset-2 outline-none;
+  }
+  
   .clip-path-slash {
     clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
   }
@@ -86,4 +110,49 @@
   .clip-path-reverse-slash {
     clip-path: polygon(0 15%, 100% 0, 100% 100%, 0 100%);
   }
+  
+  /* High contrast mode improvements */
+  @media (forced-colors: active) {
+    * {
+      forced-color-adjust: none;
+    }
+    
+    button, a {
+      @apply border-2 border-current;
+    }
+  }
+}
+
+/* ARIA attributes styling */
+[aria-busy="true"] {
+  @apply cursor-wait;
+}
+
+[aria-disabled="true"] {
+  @apply cursor-not-allowed opacity-70;
+}
+
+/* Drag and drop cues */
+[draggable="true"] {
+  @apply cursor-grab;
+}
+
+[draggable="true"]:active {
+  @apply cursor-grabbing;
+}
+
+/* Error states for form elements */
+.input-error,
+.select-error,
+.textarea-error {
+  @apply border-destructive focus:ring-destructive;
+}
+
+/* Error message styling */
+.error-message {
+  @apply text-destructive text-sm mt-1;
+}
+
+[role="status"][aria-live="polite"] {
+  @apply sr-only;
 }

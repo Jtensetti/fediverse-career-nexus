@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getEvent, updateEvent, Event } from '@/services/eventService';
 
 import EventForm from '@/components/EventForm';
@@ -12,6 +13,7 @@ export default function EventEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -43,7 +45,9 @@ export default function EventEdit() {
   if (isLoading) {
     return (
       <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
-        <div className="text-center">Loading event details...</div>
+        <div className="text-center" aria-live="polite">
+          {t('events.loading')}
+        </div>
       </div>
     );
   }
@@ -52,12 +56,12 @@ export default function EventEdit() {
     return (
       <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Event not found</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('events.notFound')}</h2>
           <p className="text-muted-foreground mb-6">
-            The event you're trying to edit doesn't exist or has been removed.
+            {t('events.notFoundDescription')}
           </p>
           <Button asChild>
-            <Link to="/events">Back to Events</Link>
+            <Link to="/events">{t('events.backToEvents')}</Link>
           </Button>
         </div>
       </div>
@@ -67,9 +71,9 @@ export default function EventEdit() {
   return (
     <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Edit Event</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('events.editTitle')}</h1>
         <p className="text-muted-foreground mt-2">
-          Make changes to your event details below.
+          {t('events.editDescription')}
         </p>
       </div>
       
@@ -78,7 +82,7 @@ export default function EventEdit() {
           defaultValues={event}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
-          submitButtonText="Update Event"
+          submitButtonText={t('events.edit')}
         />
       </div>
     </div>

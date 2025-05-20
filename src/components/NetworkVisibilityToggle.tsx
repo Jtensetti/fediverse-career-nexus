@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { UsersRound, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { 
   getProfileVisibilitySettings, 
   updateProfileVisibilitySettings 
@@ -17,6 +18,7 @@ const NetworkVisibilityToggle = ({ initialValue, onChange }: NetworkVisibilityTo
   const [enabled, setEnabled] = useState(initialValue ?? true);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const { t } = useTranslation();
   
   useEffect(() => {
     const fetchSettings = async () => {
@@ -62,23 +64,24 @@ const NetworkVisibilityToggle = ({ initialValue, onChange }: NetworkVisibilityTo
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <UsersRound size={18} className="text-bondy-primary" />
-          <Label htmlFor="network-visibility" className="font-medium">Show my network connections to others</Label>
+          <Label htmlFor="network-visibility" className="font-medium">{t('network.showConnections')}</Label>
         </div>
         {loading ? (
-          <Loader2 size={18} className="animate-spin text-gray-400" />
+          <Loader2 size={18} className="animate-spin text-gray-400" aria-label={t('common.loading')} />
         ) : (
           <Switch 
             id="network-visibility" 
             checked={enabled}
             onCheckedChange={handleToggle}
             disabled={updating}
+            aria-label={t('network.showConnections')}
           />
         )}
       </div>
       <p className="text-sm text-gray-600">
         {enabled 
-          ? "Your connections can see your network and your degree of connection with other members." 
-          : "Your connections will not be visible to others and you won't appear in others' connection lists."}
+          ? t('network.connectionsVisible')
+          : t('network.connectionsHidden')}
       </p>
     </div>
   );

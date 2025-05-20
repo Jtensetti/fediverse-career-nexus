@@ -2,6 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ShieldCheck, ShieldX, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface VerificationBadgeProps {
   status: 'unverified' | 'pending' | 'verified' | 'rejected' | undefined;
@@ -9,6 +10,8 @@ interface VerificationBadgeProps {
 }
 
 const VerificationBadge = ({ status, className }: VerificationBadgeProps) => {
+  const { t } = useTranslation();
+  
   if (!status || status === 'unverified') {
     return null;
   }
@@ -18,23 +21,23 @@ const VerificationBadge = ({ status, className }: VerificationBadgeProps) => {
       case 'verified':
         return {
           icon: <ShieldCheck className="h-3 w-3 mr-1" />,
-          label: "Verified",
+          label: t('verification.verified'),
           variant: "outline",
-          tooltipText: "This information has been verified"
+          tooltipText: t('verification.verifiedTooltip')
         };
       case 'pending':
         return {
           icon: <Clock className="h-3 w-3 mr-1" />,
-          label: "Verification pending",
+          label: t('verification.pending'),
           variant: "secondary",
-          tooltipText: "Verification is in progress"
+          tooltipText: t('verification.pendingTooltip')
         };
       case 'rejected':
         return {
           icon: <ShieldX className="h-3 w-3 mr-1" />,
-          label: "Verification failed",
+          label: t('verification.rejected'),
           variant: "destructive",
-          tooltipText: "This information could not be verified"
+          tooltipText: t('verification.rejectedTooltip')
         };
       default:
         return null;

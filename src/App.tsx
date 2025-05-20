@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import SkipToContent from "./components/SkipToContent";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
@@ -34,30 +35,33 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/profile/:username" element={<Profile />} />
-          <Route path="/profile/edit" element={<ProfileEdit />} />
-          <Route path="/connections" element={<Connections />} />
-          <Route path="/articles" element={<Articles />} />
-          <Route path="/articles/:slug" element={<ArticleView />} />
-          <Route path="/articles/create" element={<ArticleCreate />} />
-          <Route path="/articles/edit/:id" element={<ArticleEdit />} />
-          <Route path="/articles/manage" element={<ArticleManage />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/jobs/:id" element={<JobView />} />
-          <Route path="/jobs/create" element={<JobCreate />} />
-          <Route path="/jobs/edit/:id" element={<JobEdit />} />
-          <Route path="/jobs/manage" element={<JobManage />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/events/:id" element={<EventView />} />
-          <Route path="/events/create" element={<EventCreate />} />
-          <Route path="/events/edit/:id" element={<EventEdit />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/messages/:conversationId" element={<MessageConversation />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <SkipToContent />
+        <div id="main-content" tabIndex={-1} className="outline-none">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/profile/:username" element={<Profile />} />
+            <Route path="/profile/edit" element={<ProfileEdit />} />
+            <Route path="/connections" element={<Connections />} />
+            <Route path="/articles" element={<Articles />} />
+            <Route path="/articles/:slug" element={<ArticleView />} />
+            <Route path="/articles/create" element={<ArticleCreate />} />
+            <Route path="/articles/edit/:id" element={<ArticleEdit />} />
+            <Route path="/articles/manage" element={<ArticleManage />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/jobs/:id" element={<JobView />} />
+            <Route path="/jobs/create" element={<JobCreate />} />
+            <Route path="/jobs/edit/:id" element={<JobEdit />} />
+            <Route path="/jobs/manage" element={<JobManage />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:id" element={<EventView />} />
+            <Route path="/events/create" element={<EventCreate />} />
+            <Route path="/events/edit/:id" element={<EventEdit />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/messages/:conversationId" element={<MessageConversation />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -1,0 +1,71 @@
+
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "connections": "Connections",
+    "articles": "Articles",
+    "jobs": "Jobs",
+    "events": "Events",
+    "messages": "Messages",
+    "editProfile": "Edit Profile",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to content",
+    "darkMode": "Toggle dark mode",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu",
+    "profileMenu": "Profile menu",
+    "searchInput": "Search",
+    "notification": "Notification"
+  },
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit Profile",
+    "connections": "Connections",
+    "articles": "Articles",
+    "showWhoViewed": "Show who viewed my profile",
+    "profileViewsAnonymous": "Profile views will be anonymous, and you won't see who viewed your profile.",
+    "profileViewsVisible": "You'll see who viewed your profile, and others will know when you view theirs."
+  },
+  "network": {
+    "showConnections": "Show my network connections to others",
+    "connectionsVisible": "Your connections can see your network and your degree of connection with other members.",
+    "connectionsHidden": "Your connections will not be visible to others and you won't appear in others' connection lists."
+  },
+  "verification": {
+    "verified": "Verified",
+    "pending": "Verification pending",
+    "rejected": "Verification failed",
+    "verifiedTooltip": "This information has been verified",
+    "pendingTooltip": "Verification is in progress",
+    "rejectedTooltip": "This information could not be verified"
+  },
+  "events": {
+    "create": "Create Event",
+    "edit": "Edit Event",
+    "createTitle": "Create Event",
+    "editTitle": "Edit Event",
+    "createDescription": "Fill in the form below to create a new event.",
+    "editDescription": "Make changes to your event details below.",
+    "loading": "Loading event details...",
+    "notFound": "Event not found",
+    "notFoundDescription": "The event you're trying to edit doesn't exist or has been removed.",
+    "backToEvents": "Back to Events"
+  }
+}

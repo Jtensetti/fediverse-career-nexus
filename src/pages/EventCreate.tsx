@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { createEvent, Event } from '@/services/eventService';
 
 import EventForm from '@/components/EventForm';
@@ -9,6 +10,7 @@ import EventForm from '@/components/EventForm';
 export default function EventCreate() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const createMutation = useMutation({
     mutationFn: (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
@@ -32,9 +34,9 @@ export default function EventCreate() {
   return (
     <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Create Event</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('events.createTitle')}</h1>
         <p className="text-muted-foreground mt-2">
-          Fill in the form below to create a new event.
+          {t('events.createDescription')}
         </p>
       </div>
       
@@ -42,7 +44,7 @@ export default function EventCreate() {
         <EventForm 
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
-          submitButtonText="Create Event"
+          submitButtonText={t('events.create')}
         />
       </div>
     </div>
