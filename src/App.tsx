@@ -9,6 +9,11 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
 import Connections from "./pages/Connections";
+import Articles from "./pages/Articles";
+import ArticleView from "./pages/ArticleView";
+import ArticleCreate from "./pages/ArticleCreate";
+import ArticleEdit from "./pages/ArticleEdit";
+import ArticleManage from "./pages/ArticleManage";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +28,11 @@ const App = () => (
           <Route path="/profile/:username" element={<Profile />} />
           <Route path="/profile/edit" element={<ProfileEdit />} />
           <Route path="/connections" element={<Connections />} />
+          <Route path="/articles" element={<Articles />} />
+          <Route path="/articles/:slug" element={<ArticleView />} />
+          <Route path="/articles/create" element={<ArticleCreate />} />
+          <Route path="/articles/edit/:id" element={<ArticleEdit />} />
+          <Route path="/articles/manage" element={<ArticleManage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
