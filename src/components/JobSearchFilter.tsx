@@ -63,7 +63,10 @@ const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
         
         {/* Job type filter */}
         <div className="w-full md:w-[180px]">
-          <Select value={jobType} onValueChange={setJobType}>
+          <Select 
+            value={jobType} 
+            onValueChange={(value: "full_time" | "part_time" | "contract" | "internship" | "temporary" | undefined) => setJobType(value)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Job type" />
             </SelectTrigger>
