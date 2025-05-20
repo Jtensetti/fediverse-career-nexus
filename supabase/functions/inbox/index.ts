@@ -1,11 +1,74 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 import { verifySignature } from "npm:http-signature@1.3.6";
+import { decode as decodeBase64 } from "https://deno.land/std@0.167.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, signature, digest, date, host',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+// Function to fetch public key from remote host or local DB
+async function fetchPublicKey(keyId: string): Promise<string | null> {
+  try {
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // First check if we already have this key cached
+    const { data: keyData, error: keyError } = await supabase
+      .from('remote_keys')
+      .select('pem')
+      .eq('key_id', keyId)
+      .single();
+    
+    if (keyData && keyData.pem) {
+      console.log('Using cached public key for:', keyId);
+      return keyData.pem;
+    }
+    
+    console.log('Fetching public key from remote server:', keyId);
+    
+    // Parse the keyId URL to get the actor URL
+    const keyIdUrl = new URL(keyId);
+    const actorUrl = keyIdUrl.protocol + '//' + keyIdUrl.host + keyIdUrl.pathname.split('#')[0];
+    
+    // Fetch the actor object
+    const actorResponse = await fetch(actorUrl, {
+      headers: {
+        'Accept': 'application/activity+json'
+      }
+    });
+    
+    if (!actorResponse.ok) {
+      throw new Error(`Failed to fetch actor: ${actorResponse.status}`);
+    }
+    
+    const actor = await actorResponse.json();
+    
+    // Extract the public key from the actor object
+    let publicKeyPem = null;
+    if (actor.publicKey && actor.publicKey.publicKeyPem) {
+      publicKeyPem = actor.publicKey.publicKeyPem;
+    }
+    
+    if (!publicKeyPem) {
+      throw new Error('No public key found in actor object');
+    }
+    
+    // Store the key in our database for future use
+    await supabase.from('remote_keys').insert({
+      key_id: keyId,
+      pem: publicKeyPem
+    });
+    
+    return publicKeyPem;
+  } catch (error) {
+    console.error('Error fetching public key:', error);
+    return null;
+  }
 }
 
 // Function to verify HTTP signatures for ActivityPub
@@ -28,28 +91,30 @@ async function verifyHttpSignature(request: Request): Promise<{ valid: boolean; 
       const keyIdMatch = signatureHeader.match(/keyId="([^"]+)"/);
       keyId = keyIdMatch ? keyIdMatch[1] : null;
       
-      // TODO: In a production system, you would fetch the actor's public key using keyId
-      // For now, we'll just verify the signature format is valid
-      const valid = verifySignature({
-        headers,
-        method,
-        url,
-        // This is a placeholder - in a real implementation you would fetch the public key
-        // based on the keyId
-        publicKey: "placeholder"
-      });
-      
-      console.log('Signature verification result:', { valid, keyId });
-      
-      // For now, we're returning true as we can't fully verify without the public key
-      // In production, this should be properly implemented
-      return {
-        valid: true, // Placeholder - should be properly verified in production
-        keyId
-      };
+      if (keyId) {
+        // Fetch the actor's public key using keyId
+        const publicKeyPem = await fetchPublicKey(keyId);
+        
+        if (publicKeyPem) {
+          // Verify the signature with the fetched public key
+          const valid = verifySignature({
+            headers,
+            method,
+            url,
+            publicKey: publicKeyPem
+          });
+          
+          console.log('Signature verification result:', { valid, keyId });
+          
+          return {
+            valid,
+            keyId
+          };
+        }
+      }
     }
     
-    return { valid: false, keyId: null };
+    return { valid: false, keyId };
   } catch (error) {
     console.error('Error during signature verification:', error);
     return { valid: false, keyId: null };

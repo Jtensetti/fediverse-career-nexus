@@ -758,6 +758,24 @@ export type Database = {
         }
         Relationships: []
       }
+      remote_keys: {
+        Row: {
+          fetched_at: string
+          key_id: string
+          pem: string
+        }
+        Insert: {
+          fetched_at?: string
+          key_id: string
+          pem: string
+        }
+        Update: {
+          fetched_at?: string
+          key_id?: string
+          pem?: string
+        }
+        Relationships: []
+      }
       skill_endorsements: {
         Row: {
           created_at: string
