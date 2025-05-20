@@ -268,6 +268,7 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
 // Get article authors
 export const getArticleAuthors = async (articleId: string): Promise<ArticleAuthor[]> => {
   try {
+    // Use !inner join to ensure profiles exist and alias the result directly to "profile"
     const { data, error } = await supabase
       .from('article_authors')
       .select(`
@@ -277,7 +278,7 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
         is_primary,
         can_edit,
         created_at,
-        profiles!inner(
+        profile:profiles!inner(
           username,
           fullname,
           avatar_url
@@ -290,18 +291,7 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
       return [];
     }
     
-    // Map the data to match the ArticleAuthor interface
-    const authors: ArticleAuthor[] = (data || []).map(row => ({
-      id: row.id,
-      article_id: row.article_id,
-      user_id: row.user_id,
-      is_primary: row.is_primary,
-      can_edit: row.can_edit,
-      created_at: row.created_at,
-      profile: row.profiles
-    }));
-    
-    return authors;
+    return data as ArticleAuthor[];
   } catch (error) {
     console.error('Error fetching article authors:', error);
     return [];
