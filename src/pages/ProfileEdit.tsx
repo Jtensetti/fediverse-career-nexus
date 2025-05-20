@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -21,13 +22,28 @@ import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Briefcase, School, Star, Trash, Plus, Settings } from "lucide-react";
+import { Briefcase, School, Star, Trash, Plus, Settings, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import NetworkVisibilityToggle from "@/components/NetworkVisibilityToggle";
 import ProfileVisitsToggle from "@/components/ProfileVisitsToggle";
-
-// We'll use the same mock data structure from the Profile page
-import { mockUserProfile } from "@/data/mockData";
+import VerificationBadge from "@/components/VerificationBadge";
+import VerificationRequest from "@/components/VerificationRequest";
+import { 
+  getUserExperiences, 
+  createExperience, 
+  updateExperience, 
+  deleteExperience,
+  getUserEducation,
+  createEducation,
+  updateEducation,
+  deleteEducation,
+  getUserSkills,
+  createSkill,
+  deleteSkill,
+  Experience,
+  Education,
+  Skill
+} from "@/services/profileCVService";
 
 // Schema for the basic profile information
 const profileSchema = z.object({
@@ -39,46 +55,24 @@ const profileSchema = z.object({
   location: z.string().optional()
 });
 
-// Experience item schema
-const experienceSchema = z.object({
-  id: z.string().optional(),
-  title: z.string().min(2, "Title is required"),
-  company: z.string().min(2, "Company is required"),
-  isCurrentRole: z.boolean().default(false),
-  startDate: z.string().min(2, "Start date is required"),
-  endDate: z.string().optional(),
-  location: z.string().optional(),
-  description: z.string().optional()
-});
-
-// Education item schema
-const educationSchema = z.object({
-  id: z.string().optional(),
-  institution: z.string().min(2, "Institution is required"),
-  degree: z.string().min(2, "Degree is required"),
-  field: z.string().min(2, "Field of study is required"),
-  startYear: z.number().min(1900, "Invalid year").max(2100, "Invalid year"),
-  endYear: z.number().min(1900, "Invalid year").max(2100, "Invalid year").optional(),
-  isVerified: z.boolean().default(false)
-});
-
-// Skill item schema
-const skillSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(2, "Skill name is required"),
-  endorsements: z.number().default(0)
-});
+// Import mock data temporarily
+import { mockUserProfile } from "@/data/mockData";
 
 const ProfileEditPage = () => {
   const { username } = useParams();
   const [profile, setProfile] = useState(mockUserProfile);
-
-  // Initialize experiences array
-  const [experiences, setExperiences] = useState(profile.experience || []);
-  const [education, setEducation] = useState(profile.education || []);
-  const [skills, setSkills] = useState(profile.skills || []);
-
+  
+  // State for experiences, education, and skills
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [education, setEducation] = useState<Education[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [newSkill, setNewSkill] = useState("");
+  
+  const [isLoading, setIsLoading] = useState({
+    experiences: false,
+    education: false,
+    skills: false
+  });
 
   // Form for basic profile information
   const form = useForm({
@@ -93,83 +87,177 @@ const ProfileEditPage = () => {
     }
   });
 
+  // Fetch user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setIsLoading(prev => ({ ...prev, experiences: true }));
+      const userExperiences = await getUserExperiences();
+      setExperiences(userExperiences);
+      setIsLoading(prev => ({ ...prev, experiences: false }));
+      
+      setIsLoading(prev => ({ ...prev, education: true }));
+      const userEducation = await getUserEducation();
+      setEducation(userEducation);
+      setIsLoading(prev => ({ ...prev, education: false }));
+      
+      setIsLoading(prev => ({ ...prev, skills: true }));
+      const userSkills = await getUserSkills();
+      setSkills(userSkills);
+      setIsLoading(prev => ({ ...prev, skills: false }));
+    };
+    
+    fetchUserData();
+  }, []);
+
   const onSubmit = (data) => {
     console.log("Form submitted:", data);
     // Here you would typically send the data to your API
     // and update the profile state
   };
 
-  // Add a new experience item
+  // Experience handlers
   const addExperience = () => {
-    const newExperience = {
-      id: `exp${Date.now()}`,
+    const newExperience: Experience = {
       title: "",
       company: "",
-      isCurrentRole: false,
-      startDate: "",
-      endDate: "",
-      location: "",
-      description: "",
-      isVerified: false
+      is_current_role: false,
+      start_date: "",
+      description: ""
     };
     setExperiences([...experiences, newExperience]);
   };
 
-  // Remove an experience item
-  const removeExperience = (id) => {
-    setExperiences(experiences.filter(exp => exp.id !== id));
+  const removeExperience = async (index: number) => {
+    const exp = experiences[index];
+    
+    // If this experience has an ID (stored in DB), delete it
+    if (exp.id) {
+      const success = await deleteExperience(exp.id);
+      if (success) {
+        setExperiences(experiences.filter((_, i) => i !== index));
+      }
+    } else {
+      // If not yet saved, just remove from state
+      setExperiences(experiences.filter((_, i) => i !== index));
+    }
   };
 
-  // Update an experience item
-  const updateExperience = (id, field, value) => {
-    setExperiences(experiences.map(exp => 
-      exp.id === id ? { ...exp, [field]: value } : exp
-    ));
+  const updateExperienceField = (index: number, field: string, value: any) => {
+    const updatedExperiences = [...experiences];
+    updatedExperiences[index] = { 
+      ...updatedExperiences[index], 
+      [field]: value 
+    };
+    setExperiences(updatedExperiences);
   };
 
-  // Add a new education item
+  const saveExperience = async (index: number) => {
+    const exp = experiences[index];
+    
+    if (!exp.title || !exp.company || !exp.start_date) {
+      // Show validation error
+      return;
+    }
+    
+    // If experience has an ID, update it, otherwise create new
+    if (exp.id) {
+      const updated = await updateExperience(exp.id, exp);
+      if (updated) {
+        const updatedExperiences = [...experiences];
+        updatedExperiences[index] = updated;
+        setExperiences(updatedExperiences);
+      }
+    } else {
+      const created = await createExperience(exp);
+      if (created) {
+        const updatedExperiences = [...experiences];
+        updatedExperiences[index] = created;
+        setExperiences(updatedExperiences);
+      }
+    }
+  };
+
+  // Education handlers
   const addEducation = () => {
-    const newEducation = {
-      id: `edu${Date.now()}`,
+    const newEducation: Education = {
       institution: "",
       degree: "",
       field: "",
-      startYear: new Date().getFullYear(),
-      endYear: null,
-      isVerified: false
+      start_year: new Date().getFullYear()
     };
     setEducation([...education, newEducation]);
   };
 
-  // Remove an education item
-  const removeEducation = (id) => {
-    setEducation(education.filter(edu => edu.id !== id));
+  const removeEducation = async (index: number) => {
+    const edu = education[index];
+    
+    // If this education has an ID (stored in DB), delete it
+    if (edu.id) {
+      const success = await deleteEducation(edu.id);
+      if (success) {
+        setEducation(education.filter((_, i) => i !== index));
+      }
+    } else {
+      // If not yet saved, just remove from state
+      setEducation(education.filter((_, i) => i !== index));
+    }
   };
 
-  // Update an education item
-  const updateEducation = (id, field, value) => {
-    setEducation(education.map(edu => 
-      edu.id === id ? { ...edu, [field]: value } : edu
-    ));
+  const updateEducationField = (index: number, field: string, value: any) => {
+    const updatedEducation = [...education];
+    updatedEducation[index] = { 
+      ...updatedEducation[index], 
+      [field]: value 
+    };
+    setEducation(updatedEducation);
   };
 
-  // Add a new skill
-  const addSkill = () => {
+  const saveEducation = async (index: number) => {
+    const edu = education[index];
+    
+    if (!edu.institution || !edu.degree || !edu.field || !edu.start_year) {
+      // Show validation error
+      return;
+    }
+    
+    // If education has an ID, update it, otherwise create new
+    if (edu.id) {
+      const updated = await updateEducation(edu.id, edu);
+      if (updated) {
+        const updatedEducation = [...education];
+        updatedEducation[index] = updated;
+        setEducation(updatedEducation);
+      }
+    } else {
+      const created = await createEducation(edu);
+      if (created) {
+        const updatedEducation = [...education];
+        updatedEducation[index] = created;
+        setEducation(updatedEducation);
+      }
+    }
+  };
+
+  // Skills handlers
+  const addSkill = async () => {
     if (newSkill.trim() === "") return;
     
-    const newSkillItem = {
-      id: `skill${Date.now()}`,
-      name: newSkill,
-      endorsements: 0
+    const newSkillItem: Skill = {
+      name: newSkill.trim()
     };
     
-    setSkills([...skills, newSkillItem]);
-    setNewSkill("");
+    const createdSkill = await createSkill(newSkillItem);
+    if (createdSkill) {
+      setSkills([...skills, createdSkill]);
+      setNewSkill("");
+    }
   };
 
-  // Remove a skill
-  const removeSkill = (id) => {
-    setSkills(skills.filter(skill => skill.id !== id));
+  const removeSkill = async (id: string) => {
+    const success = await deleteSkill(id);
+    if (success) {
+      setSkills(skills.filter(skill => skill.id !== id));
+    }
   };
 
   return (
@@ -318,119 +406,156 @@ const ProfileEditPage = () => {
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {experiences.map((exp, index) => (
-                    <div key={exp.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-medium">Experience #{index + 1}</h4>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => removeExperience(exp.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash size={16} />
-                        </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor={`title-${exp.id}`}>Job Title</Label>
-                          <Input 
-                            id={`title-${exp.id}`}
-                            value={exp.title} 
-                            onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
-                            placeholder="Job Title"
-                            className="mt-1"
-                          />
+                {isLoading.experiences ? (
+                  <div className="flex justify-center py-8">
+                    <div className="flex flex-col items-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bondy-primary"></div>
+                      <p className="mt-2 text-sm text-gray-500">Loading experiences...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {experiences.map((exp, index) => (
+                      <div key={exp.id || `new-exp-${index}`} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-4">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">
+                              {exp.title || `Experience #${index + 1}`}
+                            </h4>
+                            {exp.verification_status && (
+                              <VerificationBadge status={exp.verification_status} />
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            {exp.id && (
+                              <VerificationRequest 
+                                type="experience" 
+                                itemId={exp.id}
+                                companyDomain={exp.company_domain}
+                              />
+                            )}
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeExperience(index)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash size={16} />
+                            </Button>
+                          </div>
                         </div>
                         
-                        <div>
-                          <Label htmlFor={`company-${exp.id}`}>Company</Label>
-                          <Input 
-                            id={`company-${exp.id}`}
-                            value={exp.company} 
-                            onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
-                            placeholder="Company"
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor={`startDate-${exp.id}`}>Start Date</Label>
-                          <Input 
-                            id={`startDate-${exp.id}`}
-                            type="month"
-                            value={exp.startDate} 
-                            onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div className="flex flex-col">
-                          <div className="flex items-center mb-2">
-                            <Switch
-                              id={`current-${exp.id}`}
-                              checked={exp.isCurrentRole}
-                              onCheckedChange={(checked) => updateExperience(exp.id, 'isCurrentRole', checked)}
-                              className="mr-2"
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor={`title-${index}`}>Job Title</Label>
+                            <Input 
+                              id={`title-${index}`}
+                              value={exp.title || ''} 
+                              onChange={(e) => updateExperienceField(index, 'title', e.target.value)}
+                              placeholder="Job Title"
+                              className="mt-1"
                             />
-                            <Label htmlFor={`current-${exp.id}`}>I currently work here</Label>
                           </div>
                           
-                          {!exp.isCurrentRole && (
-                            <>
-                              <Label htmlFor={`endDate-${exp.id}`}>End Date</Label>
-                              <Input 
-                                id={`endDate-${exp.id}`}
-                                type="month"
-                                value={exp.endDate || ''} 
-                                onChange={(e) => updateExperience(exp.id, 'endDate', e.target.value)}
-                                className="mt-1"
+                          <div>
+                            <Label htmlFor={`company-${index}`}>Company</Label>
+                            <Input 
+                              id={`company-${index}`}
+                              value={exp.company || ''} 
+                              onChange={(e) => updateExperienceField(index, 'company', e.target.value)}
+                              placeholder="Company"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`company_domain-${index}`}>Company Website/Domain</Label>
+                            <Input 
+                              id={`company_domain-${index}`}
+                              value={exp.company_domain || ''} 
+                              onChange={(e) => updateExperienceField(index, 'company_domain', e.target.value)}
+                              placeholder="company.com"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`location-${index}`}>Location</Label>
+                            <Input 
+                              id={`location-${index}`}
+                              value={exp.location || ''} 
+                              onChange={(e) => updateExperienceField(index, 'location', e.target.value)}
+                              placeholder="City, Country (Remote)"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`startDate-${index}`}>Start Date</Label>
+                            <Input 
+                              id={`startDate-${index}`}
+                              type="date"
+                              value={exp.start_date ? exp.start_date.substring(0, 10) : ''} 
+                              onChange={(e) => updateExperienceField(index, 'start_date', e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div className="flex flex-col">
+                            <div className="flex items-center mb-2">
+                              <Switch
+                                id={`current-${index}`}
+                                checked={exp.is_current_role || false}
+                                onCheckedChange={(checked) => updateExperienceField(index, 'is_current_role', checked)}
+                                className="mr-2"
                               />
-                            </>
-                          )}
-                        </div>
-                        
-                        <div className="md:col-span-2">
-                          <Label htmlFor={`location-${exp.id}`}>Location</Label>
-                          <Input 
-                            id={`location-${exp.id}`}
-                            value={exp.location || ''} 
-                            onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-                            placeholder="City, Country (Remote)"
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div className="md:col-span-2">
-                          <Label htmlFor={`description-${exp.id}`}>Description</Label>
-                          <Textarea 
-                            id={`description-${exp.id}`}
-                            value={exp.description || ''} 
-                            onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
-                            placeholder="Describe your responsibilities and achievements"
-                            className="mt-1 h-24"
-                          />
+                              <Label htmlFor={`current-${index}`}>I currently work here</Label>
+                            </div>
+                            
+                            {!exp.is_current_role && (
+                              <>
+                                <Label htmlFor={`endDate-${index}`}>End Date</Label>
+                                <Input 
+                                  id={`endDate-${index}`}
+                                  type="date"
+                                  value={exp.end_date ? exp.end_date.substring(0, 10) : ''} 
+                                  onChange={(e) => updateExperienceField(index, 'end_date', e.target.value)}
+                                  className="mt-1"
+                                />
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="md:col-span-2">
+                            <Label htmlFor={`description-${index}`}>Description</Label>
+                            <Textarea 
+                              id={`description-${index}`}
+                              value={exp.description || ''} 
+                              onChange={(e) => updateExperienceField(index, 'description', e.target.value)}
+                              placeholder="Describe your responsibilities and achievements"
+                              className="mt-1 h-24"
+                            />
+                          </div>
+                          
+                          <div className="md:col-span-2 flex justify-end">
+                            <Button
+                              onClick={() => saveExperience(index)}
+                              className="bg-bondy-primary hover:bg-bondy-primary/90"
+                            >
+                              {exp.id ? 'Update' : 'Save'} Experience
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  
-                  {experiences.length === 0 && (
-                    <div className="text-center py-6 text-gray-500">
-                      <p>No experience added yet. Click "Add Experience" to get started.</p>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      className="bg-bondy-primary hover:bg-bondy-primary/90"
-                    >
-                      Save Changes
-                    </Button>
+                    ))}
+                    
+                    {experiences.length === 0 && (
+                      <div className="text-center py-6 text-gray-500">
+                        <p>No experience added yet. Click "Add Experience" to get started.</p>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -451,94 +576,119 @@ const ProfileEditPage = () => {
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {education.map((edu, index) => (
-                    <div key={edu.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-medium">Education #{index + 1}</h4>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => removeEducation(edu.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash size={16} />
-                        </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="md:col-span-2">
-                          <Label htmlFor={`institution-${edu.id}`}>School/University</Label>
-                          <Input 
-                            id={`institution-${edu.id}`}
-                            value={edu.institution} 
-                            onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)}
-                            placeholder="Institution name"
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor={`degree-${edu.id}`}>Degree</Label>
-                          <Input 
-                            id={`degree-${edu.id}`}
-                            value={edu.degree} 
-                            onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
-                            placeholder="e.g. Bachelor's, Master's"
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor={`field-${edu.id}`}>Field of Study</Label>
-                          <Input 
-                            id={`field-${edu.id}`}
-                            value={edu.field} 
-                            onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
-                            placeholder="e.g. Computer Science"
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor={`startYear-${edu.id}`}>Start Year</Label>
-                          <Input 
-                            id={`startYear-${edu.id}`}
-                            type="number"
-                            value={edu.startYear} 
-                            onChange={(e) => updateEducation(edu.id, 'startYear', parseInt(e.target.value))}
-                            className="mt-1"
-                          />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor={`endYear-${edu.id}`}>End Year (or expected)</Label>
-                          <Input 
-                            id={`endYear-${edu.id}`}
-                            type="number"
-                            value={edu.endYear || ''} 
-                            onChange={(e) => updateEducation(edu.id, 'endYear', parseInt(e.target.value))}
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
+                {isLoading.education ? (
+                  <div className="flex justify-center py-8">
+                    <div className="flex flex-col items-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bondy-primary"></div>
+                      <p className="mt-2 text-sm text-gray-500">Loading education...</p>
                     </div>
-                  ))}
-                  
-                  {education.length === 0 && (
-                    <div className="text-center py-6 text-gray-500">
-                      <p>No education added yet. Click "Add Education" to get started.</p>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      className="bg-bondy-primary hover:bg-bondy-primary/90"
-                    >
-                      Save Changes
-                    </Button>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-6">
+                    {education.map((edu, index) => (
+                      <div key={edu.id || `new-edu-${index}`} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-4">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">
+                              {edu.institution || `Education #${index + 1}`}
+                            </h4>
+                            {edu.verification_status && (
+                              <VerificationBadge status={edu.verification_status} />
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            {edu.id && (
+                              <VerificationRequest 
+                                type="education" 
+                                itemId={edu.id}
+                              />
+                            )}
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => removeEducation(index)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash size={16} />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="md:col-span-2">
+                            <Label htmlFor={`institution-${index}`}>School/University</Label>
+                            <Input 
+                              id={`institution-${index}`}
+                              value={edu.institution || ''} 
+                              onChange={(e) => updateEducationField(index, 'institution', e.target.value)}
+                              placeholder="Institution name"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`degree-${index}`}>Degree</Label>
+                            <Input 
+                              id={`degree-${index}`}
+                              value={edu.degree || ''} 
+                              onChange={(e) => updateEducationField(index, 'degree', e.target.value)}
+                              placeholder="e.g. Bachelor's, Master's"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`field-${index}`}>Field of Study</Label>
+                            <Input 
+                              id={`field-${index}`}
+                              value={edu.field || ''} 
+                              onChange={(e) => updateEducationField(index, 'field', e.target.value)}
+                              placeholder="e.g. Computer Science"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`startYear-${index}`}>Start Year</Label>
+                            <Input 
+                              id={`startYear-${index}`}
+                              type="number"
+                              value={edu.start_year || ''} 
+                              onChange={(e) => updateEducationField(index, 'start_year', parseInt(e.target.value))}
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`endYear-${index}`}>End Year (or expected)</Label>
+                            <Input 
+                              id={`endYear-${index}`}
+                              type="number"
+                              value={edu.end_year || ''} 
+                              onChange={(e) => updateEducationField(index, 'end_year', parseInt(e.target.value))}
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div className="md:col-span-2 flex justify-end">
+                            <Button
+                              onClick={() => saveEducation(index)}
+                              className="bg-bondy-primary hover:bg-bondy-primary/90"
+                            >
+                              {edu.id ? 'Update' : 'Save'} Education
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {education.length === 0 && (
+                      <div className="text-center py-6 text-gray-500">
+                        <p>No education added yet. Click "Add Education" to get started.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -552,47 +702,53 @@ const ProfileEditPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="flex gap-2">
-                    <Input 
-                      placeholder="Add a skill" 
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && addSkill()}
-                    />
-                    <Button onClick={addSkill} type="button">Add</Button>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {skills.map((skill) => (
-                      <div key={skill.id} className="bg-gray-100 rounded-lg px-3 py-2 flex items-center gap-2">
-                        <span>{skill.name}</span>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-5 w-5 rounded-full" 
-                          onClick={() => removeSkill(skill.id)}
-                        >
-                          <Trash size={12} className="text-gray-500" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {skills.length === 0 && (
-                    <div className="text-center py-6 text-gray-500">
-                      <p>No skills added yet. Use the field above to add your skills.</p>
+                {isLoading.skills ? (
+                  <div className="flex justify-center py-8">
+                    <div className="flex flex-col items-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bondy-primary"></div>
+                      <p className="mt-2 text-sm text-gray-500">Loading skills...</p>
                     </div>
-                  )}
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      className="bg-bondy-primary hover:bg-bondy-primary/90"
-                    >
-                      Save Changes
-                    </Button>
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="Add a skill" 
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && addSkill()}
+                      />
+                      <Button onClick={addSkill} type="button">Add</Button>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {skills.map((skill) => (
+                        <div key={skill.id} className="bg-gray-100 rounded-lg px-3 py-2 flex items-center gap-2">
+                          <span>{skill.name}</span>
+                          {skill.endorsements && skill.endorsements > 0 && (
+                            <span className="bg-bondy-primary text-white text-xs px-1.5 py-0.5 rounded-full">
+                              {skill.endorsements}
+                            </span>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-5 w-5 rounded-full" 
+                            onClick={() => removeSkill(skill.id)}
+                          >
+                            <Trash size={12} className="text-gray-500" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {skills.length === 0 && (
+                      <div className="text-center py-6 text-gray-500">
+                        <p>No skills added yet. Use the field above to add your skills.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -606,7 +762,10 @@ const ProfileEditPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <NetworkVisibilityToggle />
+                <NetworkVisibilityToggle 
+                  initialValue={profile.networkVisibilityEnabled} 
+                  onChange={(value) => setProfile({...profile, networkVisibilityEnabled: value})}
+                />
                 
                 <Separator />
                 

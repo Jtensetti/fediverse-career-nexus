@@ -9,6 +9,117 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      education: {
+        Row: {
+          created_at: string
+          degree: string
+          end_year: number | null
+          field: string
+          id: string
+          institution: string
+          start_year: number
+          updated_at: string
+          user_id: string
+          verification_date: string | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verification_token: string | null
+        }
+        Insert: {
+          created_at?: string
+          degree: string
+          end_year?: number | null
+          field: string
+          id?: string
+          institution: string
+          start_year: number
+          updated_at?: string
+          user_id: string
+          verification_date?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verification_token?: string | null
+        }
+        Update: {
+          created_at?: string
+          degree?: string
+          end_year?: number | null
+          field?: string
+          id?: string
+          institution?: string
+          start_year?: number
+          updated_at?: string
+          user_id?: string
+          verification_date?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verification_token?: string | null
+        }
+        Relationships: []
+      }
+      experiences: {
+        Row: {
+          company: string
+          company_domain: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          is_current_role: boolean | null
+          location: string | null
+          start_date: string
+          title: string
+          updated_at: string
+          user_id: string
+          verification_date: string | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verification_token: string | null
+        }
+        Insert: {
+          company: string
+          company_domain?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current_role?: boolean | null
+          location?: string | null
+          start_date: string
+          title: string
+          updated_at?: string
+          user_id: string
+          verification_date?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verification_token?: string | null
+        }
+        Update: {
+          company?: string
+          company_domain?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current_role?: boolean | null
+          location?: string | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          verification_date?: string | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          verification_token?: string | null
+        }
+        Relationships: []
+      }
       profile_views: {
         Row: {
           id: string
@@ -30,6 +141,62 @@ export type Database = {
           viewed_at?: string
           viewed_id?: string
           viewer_id?: string | null
+        }
+        Relationships: []
+      }
+      skill_endorsements: {
+        Row: {
+          created_at: string
+          endorser_id: string
+          id: string
+          skill_id: string
+        }
+        Insert: {
+          created_at?: string
+          endorser_id: string
+          id?: string
+          skill_id: string
+        }
+        Update: {
+          created_at?: string
+          endorser_id?: string
+          id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          created_at: string
+          endorsements: number
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          endorsements?: number
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          endorsements?: number
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -59,10 +226,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_verification_token: {
+        Args: { length?: number }
+        Returns: string
+      }
+      request_education_verification: {
+        Args: { education_id: string }
+        Returns: string
+      }
+      request_experience_verification: {
+        Args: { experience_id: string }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      verification_status: "unverified" | "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -177,6 +355,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      verification_status: ["unverified", "pending", "verified", "rejected"],
+    },
   },
 } as const
