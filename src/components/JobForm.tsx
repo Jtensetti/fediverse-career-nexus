@@ -30,8 +30,8 @@ const jobFormSchema = z.object({
   location: z.string().min(2, "Location is required"),
   description: z.string().min(20, "Description must be at least 20 characters"),
   job_type: z.enum(["full_time", "part_time", "contract", "internship", "temporary"]),
-  salary_min: z.string().optional().transform(val => val ? Number(val) : null),
-  salary_max: z.string().optional().transform(val => val ? Number(val) : null),
+  salary_min: z.coerce.number().nullable().optional(),
+  salary_max: z.coerce.number().nullable().optional(),
   salary_currency: z.string().optional(),
   remote_allowed: z.boolean().default(false),
   application_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
@@ -66,8 +66,11 @@ const JobForm = ({
   const formattedDefaultValues = {
     ...defaultValues,
     skills: defaultValues.skills ? defaultValues.skills.join(", ") : "",
-    salary_min: defaultValues.salary_min !== null ? String(defaultValues.salary_min || "") : "",
-    salary_max: defaultValues.salary_max !== null ? String(defaultValues.salary_max || "") : "",
+    // Ensure salary fields are properly handled as strings for the form
+    salary_min: defaultValues.salary_min !== null && defaultValues.salary_min !== undefined ? 
+      String(defaultValues.salary_min) : "",
+    salary_max: defaultValues.salary_max !== null && defaultValues.salary_max !== undefined ? 
+      String(defaultValues.salary_max) : "",
   };
   
   const form = useForm<z.infer<typeof jobFormSchema>>({
@@ -78,8 +81,8 @@ const JobForm = ({
       location: "",
       description: "",
       job_type: "full_time",
-      salary_min: "",
-      salary_max: "",
+      salary_min: null,
+      salary_max: null,
       salary_currency: "USD",
       remote_allowed: false,
       application_url: "",
@@ -205,7 +208,16 @@ const JobForm = ({
                 <FormItem>
                   <FormLabel>Minimum Salary</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. 50000" type="number" {...field} />
+                    <Input 
+                      placeholder="e.g. 50000" 
+                      type="number" 
+                      {...field} 
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? null : e.target.value;
+                        field.onChange(value);
+                      }}
+                      value={field.value === null ? "" : field.value}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -219,7 +231,16 @@ const JobForm = ({
                 <FormItem>
                   <FormLabel>Maximum Salary</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. 80000" type="number" {...field} />
+                    <Input 
+                      placeholder="e.g. 80000" 
+                      type="number" 
+                      {...field} 
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? null : e.target.value;
+                        field.onChange(value);
+                      }}
+                      value={field.value === null ? "" : field.value}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
