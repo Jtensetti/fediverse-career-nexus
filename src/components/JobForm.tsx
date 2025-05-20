@@ -62,15 +62,10 @@ const JobForm = ({
   isSubmitting,
   submitButtonText = "Create Job Post"
 }: JobFormProps) => {
-  // Convert skills array to comma-separated string for form
-  const formattedDefaultValues = {
+  // Keep skills as array and don't convert salary fields to strings
+  const formattedDefaultValues: Partial<z.infer<typeof jobFormSchema>> = {
     ...defaultValues,
-    skills: defaultValues.skills ? defaultValues.skills.join(", ") : "",
-    // Ensure salary fields are properly handled as strings for the form
-    salary_min: defaultValues.salary_min !== null && defaultValues.salary_min !== undefined ? 
-      String(defaultValues.salary_min) : "",
-    salary_max: defaultValues.salary_max !== null && defaultValues.salary_max !== undefined ? 
-      String(defaultValues.salary_max) : "",
+    skills: defaultValues.skills || [],
   };
   
   const form = useForm<z.infer<typeof jobFormSchema>>({
@@ -87,7 +82,7 @@ const JobForm = ({
       remote_allowed: false,
       application_url: "",
       contact_email: "",
-      skills: "",
+      skills: [],
       published: false,
       ...formattedDefaultValues
     },
@@ -211,12 +206,11 @@ const JobForm = ({
                     <Input 
                       placeholder="e.g. 50000" 
                       type="number" 
-                      {...field} 
+                      value={field.value ?? ""} 
                       onChange={(e) => {
-                        const value = e.target.value === "" ? null : e.target.value;
-                        field.onChange(value);
+                        const n = e.target.value === "" ? null : Number(e.target.value);
+                        field.onChange(n);
                       }}
-                      value={field.value === null ? "" : field.value}
                     />
                   </FormControl>
                   <FormMessage />
@@ -234,12 +228,11 @@ const JobForm = ({
                     <Input 
                       placeholder="e.g. 80000" 
                       type="number" 
-                      {...field} 
+                      value={field.value ?? ""}
                       onChange={(e) => {
-                        const value = e.target.value === "" ? null : e.target.value;
-                        field.onChange(value);
+                        const n = e.target.value === "" ? null : Number(e.target.value);
+                        field.onChange(n);
                       }}
-                      value={field.value === null ? "" : field.value}
                     />
                   </FormControl>
                   <FormMessage />
@@ -302,8 +295,16 @@ const JobForm = ({
               <FormLabel>Required Skills</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="e.g. React, JavaScript, TypeScript (comma-separated)" 
-                  {...field}
+                  placeholder="e.g. React, JavaScript, TypeScript (comma-separated)"
+                  value={Array.isArray(field.value) ? field.value.join(", ") : ""}
+                  onChange={(e) => {
+                    field.onChange(
+                      e.target.value
+                        .split(",")
+                        .map(s => s.trim())
+                        .filter(Boolean)
+                    );
+                  }}
                 />
               </FormControl>
               <FormDescription>
