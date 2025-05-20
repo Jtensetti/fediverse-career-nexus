@@ -131,6 +131,98 @@ export type Database = {
         }
         Relationships: []
       }
+      event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          description: string
+          end_time: string
+          id: string
+          image_url: string | null
+          is_public: boolean
+          is_virtual: boolean
+          location: string | null
+          start_time: string
+          stream_type: string | null
+          stream_url: string | null
+          timezone: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          description: string
+          end_time: string
+          id?: string
+          image_url?: string | null
+          is_public?: boolean
+          is_virtual?: boolean
+          location?: string | null
+          start_time: string
+          stream_type?: string | null
+          stream_url?: string | null
+          timezone?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          description?: string
+          end_time?: string
+          id?: string
+          image_url?: string | null
+          is_public?: boolean
+          is_virtual?: boolean
+          location?: string | null
+          start_time?: string
+          stream_type?: string | null
+          stream_url?: string | null
+          timezone?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       experiences: {
         Row: {
           company: string

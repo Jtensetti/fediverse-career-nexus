@@ -19,6 +19,10 @@ import JobView from "./pages/JobView";
 import JobCreate from "./pages/JobCreate";
 import JobEdit from "./pages/JobEdit";
 import JobManage from "./pages/JobManage";
+import Events from "./pages/Events";
+import EventView from "./pages/EventView";
+import EventCreate from "./pages/EventCreate";
+import EventEdit from "./pages/EventEdit";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +47,10 @@ const App = () => (
           <Route path="/jobs/create" element={<JobCreate />} />
           <Route path="/jobs/edit/:id" element={<JobEdit />} />
           <Route path="/jobs/manage" element={<JobManage />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/events/:id" element={<EventView />} />
+          <Route path="/events/create" element={<EventCreate />} />
+          <Route path="/events/edit/:id" element={<EventEdit />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
