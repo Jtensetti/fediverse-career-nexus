@@ -22,7 +22,7 @@ interface JobSearchFilterProps {
 
 const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
   const [search, setSearch] = useState("");
-  const [jobType, setJobType] = useState<string | undefined>(undefined);
+  const [jobType, setJobType] = useState<"full_time" | "part_time" | "contract" | "internship" | "temporary" | undefined>(undefined);
   const [location, setLocation] = useState("");
   const [remoteAllowed, setRemoteAllowed] = useState<boolean | undefined>(undefined);
   

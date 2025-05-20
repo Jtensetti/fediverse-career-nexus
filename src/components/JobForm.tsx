@@ -67,8 +67,8 @@ const JobForm = ({
   const formattedDefaultValues = {
     ...defaultValues,
     skills: defaultValues.skills ? defaultValues.skills.join(", ") : "",
-    salary_min: defaultValues.salary_min ? defaultValues.salary_min.toString() : "",
-    salary_max: defaultValues.salary_max ? defaultValues.salary_max.toString() : "",
+    salary_min: defaultValues.salary_min !== null ? String(defaultValues.salary_min || "") : "",
+    salary_max: defaultValues.salary_max !== null ? String(defaultValues.salary_max || "") : "",
   };
   
   const form = useForm<z.infer<typeof jobFormSchema>>({
