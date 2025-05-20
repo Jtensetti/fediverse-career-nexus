@@ -931,6 +931,10 @@ export type Database = {
         Args: { source_user_id: string; target_user_id: string }
         Returns: number
       }
+      handle_inbox_event: {
+        Args: { event_id: string }
+        Returns: boolean
+      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
@@ -938,6 +942,10 @@ export type Database = {
       is_moderator: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      process_pending_inbox_events: {
+        Args: { batch_size?: number }
+        Returns: number
       }
       request_education_verification: {
         Args: { education_id: string }

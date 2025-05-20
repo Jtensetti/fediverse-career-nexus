@@ -15,3 +15,10 @@ verify_jwt = false
 
 [functions.federation]
 verify_jwt = true
+
+[functions.nodeinfo]
+verify_jwt = false
+
+[functions.instance]
+verify_jwt = false
+
