@@ -269,11 +269,12 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
 // Get article authors
 export const getArticleAuthors = async (articleId: string): Promise<ArticleAuthor[]> => {
   try {
+    // Use a proper join between article_authors and profiles
     const { data, error } = await supabase
       .from('article_authors')
       .select(`
         *,
-        profile:user_id (
+        profile:profiles!user_id(
           username,
           fullname,
           avatar_url
