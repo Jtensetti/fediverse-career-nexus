@@ -31,6 +31,11 @@
     "forgotPassword": "Forgot password?",
     "resetPassword": "Reset password"
   },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
   "codeOfConduct": {
     "title": "Code of Conduct",
     "description": "Our community guidelines and ethical standards",
