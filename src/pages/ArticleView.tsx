@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { ArrowLeft, Calendar } from "lucide-react";
+import ArticleReactions from "@/components/ArticleReactions";
 
 const ArticleView = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -100,6 +101,12 @@ const ArticleView = () => {
               {article.content}
             </ReactMarkdown>
           </article>
+          
+          {/* Add the emoji reactions component */}
+          <div className="my-8 p-4 border rounded-md bg-background/50">
+            <h3 className="text-lg font-medium mb-2">Reactions</h3>
+            <ArticleReactions articleId={article.id} />
+          </div>
           
           <div className="mt-12 pt-8 border-t">
             <NewsletterSubscribe />
