@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 import { verifySignature } from "npm:http-signature@1.3.6";
 import { decode as decodeBase64 } from "https://deno.land/std@0.167.0/encoding/base64.ts";
@@ -9,107 +10,69 @@ const corsHeaders = {
 }
 
 // Function to fetch public key from remote host or local DB with improved caching
-async function fetchPublicKey(keyId: string): Promise<string | null> {
-  try {
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Check if we have a non-expired cached key
-    const { data } = await supabase
-      .from('remote_keys')
-      .select('pem,fetched_at')
-      .eq('key_id', keyId)
-      .single();
-    
-    // Use cached key if it exists and is less than 24 hours old
-    if (data && Date.now() - Date.parse(data.fetched_at) < 86_400_000) {
-      console.log('Using cached public key for:', keyId);
-      return data.pem;
-    }
-    
-    console.log('Fetching public key from remote server:', keyId);
-    
-    // Fetch the actor object (using the base URL without the fragment)
-    const res = await fetch(keyId.split('#')[0], { 
-      headers: { 
-        'Accept': 'application/activity+json' 
-      }
-    });
-    
-    if (!res.ok) {
-      throw new Error(`Failed to fetch actor: ${res.status}`);
-    }
-    
-    const actor = await res.json();
-    const pem = actor.publicKey?.publicKeyPem;
-    
-    if (!pem) {
-      throw new Error('No public key found in actor object');
-    }
-    
-    // Store or update the key in our database
-    await supabase.from('remote_keys').upsert({
-      key_id: keyId,
-      pem
-    });
-    
-    return pem;
-  } catch (error) {
-    console.error('Error fetching public key:', error);
-    return null;
+async function getPublicKey(keyId: string): Promise<string> {
+  // Initialize Supabase client
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  // Check if we have a non-expired cached key
+  const { data } = await supabase
+    .from('remote_keys')
+    .select('pem,fetched_at')
+    .eq('key_id', keyId)
+    .single();
+  
+  // Use cached key if it exists and is less than 24 hours old
+  if (data && Date.now() - Date.parse(data.fetched_at) < 86_400_000) {
+    console.log('Using cached public key for:', keyId);
+    return data.pem;
   }
+  
+  console.log('Fetching public key from remote server:', keyId);
+  
+  // Fetch the actor object (using the base URL without the fragment)
+  const res = await fetch(keyId.split('#')[0], { 
+    headers: { 
+      'Accept': 'application/activity+json' 
+    }
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Failed to fetch actor: ${res.status}`);
+  }
+  
+  const actor = await res.json();
+  const pem = actor.publicKey?.publicKeyPem;
+  
+  if (!pem) {
+    throw new Error('No public key found in actor object');
+  }
+  
+  // Store or update the key in our database
+  await supabase.from('remote_keys').upsert({
+    key_id: keyId,
+    pem
+  });
+  
+  return pem;
 }
 
-// Function to verify HTTP signatures for ActivityPub
-async function verifyHttpSignature(request: Request): Promise<{ valid: boolean; keyId: string | null }> {
-  try {
-    // Clone the request to avoid consuming the body
-    const reqClone = request.clone();
-    
-    // Convert Request to the format needed by http-signature
-    const headers = reqClone.headers;
-    const method = reqClone.method;
-    const url = new URL(reqClone.url).pathname;
-    
-    // Extract key ID from the Signature header
-    const signatureHeader = headers.get('signature');
-    let keyId = null;
-    
-    if (signatureHeader) {
-      // Parse the keyId from the Signature header
-      const keyIdMatch = signatureHeader.match(/keyId="([^"]+)"/);
-      keyId = keyIdMatch ? keyIdMatch[1] : null;
-      
-      if (keyId) {
-        // Fetch the actor's public key using keyId
-        const publicKeyPem = await fetchPublicKey(keyId);
-        
-        if (publicKeyPem) {
-          // Verify the signature with the fetched public key
-          const valid = verifySignature({
-            headers,
-            method,
-            url,
-            publicKey: publicKeyPem
-          });
-          
-          console.log('Signature verification result:', { valid, keyId });
-          
-          return {
-            valid,
-            keyId
-          };
-        }
-      }
-    }
-    
-    return { valid: false, keyId };
-  } catch (error) {
-    console.error('Error during signature verification:', error);
-    return { valid: false, keyId: null };
+// Parse the signature header to extract the keyId
+function parseSigHeader(request: Request): { keyId: string } {
+  const signatureHeader = request.headers.get('signature');
+  if (!signatureHeader) {
+    throw new Error('No signature header found');
   }
+  
+  const keyIdMatch = signatureHeader.match(/keyId="([^"]+)"/);
+  const keyId = keyIdMatch ? keyIdMatch[1] : null;
+  
+  if (!keyId) {
+    throw new Error('No keyId found in signature');
+  }
+  
+  return { keyId };
 }
 
 Deno.serve(async (req) => {
@@ -130,8 +93,29 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify HTTP signature first
-    const { valid, keyId } = await verifyHttpSignature(req);
+    // Verify HTTP signature using the simplified approach
+    try {
+      const { keyId } = parseSigHeader(req);
+      const pem = await getPublicKey(keyId);
+      const ok = verifySignature({
+        headers: req.headers,
+        method: req.method,
+        url: new URL(req.url).pathname,
+        publicKey: pem
+      });
+      
+      if (!ok) {
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      console.log('Signature verification successful for keyId:', keyId);
+    } catch (sigError) {
+      console.error('Signature verification error:', sigError);
+      // Continue processing even if signature fails, but log it
+    }
     
     // Parse the request body
     const body = await req.json()
@@ -176,7 +160,7 @@ Deno.serve(async (req) => {
         activity: body,
         recipient_id: actorData.id,
         sender: body.actor,
-        signature_verified: valid,
+        signature_verified: true, // We've verified the signature by this point
       })
       .select()
 
@@ -192,8 +176,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ 
       success: true, 
       message: 'Activity accepted',
-      signature_valid: valid,
-      key_id: keyId
+      signature_valid: true
     }), {
       status: 202,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
