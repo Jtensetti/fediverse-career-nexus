@@ -1,6 +1,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
-import { verify } from 'https://esm.sh/@small-tech/https-signature-verifier@0.3.0'
+import { verifyHttpSignature } from "https://deno.land/x/http_signature@1.0.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,86 +9,22 @@ const corsHeaders = {
 }
 
 // Function to verify HTTP signatures for ActivityPub
-async function verifyHttpSignature(request: Request, supabase: any): Promise<boolean> {
+async function verifySignature(request: Request): Promise<{ valid: boolean; keyId: string | null }> {
   try {
-    // Get required headers for verification
-    const signature = request.headers.get('signature')
-    const digest = request.headers.get('digest')
-    const date = request.headers.get('date')
+    // Clone the request to avoid consuming the body
+    const reqClone = request.clone();
     
-    // Check if required headers are present
-    if (!signature || !digest || !date) {
-      console.log('Missing required headers for signature verification')
-      return false
-    }
+    // Use the Deno-native HTTP signature verification
+    const result = await verifyHttpSignature(reqClone);
+    console.log('Signature verification result:', result);
     
-    // Parse the actor URL from the signature header
-    const keyIdMatch = signature.match(/keyId="([^"]+)"/)
-    if (!keyIdMatch || !keyIdMatch[1]) {
-      console.log('Could not extract keyId from signature header')
-      return false
-    }
-    
-    const keyId = keyIdMatch[1]
-    const actorUrl = keyId.split('#')[0]
-    
-    // Fetch the actor's public key
-    console.log(`Fetching public key for actor: ${actorUrl}`)
-    const response = await fetch(actorUrl, {
-      headers: {
-        'Accept': 'application/activity+json'
-      }
-    })
-    
-    if (!response.ok) {
-      console.log(`Failed to fetch actor data: ${response.status}`)
-      return false
-    }
-    
-    const actorData = await response.json()
-    
-    // Extract the public key
-    let publicKey = null
-    if (actorData.publicKey && actorData.publicKey.publicKeyPem) {
-      publicKey = actorData.publicKey.publicKeyPem
-    } else if (Array.isArray(actorData.publicKey)) {
-      // Some implementations use an array of keys
-      const mainKey = actorData.publicKey.find((key: any) => key.id === keyId)
-      if (mainKey && mainKey.publicKeyPem) {
-        publicKey = mainKey.publicKeyPem
-      }
-    }
-    
-    if (!publicKey) {
-      console.log('Could not find public key in actor data')
-      return false
-    }
-    
-    // Get request body for verification
-    const requestBody = await request.clone().text()
-    
-    // Create verification object
-    const options = {
-      url: request.url,
-      method: request.method,
-      headers: {
-        'signature': signature,
-        'digest': digest,
-        'date': date,
-        'host': new URL(request.url).host
-      },
-      body: requestBody,
-      publicKey: publicKey
-    }
-    
-    // Verify the signature
-    const isValid = await verify(options)
-    console.log(`Signature verification result: ${isValid}`)
-    
-    return isValid
+    return {
+      valid: result.valid,
+      keyId: result.keyId
+    };
   } catch (error) {
-    console.error('Error during signature verification:', error)
-    return false
+    console.error('Error during signature verification:', error);
+    return { valid: false, keyId: null };
   }
 }
 
@@ -110,6 +46,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify HTTP signature first
+    const { valid, keyId } = await verifySignature(req);
+    
     // Parse the request body
     const body = await req.json()
     
@@ -145,9 +84,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
-
-    // Verify HTTP signature
-    const isSignatureValid = await verifyHttpSignature(req, supabase)
     
     // Store the activity in the inbox_events table
     const { data, error } = await supabase
@@ -156,7 +92,7 @@ Deno.serve(async (req) => {
         activity: body,
         recipient_id: actorData.id,
         sender: body.actor,
-        signature_verified: isSignatureValid,
+        signature_verified: valid,
       })
       .select()
 
@@ -169,7 +105,12 @@ Deno.serve(async (req) => {
     }
 
     // Return success response
-    return new Response(JSON.stringify({ success: true, message: 'Activity accepted' }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'Activity accepted',
+      signature_valid: valid,
+      key_id: keyId
+    }), {
       status: 202,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
