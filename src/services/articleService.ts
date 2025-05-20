@@ -26,9 +26,20 @@ export interface ArticleFormData {
 // Create a new article
 export const createArticle = async (articleData: ArticleFormData): Promise<Article | null> => {
   try {
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error('You must be logged in to create an article');
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('articles')
-      .insert(articleData)
+      .insert({
+        ...articleData,
+        user_id: user.id
+      })
       .select()
       .single();
     

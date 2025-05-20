@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
-import { Article as ArticleIcon } from "lucide-react";
+import { FileText } from "lucide-react";
 
 interface ArticleCardProps {
   article: Article;
@@ -40,7 +40,7 @@ const ArticleCard = ({ article, authorName = "Author" }: ArticleCardProps) => {
       </CardContent>
       <CardFooter className="pt-0 flex justify-between text-sm text-gray-500">
         <div className="flex items-center gap-1">
-          <ArticleIcon size={16} />
+          <FileText size={16} />
           <span>Article</span>
         </div>
         <Link to={`/articles/${article.slug}`} className="text-primary hover:underline">
