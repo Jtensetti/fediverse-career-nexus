@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Language } from 'lucide-react';
+import { Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -33,7 +33,7 @@ const LanguageSwitcher = () => {
           className="gap-2"
           aria-label="Change language"
         >
-          <Language className="h-[1.2rem] w-[1.2rem]" />
+          <Languages className="h-[1.2rem] w-[1.2rem]" />
           <span className="hidden md:inline-block">
             {languages.find(lang => lang.code === i18n.language)?.name || 'English'}
           </span>
