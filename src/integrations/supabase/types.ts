@@ -200,21 +200,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_connections: {
+        Row: {
+          connected_user_id: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_user_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_user_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
+          show_network_connections: boolean
           show_profile_visitors: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          show_network_connections?: boolean
           show_profile_visitors?: boolean
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          show_network_connections?: boolean
           show_profile_visitors?: boolean
           updated_at?: string
           user_id?: string
@@ -229,6 +259,10 @@ export type Database = {
       generate_verification_token: {
         Args: { length?: number }
         Returns: string
+      }
+      get_connection_degree: {
+        Args: { source_user_id: string; target_user_id: string }
+        Returns: number
       }
       request_education_verification: {
         Args: { education_id: string }

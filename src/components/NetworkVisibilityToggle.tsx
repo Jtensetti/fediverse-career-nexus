@@ -6,7 +6,7 @@ import { UsersRound, Loader2 } from "lucide-react";
 import { 
   getProfileVisibilitySettings, 
   updateProfileVisibilitySettings 
-} from "@/services/profileViewService";
+} from "@/services/networkConnectionsService";
 
 interface NetworkVisibilityToggleProps {
   initialValue?: boolean;
@@ -26,11 +26,10 @@ const NetworkVisibilityToggle = ({ initialValue, onChange }: NetworkVisibilityTo
         if (initialValue === undefined) {
           const showVisitors = await getProfileVisibilitySettings();
           setEnabled(showVisitors);
-        } else {
-          setLoading(false);
         }
       } catch (error) {
         console.error("Error fetching profile visibility settings:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -45,16 +44,15 @@ const NetworkVisibilityToggle = ({ initialValue, onChange }: NetworkVisibilityTo
       if (onChange) {
         onChange(checked);
         setEnabled(checked);
-        setUpdating(false);
       } else {
         const success = await updateProfileVisibilitySettings(checked);
         if (success) {
           setEnabled(checked);
         }
-        setUpdating(false);
       }
     } catch (error) {
       console.error("Error updating profile visibility settings:", error);
+    } finally {
       setUpdating(false);
     }
   };
