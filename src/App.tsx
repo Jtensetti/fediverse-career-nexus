@@ -30,6 +30,7 @@ import MessageConversation from "./pages/MessageConversation";
 import Moderation from "./pages/Moderation";
 import ActorProfile from "./pages/ActorProfile";
 import ActorOutbox from "./pages/ActorOutbox";
+import ActorInbox from "./pages/ActorInbox";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/messages/:conversationId" element={<MessageConversation />} />
               <Route path="/moderation" element={<Moderation />} />
               <Route path="/:username/outbox" element={<ActorOutbox />} />
+              <Route path="/:username/inbox" element={<ActorInbox />} />
               <Route path="/:username" element={<ActorProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

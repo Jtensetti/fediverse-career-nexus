@@ -543,6 +543,47 @@ export type Database = {
           },
         ]
       }
+      inbox_events: {
+        Row: {
+          activity: Json
+          created_at: string
+          id: string
+          processed_at: string | null
+          recipient_id: string
+          sender: string
+          signature_verified: boolean
+          status: string
+        }
+        Insert: {
+          activity: Json
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          recipient_id: string
+          sender: string
+          signature_verified?: boolean
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          recipient_id?: string
+          sender?: string
+          signature_verified?: boolean
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbox_events_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_posts: {
         Row: {
           application_url: string | null
