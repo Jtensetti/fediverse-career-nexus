@@ -46,10 +46,7 @@ export async function getEvents(options: {
     
     let query = supabase
       .from('events')
-      .select(`
-        *,
-        rsvp_count:event_rsvps!inner(count(*))
-      `, { count: 'exact' });
+      .select('*, rsvp_count:event_rsvps(count(*))');
     
     // Filter by upcoming events
     if (upcoming) {
@@ -67,11 +64,21 @@ export async function getEvents(options: {
     
     if (error) throw error;
     
+    // Transform the data to match our expected type
+    const eventsWithCount: EventWithRSVPCount[] = data?.map(item => {
+      // Extract the rsvp_count from the nested object and add it to the main event object
+      const { rsvp_count, ...event } = item as any;
+      return {
+        ...event,
+        rsvp_count: rsvp_count[0]?.count || 0
+      };
+    }) || [];
+    
     // Get current user's RSVP status for each event
     const currentUser = (await supabase.auth.getSession()).data.session?.user;
     
-    if (currentUser && data) {
-      const eventIds = data.map(event => event.id);
+    if (currentUser && eventsWithCount.length > 0) {
+      const eventIds = eventsWithCount.map(event => event.id);
       
       const { data: rsvpData } = await supabase
         .from('event_rsvps')
@@ -82,14 +89,14 @@ export async function getEvents(options: {
       if (rsvpData) {
         const rsvpMap = new Map(rsvpData.map(rsvp => [rsvp.event_id, rsvp.status]));
         
-        return data.map(event => ({
+        return eventsWithCount.map(event => ({
           ...event,
           user_rsvp_status: rsvpMap.get(event.id) as 'attending' | 'maybe' | 'declined' | undefined
         }));
       }
     }
     
-    return data || [];
+    return eventsWithCount;
   } catch (error) {
     console.error('Error fetching events:', error);
     toast.error('Failed to load events');
@@ -101,19 +108,23 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
   try {
     const { data, error } = await supabase
       .from('events')
-      .select(`
-        *,
-        rsvp_count:event_rsvps!inner(count(*))
-      `)
+      .select('*, rsvp_count:event_rsvps(count(*))')
       .eq('id', id)
       .single();
     
     if (error) throw error;
     
+    // Transform the data to match our expected type
+    const { rsvp_count, ...event } = data as any;
+    const eventWithCount: EventWithRSVPCount = {
+      ...event,
+      rsvp_count: rsvp_count[0]?.count || 0
+    };
+    
     // Get current user's RSVP status
     const currentUser = (await supabase.auth.getSession()).data.session?.user;
     
-    if (currentUser && data) {
+    if (currentUser) {
       const { data: rsvpData } = await supabase
         .from('event_rsvps')
         .select('status')
@@ -123,13 +134,13 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
       
       if (rsvpData) {
         return {
-          ...data,
+          ...eventWithCount,
           user_rsvp_status: rsvpData.status as 'attending' | 'maybe' | 'declined'
         };
       }
     }
     
-    return data;
+    return eventWithCount;
   } catch (error) {
     console.error('Error fetching event:', error);
     toast.error('Failed to load event details');
@@ -137,18 +148,29 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
   }
 }
 
-export async function createEvent(event: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Event | null> {
+export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Event | null> {
   try {
+    const session = await supabase.auth.getSession();
+    const user_id = session.data.session?.user.id;
+    
+    if (!user_id) {
+      toast.error('You must be logged in to create an event');
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('events')
-      .insert(event)
+      .insert({
+        ...eventData,
+        user_id
+      })
       .select()
       .single();
     
     if (error) throw error;
     
     toast.success('Event created successfully');
-    return data;
+    return data as Event;
   } catch (error) {
     console.error('Error creating event:', error);
     toast.error('Failed to create event');
@@ -156,11 +178,14 @@ export async function createEvent(event: Omit<Event, 'id' | 'created_at' | 'upda
   }
 }
 
-export async function updateEvent(id: string, event: Partial<Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>>): Promise<Event | null> {
+export async function updateEvent(id: string, eventData: Partial<Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>>): Promise<Event | null> {
   try {
     const { data, error } = await supabase
       .from('events')
-      .update({ ...event, updated_at: new Date().toISOString() })
+      .update({ 
+        ...eventData, 
+        updated_at: new Date().toISOString() 
+      })
       .eq('id', id)
       .select()
       .single();
@@ -168,7 +193,7 @@ export async function updateEvent(id: string, event: Partial<Omit<Event, 'id' | 
     if (error) throw error;
     
     toast.success('Event updated successfully');
-    return data;
+    return data as Event;
   } catch (error) {
     console.error('Error updating event:', error);
     toast.error('Failed to update event');
@@ -196,10 +221,19 @@ export async function deleteEvent(id: string): Promise<boolean> {
 
 export async function createRSVP(eventId: string, status: 'attending' | 'maybe' | 'declined'): Promise<EventRSVP | null> {
   try {
+    const session = await supabase.auth.getSession();
+    const user_id = session.data.session?.user.id;
+    
+    if (!user_id) {
+      toast.error('You must be logged in to RSVP to an event');
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('event_rsvps')
       .upsert({
         event_id: eventId,
+        user_id,
         status
       })
       .select()
@@ -208,7 +242,7 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
     if (error) throw error;
     
     toast.success(`RSVP ${status} submitted successfully`);
-    return data;
+    return data as EventRSVP;
   } catch (error) {
     console.error('Error creating RSVP:', error);
     toast.error('Failed to submit RSVP');
@@ -225,7 +259,7 @@ export async function getEventRSVPs(eventId: string): Promise<EventRSVP[]> {
     
     if (error) throw error;
     
-    return data || [];
+    return data as EventRSVP[];
   } catch (error) {
     console.error('Error fetching RSVPs:', error);
     toast.error('Failed to load RSVPs');

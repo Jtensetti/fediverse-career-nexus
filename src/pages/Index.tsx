@@ -6,8 +6,12 @@ import Technology from "../components/Technology";
 import FAQ from "../components/FAQ";
 import CallToAction from "../components/CallToAction";
 import Footer from "../components/Footer";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Card from "../components/Card";
+import CardHeader from "../components/CardHeader";
+import CardTitle from "../components/CardTitle";
+import CardContent from "../components/CardContent";
+import CardFooter from "../components/CardFooter";
+import Button from "../components/Button";
 import { Link } from "react-router-dom";
 
 const Index = () => {
