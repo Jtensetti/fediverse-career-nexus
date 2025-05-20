@@ -14,6 +14,11 @@ import ArticleView from "./pages/ArticleView";
 import ArticleCreate from "./pages/ArticleCreate";
 import ArticleEdit from "./pages/ArticleEdit";
 import ArticleManage from "./pages/ArticleManage";
+import Jobs from "./pages/Jobs";
+import JobView from "./pages/JobView";
+import JobCreate from "./pages/JobCreate";
+import JobEdit from "./pages/JobEdit";
+import JobManage from "./pages/JobManage";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +38,11 @@ const App = () => (
           <Route path="/articles/create" element={<ArticleCreate />} />
           <Route path="/articles/edit/:id" element={<ArticleEdit />} />
           <Route path="/articles/manage" element={<ArticleManage />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/jobs/:id" element={<JobView />} />
+          <Route path="/jobs/create" element={<JobCreate />} />
+          <Route path="/jobs/edit/:id" element={<JobEdit />} />
+          <Route path="/jobs/manage" element={<JobManage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

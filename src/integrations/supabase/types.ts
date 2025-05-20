@@ -191,6 +191,72 @@ export type Database = {
         }
         Relationships: []
       }
+      job_posts: {
+        Row: {
+          application_url: string | null
+          company_name: string
+          company_verified: boolean
+          contact_email: string | null
+          created_at: string
+          description: string
+          id: string
+          job_type: Database["public"]["Enums"]["job_type"]
+          location: string
+          published: boolean
+          published_at: string | null
+          remote_allowed: boolean
+          salary_currency: string | null
+          salary_max: number | null
+          salary_min: number | null
+          skills: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application_url?: string | null
+          company_name: string
+          company_verified?: boolean
+          contact_email?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          job_type: Database["public"]["Enums"]["job_type"]
+          location: string
+          published?: boolean
+          published_at?: string | null
+          remote_allowed?: boolean
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          skills?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          application_url?: string | null
+          company_name?: string
+          company_verified?: boolean
+          contact_email?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          job_type?: Database["public"]["Enums"]["job_type"]
+          location?: string
+          published?: boolean
+          published_at?: string | null
+          remote_allowed?: boolean
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          skills?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       newsletter_subscriptions: {
         Row: {
           email: string
@@ -372,6 +438,12 @@ export type Database = {
       }
     }
     Enums: {
+      job_type:
+        | "full_time"
+        | "part_time"
+        | "contract"
+        | "internship"
+        | "temporary"
       verification_status: "unverified" | "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
@@ -488,6 +560,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      job_type: [
+        "full_time",
+        "part_time",
+        "contract",
+        "internship",
+        "temporary",
+      ],
       verification_status: ["unverified", "pending", "verified", "rejected"],
     },
   },
