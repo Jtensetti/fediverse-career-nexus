@@ -80,6 +80,112 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          encryption_public_key: string | null
+          id: string
+          is_active: boolean
+          joined_at: string
+          left_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          encryption_public_key?: string | null
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          left_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          encryption_public_key?: string | null
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          left_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      direct_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          encrypted_content: string | null
+          id: string
+          is_encrypted: boolean
+          read_at: string | null
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          encrypted_content?: string | null
+          id?: string
+          is_encrypted?: boolean
+          read_at?: string | null
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          encrypted_content?: string | null
+          id?: string
+          is_encrypted?: boolean
+          read_at?: string | null
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       education: {
         Row: {
           created_at: string
@@ -512,6 +618,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_initiate_conversation: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: boolean
+      }
+      create_conversation: {
+        Args: { other_user_id: string }
+        Returns: string
+      }
       generate_verification_token: {
         Args: { length?: number }
         Returns: string

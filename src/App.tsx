@@ -23,6 +23,8 @@ import Events from "./pages/Events";
 import EventView from "./pages/EventView";
 import EventCreate from "./pages/EventCreate";
 import EventEdit from "./pages/EventEdit";
+import Messages from "./pages/Messages"; 
+import MessageConversation from "./pages/MessageConversation";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +53,8 @@ const App = () => (
           <Route path="/events/:id" element={<EventView />} />
           <Route path="/events/create" element={<EventCreate />} />
           <Route path="/events/edit/:id" element={<EventEdit />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/messages/:conversationId" element={<MessageConversation />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
