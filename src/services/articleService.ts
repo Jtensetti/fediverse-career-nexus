@@ -269,12 +269,11 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
 // Get article authors
 export const getArticleAuthors = async (articleId: string): Promise<ArticleAuthor[]> => {
   try {
-    // Use a proper join between article_authors and profiles
     const { data, error } = await supabase
       .from('article_authors')
       .select(`
         *,
-        profile:profiles!user_id(
+        profile:profiles(
           username,
           fullname,
           avatar_url
@@ -287,7 +286,13 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
       return [];
     }
     
-    return data || [];
+    // Transform the data to match the ArticleAuthor interface
+    const authors = data.map(author => ({
+      ...author,
+      profile: author.profile || undefined
+    }));
+    
+    return authors;
   } catch (error) {
     console.error('Error fetching article authors:', error);
     return [];
