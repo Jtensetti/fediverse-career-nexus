@@ -399,7 +399,87 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
     }
   }
   
-  // Add to federation queue
+  // Store in ap_objects table for local retrieval
+  const { data: apObject, error: apObjectError } = await supabaseClient
+    .from("ap_objects")
+    .insert({
+      type: activity.type,
+      attributed_to: actorId,
+      content: activity
+    })
+    .select()
+    .single();
+  
+  if (apObjectError) {
+    console.error("Error storing activity in ap_objects:", apObjectError);
+    // Not returning error here as the activity might still be delivered
+  }
+  
+  // Use the new batch system for Create activities that should be sent to followers
+  if (activity.type === "Create" && 
+      (activity.to?.includes("https://www.w3.org/ns/activitystreams#Public") || 
+       activity.cc?.includes("https://www.w3.org/ns/activitystreams#Public"))) {
+    try {
+      // Create batches of followers
+      const { data: batchResult, error: batchError } = await supabaseClient.rpc(
+        "create_follower_batches",
+        {
+          p_actor_id: actorId,
+          p_activity: activity,
+          p_batch_size: 100
+        }
+      );
+      
+      if (batchError) {
+        console.error("Error creating follower batches:", batchError);
+        // Fall back to the federation queue for this case
+        const { data: queueItem, error: queueError } = await supabaseClient
+          .from("federation_queue")
+          .insert({
+            activity: activity,
+            actor_id: actorId,
+            status: "pending"
+          })
+          .select()
+          .single();
+        
+        if (queueError) {
+          console.error("Error adding activity to federation queue:", queueError);
+        }
+      } else {
+        console.log(`Created ${batchResult} follower batches for delivery`);
+        
+        // Trigger batch processing in the background
+        EdgeRuntime.waitUntil(
+          fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/follower-batch-processor`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`
+            },
+            body: JSON.stringify({})
+          }).catch(err => console.error("Error invoking batch processor:", err))
+        );
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: "Activity accepted and batched for federation",
+            batches: batchResult
+          }),
+          {
+            status: 202,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Error using batch system:", error);
+      // Fall back to federation queue
+    }
+  }
+  
+  // If we didn't use the batch system or it failed, fall back to the regular queue
   const { data: queueItem, error: queueError } = await supabaseClient
     .from("federation_queue")
     .insert({
@@ -419,22 +499,6 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
-  }
-  
-  // Also store in ap_objects table for local retrieval
-  const { data: apObject, error: apObjectError } = await supabaseClient
-    .from("ap_objects")
-    .insert({
-      type: activity.type,
-      attributed_to: actorId,
-      content: activity
-    })
-    .select()
-    .single();
-  
-  if (apObjectError) {
-    console.error("Error storing activity in ap_objects:", apObjectError);
-    // Not returning error here as the activity is already in the queue
   }
   
   return new Response(

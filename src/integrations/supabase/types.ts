@@ -762,6 +762,48 @@ export type Database = {
         }
         Relationships: []
       }
+      follower_batches: {
+        Row: {
+          activity: Json
+          actor_id: string
+          attempts: number
+          batch_size: number
+          batch_targets: Json[]
+          created_at: string
+          id: string
+          last_attempted_at: string | null
+          next_attempt_at: string | null
+          partition_key: number
+          status: string
+        }
+        Insert: {
+          activity: Json
+          actor_id: string
+          attempts?: number
+          batch_size?: number
+          batch_targets: Json[]
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key: number
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          actor_id?: string
+          attempts?: number
+          batch_size?: number
+          batch_targets?: Json[]
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key?: number
+          status?: string
+        }
+        Relationships: []
+      }
       inbox_events: {
         Row: {
           activity: Json
@@ -1151,6 +1193,17 @@ export type Database = {
         }
         Relationships: []
       }
+      follower_batch_stats: {
+        Row: {
+          failed_count: number | null
+          partition_key: number | null
+          pending_count: number | null
+          processed_count: number | null
+          processing_count: number | null
+          total_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       actor_id_to_partition_key: {
@@ -1169,6 +1222,10 @@ export type Database = {
         Args: { local_actor_id: string; remote_actor_uri: string }
         Returns: string
       }
+      create_follower_batches: {
+        Args: { p_actor_id: string; p_activity: Json; p_batch_size?: number }
+        Returns: number
+      }
       generate_verification_token: {
         Args: { length?: number }
         Returns: string
@@ -1180,6 +1237,17 @@ export type Database = {
       get_domain_moderation_status: {
         Args: { domain: string }
         Returns: string
+      }
+      get_follower_batch_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          partition_key: number
+          total_count: number
+          pending_count: number
+          processing_count: number
+          failed_count: number
+          processed_count: number
+        }[]
       }
       handle_inbox_event: {
         Args: { event_id: string }
