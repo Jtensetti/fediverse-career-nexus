@@ -9,6 +9,56 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+// Function to check if a host has exceeded rate limits
+async function checkRateLimit(remoteHost: string, requestLimit: number = 30, windowMinutes: number = 10): Promise<boolean> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  // Get current timestamp and the timestamp for start of window
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - (windowMinutes * 60 * 1000));
+  
+  try {
+    // First, cleanup old requests that are outside our window
+    await supabase
+      .from('federation_request_logs')
+      .delete()
+      .lt('timestamp', windowStart.toISOString());
+    
+    // Count requests within our window
+    const { count, error: countError } = await supabase
+      .from('federation_request_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('remote_host', remoteHost)
+      .gte('timestamp', windowStart.toISOString());
+    
+    if (countError) {
+      console.error('Error checking rate limit:', countError);
+      return false; // Allow the request if we can't check (fail open for legitimate traffic)
+    }
+    
+    // Log this request
+    const { error: insertError } = await supabase
+      .from('federation_request_logs')
+      .insert({
+        remote_host: remoteHost,
+        endpoint: 'inbox',
+        timestamp: now.toISOString(),
+      });
+    
+    if (insertError) {
+      console.error('Error logging request:', insertError);
+    }
+    
+    // If count is null (shouldn't happen) or exceeds limit, return true (rate limited)
+    return (count ?? 0) >= requestLimit;
+  } catch (error) {
+    console.error('Error in rate limit check:', error);
+    return false; // Allow the request if the check fails
+  }
+}
+
 // Function to fetch public key from remote host or local DB with improved caching
 async function getPublicKey(keyId: string): Promise<string> {
   // Initialize Supabase client
@@ -75,6 +125,17 @@ function parseSigHeader(request: Request): { keyId: string } {
   return { keyId };
 }
 
+// Extract the remote host from a URL or keyId
+function extractRemoteHost(url: string): string {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.hostname;
+  } catch (error) {
+    console.error('Error extracting host from URL:', error);
+    return url; // Return original if parsing fails
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -93,6 +154,38 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Extract the remote host for rate limiting
+    let remoteHost = "";
+    
+    // Try to get host from signature keyId first
+    try {
+      const { keyId } = parseSigHeader(req);
+      remoteHost = extractRemoteHost(keyId);
+    } catch (sigError) {
+      // If that fails, use the request's origin or fallback
+      const origin = req.headers.get('origin');
+      if (origin) {
+        remoteHost = extractRemoteHost(origin);
+      } else {
+        // Last resort: use the host header
+        remoteHost = req.headers.get('host') || "unknown-host";
+      }
+    }
+    
+    // Check rate limiting before processing the request
+    const isRateLimited = await checkRateLimit(remoteHost);
+    if (isRateLimited) {
+      console.warn(`Rate limited request from ${remoteHost}`);
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Retry-After': '600' // Suggest retry after 10 minutes
+        },
+      });
+    }
+    
     // Verify HTTP signature using the simplified approach
     try {
       const { keyId } = parseSigHeader(req);

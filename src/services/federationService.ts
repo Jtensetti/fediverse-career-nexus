@@ -196,3 +196,81 @@ export const deleteDomainModeration = async (host: string) => {
     return { success: false, error };
   }
 };
+
+// New functions for managing rate limits
+
+// Get rate limit status for a given host
+export const getRateLimitStatus = async (host: string, windowMinutes = 10) => {
+  try {
+    const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
+    
+    const { data, error, count } = await supabase
+      .from('federation_request_logs')
+      .select('*', { count: 'exact' })
+      .eq('remote_host', host)
+      .gte('timestamp', windowStart)
+      .order('timestamp', { ascending: false });
+      
+    if (error) {
+      console.error("Error fetching rate limit status:", error);
+      return { success: false, error };
+    }
+    
+    return { 
+      success: true, 
+      count,
+      requests: data 
+    };
+  } catch (error) {
+    console.error("Error processing rate limit status:", error);
+    return { success: false, error };
+  }
+};
+
+// Clear rate limit log entries for a host (admin function)
+export const clearRateLimitLogs = async (host: string) => {
+  try {
+    const { error } = await supabase
+      .from('federation_request_logs')
+      .delete()
+      .eq('remote_host', host);
+      
+    if (error) {
+      console.error("Error clearing rate limit logs:", error);
+      return { success: false, error };
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error clearing rate limit logs:", error);
+    return { success: false, error };
+  }
+};
+
+// Get all rate limited hosts (for admin view)
+export const getRateLimitedHosts = async (requestThreshold = 25, windowMinutes = 10) => {
+  try {
+    const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
+    
+    // This query gets hosts with counts of requests within the time window
+    const { data, error } = await supabase
+      .rpc('get_rate_limited_hosts', { 
+        window_start: windowStart,
+        request_threshold: requestThreshold
+      });
+      
+    if (error) {
+      console.error("Error fetching rate limited hosts:", error);
+      return { success: false, error };
+    }
+    
+    return { 
+      success: true, 
+      hosts: data 
+    };
+  } catch (error) {
+    console.error("Error processing rate limited hosts:", error);
+    return { success: false, error };
+  }
+};
+
