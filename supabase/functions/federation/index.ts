@@ -15,9 +15,10 @@ async function processQueueItem(item: any) {
   try {
     // Mark item as processing
     await supabaseClient
-      .from("federation_queue")
+      .from("federation_queue_partitioned")
       .update({ status: "processing", attempts: item.attempts + 1, last_attempted_at: new Date().toISOString() })
-      .eq("id", item.id);
+      .eq("id", item.id)
+      .eq("partition_key", item.partition_key);
     
     // Get the actor data including private key
     const { data: actor, error: actorError } = await supabaseClient
@@ -61,9 +62,10 @@ async function processQueueItem(item: any) {
     if (recipients.length === 0) {
       console.log("No external recipients to deliver to");
       await supabaseClient
-        .from("federation_queue")
+        .from("federation_queue_partitioned")
         .update({ status: "processed" })
-        .eq("id", item.id);
+        .eq("id", item.id)
+        .eq("partition_key", item.partition_key);
       return;
     }
     
@@ -124,9 +126,10 @@ async function processQueueItem(item: any) {
     
     // Mark item as processed
     await supabaseClient
-      .from("federation_queue")
+      .from("federation_queue_partitioned")
       .update({ status: "processed" })
-      .eq("id", item.id);
+      .eq("id", item.id)
+      .eq("partition_key", item.partition_key);
     
     console.log(`Queue item ${item.id} processed successfully`);
   } catch (error) {
@@ -138,13 +141,14 @@ async function processQueueItem(item: any) {
     
     // Mark item for retry with exponential backoff
     await supabaseClient
-      .from("federation_queue")
+      .from("federation_queue_partitioned")
       .update({ 
         status: "pending",
         last_attempted_at: new Date().toISOString(),
         next_attempt_at: nextAttemptAt
       })
-      .eq("id", item.id);
+      .eq("id", item.id)
+      .eq("partition_key", item.partition_key);
     
     console.log(`Scheduled item ${item.id} for retry at ${nextAttemptAt}`);
   }
@@ -157,12 +161,22 @@ serve(async (req) => {
   }
   
   try {
-    // Get pending queue items that are ready for processing (next_attempt_at is null or in the past)
-    const { data: queueItems, error } = await supabaseClient
-      .from("federation_queue")
+    const { partition = null } = await req.json();
+    let query = supabaseClient
+      .from("federation_queue_partitioned")
       .select("*")
       .eq("status", "pending")
-      .or(`next_attempt_at.is.null,next_attempt_at.lte.${new Date().toISOString()}`)
+      .or(`next_attempt_at.is.null,next_attempt_at.lte.${new Date().toISOString()}`);
+    
+    // If a specific partition is requested, filter for that partition
+    if (partition !== null && partition >= 0 && partition <= 3) {
+      query = query.eq("partition_key", partition);
+      console.log(`Processing partition ${partition}`);
+    } else {
+      console.log("No specific partition requested, processing all pending items");
+    }
+    
+    const { data: queueItems, error } = await query
       .order("created_at", { ascending: true })
       .limit(10);
     
@@ -171,10 +185,14 @@ serve(async (req) => {
     }
     
     if (!queueItems || queueItems.length === 0) {
-      return new Response(JSON.stringify({ message: "No pending items" }), { status: 200 });
+      return new Response(JSON.stringify({ 
+        message: partition !== null 
+          ? `No pending items in partition ${partition}` 
+          : "No pending items" 
+      }), { status: 200 });
     }
     
-    console.log(`Processing ${queueItems.length} queue items`);
+    console.log(`Processing ${queueItems.length} queue items${partition !== null ? ` from partition ${partition}` : ''}`);
     
     // Process each item
     for (const item of queueItems) {
@@ -185,14 +203,14 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Started processing ${queueItems.length} items` 
+        message: `Started processing ${queueItems.length} items${partition !== null ? ` from partition ${partition}` : ''}`
       }),
       { status: 200 }
     );
   } catch (error) {
     console.error("Error in federation worker:", error);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: "Internal server error", details: error.message }),
       { status: 500 }
     );
   }

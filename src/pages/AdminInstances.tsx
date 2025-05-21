@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RemoteInstancesTable from "@/components/RemoteInstancesTable";
+import ShardedQueueStats from "@/components/ShardedQueueStats";
 import { supabase } from "@/integrations/supabase/client";
 
 const AdminInstances = () => {
@@ -96,11 +97,16 @@ const AdminInstances = () => {
       <Tabs defaultValue="instances" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="instances">Rate Limited Instances</TabsTrigger>
+          <TabsTrigger value="queue">Federation Queue</TabsTrigger>
           <TabsTrigger value="logs">Federation Logs</TabsTrigger>
         </TabsList>
         
         <TabsContent value="instances" className="space-y-4">
           <RemoteInstancesTable />
+        </TabsContent>
+        
+        <TabsContent value="queue" className="space-y-4">
+          <ShardedQueueStats />
         </TabsContent>
         
         <TabsContent value="logs" className="space-y-4">

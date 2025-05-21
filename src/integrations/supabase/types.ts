@@ -582,6 +582,186 @@ export type Database = {
           },
         ]
       }
+      federation_queue_partition_0: {
+        Row: {
+          activity: Json
+          actor_id: string
+          attempts: number
+          created_at: string
+          id: string
+          last_attempted_at: string | null
+          next_attempt_at: string | null
+          partition_key: number
+          status: string
+        }
+        Insert: {
+          activity: Json
+          actor_id: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key: number
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          actor_id?: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      federation_queue_partition_1: {
+        Row: {
+          activity: Json
+          actor_id: string
+          attempts: number
+          created_at: string
+          id: string
+          last_attempted_at: string | null
+          next_attempt_at: string | null
+          partition_key: number
+          status: string
+        }
+        Insert: {
+          activity: Json
+          actor_id: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key: number
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          actor_id?: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      federation_queue_partition_2: {
+        Row: {
+          activity: Json
+          actor_id: string
+          attempts: number
+          created_at: string
+          id: string
+          last_attempted_at: string | null
+          next_attempt_at: string | null
+          partition_key: number
+          status: string
+        }
+        Insert: {
+          activity: Json
+          actor_id: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key: number
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          actor_id?: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      federation_queue_partition_3: {
+        Row: {
+          activity: Json
+          actor_id: string
+          attempts: number
+          created_at: string
+          id: string
+          last_attempted_at: string | null
+          next_attempt_at: string | null
+          partition_key: number
+          status: string
+        }
+        Insert: {
+          activity: Json
+          actor_id: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key: number
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          actor_id?: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      federation_queue_partitioned: {
+        Row: {
+          activity: Json
+          actor_id: string
+          attempts: number
+          created_at: string
+          id: string
+          last_attempted_at: string | null
+          next_attempt_at: string | null
+          partition_key: number
+          status: string
+        }
+        Insert: {
+          activity: Json
+          actor_id: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key: number
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          actor_id?: string
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          next_attempt_at?: string | null
+          partition_key?: number
+          status?: string
+        }
+        Relationships: []
+      }
       inbox_events: {
         Row: {
           activity: Json
@@ -973,6 +1153,10 @@ export type Database = {
       }
     }
     Functions: {
+      actor_id_to_partition_key: {
+        Args: { actor_id: string }
+        Returns: number
+      }
       can_initiate_conversation: {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
@@ -1008,6 +1192,10 @@ export type Database = {
       is_moderator: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      migrate_federation_queue_data: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       process_pending_inbox_events: {
         Args: { batch_size?: number }
