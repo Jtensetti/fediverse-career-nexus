@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import ModerationLog from "@/components/ModerationLog";
 import ModerationHeader from "@/components/ModerationHeader";
+import DomainModeration from "@/components/DomainModeration";
 import CodeOfConduct from "@/components/CodeOfConduct";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -324,6 +324,7 @@ const Moderation = () => {
       <Tabs defaultValue={acceptedCoC ? "log" : "coc"} className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="log">{t('moderation.log')}</TabsTrigger>
+          <TabsTrigger value="domains">Domain Blocks</TabsTrigger>
           <TabsTrigger value="federation">Fediverse</TabsTrigger>
           <TabsTrigger value="objects">AP Objects</TabsTrigger>
           <TabsTrigger value="coc">{t('moderation.codeOfConduct')}</TabsTrigger>
@@ -332,6 +333,16 @@ const Moderation = () => {
         <TabsContent value="log" className="space-y-4">
           {acceptedCoC ? (
             <ModerationLog isAdmin={isAdmin || isModerator} />
+          ) : (
+            <div className="text-center py-8">
+              <p>{t('moderation.pleaseAcceptCoC')}</p>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="domains" className="space-y-4">
+          {acceptedCoC ? (
+            <DomainModeration />
           ) : (
             <div className="text-center py-8">
               <p>{t('moderation.pleaseAcceptCoC')}</p>

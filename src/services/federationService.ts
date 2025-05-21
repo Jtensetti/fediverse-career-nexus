@@ -19,14 +19,6 @@ export interface FederatedPost {
   moderation_status?: 'normal' | 'probation' | 'blocked';
 }
 
-// Mock domain moderation data - in a real app, this would be stored in the database
-const DOMAIN_MODERATION: Record<string, 'normal' | 'probation' | 'blocked'> = {
-  'example.social': 'probation',
-  'suspicious.federation': 'blocked',
-  'problematic.app': 'blocked',
-  'warning.social': 'probation'
-};
-
 export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedPost[]> => {
   const offset = (page - 1) * limit;
 
@@ -80,10 +72,20 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
           }
         }
         
-        // Determine moderation status based on the domain
+        // Determine moderation status based on the domain from the database
         let moderationStatus: 'normal' | 'probation' | 'blocked' = 'normal';
+        
         if (instanceDomain && post.source === 'remote') {
-          moderationStatus = DOMAIN_MODERATION[instanceDomain] || 'normal';
+          // Query the blocked_domains table
+          const { data: domainData, error: domainError } = await supabase
+            .from('blocked_domains')
+            .select('status')
+            .eq('host', instanceDomain)
+            .single();
+          
+          if (!domainError && domainData) {
+            moderationStatus = domainData.status as 'normal' | 'probation' | 'blocked';
+          }
         }
         
         return {
@@ -117,4 +119,80 @@ export const getProxiedMediaUrl = (url: string): string => {
   // For remote media, use the proxy endpoint
   const encodedUrl = encodeURIComponent(url);
   return `${currentOrigin}/functions/v1/proxy-media?url=${encodedUrl}`;
+};
+
+// New function to retrieve domain moderation data
+export const getDomainModeration = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('blocked_domains')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching domain moderation:", error);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error processing domain moderation:", error);
+    return [];
+  }
+};
+
+// Function to add or update a domain moderation entry
+export const updateDomainModeration = async (
+  host: string, 
+  status: 'normal' | 'probation' | 'blocked',
+  reason: string
+) => {
+  try {
+    const { data, error } = await supabase
+      .from('blocked_domains')
+      .upsert(
+        { 
+          host, 
+          status, 
+          reason,
+          updated_at: new Date().toISOString(),
+          updated_by: (await supabase.auth.getUser()).data.user?.id
+        },
+        { 
+          onConflict: 'host',
+          ignoreDuplicates: false 
+        }
+      )
+      .select();
+
+    if (error) {
+      console.error("Error updating domain moderation:", error);
+      return { success: false, error };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error updating domain moderation:", error);
+    return { success: false, error };
+  }
+};
+
+// Function to delete a domain moderation entry
+export const deleteDomainModeration = async (host: string) => {
+  try {
+    const { error } = await supabase
+      .from('blocked_domains')
+      .delete()
+      .eq('host', host);
+
+    if (error) {
+      console.error("Error deleting domain moderation:", error);
+      return { success: false, error };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting domain moderation:", error);
+    return { success: false, error };
+  }
 };

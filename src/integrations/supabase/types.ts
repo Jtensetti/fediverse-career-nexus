@@ -202,6 +202,36 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_domains: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          host: string
+          reason: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          host: string
+          reason: string
+          status: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          host?: string
+          reason?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -929,6 +959,18 @@ export type Database = {
         }
         Relationships: []
       }
+      federated_posts_with_moderation: {
+        Row: {
+          attributed_to: string | null
+          content: Json | null
+          id: string | null
+          moderation_status: string | null
+          published_at: string | null
+          source: string | null
+          type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_initiate_conversation: {
@@ -950,6 +992,10 @@ export type Database = {
       get_connection_degree: {
         Args: { source_user_id: string; target_user_id: string }
         Returns: number
+      }
+      get_domain_moderation_status: {
+        Args: { domain: string }
+        Returns: string
       }
       handle_inbox_event: {
         Args: { event_id: string }
