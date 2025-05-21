@@ -22,3 +22,5 @@ verify_jwt = false
 [functions.instance]
 verify_jwt = false
 
+[functions.proxy-media]
+verify_jwt = false

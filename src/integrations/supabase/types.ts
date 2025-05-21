@@ -918,7 +918,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      federated_feed: {
+        Row: {
+          attributed_to: string | null
+          content: Json | null
+          id: string | null
+          published_at: string | null
+          source: string | null
+          type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_initiate_conversation: {
@@ -956,6 +966,10 @@ export type Database = {
       process_pending_inbox_events: {
         Args: { batch_size?: number }
         Returns: number
+      }
+      proxy_remote_media: {
+        Args: { url: string }
+        Returns: string
       }
       request_education_verification: {
         Args: { education_id: string }

@@ -13,6 +13,8 @@ import CardContent from "../components/CardContent";
 import CardFooter from "../components/CardFooter";
 import Button from "../components/Button";
 import { Link } from "react-router-dom";
+import FederatedFeed from "../components/FederatedFeed";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   return (
@@ -29,50 +31,67 @@ const Index = () => {
         
         <div className="py-20 bg-muted">
           <div className="container max-w-6xl mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Explore Our Platform</h2>
-            <div className="grid gap-8 md:grid-cols-3">
-              <Card className="flex flex-col h-full">
-                <CardHeader>
-                  <CardTitle>Articles</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p>Read and share insightful articles from industry experts.</p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild>
-                    <Link to="/articles">Browse Articles</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+            <Tabs defaultValue="explore">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold">Discover Content</h2>
+                <TabsList>
+                  <TabsTrigger value="explore">Explore</TabsTrigger>
+                  <TabsTrigger value="feed">Federated Feed</TabsTrigger>
+                </TabsList>
+              </div>
               
-              <Card className="flex flex-col h-full">
-                <CardHeader>
-                  <CardTitle>Job Listings</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p>Find career opportunities or post job openings.</p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild>
-                    <Link to="/jobs">Explore Jobs</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+              <TabsContent value="explore">
+                <div className="grid gap-8 md:grid-cols-3">
+                  <Card className="flex flex-col h-full">
+                    <CardHeader>
+                      <CardTitle>Articles</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <p>Read and share insightful articles from industry experts.</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button asChild>
+                        <Link to="/articles">Browse Articles</Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  
+                  <Card className="flex flex-col h-full">
+                    <CardHeader>
+                      <CardTitle>Job Listings</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <p>Find career opportunities or post job openings.</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button asChild>
+                        <Link to="/jobs">Explore Jobs</Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  
+                  <Card className="flex flex-col h-full">
+                    <CardHeader>
+                      <CardTitle>Events</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <p>Attend professional events, webinars, and livestreams.</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button asChild>
+                        <Link to="/events">Browse Events</Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              </TabsContent>
               
-              <Card className="flex flex-col h-full">
-                <CardHeader>
-                  <CardTitle>Events</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p>Attend professional events, webinars, and livestreams.</p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild>
-                    <Link to="/events">Browse Events</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
+              <TabsContent value="feed">
+                <div className="max-w-2xl mx-auto">
+                  <FederatedFeed limit={5} />
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
 
