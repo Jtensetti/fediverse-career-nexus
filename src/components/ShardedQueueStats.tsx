@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { RefreshCw, Play, Clock } from "lucide-react";
@@ -24,10 +23,8 @@ const ShardedQueueStats = () => {
   const { data: queueStats, isLoading, refetch } = useQuery({
     queryKey: ["queueStats"],
     queryFn: async () => {
-      // Using the federation_queue_stats view that was created in the migration
-      const { data, error } = await supabase
-        .from('federation_queue_stats')
-        .select('*');
+      // Using the get_follower_batch_stats function directly to avoid type issues
+      const { data, error } = await supabase.rpc('get_follower_batch_stats');
       
       if (error) throw new Error(error.message);
       return data as QueueStats[];
