@@ -15,23 +15,27 @@ import { mockUserProfile, mockNetworkData } from "@/data/mockData";
 import { ProfileViewsWidget } from "@/components/ProfileViewsWidget";
 import { recordProfileView } from "@/services/profileViewService";
 import { supabase } from "@/integrations/supabase/client";
+import FederationInfo from "@/components/FederationInfo";
 
 const ProfilePage = () => {
   const { username } = useParams();
   const [profile] = useState(mockUserProfile);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
+      setCurrentUserId(session?.user?.id || null);
     };
     
     checkAuth();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
+      setCurrentUserId(session?.user?.id || null);
     });
     
     return () => {
@@ -58,6 +62,9 @@ const ProfilePage = () => {
       }
     }
   }, [username, viewingOwnProfile, isAuthenticated]);
+
+  // The profile username to use - either from URL params or the current user's profile
+  const displayUsername = username || profile.username;
   
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -321,6 +328,12 @@ const ProfilePage = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Federation Information - New section */}
+            <FederationInfo 
+              username={displayUsername}
+              isOwnProfile={viewingOwnProfile}
+            />
           </div>
           
           {/* Right Sidebar */}

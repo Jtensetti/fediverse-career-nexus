@@ -14,10 +14,12 @@ export type Database = {
           created_at: string
           id: string
           inbox_url: string | null
+          key_fingerprint: string | null
           outbox_url: string | null
           preferred_username: string
           private_key: string | null
           public_key: string | null
+          status: string
           type: string | null
           user_id: string | null
         }
@@ -25,10 +27,12 @@ export type Database = {
           created_at?: string
           id?: string
           inbox_url?: string | null
+          key_fingerprint?: string | null
           outbox_url?: string | null
           preferred_username: string
           private_key?: string | null
           public_key?: string | null
+          status?: string
           type?: string | null
           user_id?: string | null
         }
@@ -36,10 +40,12 @@ export type Database = {
           created_at?: string
           id?: string
           inbox_url?: string | null
+          key_fingerprint?: string | null
           outbox_url?: string | null
           preferred_username?: string
           private_key?: string | null
           public_key?: string | null
+          status?: string
           type?: string | null
           user_id?: string | null
         }

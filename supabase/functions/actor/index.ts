@@ -96,6 +96,17 @@ serve(async (req) => {
       );
     }
 
+    // Check if the actor's federation is disabled
+    if (actor.status === "disabled") {
+      return new Response(
+        JSON.stringify({ error: "This account has disabled federation" }),
+        {
+          status: 410, // Gone - this is more appropriate than 404 for a disabled account
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
     const domain = url.hostname;
     const protocol = url.protocol;
     const baseUrl = `${protocol}//${domain}`;
@@ -188,7 +199,8 @@ serve(async (req) => {
         "type": "Image",
         "mediaType": "image/jpeg",
         "url": profile.avatar_url
-      } : null
+      } : null,
+      "fingerprint": actor.key_fingerprint
     };
 
     // Filter out null values
