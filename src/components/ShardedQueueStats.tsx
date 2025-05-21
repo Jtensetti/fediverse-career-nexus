@@ -24,7 +24,10 @@ const ShardedQueueStats = () => {
   const { data: queueStats, isLoading, refetch } = useQuery({
     queryKey: ["queueStats"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_federation_queue_stats");
+      // Using direct SQL query instead of rpc to avoid TypeScript issues
+      const { data, error } = await supabase
+        .from('federation_queue_stats')
+        .select('*');
       
       if (error) throw new Error(error.message);
       return data as QueueStats[];
@@ -34,6 +37,7 @@ const ShardedQueueStats = () => {
   // Mutation to migrate data from old queue to partitioned queue
   const migrateQueueMutation = useMutation({
     mutationFn: async () => {
+      // Using a direct SQL query with custom function call
       const { data, error } = await supabase.rpc("migrate_federation_queue_data");
       
       if (error) throw new Error(error.message);

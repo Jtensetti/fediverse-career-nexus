@@ -60,9 +60,9 @@ serve(async (req) => {
     console.log("Federation coordinator starting");
     
     // Get queue stats for each partition
-    const { data: queueStats, error: statsError } = await supabaseClient.rpc(
-      "get_federation_queue_stats"
-    );
+    const { data: queueStats, error: statsError } = await supabaseClient
+      .from('federation_queue_stats')
+      .select('*');
     
     if (statsError) {
       throw new Error(`Failed to get queue stats: ${statsError.message}`);
