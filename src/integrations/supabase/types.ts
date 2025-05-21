@@ -929,6 +929,10 @@ export type Database = {
         Args: { other_user_id: string }
         Returns: string
       }
+      create_follow: {
+        Args: { local_actor_id: string; remote_actor_uri: string }
+        Returns: string
+      }
       generate_verification_token: {
         Args: { length?: number }
         Returns: string

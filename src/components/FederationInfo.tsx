@@ -1,12 +1,13 @@
 
 import { useState, useEffect } from "react";
-import { ExternalLink, Key, Globe2 } from "lucide-react";
+import { ExternalLink, Key, Globe2, UserPlus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import FederationFollowButton from "./FederationFollowButton";
 
 interface FederationInfoProps {
   username: string;
@@ -17,6 +18,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   const [loading, setLoading] = useState<boolean>(true);
   const [updating, setUpdating] = useState<boolean>(false);
   const [actor, setActor] = useState<any>(null);
+  const [currentUserActor, setCurrentUserActor] = useState<any>(null);
   const [federationEnabled, setFederationEnabled] = useState<boolean>(true);
   const { toast } = useToast();
   
@@ -41,6 +43,25 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
         
         setActor(data);
         setFederationEnabled(data?.status === "active");
+        
+        // If logged in, fetch current user's actor info for follow functionality
+        if (session?.session?.user) {
+          const { data: currentUserProfile } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("id", session.session.user.id)
+            .single();
+            
+          if (currentUserProfile) {
+            const { data: currentUserActorData } = await supabase
+              .from("actors")
+              .select("*")
+              .eq("preferred_username", currentUserProfile.username)
+              .single();
+              
+            setCurrentUserActor(currentUserActorData);
+          }
+        }
       } catch (error) {
         console.error("Error:", error);
       } finally {
@@ -101,6 +122,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   
   const domain = window.location.hostname;
   const federatedHandle = `@${username}@${domain}`;
+  const remoteActorUri = `${window.location.origin}/actor/${username}`;
   
   return (
     <Card>
@@ -148,6 +170,16 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
                   <Key size={14} />
                 </Button>
               </div>
+            </div>
+          )}
+          
+          {!isOwnProfile && currentUserActor && (
+            <div className="mt-4 pt-4 border-t">
+              <FederationFollowButton
+                remoteActorUri={remoteActorUri}
+                localActorId={currentUserActor.id}
+                disabled={!currentUserActor || currentUserActor.status !== "active"}
+              />
             </div>
           )}
         </div>
