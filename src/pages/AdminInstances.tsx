@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,7 +14,7 @@ const AdminInstances = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Check if the current user is an admin
-  useState(() => {
+  useEffect(() => {
     const checkUserRole = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();

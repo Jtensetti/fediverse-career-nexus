@@ -200,7 +200,7 @@ const RemoteInstancesTable = () => {
                         <Badge
                           variant={
                             instance.status === 'blocked' ? 'destructive' :
-                            instance.status === 'probation' ? 'warning' : 'outline'
+                            instance.status === 'probation' ? 'secondary' : 'outline'
                           }
                         >
                           {instance.status || 'normal'}
@@ -243,7 +243,7 @@ const RemoteInstancesTable = () => {
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button
-                                  variant="warning"
+                                  variant="secondary"
                                   size="sm"
                                   onClick={() => {
                                     setSelectedInstance(instance.remote_host);
