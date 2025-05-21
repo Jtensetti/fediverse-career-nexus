@@ -197,43 +197,23 @@ export const deleteDomainModeration = async (host: string) => {
   }
 };
 
-// New functions for managing rate limits
-
-// Get the Supabase URL and key from the client
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://tvvrdoklywxllcpzxdls.supabase.co";
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2dnJkb2tseXd4bGxjcHp4ZGxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2ODQzNDEsImV4cCI6MjA2MjI2MDM0MX0.IDWfDP8pTNED7Owl_Yk2eG5c1DTnengwrAPUePHifPA";
-
-// Get rate limit status for a given host
+// Rate limiting functions using the federation-rate-limits Edge Function for security
 export const getRateLimitStatus = async (host: string, windowMinutes = 10) => {
   try {
-    const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
-    
-    // Use the Supabase REST API directly with explicit URL and key
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/federation_request_logs?remote_host=eq.${encodeURIComponent(host)}&timestamp=gte.${encodeURIComponent(windowStart)}&order=timestamp.desc`, 
-      {
-        method: 'GET',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'count=exact'
-        }
+    const { data, error } = await supabase.functions.invoke('federation-rate-limits', {
+      body: {
+        action: 'getStatus',
+        host,
+        windowMinutes
       }
-    );
+    });
     
-    const data = await response.json();
-    const count = parseInt(response.headers.get('content-range')?.split('/')[1] || '0');
-    
-    if (!response.ok) {
-      console.error("Error fetching rate limit status:", data);
-      return { success: false, error: data };
+    if (error) {
+      console.error("Error fetching rate limit status:", error);
+      return { success: false, error };
     }
     
-    return { 
-      success: true, 
-      count,
-      requests: data 
-    };
+    return { success: true, ...data };
   } catch (error) {
     console.error("Error processing rate limit status:", error);
     return { success: false, error };
@@ -243,21 +223,14 @@ export const getRateLimitStatus = async (host: string, windowMinutes = 10) => {
 // Clear rate limit log entries for a host (admin function)
 export const clearRateLimitLogs = async (host: string) => {
   try {
-    // Use the Supabase REST API directly with explicit URL and key
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/federation_request_logs?remote_host=eq.${encodeURIComponent(host)}`, 
-      {
-        method: 'DELETE',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        }
+    const { data, error } = await supabase.functions.invoke('federation-rate-limits', {
+      body: {
+        action: 'clearLogs',
+        host
       }
-    );
+    });
     
-    if (!response.ok) {
-      const error = await response.json();
+    if (error) {
       console.error("Error clearing rate limit logs:", error);
       return { success: false, error };
     }
@@ -272,40 +245,20 @@ export const clearRateLimitLogs = async (host: string) => {
 // Get all rate limited hosts (for admin view)
 export const getRateLimitedHosts = async (requestThreshold = 25, windowMinutes = 10) => {
   try {
-    const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
-    
-    // Use direct fetch API to handle the complex query using the RPC function
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/rpc/get_rate_limited_hosts`,
-      {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          window_start: windowStart,
-          request_threshold: requestThreshold
-        })
+    const { data, error } = await supabase.functions.invoke('federation-rate-limits', {
+      body: {
+        action: 'getLimitedHosts',
+        requestThreshold,
+        windowMinutes
       }
-    );
+    });
     
-    if (!response.ok) {
-      const error = await response.json();
+    if (error) {
       console.error("Error fetching rate limited hosts:", error);
       return { success: false, error };
     }
     
-    const data = await response.json();
-    
-    return { 
-      success: true, 
-      hosts: data.map((item: any) => ({
-        remote_host: item.remote_host,
-        request_count: item.request_count,
-        latest_request: item.latest_request
-      }))
-    };
+    return { success: true, hosts: data.hosts };
   } catch (error) {
     console.error("Error processing rate limited hosts:", error);
     return { success: false, error };

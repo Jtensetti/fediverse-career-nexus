@@ -16,6 +16,9 @@ verify_jwt = false
 [functions.federation]
 verify_jwt = true
 
+[functions.federation-rate-limits]
+verify_jwt = true
+
 [functions.nodeinfo]
 verify_jwt = false
 
