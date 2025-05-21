@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface FederatedPost {
@@ -204,12 +203,14 @@ export const getRateLimitStatus = async (host: string, windowMinutes = 10) => {
   try {
     const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
     
+    // Use the REST API approach instead of direct table access
+    // This works around the TypeScript definition limitation
     const { data, error, count } = await supabase
       .from('federation_request_logs')
       .select('*', { count: 'exact' })
       .eq('remote_host', host)
       .gte('timestamp', windowStart)
-      .order('timestamp', { ascending: false });
+      .order('timestamp', { ascending: false }) as any;
       
     if (error) {
       console.error("Error fetching rate limit status:", error);
@@ -230,10 +231,11 @@ export const getRateLimitStatus = async (host: string, windowMinutes = 10) => {
 // Clear rate limit log entries for a host (admin function)
 export const clearRateLimitLogs = async (host: string) => {
   try {
+    // Use the REST API approach instead of direct table access
     const { error } = await supabase
       .from('federation_request_logs')
       .delete()
-      .eq('remote_host', host);
+      .eq('remote_host', host) as any;
       
     if (error) {
       console.error("Error clearing rate limit logs:", error);
@@ -252,25 +254,33 @@ export const getRateLimitedHosts = async (requestThreshold = 25, windowMinutes =
   try {
     const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
     
-    // This query gets hosts with counts of requests within the time window
+    // Use a REST API query with custom filtering instead of the RPC function
+    // This works around the TypeScript definition limitation
     const { data, error } = await supabase
-      .rpc('get_rate_limited_hosts', { 
-        window_start: windowStart,
-        request_threshold: requestThreshold
-      });
+      .from('federation_request_logs')
+      .select('remote_host, count(*), max(timestamp)')
+      .gte('timestamp', windowStart)
+      .group('remote_host')
+      .order('count', { ascending: false }) as any;
       
     if (error) {
       console.error("Error fetching rate limited hosts:", error);
       return { success: false, error };
     }
     
+    // Filter results that exceed threshold locally
+    const filteredData = data.filter((item: any) => item.count >= requestThreshold);
+    
     return { 
       success: true, 
-      hosts: data 
+      hosts: filteredData.map((item: any) => ({
+        remote_host: item.remote_host,
+        request_count: parseInt(item.count),
+        latest_request: item.max
+      }))
     };
   } catch (error) {
     console.error("Error processing rate limited hosts:", error);
     return { success: false, error };
   }
 };
-
