@@ -38,29 +38,34 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
         // Extract actor information from the content
         let actorInfo = null;
         
-        if (post.content?.actor) {
-          // For local posts, the actor is directly available
-          if (typeof post.content.actor === 'object') {
-            actorInfo = post.content.actor;
-          } 
-          // For remote posts, we might need to resolve the actor URL
-          else if (typeof post.content.actor === 'string') {
-            // In a production app, we would fetch the actor info from remote
-            // For now, we'll just extract the username from the URL
-            const actorUrl = post.content.actor;
-            const username = actorUrl.split('/').pop();
-            
-            actorInfo = {
-              preferredUsername: username,
-              name: username
-            };
+        if (post.content && typeof post.content === 'object') {
+          const content = post.content as Record<string, any>;
+          
+          if (content.actor) {
+            // For local posts, the actor is directly available
+            if (typeof content.actor === 'object') {
+              actorInfo = content.actor;
+            } 
+            // For remote posts, we might need to resolve the actor URL
+            else if (typeof content.actor === 'string') {
+              // In a production app, we would fetch the actor info from remote
+              // For now, we'll just extract the username from the URL
+              const actorUrl = content.actor;
+              const username = actorUrl.split('/').pop();
+              
+              actorInfo = {
+                preferredUsername: username,
+                name: username
+              };
+            }
           }
         }
         
         return {
           ...post,
+          source: post.source as 'local' | 'remote',
           actor: actorInfo
-        };
+        } as FederatedPost;
       })
     );
 

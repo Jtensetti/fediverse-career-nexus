@@ -6,9 +6,16 @@ import FederatedFeed from "@/components/FederatedFeed";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Globe } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const FederatedFeedPage = () => {
   const [feedSource, setFeedSource] = useState<string>("all");
+  const queryClient = useQueryClient();
+
+  const handleRefresh = () => {
+    // Invalidate the feed query to force a refresh
+    queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -34,11 +41,11 @@ const FederatedFeedPage = () => {
                 </SelectContent>
               </Select>
               
-              <Button variant="outline">Refresh</Button>
+              <Button variant="outline" onClick={handleRefresh}>Refresh</Button>
             </div>
           </div>
           
-          <FederatedFeed className="mb-8" />
+          <FederatedFeed className="mb-8" sourceFilter={feedSource} />
         </div>
       </main>
       

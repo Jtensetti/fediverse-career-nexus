@@ -9,28 +9,40 @@ import { Loader2 } from "lucide-react";
 interface FederatedFeedProps {
   limit?: number;
   className?: string;
+  sourceFilter?: string;
 }
 
-export default function FederatedFeed({ limit = 10, className = "" }: FederatedFeedProps) {
+export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "all" }: FederatedFeedProps) {
   const [page, setPage] = useState<number>(1);
   const [allPosts, setAllPosts] = useState<FederatedPost[]>([]);
   
-  const { data: posts, isLoading, isFetching, error } = useQuery({
+  const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['federatedFeed', page, limit],
     queryFn: () => getFederatedFeed(limit, page),
   });
   
   useEffect(() => {
+    // Reset to page 1 when source filter changes
+    setPage(1);
+    setAllPosts([]);
+  }, [sourceFilter]);
+  
+  useEffect(() => {
     if (posts && posts.length > 0) {
+      // Filter posts based on sourceFilter
+      const filteredPosts = sourceFilter === "all" 
+        ? posts 
+        : posts.filter(post => post.source === sourceFilter);
+      
       // For the first page, replace all posts
       if (page === 1) {
-        setAllPosts(posts);
+        setAllPosts(filteredPosts);
       } else {
         // For subsequent pages, append new posts
-        setAllPosts(prev => [...prev, ...posts]);
+        setAllPosts(prev => [...prev, ...filteredPosts]);
       }
     }
-  }, [posts, page]);
+  }, [posts, page, sourceFilter]);
   
   const handleLoadMore = () => {
     setPage(prev => prev + 1);
@@ -40,7 +52,7 @@ export default function FederatedFeed({ limit = 10, className = "" }: FederatedF
     return (
       <div className={`p-6 text-center ${className}`}>
         <p className="text-red-500 mb-2">Error loading federated posts</p>
-        <Button onClick={() => setPage(1)} variant="outline">
+        <Button onClick={() => refetch()} variant="outline">
           Try Again
         </Button>
       </div>
