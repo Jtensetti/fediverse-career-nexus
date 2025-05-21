@@ -199,18 +199,22 @@ export const deleteDomainModeration = async (host: string) => {
 
 // New functions for managing rate limits
 
+// Get the Supabase URL and key from the client
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://tvvrdoklywxllcpzxdls.supabase.co";
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2dnJkb2tseXd4bGxjcHp4ZGxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2ODQzNDEsImV4cCI6MjA2MjI2MDM0MX0.IDWfDP8pTNED7Owl_Yk2eG5c1DTnengwrAPUePHifPA";
+
 // Get rate limit status for a given host
 export const getRateLimitStatus = async (host: string, windowMinutes = 10) => {
   try {
     const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
     
-    // Use the Supabase REST API directly with type casting to bypass TypeScript limitations
+    // Use the Supabase REST API directly with explicit URL and key
     const response = await fetch(
-      `${supabase.supabaseUrl}/rest/v1/federation_request_logs?remote_host=eq.${encodeURIComponent(host)}&timestamp=gte.${encodeURIComponent(windowStart)}&order=timestamp.desc`, 
+      `${SUPABASE_URL}/rest/v1/federation_request_logs?remote_host=eq.${encodeURIComponent(host)}&timestamp=gte.${encodeURIComponent(windowStart)}&order=timestamp.desc`, 
       {
         method: 'GET',
         headers: {
-          'apikey': supabase.supabaseKey,
+          'apikey': SUPABASE_KEY,
           'Content-Type': 'application/json',
           'Prefer': 'count=exact'
         }
@@ -239,13 +243,13 @@ export const getRateLimitStatus = async (host: string, windowMinutes = 10) => {
 // Clear rate limit log entries for a host (admin function)
 export const clearRateLimitLogs = async (host: string) => {
   try {
-    // Use the Supabase REST API directly to delete records
+    // Use the Supabase REST API directly with explicit URL and key
     const response = await fetch(
-      `${supabase.supabaseUrl}/rest/v1/federation_request_logs?remote_host=eq.${encodeURIComponent(host)}`, 
+      `${SUPABASE_URL}/rest/v1/federation_request_logs?remote_host=eq.${encodeURIComponent(host)}`, 
       {
         method: 'DELETE',
         headers: {
-          'apikey': supabase.supabaseKey,
+          'apikey': SUPABASE_KEY,
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         }
@@ -270,13 +274,13 @@ export const getRateLimitedHosts = async (requestThreshold = 25, windowMinutes =
   try {
     const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
     
-    // Use direct fetch API to handle the complex query that TypeScript doesn't support
+    // Use direct fetch API to handle the complex query using the RPC function
     const response = await fetch(
-      `${supabase.supabaseUrl}/rest/v1/rpc/get_rate_limited_hosts`,
+      `${SUPABASE_URL}/rest/v1/rpc/get_rate_limited_hosts`,
       {
         method: 'POST',
         headers: {
-          'apikey': supabase.supabaseKey,
+          'apikey': SUPABASE_KEY,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
