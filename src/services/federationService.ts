@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface FederatedPost {
@@ -51,23 +50,30 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
             } 
             // For remote posts, we might need to resolve the actor URL
             else if (typeof content.actor === 'string') {
-              // In a production app, we would fetch the actor info from remote
-              // For now, we'll just extract the username from the URL
+              // Try to get actor info from cache first
               const actorUrl = content.actor;
-              const username = actorUrl.split('/').pop();
+              const cachedActor = await getRemoteActorFromCache(actorUrl);
               
-              // Extract domain from the actor URL for moderation status
-              try {
-                const url = new URL(actorUrl);
-                instanceDomain = url.hostname;
-              } catch (e) {
-                instanceDomain = null;
+              if (cachedActor) {
+                actorInfo = cachedActor;
+              } else {
+                // In a production app, we would fetch the actor info from remote
+                // For now, we'll just extract the username from the URL
+                const username = actorUrl.split('/').pop();
+                
+                // Extract domain from the actor URL for moderation status
+                try {
+                  const url = new URL(actorUrl);
+                  instanceDomain = url.hostname;
+                } catch (e) {
+                  instanceDomain = null;
+                }
+                
+                actorInfo = {
+                  preferredUsername: username,
+                  name: username
+                };
               }
-              
-              actorInfo = {
-                preferredUsername: username,
-                name: username
-              };
             }
           }
         }
@@ -119,6 +125,100 @@ export const getProxiedMediaUrl = (url: string): string => {
   // For remote media, use the proxy endpoint
   const encodedUrl = encodeURIComponent(url);
   return `${currentOrigin}/functions/v1/proxy-media?url=${encodedUrl}`;
+};
+
+// New function to get actor from cache or fetch and store if not found
+export const getRemoteActorFromCache = async (actorUrl: string) => {
+  try {
+    // Try to get from cache first
+    const { data: cachedActor, error: cacheError } = await supabase
+      .from('remote_actors_cache')
+      .select('actor_data')
+      .eq('actor_url', actorUrl)
+      .single();
+    
+    if (!cacheError && cachedActor) {
+      // Update the fetched_at timestamp to keep it fresh
+      await supabase
+        .from('remote_actors_cache')
+        .update({ fetched_at: new Date().toISOString() })
+        .eq('actor_url', actorUrl);
+        
+      return cachedActor.actor_data;
+    }
+    
+    // If not in cache, we would fetch from remote
+    // This is a placeholder for actual remote fetching logic
+    // In a production app, you'd make an HTTP request to the actorUrl 
+    // and parse the ActivityPub actor data
+    console.log("Would fetch remote actor data for:", actorUrl);
+    
+    // For demonstration, we'll create a simple actor object
+    const dummyActor = {
+      preferredUsername: actorUrl.split('/').pop(),
+      name: actorUrl.split('/').pop(),
+      icon: {
+        url: null
+      }
+    };
+    
+    // Store in cache
+    await supabase
+      .from('remote_actors_cache')
+      .upsert({
+        actor_url: actorUrl,
+        actor_data: dummyActor,
+        fetched_at: new Date().toISOString()
+      });
+    
+    return dummyActor;
+  } catch (error) {
+    console.error("Error getting remote actor from cache:", error);
+    return null;
+  }
+};
+
+// Function to manually cache a remote actor
+export const cacheRemoteActor = async (actorUrl: string, actorData: any) => {
+  try {
+    const { error } = await supabase
+      .from('remote_actors_cache')
+      .upsert({
+        actor_url: actorUrl,
+        actor_data: actorData,
+        fetched_at: new Date().toISOString()
+      });
+      
+    if (error) {
+      console.error("Error caching remote actor:", error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error in cacheRemoteActor:", error);
+    return false;
+  }
+};
+
+// Function to manually clear an actor from cache
+export const clearActorCache = async (actorUrl: string) => {
+  try {
+    const { error } = await supabase
+      .from('remote_actors_cache')
+      .delete()
+      .eq('actor_url', actorUrl);
+      
+    if (error) {
+      console.error("Error clearing actor cache:", error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error in clearActorCache:", error);
+    return false;
+  }
 };
 
 // New function to retrieve domain moderation data

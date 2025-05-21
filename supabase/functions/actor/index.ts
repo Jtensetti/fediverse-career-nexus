@@ -208,8 +208,23 @@ serve(async (req) => {
       (actorObject[key] === null || actorObject[key] === undefined) && delete actorObject[key]
     );
 
-    // Store in cache
+    // Store in both KV cache and database cache
     await kv.set(cacheKey, actorObject, { expireIn: CACHE_TTL });
+    
+    // Store in the database cache too for cross-function availability
+    try {
+      const cacheUrl = `${baseUrl}/${profile.username}`;
+      await supabaseClient
+        .from("remote_actors_cache")
+        .upsert({
+          actor_url: cacheUrl,
+          actor_data: actorObject,
+          fetched_at: new Date().toISOString()
+        });
+    } catch (cacheError) {
+      console.error("Error caching actor in database:", cacheError);
+      // Non-fatal, continue even if database caching fails
+    }
 
     return new Response(
       JSON.stringify(actorObject),

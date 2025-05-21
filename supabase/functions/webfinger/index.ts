@@ -57,6 +57,41 @@ serve(async (req) => {
     // Check if domain matches our domain
     const currentDomain = url.hostname;
     if (domain !== currentDomain) {
+      // Check if this is a remote domain we might have cached
+      const remoteActorUrl = `https://${domain}/${username}`;
+      try {
+        // Look up in our remote actor cache
+        const { data: cachedRemoteActor, error } = await supabaseClient
+          .from("remote_actors_cache")
+          .select("actor_data")
+          .eq("actor_url", remoteActorUrl)
+          .single();
+          
+        if (!error && cachedRemoteActor) {
+          // We have this remote actor cached, create a WebFinger response for it
+          const webfingerResponse = {
+            subject: resource,
+            links: [
+              {
+                rel: "self",
+                type: "application/activity+json",
+                href: remoteActorUrl
+              }
+            ]
+          };
+          
+          return new Response(
+            JSON.stringify(webfingerResponse),
+            {
+              headers: { ...corsHeaders, "Content-Type": "application/jrd+json" }
+            }
+          );
+        }
+      } catch (cacheError) {
+        console.error("Error checking remote actor cache:", cacheError);
+      }
+      
+      // Not found in our cache, return domain mismatch error
       return new Response(
         JSON.stringify({ error: "Domain does not match" }),
         {
@@ -100,6 +135,40 @@ serve(async (req) => {
       );
     }
 
+    // Check if we have an actor object for this user
+    const actorId = `https://${currentDomain}/${profile.username}`;
+    
+    // Try to get from remote_actors_cache first (our own actors would be cached here too)
+    const { data: cachedActor, error: cacheError } = await supabaseClient
+      .from("remote_actors_cache")
+      .select("actor_data")
+      .eq("actor_url", actorId)
+      .single();
+      
+    if (!cacheError && cachedActor) {
+      // We found it in the cache
+      const webfingerResponse = {
+        subject: resource,
+        links: [
+          {
+            rel: "self",
+            type: "application/activity+json",
+            href: actorId
+          }
+        ]
+      };
+      
+      // Store in KV cache
+      await kv.set(cacheKey, webfingerResponse, { expireIn: CACHE_TTL });
+      
+      return new Response(
+        JSON.stringify(webfingerResponse),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/jrd+json" }
+        }
+      );
+    }
+
     // Lookup the actor object for this user
     const { data: actorObject, error: actorError } = await supabaseClient
       .from("ap_objects")
@@ -120,7 +189,6 @@ serve(async (req) => {
     }
 
     // Construct WebFinger response
-    const actorId = actorObject.content.id || `https://${currentDomain}/actors/${profile.username}`;
     const webfingerResponse = {
       subject: resource,
       links: [
@@ -132,8 +200,22 @@ serve(async (req) => {
       ]
     };
 
-    // Store in cache
+    // Store in KV cache
     await kv.set(cacheKey, webfingerResponse, { expireIn: CACHE_TTL });
+    
+    // Also cache the actor object for future use
+    try {
+      await supabaseClient
+        .from("remote_actors_cache")
+        .upsert({
+          actor_url: actorId,
+          actor_data: actorObject.content,
+          fetched_at: new Date().toISOString()
+        });
+    } catch (cachingError) {
+      console.error("Error caching actor:", cachingError);
+      // Non-fatal error, continue
+    }
 
     return new Response(
       JSON.stringify(webfingerResponse),

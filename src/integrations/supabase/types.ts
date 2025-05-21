@@ -1019,6 +1019,24 @@ export type Database = {
         }
         Relationships: []
       }
+      remote_actors_cache: {
+        Row: {
+          actor_data: Json
+          actor_url: string
+          fetched_at: string
+        }
+        Insert: {
+          actor_data: Json
+          actor_url: string
+          fetched_at?: string
+        }
+        Update: {
+          actor_data?: Json
+          actor_url?: string
+          fetched_at?: string
+        }
+        Relationships: []
+      }
       remote_keys: {
         Row: {
           fetched_at: string
@@ -1213,6 +1231,10 @@ export type Database = {
       can_initiate_conversation: {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
+      }
+      cleanup_expired_actor_cache: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       create_conversation: {
         Args: { other_user_id: string }
