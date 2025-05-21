@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink } from "react-router-dom";
@@ -19,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { AlignJustify, User } from "lucide-react";
+import { AlignJustify, Settings, User } from "lucide-react";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -55,9 +56,10 @@ const Navbar = () => {
       href: "/messages",
     },
     {
-      name: t("nav.moderation", "Moderation"),
-      href: "/moderation",
+      name: t("nav.feed", "Feed"),
+      href: "/feed",
     }
+    // Moderation link removed from public navigation
   ];
 
   return (
@@ -101,6 +103,18 @@ const Navbar = () => {
                     {t("common.edit", "Edit")} {t("nav.profile", "Profile")}
                   </RouterLink>
                 </DropdownMenuItem>
+                {/* Add admin links in the dropdown menu instead */}
+                <DropdownMenuItem>
+                  <RouterLink to="/moderation">
+                    {t("nav.moderation", "Moderation")}
+                  </RouterLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <RouterLink to="/admin/instances">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Instance Management
+                  </RouterLink>
+                </DropdownMenuItem>
                 <DropdownMenuItem>
                   {t("auth.logout", "Log out")}
                 </DropdownMenuItem>
@@ -121,10 +135,25 @@ const Navbar = () => {
                 </SheetHeader>
                 <nav className="grid gap-6 text-lg">
                   {navigationItems.map((item) => (
-                    <RouterLink key={item.href} to={item.href}>
+                    <RouterLink 
+                      key={item.href} 
+                      to={item.href}
+                      onClick={() => setIsOpen(false)}
+                    >
                       {item.name}
                     </RouterLink>
                   ))}
+                  {/* Add admin links in mobile menu, but at the bottom */}
+                  <div className="border-t pt-4 mt-4">
+                    <RouterLink 
+                      to="/admin/instances"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center text-muted-foreground hover:text-foreground"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Instance Management
+                    </RouterLink>
+                  </div>
                 </nav>
               </SheetContent>
             </Sheet>

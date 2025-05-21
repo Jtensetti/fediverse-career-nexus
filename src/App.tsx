@@ -32,6 +32,7 @@ import ActorProfile from "./pages/ActorProfile";
 import ActorOutbox from "./pages/ActorOutbox";
 import ActorInbox from "./pages/ActorInbox";
 import FederatedFeedPage from "./pages/FederatedFeed";
+import AdminInstances from "./pages/AdminInstances";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/messages/:conversationId" element={<MessageConversation />} />
               <Route path="/moderation" element={<Moderation />} />
               <Route path="/feed" element={<FederatedFeedPage />} />
+              <Route path="/admin/instances" element={<AdminInstances />} />
               <Route path="/:username/outbox" element={<ActorOutbox />} />
               <Route path="/:username/inbox" element={<ActorInbox />} />
               <Route path="/:username" element={<ActorProfile />} />
