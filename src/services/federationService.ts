@@ -15,7 +15,17 @@ export interface FederatedPost {
       url?: string;
     };
   };
+  instance?: string;
+  moderation_status?: 'normal' | 'probation' | 'blocked';
 }
+
+// Mock domain moderation data - in a real app, this would be stored in the database
+const DOMAIN_MODERATION: Record<string, 'normal' | 'probation' | 'blocked'> = {
+  'example.social': 'probation',
+  'suspicious.federation': 'blocked',
+  'problematic.app': 'blocked',
+  'warning.social': 'probation'
+};
 
 export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedPost[]> => {
   const offset = (page - 1) * limit;
@@ -37,6 +47,7 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
       data.map(async (post) => {
         // Extract actor information from the content
         let actorInfo = null;
+        let instanceDomain = null;
         
         if (post.content && typeof post.content === 'object') {
           const content = post.content as Record<string, any>;
@@ -53,6 +64,14 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
               const actorUrl = content.actor;
               const username = actorUrl.split('/').pop();
               
+              // Extract domain from the actor URL for moderation status
+              try {
+                const url = new URL(actorUrl);
+                instanceDomain = url.hostname;
+              } catch (e) {
+                instanceDomain = null;
+              }
+              
               actorInfo = {
                 preferredUsername: username,
                 name: username
@@ -61,10 +80,18 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
           }
         }
         
+        // Determine moderation status based on the domain
+        let moderationStatus: 'normal' | 'probation' | 'blocked' = 'normal';
+        if (instanceDomain && post.source === 'remote') {
+          moderationStatus = DOMAIN_MODERATION[instanceDomain] || 'normal';
+        }
+        
         return {
           ...post,
           source: post.source as 'local' | 'remote',
-          actor: actorInfo
+          actor: actorInfo,
+          instance: instanceDomain,
+          moderation_status: moderationStatus
         } as FederatedPost;
       })
     );
