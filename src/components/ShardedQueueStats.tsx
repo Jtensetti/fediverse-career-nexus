@@ -24,8 +24,10 @@ const ShardedQueueStats = () => {
   const { data: queueStats, isLoading, refetch } = useQuery({
     queryKey: ["queueStats"],
     queryFn: async () => {
-      // Using direct SQL query with RPC instead of from() to avoid TypeScript issues
-      const { data, error } = await supabase.rpc('get_federation_queue_stats');
+      // Using the federation_queue_stats view that was created in the migration
+      const { data, error } = await supabase
+        .from('federation_queue_stats')
+        .select('*');
       
       if (error) throw new Error(error.message);
       return data as QueueStats[];
