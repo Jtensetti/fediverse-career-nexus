@@ -33,8 +33,16 @@ import ActorOutbox from "./pages/ActorOutbox";
 import ActorInbox from "./pages/ActorInbox";
 import FederatedFeedPage from "./pages/FederatedFeed";
 import AdminInstances from "./pages/AdminInstances";
+import Auth from "./pages/Auth";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -47,8 +55,11 @@ const App = () => (
           <div id="main-content" tabIndex={-1} className="outline-none">
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/auth/login" element={<Auth />} />
+              <Route path="/auth/signup" element={<Auth />} />
               <Route path="/profile/:username" element={<Profile />} />
               <Route path="/profile/edit" element={<ProfileEdit />} />
+              <Route path="/profile/create" element={<ProfileEdit />} />
               <Route path="/connections" element={<Connections />} />
               <Route path="/articles" element={<Articles />} />
               <Route path="/articles/:slug" element={<ArticleView />} />
