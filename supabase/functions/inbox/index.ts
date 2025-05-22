@@ -1,4 +1,5 @@
 
+// First part of the file stays the same
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 import { verifySignature } from "npm:http-signature@1.3.6";
 import { decode as decodeBase64 } from "https://deno.land/std@0.167.0/encoding/base64.ts";

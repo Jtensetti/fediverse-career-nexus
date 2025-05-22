@@ -1088,6 +1088,42 @@ export type Database = {
         }
         Relationships: []
       }
+      server_keys: {
+        Row: {
+          algorithm: string
+          created_at: string
+          id: string
+          is_current: boolean
+          key_id: string
+          key_size: number
+          private_key: string
+          public_key: string
+          revoked_at: string | null
+        }
+        Insert: {
+          algorithm?: string
+          created_at?: string
+          id?: string
+          is_current?: boolean
+          key_id: string
+          key_size?: number
+          private_key: string
+          public_key: string
+          revoked_at?: string | null
+        }
+        Update: {
+          algorithm?: string
+          created_at?: string
+          id?: string
+          is_current?: boolean
+          key_id?: string
+          key_size?: number
+          private_key?: string
+          public_key?: string
+          revoked_at?: string | null
+        }
+        Relationships: []
+      }
       skill_endorsements: {
         Row: {
           created_at: string
@@ -1298,6 +1334,15 @@ export type Database = {
       get_connection_degree: {
         Args: { source_user_id: string; target_user_id: string }
         Returns: number
+      }
+      get_current_server_key: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          key_id: string
+          public_key: string
+          private_key: string
+        }[]
       }
       get_domain_moderation_status: {
         Args: { domain: string }

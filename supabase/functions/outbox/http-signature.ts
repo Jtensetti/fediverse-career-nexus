@@ -1,8 +1,48 @@
 
 // HTTP Signature utilities for ActivityPub
 
-import { createHash } from "https://deno.land/std@0.177.0/node/crypto.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { encode as encodeBase64 } from "https://deno.land/std@0.177.0/encoding/base64.ts";
+
+/**
+ * Get the server key from database
+ */
+export async function getServerKey(): Promise<{keyId: string, privateKey: string} | null> {
+  try {
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+      return null;
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Get the current server key
+    const { data, error } = await supabase
+      .rpc("get_current_server_key")
+      .maybeSingle();
+    
+    if (error || !data) {
+      console.error("Error fetching server key:", error);
+      return null;
+    }
+    
+    // Create a full key ID from the base ID
+    const domain = new URL(supabaseUrl).hostname;
+    const fullKeyId = `${supabaseUrl}/functions/v1/actor/server#${data.key_id}`;
+    
+    return {
+      keyId: fullKeyId,
+      privateKey: data.private_key
+    };
+  } catch (error) {
+    console.error("Error in getServerKey:", error);
+    return null;
+  }
+}
 
 // Sign an HTTP request using RSA-SHA256
 export async function signRequest(
@@ -44,10 +84,10 @@ export async function signRequest(
 
 // Create a digest of the request body
 async function createDigest(body: string): Promise<string> {
-  const hash = createHash("sha256");
-  hash.update(body);
-  const digest = hash.digest();
-  return `SHA-256=${encodeBase64(digest)}`;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(body);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return `SHA-256=${encodeBase64(new Uint8Array(hash))}`;
 }
 
 // Create a signature using the private key
@@ -93,41 +133,4 @@ async function createSignature(data: string, privateKeyPem: string): Promise<str
     console.error("Error creating signature:", error);
     throw error;
   }
-}
-
-// Generate a new RSA key pair for ActivityPub
-export async function generateRsaKeyPair(): Promise<{ publicKey: string, privateKey: string }> {
-  // Generate RSA-2048 key pair
-  const keyPair = await crypto.subtle.generateKey(
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // 65537
-      hash: "SHA-256"
-    },
-    true,
-    ["sign", "verify"]
-  );
-  
-  // Export keys to PKCS8 and SPKI formats
-  const privateKeyExport = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-  const publicKeyExport = await crypto.subtle.exportKey("spki", keyPair.publicKey);
-  
-  // Convert to base64 PEM format
-  const privateKeyBase64 = encodeBase64(new Uint8Array(privateKeyExport));
-  const publicKeyBase64 = encodeBase64(new Uint8Array(publicKeyExport));
-  
-  const privateKeyPem = [
-    "-----BEGIN PRIVATE KEY-----",
-    ...privateKeyBase64.match(/.{1,64}/g) || [],
-    "-----END PRIVATE KEY-----"
-  ].join("\n");
-  
-  const publicKeyPem = [
-    "-----BEGIN PUBLIC KEY-----",
-    ...publicKeyBase64.match(/.{1,64}/g) || [],
-    "-----END PUBLIC KEY-----"
-  ].join("\n");
-  
-  return { publicKey: publicKeyPem, privateKey: privateKeyPem };
 }
