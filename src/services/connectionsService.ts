@@ -38,7 +38,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         created_at,
         user_id,
         connected_user_id,
-        connected_profile:profiles!user_connections_connected_user_id_fkey (id, username, fullname, headline, avatar_url, is_verified)
+        connected_profile:profiles(id, username, fullname, headline, avatar_url, is_verified)
       `)
       .eq("user_id", user.id)
       .eq("status", "accepted");
@@ -57,7 +57,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         created_at,
         user_id,
         connected_user_id,
-        user_profile:profiles!user_connections_user_id_fkey (id, username, fullname, headline, avatar_url, is_verified)
+        user_profile:profiles(id, username, fullname, headline, avatar_url, is_verified)
       `)
       .eq("connected_user_id", user.id)
       .eq("status", "accepted");
@@ -69,38 +69,44 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
 
     // Process regular connections (where user is the initiator)
     const normalizedConnections = connections?.map(connection => {
-      if (!connection.connected_profile) {
+      // Check if connected_profile exists and has data
+      if (!connection.connected_profile || connection.connected_profile.length === 0) {
         console.warn("Connected profile is missing for connection:", connection.id);
         return null;
       }
       
+      const profile = connection.connected_profile[0];
+      
       return {
         id: connection.id,
-        username: connection.connected_profile.username || "",
-        displayName: connection.connected_profile.fullname || connection.connected_profile.username || "",
-        headline: connection.connected_profile.headline || "",
-        avatarUrl: connection.connected_profile.avatar_url || "",
+        username: profile.username || "",
+        displayName: profile.fullname || profile.username || "",
+        headline: profile.headline || "",
+        avatarUrl: profile.avatar_url || "",
         connectionDegree: 1 as ConnectionDegree,
-        isVerified: connection.connected_profile.is_verified || false,
+        isVerified: profile.is_verified || false,
         mutualConnections: 0, 
       };
     }).filter(Boolean) as NetworkConnection[] || [];
 
     // Process reverse connections (where user is the receiver)
     const normalizedReverseConnections = reverseConnections?.map(connection => {
-      if (!connection.user_profile) {
+      // Check if user_profile exists and has data
+      if (!connection.user_profile || connection.user_profile.length === 0) {
         console.warn("User profile is missing for reverse connection:", connection.id);
         return null;
       }
       
+      const profile = connection.user_profile[0];
+      
       return {
         id: connection.id,
-        username: connection.user_profile.username || "",
-        displayName: connection.user_profile.fullname || connection.user_profile.username || "",
-        headline: connection.user_profile.headline || "",
-        avatarUrl: connection.user_profile.avatar_url || "",
+        username: profile.username || "",
+        displayName: profile.fullname || profile.username || "",
+        headline: profile.headline || "",
+        avatarUrl: profile.avatar_url || "",
         connectionDegree: 1 as ConnectionDegree,
-        isVerified: connection.user_profile.is_verified || false,
+        isVerified: profile.is_verified || false,
         mutualConnections: 0,
       };
     }).filter(Boolean) as NetworkConnection[] || [];
