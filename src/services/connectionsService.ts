@@ -38,7 +38,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         created_at,
         user_id,
         connected_user_id,
-        profiles!user_connections_connected_user_id_fkey (id, username, fullname, headline, avatar_url, is_verified)
+        connected_profile:profiles!user_connections_connected_user_id_fkey (id, username, fullname, headline, avatar_url, is_verified)
       `)
       .eq("user_id", user.id)
       .eq("status", "accepted");
@@ -57,7 +57,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         created_at,
         user_id,
         connected_user_id,
-        profiles!user_connections_user_id_fkey (id, username, fullname, headline, avatar_url, is_verified)
+        user_profile:profiles!user_connections_user_id_fkey (id, username, fullname, headline, avatar_url, is_verified)
       `)
       .eq("connected_user_id", user.id)
       .eq("status", "accepted");
@@ -67,8 +67,8 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
       return [];
     }
 
-    const normalizedConnections = (connections || []).map(connection => {
-      const profile = connection.profiles;
+    const normalizedConnections = connections?.map(connection => {
+      const profile = connection.connected_profile;
       return {
         id: connection.id,
         username: profile?.username || "",
@@ -79,10 +79,10 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         isVerified: profile?.is_verified || false,
         mutualConnections: 0, // To be calculated if needed
       };
-    });
+    }) || [];
 
-    const normalizedReverseConnections = (reverseConnections || []).map(connection => {
-      const profile = connection.profiles;
+    const normalizedReverseConnections = reverseConnections?.map(connection => {
+      const profile = connection.user_profile;
       return {
         id: connection.id,
         username: profile?.username || "",
@@ -93,7 +93,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         isVerified: profile?.is_verified || false,
         mutualConnections: 0, // To be calculated if needed
       };
-    });
+    }) || [];
 
     return [...normalizedConnections, ...normalizedReverseConnections];
   } catch (error) {
@@ -139,14 +139,14 @@ export const getConnectionSuggestions = async (): Promise<NetworkSuggestion[]> =
       });
     }
 
-    const filteredSuggestions = suggestions.filter(
+    const filteredSuggestions = suggestions?.filter(
       profile => !connectedUserIds.has(profile.id)
-    );
+    ) || [];
 
     return filteredSuggestions.map(profile => ({
       id: profile.id,
-      username: profile.username,
-      displayName: profile.fullname || profile.username,
+      username: profile.username || "",
+      displayName: profile.fullname || profile.username || "",
       headline: profile.headline || "",
       avatarUrl: profile.avatar_url || "",
       connectionDegree: 2 as ConnectionDegree, // Assume 2nd degree for suggestions

@@ -1028,25 +1028,46 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
+          domain: string | null
           fullname: string | null
+          headline: string | null
           id: string
+          is_verified: boolean | null
+          location: string | null
+          phone: string | null
+          profile_views: number | null
           updated_at: string
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          domain?: string | null
           fullname?: string | null
+          headline?: string | null
           id: string
+          is_verified?: boolean | null
+          location?: string | null
+          phone?: string | null
+          profile_views?: number | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          domain?: string | null
           fullname?: string | null
+          headline?: string | null
           id?: string
+          is_verified?: boolean | null
+          location?: string | null
+          phone?: string | null
+          profile_views?: number | null
           updated_at?: string
           username?: string | null
         }
