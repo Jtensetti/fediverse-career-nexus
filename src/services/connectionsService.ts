@@ -77,7 +77,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
       
       // Try to get the profile either as an array or as an object
       let profile;
-      if (typeof connection.connected_profile === 'object' && connection.connected_profile !== null) {
+      if (connection.connected_profile !== null) {
         if (Array.isArray(connection.connected_profile)) {
           profile = connection.connected_profile.length > 0 ? connection.connected_profile[0] : null;
         } else {
@@ -112,7 +112,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
       
       // Try to get the profile either as an array or as an object
       let profile;
-      if (typeof connection.user_profile === 'object' && connection.user_profile !== null) {
+      if (connection.user_profile !== null) {
         if (Array.isArray(connection.user_profile)) {
           profile = connection.user_profile.length > 0 ? connection.user_profile[0] : null;
         } else {
