@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { corsHeaders } from "../middleware/validate.ts";
-import { createLogger } from "../middleware/logger.ts";
+import { createLogger, logRequest, logResponse } from "../middleware/logger.ts";
 
 const logger = createLogger("healthz");
 
@@ -31,8 +31,15 @@ interface HealthCheckResult {
 }
 
 serve(async (req) => {
-  // Set CORS headers
-  const headers = { ...corsHeaders, "Content-Type": "application/json" };
+  // Generate a unique trace ID for this request
+  const traceId = crypto.randomUUID();
+  
+  // Set CORS headers and add trace ID
+  const headers = { 
+    ...corsHeaders, 
+    "Content-Type": "application/json",
+    "X-Trace-ID": traceId 
+  };
 
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -58,7 +65,7 @@ serve(async (req) => {
   };
   
   try {
-    logger.debug("Starting health check");
+    logger.debug({ traceId }, "Starting health check");
     
     // Check 1: Database connectivity - use a simple query to test
     try {
@@ -77,9 +84,9 @@ serve(async (req) => {
         message: latency < 500 ? "Database responding normally" : "Database response time slow"
       };
       
-      logger.debug({ latency }, "Database check completed");
+      logger.debug({ latency, traceId }, "Database check completed");
     } catch (error) {
-      logger.error({ error: error.message }, "Database check failed");
+      logger.error({ error: error.message, traceId }, "Database check failed");
       healthCheck.checks.database = {
         status: "fail",
         latency_ms: Math.round(performance.now() - startTime),
@@ -123,7 +130,7 @@ serve(async (req) => {
         message: queueMessage
       };
       
-      logger.debug({ pending_count: totalPending }, "Queue check completed");
+      logger.debug({ pending_count: totalPending, traceId }, "Queue check completed");
       
       // Update overall status if queue is in warning state
       if (queueStatus === "fail" && healthCheck.status === "healthy") {
@@ -133,7 +140,7 @@ serve(async (req) => {
       }
       
     } catch (error) {
-      logger.error({ error: error.message }, "Queue check failed");
+      logger.error({ error: error.message, traceId }, "Queue check failed");
       healthCheck.checks.queue = {
         status: "fail",
         pending_count: 0,
@@ -146,7 +153,8 @@ serve(async (req) => {
     logger.info({ 
       health_status: healthCheck.status,
       db_status: healthCheck.checks.database.status,
-      queue_status: healthCheck.checks.queue.status
+      queue_status: healthCheck.checks.queue.status,
+      traceId
     }, "Health check completed");
     
     // Return appropriate HTTP status code based on health status
@@ -163,13 +171,14 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    logger.error({ error: error.message, stack: error.stack }, "Health check failed");
+    logger.error({ error: error.message, stack: error.stack, traceId }, "Health check failed");
     
     return new Response(
       JSON.stringify({
         status: "unhealthy",
         timestamp: new Date().toISOString(),
-        error: error.message
+        message: "Internal server error",
+        traceId
       }),
       { 
         status: 500,

@@ -64,6 +64,7 @@ export function createLogger(context = "general", requestId?: string) {
         tags: {
           environment,
           context,
+          requestId,
         },
       };
       
@@ -96,9 +97,11 @@ export function createLogger(context = "general", requestId?: string) {
  * Helper function to create a request-scoped logger with unique request ID
  */
 export function createRequestLogger(req: Request, context: string) {
-  // Generate unique request ID if not present
-  const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
-  return createLogger(context, requestId);
+  // Get trace ID from headers or generate a new one
+  const traceId = req.headers.get("x-trace-id") || 
+                 req.headers.get("x-request-id") || 
+                 crypto.randomUUID();
+  return createLogger(context, traceId);
 }
 
 /**
@@ -125,4 +128,15 @@ export function logResponse(logger: any, status: number, startTime: number) {
     status,
     processingTime: `${processingTime.toFixed(2)}ms`,
   }, `Response: ${status} (${processingTime.toFixed(2)}ms)`);
+}
+
+/**
+ * Standardized error response generator with trace ID
+ */
+export function createErrorResponse(error: any, traceId: string, status = 500) {
+  return {
+    error: "Internal server error",
+    traceId,
+    status
+  };
 }

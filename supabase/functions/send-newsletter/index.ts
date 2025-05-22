@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createLogger } from "../middleware/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,22 +10,39 @@ const corsHeaders = {
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  // Generate a unique trace ID for this request
+  const traceId = crypto.randomUUID();
+  const logger = createLogger("send-newsletter", traceId);
+  
+  // Add trace ID to headers
+  const headers = {
+    ...corsHeaders,
+    "X-Trace-ID": traceId,
+    "Content-Type": "application/json"
+  };
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers });
   }
 
   try {
+    logger.debug({ traceId }, "Processing newsletter request");
+    
     // Get the RESEND_API_KEY from environment variables
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     
     if (!resendApiKey) {
-      console.error("RESEND_API_KEY environment variable not set");
+      logger.error({ traceId }, "RESEND_API_KEY environment variable not set");
       return new Response(
-        JSON.stringify({ error: "Server configuration error: Missing API key" }),
+        JSON.stringify({ 
+          error: "Server configuration error", 
+          message: "Missing API key",
+          traceId 
+        }),
         {
           status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers
         }
       );
     }
@@ -34,27 +52,34 @@ const handler = async (req: Request): Promise<Response> => {
     
     // For demonstration purposes, we'll return information about the configuration
     // In a real implementation, this would contain the newsletter sending logic
+    logger.info({ configured: true, traceId }, "Newsletter sending endpoint is configured properly");
     
     return new Response(
       JSON.stringify({
-        message: "Newsletter sending endpoint ready. API key configured properly.",
-        configured: true
+        message: "Newsletter sending endpoint ready",
+        configured: true,
+        traceId
       }),
       {
         status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
+        headers
       }
     );
-  } catch (error: any) {
-    console.error("Error in send-newsletter function:", error);
+  } catch (error) {
+    logger.error({ 
+      error: error.message, 
+      stack: error.stack,
+      traceId 
+    }, "Error in send-newsletter function");
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: "Internal server error", 
+        traceId 
+      }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers
       }
     );
   }

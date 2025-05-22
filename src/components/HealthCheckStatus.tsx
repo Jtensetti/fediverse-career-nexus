@@ -5,10 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface HealthCheckData {
   status: "healthy" | "degraded" | "unhealthy";
   timestamp: string;
+  traceId?: string;
   checks: {
     database: {
       status: "pass" | "warn" | "fail";
@@ -25,14 +27,24 @@ interface HealthCheckData {
 }
 
 const HealthCheckStatus = () => {
+  const [lastTraceId, setLastTraceId] = useState<string | null>(null);
+
   const { data: healthData, isLoading, error, refetch } = useQuery({
     queryKey: ["healthCheck"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase.functions.invoke("healthz");
+        const { data, error, headers } = await supabase.functions.invoke("healthz");
+        
         if (error) throw new Error(error.message);
+        
+        // Store the trace ID if available from response
+        const traceId = headers?.get("X-Trace-ID") || (data as any)?.traceId;
+        if (traceId) {
+          setLastTraceId(traceId);
+        }
+        
         return data as HealthCheckData;
-      } catch (err) {
+      } catch (err: any) {
         console.error("Health check failed:", err);
         throw err;
       }
@@ -47,10 +59,10 @@ const HealthCheckStatus = () => {
         title: "Health check refreshed",
         description: "The latest system health data has been fetched.",
       });
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: "Failed to refresh health data",
-        description: err.message,
+        description: err.message || "An error occurred",
         variant: "destructive",
       });
     }
@@ -127,6 +139,12 @@ const HealthCheckStatus = () => {
                   {healthData?.checks.queue.pending_count} / {healthData?.checks.queue.max_allowed}
                 </span>
               </div>
+              
+              {lastTraceId && (
+                <div className="pt-2 text-xs text-muted-foreground">
+                  Trace ID: {lastTraceId}
+                </div>
+              )}
             </div>
           </div>
         )}
