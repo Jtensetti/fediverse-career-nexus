@@ -1,5 +1,6 @@
 
-import { pino } from "https://deno.land/x/pino@v4.14.0/mod.ts";
+// Replace the incompatible Pino import with a compatible one
+import { pino } from "https://esm.sh/pino@8.14.1";
 import { pinoLogflare } from "https://esm.sh/pino-logflare@0.4.0";
 
 /**
@@ -38,31 +39,10 @@ export function createLogger(context = "general", requestId?: string) {
 
     return pino({
       ...baseConfig,
-      browser: {
-        transmit: {
-          level: isProduction ? "info" : "debug",
-          send: (level, logEvent) => {
-            // Send log to Logflare
-            const headers = {
-              "X-Logflare-Source": logflareSourceId,
-              "X-API-KEY": logflareApiKey,
-              "Content-Type": "application/json",
-            };
-            
-            // Don't wait for the response as this is background logging
-            fetch("https://api.logflare.app/logs", {
-              method: "POST",
-              headers,
-              body: JSON.stringify({
-                message: logEvent.messages[0],
-                metadata: { ...logEvent.bindings[0], level },
-              }),
-            }).catch(err => {
-              console.error("Failed to send logs to Logflare:", err);
-            });
-          },
-        },
-      },
+      transport: {
+        target: 'pino/transport',
+        options: { destination: stream }
+      }
     });
   } 
   // If Sentry DSN is available, configure Sentry transport
@@ -70,16 +50,7 @@ export function createLogger(context = "general", requestId?: string) {
     console.log(`Configuring logger with Sentry transport for context: ${context}`);
     
     // Initialize Sentry
-    const sentryTransport = {
-      target: "pino/file",
-      options: { destination: 1 },
-      level: isProduction ? "info" : "debug",
-    };
-    
-    const logger = pino({
-      ...baseConfig,
-      transport: sentryTransport,
-    });
+    const logger = pino(baseConfig);
     
     // Add a hook to send errors to Sentry
     const originalError = logger.error;
