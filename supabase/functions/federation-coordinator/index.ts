@@ -1,11 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { validateRequest, corsHeaders } from "../middleware/validate.ts";
 
 // Initialize the Supabase client
 const supabaseClient = createClient(
@@ -15,6 +12,15 @@ const supabaseClient = createClient(
 
 // Number of partitions to coordinate
 const NUM_PARTITIONS = 4;
+
+// Define the schema for the coordinator request
+const coordinatorSchema = z.object({
+  // Make all fields optional since this endpoint doesn't strictly require parameters
+  partition: z.number().int().min(0).max(NUM_PARTITIONS - 1).optional()
+});
+
+// Type inference from the schema
+type CoordinatorRequest = z.infer<typeof coordinatorSchema>;
 
 async function invokeWorker(partition: number) {
   try {
@@ -40,22 +46,8 @@ async function invokeWorker(partition: number) {
   }
 }
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-  
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { 
-        status: 405, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
-  }
-  
+// Handler with validation
+const handleCoordinator = async (req: Request, data: CoordinatorRequest): Promise<Response> => {
   try {
     console.log("Federation coordinator starting");
     
@@ -102,4 +94,7 @@ serve(async (req) => {
       }
     );
   }
-});
+};
+
+// Apply validation middleware
+serve(validateRequest(handleCoordinator, coordinatorSchema));

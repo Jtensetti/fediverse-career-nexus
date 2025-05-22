@@ -1,11 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { validateRequest, corsHeaders } from "../middleware/validate.ts";
 
 // Initialize the Supabase client
 const supabaseClient = createClient(
@@ -13,15 +10,28 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+// Define the schema for analytics requests
+const analyticsSchema = z.object({
+  action: z.enum([
+    "getMetricsByHost",
+    "getTopFailingHosts",
+    "getRateLimitedHosts",
+    "getSummary"
+  ], {
+    required_error: "Action is required",
+    invalid_type_error: "Invalid action type"
+  }),
+  timeframe: z.string().regex(/^\d+h$/, "Timeframe must be in format '24h'").default("24h"),
+  limit: z.number().int().positive().default(10)
+});
 
+// Type inference from the schema
+type AnalyticsRequest = z.infer<typeof analyticsSchema>;
+
+// Handler with validation
+const handleAnalytics = async (req: Request, data: AnalyticsRequest): Promise<Response> => {
   try {
-    // Parse the request
-    const { action, timeframe = '24h', limit = 10 } = await req.json();
+    const { action, timeframe, limit } = data;
     
     // Default time window to 24 hours if not specified
     const windowHours = parseInt(timeframe.replace('h', '')) || 24;
@@ -61,7 +71,7 @@ serve(async (req) => {
       }
     );
   }
-});
+};
 
 async function getMetricsByHost(limit: number) {
   const { data, error } = await supabaseClient
@@ -163,3 +173,6 @@ async function getSummary(windowStart: Date) {
     }
   );
 }
+
+// Apply validation middleware
+serve(validateRequest(handleAnalytics, analyticsSchema));

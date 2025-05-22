@@ -1,31 +1,25 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.37.0"
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-}
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { validateRequest, corsHeaders } from "../middleware/validate.ts";
 
 console.log("Function initialized: create-jitsi-meeting")
 
-serve(async (req) => {
-  // Handle OPTIONS request
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders })
-  }
+// Define the schema for the request body
+const jitsiMeetingSchema = z.object({
+  roomName: z.string().min(1, "Room name is required"),
+  userDisplayName: z.string().optional().default("Participant")
+});
 
+// Type inference from the schema
+type JitsiMeetingRequest = z.infer<typeof jitsiMeetingSchema>;
+
+// Handler with validation
+const handleJitsiMeeting = async (req: Request, data: JitsiMeetingRequest) => {
   try {
-    // Get request body
-    const { roomName, userDisplayName } = await req.json()
-
-    if (!roomName) {
-      return new Response(
-        JSON.stringify({ error: "Room name is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      )
-    }
-
+    const { roomName, userDisplayName } = data;
+    
     // Create Jitsi JWT for secure rooms (optional, can be enabled if needed)
     // This is a simple implementation - in production you might want to use a more secure approach
     const domain = "meet.jit.si" // Default public Jitsi server
@@ -60,7 +54,7 @@ serve(async (req) => {
         TOOLBAR_ALWAYS_VISIBLE: true,
       },
       userInfo: {
-        displayName: userDisplayName || "Participant"
+        displayName: userDisplayName
       }
     }
     
@@ -82,4 +76,7 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     )
   }
-})
+};
+
+// Apply validation middleware
+serve(validateRequest(handleJitsiMeeting, jitsiMeetingSchema));
