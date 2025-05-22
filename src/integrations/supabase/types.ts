@@ -1287,7 +1287,15 @@ export type Database = {
           source: string | null
           type: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       federated_posts_with_moderation: {
         Row: {
@@ -1299,7 +1307,15 @@ export type Database = {
           source: string | null
           type: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       federation_metrics_by_host: {
         Row: {
