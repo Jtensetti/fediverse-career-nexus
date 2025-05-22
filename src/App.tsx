@@ -33,6 +33,7 @@ import ActorOutbox from "./pages/ActorOutbox";
 import ActorInbox from "./pages/ActorInbox";
 import FederatedFeedPage from "./pages/FederatedFeed";
 import AdminInstances from "./pages/AdminInstances";
+import AdminFederationMetrics from "./pages/AdminFederationMetrics";
 import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient({
@@ -83,6 +84,7 @@ const App = () => (
               <Route path="/moderation" element={<Moderation />} />
               <Route path="/feed" element={<FederatedFeedPage />} />
               <Route path="/admin/instances" element={<AdminInstances />} />
+              <Route path="/admin/federation" element={<AdminFederationMetrics />} />
               <Route path="/:username/outbox" element={<ActorOutbox />} />
               <Route path="/:username/inbox" element={<ActorInbox />} />
               <Route path="/:username" element={<ActorProfile />} />
