@@ -5,11 +5,10 @@ import { RefreshCw, Play, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 
 interface QueueStats {
-  queue_name: string;
+  queue_name: number;  // This is actually the partition key number
   pending: number;
   latest: string;
 }
@@ -88,9 +87,9 @@ const ShardedQueueStats = () => {
 
   // Mutation to run the federation worker for a specific queue
   const runWorkerMutation = useMutation({
-    mutationFn: async (queueName: string) => {
+    mutationFn: async (partitionKey: number) => {
       const { data, error } = await supabase.functions.invoke("federation", {
-        body: { queue: queueName }
+        body: { partition: partitionKey }
       });
       
       if (error) throw new Error(error.message);
