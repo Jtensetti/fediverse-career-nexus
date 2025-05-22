@@ -18,7 +18,40 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
+// Log federation request metrics
+async function logRequestMetrics(
+  remoteHost: string, 
+  endpoint: string, 
+  startTime: number, 
+  success: boolean, 
+  statusCode?: number, 
+  errorMessage?: string
+) {
+  const endTime = performance.now();
+  const responseTimeMs = Math.round(endTime - startTime);
+  
+  try {
+    await supabaseClient
+      .from("federation_request_logs")
+      .insert({
+        remote_host: remoteHost,
+        endpoint,
+        success,
+        response_time_ms: responseTimeMs,
+        status_code: statusCode,
+        error_message: errorMessage
+      });
+  } catch (error) {
+    console.error("Failed to log request metrics:", error);
+    // Non-blocking - we don't want metrics logging to break functionality
+  }
+}
+
 serve(async (req) => {
+  // Start measuring request time
+  const startTime = performance.now();
+  const remoteHost = new URL(req.url).hostname;
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -30,6 +63,7 @@ serve(async (req) => {
     const resource = url.searchParams.get("resource");
 
     if (!resource) {
+      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 400, "Missing resource parameter");
       return new Response(
         JSON.stringify({ error: "Resource parameter is required" }),
         {
@@ -42,6 +76,7 @@ serve(async (req) => {
     // WebFinger typically uses acct:username@domain.com format
     const acctMatch = resource.match(/^acct:(.+)@(.+)$/);
     if (!acctMatch) {
+      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 400, "Invalid resource format");
       return new Response(
         JSON.stringify({ error: "Invalid resource format. Expected acct:username@domain.com" }),
         {
@@ -80,6 +115,7 @@ serve(async (req) => {
             ]
           };
           
+          await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
           return new Response(
             JSON.stringify(webfingerResponse),
             {
@@ -92,6 +128,7 @@ serve(async (req) => {
       }
       
       // Not found in our cache, return domain mismatch error
+      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 404, "Domain mismatch");
       return new Response(
         JSON.stringify({ error: "Domain does not match" }),
         {
@@ -107,6 +144,7 @@ serve(async (req) => {
     
     if (cachedResponse.value) {
       console.log(`Cache hit for ${username}`);
+      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
       return new Response(
         JSON.stringify(cachedResponse.value),
         {
@@ -126,6 +164,7 @@ serve(async (req) => {
 
     if (error || !profile) {
       console.error("Error fetching profile:", error);
+      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 404, "User not found");
       return new Response(
         JSON.stringify({ error: "User not found" }),
         {
@@ -161,6 +200,7 @@ serve(async (req) => {
       // Store in KV cache
       await kv.set(cacheKey, webfingerResponse, { expireIn: CACHE_TTL });
       
+      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
       return new Response(
         JSON.stringify(webfingerResponse),
         {
@@ -179,6 +219,7 @@ serve(async (req) => {
 
     if (actorError || !actorObject) {
       console.error("Actor not found:", actorError);
+      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 404, "Actor not found");
       return new Response(
         JSON.stringify({ error: "Actor not found" }),
         {
@@ -217,6 +258,7 @@ serve(async (req) => {
       // Non-fatal error, continue
     }
 
+    await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
     return new Response(
       JSON.stringify(webfingerResponse),
       {
@@ -225,6 +267,7 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error processing WebFinger request:", error);
+    await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 500, error.message);
     return new Response(
       JSON.stringify({ error: "Internal Server Error" }),
       {

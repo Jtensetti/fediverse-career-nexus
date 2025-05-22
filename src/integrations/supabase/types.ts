@@ -762,6 +762,39 @@ export type Database = {
         }
         Relationships: []
       }
+      federation_request_logs: {
+        Row: {
+          endpoint: string
+          error_message: string | null
+          id: string
+          remote_host: string
+          response_time_ms: number
+          status_code: number | null
+          success: boolean
+          timestamp: string
+        }
+        Insert: {
+          endpoint: string
+          error_message?: string | null
+          id?: string
+          remote_host: string
+          response_time_ms: number
+          status_code?: number | null
+          success: boolean
+          timestamp?: string
+        }
+        Update: {
+          endpoint?: string
+          error_message?: string | null
+          id?: string
+          remote_host?: string
+          response_time_ms?: number
+          status_code?: number | null
+          success?: boolean
+          timestamp?: string
+        }
+        Relationships: []
+      }
       follower_batches: {
         Row: {
           activity: Json
@@ -1211,6 +1244,16 @@ export type Database = {
         }
         Relationships: []
       }
+      federation_metrics_by_host: {
+        Row: {
+          failed_requests: number | null
+          median_latency_ms: number | null
+          remote_host: string | null
+          success_percent: number | null
+          total_requests: number | null
+        }
+        Relationships: []
+      }
       follower_batch_stats: {
         Row: {
           failed_count: number | null
@@ -1269,6 +1312,14 @@ export type Database = {
           processing_count: number
           failed_count: number
           processed_count: number
+        }[]
+      }
+      get_rate_limited_hosts: {
+        Args: { window_start: string; request_threshold: number }
+        Returns: {
+          remote_host: string
+          request_count: number
+          latest_request: string
         }[]
       }
       handle_inbox_event: {

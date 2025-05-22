@@ -9,6 +9,35 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
+// Log federation request metrics
+async function logRequestMetrics(
+  remoteHost: string, 
+  endpoint: string, 
+  startTime: number, 
+  success: boolean, 
+  statusCode?: number, 
+  errorMessage?: string
+) {
+  const endTime = performance.now();
+  const responseTimeMs = Math.round(endTime - startTime);
+  
+  try {
+    await supabaseClient
+      .from("federation_request_logs")
+      .insert({
+        remote_host: remoteHost,
+        endpoint,
+        success,
+        response_time_ms: responseTimeMs,
+        status_code: statusCode,
+        error_message: errorMessage
+      });
+  } catch (error) {
+    console.error("Failed to log request metrics:", error);
+    // Non-blocking - we don't want metrics logging to break functionality
+  }
+}
+
 async function processQueueItem(item: any) {
   console.log(`Processing queue item ${item.id}`);
   
@@ -72,9 +101,13 @@ async function processQueueItem(item: any) {
     // For each recipient, deliver the activity
     const deliveryPromises = recipients.map(async (recipient) => {
       try {
+        // Start timing the request
+        const startTime = performance.now();
+        
         // For simplicity, assume recipient is an actor URL
         // In a real implementation, we'd need to look up the inbox URL
         const inboxUrl = `${recipient}/inbox`;
+        const remoteHost = new URL(inboxUrl).hostname;
         const origin = new URL(Deno.env.get("SUPABASE_URL") ?? "").origin;
         const keyId = `${origin}/${actor.preferred_username}#main-key`;
         
@@ -107,6 +140,16 @@ async function processQueueItem(item: any) {
           body: body
         });
         
+        // Log the metrics regardless of success
+        await logRequestMetrics(
+          remoteHost, 
+          "/inbox", 
+          startTime, 
+          response.ok, 
+          response.status, 
+          response.ok ? undefined : `HTTP ${response.status}`
+        );
+        
         // Check response
         if (!response.ok) {
           const responseText = await response.text();
@@ -117,6 +160,22 @@ async function processQueueItem(item: any) {
         return true;
       } catch (error) {
         console.error(`Error delivering to ${recipient}:`, error);
+        
+        // Try to extract host for metrics logging on failure
+        try {
+          const remoteHost = new URL(recipient).hostname;
+          await logRequestMetrics(
+            remoteHost, 
+            "/inbox", 
+            performance.now() - 100, // Estimate start time since we don't have it at this point
+            false, 
+            0, 
+            error.message
+          );
+        } catch (logError) {
+          console.error("Error logging metrics on failure:", logError);
+        }
+        
         return false;
       }
     });
