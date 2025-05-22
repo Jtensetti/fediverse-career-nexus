@@ -76,9 +76,14 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
       }
       
       // Try to get the profile either as an array or as an object
-      const profile = Array.isArray(connection.connected_profile) 
-        ? connection.connected_profile[0] 
-        : connection.connected_profile;
+      let profile;
+      if (typeof connection.connected_profile === 'object' && connection.connected_profile !== null) {
+        if (Array.isArray(connection.connected_profile)) {
+          profile = connection.connected_profile.length > 0 ? connection.connected_profile[0] : null;
+        } else {
+          profile = connection.connected_profile;
+        }
+      }
       
       if (!profile) {
         console.warn("Connected profile data is invalid for connection:", connection.id);
@@ -106,9 +111,14 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
       }
       
       // Try to get the profile either as an array or as an object
-      const profile = Array.isArray(connection.user_profile) 
-        ? connection.user_profile[0] 
-        : connection.user_profile;
+      let profile;
+      if (typeof connection.user_profile === 'object' && connection.user_profile !== null) {
+        if (Array.isArray(connection.user_profile)) {
+          profile = connection.user_profile.length > 0 ? connection.user_profile[0] : null;
+        } else {
+          profile = connection.user_profile;
+        }
+      }
       
       if (!profile) {
         console.warn("User profile data is invalid for reverse connection:", connection.id);
