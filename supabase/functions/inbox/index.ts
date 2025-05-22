@@ -11,8 +11,14 @@ const corsHeaders = {
 
 // Function to check if a host has exceeded rate limits
 async function checkRateLimit(remoteHost: string, requestLimit: number = 30, windowMinutes: number = 10): Promise<boolean> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    return false; // Allow the request but log the error
+  }
+  
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   // Get current timestamp and the timestamp for start of window
@@ -62,8 +68,14 @@ async function checkRateLimit(remoteHost: string, requestLimit: number = 30, win
 // Function to fetch public key from remote host or local DB with improved caching
 async function getPublicKey(keyId: string): Promise<string> {
   // Initialize Supabase client
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    throw new Error("Server configuration error");
+  }
+  
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   // Check if we have a non-expired cached key
@@ -142,7 +154,7 @@ Deno.serve(async (req) => {
     return new Response(null, {
       status: 204,
       headers: corsHeaders,
-    })
+    });
   }
 
   // Only allow POST requests
@@ -150,7 +162,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    });
   }
 
   try {
@@ -211,39 +223,47 @@ Deno.serve(async (req) => {
     }
     
     // Parse the request body
-    const body = await req.json()
+    const body = await req.json();
     
     // Basic validation
     if (!body || !body.type || !body.actor) {
       return new Response(JSON.stringify({ error: 'Invalid ActivityPub object' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      });
     }
 
     // Determine the recipient
-    // In a real implementation, extract from path params or headers
-    const path = new URL(req.url).pathname
-    const username = path.split('/').pop()
+    const path = new URL(req.url).pathname;
+    const username = path.split('/').pop();
     
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing required environment variables: SUPABASE_URL or SUPABASE_ANON_KEY");
+      return new Response(JSON.stringify({ error: "Server configuration error" }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Find the recipient actor
     const { data: actorData, error: actorError } = await supabase
       .from('actors')
       .select('id')
       .eq('preferred_username', username)
-      .single()
+      .single();
 
     if (actorError || !actorData) {
-      console.error('Error finding recipient actor:', actorError)
+      console.error('Error finding recipient actor:', actorError);
       return new Response(JSON.stringify({ error: 'Recipient not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      });
     }
     
     // Store the activity in the inbox_events table
@@ -255,14 +275,14 @@ Deno.serve(async (req) => {
         sender: body.actor,
         signature_verified: true, // We've verified the signature by this point
       })
-      .select()
+      .select();
 
     if (error) {
-      console.error('Error storing inbox event:', error)
+      console.error('Error storing inbox event:', error);
       return new Response(JSON.stringify({ error: 'Failed to process activity' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      });
     }
 
     // Return success response
@@ -273,12 +293,12 @@ Deno.serve(async (req) => {
     }), {
       status: 202,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    });
   } catch (err) {
-    console.error('Error processing request:', err)
+    console.error('Error processing request:', err);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    });
   }
-})
+});
