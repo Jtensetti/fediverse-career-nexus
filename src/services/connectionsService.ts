@@ -29,7 +29,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
-    // Query connections with better join structure
+    // First, fetch connections where the user is the initiator
     const { data: connections, error } = await supabase
       .from("user_connections")
       .select(`
@@ -38,7 +38,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         created_at,
         user_id,
         connected_user_id,
-        connected_profile:profiles!user_connections_connected_user_id_fkey (id, username, fullname, headline, avatar_url, is_verified)
+        connected_profile:profiles(id, username, fullname, headline, avatar_url, is_verified)
       `)
       .eq("user_id", user.id)
       .eq("status", "accepted");
@@ -48,7 +48,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
       return [];
     }
 
-    // Get connections where the user is the connected_user_id
+    // Get connections where the user is the receiver
     const { data: reverseConnections, error: reverseError } = await supabase
       .from("user_connections")
       .select(`
@@ -57,7 +57,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         created_at,
         user_id,
         connected_user_id,
-        user_profile:profiles!user_connections_user_id_fkey (id, username, fullname, headline, avatar_url, is_verified)
+        user_profile:profiles(id, username, fullname, headline, avatar_url, is_verified)
       `)
       .eq("connected_user_id", user.id)
       .eq("status", "accepted");
@@ -67,8 +67,11 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
       return [];
     }
 
+    // Process regular connections (where user is the initiator)
     const normalizedConnections = connections?.map(connection => {
-      const profile = connection.connected_profile;
+      // Make sure connected_profile exists and has required data
+      const profile = connection.connected_profile?.[0] || null;
+      
       return {
         id: connection.id,
         username: profile?.username || "",
@@ -77,12 +80,15 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         avatarUrl: profile?.avatar_url || "",
         connectionDegree: 1 as ConnectionDegree,
         isVerified: profile?.is_verified || false,
-        mutualConnections: 0, // To be calculated if needed
+        mutualConnections: 0, 
       };
     }) || [];
 
+    // Process reverse connections (where user is the receiver)
     const normalizedReverseConnections = reverseConnections?.map(connection => {
-      const profile = connection.user_profile;
+      // Make sure user_profile exists and has required data
+      const profile = connection.user_profile?.[0] || null;
+      
       return {
         id: connection.id,
         username: profile?.username || "",
@@ -91,7 +97,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         avatarUrl: profile?.avatar_url || "",
         connectionDegree: 1 as ConnectionDegree,
         isVerified: profile?.is_verified || false,
-        mutualConnections: 0, // To be calculated if needed
+        mutualConnections: 0,
       };
     }) || [];
 
