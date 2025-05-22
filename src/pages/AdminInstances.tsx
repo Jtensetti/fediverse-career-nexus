@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RemoteInstancesTable from "@/components/RemoteInstancesTable";
 import ShardedQueueStats from "@/components/ShardedQueueStats";
+import HealthCheckStatus from "@/components/HealthCheckStatus";
 import { supabase } from "@/integrations/supabase/client";
 
 const AdminInstances = () => {
@@ -92,6 +93,11 @@ const AdminInstances = () => {
         <p className="text-muted-foreground">
           Monitor and manage remote federated instances
         </p>
+      </div>
+
+      {/* Add HealthCheckStatus at the top for visibility */}
+      <div className="mb-8">
+        <HealthCheckStatus />
       </div>
 
       <Tabs defaultValue="instances" className="w-full">

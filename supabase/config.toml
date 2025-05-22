@@ -47,3 +47,6 @@ port = 54328
 
 [functions]
 enabled = true
+
+[functions.healthz]
+verify_jwt = false
