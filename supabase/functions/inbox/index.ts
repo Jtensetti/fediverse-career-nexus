@@ -149,6 +149,41 @@ function extractRemoteHost(url: string): string {
   }
 }
 
+// Log the signature verification result
+async function logSignatureVerification(
+  remoteHost: string, 
+  keyId: string, 
+  success: boolean, 
+  error?: string
+): Promise<void> {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing required environment variables for logging");
+      return;
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    await supabase
+      .from('federation_request_logs')
+      .insert({
+        remote_host: remoteHost,
+        endpoint: 'inbox',
+        success: success,
+        status_code: success ? 202 : 401,
+        error_message: error || null,
+        response_time_ms: 0  // We don't measure response time for verification logs
+      });
+      
+  } catch (logError) {
+    console.error('Error logging signature verification:', logError);
+    // Non-blocking - continue even if logging fails
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -167,15 +202,17 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Extract the remote host for rate limiting
+    // Extract the remote host for rate limiting and logging
     let remoteHost = "";
+    let keyId = "";
     
     // Try to get host from signature keyId first
     try {
-      const { keyId } = parseSigHeader(req);
+      const sigInfo = parseSigHeader(req);
+      keyId = sigInfo.keyId;
       remoteHost = extractRemoteHost(keyId);
     } catch (sigError) {
-      // If that fails, use the request's origin or fallback
+      // If signature parsing fails, use fallback methods
       const origin = req.headers.get('origin');
       if (origin) {
         remoteHost = extractRemoteHost(origin);
@@ -183,6 +220,21 @@ Deno.serve(async (req) => {
         // Last resort: use the host header
         remoteHost = req.headers.get('host') || "unknown-host";
       }
+      
+      console.error(`Signature parsing failed from ${remoteHost}:`, sigError);
+      
+      // Log the failed signature and return 401
+      await logSignatureVerification(
+        remoteHost,
+        keyId || "unknown",
+        false,
+        `Invalid signature format: ${sigError.message}`
+      );
+      
+      return new Response(JSON.stringify({ error: 'Invalid signature format' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
     
     // Check rate limiting before processing the request
@@ -199,28 +251,53 @@ Deno.serve(async (req) => {
       });
     }
     
-    // Verify HTTP signature using the simplified approach
+    // Verify HTTP signature - STRICT VALIDATION
+    let signatureIsValid = false;
     try {
-      const { keyId } = parseSigHeader(req);
       const pem = await getPublicKey(keyId);
-      const ok = verifySignature({
+      
+      // Use http-signature's verifySignature function
+      const isValid = verifySignature({
         headers: req.headers,
         method: req.method,
         url: new URL(req.url).pathname,
         publicKey: pem
       });
       
-      if (!ok) {
+      if (!isValid) {
+        await logSignatureVerification(
+          remoteHost,
+          keyId,
+          false,
+          "Invalid signature (verification failed)"
+        );
+        
         return new Response(JSON.stringify({ error: 'Invalid signature' }), {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       
+      signatureIsValid = true;
       console.log('Signature verification successful for keyId:', keyId);
+      await logSignatureVerification(remoteHost, keyId, true);
     } catch (sigError) {
       console.error('Signature verification error:', sigError);
-      // Continue processing even if signature fails, but log it
+      
+      await logSignatureVerification(
+        remoteHost,
+        keyId,
+        false,
+        `Signature verification error: ${sigError.message}`
+      );
+      
+      return new Response(JSON.stringify({ 
+        error: 'Signature verification failed', 
+        details: sigError.message 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
     
     // Parse the request body
@@ -274,7 +351,7 @@ Deno.serve(async (req) => {
         activity: body,
         recipient_id: actorData.id,
         sender: body.actor,
-        signature_verified: true, // We've verified the signature by this point
+        signature_verified: signatureIsValid, // Set based on verification result
       })
       .select();
 
@@ -290,7 +367,7 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ 
       success: true, 
       message: 'Activity accepted',
-      signature_valid: true
+      signature_valid: signatureIsValid
     }), {
       status: 202,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
