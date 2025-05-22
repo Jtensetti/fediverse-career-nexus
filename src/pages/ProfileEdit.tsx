@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Button } from "@/components/ui/button";
@@ -22,14 +21,16 @@ import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Briefcase, School, Star, Trash, Plus, Settings, ShieldCheck } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Briefcase, School, Star, Trash, Plus, Settings } from "lucide-react";
+import ProfileImageUpload from "@/components/ProfileImageUpload";
+import { getCurrentUserProfile } from "@/services/profileService";
+import { updateUserProfile, ProfileUpdateData } from "@/services/profileEditService";
 import NetworkVisibilityToggle from "@/components/NetworkVisibilityToggle";
 import ProfileVisitsToggle from "@/components/ProfileVisitsToggle";
 import VerificationBadge from "@/components/VerificationBadge";
 import VerificationRequest from "@/components/VerificationRequest";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 import { 
   getUserExperiences, 
   createExperience, 
@@ -52,18 +53,17 @@ const profileSchema = z.object({
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
   headline: z.string().min(5, "Headline must be at least 5 characters"),
   bio: z.string().optional(),
-  email: z.string().email("Please enter a valid email"),
+  email: z.string().email("Please enter a valid email").optional(),
   phone: z.string().optional(),
   location: z.string().optional()
 });
 
-// Import mock data temporarily
-import { mockUserProfile } from "@/data/mockData";
-
 const ProfileEditPage = () => {
-  const { username } = useParams();
-  const [profile, setProfile] = useState(mockUserProfile);
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   
   // State for experiences, education, and skills
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -72,72 +72,126 @@ const ProfileEditPage = () => {
   const [newSkill, setNewSkill] = useState("");
   
   const [isLoading, setIsLoading] = useState({
+    profile: true,
     experiences: false,
     education: false,
-    skills: false
+    skills: false,
+    saving: false
   });
 
   // Form for basic profile information
-  const form = useForm({
+  const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      displayName: profile.displayName,
-      headline: profile.headline,
-      bio: profile.bio,
-      email: profile.contact.email,
-      phone: profile.contact.phone,
-      location: profile.contact.location
+      displayName: "",
+      headline: "",
+      bio: "",
+      email: "",
+      phone: "",
+      location: ""
     }
   });
 
-  // Get current user
+  // Get current user and profile data
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(prev => ({ ...prev, profile: true }));
+        
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUserId(user.id);
+          
+          // Get user profile
+          const userProfile = await getCurrentUserProfile();
+          if (userProfile) {
+            setProfile(userProfile);
+            setAvatarUrl(userProfile.avatarUrl);
+            
+            // Initialize the form with data
+            form.reset({
+              displayName: userProfile.displayName || "",
+              headline: userProfile.headline || "",
+              bio: userProfile.bio || "",
+              email: userProfile.contact?.email || "",
+              phone: userProfile.contact?.phone || "",
+              location: userProfile.contact?.location || ""
+            });
+            
+            // Fetch CV data
+            await fetchCVData();
+          }
+        } else {
+          toast.error("You must be logged in to edit your profile");
+          navigate("/auth/login");
+        }
+      } catch (error) {
+        console.error("Error loading profile:", error);
+        toast.error("Failed to load profile");
+      } finally {
+        setIsLoading(prev => ({ ...prev, profile: false }));
+        setLoading(false);
       }
     };
     
-    getCurrentUser();
-  }, []);
-
-  // Fetch user data
-  useEffect(() => {
-    const fetchUserData = async () => {
-      setIsLoading(prev => ({ ...prev, experiences: true }));
-      const userExperiences = await getUserExperiences();
-      setExperiences(userExperiences);
-      setIsLoading(prev => ({ ...prev, experiences: false }));
-      
-      setIsLoading(prev => ({ ...prev, education: true }));
-      const userEducation = await getUserEducation();
-      setEducation(userEducation);
-      setIsLoading(prev => ({ ...prev, education: false }));
-      
-      setIsLoading(prev => ({ ...prev, skills: true }));
-      const userSkills = await getUserSkills();
-      setSkills(userSkills);
-      setIsLoading(prev => ({ ...prev, skills: false }));
-    };
-    
     fetchUserData();
-  }, []);
+  }, [navigate]);
 
-  const onSubmit = (data) => {
-    console.log("Form submitted:", data);
-    // Here you would typically send the data to your API
-    // and update the profile state
+  const fetchCVData = async () => {
+    // Fetch experiences
+    setIsLoading(prev => ({ ...prev, experiences: true }));
+    const userExperiences = await getUserExperiences();
+    setExperiences(userExperiences);
+    setIsLoading(prev => ({ ...prev, experiences: false }));
+    
+    // Fetch education
+    setIsLoading(prev => ({ ...prev, education: true }));
+    const userEducation = await getUserEducation();
+    setEducation(userEducation);
+    setIsLoading(prev => ({ ...prev, education: false }));
+    
+    // Fetch skills
+    setIsLoading(prev => ({ ...prev, skills: true }));
+    const userSkills = await getUserSkills();
+    setSkills(userSkills);
+    setIsLoading(prev => ({ ...prev, skills: false }));
+  };
+
+  const onSubmit = async (data: z.infer<typeof profileSchema>) => {
+    try {
+      setIsLoading(prev => ({ ...prev, saving: true }));
+      
+      const profileData: ProfileUpdateData = {
+        fullname: data.displayName,
+        headline: data.headline,
+        bio: data.bio,
+        phone: data.phone,
+        location: data.location
+      };
+      
+      const success = await updateUserProfile(profileData);
+      
+      if (success) {
+        toast.success("Profile updated successfully");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    } finally {
+      setIsLoading(prev => ({ ...prev, saving: false }));
+    }
+  };
+
+  // Handle avatar upload completion
+  const handleAvatarUploaded = (url: string) => {
+    setAvatarUrl(url);
   };
 
   // Experience handlers
   const addExperience = () => {
     if (!userId) {
-      toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "You need to be signed in to add an experience."
-      });
+      toast.error("You need to be signed in to add experience");
       return;
     }
     
@@ -181,11 +235,7 @@ const ProfileEditPage = () => {
     
     if (!exp.title || !exp.company || !exp.start_date) {
       // Show validation error
-      toast({
-        variant: "destructive",
-        title: "Missing information",
-        description: "Please fill in all required fields (title, company, and start date)."
-      });
+      toast.error("Please fill in all required fields (title, company, and start date)");
       return;
     }
     
@@ -215,11 +265,7 @@ const ProfileEditPage = () => {
   // Education handlers
   const addEducation = () => {
     if (!userId) {
-      toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "You need to be signed in to add education."
-      });
+      toast.error("You need to be signed in to add education");
       return;
     }
     
@@ -262,11 +308,7 @@ const ProfileEditPage = () => {
     
     if (!edu.institution || !edu.degree || !edu.field || !edu.start_year) {
       // Show validation error
-      toast({
-        variant: "destructive",
-        title: "Missing information",
-        description: "Please fill in all required fields (institution, degree, field of study, and start year)."
-      });
+      toast.error("Please fill in all required fields (institution, degree, field of study, and start year)");
       return;
     }
     
@@ -296,11 +338,7 @@ const ProfileEditPage = () => {
   // Skills handlers
   const addSkill = async () => {
     if (!userId) {
-      toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "You need to be signed in to add a skill."
-      });
+      toast.error("You need to be signed in to add a skill");
       return;
     }
     
@@ -325,6 +363,21 @@ const ProfileEditPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Navbar />
+        <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-8 w-64 bg-gray-200 rounded mb-6"></div>
+            <div className="h-64 w-full max-w-2xl bg-gray-100 rounded"></div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -347,110 +400,125 @@ const ProfileEditPage = () => {
                 <CardTitle>Personal Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="displayName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Display Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="headline"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Professional Headline</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your professional headline" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            A short description of your current role or expertise
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="bio"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Bio</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Tell us about yourself" 
-                              className="min-h-32" 
-                              {...field} 
+                <div className="flex flex-col sm:flex-row gap-8 mb-6">
+                  <ProfileImageUpload 
+                    currentImageUrl={avatarUrl} 
+                    displayName={profile?.displayName}
+                    onImageUploaded={handleAvatarUploaded}
+                  />
+                  
+                  <div className="flex-1">
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <FormField
+                          control={form.control}
+                          name="displayName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Display Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Your name" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="headline"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Professional Headline</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Your professional headline" {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                A short description of your current role or expertise
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="bio"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Bio</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Tell us about yourself" 
+                                  className="min-h-32" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <div className="pt-4">
+                          <h3 className="text-lg font-medium mb-4">Contact Information</h3>
+                          
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="email"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Email</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="your.email@example.com" {...field} disabled />
+                                  </FormControl>
+                                  <FormDescription>Email cannot be changed here</FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
                             />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="pt-4">
-                      <h3 className="text-lg font-medium mb-4">Contact Information</h3>
-                      
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl>
-                                <Input placeholder="your.email@example.com" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                            
+                            <FormField
+                              control={form.control}
+                              name="phone"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Phone</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="+1 (555) 123-4567" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="location"
+                              render={({ field }) => (
+                                <FormItem className="md:col-span-2">
+                                  <FormLabel>Location</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="City, Country" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
                         
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Phone</FormLabel>
-                              <FormControl>
-                                <Input placeholder="+1 (555) 123-4567" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="location"
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel>Location</FormLabel>
-                              <FormControl>
-                                <Input placeholder="City, Country" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    
-                    <Button type="submit" className="bg-bondy-primary hover:bg-bondy-primary/90">
-                      Save Changes
-                    </Button>
-                  </form>
-                </Form>
+                        <Button 
+                          type="submit" 
+                          className="bg-bondy-primary hover:bg-bondy-primary/90"
+                          disabled={isLoading.saving}
+                        >
+                          {isLoading.saving ? "Saving..." : "Save Changes"}
+                        </Button>
+                      </form>
+                    </Form>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
