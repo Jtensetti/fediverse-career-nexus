@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.37.0"
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { validateRequest, corsHeaders } from "../middleware/validate.ts";
+import { createRequestLogger, logRequest, logResponse } from "../middleware/logger.ts";
 
 console.log("Function initialized: create-jitsi-meeting")
 
@@ -17,8 +18,15 @@ type JitsiMeetingRequest = z.infer<typeof jitsiMeetingSchema>;
 
 // Handler with validation
 const handleJitsiMeeting = async (req: Request, data: JitsiMeetingRequest) => {
+  const startTime = performance.now();
+  const logger = createRequestLogger(req, "jitsi-meeting");
+  
+  logRequest(logger, req);
+  
   try {
     const { roomName, userDisplayName } = data;
+    
+    logger.debug({ roomName, userDisplayName }, "Processing meeting creation request");
     
     // Create Jitsi JWT for secure rooms (optional, can be enabled if needed)
     // This is a simple implementation - in production you might want to use a more secure approach
@@ -58,23 +66,30 @@ const handleJitsiMeeting = async (req: Request, data: JitsiMeetingRequest) => {
       }
     }
     
-    console.log(`Created Jitsi meeting: ${meetingUrl}`)
+    logger.info({ meetingUrl, meetingId }, "Created Jitsi meeting");
+    
+    const responseBody = {
+      meetingUrl,
+      config,
+      domain,
+      roomName: meetingId
+    };
+
+    logResponse(logger, 200, startTime);
     
     return new Response(
-      JSON.stringify({ 
-        meetingUrl,
-        config,
-        domain,
-        roomName: meetingId
-      }),
+      JSON.stringify(responseBody),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    )
+    );
   } catch (error) {
-    console.error("Error creating Jitsi meeting:", error)
+    logger.error({ error: error.message, stack: error.stack }, "Error creating Jitsi meeting");
+    
+    logResponse(logger, 500, startTime);
+    
     return new Response(
       JSON.stringify({ error: "Failed to create meeting" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    )
+    );
   }
 };
 

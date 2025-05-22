@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { validateRequest, corsHeaders } from "../middleware/validate.ts";
+import { createRequestLogger, logRequest, logResponse } from "../middleware/logger.ts";
 
 // Initialize the Supabase client
 const supabaseClient = createClient(
@@ -22,12 +23,22 @@ const coordinatorSchema = z.object({
 // Type inference from the schema
 type CoordinatorRequest = z.infer<typeof coordinatorSchema>;
 
-async function invokeWorker(partition: number) {
+async function invokeWorker(partition: number, logger: any) {
   try {
-    console.log(`Invoking worker for partition ${partition}`);
+    logger.debug({ partition }, `Invoking worker for partition ${partition}`);
+    
     const response = await supabaseClient.functions.invoke("federation", {
       body: { partition }
     });
+    
+    if (response.error) {
+      logger.error({ partition, error: response.error.message }, `Error invoking worker for partition ${partition}`);
+    } else {
+      logger.info(
+        { partition, itemsProcessed: response.data?.itemsCount || 0 }, 
+        `Worker completed for partition ${partition}`
+      );
+    }
     
     return {
       partition,
@@ -36,7 +47,11 @@ async function invokeWorker(partition: number) {
       itemsProcessed: response.data?.itemsCount || 0
     };
   } catch (error) {
-    console.error(`Error invoking worker for partition ${partition}:`, error);
+    logger.error(
+      { partition, error: error.message, stack: error.stack }, 
+      `Error invoking worker for partition ${partition}`
+    );
+    
     return {
       partition,
       success: false,
@@ -48,8 +63,13 @@ async function invokeWorker(partition: number) {
 
 // Handler with validation
 const handleCoordinator = async (req: Request, data: CoordinatorRequest): Promise<Response> => {
+  const startTime = performance.now();
+  const logger = createRequestLogger(req, "federation-coordinator");
+  
+  logRequest(logger, req);
+  
   try {
-    console.log("Federation coordinator starting");
+    logger.info("Federation coordinator starting");
     
     // Get queue stats for each partition
     const { data: queueStats, error: statsError } = await supabaseClient
@@ -57,21 +77,24 @@ const handleCoordinator = async (req: Request, data: CoordinatorRequest): Promis
       .select('*');
     
     if (statsError) {
+      logger.error({ error: statsError.message }, "Failed to get queue stats");
       throw new Error(`Failed to get queue stats: ${statsError.message}`);
     }
     
-    console.log("Queue stats:", queueStats);
+    logger.debug({ queueStats }, "Queue stats retrieved");
     
     // Launch workers in parallel, one per partition
     const workerPromises = [];
     for (let i = 0; i < NUM_PARTITIONS; i++) {
-      workerPromises.push(invokeWorker(i));
+      workerPromises.push(invokeWorker(i, logger));
     }
     
     // Wait for all workers to complete
     const results = await Promise.all(workerPromises);
     
-    console.log("All workers completed", results);
+    logger.info({ results }, "All workers completed");
+    
+    logResponse(logger, 200, startTime);
     
     return new Response(
       JSON.stringify({
@@ -85,7 +108,10 @@ const handleCoordinator = async (req: Request, data: CoordinatorRequest): Promis
       }
     );
   } catch (error) {
-    console.error("Error in federation coordinator:", error);
+    logger.error({ error: error.message, stack: error.stack }, "Error in federation coordinator");
+    
+    logResponse(logger, 500, startTime);
+    
     return new Response(
       JSON.stringify({ error: "Internal server error", details: error.message }),
       { 
