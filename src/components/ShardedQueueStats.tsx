@@ -12,11 +12,6 @@ interface QueueStats {
   queue_name: number;  // This is actually the partition key number
   pending: number;
   latest: string;
-}
-
-// This interface represents the actual returned data from the database
-interface DatabaseQueueStats {
-  partition_key: number;
   total_count: number;
   pending_count: number;
   processing_count: number;
@@ -38,13 +33,8 @@ const ShardedQueueStats = () => {
       
       if (error) throw new Error(error.message);
       
-      // Transform the data to match our QueueStats interface
-      // This handles the mismatch between the database columns and our interface
-      return (data as DatabaseQueueStats[]).map(item => ({
-        queue_name: item.partition_key,
-        pending: item.pending_count,
-        latest: new Date().toISOString() // Default since our view doesn't include latest timestamp
-      })) as QueueStats[];
+      // The data now directly matches our QueueStats interface since we updated the view
+      return data as QueueStats[];
     }
   });
 

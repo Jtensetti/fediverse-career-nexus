@@ -1314,10 +1314,12 @@ export type Database = {
       federation_queue_stats: {
         Row: {
           failed_count: number | null
-          partition_key: number | null
+          latest: string | null
+          pending: number | null
           pending_count: number | null
           processed_count: number | null
           processing_count: number | null
+          queue_name: number | null
           total_count: number | null
         }
         Relationships: []
