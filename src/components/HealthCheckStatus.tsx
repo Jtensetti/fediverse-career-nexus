@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,8 +31,8 @@ export default function HealthCheckStatus() {
   
   const fetchHealthStatus = async (): Promise<HealthStatus> => {
     try {
-      // Use standard fetch API instead of Supabase functions to access headers
-      const response = await fetch(`${supabase.functions.url}/healthz`);
+      // Use standard fetch API instead of directly accessing the protected url property
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/healthz`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch health status');
