@@ -7,10 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 
+// This interface matches the new federation_queue_stats view structure
 interface QueueStats {
   queue_name: number;  // This is actually the partition key number
   pending: number;
   latest: string;
+}
+
+// This interface represents the actual returned data from the database
+interface DatabaseQueueStats {
+  partition_key: number;
+  total_count: number;
+  pending_count: number;
+  processing_count: number;
+  failed_count: number;
+  processed_count: number;
 }
 
 const ShardedQueueStats = () => {
@@ -26,7 +37,14 @@ const ShardedQueueStats = () => {
         .select('*');
       
       if (error) throw new Error(error.message);
-      return data as QueueStats[];
+      
+      // Transform the data to match our QueueStats interface
+      // This handles the mismatch between the database columns and our interface
+      return (data as DatabaseQueueStats[]).map(item => ({
+        queue_name: item.partition_key,
+        pending: item.pending_count,
+        latest: new Date().toISOString() // Default since our view doesn't include latest timestamp
+      })) as QueueStats[];
     }
   });
 
