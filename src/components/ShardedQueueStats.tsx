@@ -9,19 +9,16 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 
 interface QueueStats {
-  partition_key: number;
-  total_count: number;
-  pending_count: number;
-  processing_count: number;
-  failed_count: number;
-  processed_count: number;
+  queue_name: string;
+  pending: number;
+  latest: string;
 }
 
 const ShardedQueueStats = () => {
   const queryClient = useQueryClient();
   const [isRunningCoordinator, setIsRunningCoordinator] = useState(false);
 
-  // Fetch queue statistics from the new federation_queue_stats view
+  // Fetch queue statistics from the federation_queue_stats view
   const { data: queueStats, isLoading, refetch } = useQuery({
     queryKey: ["queueStats"],
     queryFn: async () => {
@@ -73,7 +70,7 @@ const ShardedQueueStats = () => {
     onSuccess: (data) => {
       toast({
         title: "Federation coordinator completed",
-        description: `Processed items across ${data.results.length} partitions.`
+        description: `Processed items across ${data.results?.length || 0} partitions.`
       });
       queryClient.invalidateQueries({ queryKey: ['queueStats'] });
     },
@@ -89,11 +86,11 @@ const ShardedQueueStats = () => {
     }
   });
 
-  // Mutation to run the federation worker for a specific partition
+  // Mutation to run the federation worker for a specific queue
   const runWorkerMutation = useMutation({
-    mutationFn: async (partition: number) => {
+    mutationFn: async (queueName: string) => {
       const { data, error } = await supabase.functions.invoke("federation", {
-        body: { partition }
+        body: { queue: queueName }
       });
       
       if (error) throw new Error(error.message);
@@ -102,7 +99,7 @@ const ShardedQueueStats = () => {
     onSuccess: (data) => {
       toast({
         title: "Federation worker completed",
-        description: data.message
+        description: data.message || "Queue processed successfully"
       });
       queryClient.invalidateQueries({ queryKey: ['queueStats'] });
     },
@@ -164,14 +161,14 @@ const ShardedQueueStats = () => {
         <div className="grid gap-4 md:grid-cols-2">
           {queueStats && queueStats.length > 0 ? (
             queueStats.map((stats) => (
-              <Card key={stats.partition_key}>
+              <Card key={stats.queue_name}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg font-medium">
-                    Partition {stats.partition_key}
+                    Queue {stats.queue_name}
                   </CardTitle>
                   <Button
                     size="sm"
-                    onClick={() => runWorkerMutation.mutate(stats.partition_key)}
+                    onClick={() => runWorkerMutation.mutate(stats.queue_name)}
                     disabled={runWorkerMutation.isPending}
                   >
                     Process
@@ -179,29 +176,16 @@ const ShardedQueueStats = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Total: {stats.total_count}</span>
-                        <span className="text-muted-foreground">Pending: {stats.pending_count}</span>
-                      </div>
-                      <Progress 
-                        value={stats.total_count > 0 ? (stats.processed_count / stats.total_count) * 100 : 0} 
-                        className="h-2 mt-1" 
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="rounded-md bg-muted p-2">
-                        <div className="text-muted-foreground">Processing</div>
-                        <div className="text-xl font-bold">{stats.processing_count}</div>
+                        <div className="text-muted-foreground">Pending</div>
+                        <div className="text-xl font-bold">{stats.pending}</div>
                       </div>
                       <div className="rounded-md bg-muted p-2">
-                        <div className="text-muted-foreground">Failed</div>
-                        <div className="text-xl font-bold text-destructive">{stats.failed_count}</div>
-                      </div>
-                      <div className="rounded-md bg-muted p-2">
-                        <div className="text-muted-foreground">Processed</div>
-                        <div className="text-xl font-bold text-green-600 dark:text-green-400">{stats.processed_count}</div>
+                        <div className="text-muted-foreground">Latest</div>
+                        <div className="text-sm font-medium">
+                          {stats.latest ? new Date(stats.latest).toLocaleString() : 'N/A'}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -212,7 +196,7 @@ const ShardedQueueStats = () => {
             <Card className="md:col-span-2">
               <CardContent className="flex items-center justify-center p-6">
                 <p className="text-muted-foreground">
-                  No queue statistics available. The partitioned queue may be empty.
+                  No queue statistics available. The queue may be empty.
                 </p>
               </CardContent>
             </Card>
