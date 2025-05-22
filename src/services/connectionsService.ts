@@ -38,7 +38,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         created_at,
         user_id,
         connected_user_id,
-        connected_profile:profiles(id, username, fullname, headline, avatar_url, is_verified)
+        connected_profile:profiles!connected_user_id(id, username, fullname, headline, avatar_url, is_verified)
       `)
       .eq("user_id", user.id)
       .eq("status", "accepted");
@@ -57,7 +57,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         created_at,
         user_id,
         connected_user_id,
-        user_profile:profiles(id, username, fullname, headline, avatar_url, is_verified)
+        user_profile:profiles!user_id(id, username, fullname, headline, avatar_url, is_verified)
       `)
       .eq("connected_user_id", user.id)
       .eq("status", "accepted");
@@ -69,13 +69,21 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
 
     // Process regular connections (where user is the initiator)
     const normalizedConnections = connections?.map(connection => {
-      // Check if connected_profile exists and has data
-      if (!connection.connected_profile || connection.connected_profile.length === 0) {
+      // Check if connected_profile exists
+      if (!connection.connected_profile) {
         console.warn("Connected profile is missing for connection:", connection.id);
         return null;
       }
       
-      const profile = connection.connected_profile[0];
+      // Try to get the profile either as an array or as an object
+      const profile = Array.isArray(connection.connected_profile) 
+        ? connection.connected_profile[0] 
+        : connection.connected_profile;
+      
+      if (!profile) {
+        console.warn("Connected profile data is invalid for connection:", connection.id);
+        return null;
+      }
       
       return {
         id: connection.id,
@@ -91,13 +99,21 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
 
     // Process reverse connections (where user is the receiver)
     const normalizedReverseConnections = reverseConnections?.map(connection => {
-      // Check if user_profile exists and has data
-      if (!connection.user_profile || connection.user_profile.length === 0) {
+      // Check if user_profile exists
+      if (!connection.user_profile) {
         console.warn("User profile is missing for reverse connection:", connection.id);
         return null;
       }
       
-      const profile = connection.user_profile[0];
+      // Try to get the profile either as an array or as an object
+      const profile = Array.isArray(connection.user_profile) 
+        ? connection.user_profile[0] 
+        : connection.user_profile;
+      
+      if (!profile) {
+        console.warn("User profile data is invalid for reverse connection:", connection.id);
+        return null;
+      }
       
       return {
         id: connection.id,
