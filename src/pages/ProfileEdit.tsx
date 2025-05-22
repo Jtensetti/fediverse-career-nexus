@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -18,6 +19,7 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch"; // Add this import
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
