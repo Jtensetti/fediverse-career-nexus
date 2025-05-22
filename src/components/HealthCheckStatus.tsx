@@ -6,32 +6,47 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CircleCheck, CircleAlert, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
-  database: {
-    connected: boolean;
-    latency: number;
-  };
-  queues: {
-    depth: number;
-    threshold: number;
-  };
   timestamp: string;
   traceId: string;
+  checks: {
+    database: {
+      status: 'pass' | 'warn' | 'fail';
+      latency_ms: number;
+      message?: string;
+    };
+    queue: {
+      status: 'pass' | 'warn' | 'fail';
+      pending_count: number;
+      max_allowed: number;
+      message?: string;
+    };
+  };
 }
 
 export default function HealthCheckStatus() {
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   
   const fetchHealthStatus = async (): Promise<HealthStatus> => {
-    const response = await fetch('/api/healthz');
-    if (!response.ok) {
-      throw new Error('Failed to fetch health status');
+    try {
+      // Use standard fetch API instead of Supabase functions to access headers
+      const response = await fetch(`${supabase.functions.url}/healthz`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch health status');
+      }
+      
+      const data = await response.json();
+      const traceId = response.headers.get('X-Trace-ID') || data.traceId || 'unknown';
+      
+      return { ...data, traceId };
+    } catch (error) {
+      console.error('Error fetching health data:', error);
+      throw error;
     }
-    const data = await response.json();
-    const traceId = response.headers.get('X-Trace-ID') || 'unknown';
-    return { ...data, traceId };
   };
   
   const { data, isLoading, error, refetch, isFetching } = useQuery({
@@ -53,10 +68,13 @@ export default function HealthCheckStatus() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'healthy':
+      case 'pass':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'degraded':
+      case 'warn':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'unhealthy':
+      case 'fail':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -66,9 +84,12 @@ export default function HealthCheckStatus() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'healthy':
+      case 'pass':
         return <CircleCheck className="h-4 w-4 text-green-600" />;
       case 'degraded':
+      case 'warn':
       case 'unhealthy':
+      case 'fail':
         return <CircleAlert className="h-4 w-4 text-red-600" />;
       default:
         return null;
@@ -109,28 +130,32 @@ export default function HealthCheckStatus() {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium text-gray-500">Database</span>
-                <Badge variant="outline" className={data.database.connected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                  {data.database.connected ? 'Connected' : 'Disconnected'}
+                <Badge variant="outline" className={getStatusColor(data.checks.database.status)}>
+                  {data.checks.database.status === 'pass' ? 'Connected' : 
+                   data.checks.database.status === 'warn' ? 'Slow' : 'Error'}
                 </Badge>
               </div>
               <div className="text-sm text-gray-600">
-                Latency: {data.database.latency}ms
+                Latency: {data.checks.database.latency_ms}ms
+                {data.checks.database.message && (
+                  <div className="text-xs mt-1 text-gray-500">{data.checks.database.message}</div>
+                )}
               </div>
             </div>
             
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium text-gray-500">Queue Depth</span>
-                <Badge variant="outline" className={
-                  data.queues.depth < data.queues.threshold 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
-                }>
-                  {data.queues.depth < data.queues.threshold ? 'Normal' : 'High'}
+                <Badge variant="outline" className={getStatusColor(data.checks.queue.status)}>
+                  {data.checks.queue.status === 'pass' ? 'Normal' : 
+                   data.checks.queue.status === 'warn' ? 'High' : 'Critical'}
                 </Badge>
               </div>
               <div className="text-sm text-gray-600">
-                {data.queues.depth} / {data.queues.threshold} messages
+                {data.checks.queue.pending_count} / {data.checks.queue.max_allowed} messages
+                {data.checks.queue.message && (
+                  <div className="text-xs mt-1 text-gray-500">{data.checks.queue.message}</div>
+                )}
               </div>
             </div>
             
