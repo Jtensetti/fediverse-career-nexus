@@ -9,6 +9,7 @@ import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Helmet } from "react-helmet-async";
+import AdminFixSecurityInvoker from "@/components/AdminFixSecurityInvoker";
 
 export default function AdminFederationMetrics() {
   const [loading, setLoading] = useState(true);
@@ -97,8 +98,15 @@ export default function AdminFederationMetrics() {
               Track metrics, manage queues, and process batched operations.
             </AlertDescription>
           </Alert>
-          
-          <FederationMetricsOverview />
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+            <div className="md:col-span-9">
+              <FederationMetricsOverview />
+            </div>
+            <div className="md:col-span-3">
+              <AdminFixSecurityInvoker />
+            </div>
+          </div>
         </div>
       </main>
       
