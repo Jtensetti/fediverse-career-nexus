@@ -66,7 +66,7 @@ const ProfilePage = () => {
   const { data: userConnections, isLoading: connectionsLoading } = useQuery({
     queryKey: ["connections", profile?.id],
     queryFn: () => getUserConnections(),
-    enabled: !!profile?.id && profile.networkVisibilityEnabled
+    enabled: !!profile?.id && profile.networkVisibilityEnabled === true
   });
   
   // Determine if viewing own profile
@@ -125,6 +125,9 @@ const ProfilePage = () => {
   // The username to display
   const displayUsername = username || profile.username;
   
+  // Safely handle connectionDegree for display
+  const connectionDegreeValue = profile.connectionDegree !== undefined ? profile.connectionDegree as ConnectionDegree : null;
+  
   return (
     <DashboardLayout showHeader={false}>
       {/* Profile Header */}
@@ -135,9 +138,9 @@ const ProfilePage = () => {
               <AvatarImage src={profile.avatarUrl} alt={profile.displayName} />
               <AvatarFallback>{profile.displayName.substring(0, 2)}</AvatarFallback>
             </Avatar>
-            {profile.connectionDegree && (
+            {connectionDegreeValue && (
               <div className="absolute -bottom-2 -right-2">
-                <ConnectionBadge degree={profile.connectionDegree as ConnectionDegree} />
+                <ConnectionBadge degree={connectionDegreeValue} />
               </div>
             )}
           </div>
@@ -150,8 +153,8 @@ const ProfilePage = () => {
                   <Check size={14} /> Verified
                 </Badge>
               )}
-              {profile.connectionDegree && (
-                <ConnectionBadge degree={profile.connectionDegree as ConnectionDegree} />
+              {connectionDegreeValue && (
+                <ConnectionBadge degree={connectionDegreeValue} />
               )}
             </div>
             

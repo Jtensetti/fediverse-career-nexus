@@ -14,6 +14,7 @@ export interface UserProfile {
   connections?: number;
   profileViews?: number;
   networkVisibilityEnabled?: boolean;
+  connectionDegree?: number;
   contact?: {
     email?: string;
     phone?: string;
@@ -116,16 +117,17 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       bio: profile.bio || "",
       avatarUrl: profile.avatar_url,
       isVerified: profile.is_verified || false,
-      domain: profile.domain,
+      domain: profile.domain || "",
       connections: connectionCount || 0,
       profileViews: profile.profile_views || 0,
       networkVisibilityEnabled: settings?.show_network_connections ?? true,
+      connectionDegree: 0, // Self profile is 0 degree
       contact: {
         email: user.email,
-        phone: profile.phone,
-        location: profile.location
+        phone: profile.phone || "",
+        location: profile.location || ""
       },
-      experience: experience.map(exp => ({
+      experience: (experience || []).map(exp => ({
         id: exp.id,
         title: exp.title,
         company: exp.company,
@@ -136,7 +138,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
         description: exp.description,
         isVerified: exp.verification_status === "verified"
       })),
-      education: education.map(edu => ({
+      education: (education || []).map(edu => ({
         id: edu.id,
         institution: edu.institution,
         degree: edu.degree,
@@ -145,7 +147,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
         endYear: edu.end_year,
         isVerified: edu.verification_status === "verified"
       })),
-      skills: skills.map(skill => ({
+      skills: (skills || []).map(skill => ({
         id: skill.id,
         name: skill.name,
         endorsements: skill.endorsements || 0
@@ -234,17 +236,17 @@ export const getUserProfileByUsername = async (username: string): Promise<UserPr
       bio: profile.bio || "",
       avatarUrl: profile.avatar_url,
       isVerified: profile.is_verified || false,
-      domain: profile.domain,
+      domain: profile.domain || "",
       connections: connectionCount || 0,
       profileViews: profile.profile_views || 0,
       networkVisibilityEnabled,
       connectionDegree,
       contact: {
         email: isOwnProfile ? user?.email : null,
-        phone: profile.phone,
-        location: profile.location
+        phone: profile.phone || "",
+        location: profile.location || ""
       },
-      experience: experience.map(exp => ({
+      experience: (experience || []).map(exp => ({
         id: exp.id,
         title: exp.title,
         company: exp.company,
@@ -255,7 +257,7 @@ export const getUserProfileByUsername = async (username: string): Promise<UserPr
         description: exp.description,
         isVerified: exp.verification_status === "verified"
       })),
-      education: education.map(edu => ({
+      education: (education || []).map(edu => ({
         id: edu.id,
         institution: edu.institution,
         degree: edu.degree,
@@ -264,7 +266,7 @@ export const getUserProfileByUsername = async (username: string): Promise<UserPr
         endYear: edu.end_year,
         isVerified: edu.verification_status === "verified"
       })),
-      skills: skills.map(skill => ({
+      skills: (skills || []).map(skill => ({
         id: skill.id,
         name: skill.name,
         endorsements: skill.endorsements || 0
@@ -276,4 +278,3 @@ export const getUserProfileByUsername = async (username: string): Promise<UserPr
     return null;
   }
 };
-
