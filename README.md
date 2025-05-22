@@ -1,73 +1,124 @@
-# Welcome to your Lovable project
+# 🌐 Fediverse Career Nexus (aka Bondy)
 
-## Project info
+A community-driven, federated job board designed for the open web.
 
-**URL**: https://lovable.dev/projects/aaae6ed4-598c-43d7-b7d3-0c838ee77f5b
+Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexus** is robust enough to scale, but still open for improvement. It’s an experiment — and a mission — to make professional discovery possible across federated networks.
 
-## How can I edit this code?
+> ✊ This is not just a job board — it’s a declaration of independence from centralized platforms.
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🔍 What It Does
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/aaae6ed4-598c-43d7-b7d3-0c838ee77f5b) and start prompting.
+- ✅ Post jobs (with salaries, skills, types, and remote settings)
+- ✅ Filter and search jobs by type, location, skills, and remote allowance
+- 🟡 Federates via ActivityPub (prototype inbox/outbox working)
+- 🟡 Allows form-driven job submissions (with validation)
+- 🟡 Renders modern, accessible components with Tailwind + ShadCN
+- 🔴 Missing full job detail page, pagination, moderation tools
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 📊 Current Project Health
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+| Feature Area                  | Status          | Notes                                                                 |
+|------------------------------|------------------|-----------------------------------------------------------------------|
+| 🧱 Job UI (Form/Card/Filter)  | 🟢 **Complete**   | Reusable and production-grade                                        |
+| 🔎 Job Detail View            | 🔴 **Missing**    | Needs `/jobs/:id` page                                               |
+| 📡 ActivityPub Federation     | 🟡 **In Progress**| Basic actor/inbox/outbox working                                     |
+| 🔐 Security (RLS, Views)      | 🟡 **Mostly Done**| Linter may falsely flag SECURITY DEFINER, but DB uses INVOKER        |
+| ⚠️ Error Handling             | 🔴 **Missing**    | No loading or error UI states                                        |
+| 🔁 Pagination / Infinite Feed | 🔴 **Missing**    | Currently fetches all results at once                                |
+| 🧪 Testing Coverage           | 🔴 **None Yet**   | Needs both unit + integration tests                                  |
+| 🛠️ DevOps / CI/CD            | 🟡 **Basic**      | Edge Functions deployable; CI config needed                          |
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## 🎯 Project Vision
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+We believe job discovery shouldn’t be owned by a handful of tech monopolies.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Imagine a hiring system that:
+- Lets candidates and organizations post and discover jobs on the **Fediverse**
+- Uses **ActivityPub** for job delivery to Mastodon, Lemmy, and others
+- Can be run by **any community**, from cooperatives to DAOs
 
-# Step 3: Install the necessary dependencies.
-npm i
+This project is **yours** as much as it is mine.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+---
+
+## 👨‍💻 Contribute
+
+We welcome contributions of all kinds:
+
+### Good first issues
+- [ ] Build a `/jobs/:id` detail page with route
+- [ ] Improve `jobPostsService` for pagination + error handling
+- [ ] Harden signature validation for inbox handling
+- [ ] Implement proper WebFinger discovery
+- [ ] Add content moderation (e.g. domain blocking)
+- [ ] Write tests (Zod, Edge Functions, UI components)
+
+---
+
+## 🧠 Tech Stack
+
+- ⚛️ React + TypeScript
+- 💅 ShadCN UI + TailwindCSS
+- ⚡ Supabase (Postgres + Edge Functions)
+- 🧬 ActivityPub (Inbox/Outbox proto)
+- 🦕 Deno (Edge Runtime)
+
+---
+
+## 🛠️ Getting Started
+
+Clone and run locally:
+
+```bash
+git clone https://github.com/Jtensetti/fediverse-career-nexus.git
+cd fediverse-career-nexus
+pnpm install
+pnpm dev
+````
+
+To deploy an Edge Function:
+
+```bash
+supabase functions deploy inbox --project-ref <your-project>
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🛣️ Roadmap
 
-**Use GitHub Codespaces**
+Planned additions:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+* ✅ ActivityPub actor support (inbox, outbox, HTTP signatures)
+* ⏳ Federated feed merging (remote/local UNION)
+* ⏳ Job moderation (badging, blocking)
+* ⏳ Federated follow/followers logic
+* ⏳ Analytics for federation health
 
-## What technologies are used for this project?
+Check the [GitHub Project Board](https://github.com/Jtensetti/fediverse-career-nexus/projects) for more.
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📬 Contact
 
-## How can I deploy this project?
+If you have questions, ideas, or want to contribute:
 
-Simply open [Lovable](https://lovable.dev/projects/aaae6ed4-598c-43d7-b7d3-0c838ee77f5b) and click on Share -> Publish.
+* 🐘 Mastodon: [@jtensetti@mastodon.nu](https://mastodon.nu/@jtensetti)
+* 📧 Email: [jtensetti@protonmail.com](mailto:jtensetti@protonmail.com)
+* 🐙 Open a GitHub Issue: [GitHub Issues](https://github.com/Jtensetti/fediverse-career-nexus/issues)
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## 🧭 License
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+This project is [MIT Licensed](LICENSE).
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+> Let’s take back control of how we find and share opportunities.
+> The Fediverse isn’t just social — it’s professional too.
