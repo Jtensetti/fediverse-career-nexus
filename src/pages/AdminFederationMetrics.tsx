@@ -1,13 +1,14 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FederationAnalytics from "@/components/FederationAnalytics";
+import FederationMetricsOverview from "@/components/FederationMetricsOverview";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Helmet } from "react-helmet-async";
 
 export default function AdminFederationMetrics() {
   const [loading, setLoading] = useState(true);
@@ -28,12 +29,10 @@ export default function AdminFederationMetrics() {
         }
         
         // Check if user has admin role
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .eq('role', 'admin')
-          .single();
+        const { data, error } = await supabase.rpc(
+          'is_admin',
+          { user_id: session.user.id }
+        );
         
         if (error || !data) {
           navigate('/');
@@ -70,6 +69,10 @@ export default function AdminFederationMetrics() {
   
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Federation Metrics - Admin</title>
+      </Helmet>
+      
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">
@@ -83,19 +86,19 @@ export default function AdminFederationMetrics() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <h1 className="text-3xl font-bold">Federation Metrics</h1>
+            <h1 className="text-3xl font-bold">Federation Management</h1>
           </div>
           
           <Alert className="mb-6">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Monitoring Federation Traffic</AlertTitle>
+            <AlertTitle>Federation Management Console</AlertTitle>
             <AlertDescription>
-              This dashboard shows metrics for federation traffic with other instances.
-              Monitor success rates, latency, and potential rate limiting issues.
+              Monitor and manage federation traffic with other instances.
+              Track metrics, manage queues, and process batched operations.
             </AlertDescription>
           </Alert>
           
-          <FederationAnalytics />
+          <FederationMetricsOverview />
         </div>
       </main>
       
