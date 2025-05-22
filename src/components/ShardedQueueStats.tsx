@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw, Play, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,14 +18,16 @@ interface QueueStats {
 }
 
 const ShardedQueueStats = () => {
+  const queryClient = useQueryClient();
   const [isRunningCoordinator, setIsRunningCoordinator] = useState(false);
 
-  // Fetch queue statistics
+  // Fetch queue statistics from the new federation_queue_stats view
   const { data: queueStats, isLoading, refetch } = useQuery({
     queryKey: ["queueStats"],
     queryFn: async () => {
-      // Using the get_follower_batch_stats function directly to avoid type issues
-      const { data, error } = await supabase.rpc('get_follower_batch_stats');
+      const { data, error } = await supabase
+        .from('federation_queue_stats')
+        .select('*');
       
       if (error) throw new Error(error.message);
       return data as QueueStats[];
@@ -73,7 +75,7 @@ const ShardedQueueStats = () => {
         title: "Federation coordinator completed",
         description: `Processed items across ${data.results.length} partitions.`
       });
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ['queueStats'] });
     },
     onError: (error) => {
       toast({
@@ -102,7 +104,7 @@ const ShardedQueueStats = () => {
         title: "Federation worker completed",
         description: data.message
       });
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ['queueStats'] });
     },
     onError: (error) => {
       toast({

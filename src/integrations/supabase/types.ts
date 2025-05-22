@@ -1311,6 +1311,17 @@ export type Database = {
         }
         Relationships: []
       }
+      federation_queue_stats: {
+        Row: {
+          failed_count: number | null
+          partition_key: number | null
+          pending_count: number | null
+          processed_count: number | null
+          processing_count: number | null
+          total_count: number | null
+        }
+        Relationships: []
+      }
       follower_batch_stats: {
         Row: {
           failed_count: number | null
@@ -1368,6 +1379,17 @@ export type Database = {
       get_domain_moderation_status: {
         Args: { domain: string }
         Returns: string
+      }
+      get_federation_queue_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          partition_key: number
+          total_count: number
+          pending_count: number
+          processing_count: number
+          failed_count: number
+          processed_count: number
+        }[]
       }
       get_follower_batch_stats: {
         Args: Record<PropertyKey, never>
