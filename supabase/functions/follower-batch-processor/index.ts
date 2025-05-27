@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { SignJWT } from "https://esm.sh/jose@4.14.4";
@@ -16,6 +15,46 @@ const supabaseClient = createClient(
 
 // Maximum number of concurrent requests to send
 const MAX_CONCURRENT_REQUESTS = 5;
+
+// Function to check if a domain is blocked
+async function isDomainBlocked(url: string): Promise<boolean> {
+  try {
+    const parsedUrl = new URL(url);
+    const host = parsedUrl.hostname;
+    
+    const { data, error } = await supabaseClient
+      .from('blocked_domains')
+      .select('status')
+      .eq('host', host)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error checking blocked domain:', error);
+      return false; // Fail open - don't block if we can't check
+    }
+    
+    return data?.status === 'blocked';
+  } catch (error) {
+    console.error('Error parsing URL for domain check:', error);
+    return false;
+  }
+}
+
+// Function to filter inbox URLs by blocked domains
+async function filterBlockedInboxUrls(inboxUrls: string[]): Promise<string[]> {
+  const filteredUrls = [];
+  
+  for (const inboxUrl of inboxUrls) {
+    const isBlocked = await isDomainBlocked(inboxUrl);
+    if (isBlocked) {
+      console.log(`Skipping delivery to blocked domain: ${new URL(inboxUrl).hostname}`);
+    } else {
+      filteredUrls.push(inboxUrl);
+    }
+  }
+  
+  return filteredUrls;
+}
 
 // Process a single batch
 async function processBatch(batch: any) {
@@ -51,12 +90,42 @@ async function processBatch(batch: any) {
       }
     }
     
-    console.log(`Batch ${batch.id} has ${inboxUrls.length} targets`);
+    console.log(`Batch ${batch.id} has ${inboxUrls.length} targets before filtering`);
+    
+    // Filter out blocked domains
+    const filteredInboxUrls = await filterBlockedInboxUrls(inboxUrls);
+    const filteredCount = filteredInboxUrls.length;
+    
+    if (inboxUrls.length > filteredCount) {
+      console.log(`Filtered out ${inboxUrls.length - filteredCount} targets on blocked domains`);
+    }
+    
+    if (filteredInboxUrls.length === 0) {
+      console.log(`Batch ${batch.id} has no valid targets after filtering blocked domains`);
+      
+      // Mark as processed since there's nothing to deliver
+      await supabaseClient
+        .from("follower_batches")
+        .update({ 
+          status: "processed", 
+        })
+        .eq("id", batch.id);
+        
+      return { 
+        batchId: batch.id, 
+        success: true, 
+        processed: 0, 
+        failures: 0,
+        filtered: inboxUrls.length
+      };
+    }
+    
+    console.log(`Batch ${batch.id} processing ${filteredInboxUrls.length} targets after filtering`);
     
     // Limit concurrent requests
     const results = [];
-    for (let i = 0; i < inboxUrls.length; i += MAX_CONCURRENT_REQUESTS) {
-      const chunk = inboxUrls.slice(i, i + MAX_CONCURRENT_REQUESTS);
+    for (let i = 0; i < filteredInboxUrls.length; i += MAX_CONCURRENT_REQUESTS) {
+      const chunk = filteredInboxUrls.slice(i, i + MAX_CONCURRENT_REQUESTS);
       const promises = chunk.map(inboxUrl => 
         deliverActivity(inboxUrl, batch.activity, actor)
       );
@@ -65,7 +134,7 @@ async function processBatch(batch: any) {
       results.push(...chunkResults);
       
       // Small delay between chunks to avoid overwhelming the network
-      if (i + MAX_CONCURRENT_REQUESTS < inboxUrls.length) {
+      if (i + MAX_CONCURRENT_REQUESTS < filteredInboxUrls.length) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
@@ -120,7 +189,8 @@ async function processBatch(batch: any) {
       batchId: batch.id, 
       success: true, 
       processed: results.length, 
-      failures: failures.length 
+      failures: failures.length,
+      filtered: inboxUrls.length - filteredInboxUrls.length
     };
   } catch (error) {
     console.error(`Error processing batch ${batch.id}:`, error);

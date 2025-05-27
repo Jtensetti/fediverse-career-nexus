@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { signRequest } from "./http-signature.ts";
@@ -36,6 +35,46 @@ async function logRequestMetrics(
     console.error("Failed to log request metrics:", error);
     // Non-blocking - we don't want metrics logging to break functionality
   }
+}
+
+// Function to check if a domain is blocked
+async function isDomainBlocked(url: string): Promise<boolean> {
+  try {
+    const parsedUrl = new URL(url);
+    const host = parsedUrl.hostname;
+    
+    const { data, error } = await supabaseClient
+      .from('blocked_domains')
+      .select('status')
+      .eq('host', host)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error checking blocked domain:', error);
+      return false; // Fail open - don't block if we can't check
+    }
+    
+    return data?.status === 'blocked';
+  } catch (error) {
+    console.error('Error parsing URL for domain check:', error);
+    return false;
+  }
+}
+
+// Function to filter recipients by blocked domains
+async function filterBlockedRecipients(recipients: string[]): Promise<string[]> {
+  const filteredRecipients = [];
+  
+  for (const recipient of recipients) {
+    const isBlocked = await isDomainBlocked(recipient);
+    if (isBlocked) {
+      console.log(`Skipping delivery to blocked domain: ${new URL(recipient).hostname}`);
+    } else {
+      filteredRecipients.push(recipient);
+    }
+  }
+  
+  return filteredRecipients;
 }
 
 async function processQueueItem(item: any) {
@@ -88,8 +127,17 @@ async function processQueueItem(item: any) {
     // Remove duplicates
     recipients = [...new Set(recipients)];
     
+    // Filter out blocked domains
+    const originalCount = recipients.length;
+    recipients = await filterBlockedRecipients(recipients);
+    const filteredCount = recipients.length;
+    
+    if (originalCount > filteredCount) {
+      console.log(`Filtered out ${originalCount - filteredCount} recipients on blocked domains`);
+    }
+    
     if (recipients.length === 0) {
-      console.log("No external recipients to deliver to");
+      console.log("No external recipients to deliver to (after filtering blocked domains)");
       await supabaseClient
         .from("federation_queue_partitioned")
         .update({ status: "processed" })

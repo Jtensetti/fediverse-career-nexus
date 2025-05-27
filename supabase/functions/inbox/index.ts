@@ -1,4 +1,3 @@
-
 // First part of the file stays the same
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 import { verifySignature } from "npm:http-signature@1.3.6";
@@ -184,6 +183,46 @@ async function logSignatureVerification(
   }
 }
 
+// Function to check domain moderation status
+async function checkDomainModeration(remoteHost: string): Promise<{ status: string; blocked: boolean; reason?: string }> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("Missing required environment variables for domain check");
+    return { status: 'normal', blocked: false };
+  }
+  
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  try {
+    const { data, error } = await supabase
+      .from('blocked_domains')
+      .select('status, reason')
+      .eq('host', remoteHost)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error checking domain moderation:', error);
+      return { status: 'normal', blocked: false };
+    }
+    
+    if (!data) {
+      // Domain not in moderation list, allow normal processing
+      return { status: 'normal', blocked: false };
+    }
+    
+    return {
+      status: data.status,
+      blocked: data.status === 'blocked',
+      reason: data.reason
+    };
+  } catch (error) {
+    console.error('Error in domain moderation check:', error);
+    return { status: 'normal', blocked: false };
+  }
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -235,6 +274,34 @@ Deno.serve(async (req) => {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+    
+    // DOMAIN MODERATION CHECK - Check if the sender's domain is blocked
+    const domainModerationStatus = await checkDomainModeration(remoteHost);
+    
+    if (domainModerationStatus.blocked) {
+      console.warn(`Blocked domain attempted to send activity: ${remoteHost}, reason: ${domainModerationStatus.reason}`);
+      
+      // Log the blocked attempt for audit
+      await logSignatureVerification(
+        remoteHost,
+        keyId,
+        false,
+        `Domain blocked: ${domainModerationStatus.reason || 'No reason specified'}`
+      );
+      
+      return new Response(JSON.stringify({ 
+        error: 'Domain blocked', 
+        reason: 'This domain has been blocked by the administrator' 
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Log if domain is on probation (but still process the request)
+    if (domainModerationStatus.status === 'probation') {
+      console.info(`Processing activity from domain on probation: ${remoteHost}, reason: ${domainModerationStatus.reason}`);
     }
     
     // Check rate limiting before processing the request
@@ -459,13 +526,18 @@ Deno.serve(async (req) => {
     }
     
     // Store the activity in the inbox_events table
+    // Include moderation status for domains on probation
     const { data, error } = await supabase
       .from('inbox_events')
       .insert({
         activity: activityBody,
         recipient_id: actorData.id,
         sender: activityBody.actor,
-        signature_verified: signatureIsValid, // Set based on verification result
+        signature_verified: signatureIsValid,
+        // Add a note if the domain is on probation
+        ...(domainModerationStatus.status === 'probation' && {
+          notes: `From domain on probation: ${domainModerationStatus.reason || 'No reason specified'}`
+        })
       })
       .select();
 
@@ -481,7 +553,8 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ 
       success: true, 
       message: 'Activity accepted',
-      signature_valid: signatureIsValid
+      signature_valid: signatureIsValid,
+      domain_status: domainModerationStatus.status
     }), {
       status: 202,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
