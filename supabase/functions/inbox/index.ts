@@ -1,3 +1,4 @@
+
 // First part of the file stays the same
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 import { verifySignature } from "npm:http-signature@1.3.6";
@@ -220,6 +221,122 @@ async function checkDomainModeration(remoteHost: string): Promise<{ status: stri
   } catch (error) {
     console.error('Error in domain moderation check:', error);
     return { status: 'normal', blocked: false };
+  }
+}
+
+// Function to handle Follow activities with auto-accept
+async function handleFollowActivity(activityBody: any, recipientActor: any, supabase: any): Promise<boolean> {
+  try {
+    const followerActorUrl = activityBody.actor;
+    const targetObject = activityBody.object;
+    
+    console.log(`Processing Follow request from ${followerActorUrl} to ${targetObject}`);
+    
+    // Verify that the target is indeed our local actor
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const expectedActorUrl = `${supabaseUrl}/functions/v1/actor/${recipientActor.preferred_username}`;
+    
+    if (targetObject !== expectedActorUrl) {
+      console.error('Follow target does not match local actor URL');
+      return false;
+    }
+    
+    // Try to fetch the follower's actor data from their server
+    let followerActorData;
+    try {
+      const actorResponse = await fetch(followerActorUrl, {
+        headers: { 'Accept': 'application/activity+json' }
+      });
+      
+      if (actorResponse.ok) {
+        followerActorData = await actorResponse.json();
+      }
+    } catch (error) {
+      console.error('Failed to fetch follower actor data:', error);
+      // Continue with basic data
+    }
+    
+    // Create or update the remote actor record
+    let followerActorId;
+    const followerUsername = followerActorUrl.split('/').pop() || 'unknown';
+    
+    const { data: existingActor, error: actorFetchError } = await supabase
+      .from('actors')
+      .select('id')
+      .eq('preferred_username', followerUsername)
+      .single();
+    
+    if (existingActor) {
+      followerActorId = existingActor.id;
+    } else {
+      // Create new actor record
+      const { data: newActor, error: actorInsertError } = await supabase
+        .from('actors')
+        .insert({
+          preferred_username: followerUsername,
+          inbox_url: followerActorData?.inbox || `${followerActorUrl}/inbox`,
+          outbox_url: followerActorData?.outbox || `${followerActorUrl}/outbox`,
+          type: followerActorData?.type || 'Person',
+          public_key: followerActorData?.publicKey?.publicKeyPem || null
+        })
+        .select('id')
+        .single();
+      
+      if (actorInsertError) {
+        console.error('Error creating actor record:', actorInsertError);
+        return false;
+      }
+      
+      followerActorId = newActor.id;
+    }
+    
+    // Record the follower relationship
+    const { error: followerError } = await supabase
+      .from('actor_followers')
+      .upsert({
+        local_actor_id: recipientActor.id,
+        follower_actor_url: followerActorUrl,
+        follower_actor_id: followerActorId,
+        status: 'accepted'
+      }, {
+        onConflict: 'local_actor_id,follower_actor_url'
+      });
+    
+    if (followerError) {
+      console.error('Error recording follower relationship:', followerError);
+      return false;
+    }
+    
+    // Create Accept activity response
+    const acceptActivity = {
+      '@context': 'https://www.w3.org/ns/activitystreams',
+      type: 'Accept',
+      actor: expectedActorUrl,
+      object: activityBody,
+      id: `${expectedActorUrl}/accept/${crypto.randomUUID()}`,
+      published: new Date().toISOString()
+    };
+    
+    // Queue the Accept activity for delivery
+    const { error: queueError } = await supabase
+      .from('federation_queue')
+      .insert({
+        actor_id: recipientActor.id,
+        activity: acceptActivity,
+        status: 'pending'
+      });
+    
+    if (queueError) {
+      console.error('Error queuing Accept activity:', queueError);
+      return false;
+    }
+    
+    console.log(`Successfully processed Follow from ${followerActorUrl} and queued Accept response`);
+    return true;
+    
+  } catch (error) {
+    console.error('Error handling Follow activity:', error);
+    return false;
   }
 }
 
@@ -513,7 +630,7 @@ Deno.serve(async (req) => {
     // Find the recipient actor
     const { data: actorData, error: actorError } = await supabase
       .from('actors')
-      .select('id')
+      .select('id, preferred_username')
       .eq('preferred_username', username)
       .single();
 
@@ -525,8 +642,47 @@ Deno.serve(async (req) => {
       });
     }
     
-    // Store the activity in the inbox_events table
-    // Include moderation status for domains on probation
+    // Handle Follow activities specially
+    if (activityBody.type === 'Follow') {
+      const followHandled = await handleFollowActivity(activityBody, actorData, supabase);
+      
+      if (!followHandled) {
+        return new Response(JSON.stringify({ error: 'Failed to process Follow activity' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      // Store the activity in the inbox_events table for audit
+      const { error: inboxError } = await supabase
+        .from('inbox_events')
+        .insert({
+          activity: activityBody,
+          recipient_id: actorData.id,
+          sender: activityBody.actor,
+          signature_verified: signatureIsValid,
+          // Add a note if the domain is on probation
+          ...(domainModerationStatus.status === 'probation' && {
+            notes: `From domain on probation: ${domainModerationStatus.reason || 'No reason specified'}`
+          })
+        });
+      
+      if (inboxError) {
+        console.error('Error storing Follow activity in inbox_events:', inboxError);
+      }
+      
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: 'Follow activity accepted and processed',
+        signature_valid: signatureIsValid,
+        domain_status: domainModerationStatus.status
+      }), {
+        status: 202,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Store other activities in the inbox_events table
     const { data, error } = await supabase
       .from('inbox_events')
       .insert({

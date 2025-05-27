@@ -9,9 +9,55 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      actor_followers: {
+        Row: {
+          created_at: string
+          follower_actor_id: string | null
+          follower_actor_url: string
+          id: string
+          local_actor_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          follower_actor_id?: string | null
+          follower_actor_url: string
+          id?: string
+          local_actor_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          follower_actor_id?: string | null
+          follower_actor_url?: string
+          id?: string
+          local_actor_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actor_followers_follower_actor_id_fkey"
+            columns: ["follower_actor_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "actor_followers_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       actors: {
         Row: {
           created_at: string
+          follower_count: number
           id: string
           inbox_url: string | null
           key_fingerprint: string | null
@@ -25,6 +71,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          follower_count?: number
           id?: string
           inbox_url?: string | null
           key_fingerprint?: string | null
@@ -38,6 +85,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          follower_count?: number
           id?: string
           inbox_url?: string | null
           key_fingerprint?: string | null
