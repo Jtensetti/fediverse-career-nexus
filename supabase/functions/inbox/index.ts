@@ -251,6 +251,123 @@ Deno.serve(async (req) => {
       });
     }
     
+    // Parse the request body first for validation
+    const body = await req.text();
+    let activityBody;
+    try {
+      activityBody = JSON.parse(body);
+    } catch (parseError) {
+      return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // STRICT VALIDATION 1: Verify Digest header
+    const digestHeader = req.headers.get('digest');
+    if (!digestHeader) {
+      await logSignatureVerification(
+        remoteHost,
+        keyId,
+        false,
+        "Missing Digest header"
+      );
+      
+      return new Response(JSON.stringify({ error: 'Missing Digest header' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Compute SHA-256 hash of request body
+    const encoder = new TextEncoder();
+    const data = encoder.encode(body);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    const computedDigest = `SHA-256=${btoa(String.fromCharCode(...new Uint8Array(hash)))}`;
+    
+    if (digestHeader !== computedDigest) {
+      await logSignatureVerification(
+        remoteHost,
+        keyId,
+        false,
+        `Digest mismatch: expected ${computedDigest}, got ${digestHeader}`
+      );
+      
+      return new Response(JSON.stringify({ error: 'Invalid digest' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // STRICT VALIDATION 2: Enforce request freshness
+    const dateHeader = req.headers.get('date');
+    if (!dateHeader) {
+      await logSignatureVerification(
+        remoteHost,
+        keyId,
+        false,
+        "Missing Date header"
+      );
+      
+      return new Response(JSON.stringify({ error: 'Missing Date header' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const requestTime = new Date(dateHeader);
+    const now = new Date();
+    const timeDiffMs = Math.abs(now.getTime() - requestTime.getTime());
+    const maxAgeMs = 5 * 60 * 1000; // 5 minutes
+    
+    if (timeDiffMs > maxAgeMs) {
+      await logSignatureVerification(
+        remoteHost,
+        keyId,
+        false,
+        `Request too old: ${timeDiffMs}ms > ${maxAgeMs}ms`
+      );
+      
+      return new Response(JSON.stringify({ error: 'Request too old' }), {
+        status: 408,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // STRICT VALIDATION 3: Match signature to actor
+    const actorUrl = activityBody.actor;
+    if (!actorUrl) {
+      await logSignatureVerification(
+        remoteHost,
+        keyId,
+        false,
+        "Missing actor in activity"
+      );
+      
+      return new Response(JSON.stringify({ error: 'Missing actor in activity' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Extract base URL from keyId (remove fragment)
+    const keyIdBaseUrl = keyId.split('#')[0];
+    const actorBaseUrl = typeof actorUrl === 'string' ? actorUrl : actorUrl.id || actorUrl;
+    
+    if (keyIdBaseUrl !== actorBaseUrl) {
+      await logSignatureVerification(
+        remoteHost,
+        keyId,
+        false,
+        `Actor mismatch: keyId ${keyIdBaseUrl} != actor ${actorBaseUrl}`
+      );
+      
+      return new Response(JSON.stringify({ error: 'Signature actor mismatch' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
     // Verify HTTP signature - STRICT VALIDATION
     let signatureIsValid = false;
     try {
@@ -300,11 +417,8 @@ Deno.serve(async (req) => {
       });
     }
     
-    // Parse the request body
-    const body = await req.json();
-    
     // Basic validation
-    if (!body || !body.type || !body.actor) {
+    if (!activityBody || !activityBody.type || !activityBody.actor) {
       return new Response(JSON.stringify({ error: 'Invalid ActivityPub object' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -348,9 +462,9 @@ Deno.serve(async (req) => {
     const { data, error } = await supabase
       .from('inbox_events')
       .insert({
-        activity: body,
+        activity: activityBody,
         recipient_id: actorData.id,
-        sender: body.actor,
+        sender: activityBody.actor,
         signature_verified: signatureIsValid, // Set based on verification result
       })
       .select();
