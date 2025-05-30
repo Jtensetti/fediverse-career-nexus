@@ -1,4 +1,3 @@
-
 // Helper functions for the actor endpoint
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
@@ -93,6 +92,135 @@ export async function fetchActorFromDatabase(username: string) {
   }
   
   return { profile, actor };
+}
+
+// Resolve inbox URL for a given actor URI
+export async function resolveInboxUrl(actorUri: string): Promise<string | null> {
+  console.log(`Resolving inbox URL for actor: ${actorUri}`);
+  
+  // First, try to get from local actors table
+  const { data: localActor, error: localError } = await supabaseClient
+    .from("actors")
+    .select("inbox_url")
+    .eq("preferred_username", actorUri.split('/').pop())
+    .single();
+  
+  if (!localError && localActor?.inbox_url) {
+    console.log(`Found local actor inbox: ${localActor.inbox_url}`);
+    return localActor.inbox_url;
+  }
+  
+  // Try to get from remote actors cache
+  const { data: cachedActor, error: cacheError } = await supabaseClient
+    .from("remote_actors_cache")
+    .select("actor_data")
+    .eq("actor_url", actorUri)
+    .single();
+  
+  if (!cacheError && cachedActor?.actor_data?.inbox) {
+    console.log(`Found cached actor inbox: ${cachedActor.actor_data.inbox}`);
+    return cachedActor.actor_data.inbox;
+  }
+  
+  // Fallback: fetch actor profile and cache it
+  console.log(`Fetching actor profile for inbox URL: ${actorUri}`);
+  return await fetchAndCacheActorInbox(actorUri);
+}
+
+// Fetch actor profile and extract inbox URL
+async function fetchAndCacheActorInbox(actorUri: string): Promise<string | null> {
+  try {
+    const startTime = performance.now();
+    const response = await fetch(actorUri, {
+      headers: {
+        "Accept": "application/activity+json, application/ld+json",
+        "User-Agent": "ActivityPub-Federation/1.0"
+      }
+    });
+    
+    const remoteHost = new URL(actorUri).hostname;
+    
+    if (!response.ok) {
+      await logRequestMetrics(remoteHost, "/actor", startTime, false, response.status);
+      console.error(`Failed to fetch actor ${actorUri}: ${response.status}`);
+      return null;
+    }
+    
+    const actorData = await response.json();
+    await logRequestMetrics(remoteHost, "/actor", startTime, true, response.status);
+    
+    // Cache the actor data
+    await supabaseClient
+      .from("remote_actors_cache")
+      .upsert({
+        actor_url: actorUri,
+        actor_data: actorData,
+        fetched_at: new Date().toISOString()
+      });
+    
+    console.log(`Cached actor data for ${actorUri}, inbox: ${actorData.inbox}`);
+    return actorData.inbox || null;
+  } catch (error) {
+    console.error(`Error fetching actor profile ${actorUri}:`, error);
+    return null;
+  }
+}
+
+// Batch resolve inbox URLs for multiple actors
+export async function batchResolveInboxUrls(actorUris: string[]): Promise<Map<string, string>> {
+  const inboxMap = new Map<string, string>();
+  
+  // Get all cached data in one query
+  const { data: cachedActors } = await supabaseClient
+    .from("remote_actors_cache")
+    .select("actor_url, actor_data")
+    .in("actor_url", actorUris);
+  
+  // Build cache lookup
+  const cacheMap = new Map();
+  cachedActors?.forEach(cached => {
+    if (cached.actor_data?.inbox) {
+      cacheMap.set(cached.actor_url, cached.actor_data.inbox);
+    }
+  });
+  
+  // Process each actor URI
+  for (const actorUri of actorUris) {
+    // Check cache first
+    if (cacheMap.has(actorUri)) {
+      inboxMap.set(actorUri, cacheMap.get(actorUri));
+      continue;
+    }
+    
+    // Fallback to individual resolution
+    const inboxUrl = await resolveInboxUrl(actorUri);
+    if (inboxUrl) {
+      inboxMap.set(actorUri, inboxUrl);
+    } else {
+      // Use fallback construction as last resort
+      console.warn(`Could not resolve inbox for ${actorUri}, using fallback`);
+      inboxMap.set(actorUri, `${actorUri}/inbox`);
+    }
+  }
+  
+  return inboxMap;
+}
+
+// Store remote actor data when processing Follow activities
+export async function storeRemoteActorData(actorUri: string, actorData: any) {
+  try {
+    await supabaseClient
+      .from("remote_actors_cache")
+      .upsert({
+        actor_url: actorUri,
+        actor_data: actorData,
+        fetched_at: new Date().toISOString()
+      });
+    
+    console.log(`Stored remote actor data for ${actorUri}`);
+  } catch (error) {
+    console.error(`Error storing remote actor data for ${actorUri}:`, error);
+  }
 }
 
 // Create actor object

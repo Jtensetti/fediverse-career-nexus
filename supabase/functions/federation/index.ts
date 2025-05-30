@@ -1,41 +1,13 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { signRequest } from "./http-signature.ts";
+import { batchResolveInboxUrls, logRequestMetrics } from "../actor/utils.ts";
 
 // Initialize the Supabase client
 const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
-
-// Log federation request metrics
-async function logRequestMetrics(
-  remoteHost: string, 
-  endpoint: string, 
-  startTime: number, 
-  success: boolean, 
-  statusCode?: number, 
-  errorMessage?: string
-) {
-  const endTime = performance.now();
-  const responseTimeMs = Math.round(endTime - startTime);
-  
-  try {
-    await supabaseClient
-      .from("federation_request_logs")
-      .insert({
-        remote_host: remoteHost,
-        endpoint,
-        success,
-        response_time_ms: responseTimeMs,
-        status_code: statusCode,
-        error_message: errorMessage
-      });
-  } catch (error) {
-    console.error("Failed to log request metrics:", error);
-    // Non-blocking - we don't want metrics logging to break functionality
-  }
-}
 
 // Function to check if a domain is blocked
 async function isDomainBlocked(url: string): Promise<boolean> {
@@ -146,15 +118,20 @@ async function processQueueItem(item: any) {
       return;
     }
     
-    // For each recipient, deliver the activity
+    // Batch resolve inbox URLs for all recipients
+    console.log(`Resolving inbox URLs for ${recipients.length} recipients`);
+    const inboxMap = await batchResolveInboxUrls(recipients);
+    
+    // For each recipient, deliver the activity using their actual inbox URL
     const deliveryPromises = recipients.map(async (recipient) => {
       try {
-        // Start timing the request
         const startTime = performance.now();
+        const inboxUrl = inboxMap.get(recipient);
         
-        // For simplicity, assume recipient is an actor URL
-        // In a real implementation, we'd need to look up the inbox URL
-        const inboxUrl = `${recipient}/inbox`;
+        if (!inboxUrl) {
+          throw new Error(`Could not resolve inbox URL for ${recipient}`);
+        }
+        
         const remoteHost = new URL(inboxUrl).hostname;
         const origin = new URL(Deno.env.get("SUPABASE_URL") ?? "").origin;
         const keyId = `${origin}/${actor.preferred_username}#main-key`;
@@ -181,7 +158,7 @@ async function processQueueItem(item: any) {
           keyId
         );
         
-        // Send the request
+        // Send the request to the actual inbox URL
         const response = await fetch(inboxUrl, {
           method: "POST",
           headers: headers,
@@ -211,15 +188,18 @@ async function processQueueItem(item: any) {
         
         // Try to extract host for metrics logging on failure
         try {
-          const remoteHost = new URL(recipient).hostname;
-          await logRequestMetrics(
-            remoteHost, 
-            "/inbox", 
-            performance.now() - 100, // Estimate start time since we don't have it at this point
-            false, 
-            0, 
-            error.message
-          );
+          const inboxUrl = inboxMap.get(recipient);
+          if (inboxUrl) {
+            const remoteHost = new URL(inboxUrl).hostname;
+            await logRequestMetrics(
+              remoteHost, 
+              "/inbox", 
+              performance.now() - 100, // Estimate start time since we don't have it at this point
+              false, 
+              0, 
+              error.message
+            );
+          }
         } catch (logError) {
           console.error("Error logging metrics on failure:", logError);
         }

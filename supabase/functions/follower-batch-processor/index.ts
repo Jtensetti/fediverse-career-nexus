@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { SignJWT } from "https://esm.sh/jose@4.14.4";
+import { batchResolveInboxUrls, logRequestMetrics } from "../actor/utils.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -82,15 +83,21 @@ async function processBatch(batch: any) {
       throw new Error(`Actor not found: ${actorError?.message}`);
     }
     
-    // Flatten the batch targets to an array of inbox URLs
-    const inboxUrls = [];
+    // Extract actor URIs from batch targets
+    const actorUris = [];
     for (const batchTarget of batch.batch_targets) {
       if (Array.isArray(batchTarget)) {
-        inboxUrls.push(...batchTarget);
+        actorUris.push(...batchTarget);
       }
     }
     
-    console.log(`Batch ${batch.id} has ${inboxUrls.length} targets before filtering`);
+    console.log(`Batch ${batch.id} has ${actorUris.length} actor URIs before inbox resolution`);
+    
+    // Resolve actual inbox URLs for all actors
+    const inboxMap = await batchResolveInboxUrls(actorUris);
+    const inboxUrls = Array.from(inboxMap.values());
+    
+    console.log(`Resolved ${inboxUrls.length} inbox URLs`);
     
     // Filter out blocked domains
     const filteredInboxUrls = await filterBlockedInboxUrls(inboxUrls);
@@ -211,10 +218,11 @@ async function processBatch(batch: any) {
   }
 }
 
-// Deliver activity to a single inbox
+// Deliver activity to a single inbox using the actual inbox URL
 async function deliverActivity(inboxUrl: string, activity: any, actor: any) {
   try {
-    console.log(`Delivering to ${inboxUrl}`);
+    console.log(`Delivering to actual inbox: ${inboxUrl}`);
+    const startTime = performance.now();
     
     // Sign the request
     const keyId = `${new URL(Deno.env.get("SUPABASE_URL") ?? "").origin}/u/${actor.preferred_username}#main-key`;
@@ -225,6 +233,8 @@ async function deliverActivity(inboxUrl: string, activity: any, actor: any) {
     headers.set("Content-Type", "application/activity+json");
     headers.set("Accept", "application/activity+json");
     headers.set("User-Agent", "ActivityPub-BatchProcessor/1.0");
+    headers.set("Date", new Date().toUTCString());
+    headers.set("Host", new URL(inboxUrl).host);
     
     // Create signature (simplified for this example)
     // In a real implementation, you'd use HTTP signature
@@ -236,12 +246,24 @@ async function deliverActivity(inboxUrl: string, activity: any, actor: any) {
     // Simple signature mechanism (this should be replaced with proper HTTP signatures)
     const signed = await signRequest(inboxUrl, "POST", headers, body, privateKey, keyId);
     
-    // Send the request
+    // Send the request to the actual inbox URL
     const response = await fetch(inboxUrl, {
       method: "POST",
       headers: headers,
       body: body
     });
+    
+    const remoteHost = new URL(inboxUrl).hostname;
+    
+    // Log metrics
+    await logRequestMetrics(
+      remoteHost,
+      "/inbox",
+      startTime,
+      response.ok,
+      response.status,
+      response.ok ? undefined : `HTTP ${response.status}`
+    );
     
     // Check response
     if (!response.ok) {
