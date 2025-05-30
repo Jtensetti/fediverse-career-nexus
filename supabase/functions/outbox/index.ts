@@ -18,6 +18,60 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
+// Function to generate unique activity and object IDs
+function generateActivityId(username: string, actorId: string): string {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const activityUuid = crypto.randomUUID();
+  return `${supabaseUrl}/functions/v1/activities/${activityUuid}`;
+}
+
+function generateObjectId(username: string, objectType: string): string {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const objectUuid = crypto.randomUUID();
+  return `${supabaseUrl}/functions/v1/objects/${objectUuid}`;
+}
+
+// Function to assign IDs to activity and embedded objects
+function assignActivityIds(activity: any, username: string, actorId: string): any {
+  const enrichedActivity = { ...activity };
+  
+  // Generate unique ID for the activity if not present
+  if (!enrichedActivity.id) {
+    enrichedActivity.id = generateActivityId(username, actorId);
+  }
+  
+  // Add published timestamp if not present
+  if (!enrichedActivity.published) {
+    enrichedActivity.published = new Date().toISOString();
+  }
+  
+  // Handle embedded objects
+  if (enrichedActivity.object && typeof enrichedActivity.object === 'object') {
+    const obj = enrichedActivity.object;
+    
+    // Generate unique ID for the object if not present
+    if (!obj.id) {
+      const objectType = obj.type || 'Object';
+      obj.id = generateObjectId(username, objectType);
+    }
+    
+    // Add published timestamp to object if not present
+    if (!obj.published) {
+      obj.published = new Date().toISOString();
+    }
+    
+    // Ensure object has proper attribution
+    if (!obj.attributedTo) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      obj.attributedTo = `${supabaseUrl}/functions/v1/actor/${username}`;
+    }
+    
+    enrichedActivity.object = obj;
+  }
+  
+  return enrichedActivity;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -338,6 +392,14 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
     );
   }
   
+  // ASSIGN UNIQUE IDs - This is the key change
+  const enrichedActivity = assignActivityIds(activity, username, actorId);
+  
+  console.log(`Generated activity ID: ${enrichedActivity.id}`);
+  if (enrichedActivity.object?.id) {
+    console.log(`Generated object ID: ${enrichedActivity.object.id}`);
+  }
+  
   // Check if actor has RSA keys, generate if not
   const { data: actorData, error: actorError } = await supabaseClient
     .from("actors")
@@ -399,13 +461,13 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
     }
   }
   
-  // Store in ap_objects table for local retrieval
+  // Store in ap_objects table for local retrieval with enriched activity
   const { data: apObject, error: apObjectError } = await supabaseClient
     .from("ap_objects")
     .insert({
-      type: activity.type,
+      type: enrichedActivity.type,
       attributed_to: actorId,
-      content: activity
+      content: enrichedActivity
     })
     .select()
     .single();
@@ -416,16 +478,16 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
   }
   
   // Use the new batch system for Create activities that should be sent to followers
-  if (activity.type === "Create" && 
-      (activity.to?.includes("https://www.w3.org/ns/activitystreams#Public") || 
-       activity.cc?.includes("https://www.w3.org/ns/activitystreams#Public"))) {
+  if (enrichedActivity.type === "Create" && 
+      (enrichedActivity.to?.includes("https://www.w3.org/ns/activitystreams#Public") || 
+       enrichedActivity.cc?.includes("https://www.w3.org/ns/activitystreams#Public"))) {
     try {
       // Create batches of followers
       const { data: batchResult, error: batchError } = await supabaseClient.rpc(
         "create_follower_batches",
         {
           p_actor_id: actorId,
-          p_activity: activity,
+          p_activity: enrichedActivity, // Use enriched activity with IDs
           p_batch_size: 100
         }
       );
@@ -436,7 +498,7 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
         const { data: queueItem, error: queueError } = await supabaseClient
           .from("federation_queue")
           .insert({
-            activity: activity,
+            activity: enrichedActivity, // Use enriched activity with IDs
             actor_id: actorId,
             status: "pending"
           })
@@ -465,6 +527,8 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
           JSON.stringify({ 
             success: true,
             message: "Activity accepted and batched for federation",
+            activityId: enrichedActivity.id,
+            objectId: enrichedActivity.object?.id,
             batches: batchResult
           }),
           {
@@ -483,7 +547,7 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
   const { data: queueItem, error: queueError } = await supabaseClient
     .from("federation_queue")
     .insert({
-      activity: activity,
+      activity: enrichedActivity, // Use enriched activity with IDs
       actor_id: actorId,
       status: "pending"
     })
@@ -505,6 +569,8 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
     JSON.stringify({ 
       success: true,
       message: "Activity accepted and queued for federation",
+      activityId: enrichedActivity.id,
+      objectId: enrichedActivity.object?.id,
       id: queueItem.id
     }),
     {

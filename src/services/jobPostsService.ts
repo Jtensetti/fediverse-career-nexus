@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { federateJobPost } from "./activityPubService";
 
 export interface JobPost {
   id: string;
@@ -144,7 +144,7 @@ export const createJobPost = async (jobPost: Omit<JobPost, 'id' | 'user_id' | 'c
         ...jobPost,
         user_id: session.session.user.id
       })
-      .select('id')
+      .select('*')
       .single();
     
     if (error) {
@@ -158,6 +158,18 @@ export const createJobPost = async (jobPost: Omit<JobPost, 'id' | 'user_id' | 'c
     }
     
     toast.success('Job post created successfully');
+    
+    // If the job post is published, federate it
+    if (data.published) {
+      console.log('Job post is published, federating...');
+      const federationSuccess = await federateJobPost(data);
+      if (federationSuccess) {
+        toast.success('Job post federated to the network');
+      } else {
+        toast.error('Job post created but federation failed');
+      }
+    }
+    
     return data.id;
   } catch (error) {
     console.error('Error in createJobPost:', error);
@@ -179,11 +191,13 @@ export const updateJobPost = async (id: string, jobPost: Partial<JobPost>): Prom
     // Remove fields that should not be updated
     const { id: _, user_id: __, created_at: ___, ...updateData } = jobPost as any;
     
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('job_posts')
       .update(updateData)
       .eq('id', id)
-      .eq('user_id', session.session.user.id);
+      .eq('user_id', session.session.user.id)
+      .select('*')
+      .single();
     
     if (error) {
       console.error('Error updating job post:', error);
@@ -192,6 +206,18 @@ export const updateJobPost = async (id: string, jobPost: Partial<JobPost>): Prom
     }
     
     toast.success('Job post updated successfully');
+    
+    // If the job post was just published (published changed from false to true), federate it
+    if (updateData.published === true) {
+      console.log('Job post was published, federating...');
+      const federationSuccess = await federateJobPost(data);
+      if (federationSuccess) {
+        toast.success('Job post federated to the network');
+      } else {
+        toast.error('Job post updated but federation failed');
+      }
+    }
+    
     return true;
   } catch (error) {
     console.error('Error in updateJobPost:', error);
@@ -241,11 +267,13 @@ export const toggleJobPostPublished = async (id: string, published: boolean): Pr
       return false;
     }
     
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('job_posts')
       .update({ published })
       .eq('id', id)
-      .eq('user_id', session.session.user.id);
+      .eq('user_id', session.session.user.id)
+      .select('*')
+      .single();
     
     if (error) {
       console.error('Error updating job post published status:', error);
@@ -254,6 +282,18 @@ export const toggleJobPostPublished = async (id: string, published: boolean): Pr
     }
     
     toast.success(published ? 'Job post published' : 'Job post unpublished');
+    
+    // If the job post was just published, federate it
+    if (published) {
+      console.log('Job post was published, federating...');
+      const federationSuccess = await federateJobPost(data);
+      if (federationSuccess) {
+        toast.success('Job post federated to the network');
+      } else {
+        toast.error('Job post published but federation failed');
+      }
+    }
+    
     return true;
   } catch (error) {
     console.error('Error in toggleJobPostPublished:', error);
