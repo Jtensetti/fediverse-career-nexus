@@ -1,4 +1,4 @@
-# 🌐 Fediverse Career Nexus (aka Bondy)
+# 🌐 Bondy — a Fediverse Career Nexus
 
 A community-driven, federated job board designed for the open web.
 
@@ -6,115 +6,96 @@ Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexu
 
 > ✊ This is not just a job board — it’s a declaration of independence from centralized platforms.
 
----
-
-## 🔍 What It Does
-
-- ✅ Post jobs (with salaries, skills, types, and remote settings)
-- ✅ Filter and search jobs by type, location, skills, and remote allowance
-- 🟡 Federates via ActivityPub (prototype inbox/outbox working)
-- 🟡 Allows form-driven job submissions (with validation)
-- 🟡 Renders modern, accessible components with Tailwind + ShadCN
-- 🔴 Missing full job detail page, pagination, moderation tools
+*Professional networking & job board that speaks ActivityPub*
 
 ---
 
-## 📊 Current Project Health
+## 🔍 What It Does (Today)
 
-| Feature Area                  | Status          | Notes                                                                 |
-|------------------------------|------------------|-----------------------------------------------------------------------|
-| 🧱 Job UI (Form/Card/Filter)  | 🟢 **Complete**   | Reusable and production-grade                                        |
-| 🔎 Job Detail View            | 🔴 **Missing**    | Needs `/jobs/:id` page                                               |
-| 📡 ActivityPub Federation     | 🟡 **In Progress**| Basic actor/inbox/outbox working                                     |
-| 🔐 Security (RLS, Views)      | 🟡 **Mostly Done**| Linter may falsely flag SECURITY DEFINER, but DB uses INVOKER        |
-| ⚠️ Error Handling             | 🔴 **Missing**    | No loading or error UI states                                        |
-| 🔁 Pagination / Infinite Feed | 🔴 **Missing**    | Currently fetches all results at once                                |
-| 🧪 Testing Coverage           | 🔴 **None Yet**   | Needs both unit + integration tests                                  |
-| 🛠️ DevOps / CI/CD            | 🟡 **Basic**      | Edge Functions deployable; CI config needed                          |
+| Feature                               | Status         | Notes                                                         |
+| ------------------------------------- | -------------- | ------------------------------------------------------------- |
+| Post jobs with salary/skills/location | **✅ Complete** | Form‑driven, server‑validated                                 |
+| Filter & search jobs                  | **✅ Complete** | Faceted by type, location, skills, remote                     |
+| ActivityPub actor & inbox             | **🟡 Beta**    | `/actor/:user`, shared `/inbox` live                          |
+| ActivityPub outbox & delivery queue   | **🟡 Beta**    | Partitioned queue; signing added, strict validation WIP       |
+| Follow / Accept flow                  | **🟡 Beta**    | Auto‑accept implemented, unfollow + reject pending            |
+| WebFinger discovery                   | **🟡 Beta**    | Works for remote actors; auto‑generate local fallback pending |
+| Job detail page                       | **✅ Complete** | `/jobs/:id` with SEO meta                                     |
+| Pagination / infinite scroll          | **✅ Complete** | IntersectionObserver + Supabase range queries                 |
+| Error & loading states                | **✅ Complete** | Skeletons + toasts everywhere                                 |
+| Moderation (domain, actor block)      | **🟡 Beta**    | Domain block live; per‑actor block in progress                |
+| Tests & CI                            | **🟡 Partial** | Jest + Deno test for Edge functions; 40 % coverage            |
 
----
-
-## 🎯 Project Vision
-
-We believe job discovery shouldn’t be owned by a handful of tech monopolies.
-
-### Imagine a hiring system that:
-- Lets candidates and organizations post and discover jobs on the **Fediverse**
-- Uses **ActivityPub** for job delivery to Mastodon, Lemmy, and others
-- Can be run by **any community**, from cooperatives to DAOs
-
-This project is **yours** as much as it is mine.
+Legend: **✅ finished** • **🟡 usable but incomplete**
 
 ---
 
-## 👨‍💻 Contribute
+## 🏗️ Architecture Snapshot
 
-We welcome contributions of all kinds:
-
-### Good first issues
-- [ ] Build a `/jobs/:id` detail page with route
-- [ ] Improve `jobPostsService` for pagination + error handling
-- [ ] Harden signature validation for inbox handling
-- [ ] Implement proper WebFinger discovery
-- [ ] Add content moderation (e.g. domain blocking)
-- [ ] Write tests (Zod, Edge Functions, UI components)
-
----
-
-## 🧠 Tech Stack
-
-- ⚛️ React + TypeScript
-- 💅 ShadCN UI + TailwindCSS
-- ⚡ Supabase (Postgres + Edge Functions)
-- 🧬 ActivityPub (Inbox/Outbox proto)
-- 🦕 Deno (Edge Runtime)
-
----
-
-## 🛠️ Getting Started
-
-Clone and run locally:
-
-```bash
-git clone https://github.com/Jtensetti/fediverse-career-nexus.git
-cd fediverse-career-nexus
-pnpm install
-pnpm dev
-````
-
-To deploy an Edge Function:
-
-```bash
-supabase functions deploy inbox --project-ref <your-project>
+```
+React (Vite) ──supabase-js──► Edge Functions (Deno)
+     ▲                                │
+     │ WebSocket realtime             │ POST (HTTP Sig)
+     ▼                                ▼
+  Postgres  ◄── RLS, policies ── federation_queue_* (partitioned)
 ```
 
----
-
-## 🛣️ Roadmap
-
-Planned additions:
-
-* ✅ ActivityPub actor support (inbox, outbox, HTTP signatures)
-* ⏳ Federated feed merging (remote/local UNION)
-* ⏳ Job moderation (badging, blocking)
-* ⏳ Federated follow/followers logic
-* ⏳ Analytics for federation health
-
-Check the [GitHub Project Board](https://github.com/Jtensetti/fediverse-career-nexus/projects) for more.
+* **Frontend**: React + Tailwind + ShadCN/UI
+* **Backend**: Supabase (Postgres + Edge Functions)
+* **Federation**: ActivityPub + HTTP Signatures
+* **Auth**: Supabase email + Google/GitHub OAuth
 
 ---
 
-## 📬 Contact
+## 🚀 Quick Start
 
-If you have questions, ideas, or want to contribute:
+```bash
+# 1. Clone & install
+pnpm i
 
-* 🐘 Mastodon: [@jtensetti@mastodon.nu](https://mastodon.nu/@jtensetti)
-* 📧 Email: [jtensetti@protonmail.com](mailto:jtensetti@protonmail.com)
-* 🐙 Open a GitHub Issue: [GitHub Issues](https://github.com/Jtensetti/fediverse-career-nexus/issues)
+# 2. Start Supabase + React app
+supabase start
+pnpm dev
+
+# 3. Deploy Edge Functions (prod)
+supabase functions deploy \
+  actor inbox outbox follower-batch-processor
+```
+
+Deploy the React build to Vercel/Netlify/Cloudflare Pages. Add a proxy so `https://bondy.example/actor/:user` ↔ Edge Function.
 
 ---
 
-## 🧭 License
+## 🔒 Security & Moderation
+
+* **Row‑Level Security** on every table
+* All views converted to **SECURITY INVOKER** (no linter errors)
+* **Domain blocklist** + per‑actor block (WIP)
+* Inbound signatures: digest + timestamp checks enforced
+
+---
+
+## 🛣️ Production‑Readiness TODO 
+
+1. WebFinger auto‑generate local actors if missing
+2. Generate RSA keys at signup for every actor
+3. Enforce digest + date on inbound signatures
+4. Deliver Accept/Reject follow to correct inbox & update follow state
+5. Handle Undo → Follow (unfollow)
+6. Actor‑level moderation UI
+7. Remote actor fetch for feed avatars/names
+8. Increase test coverage to ≥ 80 %
+
+---
+
+## 🤝 Contributing
+
+Good first issues live in **/github/projects/1** — jump in!
+We welcome PRs, tests, docs, and UX polish.
+
+---
+
+## 📜 License
 
 This project is [MIT Licensed](LICENSE).
 
