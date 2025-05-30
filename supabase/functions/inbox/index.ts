@@ -1,4 +1,3 @@
-
 // First part of the file stays the same
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 import { verifySignature } from "npm:http-signature@1.3.6";
@@ -340,6 +339,145 @@ async function handleFollowActivity(activityBody: any, recipientActor: any, supa
   }
 }
 
+// Function to extract local recipients from activity
+function extractLocalRecipients(activity: any, supabaseUrl: string): string[] {
+  const localRecipients = new Set<string>();
+  const domain = new URL(supabaseUrl).origin;
+  
+  // Check 'to' field
+  if (activity.to) {
+    const toArray = Array.isArray(activity.to) ? activity.to : [activity.to];
+    for (const recipient of toArray) {
+      if (typeof recipient === 'string' && recipient.startsWith(domain) && 
+          recipient !== "https://www.w3.org/ns/activitystreams#Public") {
+        // Extract username from URL like https://domain.com/username
+        const urlPath = new URL(recipient).pathname;
+        const username = urlPath.substring(1); // Remove leading slash
+        if (username && !username.includes('/')) { // Simple username validation
+          localRecipients.add(username);
+        }
+      }
+    }
+  }
+  
+  // Check 'cc' field
+  if (activity.cc) {
+    const ccArray = Array.isArray(activity.cc) ? activity.cc : [activity.cc];
+    for (const recipient of ccArray) {
+      if (typeof recipient === 'string' && recipient.startsWith(domain) && 
+          recipient !== "https://www.w3.org/ns/activitystreams#Public") {
+        const urlPath = new URL(recipient).pathname;
+        const username = urlPath.substring(1);
+        if (username && !username.includes('/')) {
+          localRecipients.add(username);
+        }
+      }
+    }
+  }
+  
+  return Array.from(localRecipients);
+}
+
+// Function to handle shared inbox distribution
+async function handleSharedInboxDistribution(
+  activityBody: any, 
+  supabase: any, 
+  remoteHost: string, 
+  keyId: string, 
+  signatureIsValid: boolean,
+  domainModerationStatus: any
+): Promise<Response> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  if (!supabaseUrl) {
+    console.error("Missing SUPABASE_URL environment variable");
+    return new Response(JSON.stringify({ error: "Server configuration error" }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  // Extract local recipients from the activity
+  const localUsernames = extractLocalRecipients(activityBody, supabaseUrl);
+  
+  if (localUsernames.length === 0) {
+    console.log("No local recipients found in shared inbox activity");
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'No local recipients found',
+      signature_valid: signatureIsValid,
+      domain_status: domainModerationStatus.status
+    }), {
+      status: 202,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  console.log(`Distributing shared inbox activity to ${localUsernames.length} local users: ${localUsernames.join(', ')}`);
+  
+  // Get actor IDs for all local usernames
+  const { data: actors, error: actorsError } = await supabase
+    .from('actors')
+    .select('id, preferred_username')
+    .in('preferred_username', localUsernames);
+  
+  if (actorsError) {
+    console.error('Error fetching local actors:', actorsError);
+    return new Response(JSON.stringify({ error: 'Error processing recipients' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  if (!actors || actors.length === 0) {
+    console.log("No matching local actors found");
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'No matching local actors found',
+      signature_valid: signatureIsValid,
+      domain_status: domainModerationStatus.status
+    }), {
+      status: 202,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  // Create inbox events for each local recipient
+  const inboxEvents = actors.map(actor => ({
+    activity: activityBody,
+    recipient_id: actor.id,
+    sender: activityBody.actor,
+    signature_verified: signatureIsValid,
+    ...(domainModerationStatus.status === 'probation' && {
+      notes: `From domain on probation: ${domainModerationStatus.reason || 'No reason specified'}`
+    })
+  }));
+  
+  const { error: insertError } = await supabase
+    .from('inbox_events')
+    .insert(inboxEvents);
+  
+  if (insertError) {
+    console.error('Error storing shared inbox events:', insertError);
+    return new Response(JSON.stringify({ error: 'Failed to process shared inbox activity' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  
+  console.log(`Successfully distributed activity to ${actors.length} local recipients`);
+  
+  return new Response(JSON.stringify({ 
+    success: true, 
+    message: `Activity distributed to ${actors.length} local recipients`,
+    recipients: actors.map(a => a.preferred_username),
+    signature_valid: signatureIsValid,
+    domain_status: domainModerationStatus.status
+  }), {
+    status: 202,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -358,6 +496,27 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Parse the URL to determine if this is a shared inbox request
+    const url = new URL(req.url);
+    const pathname = url.pathname;
+    
+    // Check if this is a shared inbox request (path is exactly /inbox)
+    const isSharedInbox = pathname === '/inbox';
+    let username = null;
+    
+    if (!isSharedInbox) {
+      // Extract username from path like /:username/inbox
+      const pathParts = pathname.split('/').filter(Boolean);
+      if (pathParts.length === 2 && pathParts[1] === 'inbox') {
+        username = pathParts[0];
+      } else {
+        return new Response(JSON.stringify({ error: 'Invalid inbox path' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     // Extract the remote host for rate limiting and logging
     let remoteHost = "";
     let keyId = "";
@@ -609,10 +768,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Determine the recipient
-    const path = new URL(req.url).pathname;
-    const username = path.split('/').pop();
-    
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
@@ -627,6 +782,19 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     
+    // Handle shared inbox requests
+    if (isSharedInbox) {
+      return await handleSharedInboxDistribution(
+        activityBody, 
+        supabase, 
+        remoteHost, 
+        keyId, 
+        signatureIsValid, 
+        domainModerationStatus
+      );
+    }
+    
+    // Handle individual user inbox requests
     // Find the recipient actor
     const { data: actorData, error: actorError } = await supabase
       .from('actors')
