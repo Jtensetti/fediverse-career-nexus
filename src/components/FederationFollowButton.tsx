@@ -32,6 +32,21 @@ export default function FederationFollowButton({
     try {
       setLoading(true);
       
+      // Ensure the actor has RSA keys before creating follow
+      const { error: ensureKeysError } = await supabase.rpc('ensure_actor_keys', {
+        actor_id: localActorId
+      });
+      
+      if (ensureKeysError) {
+        console.error("Error ensuring actor keys:", ensureKeysError);
+        toast({
+          title: "Key generation failed",
+          description: "Could not generate signing keys for your actor.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       const { data, error } = await supabase.rpc('create_follow', {
         local_actor_id: localActorId,
         remote_actor_uri: remoteActorUri
@@ -49,7 +64,7 @@ export default function FederationFollowButton({
       
       toast({
         title: "Follow request sent",
-        description: "Your follow request has been queued for federation.",
+        description: "Your follow request has been queued for federation with proper HTTP signatures.",
         variant: "default"
       });
       

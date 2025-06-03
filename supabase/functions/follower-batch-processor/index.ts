@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { SignJWT } from "https://esm.sh/jose@4.14.4";
 import { batchResolveInboxUrls, logRequestMetrics } from "../actor/utils.ts";
+import { signRequest } from "../federation/http-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,6 +82,33 @@ async function processBatch(batch: any) {
     
     if (actorError || !actor) {
       throw new Error(`Actor not found: ${actorError?.message}`);
+    }
+    
+    // Ensure actor has RSA keys
+    if (!actor.private_key) {
+      console.log(`Actor ${actor.preferred_username} missing private key, generating...`);
+      
+      // Call the ensure actor keys function
+      const { error: ensureKeysError } = await supabaseClient.rpc('ensure_actor_keys', {
+        actor_id: batch.actor_id
+      });
+      
+      if (ensureKeysError) {
+        throw new Error(`Failed to generate keys for actor: ${ensureKeysError.message}`);
+      }
+      
+      // Refetch actor with new keys
+      const { data: updatedActor, error: refetchError } = await supabaseClient
+        .from("actors")
+        .select("id, private_key, preferred_username")
+        .eq("id", batch.actor_id)
+        .single();
+      
+      if (refetchError || !updatedActor?.private_key) {
+        throw new Error(`Failed to retrieve generated keys for actor`);
+      }
+      
+      actor.private_key = updatedActor.private_key;
     }
     
     // Extract actor URIs from batch targets
@@ -218,14 +246,14 @@ async function processBatch(batch: any) {
   }
 }
 
-// Deliver activity to a single inbox using the actual inbox URL
+// Deliver activity to a single inbox using proper HTTP signatures
 async function deliverActivity(inboxUrl: string, activity: any, actor: any) {
   try {
     console.log(`Delivering to actual inbox: ${inboxUrl}`);
     const startTime = performance.now();
     
-    // Sign the request
-    const keyId = `${new URL(Deno.env.get("SUPABASE_URL") ?? "").origin}/u/${actor.preferred_username}#main-key`;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const keyId = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}#main-key`;
     const body = JSON.stringify(activity);
     
     // Prepare headers
@@ -236,15 +264,14 @@ async function deliverActivity(inboxUrl: string, activity: any, actor: any) {
     headers.set("Date", new Date().toUTCString());
     headers.set("Host", new URL(inboxUrl).host);
     
-    // Create signature (simplified for this example)
-    // In a real implementation, you'd use HTTP signature
-    const privateKey = actor.private_key;
-    if (!privateKey) {
-      throw new Error("Actor has no private key");
+    // Sign the request using the real HTTP signature implementation
+    if (!actor.private_key) {
+      throw new Error("Actor has no private key for signing");
     }
     
-    // Simple signature mechanism (this should be replaced with proper HTTP signatures)
-    const signed = await signRequest(inboxUrl, "POST", headers, body, privateKey, keyId);
+    await signRequest(inboxUrl, "POST", headers, body, actor.private_key, keyId);
+    
+    console.log(`Signed request to ${inboxUrl} with key ${keyId}`);
     
     // Send the request to the actual inbox URL
     const response = await fetch(inboxUrl, {
@@ -271,27 +298,12 @@ async function deliverActivity(inboxUrl: string, activity: any, actor: any) {
       throw new Error(`HTTP error ${response.status}: ${text}`);
     }
     
+    console.log(`Successfully delivered to ${inboxUrl} with HTTP signature`);
     return { inboxUrl, success: true };
   } catch (error) {
     console.error(`Delivery to ${inboxUrl} failed:`, error);
     return { inboxUrl, success: false, error: error.message };
   }
-}
-
-// Simple HTTP signature implementation (placeholder)
-async function signRequest(
-  url: string,
-  method: string,
-  headers: Headers,
-  body: string,
-  privateKey: string,
-  keyId: string
-) {
-  // Implementation would depend on your signing strategy
-  // This is just a placeholder
-  
-  // In a real implementation, you'd follow the HTTP Signature spec
-  return true;
 }
 
 serve(async (req) => {

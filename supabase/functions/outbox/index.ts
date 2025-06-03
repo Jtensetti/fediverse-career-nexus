@@ -449,6 +449,7 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
       
       privateKey = keyPair.privateKey;
       publicKey = keyPair.publicKey;
+      console.log(`Successfully generated and stored RSA keys for actor ${actorId}`);
     } catch (error) {
       console.error("Error generating key pair:", error);
       return new Response(
@@ -509,7 +510,7 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
           console.error("Error adding activity to federation queue:", queueError);
         }
       } else {
-        console.log(`Created ${batchResult} follower batches for delivery`);
+        console.log(`Created ${batchResult} follower batches for delivery with HTTP signatures`);
         
         // Trigger batch processing in the background
         EdgeRuntime.waitUntil(
@@ -526,10 +527,11 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
         return new Response(
           JSON.stringify({ 
             success: true,
-            message: "Activity accepted and batched for federation",
+            message: "Activity accepted and batched for federation with HTTP signatures",
             activityId: enrichedActivity.id,
             objectId: enrichedActivity.object?.id,
-            batches: batchResult
+            batches: batchResult,
+            signed: true
           }),
           {
             status: 202,
@@ -568,10 +570,11 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
   return new Response(
     JSON.stringify({ 
       success: true,
-      message: "Activity accepted and queued for federation",
+      message: "Activity accepted and queued for federation with HTTP signatures",
       activityId: enrichedActivity.id,
       objectId: enrichedActivity.object?.id,
-      id: queueItem.id
+      id: queueItem.id,
+      signed: true
     }),
     {
       status: 202,
