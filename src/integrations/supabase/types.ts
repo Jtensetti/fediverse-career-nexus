@@ -1335,15 +1335,7 @@ export type Database = {
           source: string | null
           type: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "ap_objects_attributed_to_fkey"
-            columns: ["attributed_to"]
-            isOneToOne: false
-            referencedRelation: "actors"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       federated_posts_with_moderation: {
         Row: {
@@ -1355,15 +1347,7 @@ export type Database = {
           source: string | null
           type: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "ap_objects_attributed_to_fkey"
-            columns: ["attributed_to"]
-            isOneToOne: false
-            referencedRelation: "actors"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       federation_metrics_by_host: {
         Row: {
@@ -1378,12 +1362,10 @@ export type Database = {
       federation_queue_stats: {
         Row: {
           failed_count: number | null
-          latest: string | null
-          pending: number | null
+          partition_key: number | null
           pending_count: number | null
           processed_count: number | null
           processing_count: number | null
-          queue_name: number | null
           total_count: number | null
         }
         Relationships: []

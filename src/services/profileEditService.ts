@@ -1,7 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
+import { createUserActor } from "./actorService";
 
 export interface ProfileUpdateData {
   fullname?: string;
@@ -93,5 +93,51 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     console.error("Error uploading avatar:", error);
     toast.error("Failed to upload avatar");
     return null;
+  }
+};
+
+export const updateProfile = async (profileData: any) => {
+  try {
+    const { data: session } = await supabase.auth.getSession();
+    
+    if (!session.session) {
+      throw new Error('You must be logged in to update your profile');
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(profileData)
+      .eq('id', session.session.user.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    // If username was updated and this is the first time setting it, create actor
+    if (profileData.username) {
+      // Check if user has an actor
+      const { data: existingActor } = await supabase
+        .from('actors')
+        .select('id')
+        .eq('user_id', session.session.user.id)
+        .single();
+
+      if (!existingActor) {
+        console.log('Creating actor for new username:', profileData.username);
+        const actorCreated = await createUserActor(session.session.user.id);
+        if (actorCreated) {
+          console.log('Actor created successfully');
+        } else {
+          console.warn('Failed to create actor, but profile update succeeded');
+        }
+      }
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    throw error;
   }
 };

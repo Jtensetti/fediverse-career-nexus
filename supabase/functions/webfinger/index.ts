@@ -47,6 +47,32 @@ async function logRequestMetrics(
   }
 }
 
+// Create local actor object on-demand
+function createLocalActorObject(profile: any, domain: string) {
+  const actorUrl = `https://${domain}/actor/${profile.username}`;
+  
+  return {
+    "@context": [
+      "https://www.w3.org/ns/activitystreams",
+      "https://w3id.org/security/v1"
+    ],
+    id: actorUrl,
+    type: "Person",
+    preferredUsername: profile.username,
+    name: profile.fullname || profile.username,
+    summary: profile.bio || "",
+    inbox: `${actorUrl}/inbox`,
+    outbox: `${actorUrl}/outbox`,
+    followers: `${actorUrl}/followers`,
+    following: `${actorUrl}/following`,
+    publicKey: {
+      id: `${actorUrl}#main-key`,
+      owner: actorUrl,
+      publicKeyPem: "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----" // Placeholder
+    }
+  };
+}
+
 // Fetch remote WebFinger
 async function fetchRemoteWebFinger(domain: string, username: string) {
   const webfingerUrl = `https://${domain}/.well-known/webfinger?resource=acct:${username}@${domain}`;
@@ -245,18 +271,18 @@ serve(async (req) => {
       }
     }
 
-    // Handle local domain (existing logic)
+    // Handle local domain
     console.log(`Processing local user ${username} on domain ${currentDomain}`);
 
-    // If not in cache, look up the user in the database
-    const { data: profile, error } = await supabaseClient
+    // Look up the user in the database
+    const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
-      .select("id, username")
+      .select("id, username, fullname, bio")
       .eq("username", username)
       .single();
 
-    if (error || !profile) {
-      console.error("Error fetching profile:", error);
+    if (profileError || !profile) {
+      console.error("Error fetching profile:", profileError);
       await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 404, "User not found");
       return new Response(
         JSON.stringify({ error: "User not found" }),
@@ -267,59 +293,103 @@ serve(async (req) => {
       );
     }
 
-    // Check if we have an actor object for this user
-    const actorId = `https://${currentDomain}/${profile.username}`;
+    const actorId = `https://${currentDomain}/actor/${profile.username}`;
     
-    // Try to get from remote_actors_cache first (our own actors would be cached here too)
-    const { data: cachedActor, error: cacheError } = await supabaseClient
+    // Try to get actor from cache first
+    let { data: cachedActor, error: cacheError } = await supabaseClient
       .from("remote_actors_cache")
       .select("actor_data")
       .eq("actor_url", actorId)
       .single();
       
+    let actorObject;
+    
     if (!cacheError && cachedActor) {
-      // We found it in the cache
-      const webfingerResponse = {
-        subject: resource,
-        links: [
-          {
-            rel: "self",
-            type: "application/activity+json",
-            href: actorId
+      // Found in cache
+      actorObject = cachedActor.actor_data;
+      console.log(`Found cached local actor: ${actorId}`);
+    } else {
+      // Try to find in ap_objects
+      const { data: apObject, error: apError } = await supabaseClient
+        .from("ap_objects")
+        .select("content")
+        .eq("type", "Person")
+        .eq("content->>'preferredUsername'", username)
+        .single();
+        
+      if (!apError && apObject) {
+        actorObject = apObject.content;
+        console.log(`Found actor in ap_objects: ${actorId}`);
+        
+        // Cache it for future requests
+        try {
+          await supabaseClient
+            .from("remote_actors_cache")
+            .upsert({
+              actor_url: actorId,
+              actor_data: actorObject,
+              fetched_at: new Date().toISOString()
+            });
+        } catch (cachingError) {
+          console.error("Error caching local actor:", cachingError);
+        }
+      } else {
+        // Create actor on-demand
+        console.log(`Creating actor on-demand for ${username}`);
+        actorObject = createLocalActorObject(profile, currentDomain);
+        
+        // Try to find or create actor record
+        let { data: actorRecord } = await supabaseClient
+          .from("actors")
+          .select("id")
+          .eq("user_id", profile.id)
+          .single();
+          
+        if (!actorRecord) {
+          const { data: newActor, error: actorInsertError } = await supabaseClient
+            .from("actors")
+            .insert({
+              user_id: profile.id,
+              preferred_username: profile.username,
+              type: 'Person',
+              status: 'active'
+            })
+            .select("id")
+            .single();
+            
+          if (!actorInsertError) {
+            actorRecord = newActor;
           }
-        ]
-      };
-      
-      // Store in KV cache
-      await kv.set(cacheKey, webfingerResponse, { expireIn: CACHE_TTL });
-      
-      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
-      return new Response(
-        JSON.stringify(webfingerResponse),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/jrd+json" }
         }
-      );
-    }
-
-    // Lookup the actor object for this user
-    const { data: actorObject, error: actorError } = await supabaseClient
-      .from("ap_objects")
-      .select("id, type, content")
-      .eq("type", "Person")
-      .eq("attributed_to", profile.id)
-      .single();
-
-    if (actorError || !actorObject) {
-      console.error("Actor not found:", actorError);
-      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 404, "Actor not found");
-      return new Response(
-        JSON.stringify({ error: "Actor not found" }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        
+        // Store in ap_objects if we have an actor record
+        if (actorRecord) {
+          try {
+            await supabaseClient
+              .from("ap_objects")
+              .insert({
+                type: 'Person',
+                attributed_to: actorRecord.id,
+                content: actorObject
+              });
+          } catch (apInsertError) {
+            console.error("Error storing actor in ap_objects:", apInsertError);
+          }
         }
-      );
+        
+        // Cache the actor
+        try {
+          await supabaseClient
+            .from("remote_actors_cache")
+            .upsert({
+              actor_url: actorId,
+              actor_data: actorObject,
+              fetched_at: new Date().toISOString()
+            });
+        } catch (cachingError) {
+          console.error("Error caching generated actor:", cachingError);
+        }
+      }
     }
 
     // Construct WebFinger response
@@ -336,20 +406,6 @@ serve(async (req) => {
 
     // Store in KV cache
     await kv.set(cacheKey, webfingerResponse, { expireIn: CACHE_TTL });
-    
-    // Also cache the actor object for future use
-    try {
-      await supabaseClient
-        .from("remote_actors_cache")
-        .upsert({
-          actor_url: actorId,
-          actor_data: actorObject.content,
-          fetched_at: new Date().toISOString()
-        });
-    } catch (cachingError) {
-      console.error("Error caching actor:", cachingError);
-      // Non-fatal error, continue
-    }
 
     await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
     return new Response(
