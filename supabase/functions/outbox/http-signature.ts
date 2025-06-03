@@ -4,6 +4,46 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { encode as encodeBase64 } from "https://deno.land/std@0.177.0/encoding/base64.ts";
 
+// Generate RSA key pair function
+export async function generateRsaKeyPair(): Promise<{
+  publicKey: string;
+  privateKey: string;
+}> {
+  // Generate RSA key pair
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // 65537
+      hash: "SHA-256",
+    },
+    true,
+    ["sign", "verify"]
+  );
+
+  // Export keys to PKCS8 and SPKI formats
+  const privateKeyExport = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+  const publicKeyExport = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+
+  // Convert to base64
+  const privateKeyBase64 = encodeBase64(new Uint8Array(privateKeyExport));
+  const publicKeyBase64 = encodeBase64(new Uint8Array(publicKeyExport));
+  
+  const privateKeyPem = [
+    "-----BEGIN PRIVATE KEY-----",
+    ...privateKeyBase64.match(/.{1,64}/g) || [],
+    "-----END PRIVATE KEY-----"
+  ].join("\n");
+  
+  const publicKeyPem = [
+    "-----BEGIN PUBLIC KEY-----",
+    ...publicKeyBase64.match(/.{1,64}/g) || [],
+    "-----END PUBLIC KEY-----"
+  ].join("\n");
+  
+  return { publicKey: publicKeyPem, privateKey: privateKeyPem };
+}
+
 /**
  * Get the server key from database
  */
