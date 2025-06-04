@@ -60,31 +60,69 @@ serve(async (req) => {
         const activity = item.activity;
         const actorId = item.actor_id;
         
-        // Get followers for this actor
-        const { data: followers, error: followersError } = await supabaseClient
-          .from("user_connections")
-          .select(`
-            connected_user_id,
-            profiles!user_connections_connected_user_id_fkey(username)
-          `)
-          .eq("user_id", actorId)
-          .eq("status", "accepted");
+        let recipients = [];
         
-        if (followersError) {
-          console.error("Error fetching followers:", followersError);
-          continue;
+        // Handle Accept activities specially
+        if (activity.type === "Accept" && activity.object?.type === "Follow") {
+          // For Accept activities, the recipient is the original follower
+          const followerActorUrl = activity.object.actor;
+          if (followerActorUrl) {
+            recipients.push(followerActorUrl);
+            console.log(`Accept activity targeting follower: ${followerActorUrl}`);
+          }
+        } else if (activity.to) {
+          // Handle activities with explicit 'to' field
+          const toField = Array.isArray(activity.to) ? activity.to : [activity.to];
+          recipients.push(...toField.filter(to => 
+            typeof to === 'string' && 
+            to !== 'https://www.w3.org/ns/activitystreams#Public'
+          ));
+        } else {
+          // Default behavior: send to followers
+          const { data: followers, error: followersError } = await supabaseClient
+            .from("user_connections")
+            .select(`
+              connected_user_id,
+              profiles!user_connections_connected_user_id_fkey(username)
+            `)
+            .eq("user_id", actorId)
+            .eq("status", "accepted");
+          
+          if (followersError) {
+            console.error("Error fetching followers:", followersError);
+            continue;
+          }
+          
+          // Convert followers to actor URIs
+          for (const follower of followers || []) {
+            const followerUsername = follower.profiles?.username;
+            if (followerUsername) {
+              const supabaseUrl = Deno.env.get("SUPABASE_URL");
+              recipients.push(`${supabaseUrl}/functions/v1/actor/${followerUsername}`);
+            }
+          }
         }
         
-        // Send to each follower's inbox
-        for (const follower of followers || []) {
+        console.log(`Activity ${item.id} has ${recipients.length} recipients`);
+        
+        // Send to each recipient's inbox
+        for (const recipientUri of recipients) {
           try {
-            const followerUsername = follower.profiles?.username;
-            if (!followerUsername) continue;
+            console.log(`Determining inbox for recipient: ${recipientUri}`);
             
-            // In a real implementation, you'd resolve the actual inbox URL
-            // For now, we'll construct it based on convention
+            // For local actors, construct inbox URL directly
             const supabaseUrl = Deno.env.get("SUPABASE_URL");
-            const inboxUrl = `${supabaseUrl}/functions/v1/inbox/${followerUsername}`;
+            let inboxUrl;
+            
+            if (recipientUri.startsWith(supabaseUrl)) {
+              // Local actor
+              const username = recipientUri.split('/').pop();
+              inboxUrl = `${supabaseUrl}/functions/v1/inbox/${username}`;
+            } else {
+              // Remote actor - would need to fetch their actor document
+              // For now, assume inbox follows convention
+              inboxUrl = `${recipientUri}/inbox`;
+            }
             
             console.log(`Sending activity to ${inboxUrl}`);
             
@@ -105,7 +143,7 @@ serve(async (req) => {
             }
             
           } catch (deliveryError) {
-            console.error("Error delivering to follower:", deliveryError);
+            console.error("Error delivering to recipient:", deliveryError);
           }
         }
         
