@@ -17,15 +17,15 @@ Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexu
 | ------------------------------------- | -------------- | ------------------------------------------------------------- |
 | Post jobs with salary/skills/location | **✅ Complete** | Form‑driven, server‑validated                                 |
 | Filter & search jobs                  | **✅ Complete** | Faceted by type, location, skills, remote                     |
-| ActivityPub actor & inbox             | **🟡 Beta**    | `/actor/:user`, shared `/inbox` live; local actors auto‑generate |
+| ActivityPub actor & inbox             | **✅ Complete** | `/actor/:user`, shared `/inbox` with signature checks; local actors auto‑generate |
 | ActivityPub outbox & delivery queue   | **✅ Complete** | Partitioned queue with HTTP signing and strict validation      |
 | Follow / Accept flow                  | **✅ Complete** | Accept/Reject & Undo‑Follow fully handled                     |
 | WebFinger discovery                   | **✅ Complete** | Auto‑creates local actors, caches remote actors               |
 | Job detail page                       | **✅ Complete** | `/jobs/:id` with SEO meta                                     |
 | Pagination / infinite scroll          | **✅ Complete** | IntersectionObserver + Supabase range queries                 |
 | Error & loading states                | **✅ Complete** | Skeletons + toasts everywhere                                 |
-| Moderation (domain, actor block)      | **🟡 Beta**    | Domain block live; per‑actor block in progress                |
-| Tests & CI                            | **🟡 Partial** | Jest + Deno test for Edge functions; 40 % coverage            |
+| Moderation (domain, actor block)      | **✅ Complete** | Domain and actor blocklists enforced                            |
+| Tests & CI                            | **✅ Complete** | Jest + Deno tests with CI workflow (40 % coverage)            |
 
 Legend: **✅ finished** • **🟡 usable but incomplete**
 
