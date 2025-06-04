@@ -192,14 +192,13 @@ async function signedFetch(
     headers.set("Accept", "application/activity+json");
   }
   
-  const body = options.body?.toString() || "";
-
   // Sign the request
   await signRequest(url, options.method || "POST", headers, body, keys.privateKey, keys.keyId);
 
   // Make the signed request
   return fetch(url, {
     ...options,
+    body,
     headers
   });
 }
@@ -207,6 +206,7 @@ async function signedFetch(
 // Fetch a public key for a given keyId
 async function getPublicKey(keyId: string): Promise<string | null> {
   const actorUrl = keyId.split('#')[0];
+
 
   // Try cache first
   const { data: cached, error } = await supabaseClient
