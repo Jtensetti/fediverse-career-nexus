@@ -1,4 +1,3 @@
-# 🌐 Bondy — a Fediverse Career Nexus
 
 A community-driven, federated job board designed for the open web.
 
