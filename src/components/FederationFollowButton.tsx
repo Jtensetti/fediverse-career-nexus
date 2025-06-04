@@ -4,6 +4,7 @@ import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureActorKeys } from "@/services/actorService";
 
 interface FederationFollowButtonProps {
   remoteActorUri: string;
@@ -33,12 +34,10 @@ export default function FederationFollowButton({
       setLoading(true);
       
       // Ensure the actor has RSA keys before creating follow
-      const { error: ensureKeysError } = await supabase.rpc('ensure_actor_keys', {
-        actor_id: localActorId
-      });
+      const hasKeys = await ensureActorKeys(localActorId);
       
-      if (ensureKeysError) {
-        console.error("Error ensuring actor keys:", ensureKeysError);
+      if (!hasKeys) {
+        console.error("Error ensuring actor keys");
         toast({
           title: "Key generation failed",
           description: "Could not generate signing keys for your actor.",
