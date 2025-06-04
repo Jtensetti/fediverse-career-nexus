@@ -21,17 +21,32 @@ export const confirmEmail = async (token: string) => {
 };
 
 export const signIn = async (email: string, password: string) => {
-  const response = await fetch("/functions/v1/auth-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+  try {
+    const response = await fetch("/functions/v1/auth-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token
+      });
+      return data.user;
+    }
+  } catch (_err) {
+    // fall back to direct auth below
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
   });
-  if (!response.ok) throw new Error("Login failed");
-  const data = await response.json();
-  await supabase.auth.setSession({
-    access_token: data.access_token,
-    refresh_token: data.refresh_token
-  });
+  if (error || !data.session) {
+    throw new Error(error?.message ?? "Login failed");
+  }
   return data.user;
 };
 
