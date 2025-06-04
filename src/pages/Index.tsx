@@ -18,11 +18,13 @@ const Index = () => {
       <Navbar />
       
       <main className="flex-grow">
-        <Hero 
+        <Hero
           title="The Professional Network Built for You"
           description="Bondy combines the power of federation with modern professional networking. Build meaningful connections, share knowledge, and advance your career—all while keeping your data private."
-          ctaText="Get Started"
-          ctaLink="/feed"
+          ctaText="Sign In"
+          ctaLink="/auth/login"
+          secondaryText="Create Account"
+          secondaryLink="/auth/signup"
         />
         
         <div className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
