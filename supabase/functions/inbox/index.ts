@@ -741,12 +741,35 @@ async function handleUndoActivity(activity: any, recipientId: string, sender: st
 async function handleUnfollowActivity(activity: any, recipientId: string, sender: string) {
   try {
     console.log(`Processing Unfollow (via Undo) from ${sender}`);
-    
+
     const followerActorUrl = activity.actor;
     if (!followerActorUrl) {
       throw new Error("Follow activity missing actor field");
     }
-    
+
+    const targetActorUrl = activity.object;
+    if (!targetActorUrl) {
+      throw new Error("Follow activity missing object field");
+    }
+
+    const { data: localActor, error: localActorError } = await supabaseClient
+      .from("actors")
+      .select("preferred_username")
+      .eq("id", recipientId)
+      .single();
+
+    if (localActorError || !localActor) {
+      throw new Error(`Local actor not found: ${localActorError?.message}`);
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const expectedActorUrl = `${supabaseUrl}/functions/v1/actor/${localActor.preferred_username}`;
+
+    if (targetActorUrl !== expectedActorUrl) {
+      console.log(`Undo Follow not targeted at this actor: ${targetActorUrl}`);
+      return;
+    }
+
     // Remove the follow relationship
     const { data, error } = await supabaseClient
       .from("actor_followers")
