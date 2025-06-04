@@ -3,13 +3,29 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { validateRequest, corsHeaders } from "../middleware/validate.ts";
-import { createRequestLogger, logRequest, logResponse } from "../middleware/logger.ts";
 
 // Initialize the Supabase client
 const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
+
+// Simple logger implementation
+const createLogger = (req: Request, functionName: string) => ({
+  info: (data: any, message?: string) => console.log(`[${functionName}] INFO:`, message || '', data),
+  debug: (data: any, message?: string) => console.log(`[${functionName}] DEBUG:`, message || '', data),
+  warn: (data: any, message?: string) => console.warn(`[${functionName}] WARN:`, message || '', data),
+  error: (data: any, message?: string) => console.error(`[${functionName}] ERROR:`, message || '', data)
+});
+
+const logRequest = (logger: any, req: Request) => {
+  logger.info({ method: req.method, url: req.url }, "Incoming request");
+};
+
+const logResponse = (logger: any, status: number, startTime: number) => {
+  const duration = performance.now() - startTime;
+  logger.info({ status, duration: `${duration.toFixed(2)}ms` }, "Request completed");
+};
 
 // Define the schema for analytics requests
 const analyticsSchema = z.object({
@@ -32,7 +48,7 @@ type AnalyticsRequest = z.infer<typeof analyticsSchema>;
 // Handler with validation
 const handleAnalytics = async (req: Request, data: AnalyticsRequest): Promise<Response> => {
   const startTime = performance.now();
-  const logger = createRequestLogger(req, "analytics");
+  const logger = createLogger(req, "analytics");
   
   logRequest(logger, req);
   

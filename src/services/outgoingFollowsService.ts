@@ -23,7 +23,10 @@ export const getOutgoingFollows = async (actorId: string): Promise<OutgoingFollo
     throw error;
   }
 
-  return data || [];
+  return (data || []).map(row => ({
+    ...row,
+    status: row.status as 'pending' | 'accepted' | 'rejected'
+  }));
 };
 
 export const getOutgoingFollowStatus = async (actorId: string, remoteActorUri: string): Promise<'pending' | 'accepted' | 'rejected' | null> => {
@@ -43,7 +46,7 @@ export const getOutgoingFollowStatus = async (actorId: string, remoteActorUri: s
     throw error;
   }
 
-  return data?.status || null;
+  return data?.status as 'pending' | 'accepted' | 'rejected' || null;
 };
 
 export const subscribeToOutgoingFollows = (
