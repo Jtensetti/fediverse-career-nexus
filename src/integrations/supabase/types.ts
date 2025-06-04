@@ -1049,6 +1049,36 @@ export type Database = {
         }
         Relationships: []
       }
+      outgoing_follows: {
+        Row: {
+          created_at: string
+          follow_activity_id: string
+          id: string
+          local_actor_id: string
+          remote_actor_uri: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          follow_activity_id: string
+          id?: string
+          local_actor_id: string
+          remote_actor_uri: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          follow_activity_id?: string
+          id?: string
+          local_actor_id?: string
+          remote_actor_uri?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profile_views: {
         Row: {
           id: string

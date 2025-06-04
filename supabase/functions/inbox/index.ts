@@ -97,6 +97,152 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
   }
 }
 
+async function handleAcceptActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Accept activity from ${sender} to recipient ${recipientId}`);
+    
+    // Check if the object is a Follow activity
+    if (activity.object?.type === "Follow") {
+      const followActivityId = activity.object.id;
+      const followActor = activity.object.actor;
+      
+      console.log(`Accept activity for Follow ${followActivityId} from ${followActor}`);
+      
+      // Find the corresponding outgoing follow request
+      const { data: outgoingFollow, error: findError } = await supabaseClient
+        .from("outgoing_follows")
+        .select("*")
+        .eq("local_actor_id", recipientId)
+        .eq("remote_actor_uri", sender)
+        .single();
+      
+      if (findError && findError.code !== 'PGRST116') {
+        throw findError;
+      }
+      
+      if (!outgoingFollow) {
+        // Try to find by follow activity ID as fallback
+        const { data: outgoingFollowById, error: findByIdError } = await supabaseClient
+          .from("outgoing_follows")
+          .select("*")
+          .eq("follow_activity_id", followActivityId)
+          .single();
+        
+        if (findByIdError && findByIdError.code !== 'PGRST116') {
+          throw findByIdError;
+        }
+        
+        if (!outgoingFollowById) {
+          console.log(`No matching outgoing follow request found for Accept from ${sender}`);
+          return;
+        }
+        
+        // Update the follow request status to accepted
+        const { error: updateError } = await supabaseClient
+          .from("outgoing_follows")
+          .update({ status: "accepted" })
+          .eq("id", outgoingFollowById.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
+        console.log(`Updated outgoing follow ${outgoingFollowById.id} to accepted`);
+      } else {
+        // Update the follow request status to accepted
+        const { error: updateError } = await supabaseClient
+          .from("outgoing_follows")
+          .update({ status: "accepted" })
+          .eq("id", outgoingFollow.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
+        console.log(`Updated outgoing follow ${outgoingFollow.id} to accepted`);
+      }
+    } else {
+      console.log(`Unsupported Accept object type: ${activity.object?.type}`);
+    }
+  } catch (error) {
+    console.error("Error handling Accept activity:", error);
+    throw error;
+  }
+}
+
+async function handleRejectActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Reject activity from ${sender} to recipient ${recipientId}`);
+    
+    // Check if the object is a Follow activity
+    if (activity.object?.type === "Follow") {
+      const followActivityId = activity.object.id;
+      const followActor = activity.object.actor;
+      
+      console.log(`Reject activity for Follow ${followActivityId} from ${followActor}`);
+      
+      // Find the corresponding outgoing follow request
+      const { data: outgoingFollow, error: findError } = await supabaseClient
+        .from("outgoing_follows")
+        .select("*")
+        .eq("local_actor_id", recipientId)
+        .eq("remote_actor_uri", sender)
+        .single();
+      
+      if (findError && findError.code !== 'PGRST116') {
+        throw findError;
+      }
+      
+      if (!outgoingFollow) {
+        // Try to find by follow activity ID as fallback
+        const { data: outgoingFollowById, error: findByIdError } = await supabaseClient
+          .from("outgoing_follows")
+          .select("*")
+          .eq("follow_activity_id", followActivityId)
+          .single();
+        
+        if (findByIdError && findByIdError.code !== 'PGRST116') {
+          throw findByIdError;
+        }
+        
+        if (!outgoingFollowById) {
+          console.log(`No matching outgoing follow request found for Reject from ${sender}`);
+          return;
+        }
+        
+        // Update the follow request status to rejected
+        const { error: updateError } = await supabaseClient
+          .from("outgoing_follows")
+          .update({ status: "rejected" })
+          .eq("id", outgoingFollowById.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
+        console.log(`Updated outgoing follow ${outgoingFollowById.id} to rejected`);
+      } else {
+        // Update the follow request status to rejected
+        const { error: updateError } = await supabaseClient
+          .from("outgoing_follows")
+          .update({ status: "rejected" })
+          .eq("id", outgoingFollow.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
+        console.log(`Updated outgoing follow ${outgoingFollow.id} to rejected`);
+      }
+    } else {
+      console.log(`Unsupported Reject object type: ${activity.object?.type}`);
+    }
+  } catch (error) {
+    console.error("Error handling Reject activity:", error);
+    throw error;
+  }
+}
+
 async function handleUndoActivity(activity: any, recipientId: string, sender: string) {
   try {
     console.log(`Processing Undo activity from ${sender}`);
@@ -285,6 +431,12 @@ serve(async (req) => {
     switch (activity.type) {
       case "Follow":
         await handleFollowActivity(activity, actor.id, sender);
+        break;
+      case "Accept":
+        await handleAcceptActivity(activity, actor.id, sender);
+        break;
+      case "Reject":
+        await handleRejectActivity(activity, actor.id, sender);
         break;
       case "Undo":
         await handleUndoActivity(activity, actor.id, sender);
