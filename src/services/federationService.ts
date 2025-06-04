@@ -52,27 +52,25 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
             else if (typeof content.actor === 'string') {
               // Try to get actor info from cache first
               const actorUrl = content.actor;
-              const cachedActor = await getRemoteActorFromCache(actorUrl);
-              
-              if (cachedActor) {
-                actorInfo = cachedActor;
+              const resolvedActor = await getRemoteActorFromCache(actorUrl);
+
+              if (resolvedActor) {
+                actorInfo = resolvedActor;
               } else {
-                // In a production app, we would fetch the actor info from remote
-                // For now, we'll just extract the username from the URL
+                // Fallback to username only when remote fetch fails
                 const username = actorUrl.split('/').pop();
-                
-                // Extract domain from the actor URL for moderation status
-                try {
-                  const url = new URL(actorUrl);
-                  instanceDomain = url.hostname;
-                } catch (e) {
-                  instanceDomain = null;
-                }
-                
                 actorInfo = {
                   preferredUsername: username,
                   name: username
                 };
+              }
+
+              // Extract domain from the actor URL for moderation status
+              try {
+                const url = new URL(actorUrl);
+                instanceDomain = url.hostname;
+              } catch (e) {
+                instanceDomain = null;
               }
             }
           }
@@ -136,44 +134,43 @@ export const getRemoteActorFromCache = async (actorUrl: string) => {
       .select('actor_data')
       .eq('actor_url', actorUrl)
       .single();
-    
+
     if (!cacheError && cachedActor) {
       // Update the fetched_at timestamp to keep it fresh
       await supabase
         .from('remote_actors_cache')
         .update({ fetched_at: new Date().toISOString() })
         .eq('actor_url', actorUrl);
-        
+
       return cachedActor.actor_data;
     }
-    
-    // If not in cache, we would fetch from remote
-    // This is a placeholder for actual remote fetching logic
-    // In a production app, you'd make an HTTP request to the actorUrl 
-    // and parse the ActivityPub actor data
-    console.log("Would fetch remote actor data for:", actorUrl);
-    
-    // For demonstration, we'll create a simple actor object
-    const dummyActor = {
-      preferredUsername: actorUrl.split('/').pop(),
-      name: actorUrl.split('/').pop(),
-      icon: {
-        url: null
-      }
-    };
-    
+
+    // Not in cache - fetch from the remote server
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(actorUrl, {
+      headers: { Accept: 'application/activity+json' },
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch actor ${actorUrl}: ${response.status}`);
+    }
+
+    const actorData = await response.json();
+
     // Store in cache
-    await supabase
-      .from('remote_actors_cache')
-      .upsert({
-        actor_url: actorUrl,
-        actor_data: dummyActor,
-        fetched_at: new Date().toISOString()
-      });
-    
-    return dummyActor;
+    await supabase.from('remote_actors_cache').upsert({
+      actor_url: actorUrl,
+      actor_data: actorData,
+      fetched_at: new Date().toISOString()
+    });
+
+    return actorData;
   } catch (error) {
-    console.error("Error getting remote actor from cache:", error);
+    console.error('Error getting remote actor from cache:', error);
     return null;
   }
 };
