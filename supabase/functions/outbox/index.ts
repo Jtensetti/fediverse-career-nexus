@@ -535,12 +535,17 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
       if (batchError) {
         console.error("Error creating follower batches:", batchError);
         // Fall back to the federation queue for this case
+        const { data: partitionKey } = await supabaseClient.rpc(
+          "actor_id_to_partition_key",
+          { actor_id: actorId }
+        );
         const { data: queueItem, error: queueError } = await supabaseClient
-          .from("federation_queue")
+          .from("federation_queue_partitioned")
           .insert({
             activity: enrichedActivity, // Use enriched activity with IDs
             actor_id: actorId,
-            status: "pending"
+            status: "pending",
+            partition_key: partitionKey
           })
           .select()
           .single();
@@ -585,12 +590,17 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
   }
   
   // If we didn't use the batch system or it failed, fall back to the regular queue
+  const { data: partitionKey } = await supabaseClient.rpc(
+    "actor_id_to_partition_key",
+    { actor_id: actorId }
+  );
   const { data: queueItem, error: queueError } = await supabaseClient
-    .from("federation_queue")
+    .from("federation_queue_partitioned")
     .insert({
       activity: enrichedActivity, // Use enriched activity with IDs
       actor_id: actorId,
-      status: "pending"
+      status: "pending",
+      partition_key: partitionKey
     })
     .select()
     .single();

@@ -98,7 +98,7 @@ serve(async (req) => {
     // For now, we'll look for Follow activities in the federation queue that were sent by this actor
     // In a more complete implementation, you might have a separate "following" table
     const { data: followingActivities, error: followingError } = await supabase
-      .from("federation_queue")
+      .from("federation_queue_partitioned")
       .select("activity")
       .eq("actor_id", actor.id)
       .eq("status", "processed")
@@ -124,7 +124,7 @@ serve(async (req) => {
 
     // Get total count of Follow activities for this actor
     const { count: totalFollowing, error: countError } = await supabase
-      .from("federation_queue")
+      .from("federation_queue_partitioned")
       .select("*", { count: "exact", head: true })
       .eq("actor_id", actor.id)
       .eq("status", "processed");
