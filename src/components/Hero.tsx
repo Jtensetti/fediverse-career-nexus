@@ -8,9 +8,18 @@ interface HeroProps {
   description: string;
   ctaText: string;
   ctaLink: string;
+  secondaryText?: string;
+  secondaryLink?: string;
 }
 
-const Hero = ({ title, description, ctaText, ctaLink }: HeroProps) => {
+const Hero = ({
+  title,
+  description,
+  ctaText,
+  ctaLink,
+  secondaryText = "Create Account",
+  secondaryLink = "/profile/create",
+}: HeroProps) => {
   return (
     <div className="relative bg-gradient-to-br from-bondy-primary to-bondy-accent/90 text-white">
       <div className="absolute inset-0 bg-[url('/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png')] bg-no-repeat bg-right-bottom opacity-10 bg-contain"></div>
@@ -30,14 +39,14 @@ const Hero = ({ title, description, ctaText, ctaLink }: HeroProps) => {
             >
               <Link to={ctaLink}>{ctaText}</Link>
             </Button>
-            <Button 
-              asChild 
-              size="lg" 
+            <Button
+              asChild
+              size="lg"
               variant="outline"
               className="border-white text-white hover:bg-white/10 font-medium text-lg animate-fade-in"
             >
-              <Link to="/profile/create">
-                Create Account <ArrowRight className="ml-2 h-5 w-5" />
+              <Link to={secondaryLink}>
+                {secondaryText} <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>

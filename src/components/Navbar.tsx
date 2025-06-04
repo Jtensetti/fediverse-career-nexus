@@ -58,7 +58,7 @@ const Navbar = () => {
     };
   }, [scrolled]);
 
-  const navigationItems = [
+  const fullNavigationItems = [
     {
       name: t("nav.home", "Home"),
       href: "/",
@@ -90,8 +90,21 @@ const Navbar = () => {
     {
       name: t("nav.feed", "Feed"),
       href: "/feed",
-    }
+    },
   ];
+
+  const guestNavigationItems = [
+    {
+      name: t("nav.feed", "Feed"),
+      href: "/feed",
+    },
+    {
+      name: t("nav.jobs", "Jobs"),
+      href: "/jobs",
+    },
+  ];
+
+  const navigationItems = user ? fullNavigationItems : guestNavigationItems;
 
   return (
     <div className={`${isHomePage ? 'absolute top-0 left-0 right-0 z-50' : 'border-b'} transition-colors duration-300 ${scrolled && isHomePage ? 'bg-white/90 backdrop-blur-md shadow-sm' : isHomePage ? 'bg-transparent' : 'bg-white'}`}>
