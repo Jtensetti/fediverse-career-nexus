@@ -83,7 +83,7 @@ Deploy the React build to Vercel/Netlify/Cloudflare Pages. Add a proxy so `http
 
 1. WebFinger auto‑generate local actors if missing
 2. Generate RSA keys at signup for every actor
-3. Enforce digest + date on inbound signatures
+3. ~~Enforce digest + date on inbound signatures~~ ✅ Implemented
 4. Deliver Accept/Reject follow to correct inbox & update follow state
 5. Handle Undo → Follow (unfollow)
 6. Actor‑level moderation UI
