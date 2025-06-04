@@ -1,0 +1,33 @@
+openapi: 3.1.0
+info:
+  title: Bondy API
+  version: '1.0'
+paths:
+  /actor/{username}:
+    get:
+      summary: Get ActivityPub actor
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Actor object
+          content:
+            application/activity+json:
+              schema:
+                type: object
+  /inbox:
+    post:
+      summary: Receive inbound ActivityPub activity
+      requestBody:
+        required: true
+        content:
+          application/activity+json:
+            schema:
+              type: object
+      responses:
+        '202':
+          description: Accepted
