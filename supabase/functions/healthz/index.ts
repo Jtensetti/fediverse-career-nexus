@@ -1,8 +1,36 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { corsHeaders } from "../middleware/validate.ts";
-import { createLogger, logRequest, logResponse } from "../middleware/logger.ts";
+
+// Common headers to be used by all endpoints
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, signature, digest, date, host',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+};
+
+// Logger functionality copied directly to avoid import issues
+const createLogger = (service: string) => {
+  return {
+    debug: (data: any, message?: string) => {
+      console.log(`[DEBUG] ${service}:`, message || '', data);
+    },
+    info: (data: any, message?: string) => {
+      console.log(`[INFO] ${service}:`, message || '', data);
+    },
+    error: (data: any, message?: string) => {
+      console.error(`[ERROR] ${service}:`, message || '', data);
+    }
+  };
+};
+
+const logRequest = (req: Request, traceId: string) => {
+  console.log(`[REQUEST] ${traceId}: ${req.method} ${req.url}`);
+};
+
+const logResponse = (response: Response, traceId: string) => {
+  console.log(`[RESPONSE] ${traceId}: ${response.status}`);
+};
 
 const logger = createLogger("healthz");
 
