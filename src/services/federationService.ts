@@ -76,19 +76,32 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
           }
         }
         
-        // Determine moderation status based on the domain from the database
+        // Determine moderation status based on domain and actor from the database
         let moderationStatus: 'normal' | 'probation' | 'blocked' = 'normal';
-        
+
         if (instanceDomain && post.source === 'remote') {
-          // Query the blocked_domains table
-          const { data: domainData, error: domainError } = await supabase
+          // Domain status check
+          const { data: domainData } = await supabase
             .from('blocked_domains')
             .select('status')
             .eq('host', instanceDomain)
             .single();
-          
-          if (!domainError && domainData) {
+
+          if (domainData) {
             moderationStatus = domainData.status as 'normal' | 'probation' | 'blocked';
+          }
+
+          // Actor status check
+          if (typeof content.actor === 'string') {
+            const { data: actorData } = await supabase
+              .from('blocked_actors')
+              .select('status')
+              .eq('actor_url', content.actor)
+              .single();
+
+            if (actorData) {
+              moderationStatus = actorData.status as 'normal' | 'probation' | 'blocked';
+            }
           }
         }
         
@@ -290,6 +303,82 @@ export const deleteDomainModeration = async (host: string) => {
     return { success: true };
   } catch (error) {
     console.error("Error deleting domain moderation:", error);
+    return { success: false, error };
+  }
+};
+
+// Retrieve actor moderation data
+export const getActorModeration = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('blocked_actors')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching actor moderation:', error);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error processing actor moderation:', error);
+    return [];
+  }
+};
+
+// Add or update an actor moderation entry
+export const updateActorModeration = async (
+  actorUrl: string,
+  status: 'normal' | 'probation' | 'blocked',
+  reason: string
+) => {
+  try {
+    const { data, error } = await supabase
+      .from('blocked_actors')
+      .upsert(
+        {
+          actor_url: actorUrl,
+          status,
+          reason,
+          updated_at: new Date().toISOString(),
+          updated_by: (await supabase.auth.getUser()).data.user?.id
+        },
+        {
+          onConflict: 'actor_url',
+          ignoreDuplicates: false
+        }
+      )
+      .select();
+
+    if (error) {
+      console.error('Error updating actor moderation:', error);
+      return { success: false, error };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error updating actor moderation:', error);
+    return { success: false, error };
+  }
+};
+
+// Delete an actor moderation entry
+export const deleteActorModeration = async (actorUrl: string) => {
+  try {
+    const { error } = await supabase
+      .from('blocked_actors')
+      .delete()
+      .eq('actor_url', actorUrl);
+
+    if (error) {
+      console.error('Error deleting actor moderation:', error);
+      return { success: false, error };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting actor moderation:', error);
     return { success: false, error };
   }
 };

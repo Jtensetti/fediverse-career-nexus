@@ -318,6 +318,42 @@ async function verifyRequestSignature(req: Request, body: string): Promise<boole
   return verified;
 }
 
+// Check if a domain is blocked
+async function isDomainBlocked(url: string): Promise<boolean> {
+  try {
+    const host = new URL(url).hostname;
+    const { data, error } = await supabaseClient
+      .from('blocked_domains')
+      .select('status')
+      .eq('host', host)
+      .single();
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error checking blocked domain:', error);
+      return false;
+    }
+    return data?.status === 'blocked';
+  } catch (e) {
+    console.error('Error parsing URL for domain check:', e);
+    return false;
+  }
+}
+
+// Check if an actor is blocked
+async function isActorBlocked(actorUrl: string): Promise<boolean> {
+  const { data, error } = await supabaseClient
+    .from('blocked_actors')
+    .select('status')
+    .eq('actor_url', actorUrl)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    console.error('Error checking blocked actor:', error);
+    return false;
+  }
+
+  return data?.status === 'blocked';
+}
+
 // Initialize the Supabase client
 const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -438,6 +474,23 @@ serve(async (req) => {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
+      );
+    }
+
+    // Moderation checks
+    if (await isDomainBlocked(activity.actor)) {
+      console.log(`Inbound activity from blocked domain: ${activity.actor}`);
+      return new Response(
+        JSON.stringify({ error: "Domain blocked" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (await isActorBlocked(activity.actor)) {
+      console.log(`Inbound activity from blocked actor: ${activity.actor}`);
+      return new Response(
+        JSON.stringify({ error: "Actor blocked" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
