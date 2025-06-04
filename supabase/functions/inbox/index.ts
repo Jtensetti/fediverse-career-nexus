@@ -192,14 +192,24 @@ async function signedFetch(
     headers.set("Accept", "application/activity+json");
   }
   
-  const body = options.body?.toString() || "";
-  
+  let body = "";
+  if (typeof options.body === "string") {
+    body = options.body;
+  } else if (options.body !== undefined && options.body !== null) {
+    try {
+      body = JSON.stringify(options.body);
+    } catch {
+      body = String(options.body);
+    }
+  }
+
   // Sign the request
   await signRequest(url, options.method || "POST", headers, body, keys.privateKey, keys.keyId);
-  
+
   // Make the signed request
   return fetch(url, {
     ...options,
+    body,
     headers
   });
 }
