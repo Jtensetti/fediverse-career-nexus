@@ -1,4 +1,6 @@
 
+# 🌐 Bondy — a Fediverse Career Nexus
+
 A community-driven, federated job board designed for the open web.
 
 Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexus** is robust enough to scale, but still open for improvement. It’s an experiment — and a mission — to make professional discovery possible across federated networks.
@@ -50,7 +52,7 @@ React (Vite) ──supabase-js──► Edge Functions (Deno)
 
 ```bash
 # 1. Clone & install
-pnpm i
+npm install
 
 # 2. Configure environment variables
 cp .env.example .env
@@ -58,7 +60,7 @@ cp .env.example .env
 
 # 3. Start Supabase + React app
 supabase start
-pnpm dev
+npm run dev
 
 # 4. Deploy Edge Functions (prod)
 supabase functions deploy \
