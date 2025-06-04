@@ -17,7 +17,7 @@ Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexu
 | Post jobs with salary/skills/location | **✅ Complete** | Form‑driven, server‑validated                                 |
 | Filter & search jobs                  | **✅ Complete** | Faceted by type, location, skills, remote                     |
 | ActivityPub actor & inbox             | **🟡 Beta**    | `/actor/:user`, shared `/inbox` live; local actors auto‑generate |
-| ActivityPub outbox & delivery queue   | **🟡 Beta**    | Partitioned queue; signing added, strict validation WIP       |
+| ActivityPub outbox & delivery queue   | **✅ Complete** | Partitioned queue with HTTP signing and strict validation      |
 | Follow / Accept flow                  | **✅ Complete** | Accept/Reject & Undo‑Follow fully handled                     |
 | WebFinger discovery                   | **✅ Complete** | Auto‑creates local actors, caches remote actors               |
 | Job detail page                       | **✅ Complete** | `/jobs/:id` with SEO meta                                     |
