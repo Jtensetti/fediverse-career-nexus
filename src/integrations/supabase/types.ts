@@ -280,6 +280,36 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_actors: {
+        Row: {
+          actor_url: string
+          created_at: string
+          created_by: string | null
+          reason: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          actor_url: string
+          created_at?: string
+          created_by?: string | null
+          reason: string
+          status: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          actor_url?: string
+          created_at?: string
+          created_by?: string | null
+          reason?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string

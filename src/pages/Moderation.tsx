@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import ModerationLog from "@/components/ModerationLog";
 import ModerationHeader from "@/components/ModerationHeader";
 import DomainModeration from "@/components/DomainModeration";
+import ActorModeration from "@/components/ActorModeration";
 import CodeOfConduct from "@/components/CodeOfConduct";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -325,6 +326,7 @@ const Moderation = () => {
         <TabsList className="mb-4">
           <TabsTrigger value="log">{t('moderation.log')}</TabsTrigger>
           <TabsTrigger value="domains">Domain Blocks</TabsTrigger>
+          <TabsTrigger value="actors">Actor Blocks</TabsTrigger>
           <TabsTrigger value="federation">Fediverse</TabsTrigger>
           <TabsTrigger value="objects">AP Objects</TabsTrigger>
           <TabsTrigger value="coc">{t('moderation.codeOfConduct')}</TabsTrigger>
@@ -343,6 +345,16 @@ const Moderation = () => {
         <TabsContent value="domains" className="space-y-4">
           {acceptedCoC ? (
             <DomainModeration />
+          ) : (
+            <div className="text-center py-8">
+              <p>{t('moderation.pleaseAcceptCoC')}</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="actors" className="space-y-4">
+          {acceptedCoC ? (
+            <ActorModeration />
           ) : (
             <div className="text-center py-8">
               <p>{t('moderation.pleaseAcceptCoC')}</p>
