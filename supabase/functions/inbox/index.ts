@@ -466,6 +466,13 @@ serve(async (req) => {
       );
     }
 
+    // Persist raw activity for auditing
+    await supabaseClient.from('activities').insert({
+      actor_id: actor.id,
+      type: activity.type,
+      payload: activity
+    });
+
     // Validate the activity
     if (!activity.type || !activity.actor) {
       return new Response(
@@ -529,7 +536,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ success: true }),
       {
-        status: 200,
+        status: 202,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
