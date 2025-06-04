@@ -16,10 +16,10 @@ Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexu
 | ------------------------------------- | -------------- | ------------------------------------------------------------- |
 | Post jobs with salary/skills/location | **✅ Complete** | Form‑driven, server‑validated                                 |
 | Filter & search jobs                  | **✅ Complete** | Faceted by type, location, skills, remote                     |
-| ActivityPub actor & inbox             | **🟡 Beta**    | `/actor/:user`, shared `/inbox` live                          |
+| ActivityPub actor & inbox             | **🟡 Beta**    | `/actor/:user`, shared `/inbox` live; local actors auto‑generate |
 | ActivityPub outbox & delivery queue   | **🟡 Beta**    | Partitioned queue; signing added, strict validation WIP       |
-| Follow / Accept flow                  | **🟡 Beta**    | Auto‑accept implemented, unfollow + reject pending            |
-| WebFinger discovery                   | **🟡 Beta**    | Works for remote actors; auto‑generate local fallback pending |
+| Follow / Accept flow                  | **✅ Complete** | Accept/Reject & Undo‑Follow fully handled                     |
+| WebFinger discovery                   | **✅ Complete** | Auto‑creates local actors, caches remote actors               |
 | Job detail page                       | **✅ Complete** | `/jobs/:id` with SEO meta                                     |
 | Pagination / infinite scroll          | **✅ Complete** | IntersectionObserver + Supabase range queries                 |
 | Error & loading states                | **✅ Complete** | Skeletons + toasts everywhere                                 |
@@ -81,13 +81,13 @@ Deploy the React build to Vercel/Netlify/Cloudflare Pages. Add a proxy so `http
 
 ## 🛣️ Production‑Readiness TODO 
 
-1. WebFinger auto‑generate local actors if missing
+1. ~~WebFinger auto‑generate local actors if missing~~ ✅ Implemented
 2. Generate RSA keys at signup for every actor
-3. Enforce digest + date on inbound signatures
-4. Deliver Accept/Reject follow to correct inbox & update follow state
-5. Handle Undo → Follow (unfollow)
+3. ~~Enforce digest + date on inbound signatures~~ ✅ Implemented
+4. ~~Deliver Accept/Reject follow to correct inbox & update follow state~~ ✅ Implemented
+5. ~~Handle Undo → Follow (unfollow)~~ ✅ Implemented
 6. Actor‑level moderation UI
-7. Remote actor fetch for feed avatars/names
+7. ~~Remote actor fetch for feed avatars/names~~ ✅ Implemented
 8. Increase test coverage to ≥ 80 %
 
 ---
