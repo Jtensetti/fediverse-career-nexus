@@ -1,11 +1,124 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { signedFetch } from "../federation/utils.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Copy of utility functions from federation/utils.ts to avoid import issues
+import { signRequest } from "../federation/http-signature.ts";
+
+// Helper function to ensure an actor has RSA keys
+async function ensureActorHasKeys(actorId: string): Promise<{
+  keyId: string;
+  privateKey: string;
+} | null> {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing required environment variables");
+      return null;
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Check if actor has keys
+    const { data: actor, error: actorError } = await supabase
+      .from("actors")
+      .select("id, private_key, public_key, preferred_username")
+      .eq("id", actorId)
+      .single();
+    
+    if (actorError || !actor) {
+      console.error("Error fetching actor:", actorError);
+      return null;
+    }
+    
+    // If keys exist, return them
+    if (actor.private_key && actor.public_key) {
+      const keyId = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}#main-key`;
+      return {
+        keyId,
+        privateKey: actor.private_key
+      };
+    }
+    
+    // Generate new keys using the RPC function
+    const { error: generateError } = await supabase.rpc('ensure_actor_keys', {
+      actor_id: actorId
+    });
+    
+    if (generateError) {
+      console.error("Error generating keys:", generateError);
+      return null;
+    }
+    
+    // Fetch the newly generated keys
+    const { data: updatedActor, error: refetchError } = await supabase
+      .from("actors")
+      .select("private_key, preferred_username")
+      .eq("id", actorId)
+      .single();
+    
+    if (refetchError || !updatedActor?.private_key) {
+      console.error("Error retrieving generated keys:", refetchError);
+      return null;
+    }
+    
+    const keyId = `${supabaseUrl}/functions/v1/actor/${updatedActor.preferred_username}#main-key`;
+    return {
+      keyId,
+      privateKey: updatedActor.private_key
+    };
+  } catch (error) {
+    console.error("Error in ensureActorHasKeys:", error);
+    return null;
+  }
+}
+
+// Helper function to sign and send federation requests
+async function signedFetch(
+  url: string,
+  options: RequestInit,
+  actorId: string
+): Promise<Response> {
+  const keys = await ensureActorHasKeys(actorId);
+  
+  if (!keys) {
+    throw new Error("Failed to get actor keys for signing");
+  }
+  
+  const headers = new Headers(options.headers);
+  
+  // Ensure required headers are present
+  if (!headers.has("Date")) {
+    headers.set("Date", new Date().toUTCString());
+  }
+  if (!headers.has("Host")) {
+    headers.set("Host", new URL(url).host);
+  }
+  if (!headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/activity+json");
+  }
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "application/activity+json");
+  }
+  
+  const body = options.body?.toString() || "";
+  
+  // Sign the request
+  await signRequest(url, options.method || "POST", headers, body, keys.privateKey, keys.keyId);
+  
+  // Make the signed request
+  return fetch(url, {
+    ...options,
+    headers
+  });
+}
 
 // Initialize the Supabase client
 const supabaseClient = createClient(
@@ -475,3 +588,323 @@ serve(async (req) => {
     );
   }
 });
+
+async function handleFollowActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Follow activity from ${sender} to recipient ${recipientId}`);
+    
+    const followerActorUrl = activity.actor;
+    if (!followerActorUrl) {
+      throw new Error("Follow activity missing actor field");
+    }
+    
+    // Store the follow relationship
+    const { data: followData, error: followError } = await supabaseClient
+      .from("actor_followers")
+      .insert({
+        local_actor_id: recipientId,
+        follower_actor_url: followerActorUrl,
+        status: "accepted"
+      })
+      .select()
+      .single();
+    
+    if (followError) {
+      if (followError.code === '23505') { // unique constraint violation
+        console.log(`Follow relationship already exists between ${followerActorUrl} and ${recipientId}`);
+        return;
+      }
+      throw followError;
+    }
+    
+    console.log(`Created follow relationship: ${followData.id}`);
+    
+    // Update follower count
+    await supabaseClient
+      .from("actors")
+      .update({ 
+        follower_count: supabaseClient.raw('follower_count + 1') 
+      })
+      .eq("id", recipientId);
+    
+    // Get the local actor's username for the Accept activity
+    const { data: localActor, error: localActorError } = await supabaseClient
+      .from("actors")
+      .select("preferred_username")
+      .eq("id", recipientId)
+      .single();
+    
+    if (localActorError || !localActor) {
+      throw new Error(`Local actor not found: ${localActorError?.message}`);
+    }
+    
+    // Create Accept activity with proper targeting
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const acceptActivity = {
+      "@context": "https://www.w3.org/ns/activitystreams",
+      "type": "Accept",
+      "id": `${supabaseUrl}/functions/v1/activities/${crypto.randomUUID()}`,
+      "actor": `${supabaseUrl}/functions/v1/actor/${localActor.preferred_username}`,
+      "to": followerActorUrl, // Explicitly target the follower's inbox
+      "object": activity,
+      "published": new Date().toISOString()
+    };
+    
+    console.log(`Created Accept activity targeting ${followerActorUrl}`);
+    
+    // Queue the Accept activity for federation
+    const { error: queueError } = await supabaseClient
+      .from("federation_queue")
+      .insert({
+        activity: acceptActivity,
+        actor_id: recipientId,
+        status: "pending"
+      });
+    
+    if (queueError) {
+      console.error("Error queuing Accept activity:", queueError);
+      throw queueError;
+    }
+    
+    console.log(`Queued Accept activity for delivery to ${followerActorUrl}`);
+  } catch (error) {
+    console.error("Error handling Follow activity:", error);
+    throw error;
+  }
+}
+
+async function handleAcceptActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Accept activity from ${sender} to recipient ${recipientId}`);
+    
+    // Check if the object is a Follow activity
+    if (activity.object?.type === "Follow") {
+      const followActivityId = activity.object.id;
+      const followActor = activity.object.actor;
+      
+      console.log(`Accept activity for Follow ${followActivityId} from ${followActor}`);
+      
+      // Find the corresponding outgoing follow request
+      const { data: outgoingFollow, error: findError } = await supabaseClient
+        .from("outgoing_follows")
+        .select("*")
+        .eq("local_actor_id", recipientId)
+        .eq("remote_actor_uri", sender)
+        .single();
+      
+      if (findError && findError.code !== 'PGRST116') {
+        throw findError;
+      }
+      
+      if (!outgoingFollow) {
+        // Try to find by follow activity ID as fallback
+        const { data: outgoingFollowById, error: findByIdError } = await supabaseClient
+          .from("outgoing_follows")
+          .select("*")
+          .eq("follow_activity_id", followActivityId)
+          .single();
+        
+        if (findByIdError && findByIdError.code !== 'PGRST116') {
+          throw findByIdError;
+        }
+        
+        if (!outgoingFollowById) {
+          console.log(`No matching outgoing follow request found for Accept from ${sender}`);
+          return;
+        }
+        
+        // Update the follow request status to accepted
+        const { error: updateError } = await supabaseClient
+          .from("outgoing_follows")
+          .update({ status: "accepted" })
+          .eq("id", outgoingFollowById.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
+        console.log(`Updated outgoing follow ${outgoingFollowById.id} to accepted`);
+      } else {
+        // Update the follow request status to accepted
+        const { error: updateError } = await supabaseClient
+          .from("outgoing_follows")
+          .update({ status: "accepted" })
+          .eq("id", outgoingFollow.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
+        console.log(`Updated outgoing follow ${outgoingFollow.id} to accepted`);
+      }
+    } else {
+      console.log(`Unsupported Accept object type: ${activity.object?.type}`);
+    }
+  } catch (error) {
+    console.error("Error handling Accept activity:", error);
+    throw error;
+  }
+}
+
+async function handleRejectActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Reject activity from ${sender} to recipient ${recipientId}`);
+    
+    // Check if the object is a Follow activity
+    if (activity.object?.type === "Follow") {
+      const followActivityId = activity.object.id;
+      const followActor = activity.object.actor;
+      
+      console.log(`Reject activity for Follow ${followActivityId} from ${followActor}`);
+      
+      // Find the corresponding outgoing follow request
+      const { data: outgoingFollow, error: findError } = await supabaseClient
+        .from("outgoing_follows")
+        .select("*")
+        .eq("local_actor_id", recipientId)
+        .eq("remote_actor_uri", sender)
+        .single();
+      
+      if (findError && findError.code !== 'PGRST116') {
+        throw findError;
+      }
+      
+      if (!outgoingFollow) {
+        // Try to find by follow activity ID as fallback
+        const { data: outgoingFollowById, error: findByIdError } = await supabaseClient
+          .from("outgoing_follows")
+          .select("*")
+          .eq("follow_activity_id", followActivityId)
+          .single();
+        
+        if (findByIdError && findByIdError.code !== 'PGRST116') {
+          throw findByIdError;
+        }
+        
+        if (!outgoingFollowById) {
+          console.log(`No matching outgoing follow request found for Reject from ${sender}`);
+          return;
+        }
+        
+        // Update the follow request status to rejected
+        const { error: updateError } = await supabaseClient
+          .from("outgoing_follows")
+          .update({ status: "rejected" })
+          .eq("id", outgoingFollowById.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
+        console.log(`Updated outgoing follow ${outgoingFollowById.id} to rejected`);
+      } else {
+        // Update the follow request status to rejected
+        const { error: updateError } = await supabaseClient
+          .from("outgoing_follows")
+          .update({ status: "rejected" })
+          .eq("id", outgoingFollow.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+        
+        console.log(`Updated outgoing follow ${outgoingFollow.id} to rejected`);
+      }
+    } else {
+      console.log(`Unsupported Reject object type: ${activity.object?.type}`);
+    }
+  } catch (error) {
+    console.error("Error handling Reject activity:", error);
+    throw error;
+  }
+}
+
+async function handleUndoActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Undo activity from ${sender}`);
+    
+    // Check if the object is a Follow activity
+    if (activity.object?.type === "Follow") {
+      await handleUnfollowActivity(activity.object, recipientId, sender);
+    } else {
+      console.log(`Unsupported Undo object type: ${activity.object?.type}`);
+    }
+  } catch (error) {
+    console.error("Error handling Undo activity:", error);
+    throw error;
+  }
+}
+
+async function handleUnfollowActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Unfollow (via Undo) from ${sender}`);
+    
+    const followerActorUrl = activity.actor;
+    if (!followerActorUrl) {
+      throw new Error("Follow activity missing actor field");
+    }
+    
+    // Remove the follow relationship
+    const { data, error } = await supabaseClient
+      .from("actor_followers")
+      .delete()
+      .eq("local_actor_id", recipientId)
+      .eq("follower_actor_url", followerActorUrl)
+      .select();
+    
+    if (error) {
+      throw error;
+    }
+    
+    if (data && data.length > 0) {
+      console.log(`Removed follow relationship for ${followerActorUrl}`);
+      
+      // Update follower count
+      await supabaseClient
+        .from("actors")
+        .update({ 
+          follower_count: supabaseClient.raw('follower_count - 1') 
+        })
+        .eq("id", recipientId);
+    } else {
+      console.log(`No follow relationship found for ${followerActorUrl}`);
+    }
+  } catch (error) {
+    console.error("Error handling Unfollow activity:", error);
+    throw error;
+  }
+}
+
+async function handleCreateActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Create activity from ${sender}`);
+    
+    // Extract the created object
+    const object = activity.object;
+    if (!object) {
+      throw new Error("Create activity missing object");
+    }
+    
+    // Store the object in the inbox_items table
+    const { data, error } = await supabaseClient
+      .from("inbox_items")
+      .insert({
+        recipient_id: recipientId,
+        sender: sender,
+        activity_type: activity.type,
+        object_type: object.type,
+        content: activity
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    console.log(`Stored inbox item: ${data.id}`);
+  } catch (error) {
+    console.error("Error handling Create activity:", error);
+    throw error;
+  }
+}
