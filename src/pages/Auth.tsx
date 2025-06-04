@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Mail, Lock, ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { signIn, signUp } from "@/services/authService";
 
 // Login form schema
 const loginSchema = z.object({
@@ -75,20 +75,11 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
-      
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Welcome back!");
-        navigate("/");
-      }
-    } catch (error) {
-      toast.error("An unexpected error occurred");
-      console.error(error);
+      await signIn(values.email, values.password);
+      toast.success("Welcome back!");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -99,20 +90,11 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-      });
-      
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Account created! Please check your email to confirm your registration.");
-        navigate("/");
-      }
-    } catch (error) {
-      toast.error("An unexpected error occurred");
-      console.error(error);
+      await signUp(values.email, values.password);
+      toast.success("Account created! Please check your email to confirm.");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setIsLoading(false);
     }
