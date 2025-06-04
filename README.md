@@ -53,11 +53,15 @@ React (Vite) ──supabase-js──► Edge Functions (Deno)
 # 1. Clone & install
 pnpm i
 
-# 2. Start Supabase + React app
+# 2. Configure environment variables
+cp .env.example .env
+# Edit `.env` with your Supabase URL and anon key
+
+# 3. Start Supabase + React app
 supabase start
 pnpm dev
 
-# 3. Deploy Edge Functions (prod)
+# 4. Deploy Edge Functions (prod)
 supabase functions deploy \
   actor inbox outbox follower-batch-processor
 ```
