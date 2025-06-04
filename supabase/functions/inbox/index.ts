@@ -555,13 +555,22 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
     
     console.log(`Created Accept activity targeting ${followerActorUrl}`);
     
-    // Queue the Accept activity for federation
+    // Queue the Accept activity using the partitioned federation queue
+    const { data: partitionKey, error: partitionError } = await supabaseClient
+      .rpc("actor_id_to_partition_key", { actor_id: recipientId });
+
+    if (partitionError || partitionKey === null) {
+      console.error("Error determining partition:", partitionError);
+      throw partitionError;
+    }
+
     const { error: queueError } = await supabaseClient
-      .from("federation_queue")
+      .from("federation_queue_partitioned")
       .insert({
         activity: acceptActivity,
         actor_id: recipientId,
-        status: "pending"
+        status: "pending",
+        partition_key: partitionKey
       });
     
     if (queueError) {

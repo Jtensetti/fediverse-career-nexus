@@ -23,9 +23,9 @@ serve(async (req) => {
   try {
     const { limit = 10 } = await req.json();
     
-    // Get pending federation queue items
+    // Get pending federation queue items from the partitioned view
     const { data: queueItems, error } = await supabaseClient
-      .from("federation_queue")
+      .from("federation_queue_partitioned")
       .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: true })
@@ -53,7 +53,7 @@ serve(async (req) => {
       try {
         // Mark as processing
         await supabaseClient
-          .from("federation_queue")
+          .from("federation_queue_partitioned")
           .update({ status: "processing" })
           .eq("id", item.id);
         
@@ -149,7 +149,7 @@ serve(async (req) => {
         
         // Mark as processed
         await supabaseClient
-          .from("federation_queue")
+          .from("federation_queue_partitioned")
           .update({ status: "processed" })
           .eq("id", item.id);
         
@@ -160,7 +160,7 @@ serve(async (req) => {
         
         // Mark as failed
         await supabaseClient
-          .from("federation_queue")
+          .from("federation_queue_partitioned")
           .update({ status: "failed" })
           .eq("id", item.id);
         
