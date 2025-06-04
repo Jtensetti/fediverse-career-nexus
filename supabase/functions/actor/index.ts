@@ -1,11 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { 
-  corsHeaders, 
-  getActorFromCache, 
+  corsHeaders,
+  getActorFromCache,
   fetchActorFromDatabase,
   createActorObject,
   cacheActor,
+  createLocalActor,
   logRequestMetrics
 } from "./utils.ts";
 
@@ -53,19 +54,35 @@ serve(async (req) => {
     console.log(`Cache miss for actor ${username}, fetching from database`);
 
     // Fetch actor from database
-    const result = await fetchActorFromDatabase(username);
-    
+    let result = await fetchActorFromDatabase(username);
+
     if ('error' in result) {
-      await logRequestMetrics(remoteHost, url.pathname, startTime, false, result.status, result.error);
-      return new Response(
-        JSON.stringify({ error: result.error }),
-        {
-          status: result.status,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
+      if (result.error === "Actor not found") {
+        console.log(`Auto-creating actor for ${username}`);
+        const created = await createLocalActor(username);
+        if (!created) {
+          await logRequestMetrics(remoteHost, url.pathname, startTime, false, result.status, result.error);
+          return new Response(
+            JSON.stringify({ error: result.error }),
+            {
+              status: result.status,
+              headers: { ...corsHeaders, "Content-Type": "application/json" }
+            }
+          );
         }
-      );
+        result = created;
+      } else {
+        await logRequestMetrics(remoteHost, url.pathname, startTime, false, result.status, result.error);
+        return new Response(
+          JSON.stringify({ error: result.error }),
+          {
+            status: result.status,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          }
+        );
+      }
     }
-    
+
     const { profile, actor } = result;
     const domain = url.hostname;
     const protocol = url.protocol;

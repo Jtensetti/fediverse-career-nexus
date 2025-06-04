@@ -94,6 +94,61 @@ export async function fetchActorFromDatabase(username: string) {
   return { profile, actor };
 }
 
+// Create a local actor record and return profile and actor
+export async function createLocalActor(username: string) {
+  // Look up the user profile
+  const { data: profile, error: profileError } = await supabaseClient
+    .from("profiles")
+    .select("id, username, fullname, avatar_url")
+    .eq("username", username)
+    .single();
+
+  if (profileError || !profile) {
+    console.error("Profile not found for actor creation:", profileError);
+    return null;
+  }
+
+  // Create actor record
+  const { data: actor, error: actorError } = await supabaseClient
+    .from("actors")
+    .insert({
+      user_id: profile.id,
+      preferred_username: profile.username,
+      type: "Person",
+      status: "active",
+    })
+    .select()
+    .single();
+
+  if (actorError || !actor) {
+    console.error("Error creating actor record:", actorError);
+    return null;
+  }
+
+  // Build actor object and store for future use
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const domain = new URL(supabaseUrl).hostname;
+  const protocol = "https:";
+  const actorObject = createActorObject(profile, actor, domain, protocol);
+
+  try {
+    await supabaseClient.from("ap_objects").insert({
+      type: "Person",
+      attributed_to: actor.id,
+      content: actorObject,
+    });
+    await supabaseClient.from("remote_actors_cache").upsert({
+      actor_url: actorObject.id,
+      actor_data: actorObject,
+      fetched_at: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error caching new actor:", error);
+  }
+
+  return { profile, actor };
+}
+
 // Resolve inbox URL for a given actor URI
 export async function resolveInboxUrl(actorUri: string): Promise<string | null> {
   console.log(`Resolving inbox URL for actor: ${actorUri}`);

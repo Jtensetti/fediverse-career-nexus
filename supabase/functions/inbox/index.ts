@@ -192,17 +192,6 @@ async function signedFetch(
     headers.set("Accept", "application/activity+json");
   }
   
-  let body = "";
-  if (typeof options.body === "string") {
-    body = options.body;
-  } else if (options.body !== undefined && options.body !== null) {
-    try {
-      body = JSON.stringify(options.body);
-    } catch {
-      body = String(options.body);
-    }
-  }
-
   // Sign the request
   await signRequest(url, options.method || "POST", headers, body, keys.privateKey, keys.keyId);
 
@@ -212,6 +201,121 @@ async function signedFetch(
     body,
     headers
   });
+}
+
+// Fetch a public key for a given keyId
+async function getPublicKey(keyId: string): Promise<string | null> {
+  const actorUrl = keyId.split('#')[0];
+
+
+  // Try cache first
+  const { data: cached, error } = await supabaseClient
+    .from('remote_actors_cache')
+    .select('actor_data')
+    .eq('actor_url', actorUrl)
+    .single();
+
+  if (!error && cached?.actor_data?.publicKey?.publicKeyPem) {
+    return cached.actor_data.publicKey.publicKeyPem as string;
+  }
+
+  // Fallback to fetch actor profile
+  try {
+    const res = await fetch(actorUrl, {
+      headers: { Accept: 'application/activity+json' }
+    });
+    if (!res.ok) return null;
+    const actorData = await res.json();
+
+    await supabaseClient
+      .from('remote_actors_cache')
+      .upsert({
+        actor_url: actorUrl,
+        actor_data: actorData,
+        fetched_at: new Date().toISOString()
+      });
+
+    return actorData.publicKey?.publicKeyPem || null;
+  } catch (_e) {
+    return null;
+  }
+}
+
+// Verify HTTP signature with digest and date enforcement
+async function verifyRequestSignature(req: Request, body: string): Promise<boolean> {
+  const signatureHeader = req.headers.get('Signature');
+  const digestHeader = req.headers.get('Digest');
+  const dateHeader = req.headers.get('Date');
+
+  if (!signatureHeader || !digestHeader || !dateHeader) {
+    console.error('Missing required signature headers');
+    return false;
+  }
+
+  // Check Date within 5 minutes
+  const requestTime = Date.parse(dateHeader);
+  if (isNaN(requestTime) || Math.abs(Date.now() - requestTime) > 5 * 60 * 1000) {
+    console.error('Date header out of range');
+    return false;
+  }
+
+  // Verify digest
+  const encoder = new TextEncoder();
+  const digestBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(body));
+  const expectedDigest = 'SHA-256=' + encodeBase64(new Uint8Array(digestBuffer));
+  if (expectedDigest !== digestHeader) {
+    console.error('Digest mismatch');
+    return false;
+  }
+
+  const params: Record<string, string> = {};
+  for (const part of signatureHeader.split(',')) {
+    const [k, v] = part.trim().split('=');
+    params[k] = v.replace(/"/g, '');
+  }
+
+  const keyId = params['keyId'];
+  const signatureB64 = params['signature'];
+  const headerNames = (params['headers'] || '').split(' ');
+
+  const url = new URL(req.url);
+  const headerValues: Record<string, string> = {
+    '(request-target)': `${req.method.toLowerCase()} ${url.pathname}${url.search}`,
+    host: url.host,
+    date: dateHeader,
+    digest: digestHeader,
+  };
+
+  const stringToVerify = headerNames
+    .map((h) => `${h}: ${headerValues[h] ?? req.headers.get(h)}`)
+    .join('\n');
+
+  const publicKeyPem = await getPublicKey(keyId);
+  if (!publicKeyPem) {
+    console.error('Unable to retrieve public key for', keyId);
+    return false;
+  }
+
+  const keyBuffer = pemToBuffer(publicKeyPem.replace('PUBLIC KEY', 'PUBLIC KEY')); // reuse helper
+  const cryptoKey = await crypto.subtle.importKey(
+    'spki',
+    keyBuffer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify']
+  );
+
+  const signatureBytes = Uint8Array.from(atob(signatureB64), (c) => c.charCodeAt(0));
+  const verified = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    cryptoKey,
+    signatureBytes,
+    encoder.encode(stringToVerify)
+  );
+  if (!verified) {
+    console.error('Signature verification failed');
+  }
+  return verified;
 }
 
 // Initialize the Supabase client
@@ -288,11 +392,35 @@ serve(async (req) => {
       );
     }
 
+    // Read body and verify signature
+    let bodyText: string;
+    try {
+      bodyText = await req.text();
+    } catch (_err) {
+      return new Response(
+        JSON.stringify({ error: "Invalid body" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    if (!(await verifyRequestSignature(req, bodyText))) {
+      return new Response(
+        JSON.stringify({ error: "Invalid signature" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+
     // Parse the activity
     let activity;
     try {
-      activity = await req.json();
-    } catch (error) {
+      activity = JSON.parse(bodyText);
+    } catch (_error) {
       return new Response(
         JSON.stringify({ error: "Invalid JSON" }),
         {

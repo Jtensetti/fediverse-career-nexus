@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { signRequest, generateRsaKeyPair } from "./http-signature.ts";
 
 const corsHeaders = {
@@ -71,6 +72,24 @@ function assignActivityIds(activity: any, username: string, actorId: string): an
   
   return enrichedActivity;
 }
+
+// Basic schema for ActivityPub objects
+const objectSchema = z.object({
+  type: z.string(),
+  id: z.string().url().optional()
+}).passthrough();
+
+// Strict schema for outbound ActivityPub activities
+const activitySchema = z.object({
+  '@context': z.any().optional(),
+  type: z.string(),
+  actor: z.string().url().optional(),
+  object: objectSchema,
+  to: z.union([z.array(z.string()), z.string()]).optional(),
+  cc: z.union([z.array(z.string()), z.string()]).optional(),
+  published: z.string().optional(),
+  id: z.string().optional()
+}).passthrough();
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -366,25 +385,45 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
       }
     );
   }
+
+  const expectedActorUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/actor/${username}`;
   
-  // Parse activity from request body
+  // Parse and validate activity from request body
   let activity;
   try {
-    activity = await req.json();
-  } catch (error) {
+    const body = await req.json();
+    const result = activitySchema.safeParse(body);
+    if (!result.success) {
+      return new Response(
+        JSON.stringify({ error: "Invalid activity", details: result.error.issues }),
+        {
+          status: 422,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+    activity = result.data;
+    if (activity.actor && activity.actor !== expectedActorUrl) {
+      return new Response(
+        JSON.stringify({ error: "Actor URL mismatch" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
+    if (!activity.actor) {
+      activity.actor = expectedActorUrl;
+    }
+    if (typeof activity.to === "string") {
+      activity.to = [activity.to];
+    }
+    if (typeof activity.cc === "string") {
+      activity.cc = [activity.cc];
+    }
+  } catch (_error) {
     return new Response(
       JSON.stringify({ error: "Invalid JSON in request body" }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
-  }
-  
-  // Validate activity has required fields
-  if (!activity.type || !activity.object) {
-    return new Response(
-      JSON.stringify({ error: "Invalid activity: missing required fields" }),
       {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
