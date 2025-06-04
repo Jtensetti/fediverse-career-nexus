@@ -17,6 +17,18 @@ jwt_expiry = 3600
 jwt_secret = "super-secret-jwt-token-with-at-least-32-characters-long"
 enable_signup = true
 
+[auth.password]
+hibp_check_enabled = true
+
+[auth.mfa]
+enabled = true
+
+[auth.mfa.totp]
+enabled = true
+
+[auth.mfa.email]
+enabled = true
+
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
