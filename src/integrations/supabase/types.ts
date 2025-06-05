@@ -280,36 +280,6 @@ export type Database = {
         }
         Relationships: []
       }
-      blocked_actors: {
-        Row: {
-          actor_url: string
-          created_at: string
-          created_by: string | null
-          reason: string
-          status: string
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          actor_url: string
-          created_at?: string
-          created_by?: string | null
-          reason: string
-          status: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          actor_url?: string
-          created_at?: string
-          created_by?: string | null
-          reason?: string
-          status?: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -1466,6 +1436,10 @@ export type Database = {
       create_follower_batches: {
         Args: { p_actor_id: string; p_activity: Json; p_batch_size?: number }
         Returns: number
+      }
+      ensure_actor_has_keys: {
+        Args: { actor_uuid: string }
+        Returns: boolean
       }
       generate_verification_token: {
         Args: { length?: number }

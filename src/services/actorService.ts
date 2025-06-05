@@ -89,7 +89,7 @@ export const createLocalActorObject = (profile: any, domain: string): LocalActor
 // Create actor entries for a new user with RSA keys
 export const createUserActor = async (userId: string): Promise<boolean> => {
   try {
-    // Get user profile
+    // Get user profile - now using the RLS policy that ensures users can only see their own profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('username, fullname, bio')
@@ -166,10 +166,35 @@ export const createUserActor = async (userId: string): Promise<boolean> => {
   }
 };
 
-// Ensure actor has RSA keys (for existing actors)
+// Check if actor has keys using the new database function
+export const checkActorKeys = async (actorId: string): Promise<boolean> => {
+  try {
+    const { data: hasKeys, error } = await supabase
+      .rpc('ensure_actor_has_keys', { actor_uuid: actorId });
+    
+    if (error) {
+      console.error('Error checking actor keys:', error);
+      return false;
+    }
+    
+    return hasKeys || false;
+  } catch (error) {
+    console.error('Error in checkActorKeys:', error);
+    return false;
+  }
+};
+
+// Ensure actor has RSA keys (for existing actors) - now uses database function
 export const ensureActorKeys = async (actorId: string): Promise<boolean> => {
   try {
-    // Check if actor already has keys
+    // First check if keys exist using the new function
+    const hasKeys = await checkActorKeys(actorId);
+    
+    if (hasKeys) {
+      return true;
+    }
+
+    // If no keys exist, fetch actor details to generate them
     const { data: actor, error: actorError } = await supabase
       .from('actors')
       .select('id, private_key, public_key, preferred_username')
@@ -179,11 +204,6 @@ export const ensureActorKeys = async (actorId: string): Promise<boolean> => {
     if (actorError || !actor) {
       console.error('Error fetching actor:', actorError);
       return false;
-    }
-
-    // If keys already exist, return true
-    if (actor.private_key && actor.public_key) {
-      return true;
     }
 
     console.log(`Generating RSA keys for actor ${actor.preferred_username}`);
