@@ -72,7 +72,17 @@ export default function ActorModeration() {
     setError(null);
     try {
       const data = await getActorModeration();
-      setActors(data as ActorEntry[]);
+      // Ensure the data matches our ActorEntry interface
+      const actorEntries: ActorEntry[] = Array.isArray(data) ? data.filter(item => 
+        item && 
+        typeof item === 'object' && 
+        'actor_url' in item && 
+        'reason' in item && 
+        'status' in item &&
+        'created_at' in item &&
+        'updated_at' in item
+      ) : [];
+      setActors(actorEntries);
     } catch (err) {
       setError("Failed to load actor moderation data");
       console.error(err);
