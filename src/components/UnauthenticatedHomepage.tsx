@@ -12,8 +12,8 @@ const UnauthenticatedHomepage = () => {
 
   useEffect(() => {
     const fetchJobs = async () => {
-      const jobsData = await getPublishedJobPosts({}, 3); // Get only 3 jobs for preview
-      setJobs(jobsData);
+      const jobsData = await getPublishedJobPosts(); // Fixed: removed second argument
+      setJobs(jobsData.slice(0, 3)); // Get only 3 jobs for preview
     };
     
     fetchJobs();
@@ -154,7 +154,7 @@ const UnauthenticatedHomepage = () => {
                   <Card key={job.id} className="shadow-lg border-0 hover:shadow-xl transition-shadow">
                     <CardHeader>
                       <CardTitle className="text-bondy-primary line-clamp-2">{job.title}</CardTitle>
-                      <p className="text-sm text-gray-600">{job.company}</p>
+                      <p className="text-sm text-gray-600">{job.company_name}</p>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-700 line-clamp-3 mb-4">{job.description}</p>
