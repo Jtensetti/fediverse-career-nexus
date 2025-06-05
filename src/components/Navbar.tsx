@@ -58,7 +58,7 @@ const Navbar = () => {
     };
   }, [scrolled]);
 
-  const fullNavigationItems = [
+  const authenticatedNavigationItems = [
     {
       name: t("nav.home", "Home"),
       href: "/",
@@ -93,18 +93,8 @@ const Navbar = () => {
     },
   ];
 
-  const guestNavigationItems = [
-    {
-      name: t("nav.feed", "Feed"),
-      href: "/feed",
-    },
-    {
-      name: t("nav.jobs", "Jobs"),
-      href: "/jobs",
-    },
-  ];
-
-  const navigationItems = user ? fullNavigationItems : guestNavigationItems;
+  // For unauthenticated users, only show minimal navigation
+  const unauthenticatedNavigationItems = user ? authenticatedNavigationItems : [];
 
   return (
     <div className={`${isHomePage ? 'absolute top-0 left-0 right-0 z-50' : 'border-b'} transition-colors duration-300 ${scrolled && isHomePage ? 'bg-white/90 backdrop-blur-md shadow-sm' : isHomePage ? 'bg-transparent' : 'bg-white'}`}>
@@ -119,18 +109,23 @@ const Navbar = () => {
               />
               <span className="font-display">Bondy</span>
             </RouterLink>
-            <nav className={`mx-6 hidden md:flex space-x-6 ${isHomePage && !scrolled ? 'text-white' : 'text-foreground'}`}>
-              {navigationItems.map((item) => (
-                <RouterLink 
-                  key={item.href} 
-                  to={item.href}
-                  className="font-medium hover:text-bondy-accent transition-colors"
-                >
-                  {item.name}
-                </RouterLink>
-              ))}
-            </nav>
+            
+            {/* Only show full navigation when authenticated */}
+            {user && (
+              <nav className={`mx-6 hidden md:flex space-x-6 ${isHomePage && !scrolled ? 'text-white' : 'text-foreground'}`}>
+                {authenticatedNavigationItems.map((item) => (
+                  <RouterLink 
+                    key={item.href} 
+                    to={item.href}
+                    className="font-medium hover:text-bondy-accent transition-colors"
+                  >
+                    {item.name}
+                  </RouterLink>
+                ))}
+              </nav>
+            )}
           </div>
+          
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <ModeToggle />
@@ -208,101 +203,72 @@ const Navbar = () => {
               </div>
             )}
             
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className={`md:hidden ${isHomePage && !scrolled ? 'text-white' : ''}`}>
-                  <AlignJustify className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="sm:max-w-sm">
-                <SheetHeader>
-                  <SheetTitle>
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                        alt="Bondy" 
-                        className="w-6 h-6" 
-                      />
-                      <span className="font-display">Bondy</span>
-                    </div>
-                  </SheetTitle>
-                  <SheetDescription>
-                    {t("accessibility.navigationMenu", "Navigation menu")}
-                  </SheetDescription>
-                </SheetHeader>
-                <nav className="grid gap-4 text-lg mt-6">
-                  {navigationItems.map((item) => (
-                    <RouterLink 
-                      key={item.href} 
-                      to={item.href}
-                      onClick={() => setIsOpen(false)}
-                      className="px-2 py-1 hover:bg-muted rounded-md transition-colors"
-                    >
-                      {item.name}
-                    </RouterLink>
-                  ))}
-                  <div className="border-t pt-4 mt-4">
-                    {user ? (
-                      <>
-                        <RouterLink 
-                          to="/profile"
-                          onClick={() => setIsOpen(false)}
-                          className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors"
-                        >
-                          <User className="h-4 w-4 mr-2" />
-                          Profile
-                        </RouterLink>
-                        <button 
-                          onClick={() => {
-                            handleLogout();
-                            setIsOpen(false);
-                          }}
-                          className="flex items-center px-2 py-1 text-red-500 w-full text-left hover:bg-red-50 rounded-md transition-colors mt-2"
-                        >
-                          Log out
-                        </button>
-                      </>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        <Button 
-                          asChild 
-                          variant="outline" 
-                          className="w-full justify-start"
-                        >
-                          <RouterLink 
-                            to="/auth/login"
-                            onClick={() => setIsOpen(false)}
-                          >
-                            <LogIn className="h-4 w-4 mr-2" />
-                            Sign In
-                          </RouterLink>
-                        </Button>
-                        <Button 
-                          asChild 
-                          className="w-full justify-start bg-bondy-primary"
-                        >
-                          <RouterLink 
-                            to="/auth/signup"
-                            onClick={() => setIsOpen(false)}
-                          >
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Create Account
-                          </RouterLink>
-                        </Button>
+            {/* Mobile menu - only show when authenticated */}
+            {user && (
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className={`md:hidden ${isHomePage && !scrolled ? 'text-white' : ''}`}>
+                    <AlignJustify className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="sm:max-w-sm">
+                  <SheetHeader>
+                    <SheetTitle>
+                      <div className="flex items-center gap-2">
+                        <img 
+                          src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
+                          alt="Bondy" 
+                          className="w-6 h-6" 
+                        />
+                        <span className="font-display">Bondy</span>
                       </div>
-                    )}
-                    <RouterLink 
-                      to="/admin/instances"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground mt-4"
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Instance Management
-                    </RouterLink>
-                  </div>
-                </nav>
-              </SheetContent>
-            </Sheet>
+                    </SheetTitle>
+                    <SheetDescription>
+                      {t("accessibility.navigationMenu", "Navigation menu")}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <nav className="grid gap-4 text-lg mt-6">
+                    {authenticatedNavigationItems.map((item) => (
+                      <RouterLink 
+                        key={item.href} 
+                        to={item.href}
+                        onClick={() => setIsOpen(false)}
+                        className="px-2 py-1 hover:bg-muted rounded-md transition-colors"
+                      >
+                        {item.name}
+                      </RouterLink>
+                    ))}
+                    <div className="border-t pt-4 mt-4">
+                      <RouterLink 
+                        to="/profile"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Profile
+                      </RouterLink>
+                      <button 
+                        onClick={() => {
+                          handleLogout();
+                          setIsOpen(false);
+                        }}
+                        className="flex items-center px-2 py-1 text-red-500 w-full text-left hover:bg-red-50 rounded-md transition-colors mt-2"
+                      >
+                        Log out
+                      </button>
+                      <RouterLink 
+                        to="/admin/instances"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground mt-4"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Instance Management
+                      </RouterLink>
+                    </div>
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            )}
           </div>
         </div>
       </div>
