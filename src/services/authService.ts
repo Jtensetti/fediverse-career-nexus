@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export const signUp = async (email: string, password: string) => {
@@ -30,8 +31,9 @@ export const signIn = async (email: string, password: string) => {
     throw new Error(error?.message ?? "Login failed");
   }
 
-  // Ensure user has proper profile and actor setup
-  await ensureUserSetup(data.user);
+  // Temporarily disabled to debug login hanging issue.
+  // This function checks for profiles, settings, and actor keys after login.
+  // await ensureUserSetup(data.user);
 
   return data.user;
 };
