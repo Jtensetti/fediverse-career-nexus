@@ -22,20 +22,29 @@ export const confirmEmail = async (token: string) => {
 };
 
 export const signIn = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+  const response = await fetch("/functions/v1/auth-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
   });
 
-  if (error || !data.session) {
-    throw new Error(error?.message ?? "Login failed");
+  const responseBody = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseBody.error || "Login failed");
   }
 
-  // Temporarily disabled to debug login hanging issue.
-  // This function checks for profiles, settings, and actor keys after login.
-  // await ensureUserSetup(data.user);
+  const { error } = await supabase.auth.setSession({
+    access_token: responseBody.access_token,
+    refresh_token: responseBody.refresh_token,
+  });
 
-  return data.user;
+  if (error) {
+    throw new Error("Failed to set session: " + error.message);
+  }
+
+  // The user object from the edge function is what we need
+  return responseBody.user;
 };
 
 export const fetchMe = async () => {
