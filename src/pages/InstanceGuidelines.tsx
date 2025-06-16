@@ -3,8 +3,6 @@ import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import InstanceGuidelines from "@/components/InstanceGuidelines";
 
 const InstanceGuidelinesPage = () => {
@@ -16,8 +14,6 @@ const InstanceGuidelinesPage = () => {
       </Helmet>
       
       <div className="min-h-screen flex flex-col bg-white">
-        <Navbar />
-        
         {/* Header */}
         <div className="bg-bondy-primary text-white py-16">
           <div className="container mx-auto px-4">
@@ -52,8 +48,6 @@ const InstanceGuidelinesPage = () => {
             </div>
           </div>
         </div>
-
-        <Footer />
       </div>
     </>
   );
