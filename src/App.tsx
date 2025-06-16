@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -10,23 +11,18 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
-import EditProfile from "./pages/EditProfile";
 import Jobs from "./pages/Jobs";
-import JobDetail from "./pages/JobDetail";
-import FederatedFeedPage from "./pages/FederatedFeedPage";
+import FederatedFeedPage from "./pages/FederatedFeed";
 import Auth from "./pages/Auth";
 import Events from "./pages/Events";
-import EventDetail from "./pages/EventDetail";
-import CreateEvent from "./pages/CreateEvent";
-import EditEvent from "./pages/EditEvent";
-import { useAuth } from "./contexts/AuthContext";
 import Mission from "./pages/Mission";
+import { useAuth } from "./contexts/AuthContext";
 
 function App() {
   const queryClient = new QueryClient();
 
   const toasterConfig = {
-    position: "top-center",
+    position: "top-center" as const,
     duration: 3000,
     className: "z-[100]",
   };
@@ -57,34 +53,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/edit-profile"
-              element={
-                <ProtectedRoute>
-                  <EditProfile />
-                </ProtectedRoute>
-              }
-            />
             <Route path="/jobs" element={<Jobs />} />
-            <Route path="/jobs/:jobId" element={<JobDetail />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/events/:eventId" element={<EventDetail />} />
-            <Route
-              path="/create-event"
-              element={
-                <ProtectedRoute>
-                  <CreateEvent />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/edit-event/:eventId"
-              element={
-                <ProtectedRoute>
-                  <EditEvent />
-                </ProtectedRoute>
-              }
-            />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
