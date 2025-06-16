@@ -20,6 +20,7 @@ import FederationGuide from "./pages/FederationGuide";
 import HelpCenter from "./pages/HelpCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import CodeOfConductPage from "./pages/CodeOfConduct";
 import { useAuth } from "./contexts/AuthContext";
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
             <Route path="/federation" element={<FederationGuide />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
             <Route path="/auth/:authType" element={<Auth />} />
             <Route path="/feed" element={<FederatedFeedPage />} />
             <Route
