@@ -55,6 +55,10 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     navigate("/articles/create");
   };
 
+  const handleCreateEvent = () => {
+    navigate("/events/create");
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -137,7 +141,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       size="sm"
                       className="text-muted-foreground hover:text-foreground"
                     >
-                      <Calendar className="h-4 w-4" />
+                      <Calendar className="h-3 w-3" />
                     </Button>
                   </div>
                   
@@ -166,7 +170,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
             </DialogContent>
           </Dialog>
           
-          <div className="mt-4">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <Button
               variant="outline"
               onClick={handleWriteArticle}
@@ -174,6 +178,15 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
             >
               <PenTool className="h-4 w-4 mr-2" />
               Write an Article
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={handleCreateEvent}
+              className="w-full"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Create Event
             </Button>
           </div>
         </CardContent>
