@@ -15,6 +15,7 @@ import Jobs from "./pages/Jobs";
 import FederatedFeedPage from "./pages/FederatedFeed";
 import Auth from "./pages/Auth";
 import Events from "./pages/Events";
+import EventCreate from "./pages/EventCreate";
 import Articles from "./pages/Articles";
 import ArticleCreate from "./pages/ArticleCreate";
 import Connections from "./pages/Connections";
@@ -77,6 +78,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Events />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events/create"
+              element={
+                <ProtectedRoute>
+                  <EventCreate />
                 </ProtectedRoute>
               }
             />
