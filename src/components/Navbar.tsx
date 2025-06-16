@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useLocation } from "react-router-dom";
@@ -93,10 +92,6 @@ const Navbar = () => {
   }, [scrolled]);
 
   const authenticatedNavigationItems = [
-    {
-      name: t("nav.home", "Home"),
-      href: "/",
-    },
     {
       name: t("nav.profile", "Profile"),
       href: "/profile",

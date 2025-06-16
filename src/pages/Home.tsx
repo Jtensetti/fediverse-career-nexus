@@ -1,11 +1,11 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./Index";
-import DashboardLayout from "@/components/DashboardLayout";
-import FederatedFeed from "@/components/FederatedFeed";
 
 const Home = () => {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,8 +16,14 @@ const Home = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
-        setIsAuthenticated(!!session);
+        const authenticated = !!session;
+        setIsAuthenticated(authenticated);
         setIsLoading(false);
+        
+        // Redirect authenticated users to feed
+        if (authenticated) {
+          navigate("/feed");
+        }
       }
     );
 
@@ -26,7 +32,13 @@ const Home = () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         console.log('Initial session check:', session?.user?.email, error);
-        setIsAuthenticated(!!session);
+        const authenticated = !!session;
+        setIsAuthenticated(authenticated);
+        
+        // Redirect authenticated users to feed
+        if (authenticated) {
+          navigate("/feed");
+        }
       } catch (error) {
         console.error('Error checking session:', error);
         setIsAuthenticated(false);
@@ -40,7 +52,7 @@ const Home = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   console.log('Home render state:', { isAuthenticated, isLoading });
 
@@ -55,19 +67,14 @@ const Home = () => {
     );
   }
 
+  // Only show the index page if not authenticated
   if (!isAuthenticated) {
     console.log('User not authenticated, showing Index page');
     return <Index />;
   }
 
-  console.log('User authenticated, showing dashboard with feed');
-  return (
-    <DashboardLayout showHeader={false}>
-      <div className="max-w-2xl mx-auto">
-        <FederatedFeed />
-      </div>
-    </DashboardLayout>
-  );
+  // This should not be reached due to the redirect, but just in case
+  return null;
 };
 
 export default Home;

@@ -82,9 +82,9 @@ const Auth = () => {
       console.log('Login successful, user:', user);
       toast.success("Welcome back!");
       
-      // Small delay to ensure auth state is updated
+      // Small delay to ensure auth state is updated, then redirect to feed
       setTimeout(() => {
-        navigate("/");
+        navigate("/feed");
       }, 100);
     } catch (error: any) {
       console.error('Login failed:', error);
@@ -105,9 +105,9 @@ const Auth = () => {
       await signUp(values.email, values.password);
       toast.success("Account created! Please check your email to confirm.");
       
-      // Small delay to ensure auth state is updated
+      // Small delay to ensure auth state is updated, then redirect to feed
       setTimeout(() => {
-        navigate("/");
+        navigate("/feed");
       }, 100);
     } catch (error: any) {
       console.error('Signup failed:', error);
