@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Post {
@@ -58,10 +57,39 @@ const ensureUserHasActor = async (userId: string): Promise<string> => {
     .single();
 
   if (!profile?.username) {
-    throw new Error('User profile not found');
+    // If no username exists, create a default one
+    const defaultUsername = `user_${userId.slice(0, 8)}`;
+    
+    // Update the profile with a default username
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ username: defaultUsername })
+      .eq('id', userId);
+    
+    if (updateError) {
+      throw new Error(`Failed to create username: ${updateError.message}`);
+    }
+    
+    // Use the new username for actor creation
+    const { data: newActor, error: createActorError } = await supabase
+      .from('actors')
+      .insert({
+        user_id: userId,
+        preferred_username: defaultUsername,
+        type: 'Person',
+        status: 'active'
+      })
+      .select('id')
+      .single();
+
+    if (createActorError || !newActor) {
+      throw new Error(`Failed to create actor: ${createActorError?.message}`);
+    }
+
+    return newActor.id;
   }
 
-  // Create actor for user
+  // Create actor for user with existing username
   const { data: newActor, error: createActorError } = await supabase
     .from('actors')
     .insert({
@@ -102,9 +130,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
       throw new Error('User profile not found');
     }
 
-    const supabaseUrl =
-      import.meta.env.VITE_SUPABASE_URL ||
-      'https://tvvrdoklywxllcpzxdls.supabase.co';
+    const supabaseUrl = 'https://tvvrdoklywxllcpzxdls.supabase.co';
     const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
 
     let imageUrl: string | undefined;
@@ -130,6 +156,8 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
       imageUrl = publicUrl;
     }
 
+    const publishedTime = postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString();
+
     // Create the post in the database using the actor ID
     const { data: post, error: postError } = await supabase
       .from('ap_objects')
@@ -151,11 +179,11 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
             }),
             to: ['https://www.w3.org/ns/activitystreams#Public'],
             cc: [`${actorUrl}/followers`],
-            published: postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString()
+            published: publishedTime
           },
           to: ['https://www.w3.org/ns/activitystreams#Public'],
           cc: [`${actorUrl}/followers`],
-          published: postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString()
+          published: publishedTime
         },
         attributed_to: actorId  // Use the actor ID
       })
