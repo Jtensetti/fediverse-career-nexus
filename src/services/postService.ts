@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Post {
@@ -323,7 +324,8 @@ export const updatePost = async (id: string, data: UpdatePostData): Promise<Post
       throw new Error('Post not found');
     }
 
-    const content = existing.content as ActivityContent;
+    // Create a mutable copy of the content
+    const content = JSON.parse(JSON.stringify(existing.content)) as ActivityContent;
 
     if (data.content !== undefined) {
       content.object.content = data.content;
@@ -359,7 +361,7 @@ export const updatePost = async (id: string, data: UpdatePostData): Promise<Post
 
     const { data: updated, error } = await supabase
       .from('ap_objects')
-      .update({ content })
+      .update({ content: content as any })
       .eq('id', id)
       .select()
       .single();
