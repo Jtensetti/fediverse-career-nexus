@@ -188,7 +188,7 @@ export const getScheduledPosts = async (): Promise<Post[]> => {
     }
 
     return posts?.map(post => {
-      const content = post.content as ActivityContent;
+      const content = post.content as unknown as ActivityContent;
       return {
         id: post.id,
         content: content.object.content,
