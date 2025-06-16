@@ -72,14 +72,20 @@ const Auth = () => {
   
   // Handle login
   const handleLogin = async (values: LoginFormValues) => {
+    if (isLoading) return; // Prevent multiple submissions
+    
     setIsLoading(true);
     console.log('Starting login process for:', values.email);
     
     try {
-      await signIn(values.email, values.password);
-      console.log('Login successful, redirecting to home');
+      const user = await signIn(values.email, values.password);
+      console.log('Login successful, user:', user);
       toast.success("Welcome back!");
-      navigate("/");
+      
+      // Small delay to ensure auth state is updated
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
     } catch (error: any) {
       console.error('Login failed:', error);
       toast.error(error.message || "Login failed");
@@ -90,13 +96,19 @@ const Auth = () => {
   
   // Handle signup
   const handleSignup = async (values: SignupFormValues) => {
+    if (isLoading) return; // Prevent multiple submissions
+    
     setIsLoading(true);
     console.log('Starting signup process for:', values.email);
     
     try {
       await signUp(values.email, values.password);
       toast.success("Account created! Please check your email to confirm.");
-      navigate("/");
+      
+      // Small delay to ensure auth state is updated
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
     } catch (error: any) {
       console.error('Signup failed:', error);
       toast.error(error.message || "Signup failed");

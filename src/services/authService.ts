@@ -2,6 +2,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const signUp = async (email: string, password: string) => {
+  console.log('SignUp: Starting signup process for:', email);
+  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -10,10 +12,14 @@ export const signUp = async (email: string, password: string) => {
     }
   });
 
+  console.log('SignUp: Response received:', { data, error });
+
   if (error) {
+    console.error('SignUp: Error occurred:', error);
     throw new Error(error.message);
   }
 
+  console.log('SignUp: Success, returning data:', data);
   return data;
 };
 
@@ -28,32 +34,42 @@ export const confirmEmail = async (token: string) => {
 };
 
 export const signIn = async (email: string, password: string) => {
-  console.log('Attempting to sign in with:', email);
+  console.log('SignIn: Attempting to sign in with:', email);
   
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  console.log('Sign in response:', { data, error });
+    console.log('SignIn: Response received:', { data, error });
 
-  if (error) {
-    console.error('Sign in error:', error);
-    throw new Error(error.message);
+    if (error) {
+      console.error('SignIn: Error occurred:', error);
+      throw new Error(error.message);
+    }
+
+    if (!data.user) {
+      console.error('SignIn: No user returned');
+      throw new Error("No user returned from login");
+    }
+
+    console.log('SignIn: Success, returning user:', data.user);
+    return data.user;
+  } catch (error) {
+    console.error('SignIn: Unexpected error:', error);
+    throw error;
   }
-
-  if (!data.session) {
-    throw new Error("No session returned from login");
-  }
-
-  return data.user;
 };
 
 export const signOut = async () => {
+  console.log('SignOut: Starting signout process');
   const { error } = await supabase.auth.signOut();
   if (error) {
+    console.error('SignOut: Error occurred:', error);
     throw new Error(error.message);
   }
+  console.log('SignOut: Success');
 };
 
 export const fetchMe = async () => {
@@ -64,53 +80,4 @@ export const fetchMe = async () => {
   });
   if (!response.ok) return null;
   return response.json();
-};
-
-// Helper function to ensure user has proper setup
-const ensureUserSetup = async (user: any) => {
-  if (!user?.id) return;
-  
-  try {
-    // Check if user has a profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, username')
-      .eq('id', user.id)
-      .single();
-    
-    // If no profile exists, it should be created by the trigger
-    // But we can verify the username constraint is working
-    if (profile && !profile.username) {
-      console.log('User profile exists but needs username setup');
-    }
-    
-    // Check if user has user_settings
-    const { data: settings } = await supabase
-      .from('user_settings')
-      .select('user_id')
-      .eq('user_id', user.id)
-      .single();
-    
-    // Create user_settings if they don't exist
-    if (!settings) {
-      await supabase
-        .from('user_settings')
-        .insert({ user_id: user.id });
-    }
-    
-    // Check if user has an actor record with keys
-    const { data: actor } = await supabase
-      .from('actors')
-      .select('id, private_key, public_key')
-      .eq('user_id', user.id)
-      .single();
-    
-    if (actor && (!actor.private_key || !actor.public_key)) {
-      // Actor exists but needs keys - this should be handled by the edge function
-      console.log('Actor needs key generation');
-    }
-    
-  } catch (error) {
-    console.error('Error ensuring user setup:', error);
-  }
 };
