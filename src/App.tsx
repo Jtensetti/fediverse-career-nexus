@@ -16,6 +16,7 @@ import Auth from "./pages/Auth";
 import Events from "./pages/Events";
 import Mission from "./pages/Mission";
 import Documentation from "./pages/Documentation";
+import FederationGuide from "./pages/FederationGuide";
 import { useAuth } from "./contexts/AuthContext";
 import HelpCenter from "./pages/HelpCenter";
 
@@ -38,6 +39,7 @@ function App() {
             <Route path="/mission" element={<Mission />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/help" element={<HelpCenter />} />
+            <Route path="/federation" element={<FederationGuide />} />
             <Route path="/auth/:authType" element={<Auth />} />
             <Route path="/feed" element={<FederatedFeedPage />} />
             <Route
