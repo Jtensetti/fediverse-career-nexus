@@ -19,67 +19,121 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    console.log('AuthProvider: Setting up auth state management');
+    
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('AuthProvider: Error getting initial session:', error);
+        } else {
+          console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error('AuthProvider: Unexpected error getting session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('AuthProvider: Auth state changed:', event, session?.user?.email || 'No user');
         setSession(session);
         setUser(session?.user ?? null);
+        setLoading(false);
         
-        // Ensure user has actor when they sign in
+        // Handle sign in - ensure user has proper setup
         if (event === 'SIGNED_IN' && session?.user) {
+          // Use setTimeout to avoid blocking the auth state change
           setTimeout(async () => {
             try {
+              console.log('AuthProvider: Setting up user after sign in');
+              
               // Check if user has a profile with username
-              const { data: profile } = await supabase
+              const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('username, id')
                 .eq('id', session.user.id)
                 .single();
               
+              if (profileError) {
+                console.error('AuthProvider: Error fetching profile:', profileError);
+                return;
+              }
+              
+              // Create default username if none exists
               if (profile && !profile.username) {
-                // Update profile with default username
+                console.log('AuthProvider: Creating default username');
                 const defaultUsername = `user_${session.user.id.slice(0, 8)}`;
-                await supabase
+                const { error: updateError } = await supabase
                   .from('profiles')
                   .update({ username: defaultUsername })
                   .eq('id', session.user.id);
+                
+                if (updateError) {
+                  console.error('AuthProvider: Error updating username:', updateError);
+                  return;
+                }
               }
               
               // Check if user has an actor
-              const { data: existingActor } = await supabase
+              const { data: existingActor, error: actorError } = await supabase
                 .from('actors')
                 .select('id')
                 .eq('user_id', session.user.id)
                 .single();
               
+              if (actorError && actorError.code !== 'PGRST116') {
+                console.error('AuthProvider: Error checking for actor:', actorError);
+                return;
+              }
+              
               if (!existingActor) {
-                console.log('Creating actor for user...');
-                await createUserActor(session.user.id);
+                console.log('AuthProvider: Creating actor for user');
+                try {
+                  await createUserActor(session.user.id);
+                  console.log('AuthProvider: Actor created successfully');
+                } catch (error) {
+                  console.error('AuthProvider: Error creating actor:', error);
+                }
+              } else {
+                console.log('AuthProvider: User already has actor');
               }
             } catch (error) {
-              console.error('Error setting up user:', error);
+              console.error('AuthProvider: Error in user setup:', error);
             }
-          }, 0);
+          }, 100);
         }
-        
-        setLoading(false);
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Get initial session
+    getInitialSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('AuthProvider: Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    console.log('AuthProvider: Signing out user');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('AuthProvider: Error signing out:', error);
+        throw error;
+      }
+      console.log('AuthProvider: Sign out successful');
+    } catch (error) {
+      console.error('AuthProvider: Sign out failed:', error);
+      throw error;
+    }
   };
 
   const value = {
