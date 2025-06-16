@@ -73,13 +73,16 @@ const Auth = () => {
   // Handle login
   const handleLogin = async (values: LoginFormValues) => {
     setIsLoading(true);
+    console.log('Starting login process for:', values.email);
     
     try {
       await signIn(values.email, values.password);
+      console.log('Login successful, redirecting to home');
       toast.success("Welcome back!");
       navigate("/");
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Login failed:', error);
+      toast.error(error.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -88,13 +91,15 @@ const Auth = () => {
   // Handle signup
   const handleSignup = async (values: SignupFormValues) => {
     setIsLoading(true);
+    console.log('Starting signup process for:', values.email);
     
     try {
       await signUp(values.email, values.password);
       toast.success("Account created! Please check your email to confirm.");
       navigate("/");
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Signup failed:', error);
+      toast.error(error.message || "Signup failed");
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +178,7 @@ const Auth = () => {
                       
                       <Button type="submit" className="w-full bg-bondy-primary" disabled={isLoading}>
                         {isLoading ? "Signing In..." : "Sign In"}
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
                       </Button>
                     </form>
                   </Form>
@@ -241,7 +246,7 @@ const Auth = () => {
                       
                       <Button type="submit" className="w-full bg-bondy-primary" disabled={isLoading}>
                         {isLoading ? "Creating Account..." : "Create Account"}
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
                       </Button>
                     </form>
                   </Form>

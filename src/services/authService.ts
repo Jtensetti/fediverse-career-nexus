@@ -2,13 +2,19 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const signUp = async (email: string, password: string) => {
-  const response = await fetch("/functions/v1/auth-signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/`
+    }
   });
-  if (!response.ok) throw new Error("Signup failed");
-  return response.json();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 export const confirmEmail = async (token: string) => {
@@ -22,29 +28,32 @@ export const confirmEmail = async (token: string) => {
 };
 
 export const signIn = async (email: string, password: string) => {
-  const response = await fetch("/functions/v1/auth-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+  console.log('Attempting to sign in with:', email);
+  
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
   });
 
-  const responseBody = await response.json();
-
-  if (!response.ok) {
-    throw new Error(responseBody.error || "Login failed");
-  }
-
-  const { error } = await supabase.auth.setSession({
-    access_token: responseBody.access_token,
-    refresh_token: responseBody.refresh_token,
-  });
+  console.log('Sign in response:', { data, error });
 
   if (error) {
-    throw new Error("Failed to set session: " + error.message);
+    console.error('Sign in error:', error);
+    throw new Error(error.message);
   }
 
-  // The user object from the edge function is what we need
-  return responseBody.user;
+  if (!data.session) {
+    throw new Error("No session returned from login");
+  }
+
+  return data.user;
+};
+
+export const signOut = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    throw new Error(error.message);
+  }
 };
 
 export const fetchMe = async () => {
