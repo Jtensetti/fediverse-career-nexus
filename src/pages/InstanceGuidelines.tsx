@@ -9,8 +9,8 @@ const InstanceGuidelinesPage = () => {
   return (
     <>
       <Helmet>
-        <title>Instance Guidelines - Bondy</title>
-        <meta name="description" content="Guidelines for operating a Bondy instance responsibly and maintaining network health." />
+        <title>Instance Guidelines - Nolto</title>
+        <meta name="description" content="Guidelines for operating a Nolto instance responsibly and maintaining network health." />
       </Helmet>
       
       <div className="min-h-screen flex flex-col bg-white">

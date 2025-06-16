@@ -14,7 +14,7 @@ const Documentation = () => {
               Documentation
             </h1>
             <p className="text-xl text-bondy-highlight">
-              Everything you need to get started with Bondy
+              Everything you need to get started with Nolto
             </p>
           </div>
         </div>
@@ -24,7 +24,7 @@ const Documentation = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto prose prose-lg">
           <p className="text-lg text-gray-700 leading-relaxed mb-8">
-            Welcome to Bondy's documentation. Here you'll find everything you need to get started, from creating your first profile to running your own federated Bondy instance.
+            Welcome to Nolto's documentation. Here you'll find everything you need to get started, from creating your first profile to running your own federated Nolto instance.
           </p>
 
           <section className="mb-12">
@@ -32,7 +32,7 @@ const Documentation = () => {
             
             <h3 className="text-xl font-semibold text-bondy-primary mb-4">Creating an Account</h3>
             <ul className="space-y-2 mb-6">
-              <li>Visit your preferred Bondy instance (e.g. bondy.social or another community-run server).</li>
+              <li>Visit your preferred Nolto instance (e.g. nolto.social or another community-run server).</li>
               <li>Click "Sign Up" and fill in the registration form.</li>
               <li>Confirm your email and log in.</li>
               <li>Set up your profile with your skills, experience, and what you're looking for.</li>
@@ -50,7 +50,7 @@ const Documentation = () => {
             <h2 className="text-2xl font-bold text-bondy-primary mb-6">2. Finding Jobs & Opportunities</h2>
             <ul className="space-y-2 mb-6">
               <li>Use the search and filter tools to browse job postings across the Fediverse.</li>
-              <li>Save interesting jobs, apply directly, or contact poster via Bondy.</li>
+              <li>Save interesting jobs, apply directly, or contact poster via Nolto.</li>
               <li>Subscribe to job feeds (per tag, location, or company) to stay updated.</li>
             </ul>
           </section>
@@ -58,17 +58,17 @@ const Documentation = () => {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-bondy-primary mb-6">3. Federation: How It Works</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              Bondy is federated via ActivityPub. This means:
+              Nolto is federated via ActivityPub. This means:
             </p>
             <ul className="space-y-2 mb-6">
-              <li>You can interact with users and jobs from any compatible Bondy instance.</li>
+              <li>You can interact with users and jobs from any compatible Nolto instance.</li>
               <li>Profiles, job posts, and messages can move freely between servers.</li>
               <li>If you move to a new instance, you can export your data and connections.</li>
             </ul>
 
             <h3 className="text-xl font-semibold text-bondy-primary mb-4">Choosing an Instance</h3>
             <ul className="space-y-2 mb-6">
-              <li>You can sign up on any public Bondy instance, or create your own.</li>
+              <li>You can sign up on any public Nolto instance, or create your own.</li>
               <li>Some instances are general, others focus on specific industries, regions, or communities.</li>
               <li>Each instance has its own moderation rules and policies. Choose the one that fits you best.</li>
             </ul>
@@ -78,7 +78,7 @@ const Documentation = () => {
             <h2 className="text-2xl font-bold text-bondy-primary mb-6">4. Running Your Own Instance</h2>
             <ul className="space-y-2 mb-6">
               <li>
-                Bondy is open source. Clone the repository from{" "}
+                Nolto is open source. Clone the repository from{" "}
                 <a 
                   href="https://codeberg.org/Tensetti/Bondy" 
                   target="_blank" 
@@ -105,7 +105,7 @@ const Documentation = () => {
                   <strong className="text-bondy-primary">How Federation Works</strong> – Deep dive into federation and ActivityPub
                 </li>
                 <li>
-                  <strong className="text-bondy-primary">Instance Guidelines</strong> – Rules for hosting your own Bondy server
+                  <strong className="text-bondy-primary">Instance Guidelines</strong> – Rules for hosting your own Nolto server
                 </li>
                 <li>
                   <Link to="#" className="text-bondy-accent hover:text-bondy-primary transition-colors">
@@ -133,7 +133,7 @@ const Documentation = () => {
               >
                 Codeberg Issues <ExternalLink className="ml-1 h-4 w-4" />
               </a>{" "}
-              or join the conversation on Bondy.
+              or join the conversation on Nolto.
             </p>
           </section>
         </div>

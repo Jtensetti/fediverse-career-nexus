@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Scale, Lock, Network, Eye, Settings, Users } from "lucide-react";
 
@@ -18,7 +19,7 @@ const InstanceGuidelines = () => {
       points: [
         "Implement moderation processes to prevent abuse, harassment, illegal content, and spam.",
         "Designate moderators who can respond to reports and enforce rules quickly and fairly.",
-        "Remove or block users and content that violate your rules, Bondy's Code of Conduct, or applicable laws.",
+        "Remove or block users and content that violate your rules, Nolto's Code of Conduct, or applicable laws.",
         "Respond to reports from users and other instance admins in a timely manner."
       ]
     },
@@ -54,7 +55,7 @@ const InstanceGuidelines = () => {
       icon: Settings,
       title: "6. Technical Requirements", 
       points: [
-        "Keep your Bondy software and dependencies up-to-date with security patches.",
+        "Keep your Nolto software and dependencies up-to-date with security patches.",
         "Maintain regular backups and disaster recovery plans.",
         "Monitor your instance's performance and availability."
       ]
@@ -73,7 +74,7 @@ const InstanceGuidelines = () => {
   return (
     <div className="max-w-4xl mx-auto prose prose-lg">
       <p className="text-lg text-gray-700 leading-relaxed mb-8">
-        Running a Bondy instance is a responsibility. To ensure the health of the network and protect users, 
+        Running a Nolto instance is a responsibility. To ensure the health of the network and protect users, 
         all instance operators must follow these guidelines.
       </p>
 
@@ -101,13 +102,13 @@ const InstanceGuidelines = () => {
       <section className="bg-bondy-primary text-white p-8 rounded-lg text-center">
         <h2 className="text-2xl font-bold mb-4">Commitment to Guidelines</h2>
         <p className="text-lg mb-6 text-white/90">
-          By operating a Bondy instance, you agree to uphold these guidelines. 
-          Failure to do so may result in defederation or removal from Bondy's public instance listings.
+          By operating a Nolto instance, you agree to uphold these guidelines. 
+          Failure to do so may result in defederation or removal from Nolto's public instance listings.
         </p>
         <p className="text-lg font-medium text-bondy-highlight mb-6">
           If you have questions or need support, consult the{" "}
           <a href="/documentation" className="underline hover:text-white transition-colors">Documentation</a>, 
-          join the community forum, or contact the Bondy team.
+          join the community forum, or contact the Nolto team.
         </p>
       </section>
     </div>

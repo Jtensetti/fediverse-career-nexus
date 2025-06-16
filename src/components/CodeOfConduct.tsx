@@ -5,7 +5,7 @@ const CodeOfConduct = () => {
   return (
     <div className="max-w-4xl mx-auto prose prose-lg">
       <p className="text-lg text-gray-700 leading-relaxed mb-8">
-        Bondy is a professional, federated community. To keep Bondy open, respectful, and welcoming for everyone, 
+        Nolto is a professional, federated community. To keep Nolto open, respectful, and welcoming for everyone, 
         we expect all users to follow these guidelines at all times—both on this instance and when interacting 
         with users across the Fediverse.
       </p>
@@ -61,7 +61,7 @@ const CodeOfConduct = () => {
           </div>
           <div className="flex items-start">
             <div className="w-2 h-2 bg-bondy-accent rounded-full mt-2 mr-4 flex-shrink-0"></div>
-            <span className="text-gray-700">Do not use Bondy to intimidate, blackmail, or harm others in any way.</span>
+            <span className="text-gray-700">Do not use Nolto to intimidate, blackmail, or harm others in any way.</span>
           </div>
         </div>
       </section>
@@ -80,7 +80,7 @@ const CodeOfConduct = () => {
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-bondy-accent rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-gray-700">Respect that Bondy is a public, professional environment.</span>
+              <span className="text-gray-700">Respect that Nolto is a public, professional environment.</span>
             </li>
           </ul>
         </div>
@@ -92,7 +92,7 @@ const CodeOfConduct = () => {
           <div className="flex items-start">
             <div className="w-2 h-2 bg-bondy-accent rounded-full mt-2 mr-4 flex-shrink-0"></div>
             <span className="text-gray-700">
-              Do not use Bondy for illegal activities, including fraud, phishing, or distribution of 
+              Do not use Nolto for illegal activities, including fraud, phishing, or distribution of 
               malicious content.
             </span>
           </div>
@@ -109,7 +109,7 @@ const CodeOfConduct = () => {
           <ul className="space-y-3">
             <li className="flex items-start">
               <div className="w-2 h-2 bg-bondy-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-gray-700">Follow the moderation guidelines set by your Bondy instance.</span>
+              <span className="text-gray-700">Follow the moderation guidelines set by your Nolto instance.</span>
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-bondy-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>

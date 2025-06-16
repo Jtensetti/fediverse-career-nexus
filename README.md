@@ -1,11 +1,11 @@
 
-# 🌐 Bondy — a Fediverse Career Nexus
+# 🌐 Nolto — a Fediverse Career Nexus
 
 A community-driven, federated job board designed for the open web.
 
-Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexus** is robust enough to scale, but still open for improvement. It’s an experiment — and a mission — to make professional discovery possible across federated networks.
+Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexus** is robust enough to scale, but still open for improvement. It's an experiment — and a mission — to make professional discovery possible across federated networks.
 
-> ✊ This is not just a job board — it’s a declaration of independence from centralized platforms.
+> ✊ This is not just a job board — it's a declaration of independence from centralized platforms.
 
 *Professional networking & job board that speaks ActivityPub*
 
@@ -25,7 +25,7 @@ Built with ❤️ on [Lovable.dev](https://lovable.dev), **Fediverse Career Nexu
 | Pagination / infinite scroll          | **✅ Complete** | IntersectionObserver + Supabase range queries                 |
 | Error & loading states                | **✅ Complete** | Skeletons + toasts everywhere                                 |
 | Moderation (domain, actor block)      | **✅ Complete** | Domain and actor blocklists enforced                            |
-| Tests & CI                            | **✅ Complete** | Jest + Deno tests with CI workflow (40 % coverage)            |
+| Tests & CI                            | **✅ Complete** | Jest + Deno tests with CI workflow (40 % coverage)            |
 
 Legend: **✅ finished** • **🟡 usable but incomplete**
 
@@ -42,8 +42,8 @@ React (Vite) ──supabase-js──► Edge Functions (Deno)
 ```
 
 * **Frontend**: React + Tailwind + ShadCN/UI
-* **Backend**: Supabase (Postgres + Edge Functions)
-* **Federation**: ActivityPub + HTTP Signatures
+* **Backend**: Supabase (Postgres + Edge Functions)
+* **Federation**: ActivityPub + HTTP Signatures
 * **Auth**: Supabase email + Google/GitHub OAuth
 
 ---
@@ -67,7 +67,7 @@ supabase functions deploy \
   actor inbox outbox follower-batch-processor
 ```
 
-Deploy the React build to Vercel/Netlify/Cloudflare Pages. Add a proxy so `https://bondy.example/actor/:user` ↔ Edge Function.
+Deploy the React build to Vercel/Netlify/Cloudflare Pages. Add a proxy so `https://nolto.example/actor/:user` ↔ Edge Function.
 
 ---
 
@@ -86,10 +86,10 @@ Deploy the React build to Vercel/Netlify/Cloudflare Pages. Add a proxy so `http
 2. Generate RSA keys at signup for every actor
 3. ~~Enforce digest + date on inbound signatures~~ ✅ Implemented
 4. ~~Deliver Accept/Reject follow to correct inbox & update follow state~~ ✅ Implemented
-5. ~~Handle Undo → Follow (unfollow)~~ ✅ Implemented
+5. ~~Handle Undo → Follow (unfollow)~~ ✅ Implemented
 6. Actor‑level moderation UI
 7. ~~Remote actor fetch for feed avatars/names~~ ✅ Implemented
-8. Increase test coverage to ≥ 80 %
+8. Increase test coverage to ≥ 80 %
 
 ---
 
@@ -106,5 +106,6 @@ This project is [MIT Licensed](LICENSE).
 
 ---
 
-> Let’s take back control of how we find and share opportunities.
-> The Fediverse isn’t just social — it’s professional too.
+> Let's take back control of how we find and share opportunities.
+> The Fediverse isn't just social — it's professional too.
+```

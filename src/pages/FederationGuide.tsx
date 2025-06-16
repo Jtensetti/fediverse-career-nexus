@@ -6,13 +6,13 @@ import { ArrowLeft, Network, Users, Shield, Zap } from "lucide-react";
 const FederationGuide = () => {
   const examples = [
     {
-      text: "You join designjobs.bondy.social, which focuses on creative roles. You can still follow companies and people from techcareers.bondy.social or any other Bondy instance."
+      text: "You join designjobs.nolto.social, which focuses on creative roles. You can still follow companies and people from techcareers.nolto.social or any other Nolto instance."
     },
     {
-      text: "If your community wants to host its own Bondy instance with special rules, you can start one—and still connect with everyone else."
+      text: "If your community wants to host its own Nolto instance with special rules, you can start one—and still connect with everyone else."
     },
     {
-      text: "Someone posts a job on their local Bondy instance in Berlin. It appears in search results for users all over the Fediverse."
+      text: "Someone posts a job on their local Nolto instance in Berlin. It appears in search results for users all over the Fediverse."
     }
   ];
 
@@ -35,18 +35,18 @@ const FederationGuide = () => {
     {
       icon: Network,
       title: "Interoperability",
-      description: "Communicate with other Fediverse platforms, not just Bondy."
+      description: "Communicate with other Fediverse platforms, not just Nolto."
     }
   ];
 
   const faqs = [
     {
       question: "Do I need multiple accounts for different instances?",
-      answer: "No, you only need one Bondy account. But you can create separate accounts on different instances if you want."
+      answer: "No, you only need one Nolto account. But you can create separate accounts on different instances if you want."
     },
     {
       question: "Can I move my profile to another instance?",
-      answer: "Yes. Bondy lets you export your profile and connections, and move to a new instance whenever you wish."
+      answer: "Yes. Nolto lets you export your profile and connections, and move to a new instance whenever you wish."
     },
     {
       question: "Will I lose my contacts or history if I switch?",
@@ -71,7 +71,7 @@ const FederationGuide = () => {
               The Power of Federation
             </p>
             <p className="text-lg text-white/90 mt-4">
-              Bondy isn't a single website or company—it's part of something bigger: the Fediverse. 
+              Nolto isn't a single website or company—it's part of something bigger: the Fediverse. 
               Federation means freedom of choice, real interoperability, and true ownership over your professional identity.
             </p>
           </div>
@@ -95,21 +95,21 @@ const FederationGuide = () => {
                 other and share information. It's like email: you can have an account anywhere and still reach anyone, everywhere.
               </p>
               <p>
-                Bondy uses the open <strong>ActivityPub protocol</strong>, the same standard that powers Mastodon, 
-                Lemmy, PeerTube, and many other Fediverse platforms. This makes Bondy part of a growing network 
+                Nolto uses the open <strong>ActivityPub protocol</strong>, the same standard that powers Mastodon, 
+                Lemmy, PeerTube, and many other Fediverse platforms. This makes Nolto part of a growing network 
                 of independent but interconnected communities.
               </p>
             </div>
           </section>
 
-          {/* How It Works on Bondy */}
+          {/* How It Works on Nolto */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-bondy-primary mb-6">How It Works on Bondy</h2>
+            <h2 className="text-2xl font-bold text-bondy-primary mb-6">How It Works on Nolto</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-lg font-semibold text-bondy-primary mb-3">Multiple Instances</h3>
                 <p className="text-gray-700">
-                  Anyone can run a Bondy server ("instance"). Each instance can have its own focus—such as 
+                  Anyone can run a Nolto server ("instance"). Each instance can have its own focus—such as 
                   tech jobs, creative industries, or local communities—or be open to all.
                 </p>
               </div>
@@ -117,7 +117,7 @@ const FederationGuide = () => {
                 <h3 className="text-lg font-semibold text-bondy-primary mb-3">One Network</h3>
                 <p className="text-gray-700">
                   No matter where you sign up, you can connect with users, jobs, and organizations across 
-                  the entire Bondy network—and even interact with compatible platforms in the wider Fediverse.
+                  the entire Nolto network—and even interact with compatible platforms in the wider Fediverse.
                 </p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">

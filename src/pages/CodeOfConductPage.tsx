@@ -9,8 +9,8 @@ const CodeOfConductPage = () => {
   return (
     <>
       <Helmet>
-        <title>Code of Conduct - Bondy</title>
-        <meta name="description" content="Community guidelines and standards for respectful interaction on the Bondy professional network." />
+        <title>Code of Conduct - Nolto</title>
+        <meta name="description" content="Community guidelines and standards for respectful interaction on the Nolto professional network." />
       </Helmet>
       
       <div className="min-h-screen flex flex-col bg-white">

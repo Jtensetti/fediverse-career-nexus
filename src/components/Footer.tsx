@@ -11,10 +11,10 @@ const Footer = () => {
             <div className="flex items-center mb-4">
               <img 
                 src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                alt="Bondy Mascot" 
+                alt="Nolto Mascot" 
                 className="w-12 h-12 mr-3"
               />
-              <h3 className="text-lg font-bold text-bondy-primary">Bondy</h3>
+              <h3 className="text-lg font-bold text-bondy-primary">Nolto</h3>
             </div>
             <p className="text-gray-600 mb-4">
               A professional social network built on the ActivityPub federation protocol.
@@ -55,7 +55,7 @@ const Footer = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="text-sm text-gray-500 mb-4 md:mb-0">
-            © {new Date().getFullYear()} Bondy. Open source under the{" "}
+            © {new Date().getFullYear()} Nolto. Open source under the{" "}
             <a 
               href="https://opensource.org/licenses/MIT" 
               target="_blank" 

@@ -24,16 +24,16 @@ const Mission = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto prose prose-lg">
           <p className="text-lg text-gray-700 leading-relaxed mb-8">
-            Bondy is on a mission to reshape how people find jobs, build professional connections, and share opportunities—outside the walled gardens of big tech platforms. We believe your career journey deserves to be open, transparent, and fully in your control.
+            Nolto is on a mission to reshape how people find jobs, build professional connections, and share opportunities—outside the walled gardens of big tech platforms. We believe your career journey deserves to be open, transparent, and fully in your control.
           </p>
 
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-bondy-primary mb-6">Why Bondy?</h2>
+            <h2 className="text-2xl font-bold text-bondy-primary mb-6">Why Nolto?</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
               Most professional networks today are closed silos. Your profile, your data, and even your connections are owned by a single company. If you want to leave, you start over from scratch.
             </p>
             <p className="text-gray-700 leading-relaxed mb-6">
-              Bondy is different. We're building a community-driven alternative for the open web, based on the Fediverse. With Bondy, you decide:
+              Nolto is different. We're building a community-driven alternative for the open web, based on the Fediverse. With Nolto, you decide:
             </p>
             
             <div className="bg-gray-50 p-6 rounded-lg mb-8">
@@ -63,7 +63,7 @@ const Mission = () => {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-bondy-primary mb-6">How Does It Work?</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              Bondy uses ActivityPub—the same protocol that powers Mastodon, Lemmy, and many other federated platforms. This means:
+              Nolto uses ActivityPub—the same protocol that powers Mastodon, Lemmy, and many other federated platforms. This means:
             </p>
             
             <div className="bg-bondy-primary/5 p-6 rounded-lg mb-8">
@@ -74,7 +74,7 @@ const Mission = () => {
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-bondy-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-                  <span className="text-gray-700">If you don't like the rules or culture of one Bondy server, you can join another—or start your own.</span>
+                  <span className="text-gray-700">If you don't like the rules or culture of one Nolto server, you can join another—or start your own.</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-bondy-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
@@ -105,7 +105,7 @@ const Mission = () => {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-bondy-primary mb-6">What We Want to Change</h2>
             <p className="text-gray-700 leading-relaxed mb-6">
-              Bondy isn't just a job board—it's a declaration of independence from centralized networks. We want to:
+              Nolto isn't just a job board—it's a declaration of independence from centralized networks. We want to:
             </p>
             
             <div className="space-y-4 mb-8">
@@ -127,7 +127,7 @@ const Mission = () => {
           <section className="bg-bondy-primary text-white p-8 rounded-lg text-center">
             <h2 className="text-2xl font-bold mb-4">Join Us</h2>
             <p className="text-lg mb-6 text-white/90">
-              Whether you're looking for your next job, trying to hire, or just want to connect with others who believe in the open web, Bondy is for you.
+              Whether you're looking for your next job, trying to hire, or just want to connect with others who believe in the open web, Nolto is for you.
             </p>
             <p className="text-lg font-medium text-bondy-highlight mb-6">
               Together, we can take back professional networking—one connection at a time.
