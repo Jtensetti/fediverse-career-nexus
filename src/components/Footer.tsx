@@ -32,7 +32,7 @@ const Footer = () => {
             <div>
               <h3 className="text-sm font-semibold text-bondy-primary mb-4">Resources</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Documentation</a></li>
+                <li><Link to="/documentation" className="text-gray-600 hover:text-bondy-accent transition-colors">Documentation</Link></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Help Center</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">How Federation Works</a></li>
               </ul>
