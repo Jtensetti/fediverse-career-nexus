@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { getProxiedMediaUrl } from "@/services/federationService";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { deletePost } from "@/services/postService";
 import { toast } from "sonner";
 import type { FederatedPost } from "@/services/federationService";
 
@@ -150,16 +150,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     if (!onDelete) return;
     
     try {
-      const { error } = await supabase
-        .from('ap_objects')
-        .delete()
-        .eq('id', post.id);
-      
-      if (error) {
-        toast.error('Failed to delete post');
-        return;
-      }
-      
+      await deletePost(post.id);
       toast.success('Post deleted successfully');
       onDelete(post.id);
     } catch (error) {
