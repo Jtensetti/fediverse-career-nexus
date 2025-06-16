@@ -81,7 +81,12 @@ export default function DomainModeration() {
     
     try {
       const data = await getDomainModeration();
-      setDomains(data as DomainEntry[]);
+      // Type cast the status field to match our interface
+      const domainEntries: DomainEntry[] = Array.isArray(data) ? data.map(item => ({
+        ...item,
+        status: item.status as 'normal' | 'probation' | 'blocked'
+      })) : [];
+      setDomains(domainEntries);
     } catch (err) {
       setError("Failed to load domain moderation data");
       console.error(err);

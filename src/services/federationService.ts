@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface FederatedPost {
@@ -108,7 +107,7 @@ export const federateActivity = async (activity: any) => {
   }
 };
 
-// Add missing moderation functions
+// Fix moderation functions to return proper response format
 export const getActorModeration = async () => {
   try {
     const { data, error } = await supabase
@@ -138,10 +137,10 @@ export const updateActorModeration = async (actorUrl: string, status: string, re
       .single();
     
     if (error) throw error;
-    return data;
+    return { success: true, data };
   } catch (error) {
     console.error('Error updating actor moderation:', error);
-    throw error;
+    return { success: false, error };
   }
 };
 
@@ -153,10 +152,10 @@ export const deleteActorModeration = async (actorUrl: string) => {
       .eq('actor_url', actorUrl);
     
     if (error) throw error;
-    return true;
+    return { success: true };
   } catch (error) {
     console.error('Error deleting actor moderation:', error);
-    throw error;
+    return { success: false, error };
   }
 };
 
@@ -189,10 +188,10 @@ export const updateDomainModeration = async (host: string, status: string, reaso
       .single();
     
     if (error) throw error;
-    return data;
+    return { success: true, data };
   } catch (error) {
     console.error('Error updating domain moderation:', error);
-    throw error;
+    return { success: false, error };
   }
 };
 
@@ -204,10 +203,10 @@ export const deleteDomainModeration = async (host: string) => {
       .eq('host', host);
     
     if (error) throw error;
-    return true;
+    return { success: true };
   } catch (error) {
     console.error('Error deleting domain moderation:', error);
-    throw error;
+    return { success: false, error };
   }
 };
 
