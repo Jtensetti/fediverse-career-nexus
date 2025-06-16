@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
@@ -45,7 +46,8 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
 
     if (error) {
       console.error('❌ Profile update error:', error);
-      throw error;
+      toast.error(`Failed to update profile: ${error.message}`);
+      return false;
     }
 
     console.log('✅ Profile updated successfully');
@@ -93,7 +95,8 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (uploadError) {
       console.error('❌ Avatar upload error:', uploadError);
-      throw uploadError;
+      toast.error(`Failed to upload avatar: ${uploadError.message}`);
+      return null;
     }
 
     // Get the public URL for the uploaded image
@@ -114,7 +117,8 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (updateError) {
       console.error('❌ Avatar URL update error:', updateError);
-      throw updateError;
+      toast.error(`Failed to update profile with avatar: ${updateError.message}`);
+      return null;
     }
 
     console.log('✅ Avatar updated successfully');
@@ -138,6 +142,7 @@ export const updateProfile = async (profileData: any) => {
     
     if (!session.session) {
       console.error('❌ No session found in updateProfile');
+      toast.error('You must be logged in to update your profile');
       throw new Error('You must be logged in to update your profile');
     }
 
@@ -152,6 +157,7 @@ export const updateProfile = async (profileData: any) => {
 
     if (error) {
       console.error('❌ Profile update error:', error);
+      toast.error(`Failed to update profile: ${error.message}`);
       throw error;
     }
 
@@ -171,8 +177,10 @@ export const updateProfile = async (profileData: any) => {
         const actorCreated = await createUserActor(session.session.user.id);
         if (actorCreated) {
           console.log('✅ Actor created successfully');
+          toast.success("Profile and actor created successfully");
         } else {
           console.warn('⚠️ Failed to create actor, but profile update succeeded');
+          toast.warning("Profile updated but actor creation failed");
         }
       }
     }

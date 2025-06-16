@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Post {
@@ -172,11 +173,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
 
     console.log('✅ Profile found:', profile.username);
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) {
-      console.log('❌ VITE_SUPABASE_URL not set');
-      throw new Error('VITE_SUPABASE_URL not set');
-    }
+    const supabaseUrl = 'https://tvvrdoklywxllcpzxdls.supabase.co';
     const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
 
     let imageUrl: string | undefined;
@@ -290,10 +287,7 @@ const federatePost = async (activity: any, actorId: string) => {
     }
 
     // Send the activity to the outbox for federation
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) {
-      throw new Error('VITE_SUPABASE_URL not set');
-    }
+    const supabaseUrl = 'https://tvvrdoklywxllcpzxdls.supabase.co';
     const response = await fetch(`${supabaseUrl}/functions/v1/outbox/${profile.username}`, {
       method: 'POST',
       headers: {
