@@ -637,7 +637,7 @@ const Moderation = () => {
         
         <TabsContent value="coc">
           <div className="flex justify-center">
-            <CodeOfConduct onAccept={handleAcceptCoC} />
+            <CodeOfConduct />
           </div>
         </TabsContent>
       </Tabs>
