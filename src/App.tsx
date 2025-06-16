@@ -7,6 +7,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
@@ -43,90 +44,92 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster {...toasterConfig} />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/mission" element={<Mission />} />
-              <Route path="/documentation" element={<Documentation />} />
-              <Route path="/help" element={<HelpCenter />} />
-              <Route path="/federation" element={<FederationGuide />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
-              <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/login" element={<Auth />} />
-              <Route path="/feed" element={<FederatedFeedPage />} />
-              <Route
-                path="/profile/:actorId"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route
-                path="/events"
-                element={
-                  <ProtectedRoute>
-                    <Events />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/events/create"
-                element={
-                  <ProtectedRoute>
-                    <EventCreate />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/articles"
-                element={
-                  <ProtectedRoute>
-                    <Articles />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/articles/create"
-                element={
-                  <ProtectedRoute>
-                    <ArticleCreate />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/connections"
-                element={
-                  <ProtectedRoute>
-                    <Connections />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/messages"
-                element={
-                  <ProtectedRoute>
-                    <Messages />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <HelmetProvider>
+          <TooltipProvider>
+            <Toaster {...toasterConfig} />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/mission" element={<Mission />} />
+                <Route path="/documentation" element={<Documentation />} />
+                <Route path="/help" element={<HelpCenter />} />
+                <Route path="/federation" element={<FederationGuide />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
+                <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/login" element={<Auth />} />
+                <Route path="/feed" element={<FederatedFeedPage />} />
+                <Route
+                  path="/profile/:actorId"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/jobs" element={<Jobs />} />
+                <Route
+                  path="/events"
+                  element={
+                    <ProtectedRoute>
+                      <Events />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events/create"
+                  element={
+                    <ProtectedRoute>
+                      <EventCreate />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/articles"
+                  element={
+                    <ProtectedRoute>
+                      <Articles />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/articles/create"
+                  element={
+                    <ProtectedRoute>
+                      <ArticleCreate />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/connections"
+                  element={
+                    <ProtectedRoute>
+                      <Connections />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/messages"
+                  element={
+                    <ProtectedRoute>
+                      <Messages />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </HelmetProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
