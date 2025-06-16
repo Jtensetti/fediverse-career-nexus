@@ -91,6 +91,22 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
     // Ensure user has an actor (create if doesn't exist)
     const actorId = await ensureUserHasActor(user.id);
 
+    // Fetch username for proper actor URL
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.username) {
+      throw new Error('User profile not found');
+    }
+
+    const supabaseUrl =
+      import.meta.env.VITE_SUPABASE_URL ||
+      'https://tvvrdoklywxllcpzxdls.supabase.co';
+    const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
+
     let imageUrl: string | undefined;
 
     // Handle image upload if provided
@@ -122,7 +138,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
         content: {
           '@context': 'https://www.w3.org/ns/activitystreams',
           type: 'Create',
-          actor: `https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/actor/${user.id}`,
+          actor: actorUrl,
           object: {
             type: 'Note',
             content: postData.content,
@@ -134,11 +150,11 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
               }]
             }),
             to: ['https://www.w3.org/ns/activitystreams#Public'],
-            cc: [`https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/actor/${user.id}/followers`],
+            cc: [`${actorUrl}/followers`],
             published: postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString()
           },
           to: ['https://www.w3.org/ns/activitystreams#Public'],
-          cc: [`https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/actor/${user.id}/followers`],
+          cc: [`${actorUrl}/followers`],
           published: postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString()
         },
         attributed_to: actorId  // Use the actor ID
@@ -252,6 +268,106 @@ export const getScheduledPosts = async (): Promise<Post[]> => {
 
   } catch (error) {
     console.error('Error fetching scheduled posts:', error);
+    throw error;
+  }
+};
+
+export interface UpdatePostData {
+  content?: string;
+  imageFile?: File | null;
+}
+
+export const updatePost = async (id: string, data: UpdatePostData): Promise<Post | null> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const { data: existing } = await supabase
+      .from('ap_objects')
+      .select('content')
+      .eq('id', id)
+      .single();
+
+    if (!existing) {
+      throw new Error('Post not found');
+    }
+
+    const content = existing.content as ActivityContent;
+
+    if (data.content !== undefined) {
+      content.object.content = data.content;
+    }
+
+    let imageUrl = content.object.attachment?.[0]?.url;
+
+    if (data.imageFile) {
+      const fileExt = data.imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `post-images/${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('posts')
+        .upload(filePath, data.imageFile);
+
+      if (uploadError) {
+        throw new Error(`Failed to upload image: ${uploadError.message}`);
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('posts')
+        .getPublicUrl(filePath);
+
+      imageUrl = publicUrl;
+
+      content.object.attachment = [{
+        type: 'Image',
+        url: imageUrl,
+        mediaType: data.imageFile.type || 'image/jpeg'
+      }];
+    }
+
+    const { data: updated, error } = await supabase
+      .from('ap_objects')
+      .update({ content })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update post: ${error.message}`);
+    }
+
+    return {
+      id: updated.id,
+      content: content.object.content,
+      imageUrl,
+      published_at: updated.published_at,
+      user_id: user.id
+    };
+
+  } catch (error) {
+    console.error('Error updating post:', error);
+    throw error;
+  }
+};
+
+export const deletePost = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('ap_objects')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new Error(`Failed to delete post: ${error.message}`);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting post:', error);
     throw error;
   }
 };

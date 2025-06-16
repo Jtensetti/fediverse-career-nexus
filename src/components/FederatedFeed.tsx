@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getFederatedFeed, type FederatedPost } from "@/services/federationService";
 import FederatedPostCard from "./FederatedPostCard";
+import PostEditDialog from "./PostEditDialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +17,8 @@ interface FederatedFeedProps {
 export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "all" }: FederatedFeedProps) {
   const [page, setPage] = useState<number>(1);
   const [allPosts, setAllPosts] = useState<FederatedPost[]>([]);
+  const [editingPost, setEditingPost] = useState<FederatedPost | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['federatedFeed', page, limit],
@@ -50,8 +53,8 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   };
 
   const handleEditPost = (post: FederatedPost) => {
-    // For now, just show a toast - you can implement edit modal later
-    toast.info("Edit functionality coming soon");
+    setEditingPost(post);
+    setEditOpen(true);
   };
 
   const handleDeletePost = (postId: string) => {
@@ -81,8 +84,8 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       ) : allPosts.length > 0 ? (
         <>
           {allPosts.map((post, index) => (
-            <FederatedPostCard 
-              key={`${post.id}-${index}`} 
+            <FederatedPostCard
+              key={`${post.id}-${index}`}
               post={post}
               onEdit={handleEditPost}
               onDelete={handleDeletePost}
@@ -106,6 +109,12 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
               )}
             </Button>
           </div>
+          <PostEditDialog
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            post={editingPost}
+            onUpdated={() => refetch()}
+          />
         </>
       ) : (
         <div className="text-center py-8">
