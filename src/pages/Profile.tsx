@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2 } from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
-import { ProfileViewsWidget } from "@/components/ProfileViewsWidget";
+import ProfileViewsWidget from "@/components/ProfileViewsWidget";
 import { recordProfileView } from "@/services/profileViewService";
 import { supabase } from "@/integrations/supabase/client";
 import FederationInfo from "@/components/FederationInfo";
