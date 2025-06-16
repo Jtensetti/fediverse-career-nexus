@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -132,10 +133,21 @@ function App() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (!isLoggedIn()) {
-    return <Navigate to="/auth/signin" replace />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bondy-primary mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   return <>{children}</>;
