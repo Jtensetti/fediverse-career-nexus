@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -519,8 +518,8 @@ const ProfilePage = () => {
         {/* Right Sidebar */}
         <div className="space-y-6">
           {/* Only show profile views widget if viewing own profile and authenticated */}
-          {viewingOwnProfile && isAuthenticated && (
-            <ProfileViewsWidget />
+          {viewingOwnProfile && isAuthenticated && currentUserId && (
+            <ProfileViewsWidget userId={currentUserId} />
           )}
         </div>
       </div>

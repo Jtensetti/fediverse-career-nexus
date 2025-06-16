@@ -15,10 +15,31 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
     recentViews: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Get current user ID if not provided
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      if (userId) {
+        setCurrentUserId(userId);
+        return;
+      }
+      
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setCurrentUserId(user?.id || null);
+      } catch (error) {
+        console.error('Error getting current user:', error);
+        setCurrentUserId(null);
+      }
+    };
+    
+    getCurrentUser();
+  }, [userId]);
 
   useEffect(() => {
     const fetchViewsData = async () => {
-      if (!userId) {
+      if (!currentUserId) {
         setLoading(false);
         return;
       }
@@ -28,7 +49,7 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
         const { count: totalViews } = await supabase
           .from('profile_views')
           .select('*', { count: 'exact', head: true })
-          .eq('viewed_id', userId);
+          .eq('viewed_id', currentUserId);
 
         // Get recent views (last 7 days)
         const sevenDaysAgo = new Date();
@@ -37,7 +58,7 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
         const { count: recentViews } = await supabase
           .from('profile_views')
           .select('*', { count: 'exact', head: true })
-          .eq('viewed_id', userId)
+          .eq('viewed_id', currentUserId)
           .gte('viewed_at', sevenDaysAgo.toISOString());
 
         setViewsData({
@@ -53,7 +74,7 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
     };
 
     fetchViewsData();
-  }, [userId]);
+  }, [currentUserId]);
 
   if (loading) {
     return (
