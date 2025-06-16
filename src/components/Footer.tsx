@@ -21,7 +21,7 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-bondy-accent hover:text-bondy-primary transition-colors" aria-label="Twitter">
-                <Mastodon size={20} />
+                <Twitter size={20} />
               </a>
               <a href="#" className="text-bondy-accent hover:text-bondy-primary transition-colors" aria-label="GitHub">
                 <Github size={20} />
