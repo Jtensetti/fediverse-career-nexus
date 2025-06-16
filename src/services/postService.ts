@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Post {
@@ -39,25 +38,40 @@ interface ActivityContent {
 
 // Helper function to ensure user has an actor
 const ensureUserHasActor = async (userId: string): Promise<string> => {
+  console.log('🔍 Checking actor for user:', userId);
+  
   // First check if actor already exists
-  const { data: existingActor } = await supabase
+  const { data: existingActor, error: actorError } = await supabase
     .from('actors')
     .select('id')
     .eq('user_id', userId)
     .single();
 
+  if (actorError) {
+    console.log('❌ Error checking existing actor:', actorError);
+  }
+
   if (existingActor) {
+    console.log('✅ Found existing actor:', existingActor.id);
     return existingActor.id;
   }
 
+  console.log('🔧 No actor found, creating new one...');
+
   // Get user profile to create actor
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('username')
     .eq('id', userId)
     .single();
 
+  if (profileError) {
+    console.log('❌ Error fetching profile:', profileError);
+    throw new Error(`Failed to fetch profile: ${profileError.message}`);
+  }
+
   if (!profile?.username) {
+    console.log('⚠️ No username found, creating default username');
     // If no username exists, create a default one
     const defaultUsername = `user_${userId.slice(0, 8)}`;
     
@@ -68,8 +82,11 @@ const ensureUserHasActor = async (userId: string): Promise<string> => {
       .eq('id', userId);
     
     if (updateError) {
+      console.log('❌ Error updating username:', updateError);
       throw new Error(`Failed to create username: ${updateError.message}`);
     }
+    
+    console.log('✅ Created default username:', defaultUsername);
     
     // Use the new username for actor creation
     const { data: newActor, error: createActorError } = await supabase
@@ -84,13 +101,17 @@ const ensureUserHasActor = async (userId: string): Promise<string> => {
       .single();
 
     if (createActorError || !newActor) {
+      console.log('❌ Error creating actor:', createActorError);
       throw new Error(`Failed to create actor: ${createActorError?.message}`);
     }
 
+    console.log('✅ Created new actor:', newActor.id);
     return newActor.id;
   }
 
   // Create actor for user with existing username
+  console.log('🔧 Creating actor with existing username:', profile.username);
+  
   const { data: newActor, error: createActorError } = await supabase
     .from('actors')
     .insert({
@@ -103,36 +124,57 @@ const ensureUserHasActor = async (userId: string): Promise<string> => {
     .single();
 
   if (createActorError || !newActor) {
+    console.log('❌ Error creating actor:', createActorError);
     throw new Error(`Failed to create actor: ${createActorError?.message}`);
   }
 
+  console.log('✅ Created new actor:', newActor.id);
   return newActor.id;
 };
 
 export const createPost = async (postData: CreatePostData): Promise<Post | null> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    console.log('🚀 Starting post creation...', { contentLength: postData.content.length });
+    
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError) {
+      console.log('❌ Auth error:', userError);
+      throw new Error(`Authentication error: ${userError.message}`);
+    }
     
     if (!user) {
+      console.log('❌ No authenticated user found');
       throw new Error('User not authenticated');
     }
+
+    console.log('✅ User authenticated:', user.id);
 
     // Ensure user has an actor (create if doesn't exist)
     const actorId = await ensureUserHasActor(user.id);
 
     // Fetch username for proper actor URL
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('username')
       .eq('id', user.id)
       .single();
 
+    if (profileError) {
+      console.log('❌ Error fetching profile for actor URL:', profileError);
+      throw new Error(`Failed to fetch profile: ${profileError.message}`);
+    }
+
     if (!profile?.username) {
+      console.log('❌ No username found in profile');
       throw new Error('User profile not found');
     }
 
+    console.log('✅ Profile found:', profile.username);
+
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (!supabaseUrl) {
+      console.log('❌ VITE_SUPABASE_URL not set');
       throw new Error('VITE_SUPABASE_URL not set');
     }
     const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
@@ -141,6 +183,8 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
 
     // Handle image upload if provided
     if (postData.imageFile) {
+      console.log('📷 Uploading image:', postData.imageFile.name);
+      
       const fileExt = postData.imageFile.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `post-images/${user.id}/${fileName}`;
@@ -150,6 +194,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
         .upload(filePath, postData.imageFile);
 
       if (uploadError) {
+        console.log('❌ Image upload error:', uploadError);
         throw new Error(`Failed to upload image: ${uploadError.message}`);
       }
 
@@ -158,9 +203,12 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
         .getPublicUrl(filePath);
 
       imageUrl = publicUrl;
+      console.log('✅ Image uploaded successfully:', imageUrl);
     }
 
     const publishedTime = postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString();
+
+    console.log('💾 Creating post in database...');
 
     // Create the post in the database using the actor ID
     const { data: post, error: postError } = await supabase
@@ -195,13 +243,15 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
       .single();
 
     if (postError) {
+      console.log('❌ Post creation error:', postError);
       throw new Error(`Failed to create post: ${postError.message}`);
     }
 
-    console.log('Post created successfully:', post);
+    console.log('✅ Post created successfully:', post.id);
 
     // If not scheduled, federate the post immediately
     if (!postData.scheduledFor) {
+      console.log('🌐 Federating post...');
       await federatePost(post.content, actorId);
     }
 
@@ -215,7 +265,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
     };
 
   } catch (error) {
-    console.error('Error creating post:', error);
+    console.error('❌ Error creating post:', error);
     throw error;
   }
 };
