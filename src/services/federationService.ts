@@ -34,7 +34,7 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
       .from('federated_feed')
       .select(`
         *,
-        profiles!inner(username, fullname, avatar_url)
+        profiles(username, fullname, avatar_url)
       `)
       .order('published_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -119,8 +119,8 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
           actor: actorInfo,
           instance: instanceDomain,
           moderation_status: moderationStatus,
-          // Include profile data for local posts
-          profile: post.source === 'local' ? post.profiles : undefined,
+          // Include profile data for local posts - use optional chaining since it might be null
+          profile: post.source === 'local' && post.profiles ? post.profiles : undefined,
           // Include user_id for ownership checks
           user_id: post.source === 'local' ? post.attributed_to : undefined
         } as FederatedPost;
