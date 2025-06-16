@@ -1,5 +1,5 @@
+
 import { Link } from "react-router-dom";
-import { Github, Twitter, Linkedin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 const Footer = () => {
@@ -19,17 +19,6 @@ const Footer = () => {
             <p className="text-gray-600 mb-4">
               A professional social network built on the ActivityPub federation protocol.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-bondy-accent hover:text-bondy-primary transition-colors" aria-label="Twitter">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="text-bondy-accent hover:text-bondy-primary transition-colors" aria-label="GitHub">
-                <Github size={20} />
-              </a>
-              <a href="#" className="text-bondy-accent hover:text-bondy-primary transition-colors" aria-label="LinkedIn">
-                <Linkedin size={20} />
-              </a>
-            </div>
           </div>
 
           <div className="md:col-span-3 grid sm:grid-cols-3 gap-8">
@@ -38,8 +27,6 @@ const Footer = () => {
               <ul className="space-y-3">
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Our Mission</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Team</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Blog</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Careers</a></li>
               </ul>
             </div>
 
@@ -48,7 +35,6 @@ const Footer = () => {
               <ul className="space-y-3">
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Documentation</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Help Center</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">API</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">How Federation Works</a></li>
               </ul>
             </div>
