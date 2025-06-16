@@ -16,6 +16,27 @@ export interface CreatePostData {
   scheduledFor?: Date;
 }
 
+interface ActivityContent {
+  '@context': string;
+  type: string;
+  actor: string;
+  object: {
+    type: string;
+    content: string;
+    attachment?: Array<{
+      type: string;
+      url: string;
+      mediaType: string;
+    }>;
+    to: string[];
+    cc: string[];
+    published: string;
+  };
+  to: string[];
+  cc: string[];
+  published: string;
+}
+
 export const createPost = async (postData: CreatePostData): Promise<Post | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -166,14 +187,17 @@ export const getScheduledPosts = async (): Promise<Post[]> => {
       throw new Error(`Failed to fetch scheduled posts: ${error.message}`);
     }
 
-    return posts?.map(post => ({
-      id: post.id,
-      content: post.content.object.content,
-      imageUrl: post.content.object.attachment?.[0]?.url,
-      published_at: post.published_at,
-      user_id: user.id,
-      scheduled_for: post.content.published
-    })) || [];
+    return posts?.map(post => {
+      const content = post.content as ActivityContent;
+      return {
+        id: post.id,
+        content: content.object.content,
+        imageUrl: content.object.attachment?.[0]?.url,
+        published_at: post.published_at,
+        user_id: user.id,
+        scheduled_for: content.published
+      };
+    }) || [];
 
   } catch (error) {
     console.error('Error fetching scheduled posts:', error);
