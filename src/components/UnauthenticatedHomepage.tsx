@@ -108,7 +108,7 @@ const UnauthenticatedHomepage = () => {
                 See what's happening
               </h2>
               <p className="text-lg text-gray-600">
-                Real conversations from real professionals across the network
+                Insights, updates, and discussions – from the people you follow
               </p>
             </div>
             
@@ -162,7 +162,7 @@ const UnauthenticatedHomepage = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">Check back soon for new opportunities.</p>
+                <p className="text-gray-600 mb-4">Soon you'll find open roles from companies that value transparency, respect, and autonomy – just like you do.</p>
               </div>
             )}
             

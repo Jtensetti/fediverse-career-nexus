@@ -91,7 +91,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
         </>
       ) : (
         <div className="text-center py-8">
-          <p className="text-muted-foreground mb-2">No posts found in the federated feed</p>
+          <p className="text-muted-foreground mb-2">This feed is still warming up. You're early – that's a good thing.</p>
         </div>
       )}
     </div>
