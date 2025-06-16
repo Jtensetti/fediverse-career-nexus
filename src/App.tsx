@@ -1,101 +1,105 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "next-themes";
+import React, { useState } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import SkipToContent from "./components/SkipToContent";
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import Index from "./pages/Index";
 import Profile from "./pages/Profile";
-import ProfileEdit from "./pages/ProfileEdit";
-import Connections from "./pages/Connections";
-import Articles from "./pages/Articles";
-import ArticleView from "./pages/ArticleView";
-import ArticleCreate from "./pages/ArticleCreate";
-import ArticleEdit from "./pages/ArticleEdit";
-import ArticleManage from "./pages/ArticleManage";
+import EditProfile from "./pages/EditProfile";
 import Jobs from "./pages/Jobs";
-import JobView from "./pages/JobView";
-import JobCreate from "./pages/JobCreate";
-import JobEdit from "./pages/JobEdit";
-import JobManage from "./pages/JobManage";
-import Events from "./pages/Events";
-import EventView from "./pages/EventView";
-import EventCreate from "./pages/EventCreate";
-import EventEdit from "./pages/EventEdit";
-import Messages from "./pages/Messages"; 
-import MessageConversation from "./pages/MessageConversation";
-import Moderation from "./pages/Moderation";
-import ActorProfile from "./pages/ActorProfile";
-import ActorOutbox from "./pages/ActorOutbox";
-import ActorInbox from "./pages/ActorInbox";
-import FederatedFeedPage from "./pages/FederatedFeed";
-import AdminInstances from "./pages/AdminInstances";
-import AdminFederationMetrics from "./pages/AdminFederationMetrics";
+import JobDetail from "./pages/JobDetail";
+import FederatedFeedPage from "./pages/FederatedFeedPage";
 import Auth from "./pages/Auth";
+import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
+import CreateEvent from "./pages/CreateEvent";
+import EditEvent from "./pages/EditEvent";
+import { useAuth } from "./contexts/AuthContext";
+import Mission from "./pages/Mission";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30000,
-    },
-  },
-});
+function App() {
+  const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+  const toasterConfig = {
+    position: "top-center",
+    duration: 3000,
+    className: "z-[100]",
+  };
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Toaster {...toasterConfig} />
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
         <BrowserRouter>
-          <SkipToContent />
-          <div id="main-content" tabIndex={-1} className="outline-none">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/auth/login" element={<Auth />} />
-              <Route path="/auth/signup" element={<Auth />} />
-              <Route path="/profile/:username" element={<Profile />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/edit" element={<ProfileEdit />} />
-              <Route path="/profile/create" element={<ProfileEdit />} />
-              {/* Add redirect for duplicate profiles path */}
-              <Route path="/profile/profile" element={<Navigate to="/profile" replace />} />
-              <Route path="/connections" element={<Connections />} />
-              <Route path="/articles" element={<Articles />} />
-              <Route path="/articles/:slug" element={<ArticleView />} />
-              <Route path="/articles/create" element={<ArticleCreate />} />
-              <Route path="/articles/edit/:id" element={<ArticleEdit />} />
-              <Route path="/articles/manage" element={<ArticleManage />} />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route path="/jobs/:id" element={<JobView />} />
-              <Route path="/jobs/create" element={<JobCreate />} />
-              <Route path="/jobs/edit/:id" element={<JobEdit />} />
-              <Route path="/jobs/manage" element={<JobManage />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/:id" element={<EventView />} />
-              <Route path="/events/create" element={<EventCreate />} />
-              <Route path="/events/edit/:id" element={<EventEdit />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/messages/:conversationId" element={<MessageConversation />} />
-              <Route path="/moderation" element={<Moderation />} />
-              <Route path="/feed" element={<FederatedFeedPage />} />
-              <Route path="/admin/instances" element={<AdminInstances />} />
-              <Route path="/admin/federation" element={<AdminFederationMetrics />} />
-              <Route path="/:username/outbox" element={<ActorOutbox />} />
-              <Route path="/:username/inbox" element={<ActorInbox />} />
-              <Route path="/:username" element={<ActorProfile />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/mission" element={<Mission />} />
+            <Route path="/auth/:authType" element={<Auth />} />
+            <Route path="/feed" element={<FederatedFeedPage />} />
+            <Route
+              path="/profile/:actorId"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/edit-profile"
+              element={
+                <ProtectedRoute>
+                  <EditProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/jobs/:jobId" element={<JobDetail />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:eventId" element={<EventDetail />} />
+            <Route
+              path="/create-event"
+              element={
+                <ProtectedRoute>
+                  <CreateEvent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/edit-event/:eventId"
+              element={
+                <ProtectedRoute>
+                  <EditEvent />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+}
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isLoggedIn } = useAuth();
+
+  if (!isLoggedIn()) {
+    return <Navigate to="/auth/signin" replace />;
+  }
+
+  return <>{children}</>;
+}
 
 export default App;

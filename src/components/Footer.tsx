@@ -1,5 +1,3 @@
-
-
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 
@@ -26,7 +24,7 @@ const Footer = () => {
             <div>
               <h3 className="text-sm font-semibold text-bondy-primary mb-4">About</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Our Mission</a></li>
+                <li><Link to="/mission" className="text-gray-600 hover:text-bondy-accent transition-colors">Our Mission</Link></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Team</a></li>
               </ul>
             </div>
@@ -96,4 +94,3 @@ const Footer = () => {
 };
 
 export default Footer;
-
