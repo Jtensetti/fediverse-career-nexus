@@ -1,55 +1,61 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Users } from "lucide-react";
-import { ProfileViewStats, getProfileViewStats } from "@/services/profileViewService";
-import { formatDistanceToNow } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
-export const ProfileViewsWidget = () => {
-  const [stats, setStats] = useState<ProfileViewStats | null>(null);
+interface ProfileViewsWidgetProps {
+  userId?: string;
+}
+
+export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) {
+  const [viewsData, setViewsData] = useState<{
+    totalViews: number;
+    recentViews: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      setLoading(true);
+    const fetchViewsData = async () => {
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const data = await getProfileViewStats();
-        setStats(data);
+        // Get total profile views
+        const { count: totalViews } = await supabase
+          .from('profile_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('viewed_id', userId);
+
+        // Get recent views (last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const { count: recentViews } = await supabase
+          .from('profile_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('viewed_id', userId)
+          .gte('viewed_at', sevenDaysAgo.toISOString());
+
+        setViewsData({
+          totalViews: totalViews || 0,
+          recentViews: recentViews || 0
+        });
       } catch (error) {
-        console.error("Error fetching profile view stats:", error);
+        console.error('Error fetching profile views:', error);
+        setViewsData({ totalViews: 0, recentViews: 0 });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStats();
-  }, []);
+    fetchViewsData();
+  }, [userId]);
 
   if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye size={20} className="text-bondy-primary" />
-            <Skeleton className="h-5 w-32" />
-          </CardTitle>
-          <CardDescription>
-            <Skeleton className="h-4 w-40" />
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-5 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!stats) {
     return (
       <Card>
         <CardHeader>
@@ -58,13 +64,17 @@ export const ProfileViewsWidget = () => {
             Profile Views
           </CardTitle>
           <CardDescription>
-            No data available
+            Track who's viewing your profile
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="text-center text-gray-500 py-8">
-            <Eye size={48} className="mx-auto mb-4 opacity-30" />
-            <p>No profile view data is available</p>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-8 w-16" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-8 w-16" />
           </div>
         </CardContent>
       </Card>
@@ -79,44 +89,19 @@ export const ProfileViewsWidget = () => {
           Profile Views
         </CardTitle>
         <CardDescription>
-          People who have viewed your profile
+          Track who's viewing your profile
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-gray-100 p-3 rounded-lg">
-            <div className="text-2xl font-semibold">{stats.totalViews}</div>
-            <div className="text-sm text-gray-600">Total views</div>
-          </div>
-          <div className="bg-gray-100 p-3 rounded-lg">
-            <div className="text-2xl font-semibold">{stats.uniqueViewers}</div>
-            <div className="text-sm text-gray-600">Unique visitors</div>
-          </div>
+      <CardContent className="space-y-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Total Views</p>
+          <p className="text-2xl font-bold">{viewsData?.totalViews || 0}</p>
         </div>
-        
-        {stats.recentViews.length > 0 ? (
-          <div>
-            <h4 className="text-sm font-medium mb-2">Recent visitors</h4>
-            <div className="space-y-2">
-              {stats.recentViews.map(view => (
-                <div key={view.id} className="flex justify-between text-sm">
-                  <div className="flex items-center">
-                    <Users size={16} className="mr-2 text-gray-500" />
-                    <span>{view.viewer_id ? 'User' : 'Anonymous visitor'}</span>
-                  </div>
-                  <span className="text-gray-500">
-                    {formatDistanceToNow(new Date(view.viewed_at), { addSuffix: true })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 py-4">
-            <p>No recent profile views</p>
-          </div>
-        )}
+        <div>
+          <p className="text-sm text-muted-foreground">Views This Week</p>
+          <p className="text-2xl font-bold">{viewsData?.recentViews || 0}</p>
+        </div>
       </CardContent>
     </Card>
   );
-};
+}

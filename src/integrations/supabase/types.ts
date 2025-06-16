@@ -1334,7 +1334,22 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_connections_connected_user_id"
+            columns: ["connected_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_connections_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -1395,7 +1410,15 @@ export type Database = {
           source: string | null
           type: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       federated_posts_with_moderation: {
         Row: {
@@ -1407,7 +1430,15 @@ export type Database = {
           source: string | null
           type: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       federation_metrics_by_host: {
         Row: {
