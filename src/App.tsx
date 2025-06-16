@@ -16,6 +16,7 @@ import FederatedFeedPage from "./pages/FederatedFeed";
 import Auth from "./pages/Auth";
 import Events from "./pages/Events";
 import Articles from "./pages/Articles";
+import ArticleCreate from "./pages/ArticleCreate";
 import Connections from "./pages/Connections";
 import Messages from "./pages/Messages";
 import Mission from "./pages/Mission";
@@ -84,6 +85,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Articles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/articles/create"
+              element={
+                <ProtectedRoute>
+                  <ArticleCreate />
                 </ProtectedRoute>
               }
             />
