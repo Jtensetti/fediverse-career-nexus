@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Scale, Lock, Network, Eye, Settings, Users } from "lucide-react";
 
@@ -72,55 +71,45 @@ const InstanceGuidelines = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-bondy-primary">Instance Guidelines</h1>
-        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          Running a Bondy instance is a responsibility. To ensure the health of the network and protect users, 
-          all instance operators must follow these guidelines.
-        </p>
-      </div>
+    <div className="max-w-4xl mx-auto prose prose-lg">
+      <p className="text-lg text-gray-700 leading-relaxed mb-8">
+        Running a Bondy instance is a responsibility. To ensure the health of the network and protect users, 
+        all instance operators must follow these guidelines.
+      </p>
 
-      <div className="space-y-6">
+      <div className="space-y-12">
         {guidelines.map((guideline, index) => (
-          <Card key={index} className="border-l-4 border-l-bondy-accent">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-bondy-primary">
-                <guideline.icon className="h-6 w-6" />
-                {guideline.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
+          <section key={index} className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <guideline.icon className="h-8 w-8 text-bondy-primary" />
+              <h2 className="text-2xl font-bold text-bondy-primary">{guideline.title}</h2>
+            </div>
+            <div className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-bondy-primary/5'} p-6 rounded-lg`}>
+              <ul className="space-y-4">
                 {guideline.points.map((point, pointIndex) => (
-                  <li key={pointIndex} className="flex items-start gap-2">
+                  <li key={pointIndex} className="flex items-start gap-3">
                     <div className="w-2 h-2 bg-bondy-accent rounded-full mt-2 flex-shrink-0" />
                     <span className="text-gray-700">{point}</span>
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         ))}
       </div>
 
-      <Card className="bg-bondy-primary/5 border-bondy-primary">
-        <CardContent className="pt-6">
-          <div className="text-center space-y-4">
-            <p className="text-lg font-semibold text-bondy-primary">
-              By operating a Bondy instance, you agree to uphold these guidelines.
-            </p>
-            <p className="text-gray-700">
-              Failure to do so may result in defederation or removal from Bondy's public instance listings.
-            </p>
-            <p className="text-gray-600">
-              If you have questions or need support, consult the{" "}
-              <a href="/documentation" className="text-bondy-accent hover:underline">Documentation</a>, 
-              join the community forum, or contact the Bondy team.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <section className="bg-bondy-primary text-white p-8 rounded-lg text-center">
+        <h2 className="text-2xl font-bold mb-4">Commitment to Guidelines</h2>
+        <p className="text-lg mb-6 text-white/90">
+          By operating a Bondy instance, you agree to uphold these guidelines. 
+          Failure to do so may result in defederation or removal from Bondy's public instance listings.
+        </p>
+        <p className="text-lg font-medium text-bondy-highlight mb-6">
+          If you have questions or need support, consult the{" "}
+          <a href="/documentation" className="underline hover:text-white transition-colors">Documentation</a>, 
+          join the community forum, or contact the Bondy team.
+        </p>
+      </section>
     </div>
   );
 };
