@@ -24,7 +24,7 @@ const HelpCenter = () => {
         },
         {
           question: "Can I use Bondy on mobile?",
-          answer: "Yes! Bondy works in all modern browsers on both desktop and mobile. Mobile apps are planned for the future."
+          answer: "Yes! Bondy works in all modern browsers on both desktop and mobile."
         }
       ]
     },
