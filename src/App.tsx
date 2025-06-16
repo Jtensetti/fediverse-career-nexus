@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -20,6 +19,7 @@ import Documentation from "./pages/Documentation";
 import FederationGuide from "./pages/FederationGuide";
 import HelpCenter from "./pages/HelpCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import { useAuth } from "./contexts/AuthContext";
 
 function App() {
@@ -43,6 +43,7 @@ function App() {
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/federation" element={<FederationGuide />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             <Route path="/auth/:authType" element={<Auth />} />
             <Route path="/feed" element={<FederatedFeedPage />} />
             <Route
