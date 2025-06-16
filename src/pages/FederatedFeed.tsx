@@ -3,6 +3,7 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FederatedFeed from "@/components/FederatedFeed";
+import PostComposer from "@/components/PostComposer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Globe } from "lucide-react";
@@ -44,6 +45,8 @@ const FederatedFeedPage = () => {
               <Button variant="outline" onClick={handleRefresh}>Refresh</Button>
             </div>
           </div>
+          
+          <PostComposer className="mb-6" />
           
           <FederatedFeed className="mb-8" sourceFilter={feedSource} />
         </div>
