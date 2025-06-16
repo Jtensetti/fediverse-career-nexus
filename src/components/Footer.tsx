@@ -1,4 +1,5 @@
 
+
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 
@@ -54,9 +55,17 @@ const Footer = () => {
         <Separator className="my-8 bg-gray-200" />
 
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-gray-500 mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} Bondy Network. Open source software under the AGPLv3 license.
-          </p>
+          <div className="text-sm text-gray-500 mb-4 md:mb-0">
+            © {new Date().getFullYear()} Bondy. Open source under the{" "}
+            <a 
+              href="https://opensource.org/licenses/MIT" 
+              target="_blank" 
+              rel="noopener"
+              className="text-bondy-accent hover:text-bondy-primary transition-colors underline"
+            >
+              MIT license
+            </a>.
+          </div>
           <div className="flex space-x-6">
             <a href="#" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Terms</a>
             <a href="#" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Privacy</a>
@@ -69,3 +78,4 @@ const Footer = () => {
 };
 
 export default Footer;
+
