@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +32,7 @@ const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
   
   const isHomePage = location.pathname === "/";
 
@@ -71,6 +73,7 @@ const Navbar = () => {
     try {
       await supabase.auth.signOut();
       toast.success("Successfully logged out");
+      navigate("/");
     } catch (error) {
       toast.error("Error signing out");
     }
