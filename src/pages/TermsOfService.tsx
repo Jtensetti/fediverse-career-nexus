@@ -40,7 +40,7 @@ const TermsOfService = () => {
               Legal Terms and Conditions for Using Bondy
             </p>
             <p className="text-lg text-white/90 mt-4">
-              <strong>Effective Date:</strong> [Insert Date]
+              <strong>Effective Date:</strong> June 16, 2025
             </p>
             <p className="text-lg text-white/90 mt-2">
               These Terms of Service constitute a legally binding agreement between you and the operator 
@@ -224,9 +224,9 @@ const TermsOfService = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">13. Governing Law and Jurisdiction</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  These Terms shall be governed by and construed in accordance with the laws of [Insert Jurisdiction], 
+                  These Terms shall be governed by and construed in accordance with the laws of Sweden, 
                   without regard to conflict of law principles. Any disputes arising out of these Terms or the Service 
-                  shall be subject to the exclusive jurisdiction of the courts located in [Insert Jurisdiction].
+                  shall be subject to the exclusive jurisdiction of the courts located in Sweden.
                 </p>
               </div>
             </section>
@@ -246,10 +246,13 @@ const TermsOfService = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">15. Contact</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  For questions or notices regarding these Terms, please contact [Insert Contact Information or 
-                  Link to Instance Contact Page].
+                  For questions or notices regarding these Terms, please contact:
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
+                  <p><strong>Email:</strong> jtensetti@protonmail.com</p>
+                  <p><strong>Bondy Account:</strong> JTensetti (@user_f33be7a8)</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg mt-4">
                   <p>
                     <strong>By using this Service, you agree to these Terms of Service.</strong><br />
                     Thank you for being part of the Bondy network.

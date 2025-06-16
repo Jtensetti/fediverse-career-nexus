@@ -40,6 +40,9 @@ const PrivacyPolicy = () => {
               How Bondy Handles Your Personal Data
             </p>
             <p className="text-lg text-white/90 mt-4">
+              <strong>Effective Date:</strong> June 16, 2025
+            </p>
+            <p className="text-lg text-white/90 mt-2">
               This Privacy Policy explains how Bondy handles your personal data, both on the Bondy platform 
               and across federated instances. We are committed to protecting your privacy and ensuring 
               transparency about what happens with your data.
@@ -225,13 +228,14 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">11. Contact</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  For questions or to exercise your rights, contact your instance administrator or Data Protection 
-                  Officer (DPO), if available.
-                </p>
-                <p>
-                  If you use bondy.social or a similar public instance, see the Contact section on that site.
+                  For questions or to exercise your rights, contact the instance administrator or Data Protection 
+                  Officer (DPO):
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
+                  <p><strong>Email:</strong> jtensetti@protonmail.com</p>
+                  <p><strong>Bondy Account:</strong> JTensetti (@user_f33be7a8)</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg mt-4">
                   <p>
                     This policy applies to all Bondy instances and is intended to comply with the GDPR and other 
                     relevant privacy laws. For local variations or additional requirements, see your instance's 
