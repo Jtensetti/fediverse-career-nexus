@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 
@@ -41,7 +42,7 @@ const Footer = () => {
             <div>
               <h3 className="text-sm font-semibold text-bondy-primary mb-4">Legal</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Privacy Policy</a></li>
+                <li><Link to="/privacy" className="text-gray-600 hover:text-bondy-accent transition-colors">Privacy Policy</Link></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Terms of Service</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Code of Conduct</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Instance Guidelines</a></li>
@@ -66,7 +67,7 @@ const Footer = () => {
           </div>
           <div className="flex space-x-6 items-center">
             <a href="#" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Terms</a>
-            <a href="#" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Privacy</a>
+            <Link to="/privacy" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Privacy</Link>
             <a href="#" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Cookies</a>
             <a 
               href="https://codeberg.org/Tensetti/Bondy" 

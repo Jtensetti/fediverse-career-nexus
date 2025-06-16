@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -17,8 +18,9 @@ import Events from "./pages/Events";
 import Mission from "./pages/Mission";
 import Documentation from "./pages/Documentation";
 import FederationGuide from "./pages/FederationGuide";
-import { useAuth } from "./contexts/AuthContext";
 import HelpCenter from "./pages/HelpCenter";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import { useAuth } from "./contexts/AuthContext";
 
 function App() {
   const queryClient = new QueryClient();
@@ -40,6 +42,7 @@ function App() {
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/federation" element={<FederationGuide />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/auth/:authType" element={<Auth />} />
             <Route path="/feed" element={<FederatedFeedPage />} />
             <Route
