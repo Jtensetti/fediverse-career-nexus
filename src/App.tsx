@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -20,7 +21,7 @@ import FederationGuide from "./pages/FederationGuide";
 import HelpCenter from "./pages/HelpCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
-import CodeOfConductPage from "./pages/CodeOfConduct";
+import CodeOfConductPage from "./pages/CodeOfConductPage";
 import { useAuth } from "./contexts/AuthContext";
 
 function App() {
