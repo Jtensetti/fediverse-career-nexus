@@ -1,0 +1,128 @@
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Shield, Scale, Lock, Network, Eye, Settings, Users } from "lucide-react";
+
+const InstanceGuidelines = () => {
+  const guidelines = [
+    {
+      icon: Scale,
+      title: "1. Legal Compliance",
+      points: [
+        "You are responsible for ensuring that your instance complies with all applicable laws and regulations, including GDPR and local data protection laws.",
+        "You must provide clear information about who operates the instance and how users can contact you.",
+        "Publish a Privacy Policy and Terms of Service on your instance."
+      ]
+    },
+    {
+      icon: Shield,
+      title: "2. Moderation & Safety", 
+      points: [
+        "Implement moderation processes to prevent abuse, harassment, illegal content, and spam.",
+        "Designate moderators who can respond to reports and enforce rules quickly and fairly.",
+        "Remove or block users and content that violate your rules, Bondy's Code of Conduct, or applicable laws.",
+        "Respond to reports from users and other instance admins in a timely manner."
+      ]
+    },
+    {
+      icon: Lock,
+      title: "3. Data Protection & Privacy",
+      points: [
+        "Secure user data with appropriate technical and organizational measures.",
+        "Allow users to export their data and delete their accounts at any time.", 
+        "Limit retention of logs and personal data to what is necessary for security and operation."
+      ]
+    },
+    {
+      icon: Network,
+      title: "4. Federation Responsibilities",
+      points: [
+        "Respect blocklists and moderation decisions from other instances.",
+        "Avoid federating with instances known for harassment, abuse, or illegal activity.",
+        "Maintain up-to-date contact and technical information so others can reach you if needed.",
+        "Notify users if you plan major changes, downtime, or federation policy updates."
+      ]
+    },
+    {
+      icon: Eye,
+      title: "5. Transparency",
+      points: [
+        "Make your rules and moderation practices public.",
+        "Publish any blocklists or federation policies if you restrict federation with certain instances.",
+        "Be open about changes to your moderation team, software version, or key policies."
+      ]
+    },
+    {
+      icon: Settings,
+      title: "6. Technical Requirements", 
+      points: [
+        "Keep your Bondy software and dependencies up-to-date with security patches.",
+        "Maintain regular backups and disaster recovery plans.",
+        "Monitor your instance's performance and availability."
+      ]
+    },
+    {
+      icon: Users,
+      title: "7. Community Standards",
+      points: [
+        "Promote an inclusive, respectful, and professional environment.",
+        "Apply the Code of Conduct consistently.",
+        "Foster open dialogue but act quickly on threats to user safety or legal compliance."
+      ]
+    }
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold text-bondy-primary">Instance Guidelines</h1>
+        <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          Running a Bondy instance is a responsibility. To ensure the health of the network and protect users, 
+          all instance operators must follow these guidelines.
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        {guidelines.map((guideline, index) => (
+          <Card key={index} className="border-l-4 border-l-bondy-accent">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-bondy-primary">
+                <guideline.icon className="h-6 w-6" />
+                {guideline.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {guideline.points.map((point, pointIndex) => (
+                  <li key={pointIndex} className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-bondy-accent rounded-full mt-2 flex-shrink-0" />
+                    <span className="text-gray-700">{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="bg-bondy-primary/5 border-bondy-primary">
+        <CardContent className="pt-6">
+          <div className="text-center space-y-4">
+            <p className="text-lg font-semibold text-bondy-primary">
+              By operating a Bondy instance, you agree to uphold these guidelines.
+            </p>
+            <p className="text-gray-700">
+              Failure to do so may result in defederation or removal from Bondy's public instance listings.
+            </p>
+            <p className="text-gray-600">
+              If you have questions or need support, consult the{" "}
+              <a href="/documentation" className="text-bondy-accent hover:underline">Documentation</a>, 
+              join the community forum, or contact the Bondy team.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default InstanceGuidelines;
