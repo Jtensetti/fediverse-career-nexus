@@ -71,7 +71,7 @@ const HelpCenter = () => {
         },
         {
           question: "I can't find an answer to my problem—what now?",
-          answer: "Reach out to your instance admin, visit our community forum, or open a ticket on GitHub Issues."
+          answer: "Reach out to your instance admin, visit our community forum, or open a ticket on Codeberg Issues."
         }
       ]
     }
