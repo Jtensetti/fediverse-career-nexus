@@ -23,21 +23,35 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   
   // Check authentication status
   useEffect(() => {
+    console.log('Profile: Setting up auth check');
+    
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-      setCurrentUserId(session?.user?.id || null);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Profile: Current session:', session?.user?.email);
+        setIsAuthenticated(!!session);
+        setCurrentUserId(session?.user?.id || null);
+      } catch (error) {
+        console.error('Profile: Error checking auth:', error);
+        setIsAuthenticated(false);
+        setCurrentUserId(null);
+      } finally {
+        setAuthLoading(false);
+      }
     };
     
     checkAuth();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Profile: Auth state changed:', event, session?.user?.email);
       setIsAuthenticated(!!session);
       setCurrentUserId(session?.user?.id || null);
+      setAuthLoading(false);
     });
     
     return () => {
@@ -45,21 +59,39 @@ const ProfilePage = () => {
     };
   }, []);
   
+  // Determine if we should redirect to login
+  useEffect(() => {
+    // If no username is provided and user is not authenticated, redirect to login
+    if (!authLoading && !username && !isAuthenticated) {
+      console.log('Profile: Redirecting to login (no username and not authenticated)');
+      navigate("/auth/login", { replace: true });
+    }
+  }, [authLoading, username, isAuthenticated, navigate]);
+  
   // Fetch current user profile if no username provided, otherwise fetch the specified profile
   const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
-    queryKey: ["profile", username],
+    queryKey: ["profile", username, currentUserId],
     queryFn: async () => {
+      console.log('Profile: Fetching profile data for:', username || 'current user');
+      
       if (!username) {
-        if (!isAuthenticated) {
-          navigate("/auth/login", { replace: true });
+        // Viewing own profile - require authentication
+        if (!isAuthenticated || !currentUserId) {
+          console.log('Profile: Not authenticated for own profile');
           return null;
         }
-        return await getCurrentUserProfile();
+        const result = await getCurrentUserProfile();
+        console.log('Profile: Current user profile:', result);
+        return result;
       } else {
-        return await getUserProfileByUsername(username);
+        // Viewing someone else's profile
+        const result = await getUserProfileByUsername(username);
+        console.log('Profile: User profile by username:', result);
+        return result;
       }
     },
-    enabled: isAuthenticated || !!username
+    enabled: !authLoading && (!!username || (isAuthenticated && !!currentUserId)),
+    retry: 1
   });
   
   // Fetch user connections for the connections tab
@@ -98,7 +130,19 @@ const ProfilePage = () => {
     }
   };
   
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
   if (profileError) {
+    console.error('Profile: Profile error:', profileError);
     return (
       <DashboardLayout>
         <div className="p-8 text-center">
@@ -112,11 +156,25 @@ const ProfilePage = () => {
     );
   }
   
-  if (profileLoading || !profile) {
+  if (profileLoading) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <DashboardLayout>
+        <div className="p-8 text-center">
+          <h2 className="text-2xl font-bold mb-2">Profile Not Found</h2>
+          <p>The profile you're looking for doesn't exist or you don't have permission to view it.</p>
+          <Button className="mt-4" onClick={() => navigate("/")}>
+            Return Home
+          </Button>
         </div>
       </DashboardLayout>
     );
@@ -463,8 +521,6 @@ const ProfilePage = () => {
           {viewingOwnProfile && isAuthenticated && (
             <ProfileViewsWidget />
           )}
-          
-          {/* Other sidebar widgets can go here */}
         </div>
       </div>
     </DashboardLayout>
