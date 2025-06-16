@@ -35,7 +35,11 @@ export const createJobPostActivity = async (jobPost: any): Promise<ActivityPubAc
       return null;
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://tvvrdoklywxllcpzxdls.supabase.co';
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      toast.error('VITE_SUPABASE_URL not set');
+      return null;
+    }
     const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
 
     // Create the Note/Article object for the job post
