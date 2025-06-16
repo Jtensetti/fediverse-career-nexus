@@ -45,6 +45,17 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
       throw new Error('User not authenticated');
     }
 
+    // First, get the user's actor ID
+    const { data: actor, error: actorError } = await supabase
+      .from('actors')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (actorError || !actor) {
+      throw new Error('Actor not found for user');
+    }
+
     let imageUrl: string | undefined;
 
     // Handle image upload if provided
@@ -68,7 +79,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
       imageUrl = publicUrl;
     }
 
-    // Create the post in the database
+    // Create the post in the database using the actor ID
     const { data: post, error: postError } = await supabase
       .from('ap_objects')
       .insert({
@@ -95,7 +106,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
           cc: [`https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/actor/${user.id}/followers`],
           published: postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString()
         },
-        attributed_to: user.id
+        attributed_to: actor.id  // Use actor.id instead of user.id
       })
       .select()
       .single();
@@ -106,7 +117,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
 
     // If not scheduled, federate the post immediately
     if (!postData.scheduledFor) {
-      await federatePost(post.content, user.id);
+      await federatePost(post.content, actor.id);  // Use actor.id
     }
 
     return {
@@ -124,7 +135,7 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
   }
 };
 
-const federatePost = async (activity: any, userId: string) => {
+const federatePost = async (activity: any, actorId: string) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -136,7 +147,7 @@ const federatePost = async (activity: any, userId: string) => {
     const { data: profile } = await supabase
       .from('profiles')
       .select('username')
-      .eq('id', userId)
+      .eq('id', session.user.id)
       .single();
 
     if (!profile?.username) {
@@ -175,10 +186,21 @@ export const getScheduledPosts = async (): Promise<Post[]> => {
       throw new Error('User not authenticated');
     }
 
+    // Get the user's actor ID first
+    const { data: actor, error: actorError } = await supabase
+      .from('actors')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (actorError || !actor) {
+      throw new Error('Actor not found for user');
+    }
+
     const { data: posts, error } = await supabase
       .from('ap_objects')
       .select('*')
-      .eq('attributed_to', user.id)
+      .eq('attributed_to', actor.id)  // Use actor.id
       .eq('type', 'Create')
       .gt('content->published', new Date().toISOString())
       .order('content->published', { ascending: true });
