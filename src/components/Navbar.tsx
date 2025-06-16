@@ -21,18 +21,52 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { AlignJustify, LogIn, Settings, User, UserPlus } from "lucide-react";
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Navbar = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const location = useLocation();
-  const user = useUser();
-  const supabase = useSupabaseClient();
   
   const isHomePage = location.pathname === "/";
+
+  // Check authentication status
+  useEffect(() => {
+    console.log('Navbar: Setting up auth check');
+    
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Navbar: Current session:', session?.user?.email);
+        setUser(session?.user || null);
+        setIsAuthenticated(!!session);
+      } catch (error) {
+        console.error('Navbar: Error checking auth:', error);
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Navbar: Auth state changed:', event, session?.user?.email);
+      setUser(session?.user || null);
+      setIsAuthenticated(!!session);
+      setAuthLoading(false);
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -93,8 +127,29 @@ const Navbar = () => {
     },
   ];
 
-  // For unauthenticated users, only show minimal navigation
-  const unauthenticatedNavigationItems = user ? authenticatedNavigationItems : [];
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <div className={`${isHomePage ? 'absolute top-0 left-0 right-0 z-50' : 'border-b'} transition-colors duration-300 ${scrolled && isHomePage ? 'bg-white/90 backdrop-blur-md shadow-sm' : isHomePage ? 'bg-transparent' : 'bg-white'}`}>
+        <div className="flex h-16 items-center px-4">
+          <div className="container mx-auto flex w-full items-center justify-between">
+            <RouterLink to="/" className={`font-bold text-xl flex items-center gap-2 ${isHomePage && !scrolled ? 'text-white' : 'text-bondy-primary'}`}>
+              <img 
+                src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
+                alt="Bondy" 
+                className="w-8 h-8" 
+              />
+              <span className="font-display">Bondy</span>
+            </RouterLink>
+            <div className="flex items-center gap-4">
+              <LanguageSwitcher />
+              <ModeToggle />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${isHomePage ? 'absolute top-0 left-0 right-0 z-50' : 'border-b'} transition-colors duration-300 ${scrolled && isHomePage ? 'bg-white/90 backdrop-blur-md shadow-sm' : isHomePage ? 'bg-transparent' : 'bg-white'}`}>
@@ -110,8 +165,8 @@ const Navbar = () => {
               <span className="font-display">Bondy</span>
             </RouterLink>
             
-            {/* Only show full navigation when authenticated */}
-            {user && (
+            {/* Show full navigation when authenticated */}
+            {isAuthenticated && (
               <nav className={`mx-6 hidden md:flex space-x-6 ${isHomePage && !scrolled ? 'text-white' : 'text-foreground'}`}>
                 {authenticatedNavigationItems.map((item) => (
                   <RouterLink 
@@ -130,21 +185,21 @@ const Navbar = () => {
             <LanguageSwitcher />
             <ModeToggle />
             
-            {user ? (
+            {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
                       <AvatarFallback className="bg-bondy-primary text-white">
-                        {user.email?.charAt(0).toUpperCase() || 'U'}
+                        {user?.email?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5 text-sm font-medium text-center border-b">
-                    {user.email}
+                    {user?.email}
                   </div>
                   <DropdownMenuItem asChild>
                     <RouterLink to="/profile" className="cursor-pointer">
@@ -204,7 +259,7 @@ const Navbar = () => {
             )}
             
             {/* Mobile menu - only show when authenticated */}
-            {user && (
+            {isAuthenticated && (
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="sm" className={`md:hidden ${isHomePage && !scrolled ? 'text-white' : ''}`}>
