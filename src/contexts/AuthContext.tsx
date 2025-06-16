@@ -1,105 +1,101 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { createUserActor } from '@/services/actorService';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  isLoggedIn: () => boolean;
+  loading: boolean;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('🔐 Auth state changed:', event, {
-          user_id: session?.user?.id,
-          email: session?.user?.email,
-          session_exists: !!session
-        });
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Ensure user has actor when they sign in
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(async () => {
+            try {
+              // Check if user has a profile with username
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('username, id')
+                .eq('id', session.user.id)
+                .single();
+              
+              if (profile && !profile.username) {
+                // Update profile with default username
+                const defaultUsername = `user_${session.user.id.slice(0, 8)}`;
+                await supabase
+                  .from('profiles')
+                  .update({ username: defaultUsername })
+                  .eq('id', session.user.id);
+              }
+              
+              // Check if user has an actor
+              const { data: existingActor } = await supabase
+                .from('actors')
+                .select('id')
+                .eq('user_id', session.user.id)
+                .single();
+              
+              if (!existingActor) {
+                console.log('Creating actor for user...');
+                await createUserActor(session.user.id);
+              }
+            } catch (error) {
+              console.error('Error setting up user:', error);
+            }
+          }, 0);
+        }
+        
         setLoading(false);
       }
     );
 
-    // Check current session
-    const checkInitialAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('🔍 Initial session check:', {
-          user_id: session?.user?.id,
-          email: session?.user?.email,
-          session_exists: !!session,
-          error: error?.message
-        });
-        setSession(session);
-        setUser(session?.user ?? null);
-      } catch (error) {
-        console.error('❌ Error checking session:', error);
-        setSession(null);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    checkInitialAuth();
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  const isLoggedIn = () => {
-    const loggedIn = !!session && !!user;
-    console.log('🔗 isLoggedIn check:', {
-      session_exists: !!session,
-      user_exists: !!user,
-      result: loggedIn
-    });
-    return loggedIn;
-  };
-
   const signOut = async () => {
-    console.log('👋 Signing out user:', user?.email);
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
   const value = {
     user,
     session,
-    isLoggedIn,
+    loading,
     signOut,
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-bondy-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

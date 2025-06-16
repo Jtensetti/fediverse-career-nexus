@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -29,6 +28,7 @@ import TermsOfService from "./pages/TermsOfService";
 import CodeOfConductPage from "./pages/CodeOfConductPage";
 import InstanceGuidelinesPage from "./pages/InstanceGuidelines";
 import { useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 function App() {
   const queryClient = new QueryClient();
@@ -41,89 +41,92 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Toaster {...toasterConfig} />
-      <TooltipProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/mission" element={<Mission />} />
-            <Route path="/documentation" element={<Documentation />} />
-            <Route path="/help" element={<HelpCenter />} />
-            <Route path="/federation" element={<FederationGuide />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
-            <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
-            <Route path="/auth/:authType" element={<Auth />} />
-            <Route path="/feed" element={<FederatedFeedPage />} />
-            <Route
-              path="/profile/:actorId"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/jobs" element={<Jobs />} />
-            <Route
-              path="/events"
-              element={
-                <ProtectedRoute>
-                  <Events />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/events/create"
-              element={
-                <ProtectedRoute>
-                  <EventCreate />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/articles"
-              element={
-                <ProtectedRoute>
-                  <Articles />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/articles/create"
-              element={
-                <ProtectedRoute>
-                  <ArticleCreate />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/connections"
-              element={
-                <ProtectedRoute>
-                  <Connections />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/messages"
-              element={
-                <ProtectedRoute>
-                  <Messages />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster {...toasterConfig} />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/mission" element={<Mission />} />
+              <Route path="/documentation" element={<Documentation />} />
+              <Route path="/help" element={<HelpCenter />} />
+              <Route path="/federation" element={<FederationGuide />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
+              <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/login" element={<Auth />} />
+              <Route path="/feed" element={<FederatedFeedPage />} />
+              <Route
+                path="/profile/:actorId"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route
+                path="/events"
+                element={
+                  <ProtectedRoute>
+                    <Events />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events/create"
+                element={
+                  <ProtectedRoute>
+                    <EventCreate />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/articles"
+                element={
+                  <ProtectedRoute>
+                    <Articles />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/articles/create"
+                element={
+                  <ProtectedRoute>
+                    <ArticleCreate />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/connections"
+                element={
+                  <ProtectedRoute>
+                    <Connections />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedRoute>
+                    <Messages />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
