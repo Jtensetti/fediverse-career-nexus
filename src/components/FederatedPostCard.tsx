@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -47,7 +48,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     
     // For remote posts, use actor data
     const actor = post.actor;
-    return actor?.name || actor?.preferredUsername || 'Unknown user';
+    return actor?.name || actor?.preferredUsername || post.actor_name || 'Unknown user';
   };
   
   // Get avatar URL with proxy for remote images
@@ -58,7 +59,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     }
     
     // For remote posts, use actor icon
-    const iconUrl = post.actor?.icon?.url;
+    const iconUrl = post.actor?.icon?.url || post.actor_avatar;
     if (!iconUrl) return null;
     
     return post.source === 'remote' ? getProxiedMediaUrl(iconUrl) : iconUrl;
@@ -71,7 +72,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   
   // Get published date in relative format
   const getPublishedDate = () => {
-    const date = post.content.published || post.published_at;
+    const date = post.content.published || post.published_at || post.created_at;
     if (!date) return '';
     
     try {

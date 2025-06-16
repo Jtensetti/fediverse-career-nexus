@@ -21,8 +21,8 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const [editOpen, setEditOpen] = useState(false);
   
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ['federatedFeed', page, limit],
-    queryFn: () => getFederatedFeed(limit, page),
+    queryKey: ['federatedFeed', limit],
+    queryFn: () => getFederatedFeed(limit),
   });
   
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       // Filter posts based on sourceFilter
       const filteredPosts = sourceFilter === "all" 
         ? posts 
-        : posts.filter(post => post.source === sourceFilter);
+        : posts.filter(post => (post.source || 'local') === sourceFilter);
       
       // For the first page, replace all posts
       if (page === 1) {

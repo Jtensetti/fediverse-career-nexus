@@ -15,9 +15,15 @@ export interface Post {
   };
 }
 
-export const createPost = async (content: string, imageFile?: File): Promise<boolean> => {
+export interface CreatePostData {
+  content: string;
+  imageFile?: File;
+  scheduledFor?: Date;
+}
+
+export const createPost = async (postData: CreatePostData): Promise<boolean> => {
   try {
-    console.log('🚀 Starting post creation...', { contentLength: content.length });
+    console.log('🚀 Starting post creation...', { contentLength: postData.content.length });
     
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -96,16 +102,16 @@ export const createPost = async (content: string, imageFile?: File): Promise<boo
 
     // Handle image upload if provided
     let imageUrl: string | null = null;
-    if (imageFile) {
+    if (postData.imageFile) {
       console.log('📸 Uploading image...');
       
-      const fileExt = imageFile.name.split('.').pop();
+      const fileExt = postData.imageFile.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `posts/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('posts')
-        .upload(filePath, imageFile);
+        .upload(filePath, postData.imageFile);
 
       if (uploadError) {
         console.error('❌ Image upload error:', uploadError);
@@ -127,7 +133,7 @@ export const createPost = async (content: string, imageFile?: File): Promise<boo
       type: 'Note',
       content: {
         type: 'Note',
-        content: content,
+        content: postData.content,
         image: imageUrl,
         actor: {
           id: actor.id,
@@ -178,11 +184,7 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
         created_at,
         actors!ap_objects_attributed_to_fkey (
           user_id,
-          preferred_username,
-          profiles!actors_user_id_fkey (
-            fullname,
-            avatar_url
-          )
+          preferred_username
         )
       `)
       .eq('actors.user_id', targetUserId)
@@ -193,20 +195,119 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
       return [];
     }
 
-    return posts?.map(post => ({
-      id: post.id,
-      content: post.content?.content || '',
-      created_at: post.created_at,
-      user_id: targetUserId,
-      image_url: post.content?.image,
-      author: {
-        username: post.actors?.preferred_username || 'Unknown',
-        avatar_url: post.actors?.profiles?.avatar_url,
-        fullname: post.actors?.profiles?.fullname
-      }
-    })) || [];
+    return posts?.map(post => {
+      const content = post.content as any;
+      return {
+        id: post.id,
+        content: content?.content || '',
+        created_at: post.created_at,
+        user_id: targetUserId,
+        image_url: content?.image,
+        author: {
+          username: (post.actors as any)?.preferred_username || 'Unknown',
+          avatar_url: undefined,
+          fullname: undefined
+        }
+      };
+    }) || [];
   } catch (error) {
     console.error('Error fetching user posts:', error);
     return [];
+  }
+};
+
+export const updatePost = async (postId: string, updates: { content: string }): Promise<void> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('You must be logged in to update posts');
+    }
+
+    // Get the post to check ownership
+    const { data: post, error: fetchError } = await supabase
+      .from('ap_objects')
+      .select(`
+        id,
+        content,
+        actors!ap_objects_attributed_to_fkey (
+          user_id
+        )
+      `)
+      .eq('id', postId)
+      .single();
+
+    if (fetchError || !post) {
+      throw new Error('Post not found');
+    }
+
+    // Check ownership
+    if ((post.actors as any)?.user_id !== user.id) {
+      throw new Error('You can only edit your own posts');
+    }
+
+    // Update the content
+    const currentContent = post.content as any;
+    const updatedContent = {
+      ...currentContent,
+      content: updates.content
+    };
+
+    const { error: updateError } = await supabase
+      .from('ap_objects')
+      .update({ content: updatedContent })
+      .eq('id', postId);
+
+    if (updateError) {
+      throw new Error(`Failed to update post: ${updateError.message}`);
+    }
+
+    toast.success('Post updated successfully!');
+  } catch (error) {
+    console.error('Error updating post:', error);
+    throw error;
+  }
+};
+
+export const deletePost = async (postId: string): Promise<void> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('You must be logged in to delete posts');
+    }
+
+    // Get the post to check ownership
+    const { data: post, error: fetchError } = await supabase
+      .from('ap_objects')
+      .select(`
+        id,
+        actors!ap_objects_attributed_to_fkey (
+          user_id
+        )
+      `)
+      .eq('id', postId)
+      .single();
+
+    if (fetchError || !post) {
+      throw new Error('Post not found');
+    }
+
+    // Check ownership
+    if ((post.actors as any)?.user_id !== user.id) {
+      throw new Error('You can only delete your own posts');
+    }
+
+    const { error: deleteError } = await supabase
+      .from('ap_objects')
+      .delete()
+      .eq('id', postId);
+
+    if (deleteError) {
+      throw new Error(`Failed to delete post: ${deleteError.message}`);
+    }
+
+    toast.success('Post deleted successfully!');
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    throw error;
   }
 };

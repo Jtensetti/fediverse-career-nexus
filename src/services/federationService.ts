@@ -7,6 +7,24 @@ export interface FederatedPost {
   created_at: string;
   actor_name?: string;
   actor_avatar?: string;
+  type?: string;
+  source?: 'local' | 'remote';
+  profile?: {
+    username?: string;
+    fullname?: string;
+    avatar_url?: string;
+  };
+  actor?: {
+    name?: string;
+    preferredUsername?: string;
+    icon?: {
+      url?: string;
+    };
+  };
+  user_id?: string;
+  published_at?: string;
+  instance?: string;
+  moderation_status?: 'normal' | 'probation' | 'blocked';
 }
 
 export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPost[]> => {
@@ -37,13 +55,18 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
     }
 
     // Transform the data into our expected format
-    const federatedPosts: FederatedPost[] = apObjects.map(obj => ({
-      id: obj.id,
-      content: obj.content,
-      created_at: obj.created_at,
-      actor_name: obj.content?.actor?.name || 'Unknown User',
-      actor_avatar: obj.content?.actor?.icon?.url || null
-    }));
+    const federatedPosts: FederatedPost[] = apObjects.map(obj => {
+      const content = obj.content as any;
+      return {
+        id: obj.id,
+        content: content,
+        created_at: obj.created_at,
+        actor_name: content?.actor?.name || 'Unknown User',
+        actor_avatar: content?.actor?.icon?.url || null,
+        source: 'local' as const,
+        type: content?.type || 'Note'
+      };
+    });
 
     console.log('✅ Fetched federated posts:', federatedPosts.length);
     return federatedPosts;
@@ -83,4 +106,138 @@ export const federateActivity = async (activity: any) => {
     console.error('Error federating activity:', error);
     throw error;
   }
+};
+
+// Add missing moderation functions
+export const getActorModeration = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('blocked_actors')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching actor moderation:', error);
+    return [];
+  }
+};
+
+export const updateActorModeration = async (actorUrl: string, status: string, reason: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('blocked_actors')
+      .upsert({
+        actor_url: actorUrl,
+        status,
+        reason,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating actor moderation:', error);
+    throw error;
+  }
+};
+
+export const deleteActorModeration = async (actorUrl: string) => {
+  try {
+    const { error } = await supabase
+      .from('blocked_actors')
+      .delete()
+      .eq('actor_url', actorUrl);
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting actor moderation:', error);
+    throw error;
+  }
+};
+
+export const getDomainModeration = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('blocked_domains')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching domain moderation:', error);
+    return [];
+  }
+};
+
+export const updateDomainModeration = async (host: string, status: string, reason: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('blocked_domains')
+      .upsert({
+        host,
+        status,
+        reason,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating domain moderation:', error);
+    throw error;
+  }
+};
+
+export const deleteDomainModeration = async (host: string) => {
+  try {
+    const { error } = await supabase
+      .from('blocked_domains')
+      .delete()
+      .eq('host', host);
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting domain moderation:', error);
+    throw error;
+  }
+};
+
+export const getRateLimitedHosts = async (requestThreshold: number, timeWindow: number) => {
+  try {
+    const windowStart = new Date(Date.now() - timeWindow * 60 * 1000).toISOString();
+    
+    const { data, error } = await supabase
+      .rpc('get_rate_limited_hosts', {
+        window_start: windowStart,
+        request_threshold: requestThreshold
+      });
+    
+    if (error) throw error;
+    
+    return {
+      success: true,
+      hosts: data || []
+    };
+  } catch (error) {
+    console.error('Error fetching rate limited hosts:', error);
+    return {
+      success: false,
+      hosts: []
+    };
+  }
+};
+
+export const getProxiedMediaUrl = (originalUrl: string): string => {
+  // For now, just return the original URL
+  // In production, this would proxy through our media endpoint
+  return originalUrl;
 };
