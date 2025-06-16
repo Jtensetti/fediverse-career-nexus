@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   BrowserRouter,
@@ -14,6 +15,9 @@ import Jobs from "./pages/Jobs";
 import FederatedFeedPage from "./pages/FederatedFeed";
 import Auth from "./pages/Auth";
 import Events from "./pages/Events";
+import Articles from "./pages/Articles";
+import Connections from "./pages/Connections";
+import Messages from "./pages/Messages";
 import Mission from "./pages/Mission";
 import Documentation from "./pages/Documentation";
 import FederationGuide from "./pages/FederationGuide";
@@ -67,7 +71,38 @@ function App() {
               }
             />
             <Route path="/jobs" element={<Jobs />} />
-            <Route path="/events" element={<Events />} />
+            <Route
+              path="/events"
+              element={
+                <ProtectedRoute>
+                  <Events />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/articles"
+              element={
+                <ProtectedRoute>
+                  <Articles />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/connections"
+              element={
+                <ProtectedRoute>
+                  <Connections />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute>
+                  <Messages />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

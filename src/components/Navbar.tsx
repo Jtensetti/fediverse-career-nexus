@@ -134,10 +134,10 @@ const Navbar = () => {
             <RouterLink to="/" className={`font-bold text-xl flex items-center gap-2 ${isHomePage && !scrolled ? 'text-white' : 'text-bondy-primary'}`}>
               <img 
                 src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                alt="Bondy" 
+                alt="Nolto" 
                 className="w-8 h-8" 
               />
-              <span className="font-display">Bondy</span>
+              <span className="font-display">Nolto</span>
             </RouterLink>
             <div className="flex items-center gap-4">
               <LanguageSwitcher />
@@ -157,10 +157,10 @@ const Navbar = () => {
             <RouterLink to="/" className={`font-bold text-xl flex items-center gap-2 ${isHomePage && !scrolled ? 'text-white' : 'text-bondy-primary'}`}>
               <img 
                 src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                alt="Bondy" 
+                alt="Nolto" 
                 className="w-8 h-8" 
               />
-              <span className="font-display">Bondy</span>
+              <span className="font-display">Nolto</span>
             </RouterLink>
             
             {/* Show full navigation when authenticated */}
@@ -270,10 +270,10 @@ const Navbar = () => {
                       <div className="flex items-center gap-2">
                         <img 
                           src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                          alt="Bondy" 
+                          alt="Nolto" 
                           className="w-6 h-6" 
                         />
-                        <span className="font-display">Bondy</span>
+                        <span className="font-display">Nolto</span>
                       </div>
                     </SheetTitle>
                     <SheetDescription>
