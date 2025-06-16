@@ -6,10 +6,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Image, PenTool, Smile, Calendar, ChevronDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Image, PenTool, Smile, Calendar as CalendarIcon, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profileService";
+import { createPost, CreatePostData } from "@/services/postService";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface PostComposerProps {
   className?: string;
@@ -19,8 +26,12 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [scheduledDate, setScheduledDate] = useState<Date>();
+  const [scheduledTime, setScheduledTime] = useState<string>("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: profile } = useQuery({
     queryKey: ['currentUserProfile'],
@@ -28,27 +39,81 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     enabled: !!user,
   });
 
+  const createPostMutation = useMutation({
+    mutationFn: (postData: CreatePostData) => createPost(postData),
+    onSuccess: () => {
+      toast.success('Post created successfully!');
+      resetForm();
+      setIsOpen(false);
+      // Invalidate federated feed to show the new post
+      queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
+    },
+    onError: (error: Error) => {
+      console.error('Failed to create post:', error);
+      toast.error(error.message || 'Failed to create post. Please try again.');
+    },
+  });
+
+  const resetForm = () => {
+    setPostContent("");
+    setSelectedImage(null);
+    setScheduledDate(undefined);
+    setScheduledTime("");
+    setShowDatePicker(false);
+  };
+
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast.error('Image size must be less than 10MB');
+        return;
+      }
       setSelectedImage(file);
     }
   };
 
   const handlePost = () => {
-    // TODO: Implement posting logic
-    console.log("Posting:", postContent, selectedImage);
-    setPostContent("");
-    setSelectedImage(null);
-    setIsOpen(false);
+    if (!postContent.trim()) {
+      toast.error('Please enter some content for your post');
+      return;
+    }
+
+    const postData: CreatePostData = {
+      content: postContent.trim(),
+      imageFile: selectedImage || undefined,
+    };
+
+    createPostMutation.mutate(postData);
   };
 
   const handleScheduledPost = () => {
-    // TODO: Implement scheduled posting logic
-    console.log("Scheduling post:", postContent, selectedImage);
-    setPostContent("");
-    setSelectedImage(null);
-    setIsOpen(false);
+    if (!postContent.trim()) {
+      toast.error('Please enter some content for your post');
+      return;
+    }
+
+    if (!scheduledDate || !scheduledTime) {
+      toast.error('Please select a date and time for scheduling');
+      return;
+    }
+
+    const [hours, minutes] = scheduledTime.split(':').map(Number);
+    const scheduledDateTime = new Date(scheduledDate);
+    scheduledDateTime.setHours(hours, minutes, 0, 0);
+
+    if (scheduledDateTime <= new Date()) {
+      toast.error('Scheduled time must be in the future');
+      return;
+    }
+
+    const postData: CreatePostData = {
+      content: postContent.trim(),
+      imageFile: selectedImage || undefined,
+      scheduledFor: scheduledDateTime,
+    };
+
+    createPostMutation.mutate(postData);
   };
 
   const handleWriteArticle = () => {
@@ -67,6 +132,8 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const isLoading = createPostMutation.isPending;
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -102,11 +169,40 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                   value={postContent}
                   onChange={(e) => setPostContent(e.target.value)}
                   className="min-h-[200px] resize-none border-0 focus-visible:ring-0 text-lg p-4"
+                  disabled={isLoading}
                 />
                 
                 {selectedImage && (
-                  <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                    📷 Image selected: {selectedImage.name}
+                  <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center justify-between">
+                    <span>📷 Image selected: {selectedImage.name}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setSelectedImage(null)}
+                      disabled={isLoading}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+
+                {(scheduledDate || scheduledTime) && (
+                  <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center justify-between">
+                    <span>
+                      📅 Scheduled for: {scheduledDate && format(scheduledDate, 'PPP')} {scheduledTime && `at ${scheduledTime}`}
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        setScheduledDate(undefined);
+                        setScheduledTime("");
+                        setShowDatePicker(false);
+                      }}
+                      disabled={isLoading}
+                    >
+                      Remove
+                    </Button>
                   </div>
                 )}
                 
@@ -118,12 +214,14 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       onChange={handleImageSelect}
                       className="hidden"
                       id="image-upload"
+                      disabled={isLoading}
                     />
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => document.getElementById('image-upload')?.click()}
                       className="text-muted-foreground hover:text-foreground"
+                      disabled={isLoading}
                     >
                       <Image className="h-4 w-4" />
                     </Button>
@@ -132,17 +230,53 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       variant="ghost"
                       size="sm"
                       className="text-muted-foreground hover:text-foreground"
+                      disabled={isLoading}
                     >
                       <Smile className="h-4 w-4" />
                     </Button>
                     
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <Calendar className="h-3 w-3" />
-                    </Button>
+                    <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground hover:text-foreground"
+                          disabled={isLoading}
+                        >
+                          <CalendarIcon className="h-4 w-4" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="scheduled-date">Select Date</Label>
+                            <Calendar
+                              mode="single"
+                              selected={scheduledDate}
+                              onSelect={setScheduledDate}
+                              disabled={(date) => date <= new Date()}
+                              className="rounded-md border"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="scheduled-time">Select Time</Label>
+                            <Input
+                              id="scheduled-time"
+                              type="time"
+                              value={scheduledTime}
+                              onChange={(e) => setScheduledTime(e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                          <Button 
+                            onClick={() => setShowDatePicker(false)}
+                            className="w-full"
+                          >
+                            Done
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   
                   <div className="flex items-center gap-2">
@@ -150,7 +284,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       variant="outline"
                       size="sm"
                       onClick={handleScheduledPost}
-                      disabled={!postContent.trim()}
+                      disabled={!postContent.trim() || isLoading}
                       className="flex items-center gap-1"
                     >
                       <ChevronDown className="h-3 w-3" />
@@ -159,10 +293,10 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     
                     <Button
                       onClick={handlePost}
-                      disabled={!postContent.trim()}
+                      disabled={!postContent.trim() || isLoading}
                       size="sm"
                     >
-                      Post
+                      {isLoading ? 'Posting...' : 'Post'}
                     </Button>
                   </div>
                 </div>
@@ -185,7 +319,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
               onClick={handleCreateEvent}
               className="w-full"
             >
-              <Calendar className="h-4 w-4 mr-2" />
+              <CalendarIcon className="h-4 w-4 mr-2" />
               Create Event
             </Button>
           </div>

@@ -1,0 +1,182 @@
+
+import { supabase } from "@/integrations/supabase/client";
+
+export interface Post {
+  id: string;
+  content: string;
+  imageUrl?: string;
+  published_at: string;
+  user_id: string;
+  scheduled_for?: string;
+}
+
+export interface CreatePostData {
+  content: string;
+  imageFile?: File;
+  scheduledFor?: Date;
+}
+
+export const createPost = async (postData: CreatePostData): Promise<Post | null> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    let imageUrl: string | undefined;
+
+    // Handle image upload if provided
+    if (postData.imageFile) {
+      const fileExt = postData.imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `post-images/${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('posts')
+        .upload(filePath, postData.imageFile);
+
+      if (uploadError) {
+        throw new Error(`Failed to upload image: ${uploadError.message}`);
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('posts')
+        .getPublicUrl(filePath);
+
+      imageUrl = publicUrl;
+    }
+
+    // Create the post in the database
+    const { data: post, error: postError } = await supabase
+      .from('ap_objects')
+      .insert({
+        type: 'Create',
+        content: {
+          '@context': 'https://www.w3.org/ns/activitystreams',
+          type: 'Create',
+          actor: `https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/actor/${user.id}`,
+          object: {
+            type: 'Note',
+            content: postData.content,
+            ...(imageUrl && { 
+              attachment: [{
+                type: 'Image',
+                url: imageUrl,
+                mediaType: postData.imageFile?.type || 'image/jpeg'
+              }]
+            }),
+            to: ['https://www.w3.org/ns/activitystreams#Public'],
+            cc: [`https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/actor/${user.id}/followers`],
+            published: postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString()
+          },
+          to: ['https://www.w3.org/ns/activitystreams#Public'],
+          cc: [`https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/actor/${user.id}/followers`],
+          published: postData.scheduledFor ? postData.scheduledFor.toISOString() : new Date().toISOString()
+        },
+        attributed_to: user.id
+      })
+      .select()
+      .single();
+
+    if (postError) {
+      throw new Error(`Failed to create post: ${postError.message}`);
+    }
+
+    // If not scheduled, federate the post immediately
+    if (!postData.scheduledFor) {
+      await federatePost(post.content, user.id);
+    }
+
+    return {
+      id: post.id,
+      content: postData.content,
+      imageUrl,
+      published_at: post.published_at,
+      user_id: user.id,
+      scheduled_for: postData.scheduledFor?.toISOString()
+    };
+
+  } catch (error) {
+    console.error('Error creating post:', error);
+    throw error;
+  }
+};
+
+const federatePost = async (activity: any, userId: string) => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+
+    // Get the user's profile to find their username
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', userId)
+      .single();
+
+    if (!profile?.username) {
+      throw new Error('User profile not found');
+    }
+
+    // Send the activity to the outbox for federation
+    const response = await fetch(`https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/outbox/${profile.username}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/activity+json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(activity),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Federation failed: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('Post federated successfully:', result);
+    
+  } catch (error) {
+    console.error('Error federating post:', error);
+    // Don't throw here - post creation should succeed even if federation fails
+  }
+};
+
+export const getScheduledPosts = async (): Promise<Post[]> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const { data: posts, error } = await supabase
+      .from('ap_objects')
+      .select('*')
+      .eq('attributed_to', user.id)
+      .eq('type', 'Create')
+      .gt('content->published', new Date().toISOString())
+      .order('content->published', { ascending: true });
+
+    if (error) {
+      throw new Error(`Failed to fetch scheduled posts: ${error.message}`);
+    }
+
+    return posts?.map(post => ({
+      id: post.id,
+      content: post.content.object.content,
+      imageUrl: post.content.object.attachment?.[0]?.url,
+      published_at: post.published_at,
+      user_id: user.id,
+      scheduled_for: post.content.published
+    })) || [];
+
+  } catch (error) {
+    console.error('Error fetching scheduled posts:', error);
+    throw error;
+  }
+};
