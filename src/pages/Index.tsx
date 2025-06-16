@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import Home from "./Home";
 import UnauthenticatedHomepage from "@/components/UnauthenticatedHomepage";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export default function Index() {
   const { user, loading } = useAuth();
@@ -29,6 +31,14 @@ export default function Index() {
     return <Home />;
   }
 
-  // If not authenticated, show the UnauthenticatedHomepage
-  return <UnauthenticatedHomepage />;
+  // If not authenticated, show the layout with Navbar, UnauthenticatedHomepage, and Footer
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-grow">
+        <UnauthenticatedHomepage />
+      </main>
+      <Footer />
+    </div>
+  );
 }
