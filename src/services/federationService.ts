@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface FederatedPost {
@@ -7,9 +8,16 @@ export interface FederatedPost {
   attributed_to: string;
   published_at: string;
   source: 'local' | 'remote';
+  user_id?: string; // Add user_id for local posts
+  profile?: {
+    username?: string;
+    fullname?: string;
+    avatar_url?: string;
+  }; // Add profile data for local posts
   actor?: {
     name?: string;
     preferredUsername?: string;
+    username?: string;
     icon?: {
       url?: string;
     };
@@ -24,7 +32,10 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
   try {
     const { data, error } = await supabase
       .from('federated_feed')
-      .select('*')
+      .select(`
+        *,
+        profiles!inner(username, fullname, avatar_url)
+      `)
       .order('published_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -33,7 +44,7 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
       return [];
     }
 
-    // For each post, fetch the associated actor information
+    // For each post, fetch the associated actor information and include profile data
     const postsWithActors = await Promise.all(
       data.map(async (post) => {
         // Extract actor information from the content
@@ -107,7 +118,11 @@ export const getFederatedFeed = async (limit = 20, page = 1): Promise<FederatedP
           source: post.source as 'local' | 'remote',
           actor: actorInfo,
           instance: instanceDomain,
-          moderation_status: moderationStatus
+          moderation_status: moderationStatus,
+          // Include profile data for local posts
+          profile: post.source === 'local' ? post.profiles : undefined,
+          // Include user_id for ownership checks
+          user_id: post.source === 'local' ? post.attributed_to : undefined
         } as FederatedPost;
       })
     );

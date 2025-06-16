@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -48,7 +47,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     
     // For remote posts, use actor data
     const actor = post.actor;
-    return actor?.name || actor?.preferredUsername || actor?.username || 'Unknown user';
+    return actor?.name || actor?.preferredUsername || 'Unknown user';
   };
   
   // Get avatar URL with proxy for remote images
