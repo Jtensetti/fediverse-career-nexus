@@ -124,7 +124,10 @@ export const createUserActor = async (userId: string): Promise<boolean> => {
     }
 
     // Get domain from environment
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://tvvrdoklywxllcpzxdls.supabase.co';
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      throw new Error('VITE_SUPABASE_URL not set');
+    }
     const domain = new URL(supabaseUrl).hostname;
     
     // Create the ActivityPub actor object with the actual public key

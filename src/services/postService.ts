@@ -131,7 +131,10 @@ export const createPost = async (postData: CreatePostData): Promise<Post | null>
       throw new Error('User profile not found');
     }
 
-    const supabaseUrl = 'https://tvvrdoklywxllcpzxdls.supabase.co';
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      throw new Error('VITE_SUPABASE_URL not set');
+    }
     const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
 
     let imageUrl: string | undefined;
@@ -237,7 +240,11 @@ const federatePost = async (activity: any, actorId: string) => {
     }
 
     // Send the activity to the outbox for federation
-    const response = await fetch(`https://tvvrdoklywxllcpzxdls.supabase.co/functions/v1/outbox/${profile.username}`, {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      throw new Error('VITE_SUPABASE_URL not set');
+    }
+    const response = await fetch(`${supabaseUrl}/functions/v1/outbox/${profile.username}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/activity+json',
@@ -324,8 +331,11 @@ export const updatePost = async (id: string, data: UpdatePostData): Promise<Post
       throw new Error('Post not found');
     }
 
-    // Create a mutable copy of the content
+    // Create a mutable copy of the content and ensure object exists
     const content = JSON.parse(JSON.stringify(existing.content)) as ActivityContent;
+    if (!content.object) {
+      content.object = { type: 'Note', content: '' } as ActivityContent['object'];
+    }
 
     if (data.content !== undefined) {
       content.object.content = data.content;
