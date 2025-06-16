@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -10,7 +10,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { getProxiedMediaUrl } from "@/services/federationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/postService";
+import { togglePostReaction, getPostReactions } from "@/services/postReactionsService";
+import { togglePostBoost, getPostBoostCount, hasUserBoostedPost } from "@/services/postBoostService";
+import { getPostReplies } from "@/services/postReplyService";
 import { toast } from "sonner";
+import PostReplyDialog from "./PostReplyDialog";
 import type { FederatedPost } from "@/services/federationService";
 
 interface FederatedPostCardProps {
@@ -25,8 +29,40 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [likeCount, setLikeCount] = useState(0);
   const [isBoosted, setIsBoosted] = useState(false);
   const [boostCount, setBoostCount] = useState(0);
-  const [showReplies, setShowReplies] = useState(false);
+  const [replyCount, setReplyCount] = useState(0);
+  const [showReplyDialog, setShowReplyDialog] = useState(false);
   const { user } = useAuth();
+  
+  // Load initial data
+  useEffect(() => {
+    loadPostData();
+  }, [post.id]);
+
+  const loadPostData = async () => {
+    try {
+      // Load reactions
+      const reactions = await getPostReactions(post.id);
+      const heartReaction = reactions.find(r => r.emoji === '❤️');
+      if (heartReaction) {
+        setIsLiked(heartReaction.hasReacted);
+        setLikeCount(heartReaction.count);
+      }
+
+      // Load boost data
+      const [boostCountData, userBoosted] = await Promise.all([
+        getPostBoostCount(post.id),
+        hasUserBoostedPost(post.id)
+      ]);
+      setBoostCount(boostCountData);
+      setIsBoosted(userBoosted);
+
+      // Load reply count
+      const replies = await getPostReplies(post.id);
+      setReplyCount(replies.length);
+    } catch (error) {
+      console.error('Error loading post data:', error);
+    }
+  };
   
   // Extract content from different ActivityPub formats
   const getContent = () => {
@@ -105,12 +141,11 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
       return;
     }
     
-    setIsLiked(!isLiked);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-    
-    // Here you would implement the actual like functionality
-    // For now, just show a toast
-    toast.success(isLiked ? 'Removed reaction' : 'Added reaction');
+    const success = await togglePostReaction(post.id, '❤️');
+    if (success) {
+      setIsLiked(!isLiked);
+      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+    }
   };
 
   // Handle boost/repost
@@ -120,11 +155,11 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
       return;
     }
     
-    setIsBoosted(!isBoosted);
-    setBoostCount(prev => isBoosted ? prev - 1 : prev + 1);
-    
-    // Here you would implement the actual boost functionality
-    toast.success(isBoosted ? 'Removed boost' : 'Boosted post');
+    const success = await togglePostBoost(post.id);
+    if (success) {
+      setIsBoosted(!isBoosted);
+      setBoostCount(prev => isBoosted ? prev - 1 : prev + 1);
+    }
   };
 
   // Handle reply
@@ -134,9 +169,12 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
       return;
     }
     
-    setShowReplies(!showReplies);
-    // Here you would implement reply functionality
-    toast.info('Reply functionality coming soon');
+    setShowReplyDialog(true);
+  };
+
+  // Handle reply created
+  const handleReplyCreated = () => {
+    setReplyCount(prev => prev + 1);
   };
 
   // Handle edit
@@ -194,106 +232,115 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   };
 
   return (
-    <Card className="mb-4 overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-3">
-          <Avatar>
-            {getAvatarUrl() && !imageError ? (
-              <AvatarImage 
-                src={getAvatarUrl() as string} 
-                onError={() => setImageError(true)} 
-              />
-            ) : null}
-            <AvatarFallback>{getActorName().charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          
-          <div className="flex-1">
-            <div className="font-semibold">{getActorName()}</div>
-            <div className="text-sm text-muted-foreground flex items-center gap-1">
-              <Globe size={14} />
-              <span>{post.source === 'local' ? 'Local' : 'Remote'}</span>
-              {getPublishedDate() && (
-                <>
-                  <span>•</span>
-                  <span>{getPublishedDate()}</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {isOwnPost() && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleEdit}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pb-3">
-        {getModerationBanner()}
-        
-        <div 
-          className="prose max-w-none dark:prose-invert" 
-          dangerouslySetInnerHTML={{ __html: getContent() }} 
-        />
-        
-        {attachments.length > 0 && (
-          <div className="mt-3 grid gap-2">
-            {attachments.map((att, idx) => (
-              <div key={idx} className="rounded-md overflow-hidden">
-                <img 
-                  src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url} 
-                  alt={att.name || 'Media attachment'} 
-                  className="w-full h-auto object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
+    <>
+      <Card className="mb-4 overflow-hidden">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-3">
+            <Avatar>
+              {getAvatarUrl() && !imageError ? (
+                <AvatarImage 
+                  src={getAvatarUrl() as string} 
+                  onError={() => setImageError(true)} 
                 />
+              ) : null}
+              <AvatarFallback>{getActorName().charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1">
+              <div className="font-semibold">{getActorName()}</div>
+              <div className="text-sm text-muted-foreground flex items-center gap-1">
+                <Globe size={14} />
+                <span>{post.source === 'local' ? 'Local' : 'Remote'}</span>
+                {getPublishedDate() && (
+                  <>
+                    <span>•</span>
+                    <span>{getPublishedDate()}</span>
+                  </>
+                )}
               </div>
-            ))}
+            </div>
+
+            {isOwnPost() && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleEdit}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-        )}
-      </CardContent>
-      
-      <CardFooter className="pt-0 flex gap-2">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className={`flex-1 ${isLiked ? 'text-red-500' : ''}`}
-          onClick={handleLike}
-        >
-          <Heart className={`mr-1 h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-          {likeCount > 0 ? likeCount : 'Like'}
-        </Button>
-        <Button variant="ghost" size="sm" className="flex-1" onClick={handleReply}>
-          <MessageSquare className="mr-1 h-4 w-4" />
-          Reply
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className={`flex-1 ${isBoosted ? 'text-green-600' : ''}`}
-          onClick={handleBoost}
-        >
-          <Repeat className="mr-1 h-4 w-4" />
-          {boostCount > 0 ? boostCount : 'Boost'}
-        </Button>
-      </CardFooter>
-    </Card>
+        </CardHeader>
+        
+        <CardContent className="pb-3">
+          {getModerationBanner()}
+          
+          <div 
+            className="prose max-w-none dark:prose-invert" 
+            dangerouslySetInnerHTML={{ __html: getContent() }} 
+          />
+          
+          {attachments.length > 0 && (
+            <div className="mt-3 grid gap-2">
+              {attachments.map((att, idx) => (
+                <div key={idx} className="rounded-md overflow-hidden">
+                  <img 
+                    src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url} 
+                    alt={att.name || 'Media attachment'} 
+                    className="w-full h-auto object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+        
+        <CardFooter className="pt-0 flex gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={`flex-1 ${isLiked ? 'text-red-500' : ''}`}
+            onClick={handleLike}
+          >
+            <Heart className={`mr-1 h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+            {likeCount > 0 ? likeCount : 'Like'}
+          </Button>
+          <Button variant="ghost" size="sm" className="flex-1" onClick={handleReply}>
+            <MessageSquare className="mr-1 h-4 w-4" />
+            {replyCount > 0 ? replyCount : 'Reply'}
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={`flex-1 ${isBoosted ? 'text-green-600' : ''}`}
+            onClick={handleBoost}
+          >
+            <Repeat className="mr-1 h-4 w-4" />
+            {boostCount > 0 ? boostCount : 'Boost'}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <PostReplyDialog
+        open={showReplyDialog}
+        onOpenChange={setShowReplyDialog}
+        postId={post.id}
+        onReplyCreated={handleReplyCreated}
+      />
+    </>
   );
 }

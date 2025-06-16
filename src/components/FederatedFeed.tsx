@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFederatedFeed, type FederatedPost } from "@/services/federationService";
 import FederatedPostCard from "./FederatedPostCard";
 import PostEditDialog from "./PostEditDialog";
@@ -19,6 +19,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const [allPosts, setAllPosts] = useState<FederatedPost[]>([]);
   const [editingPost, setEditingPost] = useState<FederatedPost | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const queryClient = useQueryClient();
   
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['federatedFeed', limit],
@@ -60,7 +61,13 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const handleDeletePost = (postId: string) => {
     // Remove the deleted post from the local state
     setAllPosts(prev => prev.filter(post => post.id !== postId));
-    // Refetch to ensure we have the latest data
+    // Invalidate and refetch to ensure we have the latest data
+    queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
+  };
+
+  const handlePostUpdated = () => {
+    // Invalidate and refetch the feed
+    queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
     refetch();
   };
   
@@ -113,7 +120,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
             open={editOpen}
             onOpenChange={setEditOpen}
             post={editingPost}
-            onUpdated={() => refetch()}
+            onUpdated={handlePostUpdated}
           />
         </>
       ) : (

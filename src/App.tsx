@@ -12,6 +12,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
+import ProfileEdit from "./pages/ProfileEdit";
 import Jobs from "./pages/Jobs";
 import FederatedFeedPage from "./pages/FederatedFeed";
 import Auth from "./pages/Auth";
