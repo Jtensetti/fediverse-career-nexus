@@ -17,10 +17,19 @@ export interface ProfileUpdateData {
 export const updateUserProfile = async (profileData: ProfileUpdateData): Promise<boolean> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
+    console.log('👤 updateUserProfile - Current user:', {
+      user_id: user?.id,
+      email: user?.email,
+      user_exists: !!user
+    });
+    
     if (!user) {
+      console.error('❌ No user found in updateUserProfile');
       toast.error("You must be logged in to update your profile");
       return false;
     }
+
+    console.log('📝 Updating profile with data:', profileData);
 
     const { error } = await supabase
       .from("profiles")
@@ -34,12 +43,16 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
       })
       .eq("id", user.id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Profile update error:', error);
+      throw error;
+    }
 
+    console.log('✅ Profile updated successfully');
     toast.success("Profile updated successfully");
     return true;
   } catch (error) {
-    console.error("Error updating profile:", error);
+    console.error("❌ Error updating profile:", error);
     toast.error("Failed to update profile");
     return false;
   }
@@ -51,7 +64,14 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
 export const uploadProfileAvatar = async (file: File): Promise<string | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
+    console.log('🖼️ uploadProfileAvatar - Current user:', {
+      user_id: user?.id,
+      email: user?.email,
+      user_exists: !!user
+    });
+    
     if (!user) {
+      console.error('❌ No user found in uploadProfileAvatar');
       toast.error("You must be logged in to upload an avatar");
       return null;
     }
@@ -61,6 +81,8 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     const fileName = `${user.id}-${uuidv4()}.${fileExt}`;
     const filePath = `avatars/${fileName}`;
 
+    console.log('📤 Uploading avatar to path:', filePath);
+
     // Upload image to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from('avatars')
@@ -69,12 +91,17 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
         upsert: true
       });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error('❌ Avatar upload error:', uploadError);
+      throw uploadError;
+    }
 
     // Get the public URL for the uploaded image
     const { data: { publicUrl } } = supabase.storage
       .from('avatars')
       .getPublicUrl(filePath);
+
+    console.log('🔗 Avatar public URL:', publicUrl);
 
     // Update the profile with the new avatar URL
     const { error: updateError } = await supabase
@@ -85,12 +112,16 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
       })
       .eq("id", user.id);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('❌ Avatar URL update error:', updateError);
+      throw updateError;
+    }
 
+    console.log('✅ Avatar updated successfully');
     toast.success("Avatar updated successfully");
     return publicUrl;
   } catch (error) {
-    console.error("Error uploading avatar:", error);
+    console.error("❌ Error uploading avatar:", error);
     toast.error("Failed to upload avatar");
     return null;
   }
@@ -99,10 +130,18 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 export const updateProfile = async (profileData: any) => {
   try {
     const { data: session } = await supabase.auth.getSession();
+    console.log('📋 updateProfile - Current session:', {
+      session_exists: !!session.session,
+      user_id: session.session?.user?.id,
+      email: session.session?.user?.email
+    });
     
     if (!session.session) {
+      console.error('❌ No session found in updateProfile');
       throw new Error('You must be logged in to update your profile');
     }
+
+    console.log('📝 Updating profile with data:', profileData);
 
     const { data, error } = await supabase
       .from('profiles')
@@ -112,8 +151,11 @@ export const updateProfile = async (profileData: any) => {
       .single();
 
     if (error) {
+      console.error('❌ Profile update error:', error);
       throw error;
     }
+
+    console.log('✅ Profile updated successfully:', data);
 
     // If username was updated and this is the first time setting it, create actor
     if (profileData.username) {
@@ -125,19 +167,19 @@ export const updateProfile = async (profileData: any) => {
         .single();
 
       if (!existingActor) {
-        console.log('Creating actor for new username:', profileData.username);
+        console.log('🎭 Creating actor for new username:', profileData.username);
         const actorCreated = await createUserActor(session.session.user.id);
         if (actorCreated) {
-          console.log('Actor created successfully');
+          console.log('✅ Actor created successfully');
         } else {
-          console.warn('Failed to create actor, but profile update succeeded');
+          console.warn('⚠️ Failed to create actor, but profile update succeeded');
         }
       }
     }
 
     return data;
   } catch (error) {
-    console.error('Error updating profile:', error);
+    console.error('❌ Error updating profile:', error);
     throw error;
   }
 };

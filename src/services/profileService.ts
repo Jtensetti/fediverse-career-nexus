@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -56,16 +55,31 @@ export interface Skill {
 export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    console.log('👤 getCurrentUserProfile - Current user:', {
+      user_id: user?.id,
+      email: user?.email,
+      user_exists: !!user
+    });
+    
+    if (!user) {
+      console.error('❌ No user found in getCurrentUserProfile');
+      return null;
+    }
 
     // Get user profile
+    console.log('🔍 Fetching profile for user:', user.id);
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user.id)
       .single();
 
-    if (profileError) throw profileError;
+    if (profileError) {
+      console.error('❌ Profile fetch error:', profileError);
+      throw profileError;
+    }
+
+    console.log('📋 Profile data:', profile);
 
     // Get experience
     const { data: experience, error: experienceError } = await supabase
@@ -109,7 +123,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
 
     if (connectionError) throw connectionError;
 
-    return {
+    const userProfile = {
       id: profile.id,
       username: profile.username,
       displayName: profile.fullname || profile.username,
@@ -153,8 +167,17 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
         endorsements: skill.endorsements || 0
       }))
     };
+
+    console.log('✅ User profile assembled:', {
+      id: userProfile.id,
+      username: userProfile.username,
+      displayName: userProfile.displayName,
+      hasEmail: !!userProfile.contact?.email
+    });
+
+    return userProfile;
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    console.error("❌ Error fetching user profile:", error);
     toast.error("Failed to load profile data");
     return null;
   }

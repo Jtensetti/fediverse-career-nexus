@@ -29,7 +29,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('🔐 Auth state changed:', event, {
+          user_id: session?.user?.id,
+          email: session?.user?.email,
+          session_exists: !!session
+        });
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -40,11 +44,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkInitialAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Initial session check:', session?.user?.email, error);
+        console.log('🔍 Initial session check:', {
+          user_id: session?.user?.id,
+          email: session?.user?.email,
+          session_exists: !!session,
+          error: error?.message
+        });
         setSession(session);
         setUser(session?.user ?? null);
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('❌ Error checking session:', error);
         setSession(null);
         setUser(null);
       } finally {
@@ -60,10 +69,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const isLoggedIn = () => {
-    return !!session && !!user;
+    const loggedIn = !!session && !!user;
+    console.log('🔗 isLoggedIn check:', {
+      session_exists: !!session,
+      user_exists: !!user,
+      result: loggedIn
+    });
+    return loggedIn;
   };
 
   const signOut = async () => {
+    console.log('👋 Signing out user:', user?.email);
     await supabase.auth.signOut();
   };
 
