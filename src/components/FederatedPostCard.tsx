@@ -3,18 +3,30 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
-import { Globe, MessageSquare, ThumbsUp, Repeat, AlertTriangle } from "lucide-react";
+import { Globe, MessageSquare, Heart, Repeat, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { getProxiedMediaUrl } from "@/services/federationService";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { FederatedPost } from "@/services/federationService";
 
 interface FederatedPostCardProps {
   post: FederatedPost;
+  onEdit?: (post: FederatedPost) => void;
+  onDelete?: (postId: string) => void;
 }
 
-export default function FederatedPostCard({ post }: FederatedPostCardProps) {
+export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedPostCardProps) {
   const [imageError, setImageError] = useState<boolean>(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isBoosted, setIsBoosted] = useState(false);
+  const [boostCount, setBoostCount] = useState(0);
+  const [showReplies, setShowReplies] = useState(false);
+  const { user } = useAuth();
   
   // Extract content from different ActivityPub formats
   const getContent = () => {
@@ -27,18 +39,35 @@ export default function FederatedPostCard({ post }: FederatedPostCardProps) {
     return 'No content available';
   };
   
-  // Extract name from actor
+  // Extract name from actor or use profile data for local posts
   const getActorName = () => {
+    // For local posts, try to get the profile name first
+    if (post.source === 'local' && post.profile) {
+      return post.profile.fullname || post.profile.username || 'Unknown user';
+    }
+    
+    // For remote posts, use actor data
     const actor = post.actor;
-    return actor?.name || actor?.preferredUsername || 'Unknown user';
+    return actor?.name || actor?.preferredUsername || actor?.username || 'Unknown user';
   };
   
   // Get avatar URL with proxy for remote images
   const getAvatarUrl = () => {
+    // For local posts, use profile avatar
+    if (post.source === 'local' && post.profile?.avatar_url) {
+      return post.profile.avatar_url;
+    }
+    
+    // For remote posts, use actor icon
     const iconUrl = post.actor?.icon?.url;
     if (!iconUrl) return null;
     
     return post.source === 'remote' ? getProxiedMediaUrl(iconUrl) : iconUrl;
+  };
+  
+  // Check if current user owns this post
+  const isOwnPost = () => {
+    return post.source === 'local' && post.user_id === user?.id;
   };
   
   // Get published date in relative format
@@ -69,6 +98,76 @@ export default function FederatedPostCard({ post }: FederatedPostCardProps) {
   
   const attachments = getMediaAttachments();
 
+  // Handle like/react
+  const handleLike = async () => {
+    if (!user) {
+      toast.error('Please sign in to react to posts');
+      return;
+    }
+    
+    setIsLiked(!isLiked);
+    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+    
+    // Here you would implement the actual like functionality
+    // For now, just show a toast
+    toast.success(isLiked ? 'Removed reaction' : 'Added reaction');
+  };
+
+  // Handle boost/repost
+  const handleBoost = async () => {
+    if (!user) {
+      toast.error('Please sign in to boost posts');
+      return;
+    }
+    
+    setIsBoosted(!isBoosted);
+    setBoostCount(prev => isBoosted ? prev - 1 : prev + 1);
+    
+    // Here you would implement the actual boost functionality
+    toast.success(isBoosted ? 'Removed boost' : 'Boosted post');
+  };
+
+  // Handle reply
+  const handleReply = () => {
+    if (!user) {
+      toast.error('Please sign in to reply to posts');
+      return;
+    }
+    
+    setShowReplies(!showReplies);
+    // Here you would implement reply functionality
+    toast.info('Reply functionality coming soon');
+  };
+
+  // Handle edit
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(post);
+    }
+  };
+
+  // Handle delete
+  const handleDelete = async () => {
+    if (!onDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('ap_objects')
+        .delete()
+        .eq('id', post.id);
+      
+      if (error) {
+        toast.error('Failed to delete post');
+        return;
+      }
+      
+      toast.success('Post deleted successfully');
+      onDelete(post.id);
+    } catch (error) {
+      toast.error('Failed to delete post');
+    }
+  };
+
   // Get moderation banner styling based on status
   const getModerationBanner = () => {
     if (post.source !== 'remote' || !post.instance) return null;
@@ -94,18 +193,8 @@ export default function FederatedPostCard({ post }: FederatedPostCardProps) {
           <>
             <span className="mx-1">•</span>
             <Badge variant={badgeVariant === "outline" ? "outline" : "destructive"} className="text-xs">
-              {post.moderation_status === 'probation' && (
-                <>
-                  <AlertTriangle size={12} className="mr-1" />
-                  Instance on probation
-                </>
-              )}
-              {post.moderation_status === 'blocked' && (
-                <>
-                  <AlertTriangle size={12} className="mr-1" />
-                  Blocked instance
-                </>
-              )}
+              {post.moderation_status === 'probation' && 'Instance on probation'}
+              {post.moderation_status === 'blocked' && 'Blocked instance'}
             </Badge>
           </>
         )}
@@ -140,6 +229,26 @@ export default function FederatedPostCard({ post }: FederatedPostCardProps) {
               )}
             </div>
           </div>
+
+          {isOwnPost() && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEdit}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
       
@@ -171,17 +280,27 @@ export default function FederatedPostCard({ post }: FederatedPostCardProps) {
       </CardContent>
       
       <CardFooter className="pt-0 flex gap-2">
-        <Button variant="ghost" size="sm" className="flex-1">
-          <ThumbsUp className="mr-1 h-4 w-4" />
-          Like
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className={`flex-1 ${isLiked ? 'text-red-500' : ''}`}
+          onClick={handleLike}
+        >
+          <Heart className={`mr-1 h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+          {likeCount > 0 ? likeCount : 'Like'}
         </Button>
-        <Button variant="ghost" size="sm" className="flex-1">
+        <Button variant="ghost" size="sm" className="flex-1" onClick={handleReply}>
           <MessageSquare className="mr-1 h-4 w-4" />
           Reply
         </Button>
-        <Button variant="ghost" size="sm" className="flex-1">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className={`flex-1 ${isBoosted ? 'text-green-600' : ''}`}
+          onClick={handleBoost}
+        >
           <Repeat className="mr-1 h-4 w-4" />
-          Boost
+          {boostCount > 0 ? boostCount : 'Boost'}
         </Button>
       </CardFooter>
     </Card>

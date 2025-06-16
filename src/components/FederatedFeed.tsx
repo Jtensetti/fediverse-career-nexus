@@ -5,6 +5,7 @@ import { getFederatedFeed, type FederatedPost } from "@/services/federationServi
 import FederatedPostCard from "./FederatedPostCard";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface FederatedFeedProps {
   limit?: number;
@@ -47,6 +48,18 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const handleLoadMore = () => {
     setPage(prev => prev + 1);
   };
+
+  const handleEditPost = (post: FederatedPost) => {
+    // For now, just show a toast - you can implement edit modal later
+    toast.info("Edit functionality coming soon");
+  };
+
+  const handleDeletePost = (postId: string) => {
+    // Remove the deleted post from the local state
+    setAllPosts(prev => prev.filter(post => post.id !== postId));
+    // Refetch to ensure we have the latest data
+    refetch();
+  };
   
   if (error) {
     return (
@@ -68,7 +81,12 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       ) : allPosts.length > 0 ? (
         <>
           {allPosts.map((post, index) => (
-            <FederatedPostCard key={`${post.id}-${index}`} post={post} />
+            <FederatedPostCard 
+              key={`${post.id}-${index}`} 
+              post={post}
+              onEdit={handleEditPost}
+              onDelete={handleDeletePost}
+            />
           ))}
           
           <div className="mt-4 flex justify-center">
