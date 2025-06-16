@@ -1,19 +1,8 @@
-
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
 
-const CodeOfConduct = ({ onAccept }: { onAccept?: (accepted: boolean) => void }) => {
+const CodeOfConduct = () => {
   const { t } = useTranslation();
-  const [accepted, setAccepted] = useState(false);
-
-  const handleChange = (checked: boolean | string) => {
-    setAccepted(!!checked);
-    if (onAccept) {
-      onAccept(!!checked);
-    }
-  };
 
   return (
     <Card className="w-full max-w-4xl">
@@ -113,20 +102,6 @@ const CodeOfConduct = ({ onAccept }: { onAccept?: (accepted: boolean) => void })
             </p>
           </div>
         </section>
-        
-        <div className="flex items-center space-x-2 pt-6 border-t">
-          <Checkbox 
-            id="accept-coc" 
-            checked={accepted}
-            onCheckedChange={handleChange}
-          />
-          <label
-            htmlFor="accept-coc"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            I agree to follow the Code of Conduct
-          </label>
-        </div>
       </CardContent>
     </Card>
   );
