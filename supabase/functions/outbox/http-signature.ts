@@ -1,176 +1,115 @@
 
-// HTTP Signature utilities for ActivityPub
+// HTTP Signature implementation for ActivityPub
+export async function signRequest(
+  url: string,
+  method: string,
+  body: string | null,
+  privateKey: string,
+  keyId: string
+): Promise<{ [key: string]: string }> {
+  const urlObj = new URL(url);
+  const host = urlObj.host;
+  const path = urlObj.pathname + urlObj.search;
+  
+  // Create the date header
+  const date = new Date().toUTCString();
+  
+  // Create the digest header if there's a body
+  let digest = '';
+  if (body) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(body);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = new Uint8Array(hashBuffer);
+    const hashBase64 = btoa(String.fromCharCode(...hashArray));
+    digest = `SHA-256=${hashBase64}`;
+  }
+  
+  // Create the signature string
+  const signatureString = body
+    ? `(request-target): ${method.toLowerCase()} ${path}\nhost: ${host}\ndate: ${date}\ndigest: ${digest}`
+    : `(request-target): ${method.toLowerCase()} ${path}\nhost: ${host}\ndate: ${date}`;
+  
+  // Import the private key
+  const pemHeader = "-----BEGIN PRIVATE KEY-----";
+  const pemFooter = "-----END PRIVATE KEY-----";
+  const pemContents = privateKey.replace(pemHeader, "").replace(pemFooter, "").replace(/\s/g, "");
+  
+  // Convert base64 to binary
+  const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+  
+  // Import the key
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8",
+    binaryDer,
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256",
+    },
+    false,
+    ["sign"]
+  );
+  
+  // Sign the string
+  const encoder = new TextEncoder();
+  const signatureBuffer = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    encoder.encode(signatureString)
+  );
+  
+  // Convert to base64
+  const signatureArray = new Uint8Array(signatureBuffer);
+  const signatureBase64 = btoa(String.fromCharCode(...signatureArray));
+  
+  // Create the signature header
+  const headers = body
+    ? `(request-target) host date digest`
+    : `(request-target) host date`;
+  
+  const signature = `keyId="${keyId}",algorithm="rsa-sha256",headers="${headers}",signature="${signatureBase64}"`;
+  
+  // Return headers
+  const result: { [key: string]: string } = {
+    'Host': host,
+    'Date': date,
+    'Signature': signature,
+  };
+  
+  if (digest) {
+    result['Digest'] = digest;
+  }
+  
+  return result;
+}
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
-import { encode as encodeBase64 } from "https://deno.land/std@0.177.0/encoding/base64.ts";
-
-// Generate RSA key pair function
-export async function generateRsaKeyPair(): Promise<{
-  publicKey: string;
-  privateKey: string;
-}> {
+export async function generateRsaKeyPair(): Promise<{ privateKey: string; publicKey: string }> {
   // Generate RSA key pair
   const keyPair = await crypto.subtle.generateKey(
     {
       name: "RSASSA-PKCS1-v1_5",
       modulusLength: 2048,
-      publicExponent: new Uint8Array([0x01, 0x00, 0x01]), // 65537
+      publicExponent: new Uint8Array([1, 0, 1]),
       hash: "SHA-256",
     },
     true,
     ["sign", "verify"]
   );
 
-  // Export keys to PKCS8 and SPKI formats
-  const privateKeyExport = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-  const publicKeyExport = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+  // Export private key
+  const privateKeyBuffer = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+  const privateKeyArray = new Uint8Array(privateKeyBuffer);
+  const privateKeyBase64 = btoa(String.fromCharCode(...privateKeyArray));
+  const privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${privateKeyBase64.match(/.{1,64}/g)?.join('\n')}\n-----END PRIVATE KEY-----`;
 
-  // Convert to base64
-  const privateKeyBase64 = encodeBase64(new Uint8Array(privateKeyExport));
-  const publicKeyBase64 = encodeBase64(new Uint8Array(publicKeyExport));
-  
-  const privateKeyPem = [
-    "-----BEGIN PRIVATE KEY-----",
-    ...privateKeyBase64.match(/.{1,64}/g) || [],
-    "-----END PRIVATE KEY-----"
-  ].join("\n");
-  
-  const publicKeyPem = [
-    "-----BEGIN PUBLIC KEY-----",
-    ...publicKeyBase64.match(/.{1,64}/g) || [],
-    "-----END PUBLIC KEY-----"
-  ].join("\n");
-  
-  return { publicKey: publicKeyPem, privateKey: privateKeyPem };
-}
+  // Export public key
+  const publicKeyBuffer = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+  const publicKeyArray = new Uint8Array(publicKeyBuffer);
+  const publicKeyBase64 = btoa(String.fromCharCode(...publicKeyArray));
+  const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${publicKeyBase64.match(/.{1,64}/g)?.join('\n')}\n-----END PUBLIC KEY-----`;
 
-/**
- * Get the server key from database
- */
-export async function getServerKey(): Promise<{keyId: string, privateKey: string} | null> {
-  try {
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.error("Missing required environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
-      return null;
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Get the current server key
-    const { data, error } = await supabase
-      .rpc("get_current_server_key")
-      .maybeSingle();
-    
-    if (error || !data) {
-      console.error("Error fetching server key:", error);
-      return null;
-    }
-    
-    // Create a full key ID from the base ID
-    const domain = new URL(supabaseUrl).hostname;
-    const fullKeyId = `${supabaseUrl}/functions/v1/actor/server#${data.key_id}`;
-    
-    return {
-      keyId: fullKeyId,
-      privateKey: data.private_key
-    };
-  } catch (error) {
-    console.error("Error in getServerKey:", error);
-    return null;
-  }
-}
-
-// Sign an HTTP request using RSA-SHA256
-export async function signRequest(
-  url: string,
-  method: string,
-  headers: Headers,
-  body: string,
-  privateKey: string,
-  keyId: string
-): Promise<Headers> {
-  const requestTarget = `${method.toLowerCase()} ${new URL(url).pathname}`;
-  const digest = await createDigest(body);
-  
-  headers.set("digest", digest);
-  
-  // Create signature string
-  const signatureString = [
-    `(request-target): ${requestTarget}`,
-    `host: ${new URL(url).host}`,
-    `date: ${headers.get("date")}`,
-    `digest: ${digest}`
-  ].join("\n");
-  
-  // Sign the signature string
-  const signature = await createSignature(signatureString, privateKey);
-  
-  // Create the Signature header
-  const signatureHeader = [
-    `keyId="${keyId}"`,
-    `algorithm="rsa-sha256"`,
-    `headers="(request-target) host date digest"`,
-    `signature="${signature}"`
-  ].join(",");
-  
-  headers.set("signature", signatureHeader);
-  
-  return headers;
-}
-
-// Create a digest of the request body
-async function createDigest(body: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(body);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return `SHA-256=${encodeBase64(new Uint8Array(hash))}`;
-}
-
-// Create a signature using the private key
-async function createSignature(data: string, privateKeyPem: string): Promise<string> {
-  try {
-    // Convert PEM private key to CryptoKey
-    const pemHeader = "-----BEGIN PRIVATE KEY-----";
-    const pemFooter = "-----END PRIVATE KEY-----";
-    
-    // Extract the base64-encoded part of the PEM
-    const pemContents = privateKeyPem
-      .replace(pemHeader, "")
-      .replace(pemFooter, "")
-      .replace(/\s/g, "");
-    
-    // Convert base64 to ArrayBuffer
-    const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
-    
-    // Import the key
-    const cryptoKey = await crypto.subtle.importKey(
-      "pkcs8",
-      binaryDer,
-      {
-        name: "RSASSA-PKCS1-v1_5",
-        hash: "SHA-256"
-      },
-      false,
-      ["sign"]
-    );
-    
-    // Sign the data
-    const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(data);
-    const signatureBuffer = await crypto.subtle.sign(
-      "RSASSA-PKCS1-v1_5",
-      cryptoKey,
-      dataBuffer
-    );
-    
-    // Return base64-encoded signature
-    return encodeBase64(new Uint8Array(signatureBuffer));
-  } catch (error) {
-    console.error("Error creating signature:", error);
-    throw error;
-  }
+  return {
+    privateKey: privateKeyPem,
+    publicKey: publicKeyPem
+  };
 }
