@@ -20,12 +20,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('AuthProvider: Setting up auth state management');
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AuthProvider: Auth state changed:', event, session?.user?.email || 'No user');
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -35,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Use setTimeout to avoid blocking the auth state change
           setTimeout(async () => {
             try {
-              console.log('AuthProvider: Setting up user after sign in');
+              // Setting up user after sign in
               
               // Ensure profile exists first
               const profile = await ensureUserProfile(session.user.id);
@@ -57,15 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
               
               if (!existingActor) {
-                console.log('AuthProvider: Creating actor for user');
                 try {
                   await createUserActor(session.user.id);
-                  console.log('AuthProvider: Actor created successfully');
                 } catch (error) {
                   console.error('AuthProvider: Error creating actor:', error);
                 }
-              } else {
-                console.log('AuthProvider: User already has actor');
               }
             } catch (error) {
               console.error('AuthProvider: Error in user setup:', error);
@@ -82,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) {
           console.error('AuthProvider: Error getting initial session:', error);
         } else {
-          console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
+          // Initial session loaded
           setSession(session);
           setUser(session?.user ?? null);
         }
@@ -96,20 +90,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getInitialSession();
 
     return () => {
-      console.log('AuthProvider: Cleaning up auth subscription');
       subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    console.log('AuthProvider: Signing out user');
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('AuthProvider: Error signing out:', error);
         throw error;
       }
-      console.log('AuthProvider: Sign out successful');
     } catch (error) {
       console.error('AuthProvider: Sign out failed:', error);
       throw error;

@@ -164,7 +164,6 @@ const ProfileEditPage = () => {
     try {
       setIsLoading(prev => ({ ...prev, saving: true }));
       
-      console.log('🔄 Form submission data:', data);
       
       const profileData: ProfileUpdateData = {
         fullname: data.displayName, // Map displayName to fullname for database
@@ -174,7 +173,6 @@ const ProfileEditPage = () => {
         location: data.location
       };
       
-      console.log('📝 Profile data being sent:', profileData);
       
       const success = await updateUserProfile(profileData);
       
