@@ -44,11 +44,11 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
     if (actorError || !actor) {
       console.log('🔍 No actor found, checking profile...');
-      
+
       // Get user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('username')
+        .select('username, fullname')
         .eq('id', user.id)
         .single();
 
@@ -100,6 +100,14 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
     console.log('✅ Actor ready:', actor.id);
 
+    // Fetch profile to include display name in the post content
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username, fullname')
+      .eq('id', user.id)
+      .single();
+    const actorName = profile?.fullname || profile?.username || actor.preferred_username;
+
     // Handle image upload if provided
     let imageUrl: string | null = null;
     if (postData.imageFile) {
@@ -137,7 +145,8 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
         image: imageUrl,
         actor: {
           id: actor.id,
-          preferredUsername: actor.preferred_username
+          preferredUsername: actor.preferred_username,
+          name: actorName
         }
       },
       attributed_to: actor.id

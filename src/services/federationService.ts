@@ -60,7 +60,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         id: obj.id,
         content: content,
         created_at: obj.created_at,
-        actor_name: content?.actor?.name || 'Unknown User',
+        actor_name: content?.actor?.name || content?.actor?.preferredUsername || 'Unknown User',
         actor_avatar: content?.actor?.icon?.url || null,
         source: 'local' as const,
         type: content?.type || 'Note'

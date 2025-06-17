@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { ensureUserProfile } from "./profileService";
 
 export const signUp = async (email: string, password: string) => {
   console.log('SignUp: Starting signup process for:', email);
@@ -19,7 +20,13 @@ export const signUp = async (email: string, password: string) => {
     throw new Error(error.message);
   }
 
-  console.log('SignUp: Success, returning data:', data);
+  console.log('SignUp: Success, ensuring profile');
+
+  if (data.user) {
+    await ensureUserProfile(data.user.id);
+  }
+
+  console.log('SignUp: returning data:', data);
   return data;
 };
 

@@ -89,16 +89,57 @@ export const togglePostReaction = async (postId: string, emoji: string): Promise
     console.log('👤 User found for reaction:', user.id);
 
     // Get user's actor
-    const { data: actor, error: actorError } = await supabase
+    let { data: actor, error: actorError } = await supabase
       .from('actors')
       .select('id, preferred_username')
       .eq('user_id', user.id)
       .single();
+    let profile: { username?: string; fullname?: string } | null = null;
 
     if (actorError || !actor) {
-      console.log('❌ Actor not found:', actorError);
-      toast.error('Actor not found');
-      return false;
+      console.log('❌ Actor not found for reaction:', actorError);
+      // Attempt to create actor on the fly
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('username, fullname')
+        .eq('id', user.id)
+        .single();
+
+      profile = profileData as typeof profile;
+
+      if (!profile?.username) {
+        toast.error('Actor not found');
+        return false;
+      }
+
+      const { data: newActor, error: createError } = await supabase
+        .from('actors')
+        .insert({
+          user_id: user.id,
+          preferred_username: profile.username,
+          type: 'Person',
+          status: 'active'
+        })
+        .select('id, preferred_username')
+        .single();
+
+      if (createError || !newActor) {
+        console.error('❌ Failed to create actor for reaction:', createError);
+        toast.error('Actor not found');
+        return false;
+      }
+
+      actor = newActor;
+    }
+
+    // Fetch profile for actor name if not already loaded
+    if (!profile) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('username, fullname')
+        .eq('id', user.id)
+        .single();
+      profile = profileData as typeof profile;
     }
 
     console.log('🎭 Actor found:', actor);
@@ -142,7 +183,8 @@ export const togglePostReaction = async (postId: string, emoji: string): Promise
         type: 'Like',
         actor: {
           id: actor.id,
-          preferredUsername: actor.preferred_username
+          preferredUsername: actor.preferred_username,
+          name: profile?.fullname || profile?.username || actor.preferred_username
         },
         object: {
           id: postId
