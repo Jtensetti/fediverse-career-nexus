@@ -197,15 +197,17 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
     // Get posts from ap_objects where the attributed actor belongs to the user
     const { data: posts, error } = await supabase
       .from('ap_objects')
-      .select(`
-        id,
-        content,
-        created_at,
-        actors!ap_objects_attributed_to_fkey (
+      .select(
+        `id, content, created_at, actors!ap_objects_attributed_to_fkey (
           user_id,
-          preferred_username
-        )
-      `)
+          preferred_username,
+          profiles (
+            fullname,
+            username,
+            avatar_url
+          )
+        )`
+      )
       .eq('actors.user_id', targetUserId)
       .order('published_at', { ascending: false });
 
@@ -246,10 +248,12 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
           author: {
             username: (post.actors as any)?.preferred_username || 'Unknown',
             fullname:
+         erfaf5-codex/fix-user-feed-and-profile-issues
               (profile.fullname) ||
               (post.actors as any)?.preferred_username ||
               'Unknown User',
             avatar_url: profile.avatar_url || undefined,
+
           },
         };
       }) || []
