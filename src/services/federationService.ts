@@ -31,6 +31,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
   try {
     console.log('🌐 Fetching federated feed with limit:', limit);
 
+    emrf0d-codex/fix-user-feed-and-profile-issues
     // Fetch posts from the federated_feed view and join actor information
     const { data: apObjects, error: apError } = await supabase
       .from('federated_feed')
@@ -41,6 +42,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         published_at,
         source,
         type,
+        attributed_to,
         actors!ap_objects_attributed_to_fkey (
           user_id,
           preferred_username
@@ -98,7 +100,9 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         actor_avatar: profile?.avatar_url || null,
         user_id: actor?.user_id || null,
         profile: profile ? { username: profile.username || undefined, fullname: profile.fullname || undefined, avatar_url: profile.avatar_url || undefined } : undefined,
+     emrf0d-codex/fix-user-feed-and-profile-issues
         source: (obj as any).source === 'local' ? 'local' : 'remote',
+
         type: note?.type || 'Note',
       };
     });
