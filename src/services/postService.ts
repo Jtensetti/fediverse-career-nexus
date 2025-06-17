@@ -216,10 +216,28 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
       return [];
     }
 
+    const authorIds = posts?.map(p => (p.actors as any)?.user_id).filter(Boolean) || [];
+
+    let profilesMap: Record<string, { fullname: string | null; avatar_url: string | null }> = {};
+    if (authorIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, fullname, avatar_url')
+        .in('id', authorIds);
+
+      if (profiles) {
+        profilesMap = Object.fromEntries(
+          profiles.map(p => [p.id, { fullname: p.fullname, avatar_url: p.avatar_url }])
+        );
+      }
+    }
+
     return (
       posts?.map((post) => {
         const raw = post.content as any;
         const note = raw?.type === 'Create' ? raw.object : raw;
+        const authorUserId = (post.actors as any)?.user_id as string | undefined;
+        const profile = (authorUserId && profilesMap[authorUserId]) || {};
 
         return {
           id: post.id,
@@ -230,10 +248,12 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
           author: {
             username: (post.actors as any)?.preferred_username || 'Unknown',
             fullname:
-              (post.actors as any)?.profiles?.fullname ||
+         erfaf5-codex/fix-user-feed-and-profile-issues
+              (profile.fullname) ||
               (post.actors as any)?.preferred_username ||
               'Unknown User',
-            avatar_url: (post.actors as any)?.profiles?.avatar_url,
+            avatar_url: profile.avatar_url || undefined,
+
           },
         };
       }) || []
