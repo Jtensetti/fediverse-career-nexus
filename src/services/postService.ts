@@ -190,15 +190,21 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
     const { data: { user } } = await supabase.auth.getUser();
     const targetUserId = userId || user?.id;
     
+    console.log('🔍 getUserPosts - Target user ID:', targetUserId);
+    console.log('🔍 getUserPosts - Current user ID:', user?.id);
+    
     if (!targetUserId) {
+      console.log('❌ No target user ID provided');
       return [];
     }
 
     // Get posts from ap_objects where the attributed actor belongs to the user
+    console.log('📊 Fetching posts for user:', targetUserId);
+    
     const { data: posts, error } = await supabase
       .from('ap_objects')
       .select(
-        `id, content, created_at, actors!ap_objects_attributed_to_fkey (
+        `id, content, created_at, published_at, actors!ap_objects_attributed_to_fkey (
           user_id,
           preferred_username,
           profiles (
@@ -211,19 +217,37 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
       .eq('actors.user_id', targetUserId)
       .order('published_at', { ascending: false });
 
+    console.log('📄 Raw posts query result:', { 
+      count: posts?.length, 
+      error: error,
+      posts: posts?.slice(0, 3) // Log first 3 for debugging
+    });
+
     if (error) {
       console.error('Error fetching user posts:', error);
       return [];
     }
 
+    if (!posts || posts.length === 0) {
+      console.log('📭 No posts found for user:', targetUserId);
+      return [];
+    }
+
     const authorIds = posts?.map(p => (p.actors as any)?.user_id).filter(Boolean) || [];
+    console.log('👥 Author IDs from posts:', authorIds);
 
     let profilesMap: Record<string, { fullname: string | null; avatar_url: string | null }> = {};
     if (authorIds.length > 0) {
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, fullname, avatar_url')
         .in('id', authorIds);
+
+      console.log('📝 Profiles for posts:', {
+        count: profiles?.length,
+        error: profileError,
+        profiles: profiles
+      });
 
       if (profiles) {
         profilesMap = Object.fromEntries(
@@ -232,34 +256,36 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
       }
     }
 
-    return (
-      posts?.map((post) => {
-        const raw = post.content as any;
-        const note = raw?.type === 'Create' ? raw.object : raw;
-        const authorUserId = (post.actors as any)?.user_id as string | undefined;
-        const profile = (authorUserId && profilesMap[authorUserId]) || {};
+    const transformedPosts = posts?.map((post) => {
+      const raw = post.content as any;
+      const note = raw?.type === 'Create' ? raw.object : raw;
+      const authorUserId = (post.actors as any)?.user_id as string | undefined;
+      const profile = (authorUserId && profilesMap[authorUserId]) || {};
 
-        return {
-          id: post.id,
-          content: note?.content || '',
-          created_at: post.created_at,
-          user_id: targetUserId,
-          image_url: note?.image,
-          author: {
-            username: (post.actors as any)?.preferred_username || 'Unknown',
-            fullname:
-     emrf0d-codex/fix-user-feed-and-profile-issues
+      const transformedPost = {
+        id: post.id,
+        content: note?.content || '',
+        created_at: post.created_at,
+        user_id: targetUserId,
+        image_url: note?.image,
+        author: {
+          username: (post.actors as any)?.preferred_username || 'Unknown',
+          fullname: (profile.fullname) || (post.actors as any)?.preferred_username || 'Unknown User',
+          avatar_url: profile.avatar_url || undefined,
+        },
+      };
 
-              (profile.fullname) ||
-              (post.actors as any)?.preferred_username ||
-              'Unknown User',
-            avatar_url: profile.avatar_url || undefined,
-     emrf0d-codex/fix-user-feed-and-profile-issues
+      console.log('🔄 Transformed post:', {
+        id: transformedPost.id,
+        content: transformedPost.content.substring(0, 50) + '...',
+        author: transformedPost.author
+      });
 
-          },
-        };
-      }) || []
-    );
+      return transformedPost;
+    }) || [];
+
+    console.log('✅ Final transformed posts:', transformedPosts.length);
+    return transformedPosts;
   } catch (error) {
     console.error('Error fetching user posts:', error);
     return [];

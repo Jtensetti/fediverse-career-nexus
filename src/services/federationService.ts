@@ -31,7 +31,10 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
   try {
     console.log('🌐 Fetching federated feed with limit:', limit);
 
-    emrf0d-codex/fix-user-feed-and-profile-issues
+    // Get current user to ensure we can see their posts
+    const { data: { user } } = await supabase.auth.getUser();
+    console.log('👤 Current user for feed:', user?.id);
+
     // Fetch posts from the federated_feed view and join actor information
     const { data: apObjects, error: apError } = await supabase
       .from('federated_feed')
@@ -63,17 +66,23 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
       return [];
     }
 
+    console.log('📊 Raw federated objects:', apObjects.length);
+
     const userIds = apObjects
       .map((obj: any) => obj.actors?.user_id)
       .filter((id: string | undefined): id is string => !!id);
 
+    console.log('👥 User IDs found:', userIds);
+
     let profilesMap: Record<string, { username: string | null; fullname: string | null; avatar_url: string | null }> = {};
 
     if (userIds.length > 0) {
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, username, fullname, avatar_url')
         .in('id', userIds);
+
+      console.log('📝 Profiles fetched:', profiles?.length, 'error:', profileError);
 
       if (profiles) {
         profilesMap = Object.fromEntries(
@@ -91,6 +100,13 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
 
       const displayName = profile?.fullname || profile?.username || actor?.preferred_username || 'Unknown User';
 
+      console.log('🔍 Processing post:', {
+        id: obj.id,
+        actorUserId: actor?.user_id,
+        profile: profile,
+        displayName: displayName
+      });
+
       return {
         id: obj.id,
         content: note,
@@ -100,14 +116,21 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         actor_avatar: profile?.avatar_url || null,
         user_id: actor?.user_id || null,
         profile: profile ? { username: profile.username || undefined, fullname: profile.fullname || undefined, avatar_url: profile.avatar_url || undefined } : undefined,
-     emrf0d-codex/fix-user-feed-and-profile-issues
         source: (obj as any).source === 'local' ? 'local' : 'remote',
-
         type: note?.type || 'Note',
       };
     });
 
-    console.log('✅ Fetched federated posts:', federatedPosts.length);
+    console.log('✅ Transformed federated posts:', federatedPosts.length);
+    federatedPosts.forEach(post => {
+      console.log('📄 Post:', {
+        id: post.id,
+        actor_name: post.actor_name,
+        user_id: post.user_id,
+        source: post.source
+      });
+    });
+
     return federatedPosts;
   } catch (error) {
     console.error('Error fetching federated feed:', error);
