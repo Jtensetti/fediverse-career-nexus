@@ -29,12 +29,10 @@ const ProfilePage = () => {
   
   // Check authentication status
   useEffect(() => {
-    console.log('Profile: Setting up auth check');
     
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('Profile: Current session:', session?.user?.email);
         setIsAuthenticated(!!session);
         setCurrentUserId(session?.user?.id || null);
       } catch (error) {
@@ -49,7 +47,6 @@ const ProfilePage = () => {
     checkAuth();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Profile: Auth state changed:', event, session?.user?.email);
       setIsAuthenticated(!!session);
       setCurrentUserId(session?.user?.id || null);
       setAuthLoading(false);
@@ -64,7 +61,6 @@ const ProfilePage = () => {
   useEffect(() => {
     // If no username is provided and user is not authenticated, redirect to login
     if (!authLoading && !username && !isAuthenticated) {
-      console.log('Profile: Redirecting to login (no username and not authenticated)');
       navigate("/auth/login", { replace: true });
     }
   }, [authLoading, username, isAuthenticated, navigate]);
@@ -73,21 +69,18 @@ const ProfilePage = () => {
   const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ["profile", username, currentUserId],
     queryFn: async () => {
-      console.log('Profile: Fetching profile data for:', username || 'current user');
+      
       
       if (!username) {
         // Viewing own profile - require authentication
         if (!isAuthenticated || !currentUserId) {
-          console.log('Profile: Not authenticated for own profile');
           return null;
         }
         const result = await getCurrentUserProfile();
-        console.log('Profile: Current user profile:', result);
         return result;
       } else {
         // Viewing someone else's profile
         const result = await getUserProfileByUsername(username);
-        console.log('Profile: User profile by username:', result);
         return result;
       }
     },

@@ -10,12 +10,11 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('Home component mounted, checking auth state');
+    // Initialize auth state management
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
         const authenticated = !!session;
         setIsAuthenticated(authenticated);
         setIsLoading(false);
@@ -31,7 +30,6 @@ const Home = () => {
     const checkInitialAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Initial session check:', session?.user?.email, error);
         const authenticated = !!session;
         setIsAuthenticated(authenticated);
         
@@ -54,7 +52,6 @@ const Home = () => {
     };
   }, [navigate]);
 
-  console.log('Home render state:', { isAuthenticated, isLoading });
 
   if (isLoading) {
     return (
@@ -69,7 +66,6 @@ const Home = () => {
 
   // Only show the index page if not authenticated
   if (!isAuthenticated) {
-    console.log('User not authenticated, showing Index page');
     return <Index />;
   }
 
