@@ -33,19 +33,30 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const { user } = useAuth();
   
+  console.log('🔍 FederatedPostCard - Auth state:', { 
+    user: user?.id, 
+    email: user?.email,
+    postId: post.id,
+    postSource: post.source 
+  });
+  
   // Load initial data
   useEffect(() => {
     loadPostData();
-  }, [post.id]);
+  }, [post.id, user?.id]);
 
   const loadPostData = async () => {
     try {
+      console.log('📊 Loading post data for:', post.id);
+      
       // Load reactions
       const reactions = await getPostReactions(post.id);
+      console.log('❤️ Reactions loaded:', reactions);
       const heartReaction = reactions.find(r => r.emoji === '❤️');
       if (heartReaction) {
         setIsLiked(heartReaction.hasReacted);
         setLikeCount(heartReaction.count);
+        console.log('❤️ Heart reaction state:', { isLiked: heartReaction.hasReacted, count: heartReaction.count });
       }
 
       // Load boost data
@@ -55,12 +66,14 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
       ]);
       setBoostCount(boostCountData);
       setIsBoosted(userBoosted);
+      console.log('🔄 Boost state:', { isBoosted: userBoosted, count: boostCountData });
 
       // Load reply count
       const replies = await getPostReplies(post.id);
       setReplyCount(replies.length);
+      console.log('💬 Reply count:', replies.length);
     } catch (error) {
-      console.error('Error loading post data:', error);
+      console.error('❌ Error loading post data:', error);
     }
   };
   
@@ -79,12 +92,16 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const getActorName = () => {
     // For local posts, try to get the profile name first
     if (post.source === 'local' && post.profile) {
-      return post.profile.fullname || post.profile.username || 'Unknown user';
+      const name = post.profile.fullname || post.profile.username || 'Unknown user';
+      console.log('👤 Local actor name:', name, 'from profile:', post.profile);
+      return name;
     }
     
     // For remote posts, use actor data
     const actor = post.actor;
-    return actor?.name || actor?.preferredUsername || post.actor_name || 'Unknown user';
+    const name = actor?.name || actor?.preferredUsername || post.actor_name || 'Unknown user';
+    console.log('🌐 Remote actor name:', name, 'from actor:', actor);
+    return name;
   };
   
   // Get avatar URL with proxy for remote images
@@ -103,7 +120,9 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   
   // Check if current user owns this post
   const isOwnPost = () => {
-    return post.source === 'local' && post.user_id === user?.id;
+    const isOwner = post.source === 'local' && post.user_id === user?.id;
+    console.log('🔐 Is own post?', isOwner, { postUserId: post.user_id, currentUserId: user?.id });
+    return isOwner;
   };
   
   // Get published date in relative format
@@ -136,29 +155,41 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   // Handle like/react
   const handleLike = async () => {
+    console.log('❤️ Like button clicked, user:', user?.id);
+    
     if (!user) {
       toast.error('Please sign in to react to posts');
       return;
     }
     
+    console.log('❤️ Toggling reaction for post:', post.id);
     const success = await togglePostReaction(post.id, '❤️');
     if (success) {
       setIsLiked(!isLiked);
       setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+      console.log('❤️ Reaction toggled successfully');
+    } else {
+      console.log('❌ Failed to toggle reaction');
     }
   };
 
   // Handle boost/repost
   const handleBoost = async () => {
+    console.log('🔄 Boost button clicked, user:', user?.id);
+    
     if (!user) {
       toast.error('Please sign in to boost posts');
       return;
     }
     
+    console.log('🔄 Toggling boost for post:', post.id);
     const success = await togglePostBoost(post.id);
     if (success) {
       setIsBoosted(!isBoosted);
       setBoostCount(prev => isBoosted ? prev - 1 : prev + 1);
+      console.log('🔄 Boost toggled successfully');
+    } else {
+      console.log('❌ Failed to toggle boost');
     }
   };
 

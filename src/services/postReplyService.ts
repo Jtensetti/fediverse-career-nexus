@@ -17,6 +17,8 @@ export interface PostReply {
 // Get replies for a post
 export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
   try {
+    console.log('💬 Getting replies for post:', postId);
+    
     const { data: replies, error } = await supabase
       .from('ap_objects')
       .select(`
@@ -33,11 +35,13 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Error fetching replies:', error);
+      console.error('❌ Error fetching replies:', error);
       return [];
     }
 
-    return replies?.map(reply => {
+    console.log('💬 Raw replies data:', replies);
+
+    const processedReplies = replies?.map(reply => {
       const content = reply.content as any;
       return {
         id: reply.id,
@@ -51,8 +55,11 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
         }
       };
     }) || [];
+
+    console.log('✅ Processed replies:', processedReplies);
+    return processedReplies;
   } catch (error) {
-    console.error('Error fetching replies:', error);
+    console.error('❌ Error fetching replies:', error);
     return [];
   }
 };
@@ -60,12 +67,17 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
 // Create a reply to a post
 export const createPostReply = async (postId: string, content: string): Promise<boolean> => {
   try {
+    console.log('✍️ Creating reply to post:', { postId, content });
+    
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
+      console.log('❌ No user found for reply');
       toast.error('You must be logged in to reply');
       return false;
     }
+
+    console.log('👤 User found for reply:', user.id);
 
     // Get user's actor
     const { data: actor } = await supabase
@@ -75,9 +87,12 @@ export const createPostReply = async (postId: string, content: string): Promise<
       .single();
 
     if (!actor) {
+      console.log('❌ Actor not found for reply');
       toast.error('Actor not found');
       return false;
     }
+
+    console.log('🎭 Actor found for reply:', actor);
 
     // Create reply object
     const replyObject = {
@@ -95,20 +110,23 @@ export const createPostReply = async (postId: string, content: string): Promise<
       attributed_to: actor.id
     };
 
+    console.log('📝 Creating reply object:', replyObject);
+
     const { error } = await supabase
       .from('ap_objects')
       .insert(replyObject);
 
     if (error) {
-      console.error('Error creating reply:', error);
+      console.error('❌ Error creating reply:', error);
       toast.error(`Failed to create reply: ${error.message}`);
       return false;
     }
 
+    console.log('✅ Reply created successfully');
     toast.success('Reply posted successfully!');
     return true;
   } catch (error) {
-    console.error('Error creating reply:', error);
+    console.error('❌ Error creating reply:', error);
     toast.error('An unexpected error occurred');
     return false;
   }
