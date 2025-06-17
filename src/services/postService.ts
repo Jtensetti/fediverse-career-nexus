@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -187,6 +186,8 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
 export const getUserPosts = async (userId?: string): Promise<Post[]> => {
   try {
+    console.log('🔍 getUserPosts - Starting with userId:', userId);
+    
     const { data: { user } } = await supabase.auth.getUser();
     const targetUserId = userId || user?.id;
     
@@ -260,7 +261,7 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
       const raw = post.content as any;
       const note = raw?.type === 'Create' ? raw.object : raw;
       const authorUserId = (post.actors as any)?.user_id as string | undefined;
-      const profile = (authorUserId && profilesMap[authorUserId]) || {};
+      const profile = (authorUserId && profilesMap[authorUserId]) || { fullname: null, avatar_url: null };
 
       const transformedPost = {
         id: post.id,
@@ -270,7 +271,7 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
         image_url: note?.image,
         author: {
           username: (post.actors as any)?.preferred_username || 'Unknown',
-          fullname: (profile.fullname) || (post.actors as any)?.preferred_username || 'Unknown User',
+          fullname: profile.fullname || (post.actors as any)?.preferred_username || 'Unknown User',
           avatar_url: profile.avatar_url || undefined,
         },
       };
