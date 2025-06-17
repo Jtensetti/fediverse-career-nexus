@@ -248,13 +248,13 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
           author: {
             username: (post.actors as any)?.preferred_username || 'Unknown',
             fullname:
-        hvq9m8-codex/fix-user-feed-and-profile-issues
+     emrf0d-codex/fix-user-feed-and-profile-issues
 
               (profile.fullname) ||
               (post.actors as any)?.preferred_username ||
               'Unknown User',
             avatar_url: profile.avatar_url || undefined,
-        hvq9m8-codex/fix-user-feed-and-profile-issues
+     emrf0d-codex/fix-user-feed-and-profile-issues
 
           },
         };
