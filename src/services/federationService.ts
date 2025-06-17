@@ -90,8 +90,10 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
               avatar_url: profile.avatar_url,
             }
           : undefined,
+        318azu-codex/fix-profile-setup-issue
         source: actor?.user_id ? ('local' as const) : ('remote' as const),
         type: note?.type || 'Note',
+
       };
     });
 
