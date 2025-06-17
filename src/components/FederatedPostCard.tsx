@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +6,7 @@ import { Globe, MessageSquare, Heart, Repeat, MoreHorizontal, Edit, Trash2 } fro
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { getProxiedMediaUrl } from "@/services/federationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/postService";
@@ -31,6 +31,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [boostCount, setBoostCount] = useState(0);
   const [replyCount, setReplyCount] = useState(0);
   const [showReplyDialog, setShowReplyDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { user } = useAuth();
   
   console.log('🔍 FederatedPostCard - Auth state:', { 
@@ -210,6 +211,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   // Handle edit
   const handleEdit = () => {
+    console.log('✏️ Edit button clicked for post:', post.id);
     if (onEdit) {
       onEdit(post);
     }
@@ -217,13 +219,16 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   // Handle delete
   const handleDelete = async () => {
-    if (!onDelete) return;
+    console.log('🗑️ Delete confirmed for post:', post.id);
     
     try {
       await deletePost(post.id);
-      toast.success('Post deleted successfully');
-      onDelete(post.id);
+      console.log('✅ Post deleted successfully');
+      if (onDelete) {
+        onDelete(post.id);
+      }
     } catch (error) {
+      console.error('❌ Failed to delete post:', error);
       toast.error('Failed to delete post');
     }
   };
@@ -303,7 +308,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
                     <Edit className="mr-2 h-4 w-4" />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                  <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600">
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
@@ -372,6 +377,23 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
         postId={post.id}
         onReplyCreated={handleReplyCreated}
       />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

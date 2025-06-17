@@ -227,10 +227,15 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
 
 export const updatePost = async (postId: string, updates: { content: string }): Promise<void> => {
   try {
+    console.log('🔄 Updating post:', postId, 'with content:', updates.content);
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      console.error('❌ No user found for post update');
       throw new Error('You must be logged in to update posts');
     }
+
+    console.log('👤 User found for update:', user.id);
 
     // Get the post to check ownership
     const { data: post, error: fetchError } = await supabase
@@ -246,11 +251,15 @@ export const updatePost = async (postId: string, updates: { content: string }): 
       .single();
 
     if (fetchError || !post) {
+      console.error('❌ Error fetching post for update:', fetchError);
       throw new Error('Post not found');
     }
 
+    console.log('📄 Post found:', post);
+
     // Check ownership
     if ((post.actors as any)?.user_id !== user.id) {
+      console.error('❌ User does not own this post');
       throw new Error('You can only edit your own posts');
     }
 
@@ -261,28 +270,37 @@ export const updatePost = async (postId: string, updates: { content: string }): 
       content: updates.content
     };
 
+    console.log('📝 Updating content:', updatedContent);
+
     const { error: updateError } = await supabase
       .from('ap_objects')
       .update({ content: updatedContent })
       .eq('id', postId);
 
     if (updateError) {
+      console.error('❌ Error updating post:', updateError);
       throw new Error(`Failed to update post: ${updateError.message}`);
     }
 
+    console.log('✅ Post updated successfully');
     toast.success('Post updated successfully!');
   } catch (error) {
-    console.error('Error updating post:', error);
+    console.error('❌ Error updating post:', error);
     throw error;
   }
 };
 
 export const deletePost = async (postId: string): Promise<void> => {
   try {
+    console.log('🗑️ Deleting post:', postId);
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      console.error('❌ No user found for post deletion');
       throw new Error('You must be logged in to delete posts');
     }
+
+    console.log('👤 User found for deletion:', user.id);
 
     // Get the post to check ownership
     const { data: post, error: fetchError } = await supabase
@@ -297,13 +315,19 @@ export const deletePost = async (postId: string): Promise<void> => {
       .single();
 
     if (fetchError || !post) {
+      console.error('❌ Error fetching post for deletion:', fetchError);
       throw new Error('Post not found');
     }
 
+    console.log('📄 Post found for deletion:', post);
+
     // Check ownership
     if ((post.actors as any)?.user_id !== user.id) {
+      console.error('❌ User does not own this post');
       throw new Error('You can only delete your own posts');
     }
+
+    console.log('🗑️ Proceeding with deletion');
 
     const { error: deleteError } = await supabase
       .from('ap_objects')
@@ -311,12 +335,14 @@ export const deletePost = async (postId: string): Promise<void> => {
       .eq('id', postId);
 
     if (deleteError) {
+      console.error('❌ Error deleting post:', deleteError);
       throw new Error(`Failed to delete post: ${deleteError.message}`);
     }
 
+    console.log('✅ Post deleted successfully');
     toast.success('Post deleted successfully!');
   } catch (error) {
-    console.error('Error deleting post:', error);
+    console.error('❌ Error deleting post:', error);
     throw error;
   }
 };
