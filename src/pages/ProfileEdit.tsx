@@ -19,7 +19,7 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch"; // Add this import
+import { Switch } from "@/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -164,18 +164,27 @@ const ProfileEditPage = () => {
     try {
       setIsLoading(prev => ({ ...prev, saving: true }));
       
+      console.log('🔄 Form submission data:', data);
+      
       const profileData: ProfileUpdateData = {
-        fullname: data.displayName,
+        fullname: data.displayName, // Map displayName to fullname for database
         headline: data.headline,
         bio: data.bio,
         phone: data.phone,
         location: data.location
       };
       
+      console.log('📝 Profile data being sent:', profileData);
+      
       const success = await updateUserProfile(profileData);
       
       if (success) {
         toast.success("Profile updated successfully");
+        // Refresh the profile data
+        const updatedProfile = await getCurrentUserProfile();
+        if (updatedProfile) {
+          setProfile(updatedProfile);
+        }
       }
     } catch (error) {
       console.error("Error updating profile:", error);

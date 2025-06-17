@@ -148,9 +148,15 @@ export const updateProfile = async (profileData: any) => {
 
     console.log('📝 Updating profile with data:', profileData);
 
+    // Make sure we're updating the right fields
+    const updateData = {
+      ...profileData,
+      updated_at: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
       .from('profiles')
-      .update(profileData)
+      .update(updateData)
       .eq('id', session.session.user.id)
       .select()
       .single();
