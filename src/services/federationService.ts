@@ -30,26 +30,23 @@ export interface FederatedPost {
 export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPost[]> => {
   try {
     console.log('🌐 Fetching federated feed with limit:', limit);
-    
-    // Get federated content from ap_objects and join with actors and profiles
+
+    // Fetch posts with their attributed actor information
     const { data: apObjects, error: apError } = await supabase
       .from('ap_objects')
-      .select(`
+      .select(
+        `
         id,
         content,
         created_at,
         published_at,
         attributed_to,
-        actors (
+        actors!ap_objects_attributed_to_fkey (
           user_id,
-          preferred_username,
-          profiles (
-            username,
-            fullname,
-            avatar_url
-          )
+          preferred_username
         )
-      `)
+      `
+      )
       .order('published_at', { ascending: false })
       .limit(limit);
 
@@ -64,22 +61,33 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
       return [];
     }
 
+    const userIds = apObjects
+      .map((obj: any) => obj.actors?.user_id)
+      .filter((id: string | undefined): id is string => !!id);
+
+    let profilesMap: Record<string, { username: string | null; fullname: string | null; avatar_url: string | null }> = {};
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, fullname, avatar_url')
+        .in('id', userIds);
+
+      if (profiles) {
+        profilesMap = Object.fromEntries(
+          profiles.map(p => [p.id, { username: p.username, fullname: p.fullname, avatar_url: p.avatar_url }])
+        );
+      }
+    }
+
     // Transform the data into our expected format
     const federatedPosts: FederatedPost[] = apObjects.map((obj) => {
       const raw = obj.content as any;
       const note = raw?.type === 'Create' ? raw.object : raw;
       const actor = (obj as any).actors;
-      const profile = actor?.profiles;
+      const profile = actor?.user_id ? profilesMap[actor.user_id] : undefined;
 
-      // Determine the best display name to use
       const displayName = profile?.fullname || profile?.username || actor?.preferred_username || 'Unknown User';
-      
-      console.log('📋 Processing post:', {
-        id: obj.id,
-        profile,
-        actor,
-        displayName
-      });
 
       return {
         id: obj.id,
@@ -89,13 +97,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         actor_name: displayName,
         actor_avatar: profile?.avatar_url || null,
         user_id: actor?.user_id || null,
-        profile: profile
-          ? {
-              username: profile.username,
-              fullname: profile.fullname,
-              avatar_url: profile.avatar_url,
-            }
-          : undefined,
+        profile: profile ? { username: profile.username || undefined, fullname: profile.fullname || undefined, avatar_url: profile.avatar_url || undefined } : undefined,
         source: actor?.user_id ? ('local' as const) : ('remote' as const),
         type: note?.type || 'Note',
       };
