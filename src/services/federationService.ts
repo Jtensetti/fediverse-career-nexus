@@ -89,7 +89,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
               avatar_url: profile.avatar_url
             }
           : undefined,
-        source: 'local' as const,
+        source: actor?.user_id ? 'local' as const : 'remote' as const,
         type: content?.type || 'Note'
       };
     });
