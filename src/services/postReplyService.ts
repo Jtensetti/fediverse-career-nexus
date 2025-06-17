@@ -80,16 +80,56 @@ export const createPostReply = async (postId: string, content: string): Promise<
     console.log('👤 User found for reply:', user.id);
 
     // Get user's actor
-    const { data: actor } = await supabase
+    let { data: actor } = await supabase
       .from('actors')
       .select('id, preferred_username')
       .eq('user_id', user.id)
       .single();
+    let profile: { username?: string; fullname?: string } | null = null;
 
     if (!actor) {
       console.log('❌ Actor not found for reply');
-      toast.error('Actor not found');
-      return false;
+      // Attempt to create actor automatically
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('username, fullname')
+        .eq('id', user.id)
+        .single();
+
+      profile = profileData as typeof profile;
+
+      if (!profile?.username) {
+        toast.error('Actor not found');
+        return false;
+      }
+
+      const { data: newActor, error: createError } = await supabase
+        .from('actors')
+        .insert({
+          user_id: user.id,
+          preferred_username: profile.username,
+          type: 'Person',
+          status: 'active'
+        })
+        .select('id, preferred_username')
+        .single();
+
+      if (createError || !newActor) {
+        console.error('❌ Failed to create actor for reply:', createError);
+        toast.error('Actor not found');
+        return false;
+      }
+
+      actor = newActor;
+    }
+
+    if (!profile) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('username, fullname')
+        .eq('id', user.id)
+        .single();
+      profile = profileData as typeof profile;
     }
 
     console.log('🎭 Actor found for reply:', actor);
@@ -103,7 +143,8 @@ export const createPostReply = async (postId: string, content: string): Promise<
         inReplyTo: postId,
         actor: {
           id: actor.id,
-          preferredUsername: actor.preferred_username
+          preferredUsername: actor.preferred_username,
+          name: profile?.fullname || profile?.username || actor.preferred_username
         },
         published: new Date().toISOString()
       },

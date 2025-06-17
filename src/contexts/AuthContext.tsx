@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { createUserActor } from '@/services/actorService';
+import { ensureUserProfile } from '@/services/profileService';
 
 interface AuthContextType {
   user: User | null;
@@ -55,15 +56,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.log('AuthProvider: Setting up user after sign in');
               
               // Check if user has a profile with username
-              const { data: profile, error: profileError } = await supabase
+              let { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('username, id')
                 .eq('id', session.user.id)
                 .single();
-              
-              if (profileError) {
+
+              if (profileError && profileError.code !== 'PGRST116') {
                 console.error('AuthProvider: Error fetching profile:', profileError);
                 return;
+              }
+
+              if (!profile) {
+                profile = await ensureUserProfile(session.user.id);
+                if (!profile) {
+                  console.error('AuthProvider: Failed to create profile');
+                  return;
+                }
               }
               
               // Create default username if none exists
