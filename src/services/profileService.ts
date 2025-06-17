@@ -52,6 +52,46 @@ export interface Skill {
   endorsements: number;
 }
 
+/**
+ * Ensure a profile row exists for the given user. If none is found,
+ * a minimal profile will be created with a fallback username.
+ */
+export const ensureUserProfile = async (userId: string) => {
+  try {
+    let { data: profile, error } = await supabase
+      .from('profiles')
+      .select('id, username')
+      .eq('id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('ensureUserProfile: error fetching profile:', error);
+      return null;
+    }
+
+    if (!profile) {
+      const username = `user_${userId.slice(0, 8)}`;
+      const { data: newProfile, error: insertError } = await supabase
+        .from('profiles')
+        .insert({ id: userId, username, created_at: new Date().toISOString() })
+        .select('id, username')
+        .single();
+
+      if (insertError || !newProfile) {
+        console.error('ensureUserProfile: failed to create profile:', insertError);
+        return null;
+      }
+
+      profile = newProfile;
+    }
+
+    return profile;
+  } catch (err) {
+    console.error('ensureUserProfile: unexpected error:', err);
+    return null;
+  }
+};
+
 export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();

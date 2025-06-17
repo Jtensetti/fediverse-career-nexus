@@ -93,16 +93,56 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
     console.log('👤 User found for boost:', user.id);
 
     // Get user's actor
-    const { data: actor } = await supabase
+    let { data: actor } = await supabase
       .from('actors')
       .select('id, preferred_username')
       .eq('user_id', user.id)
       .single();
+    let profile: { username?: string; fullname?: string } | null = null;
 
     if (!actor) {
       console.log('❌ Actor not found for boost');
-      toast.error('Actor not found');
-      return false;
+      // Attempt to create actor automatically
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('username, fullname')
+        .eq('id', user.id)
+        .single();
+
+      profile = profileData as typeof profile;
+
+      if (!profile?.username) {
+        toast.error('Actor not found');
+        return false;
+      }
+
+      const { data: newActor, error: createError } = await supabase
+        .from('actors')
+        .insert({
+          user_id: user.id,
+          preferred_username: profile.username,
+          type: 'Person',
+          status: 'active'
+        })
+        .select('id, preferred_username')
+        .single();
+
+      if (createError || !newActor) {
+        console.error('❌ Failed to create actor for boost:', createError);
+        toast.error('Actor not found');
+        return false;
+      }
+
+      actor = newActor;
+    }
+
+    if (!profile) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('username, fullname')
+        .eq('id', user.id)
+        .single();
+      profile = profileData as typeof profile;
     }
 
     console.log('🎭 Actor found for boost:', actor);
@@ -142,7 +182,8 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
         type: 'Announce',
         actor: {
           id: actor.id,
-          preferredUsername: actor.preferred_username
+          preferredUsername: actor.preferred_username,
+          name: profile?.fullname || profile?.username || actor.preferred_username
         },
         object: {
           id: postId
