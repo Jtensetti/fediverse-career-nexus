@@ -41,18 +41,26 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
   return (
     <div className={className}>
       {posts.map((post) => (
-        <FederatedPostCard key={post.id} post={{
-          id: post.id,
-          content: { content: post.content },
-          created_at: post.created_at,
-          actor_name: post.author?.fullname || post.author?.username,
-          actor_avatar: post.author?.avatar_url,
-          user_id: post.user_id,
-          profile: undefined,
-          source: 'local',
-          type: 'Note'
-        }} />
-      ))}
+ swnsx1-codex/fix-profile-setup-issue
+        <FederatedPostCard
+          key={post.id}
+          post={{
+            id: post.id,
+            content: { content: post.content },
+            created_at: post.created_at,
+            actor_name: post.author?.fullname || post.author?.username,
+            actor_avatar: post.author?.avatar_url,
+            user_id: post.user_id,
+            profile: {
+              fullname: post.author?.fullname,
+              username: post.author?.username,
+              avatar_url: post.author?.avatar_url,
+            },
+            source: 'local',
+            type: 'Note',
+          }}
+        />
+    ))}
     </div>
   );
 }

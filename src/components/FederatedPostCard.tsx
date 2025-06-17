@@ -104,6 +104,14 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     console.log('🌐 Remote actor name:', name, 'from actor:', actor);
     return name;
   };
+
+  // Extract username from profile or actor data
+  const getActorUsername = () => {
+    if (post.source === 'local') {
+      return post.profile?.username || post.actor?.preferredUsername || post.actor_name || '';
+    }
+    return post.actor?.preferredUsername || post.actor_name || '';
+  };
   
   // Get avatar URL with proxy for remote images
   const getAvatarUrl = () => {
@@ -284,6 +292,9 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
             
             <div className="flex-1">
               <div className="font-semibold">{getActorName()}</div>
+              {getActorUsername() && (
+                <div className="text-xs text-muted-foreground">@{getActorUsername()}</div>
+              )}
               <div className="text-sm text-muted-foreground flex items-center gap-1">
                 <Globe size={14} />
                 <span>{post.source === 'local' ? 'Local' : 'Remote'}</span>
