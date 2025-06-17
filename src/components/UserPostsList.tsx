@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import FederatedPostCard from "./FederatedPostCard";
 import { getUserPosts, type Post } from "@/services/postService";
@@ -41,15 +42,13 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
   return (
     <div className={className}>
       {posts.map((post) => (
-        318azu-codex/fix-profile-setup-issue
-
         <FederatedPostCard
           key={post.id}
           post={{
             id: post.id,
             content: { content: post.content },
             created_at: post.created_at,
-            actor_name: post.author?.fullname || post.author?.username,
+            actor_name: post.author?.fullname || post.author?.username || 'Unknown User',
             actor_avatar: post.author?.avatar_url,
             user_id: post.user_id,
             profile: {
@@ -61,7 +60,6 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
             type: 'Note',
           }}
         />
-      318azu-codex/fix-profile-setup-issue
       ))}
     </div>
   );

@@ -34,11 +34,11 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { user } = useAuth();
   
-  console.log('🔍 FederatedPostCard - Auth state:', { 
-    user: user?.id, 
-    email: user?.email,
+  console.log('🔍 FederatedPostCard - Rendering post:', { 
     postId: post.id,
-    postSource: post.source 
+    actorName: post.actor_name,
+    profile: post.profile,
+    source: post.source
   });
   
   // Load initial data
@@ -91,9 +91,9 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   
   // Extract name from actor or use profile data for local posts
   const getActorName = () => {
-    // For local posts, try to get the profile name first
+    // For local posts, prioritize fullname from profile, then username, then fallback
     if (post.source === 'local' && post.profile) {
-      const name = post.profile.fullname || post.profile.username || 'Unknown user';
+      const name = post.profile.fullname || post.profile.username || post.actor_name || 'Unknown user';
       console.log('👤 Local actor name:', name, 'from profile:', post.profile);
       return name;
     }
@@ -108,9 +108,9 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   // Extract username from profile or actor data
   const getActorUsername = () => {
     if (post.source === 'local') {
-      return post.profile?.username || post.actor?.preferredUsername || post.actor_name || '';
+      return post.profile?.username || post.actor?.preferredUsername || '';
     }
-    return post.actor?.preferredUsername || post.actor_name || '';
+    return post.actor?.preferredUsername || '';
   };
   
   // Get avatar URL with proxy for remote images

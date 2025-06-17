@@ -38,6 +38,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         id,
         content,
         created_at,
+        published_at,
         attributed_to,
         actors (
           user_id,
@@ -70,18 +71,23 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
       const actor = (obj as any).actors;
       const profile = actor?.profiles;
 
+      // Determine the best display name to use
+      const displayName = profile?.fullname || profile?.username || actor?.preferred_username || 'Unknown User';
+      
+      console.log('📋 Processing post:', {
+        id: obj.id,
+        profile,
+        actor,
+        displayName
+      });
+
       return {
         id: obj.id,
         content: note,
         created_at: obj.created_at,
-        actor_name:
-          note?.actor?.name ||
-          note?.actor?.preferredUsername ||
-          profile?.fullname ||
-          profile?.username ||
-          actor?.preferred_username ||
-          'Unknown User',
-        actor_avatar: note?.actor?.icon?.url || profile?.avatar_url || null,
+        published_at: obj.published_at,
+        actor_name: displayName,
+        actor_avatar: profile?.avatar_url || null,
         user_id: actor?.user_id || null,
         profile: profile
           ? {
@@ -90,10 +96,8 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
               avatar_url: profile.avatar_url,
             }
           : undefined,
-        318azu-codex/fix-profile-setup-issue
         source: actor?.user_id ? ('local' as const) : ('remote' as const),
         type: note?.type || 'Note',
-
       };
     });
 
