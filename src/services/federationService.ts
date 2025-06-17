@@ -49,7 +49,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
           )
         )
       `)
-      .order('created_at', { ascending: false })
+      .order('published_at', { ascending: false })
       .limit(limit);
 
     if (apError) {
@@ -64,33 +64,34 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
     }
 
     // Transform the data into our expected format
-    const federatedPosts: FederatedPost[] = apObjects.map(obj => {
-      const content = obj.content as any;
+    const federatedPosts: FederatedPost[] = apObjects.map((obj) => {
+      const raw = obj.content as any;
+      const note = raw?.type === 'Create' ? raw.object : raw;
       const actor = (obj as any).actors;
       const profile = actor?.profiles;
 
       return {
         id: obj.id,
-        content,
+        content: note,
         created_at: obj.created_at,
         actor_name:
-          content?.actor?.name ||
-          content?.actor?.preferredUsername ||
+          note?.actor?.name ||
+          note?.actor?.preferredUsername ||
           profile?.fullname ||
           profile?.username ||
           actor?.preferred_username ||
           'Unknown User',
-        actor_avatar: content?.actor?.icon?.url || profile?.avatar_url || null,
+        actor_avatar: note?.actor?.icon?.url || profile?.avatar_url || null,
         user_id: actor?.user_id || null,
         profile: profile
           ? {
               username: profile.username,
               fullname: profile.fullname,
-              avatar_url: profile.avatar_url
+              avatar_url: profile.avatar_url,
             }
           : undefined,
-        source: 'local' as const,
-        type: content?.type || 'Note'
+        source: actor?.user_id ? ('local' as const) : ('remote' as const),
+        type: note?.type || 'Note',
       };
     });
 

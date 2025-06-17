@@ -135,21 +135,31 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       console.log('✅ Image uploaded:', imageUrl);
     }
 
-    // Create post in ap_objects table
+    // Create a "Create" activity that wraps the Note object
     console.log('💾 Creating post in database...');
-    const postObject = {
+
+    const noteObject = {
       type: 'Note',
-      content: {
-        type: 'Note',
-        content: postData.content,
-        image: imageUrl,
-        actor: {
-          id: actor.id,
-          preferredUsername: actor.preferred_username,
-          name: actorName
-        }
-      },
-      attributed_to: actor.id
+      content: postData.content,
+      image: imageUrl,
+      actor: {
+        id: actor.id,
+        preferredUsername: actor.preferred_username,
+        name: actorName
+      }
+    };
+
+    const createActivity = {
+      type: 'Create',
+      actor: actor.id,
+      object: noteObject
+    };
+
+    const postObject = {
+      type: 'Create',
+      content: createActivity,
+      attributed_to: actor.id,
+      published_at: new Date().toISOString()
     };
 
     const { data: post, error: postError } = await supabase
@@ -197,28 +207,32 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
         )
       `)
       .eq('actors.user_id', targetUserId)
-      .order('created_at', { ascending: false });
+      .order('published_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching user posts:', error);
       return [];
     }
 
-    return posts?.map(post => {
-      const content = post.content as any;
-      return {
-        id: post.id,
-        content: content?.content || '',
-        created_at: post.created_at,
-        user_id: targetUserId,
-        image_url: content?.image,
-        author: {
-          username: (post.actors as any)?.preferred_username || 'Unknown',
-          avatar_url: undefined,
-          fullname: undefined
-        }
-      };
-    }) || [];
+    return (
+      posts?.map((post) => {
+        const raw = post.content as any;
+        const note = raw?.type === 'Create' ? raw.object : raw;
+
+        return {
+          id: post.id,
+          content: note?.content || '',
+          created_at: post.created_at,
+          user_id: targetUserId,
+          image_url: note?.image,
+          author: {
+            username: (post.actors as any)?.preferred_username || 'Unknown',
+            avatar_url: undefined,
+            fullname: undefined,
+          },
+        };
+      }) || []
+    );
   } catch (error) {
     console.error('Error fetching user posts:', error);
     return [];
