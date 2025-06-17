@@ -61,7 +61,14 @@ function App() {
                 <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/login" element={<Auth />} />
-                <Route path="/feed" element={<FederatedFeedPage />} />
+                <Route
+                  path="/feed"
+                  element={
+                    <ProtectedRoute>
+                      <FederatedFeedPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/profile/:actorId"
                   element={
