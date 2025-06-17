@@ -13,6 +13,7 @@ import { deletePost } from "@/services/postService";
 import { togglePostReaction, getPostReactions } from "@/services/postReactionsService";
 import { togglePostBoost, getPostBoostCount, hasUserBoostedPost } from "@/services/postBoostService";
 import { getPostReplies } from "@/services/postReplyService";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PostReplyDialog from "./PostReplyDialog";
 import type { FederatedPost } from "@/services/federationService";
@@ -38,7 +39,9 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     postId: post.id,
     actorName: post.actor_name,
     profile: post.profile,
-    source: post.source
+    source: post.source,
+    userId: post.user_id,
+    currentUser: user?.id
   });
   
   // Load initial data
@@ -129,9 +132,24 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   
   // Check if current user owns this post
   const isOwnPost = () => {
-    const isOwner = post.source === 'local' && post.user_id === user?.id;
-    console.log('🔐 Is own post?', isOwner, { postUserId: post.user_id, currentUserId: user?.id });
-    return isOwner;
+    if (!user?.id) {
+      console.log('🔐 No current user, not own post');
+      return false;
+    }
+
+    // For local posts, check if the post user_id matches current user
+    if (post.source === 'local' && post.user_id) {
+      const isOwner = post.user_id === user.id;
+      console.log('🔐 Local post ownership check:', { 
+        postUserId: post.user_id, 
+        currentUserId: user.id, 
+        isOwner 
+      });
+      return isOwner;
+    }
+
+    console.log('🔐 Remote post or no user_id, not own post');
+    return false;
   };
   
   // Get published date in relative format

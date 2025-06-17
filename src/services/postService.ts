@@ -22,20 +22,30 @@ export interface CreatePostData {
 
 // Helper to fetch a post along with its owner's user_id
 const getPostOwner = async (postId: string) => {
+  console.log('🔍 Getting post owner for post:', postId);
+  
   const { data, error } = await supabase
-    .from('federated_feed')
-    .select(
-      `id, actors!ap_objects_attributed_to_fkey (user_id)`
-    )
+    .from('ap_objects')
+    .select(`
+      id, 
+      attributed_to,
+      actors!ap_objects_attributed_to_fkey (
+        user_id
+      )
+    `)
     .eq('id', postId)
     .single();
+
+  console.log('📄 Post owner query result:', { data, error });
 
   if (error || !data) {
     console.error('❌ Error fetching post owner:', error);
     throw new Error('Post not found');
   }
 
-  return (data as any).actors?.user_id as string | null;
+  const ownerId = (data as any).actors?.user_id;
+  console.log('👤 Post owner ID:', ownerId);
+  return ownerId as string | null;
 };
 
 export const createPost = async (postData: CreatePostData): Promise<boolean> => {
@@ -326,7 +336,7 @@ export const updatePost = async (postId: string, updates: { content: string }): 
     // Get the post owner to check ownership
     const ownerId = await getPostOwner(postId);
 
-    console.log('📄 Post owner:', ownerId);
+    console.log('📄 Post owner:', ownerId, 'Current user:', user.id);
 
     if (ownerId !== user.id) {
       console.error('❌ User does not own this post');
@@ -346,10 +356,25 @@ export const updatePost = async (postId: string, updates: { content: string }): 
     }
 
     const currentContent = postData.content as any;
-    const updatedContent = {
-      ...currentContent,
-      content: updates.content
-    };
+    let updatedContent;
+
+    // Handle different content structures
+    if (currentContent?.type === 'Create' && currentContent.object) {
+      // ActivityPub Create activity structure
+      updatedContent = {
+        ...currentContent,
+        object: {
+          ...currentContent.object,
+          content: updates.content
+        }
+      };
+    } else {
+      // Direct content structure
+      updatedContent = {
+        ...currentContent,
+        content: updates.content
+      };
+    }
 
     console.log('📝 Updating content:', updatedContent);
 
@@ -386,7 +411,7 @@ export const deletePost = async (postId: string): Promise<void> => {
     // Get the post owner to check ownership
     const ownerId = await getPostOwner(postId);
 
-    console.log('📄 Post owner for deletion:', ownerId);
+    console.log('📄 Post owner for deletion:', ownerId, 'Current user:', user.id);
 
     if (ownerId !== user.id) {
       console.error('❌ User does not own this post');
