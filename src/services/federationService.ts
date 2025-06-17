@@ -37,7 +37,15 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         id,
         content,
         created_at,
-        attributed_to
+        attributed_to,
+        actors!ap_objects_attributed_to_fkey (
+          user_id,
+          profiles!user_id (
+            username,
+            fullname,
+            avatar_url
+          )
+        )
       `)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -56,12 +64,30 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
     // Transform the data into our expected format
     const federatedPosts: FederatedPost[] = apObjects.map(obj => {
       const content = obj.content as any;
+      const actor = (obj as any).actors;
+      const profile = actor?.profiles;
+
       return {
         id: obj.id,
-        content: content,
+        content,
         created_at: obj.created_at,
-        actor_name: content?.actor?.name || content?.actor?.preferredUsername || 'Unknown User',
-        actor_avatar: content?.actor?.icon?.url || null,
+         e5u1qj-codex/fix-authentication-issue-with-actions
+        actor_name:
+          content?.actor?.name ||
+          content?.actor?.preferredUsername ||
+          profile?.fullname ||
+          profile?.username ||
+          'Unknown User',
+        actor_avatar: content?.actor?.icon?.url || profile?.avatar_url || null,
+        user_id: actor?.user_id || null,
+        profile: profile
+          ? {
+              username: profile.username,
+              fullname: profile.fullname,
+              avatar_url: profile.avatar_url
+            }
+          : undefined,
+        main
         source: 'local' as const,
         type: content?.type || 'Note'
       };
