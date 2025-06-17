@@ -41,7 +41,8 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
   return (
     <div className={className}>
       {posts.map((post) => (
- swnsx1-codex/fix-profile-setup-issue
+        318azu-codex/fix-profile-setup-issue
+
         <FederatedPostCard
           key={post.id}
           post={{
@@ -60,7 +61,8 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
             type: 'Note',
           }}
         />
-    ))}
+      318azu-codex/fix-profile-setup-issue
+      ))}
     </div>
   );
 }
