@@ -31,13 +31,13 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
   };
 
   const handleDeletePost = () => {
-    queryClient.invalidateQueries({ queryKey: ['userPosts', userId] });
+    queryClient.invalidateQueries({ queryKey: ["userPosts", userId] });
     refetch();
   };
 
   const handlePostUpdated = () => {
-    queryClient.invalidateQueries({ queryKey: ['userPosts', userId] });
-    queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
+    queryClient.invalidateQueries({ queryKey: ["userPosts", userId] });
+    queryClient.invalidateQueries({ queryKey: ["federatedFeed"] });
     refetch();
   };
 
@@ -50,9 +50,7 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
   }
 
   if (error) {
-    return (
-      <div className="p-4 text-center text-red-500">Failed to load posts</div>
-    );
+    return <div className="p-4 text-center text-red-500">Failed to load posts</div>;
   }
 
   if (!posts || posts.length === 0) {
@@ -67,15 +65,15 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
             key={post.id}
             post={{
               id: post.id,
-              content: post.isQuoteRepost 
-                ? { 
-                    content: post.content, 
-                    isQuoteRepost: true, 
-                    object: post.quotedPost 
+              content: post.isQuoteRepost
+                ? {
+                    content: post.content,
+                    isQuoteRepost: true,
+                    object: post.quotedPost,
                   }
                 : { content: post.content },
               created_at: post.created_at,
-              actor_name: post.author?.fullname || post.author?.username || 'Unknown User',
+              actor_name: post.author?.fullname || post.author?.username || "Unknown User",
               actor_avatar: post.author?.avatar_url,
               user_id: post.user_id,
               profile: {
@@ -83,8 +81,8 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
                 username: post.author?.username,
                 avatar_url: post.author?.avatar_url,
               },
-              source: 'local',
-              type: post.type || 'Note',
+              source: "local",
+              type: post.type || "Note",
             }}
             onEdit={handleEditPost}
             onDelete={handleDeletePost}

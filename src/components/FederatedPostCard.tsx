@@ -45,10 +45,10 @@ interface FederatedPostCardProps {
   showFullContent?: boolean;
 }
 
-export default function FederatedPostCard({ 
-  post, 
-  onEdit, 
-  onDelete, 
+export default function FederatedPostCard({
+  post,
+  onEdit,
+  onDelete,
   initialData,
   hideComments = false,
   showFullContent = false,
@@ -81,13 +81,13 @@ export default function FederatedPostCard({
     const target = e.target as HTMLElement;
     const isInteractive = target.closest('button, a, [role="button"], [data-interactive]');
     if (isInteractive) return;
-    
+
     navigate(`/post/${post.id}`);
   };
-  
+
   // Check if this is a quote repost
   const isQuoteRepost = post.type === 'Announce' || post.content?.isQuoteRepost;
-  
+
   // Get the quoted post data if this is a repost
   const getQuotedPost = () => {
     if (!isQuoteRepost) return null;
@@ -97,7 +97,7 @@ export default function FederatedPostCard({
   // Extract content from different ActivityPub formats
   const getRawContent = () => {
     let rawContent = '';
-    
+
     // For quote reposts, the content is the user's comment (may be empty - that's fine)
     if (isQuoteRepost) {
       rawContent = post.content.content || '';
@@ -113,7 +113,7 @@ export default function FederatedPostCard({
     } else {
       rawContent = 'No content available';
     }
-    
+
     // Sanitize HTML content to prevent XSS attacks from federated content
     return DOMPurify.sanitize(rawContent, {
       ALLOWED_TAGS: ['p', 'br', 'a', 'strong', 'em', 'b', 'i', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'span'],
@@ -126,67 +126,67 @@ export default function FederatedPostCard({
   const { displayContent, contentUrls, isTruncated } = useMemo(() => {
     const raw = getRawContent();
     const urls = extractUrls(raw);
-    
+
     // Make URLs clickable
     const linkedContent = linkifyText(raw);
-    
+
     // If showing full content (PostView), don't truncate
     if (showFullContent) {
       return { displayContent: linkedContent, contentUrls: urls, isTruncated: false };
     }
-    
+
     // Smart truncate for feed view - URLs count as 25 chars each
     const plainText = stripHtml(raw);
     const truncated = smartTruncate(plainText, 350, 25);
     const wasTruncated = truncated.endsWith('…');
-    
+
     // If truncated, use plain text version; otherwise use linkified HTML
     if (wasTruncated) {
       // Re-linkify the truncated plain text
       const linkedTruncated = linkifyText(truncated);
       return { displayContent: linkedTruncated, contentUrls: urls, isTruncated: true };
     }
-    
+
     return { displayContent: linkedContent, contentUrls: urls, isTruncated: false };
   }, [post.id, showFullContent]);
 
   // Get the first URL to show as a preview card
   const previewUrl = contentUrls.length > 0 ? contentUrls[0] : null;
-  
+
   // Extract name from actor or use profile data for local posts
   const getActorName = () => {
     // For local posts, prioritize fullname from profile, then username, then fallback
     if (post.source === 'local' && post.profile) {
       return post.profile.fullname || post.profile.username || post.actor_name || 'Unknown user';
     }
-    
+
     // For remote posts, use actor data
     const actor = post.actor;
     return actor?.name || actor?.preferredUsername || post.actor_name || 'Unknown user';
   };
 
-  // Extract username from profile or actor data
+  // Extract username from profile or actor data (single source of truth)
   const getActorUsername = () => {
     if (post.source === 'local') {
-      return post.profile?.username || post.actor?.preferredUsername || '';
+      return post.profile?.username || post.actor?.preferredUsername || post.actor_name || '';
     }
-    return post.actor?.preferredUsername || '';
+    return post.actor?.preferredUsername || post.actor_name || '';
   };
-  
+
   // Get avatar URL with proxy for remote images
   const getAvatarUrl = () => {
     // For local posts, use profile avatar
     if (post.source === 'local' && post.profile?.avatar_url) {
       return post.profile.avatar_url;
     }
-    
+
     // For remote posts, use actor icon
     const iconUrl = post.actor?.icon?.url || post.actor_avatar;
     if (!iconUrl) return null;
-    
+
     return post.source === 'remote' ? getProxiedMediaUrl(iconUrl) : iconUrl;
   };
-  
+
   // Check if current user owns this post
   const isOwnPost = () => {
     if (!user?.id) return false;
@@ -198,39 +198,39 @@ export default function FederatedPostCard({
 
     return false;
   };
-  
+
   // Get published date in relative format
   const getPublishedDate = () => {
     const date = post.content.published || post.published_at || post.created_at;
     if (!date) return '';
-    
+
     try {
       return formatDistanceToNow(new Date(date), { addSuffix: true });
     } catch (e) {
       return '';
     }
   };
-  
+
   // Extract media attachments if any - now with alt text support
   const getMediaAttachments = () => {
-    const attachments = 
-      post.content.attachment || 
+    const attachments =
+      post.content.attachment ||
       post.content.object?.attachment ||
       [];
-    
+
     if (!Array.isArray(attachments)) return [];
-    
+
     return attachments.filter(att => {
       // Accept if mediaType starts with image/ OR if type is 'Image'
-      const isImage = (att.mediaType && att.mediaType.startsWith('image/')) || 
-                      att.type === 'Image';
+      const isImage = (att.mediaType && att.mediaType.startsWith('image/')) ||
+        att.type === 'Image';
       return isImage && att.url;
     }).map(att => ({
       ...att,
       altText: att.name || '' // Use name field as alt text
     }));
   };
-  
+
   const attachments = getMediaAttachments();
 
   // Handle boost/repost - now opens quote repost dialog
@@ -254,7 +254,7 @@ export default function FederatedPostCard({
       toast.error('Please sign in to reply to posts');
       return;
     }
-    
+
     // Try to open via ref, or set flag for when component loads
     if (commentPreviewRef.current) {
       commentPreviewRef.current.openComposer();
@@ -277,7 +277,7 @@ export default function FederatedPostCard({
 
   // Handle delete
   const handleDelete = async () => {
-    
+
     try {
       await deletePost(post.id);
       if (onDelete) {
@@ -324,7 +324,7 @@ export default function FederatedPostCard({
 
   return (
     <>
-      <Card 
+      <Card
         className={cn(
           "mb-4 overflow-hidden group hover:shadow-md transition-all duration-200 hover:border-primary/20 cursor-pointer",
           isQuoteRepost && "border-l-4 border-l-green-500/50"
@@ -336,7 +336,7 @@ export default function FederatedPostCard({
           // Only navigate if the Card itself is focused, not child elements like textareas
           const target = e.target as HTMLElement;
           const isInsideInteractive = target.closest('input, textarea, select, button, a, [role="button"], [data-interactive], [contenteditable="true"]');
-          
+
           if ((e.key === 'Enter' || e.key === ' ') && !isInsideInteractive && e.currentTarget === e.target) {
             e.preventDefault();
             navigate(`/post/${post.id}`);
@@ -347,12 +347,12 @@ export default function FederatedPostCard({
           {/* Repost indicator */}
           {isQuoteRepost && <RepostIndicator reposterName={getActorName()} />}
           <div className="flex items-center gap-3">
-            <ProfileHoverCard 
+            <ProfileHoverCard
               username={post.source === 'local' ? post.profile?.username : undefined}
               userId={post.source === 'local' ? post.user_id : undefined}
               disabled={post.source !== 'local'}
             >
-              <Link 
+              <Link
                 to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
                 className={post.source === 'local' ? 'cursor-pointer' : 'cursor-default'}
                 onClick={(e) => post.source !== 'local' && e.preventDefault()}
@@ -367,14 +367,14 @@ export default function FederatedPostCard({
                 />
               </Link>
             </ProfileHoverCard>
-            
+
             <div className="flex-1 min-w-0">
-              <ProfileHoverCard 
+              <ProfileHoverCard
                 username={post.source === 'local' ? post.profile?.username : undefined}
                 userId={post.source === 'local' ? post.user_id : undefined}
                 disabled={post.source !== 'local'}
               >
-                <Link 
+                <Link
                   to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
                   className={post.source === 'local' ? 'hover:underline cursor-pointer' : 'cursor-default'}
                   onClick={(e) => post.source !== 'local' && e.preventDefault()}
@@ -382,13 +382,15 @@ export default function FederatedPostCard({
                   <div className="font-semibold truncate">{getActorName()}</div>
                 </Link>
               </ProfileHoverCard>
-            {getActorUsername() && (
+
+              {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">
-                  @{getActorUsername()}{post.source === 'local' 
-                    ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}` 
+                  @{getActorUsername()}{post.source === 'local'
+                    ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}`
                     : post.instance ? `@${post.instance}` : ''}
                 </div>
               )}
+
               <div className="text-xs text-muted-foreground flex items-center gap-1">
                 {getPublishedDate() && <span>{getPublishedDate()}</span>}
               </div>
@@ -420,7 +422,7 @@ export default function FederatedPostCard({
                       <Flag className="mr-2 h-4 w-4" />
                       Report Post
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       className="text-destructive"
                       onClick={() => setShowBlockDialog(true)}
                     >
@@ -442,10 +444,10 @@ export default function FederatedPostCard({
             </DropdownMenu>
           </div>
         </CardHeader>
-        
+
         <CardContent className="pb-3">
           {getModerationBanner()}
-          
+
           {/* Content with optional Content Warning */}
           <ContentWarningDisplay warning={post.content_warning || post.content?.summary || ''}>
             {/* Poll display if this is a Question type */}
@@ -453,18 +455,18 @@ export default function FederatedPostCard({
               <div className="space-y-3">
                 {/* Poll question text */}
                 {displayContent && displayContent !== 'No content available' && (
-                  <div 
-                    className="prose prose-sm max-w-none dark:prose-invert" 
-                    dangerouslySetInnerHTML={{ __html: displayContent }} 
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: displayContent }}
                   />
                 )}
                 {/* Wrap PollDisplay in try-catch via error boundary pattern */}
                 {(() => {
                   try {
                     return (
-                      <PollDisplay 
-                        pollId={post.id} 
-                        content={post.content as Record<string, unknown>} 
+                      <PollDisplay
+                        pollId={post.id}
+                        content={post.content as Record<string, unknown>}
                       />
                     );
                   } catch (e) {
@@ -481,9 +483,9 @@ export default function FederatedPostCard({
               <>
                 {/* Post text content */}
                 {displayContent && displayContent !== 'No content available' && (
-                  <div 
-                    className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all whitespace-pre-line" 
-                    dangerouslySetInnerHTML={{ __html: displayContent }} 
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all whitespace-pre-line"
+                    dangerouslySetInnerHTML={{ __html: displayContent }}
                     onClick={(e) => {
                       // Prevent card navigation when clicking links
                       if ((e.target as HTMLElement).tagName === 'A') {
@@ -497,7 +499,7 @@ export default function FederatedPostCard({
 
             {/* "Read more" indicator when truncated */}
             {isTruncated && (
-              <button 
+              <button
                 className="text-sm text-primary hover:underline mt-1 font-medium"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -514,14 +516,14 @@ export default function FederatedPostCard({
                 <LinkPreview url={previewUrl} compact={attachments.length > 0} />
               </div>
             )}
-          
+
             {attachments.length > 0 && (
               <div className="mt-3 grid gap-2 rounded-xl overflow-hidden">
                 {attachments.map((att, idx) => (
                   <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                    <img 
-                      src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url} 
-                      alt={att.altText || att.name || 'Media attachment'} 
+                    <img
+                      src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url}
+                      alt={att.altText || att.name || 'Media attachment'}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -532,7 +534,7 @@ export default function FederatedPostCard({
                 ))}
               </div>
             )}
-            
+
             {/* Quoted Post Preview for reposts */}
             {isQuoteRepost && getQuotedPost() && (
               <div className="mt-3">
@@ -545,20 +547,20 @@ export default function FederatedPostCard({
         <CardFooter className="pt-0 flex items-center gap-1 border-t border-border/50 mx-2 sm:mx-4 py-2" data-interactive="true">
           {/* Enhanced Reactions - compact mode with reaction picker */}
           <EnhancedPostReactions postId={post.id} compact initialReactions={initialData?.reactions} />
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="gap-1.5 rounded-full hover:text-primary hover:bg-primary/10 transition-all duration-200 px-3" 
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 rounded-full hover:text-primary hover:bg-primary/10 transition-all duration-200 px-3"
             onClick={handleReply}
             aria-label="Reply to post"
           >
             <MessageSquare className="h-4 w-4" />
             {replyCount > 0 && <span className="text-xs">{replyCount}</span>}
           </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className={cn(
               "gap-1.5 rounded-full transition-all duration-200 px-3",
               isBoosted ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950" : "hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950"
@@ -579,14 +581,14 @@ export default function FederatedPostCard({
             />
           </div>
         </CardFooter>
-        
+
         {/* Lazy-loaded Comment Preview with ref for inline commenting - hidden on PostView */}
         {!hideComments && (
           <div className="px-4 pb-3" data-interactive="true">
             <Suspense fallback={<div className="h-10 animate-pulse bg-muted/30 rounded" />}>
-              <CommentPreview 
-                ref={commentPreviewRef} 
-                postId={post.id} 
+              <CommentPreview
+                ref={commentPreviewRef}
+                postId={post.id}
                 maxComments={2}
                 autoOpenComposer={shouldOpenComposer}
                 onComposerOpened={() => setShouldOpenComposer(false)}

@@ -226,7 +226,13 @@ export const getFederatedFeed = async (
 
     let profilesMap: Record<
       string,
-      { username: string | null; fullname: string | null; avatar_url: string | null; home_instance: string | null; is_freelancer: boolean }
+      {
+        username: string | null;
+        fullname: string | null;
+        avatar_url: string | null;
+        home_instance: string | null;
+        is_freelancer: boolean;
+      }
     > = {};
 
     if (userIds.length > 0) {
