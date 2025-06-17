@@ -41,6 +41,7 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
   return (
     <div className={className}>
       {posts.map((post) => (
+ swnsx1-codex/fix-profile-setup-issue
         <FederatedPostCard
           key={post.id}
           post={{
@@ -59,7 +60,7 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
             type: 'Note',
           }}
         />
-      ))}
+    ))}
     </div>
   );
 }
