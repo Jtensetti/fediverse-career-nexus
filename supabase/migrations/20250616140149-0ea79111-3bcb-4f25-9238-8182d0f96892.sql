@@ -13,7 +13,11 @@ DROP VIEW IF EXISTS federated_posts_with_moderation CASCADE;
 DROP VIEW IF EXISTS federated_feed CASCADE;
 
 -- Recreate the federated_feed view with proper joins to profiles
-CREATE VIEW federated_feed AS
+-- Ensure the view runs with the permissions of the caller rather than
+-- the creator. Explicitly setting security_invoker avoids linter
+-- warnings about SECURITY DEFINER views.
+CREATE VIEW federated_feed
+WITH (security_invoker=true) AS
 SELECT 
   ap.id,
   ap.content,
@@ -30,7 +34,11 @@ WHERE ap.type = 'Create'
 ORDER BY ap.published_at DESC;
 
 -- Recreate the federated_posts_with_moderation view
-CREATE VIEW federated_posts_with_moderation AS
+-- Like federated_feed, recreate the moderated posts view with
+-- SECURITY INVOKER enabled so queries respect the caller's RLS
+-- context instead of the view creator.
+CREATE VIEW federated_posts_with_moderation
+WITH (security_invoker=true) AS
 SELECT 
   ap.id,
   ap.content,
