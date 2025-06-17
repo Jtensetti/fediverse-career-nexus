@@ -20,6 +20,24 @@ export interface CreatePostData {
   scheduledFor?: Date;
 }
 
+// Helper to fetch a post along with its owner's user_id
+const getPostOwner = async (postId: string) => {
+  const { data, error } = await supabase
+    .from('federated_feed')
+    .select(
+      `id, actors!ap_objects_attributed_to_fkey (user_id)`
+    )
+    .eq('id', postId)
+    .single();
+
+  if (error || !data) {
+    console.error('❌ Error fetching post owner:', error);
+    throw new Error('Post not found');
+  }
+
+  return (data as any).actors?.user_id as string | null;
+};
+
 export const createPost = async (postData: CreatePostData): Promise<boolean> => {
   try {
     console.log('🚀 Starting post creation...', { contentLength: postData.content.length });
@@ -305,34 +323,29 @@ export const updatePost = async (postId: string, updates: { content: string }): 
 
     console.log('👤 User found for update:', user.id);
 
-    // Get the post to check ownership
-    const { data: post, error: fetchError } = await supabase
-      .from('ap_objects')
-      .select(`
-        id,
-        content,
-        actors!ap_objects_attributed_to_fkey (
-          user_id
-        )
-      `)
-      .eq('id', postId)
-      .single();
+    // Get the post owner to check ownership
+    const ownerId = await getPostOwner(postId);
 
-    if (fetchError || !post) {
-      console.error('❌ Error fetching post for update:', fetchError);
-      throw new Error('Post not found');
-    }
+    console.log('📄 Post owner:', ownerId);
 
-    console.log('📄 Post found:', post);
-
-    // Check ownership
-    if ((post.actors as any)?.user_id !== user.id) {
+    if (ownerId !== user.id) {
       console.error('❌ User does not own this post');
       throw new Error('You can only edit your own posts');
     }
 
-    // Update the content
-    const currentContent = post.content as any;
+    // Fetch current content for update
+    const { data: postData, error: fetchError } = await supabase
+      .from('ap_objects')
+      .select('content')
+      .eq('id', postId)
+      .single();
+
+    if (fetchError || !postData) {
+      console.error('❌ Error fetching post for update:', fetchError);
+      throw new Error('Post not found');
+    }
+
+    const currentContent = postData.content as any;
     const updatedContent = {
       ...currentContent,
       content: updates.content
@@ -370,27 +383,12 @@ export const deletePost = async (postId: string): Promise<void> => {
 
     console.log('👤 User found for deletion:', user.id);
 
-    // Get the post to check ownership
-    const { data: post, error: fetchError } = await supabase
-      .from('ap_objects')
-      .select(`
-        id,
-        actors!ap_objects_attributed_to_fkey (
-          user_id
-        )
-      `)
-      .eq('id', postId)
-      .single();
+    // Get the post owner to check ownership
+    const ownerId = await getPostOwner(postId);
 
-    if (fetchError || !post) {
-      console.error('❌ Error fetching post for deletion:', fetchError);
-      throw new Error('Post not found');
-    }
+    console.log('📄 Post owner for deletion:', ownerId);
 
-    console.log('📄 Post found for deletion:', post);
-
-    // Check ownership
-    if ((post.actors as any)?.user_id !== user.id) {
+    if (ownerId !== user.id) {
       console.error('❌ User does not own this post');
       throw new Error('You can only delete your own posts');
     }
