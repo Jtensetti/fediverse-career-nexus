@@ -71,6 +71,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         id: obj.id,
         content,
         created_at: obj.created_at,
+         e5u1qj-codex/fix-authentication-issue-with-actions
         actor_name:
           content?.actor?.name ||
           content?.actor?.preferredUsername ||
@@ -86,6 +87,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
               avatar_url: profile.avatar_url
             }
           : undefined,
+        main
         source: 'local' as const,
         type: content?.type || 'Note'
       };
