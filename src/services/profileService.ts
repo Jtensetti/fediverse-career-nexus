@@ -59,9 +59,11 @@ export interface Skill {
  */
 export const ensureUserProfile = async (userId: string) => {
   try {
+    console.log('🔍 ensureUserProfile: Checking profile for user:', userId);
+    
     let { data: profile, error } = await supabase
       .from('profiles')
-      .select('id, username')
+      .select('id, username, fullname')
       .eq('id', userId)
       .single();
 
@@ -71,11 +73,17 @@ export const ensureUserProfile = async (userId: string) => {
     }
 
     if (!profile) {
+      console.log('ensureUserProfile: Creating new profile for user:', userId);
       const username = `user_${userId.slice(0, 8)}`;
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
-        .insert({ id: userId, username, created_at: new Date().toISOString() })
-        .select('id, username')
+        .insert({ 
+          id: userId, 
+          username, 
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select('id, username, fullname')
         .single();
 
       if (insertError || !newProfile) {
@@ -84,6 +92,9 @@ export const ensureUserProfile = async (userId: string) => {
       }
 
       profile = newProfile;
+      console.log('✅ ensureUserProfile: Created new profile:', profile);
+    } else {
+      console.log('✅ ensureUserProfile: Found existing profile:', profile);
     }
 
     return profile;
@@ -95,23 +106,30 @@ export const ensureUserProfile = async (userId: string) => {
 
 export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log('👤 getCurrentUserProfile - Current user:', {
-      user_id: user?.id,
-      email: user?.email,
-      user_exists: !!user
+    // Check session first
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('👤 getCurrentUserProfile - Session check:', {
+      has_session: !!session,
+      user_id: session?.user?.id,
+      email: session?.user?.email
     });
     
-    if (!user) {
-      console.error('❌ No user found in getCurrentUserProfile');
+    if (!session?.user) {
+      console.error('❌ No session found in getCurrentUserProfile');
       return null;
     }
 
+    const user = session.user;
+
     // First ensure the profile exists
-    await ensureUserProfile(user.id);
+    const ensuredProfile = await ensureUserProfile(user.id);
+    if (!ensuredProfile) {
+      console.error('❌ Failed to ensure profile exists');
+      return null;
+    }
 
     // Get user profile
-    console.log('🔍 Fetching profile for user:', user.id);
+    console.log('🔍 Fetching complete profile for user:', user.id);
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")

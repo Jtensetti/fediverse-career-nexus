@@ -49,19 +49,23 @@ export const signIn = async (email: string, password: string) => {
       password,
     });
 
-    console.log('SignIn: Response received:', { data, error });
+    console.log('SignIn: Response received:', { 
+      user_id: data.user?.id,
+      session_exists: !!data.session,
+      error 
+    });
 
     if (error) {
       console.error('SignIn: Error occurred:', error);
       throw new Error(error.message);
     }
 
-    if (!data.user) {
-      console.error('SignIn: No user returned');
-      throw new Error("No user returned from login");
+    if (!data.user || !data.session) {
+      console.error('SignIn: No user or session returned');
+      throw new Error("No user or session returned from login");
     }
 
-    console.log('SignIn: Success, returning user:', data.user);
+    console.log('SignIn: Success, user authenticated');
     return data.user;
   } catch (error) {
     console.error('SignIn: Unexpected error:', error);

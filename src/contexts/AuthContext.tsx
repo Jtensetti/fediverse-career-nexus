@@ -22,25 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     console.log('AuthProvider: Setting up auth state management');
     
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('AuthProvider: Error getting initial session:', error);
-        } else {
-          console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
-          setSession(session);
-          setUser(session?.user ?? null);
-        }
-      } catch (error) {
-        console.error('AuthProvider: Unexpected error getting session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Set up auth state listener
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('AuthProvider: Auth state changed:', event, session?.user?.email || 'No user');
@@ -55,39 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             try {
               console.log('AuthProvider: Setting up user after sign in');
               
-              // Check if user has a profile with username
-              let { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('username, id')
-                .eq('id', session.user.id)
-                .single();
-
-              if (profileError && profileError.code !== 'PGRST116') {
-                console.error('AuthProvider: Error fetching profile:', profileError);
-                return;
-              }
-
+              // Ensure profile exists first
+              const profile = await ensureUserProfile(session.user.id);
               if (!profile) {
-                profile = await ensureUserProfile(session.user.id);
-                if (!profile) {
-                  console.error('AuthProvider: Failed to create profile');
-                  return;
-                }
-              }
-              
-              // Create default username if none exists
-              if (profile && !profile.username) {
-                console.log('AuthProvider: Creating default username');
-                const defaultUsername = `user_${session.user.id.slice(0, 8)}`;
-                const { error: updateError } = await supabase
-                  .from('profiles')
-                  .update({ username: defaultUsername })
-                  .eq('id', session.user.id);
-                
-                if (updateError) {
-                  console.error('AuthProvider: Error updating username:', updateError);
-                  return;
-                }
+                console.error('AuthProvider: Failed to create/ensure profile');
+                return;
               }
               
               // Check if user has an actor
@@ -121,7 +75,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Get initial session
+    // THEN check for existing session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('AuthProvider: Error getting initial session:', error);
+        } else {
+          console.log('AuthProvider: Initial session:', session?.user?.email || 'No session');
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error('AuthProvider: Unexpected error getting session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     getInitialSession();
 
     return () => {
