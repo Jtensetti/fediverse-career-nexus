@@ -133,15 +133,15 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
 export const updateProfile = async (profileData: any) => {
   try {
-    const { data: session } = await supabase.auth.getSession();
-    console.log('📋 updateProfile - Current session:', {
-      session_exists: !!session.session,
-      user_id: session.session?.user?.id,
-      email: session.session?.user?.email
+    const { data: { user } } = await supabase.auth.getUser();
+    console.log('📋 updateProfile - Current user:', {
+      user_exists: !!user,
+      user_id: user?.id,
+      email: user?.email
     });
     
-    if (!session.session) {
-      console.error('❌ No session found in updateProfile');
+    if (!user) {
+      console.error('❌ No user found in updateProfile');
       toast.error('You must be logged in to update your profile');
       throw new Error('You must be logged in to update your profile');
     }
@@ -157,7 +157,7 @@ export const updateProfile = async (profileData: any) => {
     const { data, error } = await supabase
       .from('profiles')
       .update(updateData)
-      .eq('id', session.session.user.id)
+      .eq('id', user.id)
       .select()
       .single();
 
@@ -175,12 +175,12 @@ export const updateProfile = async (profileData: any) => {
       const { data: existingActor } = await supabase
         .from('actors')
         .select('id')
-        .eq('user_id', session.session.user.id)
+        .eq('user_id', user.id)
         .single();
 
       if (!existingActor) {
         console.log('🎭 Creating actor for new username:', profileData.username);
-        const actorCreated = await createUserActor(session.session.user.id);
+        const actorCreated = await createUserActor(user.id);
         if (actorCreated) {
           console.log('✅ Actor created successfully');
           toast.success("Profile and actor created successfully");

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -106,6 +107,9 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       return null;
     }
 
+    // First ensure the profile exists
+    await ensureUserProfile(user.id);
+
     // Get user profile
     console.log('🔍 Fetching profile for user:', user.id);
     const { data: profile, error: profileError } = await supabase
@@ -117,6 +121,11 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
     if (profileError) {
       console.error('❌ Profile fetch error:', profileError);
       throw profileError;
+    }
+
+    if (!profile) {
+      console.error('❌ No profile found after ensuring it exists');
+      return null;
     }
 
     console.log('📋 Profile data:', profile);
@@ -165,8 +174,8 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
 
     const userProfile = {
       id: profile.id,
-      username: profile.username,
-      displayName: profile.fullname || profile.username,
+      username: profile.username || `user_${user.id.slice(0, 8)}`,
+      displayName: profile.fullname || profile.username || `user_${user.id.slice(0, 8)}`,
       headline: profile.headline || "",
       bio: profile.bio || "",
       avatarUrl: profile.avatar_url,
