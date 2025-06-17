@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import FederationInfo from "@/components/FederationInfo";
 import { getUserProfileByUsername, getCurrentUserProfile, UserProfile } from "@/services/profileService";
 import { getUserConnections, NetworkConnection, sendConnectionRequest } from "@/services/connectionsService";
+import UserPostsList from "@/components/UserPostsList";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -274,6 +275,7 @@ const ProfilePage = () => {
               <TabsTrigger value="education">Education</TabsTrigger>
               <TabsTrigger value="skills">Skills</TabsTrigger>
               <TabsTrigger value="articles">Articles</TabsTrigger>
+              <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="connections">Connections</TabsTrigger>
             </TabsList>
             
@@ -405,6 +407,14 @@ const ProfilePage = () => {
                       </Button>
                     )}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="posts">
+              <Card>
+                <CardContent className="pt-6">
+                  <UserPostsList userId={profile.id} />
                 </CardContent>
               </Card>
             </TabsContent>
