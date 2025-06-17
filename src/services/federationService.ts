@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface FederatedPost {
@@ -30,7 +31,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
   try {
     console.log('🌐 Fetching federated feed with limit:', limit);
     
-    // Try to get federated content from ap_objects (ActivityPub objects)
+    // Get federated content from ap_objects and join with actors and profiles
     const { data: apObjects, error: apError } = await supabase
       .from('ap_objects')
       .select(`
@@ -38,9 +39,10 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
         content,
         created_at,
         attributed_to,
-        actors!ap_objects_attributed_to_fkey (
+        actors (
           user_id,
-          profiles!user_id (
+          preferred_username,
+          profiles (
             username,
             fullname,
             avatar_url
@@ -76,6 +78,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
           content?.actor?.preferredUsername ||
           profile?.fullname ||
           profile?.username ||
+          actor?.preferred_username ||
           'Unknown User',
         actor_avatar: content?.actor?.icon?.url || profile?.avatar_url || null,
         user_id: actor?.user_id || null,
