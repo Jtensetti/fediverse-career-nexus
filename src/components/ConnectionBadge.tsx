@@ -23,9 +23,9 @@ const ConnectionBadge = ({
   const sizeClasses = size === "sm" ? "text-xs py-0 px-1.5" : "text-xs py-0.5 px-2";
   
   const badgeStyles = {
-    1: "bg-blue-100 text-blue-800 border-blue-200",
-    2: "bg-green-100 text-green-800 border-green-200",
-    3: "bg-gray-100 text-gray-800 border-gray-200"
+    1: "bg-primary/10 text-primary border-primary/30",
+    2: "bg-secondary/10 text-secondary-foreground border-secondary/30",
+    3: "bg-muted text-muted-foreground border-muted-foreground/30"
   };
   
   const degreeText = {

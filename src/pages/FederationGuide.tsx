@@ -59,18 +59,18 @@ const FederationGuide = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-bondy-primary text-white py-16">
+      <div className="bg-primary text-primary-foreground py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">
               How Federation Works
             </h1>
-            <p className="text-xl text-bondy-highlight">
+            <p className="text-xl text-secondary">
               The Power of Federation
             </p>
-            <p className="text-lg text-white/90 mt-4">
+            <p className="text-lg text-primary-foreground/90 mt-4">
               Nolto isn't a single website or company—it's part of something bigger: the Fediverse. 
               Federation means freedom of choice, real interoperability, and true ownership over your professional identity.
             </p>
@@ -84,8 +84,8 @@ const FederationGuide = () => {
           
           {/* What is Federation */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-bondy-primary mb-6">What is Federation?</h2>
-            <div className="prose prose-lg text-gray-700 space-y-4">
+            <h2 className="text-2xl font-bold text-primary mb-6">What is Federation?</h2>
+            <div className="prose prose-lg text-muted-foreground space-y-4">
               <p>
                 Most social networks and job boards are centralized—everything happens on one company's servers, 
                 under one set of rules. If you don't like how things work, your only option is to leave.
@@ -104,32 +104,32 @@ const FederationGuide = () => {
 
           {/* How It Works on Nolto */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-bondy-primary mb-6">How It Works on Nolto</h2>
+            <h2 className="text-2xl font-bold text-primary mb-6">How It Works on Nolto</h2>
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-bondy-primary mb-3">Multiple Instances</h3>
-                <p className="text-gray-700">
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-primary mb-3">Multiple Instances</h3>
+                <p className="text-muted-foreground">
                   Anyone can run a Nolto server ("instance"). Each instance can have its own focus—such as 
                   tech jobs, creative industries, or local communities—or be open to all.
                 </p>
               </div>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-bondy-primary mb-3">One Network</h3>
-                <p className="text-gray-700">
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-primary mb-3">One Network</h3>
+                <p className="text-muted-foreground">
                   No matter where you sign up, you can connect with users, jobs, and organizations across 
                   the entire Nolto network—and even interact with compatible platforms in the wider Fediverse.
                 </p>
               </div>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-bondy-primary mb-3">Portability</h3>
-                <p className="text-gray-700">
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-primary mb-3">Portability</h3>
+                <p className="text-muted-foreground">
                   You're never locked in. You can move your profile, connections, and reputation to another 
                   instance at any time.
                 </p>
               </div>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-bondy-primary mb-3">Local & Global</h3>
-                <p className="text-gray-700">
+              <div className="bg-muted/50 p-6 rounded-lg">
+                <h3 className="text-lg font-semibold text-primary mb-3">Local & Global</h3>
+                <p className="text-muted-foreground">
                   Some things (like moderation or featured jobs) are managed by your chosen instance. 
                   But your reach extends far beyond, to the whole federated network.
                 </p>
@@ -139,11 +139,11 @@ const FederationGuide = () => {
 
           {/* Examples */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-bondy-primary mb-6">Examples</h2>
+            <h2 className="text-2xl font-bold text-primary mb-6">Examples</h2>
             <div className="space-y-4">
               {examples.map((example, index) => (
-                <div key={index} className="border-l-4 border-bondy-accent pl-6 py-2">
-                  <p className="text-gray-700 leading-relaxed">{example.text}</p>
+                <div key={index} className="border-l-4 border-secondary pl-6 py-2">
+                  <p className="text-muted-foreground leading-relaxed">{example.text}</p>
                 </div>
               ))}
             </div>
@@ -151,16 +151,16 @@ const FederationGuide = () => {
 
           {/* Why Federation Matters */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-bondy-primary mb-6">Why Federation Matters</h2>
+            <h2 className="text-2xl font-bold text-primary mb-6">Why Federation Matters</h2>
             <div className="grid md:grid-cols-2 gap-6">
               {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-start space-x-4 p-4 bg-white border border-gray-200 rounded-lg">
-                  <div className="bg-bondy-primary/10 p-3 rounded-lg">
-                    <benefit.icon className="h-6 w-6 text-bondy-primary" />
+                <div key={index} className="flex items-start space-x-4 p-4 bg-card border rounded-lg">
+                  <div className="bg-primary/10 p-3 rounded-lg">
+                    <benefit.icon className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-bondy-primary mb-2">{benefit.title}</h3>
-                    <p className="text-gray-700">{benefit.description}</p>
+                    <h3 className="text-lg font-semibold text-primary mb-2">{benefit.title}</h3>
+                    <p className="text-muted-foreground">{benefit.description}</p>
                   </div>
                 </div>
               ))}
@@ -169,12 +169,12 @@ const FederationGuide = () => {
 
           {/* FAQ */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-bondy-primary mb-6">Frequently Asked Questions</h2>
+            <h2 className="text-2xl font-bold text-primary mb-6">Frequently Asked Questions</h2>
             <div className="space-y-6">
               {faqs.map((faq, index) => (
-                <div key={index} className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-bondy-primary mb-3">{faq.question}</h3>
-                  <p className="text-gray-700">{faq.answer}</p>
+                <div key={index} className="bg-muted/50 p-6 rounded-lg">
+                  <h3 className="text-lg font-semibold text-primary mb-3">{faq.question}</h3>
+                  <p className="text-muted-foreground">{faq.answer}</p>
                 </div>
               ))}
             </div>
@@ -183,7 +183,7 @@ const FederationGuide = () => {
       </div>
 
       {/* Navigation */}
-      <div className="border-t border-gray-200 py-6">
+      <div className="border-t py-6">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <Button asChild variant="outline">

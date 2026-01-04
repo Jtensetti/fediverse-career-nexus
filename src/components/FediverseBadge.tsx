@@ -16,9 +16,9 @@ const FediverseBadge = ({ homeInstance, className }: FediverseBadgeProps) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge 
-            className={`bg-blue-500 hover:bg-blue-600 text-white inline-flex items-center gap-1 ${className || ''}`}
+            className={`bg-primary hover:bg-primary/90 text-primary-foreground inline-flex items-center gap-1 ${className || ''}`}
           >
-            <Check size={12} className="text-white" />
+            <Check size={12} />
             <span className="text-xs">Verified via {homeInstance}</span>
           </Badge>
         </TooltipTrigger>

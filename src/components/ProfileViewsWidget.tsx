@@ -81,7 +81,7 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Eye size={20} className="text-bondy-primary" />
+            <Eye size={20} className="text-primary" />
             Profile Views
           </CardTitle>
           <CardDescription>
@@ -106,7 +106,7 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Eye size={20} className="text-bondy-primary" />
+          <Eye size={20} className="text-primary" />
           Profile Views
         </CardTitle>
         <CardDescription>

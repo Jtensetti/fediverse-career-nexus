@@ -96,11 +96,11 @@ const ProfileVisitsToggle = () => {
     <div className="flex flex-col space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Eye size={18} className="text-bondy-primary" />
+          <Eye size={18} className="text-primary" />
           <Label htmlFor="profile-visits-visibility" className="font-medium">{t('profile.showWhoViewed')}</Label>
         </div>
         {loading ? (
-          <Loader2 size={18} className="animate-spin text-gray-400" aria-label={t('common.loading')} />
+          <Loader2 size={18} className="animate-spin text-muted-foreground" aria-label={t('common.loading')} />
         ) : (
           <Switch 
             id="profile-visits-visibility" 
@@ -111,7 +111,7 @@ const ProfileVisitsToggle = () => {
           />
         )}
       </div>
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-muted-foreground">
         {enabled 
           ? t('profile.profileViewsVisible')
           : t('profile.profileViewsAnonymous')}

@@ -74,7 +74,7 @@ const ArticleAuthors = ({
               )}
             </div>
             {showLabels && author.profile?.username && (
-              <p className={`${textSizes[size]} text-gray-500`}>@{author.profile.username}</p>
+              <p className={`${textSizes[size]} text-muted-foreground`}>@{author.profile.username}</p>
             )}
           </div>
         </div>
