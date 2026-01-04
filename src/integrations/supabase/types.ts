@@ -101,9 +101,12 @@ export type Database = {
           follower_count: number | null
           following_count: number | null
           id: string
+          is_remote: boolean | null
           preferred_username: string
           private_key: string | null
           public_key: string | null
+          remote_actor_url: string | null
+          remote_inbox_url: string | null
           status: string | null
           type: string
           updated_at: string
@@ -114,9 +117,12 @@ export type Database = {
           follower_count?: number | null
           following_count?: number | null
           id?: string
+          is_remote?: boolean | null
           preferred_username: string
           private_key?: string | null
           public_key?: string | null
+          remote_actor_url?: string | null
+          remote_inbox_url?: string | null
           status?: string | null
           type?: string
           updated_at?: string
@@ -127,9 +133,12 @@ export type Database = {
           follower_count?: number | null
           following_count?: number | null
           id?: string
+          is_remote?: boolean | null
           preferred_username?: string
           private_key?: string | null
           public_key?: string | null
+          remote_actor_url?: string | null
+          remote_inbox_url?: string | null
           status?: string | null
           type?: string
           updated_at?: string
@@ -678,6 +687,53 @@ export type Database = {
         }
         Relationships: []
       }
+      federated_sessions: {
+        Row: {
+          access_token_encrypted: string
+          created_at: string | null
+          id: string
+          last_verified_at: string | null
+          profile_id: string | null
+          refresh_token_encrypted: string | null
+          remote_actor_url: string
+          remote_instance: string
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_token_encrypted: string
+          created_at?: string | null
+          id?: string
+          last_verified_at?: string | null
+          profile_id?: string | null
+          refresh_token_encrypted?: string | null
+          remote_actor_url: string
+          remote_instance: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_token_encrypted?: string
+          created_at?: string | null
+          id?: string
+          last_verified_at?: string | null
+          profile_id?: string | null
+          refresh_token_encrypted?: string | null
+          remote_actor_url?: string
+          remote_instance?: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federated_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       federation_queue_partitioned: {
         Row: {
           activity: Json
@@ -993,6 +1049,39 @@ export type Database = {
         }
         Relationships: []
       }
+      oauth_clients: {
+        Row: {
+          client_id: string
+          client_secret: string
+          created_at: string | null
+          id: string
+          instance_domain: string
+          redirect_uri: string
+          scopes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          client_secret: string
+          created_at?: string | null
+          id?: string
+          instance_domain: string
+          redirect_uri: string
+          scopes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          client_secret?: string
+          created_at?: string | null
+          id?: string
+          instance_domain?: string
+          redirect_uri?: string
+          scopes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       outgoing_follows: {
         Row: {
           created_at: string
@@ -1204,47 +1293,56 @@ export type Database = {
       }
       profiles: {
         Row: {
+          auth_type: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
           domain: string | null
           fullname: string | null
           headline: string | null
+          home_instance: string | null
           id: string
           is_verified: boolean | null
           location: string | null
           phone: string | null
           profile_views: number | null
+          remote_actor_url: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
+          auth_type?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           domain?: string | null
           fullname?: string | null
           headline?: string | null
+          home_instance?: string | null
           id: string
           is_verified?: boolean | null
           location?: string | null
           phone?: string | null
           profile_views?: number | null
+          remote_actor_url?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
+          auth_type?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           domain?: string | null
           fullname?: string | null
           headline?: string | null
+          home_instance?: string | null
           id?: string
           is_verified?: boolean | null
           location?: string | null
           phone?: string | null
           profile_views?: number | null
+          remote_actor_url?: string | null
           updated_at?: string
           username?: string | null
         }
