@@ -6,19 +6,26 @@ export interface Event {
   id: string;
   user_id: string;
   title: string;
-  description: string;
+  description: string | null;
   location: string | null;
-  start_time: string;
-  end_time: string;
-  timezone: string;
-  image_url: string | null;
-  capacity: number | null;
-  is_virtual: boolean;
-  is_public: boolean;
-  stream_type: 'youtube' | 'peertube' | 'jitsi' | 'rtmp' | 'other' | null;
-  stream_url: string | null;
+  start_date: string; // renamed from start_time
+  end_date: string | null; // renamed from end_time
+  cover_image_url: string | null; // renamed from image_url
+  max_attendees: number | null; // renamed from capacity
+  is_online: boolean; // renamed from is_virtual
+  meeting_url: string | null; // renamed from stream_url
   created_at: string;
   updated_at: string;
+  // Legacy fields for compatibility
+  start_time?: string;
+  end_time?: string;
+  timezone?: string;
+  image_url?: string | null;
+  capacity?: number | null;
+  is_virtual?: boolean;
+  is_public?: boolean;
+  stream_type?: 'youtube' | 'peertube' | 'jitsi' | 'rtmp' | 'other' | null;
+  stream_url?: string | null;
 }
 
 export interface EventRSVP {
@@ -50,7 +57,7 @@ export async function getEvents(options: {
     
     // Filter by upcoming events
     if (upcoming) {
-      query = query.gte('end_time', new Date().toISOString());
+      query = query.gte('end_date', new Date().toISOString());
     }
     
     // Filter by user_id if provided
@@ -59,7 +66,7 @@ export async function getEvents(options: {
     }
     
     const { data, error } = await query
-      .order('start_time', { ascending: true })
+      .order('start_date', { ascending: true })
       .range(page * limit, (page + 1) * limit - 1);
     
     if (error) throw error;

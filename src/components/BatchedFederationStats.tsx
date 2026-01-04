@@ -9,12 +9,11 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 
 interface BatchStats {
-  partition_key: number;
-  total_count: number;
-  pending_count: number;
-  processing_count: number;
-  failed_count: number;
-  processed_count: number;
+  actor_id: string;
+  preferred_username: string;
+  total_batches: number;
+  pending_batches: number;
+  processed_batches: number;
 }
 
 const BatchedFederationStats = () => {
@@ -134,14 +133,14 @@ const BatchedFederationStats = () => {
         <div className="grid gap-4 md:grid-cols-2">
           {batchStats && batchStats.length > 0 ? (
             batchStats.map((stats) => (
-              <Card key={stats.partition_key}>
+              <Card key={stats.actor_id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg font-medium">
-                    Partition {stats.partition_key}
+                    Actor: {stats.preferred_username}
                   </CardTitle>
                   <Button
                     size="sm"
-                    onClick={() => processPartitionMutation.mutate(stats.partition_key)}
+                    onClick={() => processPartitionMutation.mutate(0)}
                     disabled={processPartitionMutation.isPending}
                   >
                     Process
@@ -151,27 +150,23 @@ const BatchedFederationStats = () => {
                   <div className="space-y-3">
                     <div>
                       <div className="flex items-center justify-between text-sm">
-                        <span>Total: {stats.total_count}</span>
-                        <span className="text-muted-foreground">Pending: {stats.pending_count}</span>
+                        <span>Total Batches: {stats.total_batches}</span>
+                        <span className="text-muted-foreground">Pending: {stats.pending_batches}</span>
                       </div>
                       <Progress 
-                        value={stats.total_count > 0 ? (stats.processed_count / stats.total_count) * 100 : 0} 
+                        value={stats.total_batches > 0 ? (stats.processed_batches / stats.total_batches) * 100 : 0} 
                         className="h-2 mt-1" 
                       />
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="rounded-md bg-muted p-2">
-                        <div className="text-muted-foreground">Processing</div>
-                        <div className="text-xl font-bold">{stats.processing_count}</div>
-                      </div>
-                      <div className="rounded-md bg-muted p-2">
-                        <div className="text-muted-foreground">Failed</div>
-                        <div className="text-xl font-bold text-destructive">{stats.failed_count}</div>
+                        <div className="text-muted-foreground">Pending</div>
+                        <div className="text-xl font-bold">{stats.pending_batches}</div>
                       </div>
                       <div className="rounded-md bg-muted p-2">
                         <div className="text-muted-foreground">Processed</div>
-                        <div className="text-xl font-bold text-green-600 dark:text-green-400">{stats.processed_count}</div>
+                        <div className="text-xl font-bold text-green-600 dark:text-green-400">{stats.processed_batches}</div>
                       </div>
                     </div>
                   </div>

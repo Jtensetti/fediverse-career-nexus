@@ -2,6 +2,29 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Simple message interface matching our database schema
+export interface Message {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  content: string;
+  read_at: string | null;
+  created_at: string;
+  sender?: {
+    id: string;
+    username?: string;
+    fullname?: string;
+    avatar_url?: string;
+  };
+  recipient?: {
+    id: string;
+    username?: string;
+    fullname?: string;
+    avatar_url?: string;
+  };
+}
+
+// Legacy interfaces for backward compatibility with existing components
 export interface Conversation {
   id: string;
   created_at: string;
@@ -27,26 +50,6 @@ export interface ConversationParticipant {
   };
 }
 
-export interface Message {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  encrypted_content: string | null;
-  is_encrypted: boolean;
-  read_at: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-  sender?: {
-    id: string;
-    username?: string;
-    fullname?: string;
-    avatar_url?: string;
-  };
-}
-
-// Additional types needed for MessageConversation.tsx
 export type DirectMessage = Message;
 
 export interface MessageContent {
@@ -55,17 +58,17 @@ export interface MessageContent {
   encryptedContent?: string;
 }
 
-// Conversation with messages interface
 export interface ConversationWithMessages {
   conversation: Conversation;
   messages: Message[];
 }
 
 // Store active channel subscriptions
-const activeSubscriptions: Record<string, any> = {};
+const activeSubscriptions: Record<string, ReturnType<typeof supabase.channel>> = {};
 
 /**
  * Get all conversations for the current user
+ * This returns a list of unique users the current user has messaged with
  */
 export async function getConversations(): Promise<Conversation[]> {
   try {
@@ -77,300 +80,265 @@ export async function getConversations(): Promise<Conversation[]> {
 
     const userId = sessionData.session.user.id;
 
-    // Get all conversation IDs where the user is a participant
-    const { data: participantsData, error: participantsError } = await supabase
-      .from('conversation_participants')
-      .select('conversation_id')
-      .eq('user_id', userId)
-      .eq('is_active', true);
+    // Get all messages where user is sender or recipient
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select(`
+        id,
+        sender_id,
+        recipient_id,
+        content,
+        read_at,
+        created_at
+      `)
+      .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+      .order('created_at', { ascending: false });
 
-    if (participantsError) throw participantsError;
-    if (!participantsData || participantsData.length === 0) return [];
+    if (error) {
+      console.error('Error fetching messages:', error);
+      toast.error('Failed to load conversations');
+      return [];
+    }
 
-    const conversationIds = participantsData.map(p => p.conversation_id);
+    // Group messages by conversation partner
+    const conversationMap = new Map<string, Message>();
+    for (const msg of messages || []) {
+      const partnerId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
+      if (!conversationMap.has(partnerId)) {
+        conversationMap.set(partnerId, msg as Message);
+      }
+    }
 
-    // Get all conversations with these IDs
-    const { data: conversationsData, error: conversationsError } = await supabase
-      .from('conversations')
-      .select('*')
-      .in('id', conversationIds)
-      .order('last_message_at', { ascending: false });
+    // Convert to Conversation format
+    const conversations: Conversation[] = [];
+    for (const [partnerId, lastMessage] of conversationMap) {
+      conversations.push({
+        id: partnerId, // Use partner ID as conversation ID
+        created_at: lastMessage.created_at,
+        updated_at: lastMessage.created_at,
+        last_message_at: lastMessage.created_at,
+        lastMessage: lastMessage
+      });
+    }
 
-    if (conversationsError) throw conversationsError;
-    if (!conversationsData) return [];
-
-    // For each conversation, get the last message
-    const conversationsWithLastMessage = await Promise.all(
-      conversationsData.map(async (conversation) => {
-        const { data: messagesData } = await supabase
-          .from('direct_messages')
-          .select('*')
-          .eq('conversation_id', conversation.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        return {
-          ...conversation,
-          lastMessage: messagesData && messagesData.length > 0 ? messagesData[0] : undefined
-        };
-      })
-    );
-
-    return conversationsWithLastMessage;
+    return conversations;
   } catch (error) {
-    console.error('Error fetching conversations:', error);
+    console.error('Error in getConversations:', error);
     toast.error('Failed to load conversations');
     return [];
   }
 }
 
 /**
- * Get a specific conversation by ID
+ * Get a single conversation by ID (partner user ID)
  */
-export async function getConversation(id: string): Promise<Conversation | null> {
+export async function getConversation(partnerId: string): Promise<Conversation | null> {
   try {
-    const { data, error } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      return null;
+    }
 
-    if (error) throw error;
-    return data;
+    const userId = sessionData.session.user.id;
+
+    // Get the latest message with this partner
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(sender_id.eq.${userId},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${userId})`)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error || !messages || messages.length === 0) {
+      // Return a new empty conversation
+      return {
+        id: partnerId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_message_at: new Date().toISOString()
+      };
+    }
+
+    const lastMessage = messages[0];
+    return {
+      id: partnerId,
+      created_at: lastMessage.created_at,
+      updated_at: lastMessage.created_at,
+      last_message_at: lastMessage.created_at,
+      lastMessage: lastMessage as Message
+    };
   } catch (error) {
     console.error('Error fetching conversation:', error);
-    toast.error('Failed to load conversation');
     return null;
   }
 }
 
 /**
- * Get all messages for a conversation
+ * Get messages with a specific user
  */
-export async function getMessages(conversationId: string): Promise<Message[]> {
+export async function getMessages(partnerId: string): Promise<Message[]> {
   try {
-    const { data, error } = await supabase
-      .from('direct_messages')
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      toast.error('You must be logged in to view messages');
+      return [];
+    }
+
+    const userId = sessionData.session.user.id;
+
+    const { data: messages, error } = await supabase
+      .from('messages')
       .select('*')
-      .eq('conversation_id', conversationId)
+      .or(`and(sender_id.eq.${userId},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${userId})`)
       .order('created_at', { ascending: true });
 
-    if (error) throw error;
-    return data || [];
+    if (error) {
+      console.error('Error fetching messages:', error);
+      toast.error('Failed to load messages');
+      return [];
+    }
+
+    return (messages || []) as Message[];
   } catch (error) {
-    console.error('Error fetching messages:', error);
+    console.error('Error in getMessages:', error);
     toast.error('Failed to load messages');
     return [];
   }
 }
 
 /**
- * Get conversation with messages in a single call
+ * Send a message to a user
  */
-export async function getConversationWithMessages(conversationId: string): Promise<ConversationWithMessages | null> {
+export async function sendMessage(recipientId: string, content: string): Promise<Message | null> {
   try {
-    // Get conversation details
-    const conversation = await getConversation(conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found');
-    }
-
-    // Get messages for the conversation
-    const messages = await getMessages(conversationId);
-
-    // Mark messages as read
-    await markMessagesAsRead(conversationId);
-
-    return {
-      conversation,
-      messages
-    };
-  } catch (error) {
-    console.error('Error fetching conversation with messages:', error);
-    toast.error('Failed to load conversation');
-    return null;
-  }
-}
-
-/**
- * Subscribe to messages in a conversation
- */
-export function subscribeToMessages(
-  conversationId: string,
-  onNewMessage: (message: Message) => void,
-  onError: (error: any) => void
-): void {
-  // Check if already subscribed
-  if (activeSubscriptions[conversationId]) {
-    console.log('Already subscribed to this conversation');
-    return;
-  }
-
-  // Create a new subscription
-  const channel = supabase
-    .channel(`conversation-${conversationId}`)
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'direct_messages',
-      filter: `conversation_id=eq.${conversationId}`,
-    }, (payload) => {
-      const newMessage = payload.new as Message;
-      onNewMessage(newMessage);
-      // Mark message as read if not sent by current user
-      markMessagesAsRead(conversationId).catch(console.error);
-    })
-    .subscribe((status) => {
-      if (status !== 'SUBSCRIBED') {
-        onError(new Error(`Failed to subscribe: ${status}`));
-      }
-    });
-
-  // Store the subscription
-  activeSubscriptions[conversationId] = channel;
-}
-
-/**
- * Unsubscribe from messages
- */
-export function unsubscribeFromMessages(conversationId: string): void {
-  const channel = activeSubscriptions[conversationId];
-  if (channel) {
-    supabase.removeChannel(channel);
-    delete activeSubscriptions[conversationId];
-  }
-}
-
-/**
- * Send a message in a conversation
- */
-export async function sendMessage(conversationId: string, messageContent: MessageContent): Promise<Message | null> {
-  try {
-    const session = await supabase.auth.getSession();
-    const userId = session.data.session?.user.id;
-    
-    if (!userId) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
       toast.error('You must be logged in to send messages');
       return null;
     }
-    
+
+    const senderId = sessionData.session.user.id;
+
     const { data, error } = await supabase
-      .from('direct_messages')
+      .from('messages')
       .insert({
-        conversation_id: conversationId,
-        content: messageContent.content,
-        encrypted_content: messageContent.encryptedContent || null,
-        is_encrypted: messageContent.isEncrypted,
-        sender_id: userId
+        sender_id: senderId,
+        recipient_id: recipientId,
+        content
       })
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+      return null;
+    }
+
+    return data as Message;
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error('Error in sendMessage:', error);
     toast.error('Failed to send message');
     return null;
   }
 }
 
 /**
- * Create a new conversation with another user
+ * Mark messages as read
  */
-export async function createConversation(otherUserId: string): Promise<string | null> {
+export async function markMessagesAsRead(partnerId: string): Promise<void> {
   try {
-    const { data, error } = await supabase.rpc('create_conversation', {
-      other_user_id: otherUserId
-    });
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) return;
 
-    if (error) throw error;
-    return data;
-  } catch (error: any) {
-    console.error('Error creating conversation:', error);
-    toast.error(error.message || 'Failed to create conversation');
-    return null;
-  }
-}
+    const userId = sessionData.session.user.id;
 
-/**
- * Get conversation participants
- */
-export async function getConversationParticipants(conversationId: string): Promise<ConversationParticipant[]> {
-  try {
-    const { data, error } = await supabase
-      .from('conversation_participants')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .eq('is_active', true);
-
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching participants:', error);
-    toast.error('Failed to load participants');
-    return [];
-  }
-}
-
-/**
- * Get the other participant in a conversation (for direct messages)
- */
-export async function getOtherParticipant(conversation: Conversation, currentUserId: string): Promise<any> {
-  try {
-    // First get the participant record
-    const { data: participantData, error: participantError } = await supabase
-      .from('conversation_participants')
-      .select('user_id')
-      .eq('conversation_id', conversation.id)
-      .neq('user_id', currentUserId)
-      .eq('is_active', true)
-      .single();
-
-    if (participantError) throw participantError;
-    
-    if (!participantData) return null;
-    
-    // Then get the user profile information
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, username, fullname, avatar_url')
-      .eq('id', participantData.user_id)
-      .single();
-      
-    if (profileError) {
-      console.error('Error fetching user profile:', profileError);
-      return { id: participantData.user_id };
-    }
-    
-    return profileData;
-  } catch (error) {
-    console.error('Error fetching other participant:', error);
-    return null;
-  }
-}
-
-/**
- * Mark messages in a conversation as read
- */
-export async function markMessagesAsRead(conversationId: string): Promise<boolean> {
-  try {
-    const session = await supabase.auth.getSession();
-    const userId = session.data.session?.user.id;
-    
-    if (!userId) return false;
-    
-    const { error } = await supabase
-      .from('direct_messages')
+    await supabase
+      .from('messages')
       .update({ read_at: new Date().toISOString() })
-      .eq('conversation_id', conversationId)
-      .neq('sender_id', userId)
+      .eq('sender_id', partnerId)
+      .eq('recipient_id', userId)
       .is('read_at', null);
-
-    if (error) throw error;
-    return true;
   } catch (error) {
     console.error('Error marking messages as read:', error);
-    return false;
   }
 }
+
+/**
+ * Subscribe to new messages
+ */
+export function subscribeToMessages(
+  partnerId: string,
+  onMessage: (message: Message) => void
+): { unsubscribe: () => void } {
+  const channelId = `messages:${partnerId}`;
+  
+  // Unsubscribe from existing channel if any
+  if (activeSubscriptions[channelId]) {
+    supabase.removeChannel(activeSubscriptions[channelId]);
+  }
+
+  const channel = supabase
+    .channel(channelId)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages'
+      },
+      (payload) => {
+        const message = payload.new as Message;
+        onMessage(message);
+      }
+    )
+    .subscribe();
+
+  activeSubscriptions[channelId] = channel;
+
+  return {
+    unsubscribe: () => {
+      supabase.removeChannel(channel);
+      delete activeSubscriptions[channelId];
+    }
+  };
+}
+
+/**
+ * Get unread message count
+ */
+export async function getUnreadMessageCount(): Promise<number> {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) return 0;
+
+    const userId = sessionData.session.user.id;
+
+    const { count, error } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('recipient_id', userId)
+      .is('read_at', null);
+
+    if (error) {
+      console.error('Error getting unread count:', error);
+      return 0;
+    }
+
+    return count || 0;
+  } catch (error) {
+    console.error('Error in getUnreadMessageCount:', error);
+    return 0;
+  }
+}
+
+// Legacy function exports for backward compatibility
+export const createConversation = async (participantId: string): Promise<Conversation | null> => {
+  return getConversation(participantId);
+};
+
+export const getConversationMessages = getMessages;
+
+export const sendMessageToConversation = async (conversationId: string, content: string): Promise<Message | null> => {
+  return sendMessage(conversationId, content);
+};

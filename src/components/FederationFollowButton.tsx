@@ -75,8 +75,8 @@ export default function FederationFollowButton({
       }
       
       const { data, error } = await supabase.rpc('create_follow', {
-        local_actor_id: localActorId,
-        remote_actor_uri: remoteActorUri
+        p_local_actor_id: localActorId,
+        p_remote_actor_url: remoteActorUri
       });
       
       if (error) {
