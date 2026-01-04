@@ -509,6 +509,7 @@ export type Database = {
           updated_at: string
           user_id: string
           verification_status: string | null
+          verification_token: string | null
         }
         Insert: {
           created_at?: string
@@ -521,6 +522,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           verification_status?: string | null
+          verification_token?: string | null
         }
         Update: {
           created_at?: string
@@ -533,6 +535,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verification_status?: string | null
+          verification_token?: string | null
         }
         Relationships: []
       }
@@ -731,6 +734,7 @@ export type Database = {
           updated_at: string
           user_id: string
           verification_status: string | null
+          verification_token: string | null
         }
         Insert: {
           company: string
@@ -745,6 +749,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           verification_status?: string | null
+          verification_token?: string | null
         }
         Update: {
           company?: string
@@ -759,6 +764,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verification_status?: string | null
+          verification_token?: string | null
         }
         Relationships: []
       }
@@ -2018,6 +2024,10 @@ export type Database = {
         Returns: number
       }
       are_users_connected: {
+        Args: { user1: string; user2: string }
+        Returns: boolean
+      }
+      are_users_connected_secure: {
         Args: { user1: string; user2: string }
         Returns: boolean
       }

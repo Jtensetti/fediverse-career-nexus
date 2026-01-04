@@ -363,24 +363,34 @@ export const deleteSkill = async (id: string) => {
   }
 };
 
-// Verification Services - Update status directly without RPC
-export const requestExperienceVerification = async (experienceId: string) => {
+// Generate a unique verification token
+const generateVerificationToken = (): string => {
+  return crypto.randomUUID().replace(/-/g, '').substring(0, 24).toUpperCase();
+};
+
+// Verification Services - Generate and store verification tokens
+export const requestExperienceVerification = async (experienceId: string): Promise<string | null> => {
   try {
+    const token = generateVerificationToken();
+    
     const { data, error } = await supabase
       .from('experiences')
-      .update({ verification_status: 'pending' })
+      .update({ 
+        verification_status: 'pending',
+        verification_token: token
+      })
       .eq('id', experienceId)
-      .select()
+      .select('verification_token')
       .single();
     
     if (error) throw error;
     
     toast({
       title: "Verification requested",
-      description: "Your experience verification request has been submitted."
+      description: "Your experience verification token has been generated."
     });
     
-    return data;
+    return data?.verification_token || token;
   } catch (error) {
     console.error('Error requesting experience verification:', error);
     toast({
@@ -392,23 +402,28 @@ export const requestExperienceVerification = async (experienceId: string) => {
   }
 };
 
-export const requestEducationVerification = async (educationId: string) => {
+export const requestEducationVerification = async (educationId: string): Promise<string | null> => {
   try {
+    const token = generateVerificationToken();
+    
     const { data, error } = await supabase
       .from('education')
-      .update({ verification_status: 'pending' })
+      .update({ 
+        verification_status: 'pending',
+        verification_token: token
+      })
       .eq('id', educationId)
-      .select()
+      .select('verification_token')
       .single();
     
     if (error) throw error;
     
     toast({
       title: "Verification requested",
-      description: "Your education verification request has been submitted."
+      description: "Your education verification token has been generated."
     });
     
-    return data;
+    return data?.verification_token || token;
   } catch (error) {
     console.error('Error requesting education verification:', error);
     toast({

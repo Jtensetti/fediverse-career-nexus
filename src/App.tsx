@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary, SkipToContent } from "@/components/common";
@@ -56,10 +57,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <TooltipProvider>
-          <ErrorBoundary>
-            <BrowserRouter>
-              <AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <TooltipProvider>
+            <ErrorBoundary>
+              <BrowserRouter>
+                <AuthProvider>
                 <SkipToContent />
                 <Toaster {...toasterConfig} />
                 <SessionExpiryWarning />
@@ -192,10 +194,11 @@ function App() {
                   </Routes>
                 </main>
                 <MobileBottomNav />
-              </AuthProvider>
-            </BrowserRouter>
-          </ErrorBoundary>
-        </TooltipProvider>
+                </AuthProvider>
+              </BrowserRouter>
+            </ErrorBoundary>
+          </TooltipProvider>
+        </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>
   );

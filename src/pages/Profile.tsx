@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, FileText, MessageSquare, Share2, Edit } from "lucide-react";
+import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, MessageSquare, Share2, Edit } from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
 import ProfileBanner from "@/components/profile/ProfileBanner";
@@ -20,7 +20,6 @@ import { getUserProfileByUsername, getCurrentUserProfile, UserProfile } from "@/
 import { getUserConnections, NetworkConnection, sendConnectionRequest } from "@/services/connectionsService";
 import UserPostsList from "@/components/UserPostsList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
-import { RecommendationsSection } from "@/components/RecommendationsSection";
 import AchievementBadges from "@/components/AchievementBadges";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -370,10 +369,9 @@ const ProfilePage = () => {
           <Tabs defaultValue="experience" className="mb-6">
             <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
               <TabsList className="mb-4 flex w-max md:w-auto md:flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
-                <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Experience</TabsTrigger>
+              <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Experience</TabsTrigger>
                 <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Education</TabsTrigger>
                 <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Skills</TabsTrigger>
-                <TabsTrigger value="recommendations" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Recommendations</TabsTrigger>
                 <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Posts</TabsTrigger>
                 <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Connections</TabsTrigger>
               </TabsList>
@@ -480,10 +478,15 @@ const ProfilePage = () => {
             <TabsContent value="skills">
               <Card variant="elevated">
                 <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                     <Star size={20} className="text-primary" />
                     Skills & Endorsements
                   </h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    {viewingOwnProfile 
+                      ? "Add skills to showcase your expertise. Your connections can endorse your skills to validate your abilities."
+                      : "Endorse skills to validate this person's expertise and help others understand their strengths."}
+                  </p>
                   
                   <SkillEndorsements 
                     userId={profile.id} 
@@ -497,22 +500,6 @@ const ProfilePage = () => {
                       </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="recommendations">
-              <Card variant="elevated">
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FileText size={20} className="text-primary" />
-                    Recommendations
-                  </h3>
-                  
-                  <RecommendationsSection 
-                    userId={profile.id} 
-                    isOwnProfile={viewingOwnProfile} 
-                  />
                 </CardContent>
               </Card>
             </TabsContent>

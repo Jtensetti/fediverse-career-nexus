@@ -85,8 +85,14 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
 
   if (skills.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        {isOwnProfile ? "Add skills to your profile" : "No skills listed yet"}
+      <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+        <ThumbsUp className="h-10 w-10 mx-auto mb-3 opacity-30" />
+        <p className="font-medium">{isOwnProfile ? "No skills added yet" : "No skills listed yet"}</p>
+        <p className="text-sm mt-1">
+          {isOwnProfile 
+            ? "Add skills to let your connections endorse your expertise" 
+            : "Skills will appear here once they're added"}
+        </p>
       </div>
     );
   }
