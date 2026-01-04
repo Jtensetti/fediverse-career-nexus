@@ -98,18 +98,18 @@ function App() {
                       }
                     />
                     <Route
-                      path="/profile/:usernameOrId"
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
                       path="/profile/edit"
                       element={
                         <ProtectedRoute>
                           <ProfileEdit />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile/:usernameOrId"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
                         </ProtectedRoute>
                       }
                     />
