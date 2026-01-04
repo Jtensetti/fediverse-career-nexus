@@ -60,7 +60,7 @@ export const searchService = {
       title: p.fullname || p.username || 'Unknown User',
       subtitle: p.headline,
       imageUrl: p.avatar_url,
-      url: `/profile/${p.id}`,
+      url: `/profile/${p.username || p.id}`,
     }));
 
     const jobs: SearchResult[] = (jobsRes.data || []).map(j => ({

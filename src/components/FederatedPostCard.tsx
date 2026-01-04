@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -270,28 +271,40 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
       <Card className="mb-4 overflow-hidden group hover:shadow-md transition-all duration-200 hover:border-primary/20">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Avatar className="h-11 w-11 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
-                {getAvatarUrl() && !imageError ? (
-                  <AvatarImage 
-                    src={getAvatarUrl() as string} 
-                    onError={() => setImageError(true)} 
-                    className="object-cover"
-                  />
-                ) : null}
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                  {getActorName().charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {post.source === 'remote' && (
-                <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-purple-500 flex items-center justify-center ring-2 ring-background">
-                  <Globe className="h-2.5 w-2.5 text-white" />
-                </div>
-              )}
-            </div>
+            <Link 
+              to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
+              className={post.source === 'local' ? 'cursor-pointer' : 'cursor-default'}
+              onClick={(e) => post.source !== 'local' && e.preventDefault()}
+            >
+              <div className="relative">
+                <Avatar className="h-11 w-11 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
+                  {getAvatarUrl() && !imageError ? (
+                    <AvatarImage 
+                      src={getAvatarUrl() as string} 
+                      onError={() => setImageError(true)} 
+                      className="object-cover"
+                    />
+                  ) : null}
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                    {getActorName().charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {post.source === 'remote' && (
+                  <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-purple-500 flex items-center justify-center ring-2 ring-background">
+                    <Globe className="h-2.5 w-2.5 text-white" />
+                  </div>
+                )}
+              </div>
+            </Link>
             
             <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate">{getActorName()}</div>
+              <Link 
+                to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
+                className={post.source === 'local' ? 'hover:underline cursor-pointer' : 'cursor-default'}
+                onClick={(e) => post.source !== 'local' && e.preventDefault()}
+              >
+                <div className="font-semibold truncate">{getActorName()}</div>
+              </Link>
               {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">@{getActorUsername()}</div>
               )}

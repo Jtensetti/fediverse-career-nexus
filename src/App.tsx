@@ -96,7 +96,7 @@ function App() {
                       }
                     />
                     <Route
-                      path="/profile/:actorId"
+                      path="/profile/:usernameOrId"
                       element={
                         <ProtectedRoute>
                           <Profile />
