@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { getArticleReactions, toggleReaction, ReactionCount } from "@/services/articleReactionsService";
 import { Button } from "@/components/ui/button";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -13,8 +12,7 @@ interface ArticleReactionsProps {
 const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
   const [reactions, setReactions] = useState<ReactionCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const session = useSession();
-  
+  const { user } = useAuth();
   useEffect(() => {
     const fetchReactions = async () => {
       setIsLoading(true);
@@ -27,7 +25,7 @@ const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
   }, [articleId]);
   
   const handleReaction = async (emoji: string) => {
-    if (!session) {
+    if (!user) {
       toast.error('Please sign in to react to articles');
       return;
     }

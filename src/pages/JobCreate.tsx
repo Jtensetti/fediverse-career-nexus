@@ -1,7 +1,6 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { createJobPost } from "@/services/jobPostsService";
 import JobForm from "@/components/JobForm";
 import Navbar from "@/components/Navbar";
@@ -10,13 +9,18 @@ import { toast } from "sonner";
 
 const JobCreate = () => {
   const navigate = useNavigate();
-  const session = useSession();
+  const { user, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Redirect if not authenticated
-  if (session === null) {
-    toast.error("Please sign in to create job posts");
-    navigate("/");
+  useEffect(() => {
+    if (!loading && !user) {
+      toast.error("Please sign in to create job posts");
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+  
+  if (loading || !user) {
     return null;
   }
   
