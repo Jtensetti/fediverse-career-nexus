@@ -9,3 +9,4 @@ export { default as ErrorBoundary } from "./ErrorBoundary";
 export { default as EnhancedReactions } from "./EnhancedReactions";
 export { default as SkipToContent } from "./SkipToContent";
 export { default as FocusRing } from "./FocusRing";
+export { ProfileHoverCard } from "./ProfileHoverCard";

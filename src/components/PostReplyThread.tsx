@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, Heart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import InlineReplyComposer from "./InlineReplyComposer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -69,20 +71,29 @@ export default function PostReplyThread({
         <CardContent className="p-4">
           {/* Author Info */}
           <div className="flex items-start gap-3">
-            <Avatar className="h-8 w-8">
-              {reply.author.avatar_url ? (
-                <AvatarImage src={reply.author.avatar_url} />
-              ) : null}
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                {(reply.author.fullname || reply.author.username || 'U').charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <ProfileHoverCard username={reply.author.username} userId={reply.user_id}>
+              <Link to={`/profile/${reply.author.username || reply.user_id}`}>
+                <Avatar className="h-8 w-8">
+                  {reply.author.avatar_url ? (
+                    <AvatarImage src={reply.author.avatar_url} />
+                  ) : null}
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                    {(reply.author.fullname || reply.author.username || 'U').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            </ProfileHoverCard>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium text-sm">
-                  {reply.author.fullname || reply.author.username || 'Unknown'}
-                </span>
+                <ProfileHoverCard username={reply.author.username} userId={reply.user_id}>
+                  <Link 
+                    to={`/profile/${reply.author.username || reply.user_id}`}
+                    className="font-medium text-sm hover:underline"
+                  >
+                    {reply.author.fullname || reply.author.username || 'Unknown'}
+                  </Link>
+                </ProfileHoverCard>
                 {reply.author.username && (
                   <span className="text-xs text-muted-foreground">
                     @{reply.author.username}

@@ -4,6 +4,7 @@ import { Search, User, Briefcase, FileText, Calendar, X, Loader2 } from "lucide-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import { searchService, SearchResult, SearchResults } from "@/services/searchService";
 import { cn } from "@/lib/utils";
 
@@ -111,31 +112,36 @@ export function GlobalSearch() {
         {items.map((result, index) => {
           const globalIndex = startIndex + index;
           return (
-            <button
-              key={result.id}
-              onClick={() => handleResultClick(result)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 hover:bg-accent transition-colors text-left",
-                selectedIndex === globalIndex && "bg-accent"
-              )}
+            <ProfileHoverCard 
+              username={type === 'profile' ? result.id : undefined}
+              disabled={type !== 'profile'}
             >
-              {type === 'profile' && result.imageUrl ? (
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={result.imageUrl} />
-                  <AvatarFallback>{result.title[0]}</AvatarFallback>
-                </Avatar>
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                  {getIcon(type)}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{result.title}</div>
-                {result.subtitle && (
-                  <div className="text-sm text-muted-foreground truncate">{result.subtitle}</div>
+              <button
+                key={result.id}
+                onClick={() => handleResultClick(result)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2 hover:bg-accent transition-colors text-left",
+                  selectedIndex === globalIndex && "bg-accent"
                 )}
-              </div>
-            </button>
+              >
+                {type === 'profile' && result.imageUrl ? (
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={result.imageUrl} />
+                    <AvatarFallback>{result.title[0]}</AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                    {getIcon(type)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{result.title}</div>
+                  {result.subtitle && (
+                    <div className="text-sm text-muted-foreground truncate">{result.subtitle}</div>
+                  )}
+                </div>
+              </button>
+            </ProfileHoverCard>
           );
         })}
       </div>
