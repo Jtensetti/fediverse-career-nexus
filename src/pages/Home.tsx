@@ -1,75 +1,37 @@
-
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import Index from "./Index";
+import { Loader2 } from "lucide-react";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    // Initialize auth state management
-    
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        const authenticated = !!session;
-        setIsAuthenticated(authenticated);
-        setIsLoading(false);
-        
-        // Redirect authenticated users to feed
-        if (authenticated) {
-          navigate("/feed");
-        }
-      }
-    );
+    // Redirect authenticated users to feed
+    if (!loading && user) {
+      navigate("/feed");
+    }
+  }, [loading, user, navigate]);
 
-    // Check current session
-    const checkInitialAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        const authenticated = !!session;
-        setIsAuthenticated(authenticated);
-        
-        // Redirect authenticated users to feed
-        if (authenticated) {
-          navigate("/feed");
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkInitialAuth();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
-
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Only show the index page if not authenticated
-  if (!isAuthenticated) {
+  // Show the index page for unauthenticated users
+  if (!user) {
     return <Index />;
   }
 
-  // This should not be reached due to the redirect, but just in case
+  // This should not be reached due to the redirect
   return null;
 };
 

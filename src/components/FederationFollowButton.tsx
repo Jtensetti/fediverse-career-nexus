@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { UserPlus, UserCheck, UserX, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,7 @@ export default function FederationFollowButton({
         const status = await getOutgoingFollowStatus(localActorId, remoteActorUri);
         setFollowStatus(status);
       } catch (error) {
-        console.error("Error fetching follow status:", error);
+        // Silently handle error - status will remain null
       }
     };
     
@@ -65,7 +64,6 @@ export default function FederationFollowButton({
       const hasKeys = await ensureActorKeys(localActorId);
       
       if (!hasKeys) {
-        console.error("Error ensuring actor keys");
         toast({
           title: "Key generation failed",
           description: "Could not generate signing keys for your actor.",
@@ -80,7 +78,6 @@ export default function FederationFollowButton({
       });
       
       if (error) {
-        console.error("Error following actor:", error);
         toast({
           title: "Follow failed",
           description: error.message,
@@ -97,10 +94,7 @@ export default function FederationFollowButton({
       
       // Update local status to pending
       setFollowStatus('pending');
-      
-      console.log("Follow activity created with ID:", data);
     } catch (error) {
-      console.error("Error following actor:", error);
       toast({
         title: "An error occurred",
         description: "Could not send follow request.",

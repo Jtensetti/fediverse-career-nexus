@@ -21,45 +21,17 @@ import { SkillEndorsements } from "@/components/SkillEndorsements";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ProfilePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   
-  // Check authentication status
-  useEffect(() => {
-    
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setIsAuthenticated(!!session);
-        setCurrentUserId(session?.user?.id || null);
-      } catch (error) {
-        console.error('Profile: Error checking auth:', error);
-        setIsAuthenticated(false);
-        setCurrentUserId(null);
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-    
-    checkAuth();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-      setCurrentUserId(session?.user?.id || null);
-      setAuthLoading(false);
-    });
-    
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  const isAuthenticated = !!user;
+  const currentUserId = user?.id || null;
   
   // Determine if we should redirect to login
   useEffect(() => {

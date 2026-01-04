@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
 
 import { Conversation, getConversations, getOtherParticipant } from '@/services/messageService';
 import Navbar from '@/components/Navbar';
@@ -13,30 +11,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 export default function Messages() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const currentUserId = user?.id || null;
 
-  // Get current user
+  // Redirect if not authenticated
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to view your messages",
-          variant: "destructive"
-        });
-        navigate('/');
-        return;
-      }
-      setCurrentUserId(data.session.user.id);
-    };
-
-    checkAuth();
-  }, [navigate, toast]);
+    if (!authLoading && !user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to view your messages",
+        variant: "destructive"
+      });
+      navigate('/auth/login');
+    }
+  }, [authLoading, user, navigate, toast]);
 
   // Fetch conversations
   const { data: conversations, isLoading, error } = useQuery({
@@ -44,6 +38,18 @@ export default function Messages() {
     queryFn: getConversations,
     enabled: !!currentUserId
   });
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow container max-w-4xl mx-auto px-4 py-10 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!currentUserId) {
     return (
