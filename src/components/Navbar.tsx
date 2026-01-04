@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
@@ -38,7 +37,6 @@ const Navbar = () => {
   
   const isHomePage = location.pathname === "/";
 
-  // Check authentication status
   useEffect(() => {
     console.log('Navbar: Setting up auth check');
     
@@ -97,43 +95,21 @@ const Navbar = () => {
   }, [scrolled]);
 
   const authenticatedNavigationItems = [
-    {
-      name: t("nav.profile", "Profile"),
-      href: "/profile",
-    },
-    {
-      name: t("nav.connections", "Connections"),
-      href: "/connections",
-    },
-    {
-      name: t("nav.articles", "Articles"),
-      href: "/articles",
-    },
-    {
-      name: t("nav.jobs", "Jobs"),
-      href: "/jobs",
-    },
-    {
-      name: t("nav.events", "Events"),
-      href: "/events",
-    },
-    {
-      name: t("nav.messages", "Messages"),
-      href: "/messages",
-    },
-    {
-      name: t("nav.feed", "Feed"),
-      href: "/feed",
-    },
+    { name: t("nav.profile", "Profile"), href: "/profile" },
+    { name: t("nav.connections", "Connections"), href: "/connections" },
+    { name: t("nav.articles", "Articles"), href: "/articles" },
+    { name: t("nav.jobs", "Jobs"), href: "/jobs" },
+    { name: t("nav.events", "Events"), href: "/events" },
+    { name: t("nav.messages", "Messages"), href: "/messages" },
+    { name: t("nav.feed", "Feed"), href: "/feed" },
   ];
 
-  // Show loading state while checking auth
   if (authLoading) {
     return (
-      <div className={`${isHomePage ? 'absolute top-0 left-0 right-0 z-50' : 'border-b'} transition-colors duration-300 ${scrolled && isHomePage ? 'bg-white/90 backdrop-blur-md shadow-sm' : isHomePage ? 'bg-transparent' : 'bg-white'}`}>
+      <div className={`${isHomePage ? 'absolute top-0 left-0 right-0 z-50' : 'border-b'} transition-colors duration-300 ${scrolled && isHomePage ? 'bg-background/90 backdrop-blur-md shadow-sm' : isHomePage ? 'bg-transparent' : 'bg-background'}`}>
         <div className="flex h-16 items-center px-4">
           <div className="container mx-auto flex w-full items-center justify-between">
-            <RouterLink to="/" className={`font-bold text-xl flex items-center gap-2 ${isHomePage && !scrolled ? 'text-white' : 'text-bondy-primary'}`}>
+            <RouterLink to="/" className={`font-bold text-xl flex items-center gap-2 ${isHomePage && !scrolled ? 'text-primary-foreground' : 'text-primary'}`}>
               <img 
                 src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
                 alt="Nolto" 
@@ -152,11 +128,11 @@ const Navbar = () => {
   }
 
   return (
-    <div className={`${isHomePage ? 'absolute top-0 left-0 right-0 z-50' : 'border-b'} transition-colors duration-300 ${scrolled && isHomePage ? 'bg-white/90 backdrop-blur-md shadow-sm' : isHomePage ? 'bg-transparent' : 'bg-white'}`}>
+    <div className={`${isHomePage ? 'absolute top-0 left-0 right-0 z-50' : 'border-b'} transition-colors duration-300 ${scrolled && isHomePage ? 'bg-background/90 backdrop-blur-md shadow-sm' : isHomePage ? 'bg-transparent' : 'bg-background'}`}>
       <div className="flex h-16 items-center px-4">
         <div className="container mx-auto flex w-full items-center justify-between">
           <div className="flex items-center gap-4">
-            <RouterLink to="/" className={`font-bold text-xl flex items-center gap-2 ${isHomePage && !scrolled ? 'text-white' : 'text-bondy-primary'}`}>
+            <RouterLink to="/" className={`font-bold text-xl flex items-center gap-2 ${isHomePage && !scrolled ? 'text-primary-foreground' : 'text-primary'}`}>
               <img 
                 src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
                 alt="Nolto" 
@@ -165,14 +141,13 @@ const Navbar = () => {
               <span className="font-display">Nolto</span>
             </RouterLink>
             
-            {/* Show full navigation when authenticated */}
             {isAuthenticated && (
-              <nav className={`mx-6 hidden md:flex space-x-6 ${isHomePage && !scrolled ? 'text-white' : 'text-foreground'}`}>
+              <nav className={`mx-6 hidden md:flex space-x-6 ${isHomePage && !scrolled ? 'text-primary-foreground' : 'text-foreground'}`}>
                 {authenticatedNavigationItems.map((item) => (
                   <RouterLink 
                     key={item.href} 
                     to={item.href}
-                    className="font-medium hover:text-bondy-accent transition-colors"
+                    className="font-medium hover:text-secondary transition-colors"
                   >
                     {item.name}
                   </RouterLink>
@@ -182,14 +157,12 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Global Search - only show when authenticated */}
             {isAuthenticated && (
               <div className="hidden md:block">
                 <GlobalSearch />
               </div>
             )}
             
-            {/* Notification Bell - only show when authenticated */}
             {isAuthenticated && <NotificationBell />}
             
             <LanguageSwitcher />
@@ -201,7 +174,7 @@ const Navbar = () => {
                   <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
-                      <AvatarFallback className="bg-bondy-primary text-white">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
                         {user?.email?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
@@ -234,7 +207,7 @@ const Navbar = () => {
                       Instance Management
                     </RouterLink>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-500 hover:text-red-600 focus:bg-red-50">
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive hover:text-destructive focus:bg-destructive/10">
                     {t("auth.logout", "Log out")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -245,7 +218,7 @@ const Navbar = () => {
                   asChild 
                   variant="ghost" 
                   size="sm"
-                  className={`${isHomePage && !scrolled ? 'text-white hover:bg-white/10' : 'hover:bg-gray-100'}`}
+                  className={`${isHomePage && !scrolled ? 'text-primary-foreground hover:bg-primary-foreground/10' : 'hover:bg-muted'}`}
                 >
                   <RouterLink to="/auth/login">
                     <LogIn className="h-4 w-4 mr-2" />
@@ -256,8 +229,8 @@ const Navbar = () => {
                   asChild 
                   size="sm" 
                   className={isHomePage && !scrolled ? 
-                    "bg-white text-bondy-primary hover:bg-white/90" : 
-                    "bg-bondy-primary text-white hover:bg-bondy-primary/90"
+                    "bg-primary-foreground text-primary hover:bg-primary-foreground/90" : 
+                    "bg-primary text-primary-foreground hover:bg-primary/90"
                   }
                 >
                   <RouterLink to="/auth/signup">
@@ -268,11 +241,10 @@ const Navbar = () => {
               </div>
             )}
             
-            {/* Mobile menu - only show when authenticated */}
             {isAuthenticated && (
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className={`md:hidden ${isHomePage && !scrolled ? 'text-white' : ''}`}>
+                  <Button variant="ghost" size="sm" className={`md:hidden ${isHomePage && !scrolled ? 'text-primary-foreground' : ''}`}>
                     <AlignJustify className="h-4 w-4" />
                   </Button>
                 </SheetTrigger>
@@ -317,7 +289,7 @@ const Navbar = () => {
                           handleLogout();
                           setIsOpen(false);
                         }}
-                        className="flex items-center px-2 py-1 text-red-500 w-full text-left hover:bg-red-50 rounded-md transition-colors mt-2"
+                        className="flex items-center px-2 py-1 text-destructive w-full text-left hover:bg-destructive/10 rounded-md transition-colors mt-2"
                       >
                         Log out
                       </button>
