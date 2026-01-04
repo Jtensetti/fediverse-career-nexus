@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { decryptToken } from "../_shared/token-encryption.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,19 +22,6 @@ interface MastodonAccount {
   url: string;
   avatar: string;
   header: string;
-}
-
-// Simple decryption for tokens
-function decryptToken(encrypted: string): string {
-  try {
-    const decoded = atob(encrypted);
-    if (decoded.startsWith('federated:')) {
-      return decoded.slice('federated:'.length);
-    }
-    return decoded;
-  } catch {
-    return encrypted;
-  }
 }
 
 // Strip HTML tags from bio
@@ -134,8 +122,8 @@ serve(async (req) => {
       });
     }
 
-    // Decrypt the access token
-    const accessToken = decryptToken(session.access_token_encrypted);
+    // Decrypt the access token using AES-GCM (with legacy fallback)
+    const accessToken = await decryptToken(session.access_token_encrypted);
 
     // Fetch the latest account data from the remote instance
     const remoteAccount = await fetchRemoteAccount(session.remote_instance, accessToken);
