@@ -63,6 +63,12 @@ const timeOptions = () => {
   return times;
 };
 
+const visibilityOptions = [
+  { value: 'public', label: 'Public', description: 'Anyone can see and RSVP to this event' },
+  { value: 'connections', label: 'Connections Only', description: 'Only your connections can see this event' },
+  { value: 'private', label: 'Private', description: 'Only invited people can see this event' },
+];
+
 const eventFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -76,6 +82,7 @@ const eventFormSchema = z.object({
   meeting_url: z.string().url("Invalid URL format").optional().nullable(),
   max_attendees: z.coerce.number().int().positive().optional().nullable(),
   cover_image_url: z.string().url("Invalid URL format").optional().nullable(),
+  visibility: z.enum(['public', 'connections', 'private']).default('public'),
 }).refine(data => {
   // Combine date and time for validation
   const startDateTime = new Date(
@@ -138,6 +145,7 @@ const EventForm = ({
     meeting_url: defaultValues.meeting_url || null,
     max_attendees: defaultValues.max_attendees || null,
     cover_image_url: defaultValues.cover_image_url || null,
+    visibility: (defaultValues as any).visibility || 'public',
   };
 
   const [isOnline, setIsOnline] = useState(defaultValues.is_online || false);
@@ -157,6 +165,7 @@ const EventForm = ({
       meeting_url: null,
       max_attendees: null,
       cover_image_url: null,
+      visibility: 'public' as const,
       ...formattedDefaultValues
     },
   });
@@ -188,7 +197,8 @@ const EventForm = ({
       meeting_url: values.is_online ? values.meeting_url : null,
       max_attendees: values.max_attendees,
       cover_image_url: values.cover_image_url,
-    };
+      visibility: values.visibility,
+    } as any;
 
     onSubmit(eventData);
   };
@@ -473,6 +483,42 @@ const EventForm = ({
                 </FormControl>
                 <FormDescription>
                   Set a maximum number of attendees (optional)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Visibility */}
+        <div className="space-y-6">
+          <h3 className="text-lg font-medium">Privacy & Visibility</h3>
+          
+          <FormField
+            control={form.control}
+            name="visibility"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Who can see this event?</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select visibility" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {visibilityOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-xs text-muted-foreground">{option.description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Control who can discover and attend your event
                 </FormDescription>
                 <FormMessage />
               </FormItem>

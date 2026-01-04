@@ -302,3 +302,131 @@ export const removeConnection = async (connectionId: string): Promise<boolean> =
     return false;
   }
 };
+
+export interface PendingConnectionRequest {
+  id: string;
+  username: string;
+  displayName: string;
+  headline: string;
+  avatarUrl: string;
+  createdAt: string;
+}
+
+export const getPendingConnectionRequests = async (): Promise<PendingConnectionRequest[]> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    // Get pending requests where the current user is the recipient
+    const { data: requests, error } = await supabase
+      .from("user_connections")
+      .select(`
+        id,
+        created_at,
+        user_id,
+        requester_profile:profiles!user_id(id, username, fullname, headline, avatar_url)
+      `)
+      .eq("connected_user_id", user.id)
+      .eq("status", "pending");
+
+    if (error) {
+      console.error("Error fetching pending requests:", error);
+      return [];
+    }
+
+    return (requests || []).map(request => {
+      let profile;
+      if (request.requester_profile !== null) {
+        if (Array.isArray(request.requester_profile)) {
+          profile = request.requester_profile.length > 0 ? request.requester_profile[0] : null;
+        } else {
+          profile = request.requester_profile;
+        }
+      }
+      
+      if (!profile) return null;
+      
+      return {
+        id: request.id,
+        username: profile.username || "",
+        displayName: profile.fullname || profile.username || "",
+        headline: profile.headline || "",
+        avatarUrl: profile.avatar_url || "",
+        createdAt: request.created_at,
+      };
+    }).filter(Boolean) as PendingConnectionRequest[];
+  } catch (error) {
+    console.error("Error fetching pending requests:", error);
+    toast.error("Failed to load connection requests");
+    return [];
+  }
+};
+
+// Get connection degree between current user and another user
+export const getConnectionDegree = async (targetUserId: string): Promise<ConnectionDegree> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    if (user.id === targetUserId) return 0 as ConnectionDegree;
+    
+    const { data, error } = await supabase
+      .rpc('get_connection_degree', { 
+        source_user_id: user.id, 
+        target_user_id: targetUserId 
+      });
+    
+    if (error) throw error;
+    
+    return (data <= 3 ? data as ConnectionDegree : null);
+  } catch (error) {
+    console.error('Error getting connection degree:', error);
+    return null;
+  }
+};
+
+// Get visibility settings for network connections
+export const getProfileVisibilitySettings = async (): Promise<boolean> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+    
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('show_network_connections')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (error) throw error;
+    
+    return data?.show_network_connections ?? true;
+  } catch (error) {
+    console.error('Error fetching network visibility settings:', error);
+    return true;
+  }
+};
+
+// Update visibility settings for network connections
+export const updateProfileVisibilitySettings = async (showNetworkConnections: boolean): Promise<boolean> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+    
+    const { error } = await supabase
+      .from('user_settings')
+      .update({ 
+        show_network_connections: showNetworkConnections,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id);
+    
+    if (error) throw error;
+    
+    toast.success(`Your network connections are now ${showNetworkConnections ? 'visible' : 'hidden'} to others.`);
+    
+    return true;
+  } catch (error) {
+    console.error('Error updating network visibility settings:', error);
+    toast.error("Failed to update network visibility settings");
+    return false;
+  }
+};

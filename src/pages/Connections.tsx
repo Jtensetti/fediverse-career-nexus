@@ -7,14 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserRoundPlus, Search, Filter, UsersRound, Loader2 } from "lucide-react";
+import { UserRoundPlus, Search, Filter, UsersRound, Loader2, UserCheck, Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import { 
   getUserConnections, 
   getConnectionSuggestions, 
   sendConnectionRequest,
+  acceptConnectionRequest,
+  rejectConnectionRequest,
+  getPendingConnectionRequests,
   NetworkConnection,
-  NetworkSuggestion
+  NetworkSuggestion,
+  PendingConnectionRequest
 } from "@/services/connectionsService";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -23,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 const ConnectionsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isConnecting, setIsConnecting] = useState<{ [key: string]: boolean }>({});
+  const [isResponding, setIsResponding] = useState<{ [key: string]: boolean }>({});
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   // Check authentication status
@@ -66,6 +72,18 @@ const ConnectionsPage = () => {
     queryFn: getConnectionSuggestions,
     enabled: isAuthenticated
   });
+
+  // Fetch pending connection requests
+  const { 
+    data: pendingRequests = [],
+    isLoading: pendingLoading, 
+    error: pendingError,
+    refetch: refetchPending
+  } = useQuery({
+    queryKey: ["pendingConnectionRequests"],
+    queryFn: getPendingConnectionRequests,
+    enabled: isAuthenticated
+  });
   
   // Filter connections based on search query
   const filteredConnections = connections.filter(connection => 
@@ -89,14 +107,47 @@ const ConnectionsPage = () => {
     try {
       const success = await sendConnectionRequest(userId);
       if (success) {
-        // Refresh the suggestions list
         refetchSuggestions();
         refetchConnections();
+        refetchPending();
       }
     } catch (error) {
       console.error("Error connecting:", error);
     } finally {
       setIsConnecting(prev => ({ ...prev, [userId]: false }));
+    }
+  };
+
+  const handleAcceptRequest = async (connectionId: string) => {
+    if (!isAuthenticated) return;
+    
+    setIsResponding(prev => ({ ...prev, [connectionId]: true }));
+    try {
+      const success = await acceptConnectionRequest(connectionId);
+      if (success) {
+        refetchPending();
+        refetchConnections();
+      }
+    } catch (error) {
+      console.error("Error accepting request:", error);
+    } finally {
+      setIsResponding(prev => ({ ...prev, [connectionId]: false }));
+    }
+  };
+
+  const handleRejectRequest = async (connectionId: string) => {
+    if (!isAuthenticated) return;
+    
+    setIsResponding(prev => ({ ...prev, [connectionId]: true }));
+    try {
+      const success = await rejectConnectionRequest(connectionId);
+      if (success) {
+        refetchPending();
+      }
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+    } finally {
+      setIsResponding(prev => ({ ...prev, [connectionId]: false }));
     }
   };
   
@@ -138,6 +189,15 @@ const ConnectionsPage = () => {
           <TabsTrigger value="connections" className="flex items-center gap-2">
             <UsersRound size={16} />
             <span>My Connections</span>
+          </TabsTrigger>
+          <TabsTrigger value="invitations" className="flex items-center gap-2">
+            <Bell size={16} />
+            <span>Invitations</span>
+            {pendingRequests.length > 0 && (
+              <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                {pendingRequests.length}
+              </Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="suggestions" className="flex items-center gap-2">
             <UserRoundPlus size={16} />
@@ -200,6 +260,70 @@ const ConnectionsPage = () => {
               ) : (
                 <p className="text-gray-600">You haven't connected with anyone yet. Check out our suggestions.</p>
               )}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="invitations">
+          {pendingLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+            </div>
+          ) : pendingError ? (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+              <h3 className="text-lg font-medium mb-2 text-red-600">Error Loading Invitations</h3>
+              <p className="text-gray-600">There was an error loading your invitations. Please try again later.</p>
+              <Button variant="outline" onClick={() => refetchPending()} className="mt-4">Retry</Button>
+            </div>
+          ) : pendingRequests.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pendingRequests.map((request: PendingConnectionRequest) => (
+                <div key={request.id} className="bg-white rounded-lg shadow-sm p-4">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-14 w-14 border-2 border-white">
+                      <AvatarImage src={request.avatarUrl} alt={request.displayName} />
+                      <AvatarFallback>{request.displayName.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1">
+                      <Link to={`/profile/${request.username}`} className="font-semibold hover:underline">
+                        {request.displayName}
+                      </Link>
+                      <p className="text-sm text-gray-600 line-clamp-2">{request.headline}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Sent {new Date(request.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      className="flex-1"
+                      size="sm"
+                      onClick={() => handleAcceptRequest(request.id)}
+                      disabled={isResponding[request.id]}
+                    >
+                      <UserCheck size={16} className="mr-1" />
+                      {isResponding[request.id] ? 'Accepting...' : 'Accept'}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleRejectRequest(request.id)}
+                      disabled={isResponding[request.id]}
+                    >
+                      {isResponding[request.id] ? 'Declining...' : 'Decline'}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+              <Bell size={48} className="mx-auto text-gray-400 mb-3" />
+              <h3 className="text-lg font-medium mb-1">No pending invitations</h3>
+              <p className="text-gray-600">You don't have any pending connection requests at this time.</p>
             </div>
           )}
         </TabsContent>
