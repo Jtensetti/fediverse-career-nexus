@@ -14,8 +14,11 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-// Maximum number of concurrent requests to send
-const MAX_CONCURRENT_REQUESTS = 5;
+// Maximum number of concurrent requests to send (increased from 5 to 25 for better throughput)
+const MAX_CONCURRENT_REQUESTS = 25;
+
+// Per-host connection limit to prevent overwhelming single instances
+const MAX_CONCURRENT_PER_HOST = 5;
 
 // Log federation request metrics
 async function logRequestMetrics(
@@ -337,20 +340,72 @@ async function processBatch(batch: any) {
     
     console.log(`Batch ${batch.id} processing ${filteredInboxUrls.length} targets after filtering`);
     
-    // Limit concurrent requests
+    // Group inbox URLs by host for per-host rate limiting
+    const inboxesByHost = new Map<string, string[]>();
+    for (const inboxUrl of filteredInboxUrls) {
+      try {
+        const host = new URL(inboxUrl).hostname;
+        if (!inboxesByHost.has(host)) {
+          inboxesByHost.set(host, []);
+        }
+        inboxesByHost.get(host)!.push(inboxUrl);
+      } catch {
+        // Invalid URL, skip
+      }
+    }
+    
+    // Process with adaptive batching - respect per-host limits
     const results = [];
-    for (let i = 0; i < filteredInboxUrls.length; i += MAX_CONCURRENT_REQUESTS) {
-      const chunk = filteredInboxUrls.slice(i, i + MAX_CONCURRENT_REQUESTS);
-      const promises = chunk.map(inboxUrl => 
-        deliverActivity(inboxUrl, batch.activity, actor)
-      );
+    const pendingUrls = [...filteredInboxUrls];
+    const activeByHost = new Map<string, number>();
+    
+    while (pendingUrls.length > 0 || results.length < filteredInboxUrls.length) {
+      // Select next batch respecting per-host limits
+      const batch = [];
+      const toRemove = [];
+      
+      for (let i = 0; i < pendingUrls.length && batch.length < MAX_CONCURRENT_REQUESTS; i++) {
+        const url = pendingUrls[i];
+        try {
+          const host = new URL(url).hostname;
+          const activeCount = activeByHost.get(host) || 0;
+          
+          if (activeCount < MAX_CONCURRENT_PER_HOST) {
+            batch.push(url);
+            toRemove.push(i);
+            activeByHost.set(host, activeCount + 1);
+          }
+        } catch {
+          toRemove.push(i);
+        }
+      }
+      
+      // Remove selected URLs from pending (in reverse order to preserve indices)
+      for (let i = toRemove.length - 1; i >= 0; i--) {
+        pendingUrls.splice(toRemove[i], 1);
+      }
+      
+      if (batch.length === 0) {
+        // All remaining URLs are rate-limited, wait a bit
+        await new Promise(resolve => setTimeout(resolve, 100));
+        continue;
+      }
+      
+      // Execute batch
+      const promises = batch.map(async (inboxUrl) => {
+        const result = await deliverActivity(inboxUrl, batch.activity, actor);
+        // Decrement active count for host
+        const host = new URL(inboxUrl).hostname;
+        activeByHost.set(host, (activeByHost.get(host) || 1) - 1);
+        return result;
+      });
       
       const chunkResults = await Promise.all(promises);
       results.push(...chunkResults);
       
-      // Small delay between chunks to avoid overwhelming the network
-      if (i + MAX_CONCURRENT_REQUESTS < filteredInboxUrls.length) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+      // Small delay between chunks for network breathing room
+      if (pendingUrls.length > 0) {
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
     
