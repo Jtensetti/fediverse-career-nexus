@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, Copy } from "lucide-react";
+import { ShieldCheck, Copy, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { requestExperienceVerification, requestEducationVerification } from "@/services/profileCVService";
 
@@ -30,7 +30,7 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
     setLoading(true);
     
     try {
-      let verificationToken;
+      let verificationToken: string | null = null;
       
       if (type === "experience") {
         verificationToken = await requestExperienceVerification(itemId);
@@ -66,7 +66,7 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
           Add the following TXT record to your domain's DNS settings:
         </p>
         <div className="bg-muted p-2 rounded mt-2 flex justify-between items-center">
-          <code className="text-xs">{`nolto-verify=${token}`}</code>
+          <code className="text-xs break-all">{`nolto-verify=${token}`}</code>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -110,7 +110,14 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
               disabled={loading}
               className="w-full"
             >
-              {loading ? "Generating..." : "Generate Verification Token"}
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Verification Token"
+              )}
             </Button>
           </div>
         ) : (
@@ -122,7 +129,7 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
                   id="token" 
                   value={token} 
                   readOnly 
-                  className="flex-1"
+                  className="flex-1 font-mono text-sm"
                 />
                 <Button 
                   variant="ghost" 

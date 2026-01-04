@@ -20,7 +20,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
-import LanguageSwitcher from "./LanguageSwitcher";
 import { GlobalSearch } from "./GlobalSearch";
 import { NotificationBell } from "./NotificationBell";
 import { AlignJustify, LogIn, Settings, User, UserPlus, LogOut, ChevronRight } from "lucide-react";
@@ -126,7 +125,6 @@ const Navbar = () => {
               <span className="font-display">Nolto</span>
             </RouterLink>
             <div className="flex items-center gap-4">
-              <LanguageSwitcher />
               <ModeToggle />
             </div>
           </div>
@@ -204,7 +202,6 @@ const Navbar = () => {
             {isAuthenticated && <NotificationBell />}
             
             <div className="hidden sm:flex items-center gap-1">
-              <LanguageSwitcher />
               <ModeToggle />
             </div>
             
