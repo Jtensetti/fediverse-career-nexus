@@ -37,25 +37,54 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const envFile = parseDotEnvFile(path.resolve(process.cwd(), ".env"));
 
-  const get = (key: string) => env[key] ?? envFile[key] ?? process.env[key];
+  // Last-resort fallbacks to keep the app from blank-screening if env injection fails.
+  // These values are public (URL + publishable key) and are already required client-side.
+  const FALLBACKS: Record<string, string> = {
+    VITE_SUPABASE_PROJECT_ID: "anknmcmqljejabxbeohv",
+    VITE_SUPABASE_URL: "https://anknmcmqljejabxbeohv.supabase.co",
+    VITE_SUPABASE_PUBLISHABLE_KEY:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua25tY21xbGplamFieGJlb2h2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0OTM5MTUsImV4cCI6MjA4MzA2OTkxNX0.IWsUxLhvANU4e9TDUuJ0lTHZda0yqYILU_4_rtJfnMU",
+  };
+
+  const get = (key: string) => env[key] ?? envFile[key] ?? process.env[key] ?? FALLBACKS[key];
+
+  const resolved = {
+    VITE_SUPABASE_URL: get("VITE_SUPABASE_URL"),
+    VITE_SUPABASE_PUBLISHABLE_KEY: get("VITE_SUPABASE_PUBLISHABLE_KEY"),
+    VITE_SUPABASE_PROJECT_ID: get("VITE_SUPABASE_PROJECT_ID"),
+  };
+
+  // Hard replacement plugin: guarantees `import.meta.env.VITE_*` are inlined in ALL source modules
+  // (including the auto-generated supabase client), even if env injection is flaky.
+  const inlineLovableEnv = () => ({
+    name: "inline-lovable-env",
+    enforce: "pre" as const,
+    transform(code: string, id: string) {
+      if (!id.includes("/src/") && !id.includes("\\src\\")) return null;
+
+      let out = code;
+      for (const [k, v] of Object.entries(resolved)) {
+        const needle = `import.meta.env.${k}`;
+        if (out.includes(needle)) out = out.split(needle).join(JSON.stringify(v));
+      }
+
+      if (out === code) return null;
+      return { code: out, map: null };
+    },
+  });
 
   return {
     server: {
       host: "::",
       port: 8080,
     },
-    plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+    plugins: [inlineLovableEnv(), react(), mode === "development" && componentTagger()].filter(Boolean),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    define: {
-      // These are public values (URL + publishable key). They must exist at runtime.
-      "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(get("VITE_SUPABASE_URL")),
-      "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(get("VITE_SUPABASE_PUBLISHABLE_KEY")),
-      "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(get("VITE_SUPABASE_PROJECT_ID")),
-    },
   };
 });
+
 
