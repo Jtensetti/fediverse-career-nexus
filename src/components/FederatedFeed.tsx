@@ -5,8 +5,10 @@ import { getFederatedFeed, type FederatedPost } from "@/services/federationServi
 import FederatedPostCard from "./FederatedPostCard";
 import PostEditDialog from "./PostEditDialog";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { PostSkeleton } from "./common/skeletons";
+import EmptyState from "./common/EmptyState";
 
 interface FederatedFeedProps {
   limit?: number;
@@ -85,8 +87,10 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   return (
     <div className={`${className}`}>
       {isLoading && page === 1 ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <PostSkeleton key={i} />
+          ))}
         </div>
       ) : allPosts.length > 0 ? (
         <>
@@ -124,9 +128,11 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
           />
         </>
       ) : (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground mb-2">This feed is still warming up. You're early – that's a good thing.</p>
-        </div>
+        <EmptyState
+          icon={MessageSquare}
+          title="This feed is still warming up"
+          description="You're early – that's a good thing! Be the first to share something with the network."
+        />
       )}
     </div>
   );

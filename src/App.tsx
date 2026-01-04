@@ -32,6 +32,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CodeOfConductPage from "./pages/CodeOfConductPage";
 import InstanceGuidelinesPage from "./pages/InstanceGuidelines";
+import Instances from "./pages/Instances";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -61,6 +62,7 @@ function App() {
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
                 <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
+                <Route path="/instances" element={<Instances />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/login" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />

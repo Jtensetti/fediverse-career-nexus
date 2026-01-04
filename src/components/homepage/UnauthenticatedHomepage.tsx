@@ -13,6 +13,9 @@ import FeatureShowcase from "./FeatureShowcase";
 import HomepageFAQ from "./HomepageFAQ";
 import FinalCTA from "./FinalCTA";
 import NewsletterSubscribe from "../NewsletterSubscribe";
+import Testimonials from "./Testimonials";
+import BuiltInOpen from "./BuiltInOpen";
+import ScrollReveal from "../common/ScrollReveal";
 
 const UnauthenticatedHomepage = () => {
   const [jobs, setJobs] = useState<JobPost[]>([]);
@@ -64,7 +67,7 @@ const UnauthenticatedHomepage = () => {
               <Button 
                 asChild 
                 size="lg"
-                className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-8 py-6 text-lg shadow-lg"
+                className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-8 py-6 text-lg shadow-lg hover:scale-105 transition-transform"
               >
                 <Link to="/auth/signup">
                   Get Started Free
@@ -75,7 +78,7 @@ const UnauthenticatedHomepage = () => {
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold px-8 py-6 text-lg"
+                className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold px-8 py-6 text-lg hover:scale-105 transition-transform"
               >
                 <Link to="/feed">Explore the Feed</Link>
               </Button>
@@ -90,104 +93,132 @@ const UnauthenticatedHomepage = () => {
       </section>
 
       {/* Why Federated Comparison */}
-      <WhyFederated />
+      <ScrollReveal>
+        <WhyFederated />
+      </ScrollReveal>
+
+      {/* Testimonials */}
+      <ScrollReveal delay={0.1}>
+        <Testimonials />
+      </ScrollReveal>
 
       {/* How Federation Works */}
-      <FederationExplainer />
+      <ScrollReveal delay={0.1}>
+        <FederationExplainer />
+      </ScrollReveal>
 
       {/* Feature Showcase */}
-      <FeatureShowcase />
+      <ScrollReveal delay={0.1}>
+        <FeatureShowcase />
+      </ScrollReveal>
+
+      {/* Built in Open */}
+      <ScrollReveal delay={0.1}>
+        <BuiltInOpen />
+      </ScrollReveal>
 
       {/* Live Feed Preview */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-3">
-                See What's Happening
-              </h2>
-              <p className="text-muted-foreground">
-                Real conversations from professionals across the network
-              </p>
-            </div>
-            
-            <Card className="shadow-lg border-0">
-              <CardContent className="p-6">
-                <div className="max-h-96 overflow-y-auto">
-                  <FederatedFeed limit={4} className="space-y-4" />
-                </div>
-                <div className="mt-6 text-center">
-                  <Button asChild variant="outline">
-                    <Link to="/feed">View Full Feed</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Job Opportunities */}
-      {jobs.length > 0 && (
-        <section className="py-16 bg-background">
+      <ScrollReveal>
+        <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-3">
-                  Opportunities That Matter
+                  See What's Happening
                 </h2>
                 <p className="text-muted-foreground">
-                  Transparent roles from companies that respect your values
+                  Real conversations from professionals across the network
                 </p>
               </div>
               
-              <div className="grid gap-6 md:grid-cols-3 mb-8">
-                {jobs.map(job => (
-                  <Card key={job.id} className="shadow-md border-0 hover:shadow-lg transition-shadow">
-                    <CardContent className="p-5">
-                      <h3 className="font-semibold text-foreground line-clamp-2 mb-1">{job.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-3">{job.company_name}</p>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{job.description}</p>
-                      {job.salary_min && job.salary_max && (
-                        <p className="font-semibold text-secondary text-sm">
-                          ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              
-              <div className="text-center">
-                <Button asChild variant="outline">
-                  <Link to="/jobs">View All Jobs</Link>
-                </Button>
-              </div>
+              <Card className="shadow-lg border-0">
+                <CardContent className="p-6">
+                  <div className="max-h-96 overflow-y-auto">
+                    <FederatedFeed limit={4} className="space-y-4" />
+                  </div>
+                  <div className="mt-6 text-center">
+                    <Button asChild variant="outline">
+                      <Link to="/feed">View Full Feed</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
+      </ScrollReveal>
+
+      {/* Job Opportunities */}
+      {jobs.length > 0 && (
+        <ScrollReveal>
+          <section className="py-16 bg-background">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-3">
+                    Opportunities That Matter
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Transparent roles from companies that respect your values
+                  </p>
+                </div>
+                
+                <div className="grid gap-6 md:grid-cols-3 mb-8">
+                  {jobs.map((job, index) => (
+                    <ScrollReveal key={job.id} delay={index * 0.1} direction="up">
+                      <Card className="shadow-md border-0 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                        <CardContent className="p-5">
+                          <h3 className="font-semibold text-foreground line-clamp-2 mb-1">{job.title}</h3>
+                          <p className="text-sm text-muted-foreground mb-3">{job.company_name}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{job.description}</p>
+                          {job.salary_min && job.salary_max && (
+                            <p className="font-semibold text-secondary text-sm">
+                              ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </ScrollReveal>
+                  ))}
+                </div>
+                
+                <div className="text-center">
+                  <Button asChild variant="outline">
+                    <Link to="/jobs">View All Jobs</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
       )}
 
       {/* FAQ */}
-      <HomepageFAQ />
+      <ScrollReveal>
+        <HomepageFAQ />
+      </ScrollReveal>
 
       {/* Newsletter */}
-      <section className="py-16 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-xl mx-auto text-center">
-            <h2 className="text-2xl font-bold font-display text-foreground mb-4">
-              Stay Updated
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Get the latest news about Nolto and the federated professional network movement
-            </p>
-            <NewsletterSubscribe />
+      <ScrollReveal>
+        <section className="py-16 bg-muted/50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-xl mx-auto text-center">
+              <h2 className="text-2xl font-bold font-display text-foreground mb-4">
+                Stay Updated
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                Get the latest news about Nolto and the federated professional network movement
+              </p>
+              <NewsletterSubscribe />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ScrollReveal>
 
       {/* Final CTA */}
-      <FinalCTA />
+      <ScrollReveal>
+        <FinalCTA />
+      </ScrollReveal>
     </div>
   );
 };

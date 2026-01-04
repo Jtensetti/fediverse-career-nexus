@@ -7,6 +7,9 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { JobCardSkeleton } from "@/components/common/skeletons";
+import EmptyState from "@/components/common/EmptyState";
+import { Briefcase } from "lucide-react";
 
 const Jobs = () => {
   const [jobs, setJobs] = useState<JobPost[]>([]);
@@ -46,6 +49,8 @@ const Jobs = () => {
   const handleFilterChange = (newFilters: JobPostFilter) => {
     setFilters(newFilters);
   };
+
+  const hasFilters = Object.keys(filters).length > 0;
   
   return (
     <DashboardLayout title="Job Listings">
@@ -60,8 +65,10 @@ const Jobs = () => {
       <JobSearchFilter onFilterChange={handleFilterChange} />
       
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <p className="text-lg text-muted-foreground">Loading jobs...</p>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <JobCardSkeleton key={i} />
+          ))}
         </div>
       ) : jobs.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -70,19 +77,25 @@ const Jobs = () => {
           ))}
         </div>
       ) : (
-        <div className="py-12 text-center">
-          <h2 className="text-2xl font-semibold mb-2">No job posts found</h2>
-          <p className="text-muted-foreground mb-6">
-            {Object.keys(filters).length > 0 
-              ? "Try adjusting your filters to see more results."
-              : "There are no job posts available at the moment."}
-          </p>
-          {isAuthenticated && (
-            <Button asChild>
-              <Link to="/jobs/create">Post a Job</Link>
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Briefcase}
+          title={hasFilters ? "No matching jobs found" : "Be the first to post a job!"}
+          description={
+            hasFilters 
+              ? "Try adjusting your filters to discover more opportunities."
+              : "Reach professionals across the Fediverse. Post transparent job listings that respect candidates."
+          }
+          action={
+            isAuthenticated 
+              ? { label: "Post a Job", link: "/jobs/create" }
+              : { label: "Sign up to post", link: "/auth/signup" }
+          }
+          secondaryAction={
+            hasFilters 
+              ? { label: "Clear filters", onClick: () => handleFilterChange({}) }
+              : undefined
+          }
+        />
       )}
     </DashboardLayout>
   );
