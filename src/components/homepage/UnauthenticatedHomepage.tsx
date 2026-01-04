@@ -78,7 +78,7 @@ const UnauthenticatedHomepage = () => {
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold px-8 py-6 text-lg hover:scale-105 transition-transform"
+                className="border-2 border-primary-foreground/80 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 font-semibold px-8 py-6 text-lg hover:scale-105 transition-transform backdrop-blur-sm"
               >
                 <Link to="/feed">Explore the Feed</Link>
               </Button>

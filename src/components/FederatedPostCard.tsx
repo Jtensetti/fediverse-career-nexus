@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
-import { Globe, MessageSquare, Heart, Repeat, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Globe, MessageSquare, Heart, Repeat, MoreHorizontal, Edit, Trash2, Flag, UserX, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ShareButton } from "@/components/common/ShareButton";
+import { ReportDialog } from "@/components/common/ReportDialog";
 import { getProxiedMediaUrl } from "@/services/federationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/postService";
@@ -33,6 +35,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [replyCount, setReplyCount] = useState(0);
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const { user } = useAuth();
   
   // Debug logs removed for production
@@ -282,25 +285,49 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
               </div>
             </div>
 
-            {isOwnPost() && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleEdit}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="Post options">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {isOwnPost() && (
+                  <>
+                    <DropdownMenuItem onClick={handleEdit}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                {!isOwnPost() && user && (
+                  <>
+                    <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+                      <Flag className="mr-2 h-4 w-4" />
+                      Report Post
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive">
+                      <UserX className="mr-2 h-4 w-4" />
+                      Block User
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem asChild>
+                  <ShareButton
+                    url={`${window.location.origin}/post/${post.id}`}
+                    title={getContent().replace(/<[^>]*>/g, '').substring(0, 100)}
+                    variant="ghost"
+                    size="sm"
+                  />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         
@@ -331,29 +358,48 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
           )}
         </CardContent>
         
-        <CardFooter className="pt-0 flex gap-2">
+        <CardFooter className="pt-0 flex gap-1 sm:gap-2">
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`flex-1 ${isLiked ? 'text-red-500' : ''}`}
+            className={`flex-1 ${isLiked ? 'text-destructive' : ''}`}
             onClick={handleLike}
+            aria-label={isLiked ? "Unlike post" : "Like post"}
+            aria-pressed={isLiked}
           >
             <Heart className={`mr-1 h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-            {likeCount > 0 ? likeCount : 'Like'}
-          </Button>
-          <Button variant="ghost" size="sm" className="flex-1" onClick={handleReply}>
-            <MessageSquare className="mr-1 h-4 w-4" />
-            {replyCount > 0 ? replyCount : 'Reply'}
+            <span className="hidden sm:inline">{likeCount > 0 ? likeCount : 'Like'}</span>
+            <span className="sm:hidden">{likeCount > 0 ? likeCount : ''}</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`flex-1 ${isBoosted ? 'text-green-600' : ''}`}
+            className="flex-1" 
+            onClick={handleReply}
+            aria-label="Reply to post"
+          >
+            <MessageSquare className="mr-1 h-4 w-4" />
+            <span className="hidden sm:inline">{replyCount > 0 ? replyCount : 'Reply'}</span>
+            <span className="sm:hidden">{replyCount > 0 ? replyCount : ''}</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={`flex-1 ${isBoosted ? 'text-secondary' : ''}`}
             onClick={handleBoost}
+            aria-label={isBoosted ? "Remove boost" : "Boost post"}
+            aria-pressed={isBoosted}
           >
             <Repeat className="mr-1 h-4 w-4" />
-            {boostCount > 0 ? boostCount : 'Boost'}
+            <span className="hidden sm:inline">{boostCount > 0 ? boostCount : 'Boost'}</span>
+            <span className="sm:hidden">{boostCount > 0 ? boostCount : ''}</span>
           </Button>
+          <ShareButton
+            url={`${window.location.origin}/post/${post.id}`}
+            title={getContent().replace(/<[^>]*>/g, '').substring(0, 100)}
+            variant="ghost"
+            size="sm"
+          />
         </CardFooter>
       </Card>
 
@@ -374,12 +420,19 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ReportDialog
+        contentType="post"
+        contentId={post.id}
+        contentTitle={getContent().replace(/<[^>]*>/g, '').substring(0, 50)}
+        trigger={<span className="hidden" />}
+      />
     </>
   );
 }
