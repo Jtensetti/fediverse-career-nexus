@@ -19,6 +19,7 @@ import { getUserConnections, NetworkConnection, sendConnectionRequest } from "@/
 import UserPostsList from "@/components/UserPostsList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
+import AchievementBadges from "@/components/AchievementBadges";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -557,6 +558,9 @@ const ProfilePage = () => {
           {viewingOwnProfile && isAuthenticated && currentUserId && (
             <ProfileViewsWidget userId={currentUserId} />
           )}
+          
+          {/* Achievement Badges */}
+          <AchievementBadges userId={profile.id} />
         </div>
       </div>
     </DashboardLayout>

@@ -11,12 +11,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import ProfileCompleteness from "@/components/onboarding/ProfileCompleteness";
 import SuggestedActions from "@/components/onboarding/SuggestedActions";
+import ReferralWidget from "@/components/ReferralWidget";
+import AchievementBadges from "@/components/AchievementBadges";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useAchievementChecker } from "@/hooks/useAchievementChecker";
 
 const FederatedFeedPage = () => {
   const [feedSource, setFeedSource] = useState<string>("all");
   const queryClient = useQueryClient();
   const { showOnboarding, completeOnboarding, hasChecked } = useOnboarding();
+  
+  // Check for achievements when user visits the feed
+  useAchievementChecker();
 
   const handleRefresh = () => {
     // Invalidate the feed query to force a refresh
@@ -69,6 +75,8 @@ const FederatedFeedPage = () => {
           {/* Sidebar */}
           <aside className="lg:w-80 space-y-6 lg:sticky lg:top-4 lg:self-start">
             <ProfileCompleteness />
+            <AchievementBadges compact />
+            <ReferralWidget />
             <SuggestedActions />
           </aside>
         </div>
