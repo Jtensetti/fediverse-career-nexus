@@ -94,22 +94,29 @@ const ProfileBanner = ({
       {/* Upload button for own profile */}
       {isOwnProfile && (
         <>
+          {/* NOTE: must NOT be display:none, otherwise iOS/Safari may block programmatic click() */}
           <input
             ref={inputRef}
             type="file"
             accept="image/*"
-            className="hidden"
+            className="sr-only"
             onChange={handleFileChange}
             disabled={isUploading}
           />
           <Button
+            type="button"
             variant="secondary"
             size="sm"
             className={cn(
               "absolute bottom-4 right-4 gap-2 transition-all duration-300",
-              isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+              // Always visible on mobile (no hover), hover-reveal on md+
+              "opacity-100 translate-y-0 md:opacity-0 md:translate-y-2",
+              (isHovered || isUploading) && "md:opacity-100 md:translate-y-0"
             )}
-            onClick={() => inputRef.current?.click()}
+            onClick={(e) => {
+              e.preventDefault();
+              inputRef.current?.click();
+            }}
             disabled={isUploading}
           >
             {isUploading ? (
