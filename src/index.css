@@ -43,6 +43,20 @@
     --warning-foreground: 222.2 47.4% 11.2%;
     --info: 199 89% 48%;
     --info-foreground: 210 40% 98%;
+    
+    /* Achievement tier colors */
+    --tier-bronze: 30 60% 50%;
+    --tier-bronze-glow: 30 60% 50% / 0.3;
+    --tier-silver: 210 10% 70%;
+    --tier-silver-glow: 210 10% 70% / 0.3;
+    --tier-gold: 45 90% 55%;
+    --tier-gold-glow: 45 90% 55% / 0.4;
+    --tier-platinum: 200 80% 60%;
+    --tier-platinum-glow: 200 80% 60% / 0.4;
+    
+    /* Premium effects */
+    --glass-bg: 0 0% 100% / 0.8;
+    --glass-border: 0 0% 100% / 0.2;
   }
 
   .dark {
@@ -81,6 +95,20 @@
     --warning-foreground: 222.2 47.4% 11.2%;
     --info: 199 89% 48%;
     --info-foreground: 210 40% 98%;
+    
+    /* Achievement tier colors - dark */
+    --tier-bronze: 30 65% 55%;
+    --tier-bronze-glow: 30 65% 55% / 0.35;
+    --tier-silver: 210 15% 75%;
+    --tier-silver-glow: 210 15% 75% / 0.35;
+    --tier-gold: 45 95% 60%;
+    --tier-gold-glow: 45 95% 60% / 0.45;
+    --tier-platinum: 200 85% 65%;
+    --tier-platinum-glow: 200 85% 65% / 0.45;
+    
+    /* Premium effects - dark */
+    --glass-bg: 222 47% 13% / 0.8;
+    --glass-border: 210 40% 98% / 0.1;
   }
 }
 
@@ -193,12 +221,19 @@
 @layer components {
   /* Glass effect */
   .glass {
-    @apply bg-background/80 backdrop-blur-lg border-white/10;
+    @apply backdrop-blur-lg;
+    background: hsl(var(--glass-bg));
+    border-color: hsl(var(--glass-border));
   }
   
   /* Gradient text */
   .gradient-text {
     @apply bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent;
+  }
+  
+  /* Premium gradient */
+  .gradient-premium {
+    @apply bg-gradient-to-r from-primary to-secondary;
   }
   
   /* Shimmer animation for skeletons */
@@ -241,6 +276,133 @@
     50% {
       transform: translateY(-10px);
     }
+  }
+  
+  /* Achievement tier badges */
+  .tier-bronze {
+    background: linear-gradient(135deg, hsl(var(--tier-bronze)) 0%, hsl(30 50% 40%) 100%);
+    box-shadow: 0 0 20px hsl(var(--tier-bronze-glow));
+  }
+  
+  .tier-silver {
+    background: linear-gradient(135deg, hsl(var(--tier-silver)) 0%, hsl(210 5% 60%) 100%);
+    box-shadow: 0 0 20px hsl(var(--tier-silver-glow));
+  }
+  
+  .tier-gold {
+    background: linear-gradient(135deg, hsl(var(--tier-gold)) 0%, hsl(35 85% 45%) 100%);
+    box-shadow: 0 0 25px hsl(var(--tier-gold-glow));
+  }
+  
+  .tier-platinum {
+    background: linear-gradient(135deg, hsl(var(--tier-platinum)) 0%, hsl(210 90% 50%) 100%);
+    box-shadow: 0 0 30px hsl(var(--tier-platinum-glow));
+  }
+  
+  /* Achievement unlock glow pulse */
+  .achievement-glow {
+    animation: achievementGlow 2s ease-in-out infinite;
+  }
+  
+  @keyframes achievementGlow {
+    0%, 100% {
+      box-shadow: 0 0 15px hsl(var(--tier-gold-glow));
+    }
+    50% {
+      box-shadow: 0 0 30px hsl(var(--tier-gold-glow)), 0 0 45px hsl(var(--tier-gold-glow));
+    }
+  }
+  
+  /* Gold shimmer effect for premium elements */
+  .shimmer-gold {
+    @apply relative overflow-hidden;
+  }
+  
+  .shimmer-gold::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--tier-gold) / 0.3),
+      transparent
+    );
+    animation: shimmer 3s infinite;
+  }
+  
+  /* Confetti celebration animation */
+  @keyframes confettiFall {
+    0% {
+      transform: translateY(-100%) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+  
+  .confetti {
+    animation: confettiFall 3s ease-in-out forwards;
+  }
+  
+  /* Unlock reveal animation */
+  @keyframes unlockReveal {
+    0% {
+      transform: scale(0.5) rotate(-10deg);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1) rotate(5deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+  
+  .unlock-reveal {
+    animation: unlockReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  
+  /* Progress ring animation */
+  @keyframes progressFill {
+    from {
+      stroke-dashoffset: var(--progress-offset, 100);
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  
+  .progress-ring-animated {
+    animation: progressFill 1s ease-out forwards;
+  }
+  
+  /* Pulse glow for notifications */
+  @keyframes pulseGlow {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+  
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  
+  /* Badge hover lift */
+  .badge-lift {
+    @apply transition-all duration-300;
+  }
+  
+  .badge-lift:hover {
+    @apply -translate-y-1;
+    box-shadow: 0 8px 25px -5px hsl(var(--primary) / 0.25);
   }
 }
 
@@ -289,7 +451,10 @@
     scroll-behavior: auto !important;
   }
   
-  .floating {
+  .floating,
+  .achievement-glow,
+  .pulse-glow,
+  .confetti {
     animation: none;
   }
 }
