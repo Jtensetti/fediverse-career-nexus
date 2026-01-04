@@ -40,17 +40,43 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
       return inReplyTo === postId || (typeof inReplyTo === 'string' && inReplyTo.includes(postId));
     }) || [];
 
+    // Get user IDs to fetch profiles for display names
+    const userIds = matchingReplies
+      .map(r => (r.actors as any)?.user_id)
+      .filter(Boolean);
+
+    let profilesMap: Record<string, { fullname?: string; username?: string; avatar_url?: string }> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, fullname, username, avatar_url')
+        .in('id', userIds);
+
+      if (profiles) {
+        profilesMap = Object.fromEntries(
+          profiles.map(p => [p.id, { 
+            fullname: p.fullname || undefined, 
+            username: p.username || undefined, 
+            avatar_url: p.avatar_url || undefined 
+          }])
+        );
+      }
+    }
+
     const processedReplies = matchingReplies.map(reply => {
       const content = reply.content as any;
+      const actorUserId = (reply.actors as any)?.user_id;
+      const profile = actorUserId ? profilesMap[actorUserId] : undefined;
+
       return {
         id: reply.id,
         content: content?.content || '',
         created_at: reply.created_at,
-        user_id: (reply.actors as any)?.user_id || '',
+        user_id: actorUserId || '',
         author: {
-          username: (reply.actors as any)?.preferred_username || 'Unknown',
-          avatar_url: undefined,
-          fullname: undefined
+          username: profile?.username || (reply.actors as any)?.preferred_username || 'Unknown',
+          avatar_url: profile?.avatar_url,
+          fullname: profile?.fullname
         }
       };
     });
