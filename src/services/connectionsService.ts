@@ -396,6 +396,30 @@ export const getPendingConnectionRequests = async (): Promise<PendingConnectionR
   } catch (error) {
     console.error("Error fetching pending requests:", error);
     toast.error("Failed to load connection requests");
+  return [];
+  }
+};
+
+// Get outgoing pending requests (requests the current user has sent)
+export const getSentConnectionRequests = async (): Promise<string[]> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: requests, error } = await supabase
+      .from("user_connections")
+      .select("connected_user_id")
+      .eq("user_id", user.id)
+      .eq("status", "pending");
+
+    if (error) {
+      console.error("Error fetching sent requests:", error);
+      return [];
+    }
+
+    return (requests || []).map(r => r.connected_user_id);
+  } catch (error) {
+    console.error("Error fetching sent requests:", error);
     return [];
   }
 };

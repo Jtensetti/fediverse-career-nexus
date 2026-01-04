@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserRoundPlus, Search, Filter, UsersRound, Loader2, UserCheck, Bell } from "lucide-react";
+import { UserRoundPlus, Search, Filter, UsersRound, Loader2, UserCheck, Bell, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import { 
@@ -17,6 +17,7 @@ import {
   acceptConnectionRequest,
   rejectConnectionRequest,
   getPendingConnectionRequests,
+  getSentConnectionRequests,
   NetworkConnection,
   NetworkSuggestion,
   PendingConnectionRequest
@@ -84,6 +85,16 @@ const ConnectionsPage = () => {
     queryFn: getPendingConnectionRequests,
     enabled: isAuthenticated
   });
+
+  // Fetch sent (outgoing) connection requests
+  const { 
+    data: sentRequests = [],
+    refetch: refetchSent
+  } = useQuery({
+    queryKey: ["sentConnectionRequests"],
+    queryFn: getSentConnectionRequests,
+    enabled: isAuthenticated
+  });
   
   // Filter connections based on search query
   const filteredConnections = connections.filter(connection => 
@@ -110,6 +121,7 @@ const ConnectionsPage = () => {
         refetchSuggestions();
         refetchConnections();
         refetchPending();
+        refetchSent();
       }
     } catch (error) {
       console.error("Error connecting:", error);
@@ -364,14 +376,26 @@ const ConnectionsPage = () => {
                   </div>
                   
                   <div className="flex gap-2 mt-4">
-                    <Button 
-                      className="flex-1 bg-primary hover:bg-primary/90"
-                      size="sm"
-                      onClick={() => handleConnect(suggestion.id)}
-                      disabled={isConnecting[suggestion.id]}
-                    >
-                      {isConnecting[suggestion.id] ? 'Connecting...' : 'Connect'}
-                    </Button>
+                    {sentRequests.includes(suggestion.id) ? (
+                      <Button 
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1"
+                        disabled
+                      >
+                        <Clock size={16} className="mr-1" />
+                        Pending
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="flex-1 bg-primary hover:bg-primary/90"
+                        size="sm"
+                        onClick={() => handleConnect(suggestion.id)}
+                        disabled={isConnecting[suggestion.id]}
+                      >
+                        {isConnecting[suggestion.id] ? 'Connecting...' : 'Connect'}
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm" className="flex-1" asChild>
                       <Link to={`/profile/${suggestion.username}`}>View Profile</Link>
                     </Button>
