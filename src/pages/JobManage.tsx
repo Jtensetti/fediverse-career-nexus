@@ -25,13 +25,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Edit, Trash, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 const JobManage = () => {
   const navigate = useNavigate();
-  const session = useSession();
+  const { user, loading } = useAuth();
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -39,11 +39,13 @@ const JobManage = () => {
   
   useEffect(() => {
     // Redirect to login if not authenticated
-    if (session === null) {
+    if (!loading && !user) {
       toast.error("Please sign in to manage job posts");
-      navigate("/");
+      navigate("/auth");
       return;
     }
+    
+    if (!user) return;
     
     const fetchJobs = async () => {
       setIsLoading(true);
@@ -53,7 +55,7 @@ const JobManage = () => {
     };
     
     fetchJobs();
-  }, [session, navigate]);
+  }, [user, loading, navigate]);
   
   const handleDeleteClick = (jobId: string) => {
     setJobToDelete(jobId);

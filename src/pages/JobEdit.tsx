@@ -1,29 +1,29 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSession } from "@supabase/auth-helpers-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { getJobPostById, updateJobPost } from "@/services/jobPostsService";
 import JobForm from "@/components/JobForm";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 const JobEdit = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const session = useSession();
+  const { user, loading } = useAuth();
   const [job, setJob] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
     // Redirect if not authenticated
-    if (session === null) {
+    if (!loading && !user) {
       toast.error("Please sign in to edit job posts");
-      navigate("/");
+      navigate("/auth");
       return;
     }
+    
+    if (!user) return;
     
     const fetchJob = async () => {
       if (!id) return;
@@ -38,8 +38,7 @@ const JobEdit = () => {
       }
       
       // Verify the current user owns this job post
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.user.id !== jobData.user_id) {
+      if (user.id !== jobData.user_id) {
         toast.error("You don't have permission to edit this job post");
         navigate("/jobs/manage");
         return;
@@ -50,7 +49,7 @@ const JobEdit = () => {
     };
     
     fetchJob();
-  }, [id, navigate, session]);
+  }, [id, navigate, user, loading]);
   
   const handleSubmit = async (values: any) => {
     if (!id) return;
