@@ -9,10 +9,8 @@ import FeaturedIn from "./FeaturedIn";
 import AlternatingFeatures from "./AlternatingFeature";
 import EnhancedTestimonials from "./EnhancedTestimonials";
 import FederationVisual from "./FederationVisual";
-import MobilePreview from "./MobilePreview";
 import HomepageFAQ from "./HomepageFAQ";
 import FinalCTA from "./FinalCTA";
-import NewsletterSubscribe from "../NewsletterSubscribe";
 import StickyCTA from "./StickyCTA";
 import ScrollReveal from "../common/ScrollReveal";
 
@@ -47,11 +45,6 @@ const UnauthenticatedHomepage = () => {
       {/* Visual Federation Explainer */}
       <ScrollReveal>
         <FederationVisual />
-      </ScrollReveal>
-
-      {/* Mobile App Preview */}
-      <ScrollReveal>
-        <MobilePreview />
       </ScrollReveal>
 
       {/* Live Feed Preview */}
@@ -148,23 +141,6 @@ const UnauthenticatedHomepage = () => {
       {/* FAQ */}
       <ScrollReveal>
         <HomepageFAQ />
-      </ScrollReveal>
-
-      {/* Newsletter */}
-      <ScrollReveal>
-        <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
-          <div className="container mx-auto px-4">
-            <div className="max-w-xl mx-auto text-center">
-              <h2 className="text-3xl font-bold font-display text-foreground mb-4">
-                Stay in the Loop
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                Get the latest news about Nolto and the federated professional network movement
-              </p>
-              <NewsletterSubscribe />
-            </div>
-          </div>
-        </section>
       </ScrollReveal>
 
       {/* Final CTA */}
