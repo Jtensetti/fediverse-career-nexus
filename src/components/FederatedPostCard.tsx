@@ -17,6 +17,7 @@ import { togglePostBoost, getPostBoostCount, hasUserBoostedPost } from "@/servic
 import { getPostReplies } from "@/services/postReplyService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import PostReplyDialog from "./PostReplyDialog";
 import BlockUserDialog from "./BlockUserDialog";
 import type { FederatedPost } from "@/services/federationService";
@@ -257,39 +258,42 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   return (
     <>
-      <Card className="mb-4 overflow-hidden">
+      <Card className="mb-4 overflow-hidden group hover:shadow-md transition-all duration-200 hover:border-primary/20">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
-            <Avatar>
-              {getAvatarUrl() && !imageError ? (
-                <AvatarImage 
-                  src={getAvatarUrl() as string} 
-                  onError={() => setImageError(true)} 
-                />
-              ) : null}
-              <AvatarFallback>{getActorName().charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            
-            <div className="flex-1">
-              <div className="font-semibold">{getActorName()}</div>
-              {getActorUsername() && (
-                <div className="text-xs text-muted-foreground">@{getActorUsername()}</div>
+            <div className="relative">
+              <Avatar className="h-11 w-11 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
+                {getAvatarUrl() && !imageError ? (
+                  <AvatarImage 
+                    src={getAvatarUrl() as string} 
+                    onError={() => setImageError(true)} 
+                    className="object-cover"
+                  />
+                ) : null}
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  {getActorName().charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {post.source === 'remote' && (
+                <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-purple-500 flex items-center justify-center ring-2 ring-background">
+                  <Globe className="h-2.5 w-2.5 text-white" />
+                </div>
               )}
-              <div className="text-sm text-muted-foreground flex items-center gap-1">
-                <Globe size={14} />
-                <span>{post.source === 'local' ? 'Local' : 'Remote'}</span>
-                {getPublishedDate() && (
-                  <>
-                    <span>•</span>
-                    <span>{getPublishedDate()}</span>
-                  </>
-                )}
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold truncate">{getActorName()}</div>
+              {getActorUsername() && (
+                <div className="text-xs text-muted-foreground truncate">@{getActorUsername()}</div>
+              )}
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                {getPublishedDate() && <span>{getPublishedDate()}</span>}
               </div>
             </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" aria-label="Post options">
+                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Post options">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -340,18 +344,18 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
           {getModerationBanner()}
           
           <div 
-            className="prose max-w-none dark:prose-invert" 
+            className="prose prose-sm max-w-none dark:prose-invert" 
             dangerouslySetInnerHTML={{ __html: getContent() }} 
           />
           
           {attachments.length > 0 && (
-            <div className="mt-3 grid gap-2">
+            <div className="mt-3 grid gap-2 rounded-xl overflow-hidden">
               {attachments.map((att, idx) => (
-                <div key={idx} className="rounded-md overflow-hidden">
+                <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-muted">
                   <img 
                     src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url} 
                     alt={att.name || 'Media attachment'} 
-                    className="w-full h-auto object-cover"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
@@ -363,41 +367,44 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
           )}
         </CardContent>
         
-        <CardFooter className="pt-0 flex gap-1 sm:gap-2">
+        <CardFooter className="pt-0 flex gap-0.5 sm:gap-1 border-t border-border/50 mx-4 py-2">
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`flex-1 ${isLiked ? 'text-destructive' : ''}`}
+            className={cn(
+              "flex-1 gap-1.5 rounded-full transition-all duration-200",
+              isLiked ? "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950" : "hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+            )}
             onClick={handleLike}
             aria-label={isLiked ? "Unlike post" : "Like post"}
             aria-pressed={isLiked}
           >
-            <Heart className={`mr-1 h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-            <span className="hidden sm:inline">{likeCount > 0 ? likeCount : 'Like'}</span>
-            <span className="sm:hidden">{likeCount > 0 ? likeCount : ''}</span>
+            <Heart className={cn("h-4 w-4 transition-transform", isLiked && "fill-current scale-110")} />
+            <span className="text-xs">{likeCount > 0 ? likeCount : ''}</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex-1" 
+            className="flex-1 gap-1.5 rounded-full hover:text-primary hover:bg-primary/10 transition-all duration-200" 
             onClick={handleReply}
             aria-label="Reply to post"
           >
-            <MessageSquare className="mr-1 h-4 w-4" />
-            <span className="hidden sm:inline">{replyCount > 0 ? replyCount : 'Reply'}</span>
-            <span className="sm:hidden">{replyCount > 0 ? replyCount : ''}</span>
+            <MessageSquare className="h-4 w-4" />
+            <span className="text-xs">{replyCount > 0 ? replyCount : ''}</span>
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`flex-1 ${isBoosted ? 'text-secondary' : ''}`}
+            className={cn(
+              "flex-1 gap-1.5 rounded-full transition-all duration-200",
+              isBoosted ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950" : "hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950"
+            )}
             onClick={handleBoost}
             aria-label={isBoosted ? "Remove boost" : "Boost post"}
             aria-pressed={isBoosted}
           >
-            <Repeat className="mr-1 h-4 w-4" />
-            <span className="hidden sm:inline">{boostCount > 0 ? boostCount : 'Boost'}</span>
-            <span className="sm:hidden">{boostCount > 0 ? boostCount : ''}</span>
+            <Repeat className={cn("h-4 w-4 transition-transform", isBoosted && "text-green-500")} />
+            <span className="text-xs">{boostCount > 0 ? boostCount : ''}</span>
           </Button>
           <ShareButton
             url={`${window.location.origin}/post/${post.id}`}

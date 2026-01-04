@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, FileText } from "lucide-react";
+import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, FileText, MessageSquare, Share2, Edit } from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
+import ProfileBanner from "@/components/profile/ProfileBanner";
+import AvatarWithStatus from "@/components/common/AvatarWithStatus";
 import { recordProfileView } from "@/services/profileViewService";
 import { supabase } from "@/integrations/supabase/client";
 import FederationInfo from "@/components/FederationInfo";
@@ -20,43 +22,50 @@ import UserPostsList from "@/components/UserPostsList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
 import { RecommendationsSection } from "@/components/RecommendationsSection";
 import AchievementBadges from "@/components/AchievementBadges";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 const ProfilePage = () => {
   const { username } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
   
   const isAuthenticated = !!user;
   const currentUserId = user?.id || null;
   
+  // Handle scroll for sticky header
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyHeader(window.scrollY > 280);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
   // Determine if we should redirect to login
   useEffect(() => {
-    // If no username is provided and user is not authenticated, redirect to login
     if (!authLoading && !username && !isAuthenticated) {
       navigate("/auth/login", { replace: true });
     }
   }, [authLoading, username, isAuthenticated, navigate]);
   
-  // Fetch current user profile if no username provided, otherwise fetch the specified profile
+  // Fetch profile
   const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ["profile", username, currentUserId],
     queryFn: async () => {
-      
-      
       if (!username) {
-        // Viewing own profile - require authentication
         if (!isAuthenticated || !currentUserId) {
           return null;
         }
         const result = await getCurrentUserProfile();
         return result;
       } else {
-        // Viewing someone else's profile
         const result = await getUserProfileByUsername(username);
         return result;
       }
@@ -81,6 +90,25 @@ const ProfilePage = () => {
       recordProfileView(profile.id);
     }
   }, [profile?.id, viewingOwnProfile, isAuthenticated]);
+
+  // Handle header image update
+  const handleHeaderChange = async (url: string) => {
+    if (!profile?.id) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ header_url: url })
+        .eq('id', profile.id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    } catch (error) {
+      console.error("Error updating header:", error);
+      toast.error("Failed to update header image");
+    }
+  };
   
   // Handle connect button
   const handleConnect = async () => {
@@ -116,7 +144,6 @@ const ProfilePage = () => {
       }
       
       toast.success("Profile synced successfully from your Fediverse instance!");
-      // Refetch profile to show updated data
       window.location.reload();
     } catch (error: any) {
       console.error("Error syncing profile:", error);
@@ -138,11 +165,10 @@ const ProfilePage = () => {
   }
   
   if (profileError) {
-    console.error('Profile: Profile error:', profileError);
     return (
       <DashboardLayout>
         <div className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2 text-red-600">Error Loading Profile</h2>
+          <h2 className="text-2xl font-bold mb-2 text-destructive">Error Loading Profile</h2>
           <p>There was an error loading the profile. Please try again later.</p>
           <Button className="mt-4" onClick={() => navigate("/")}>
             Return Home
@@ -176,35 +202,124 @@ const ProfilePage = () => {
     );
   }
   
-  // The username to display
   const displayUsername = username || profile.username;
-  
-  // Safely handle connectionDegree for display
   const connectionDegreeValue = profile.connectionDegree !== undefined ? profile.connectionDegree as ConnectionDegree : null;
+  const avatarStatus = profile.isVerified ? "verified" : (profile.authType === 'federated' ? "remote" : "none");
   
   return (
     <DashboardLayout showHeader={false}>
-      {/* Profile Header */}
-      <div className="bg-card rounded-lg shadow-sm p-6 mb-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="relative">
-            <Avatar className="h-32 w-32 border-4 border-white shadow-md">
-              <AvatarImage src={profile.avatarUrl} alt={profile.displayName} />
-              <AvatarFallback>{profile.displayName.substring(0, 2)}</AvatarFallback>
-            </Avatar>
-            {connectionDegreeValue && (
-              <div className="absolute -bottom-2 -right-2">
-                <ConnectionBadge degree={connectionDegreeValue} />
-              </div>
-            )}
+      {/* Sticky Mini Header */}
+      <motion.div
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: showStickyHeader ? 0 : -100, opacity: showStickyHeader ? 1 : 0 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border"
+      >
+        <div className="container max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AvatarWithStatus
+              src={profile.avatarUrl}
+              alt={profile.displayName}
+              fallback={profile.displayName?.substring(0, 2)}
+              status={avatarStatus}
+              size="sm"
+            />
+            <div>
+              <p className="font-semibold text-sm">{profile.displayName}</p>
+              <p className="text-xs text-muted-foreground">@{displayUsername}</p>
+            </div>
+          </div>
+          {!viewingOwnProfile && (
+            <Button size="sm" onClick={handleConnect} disabled={isConnecting} loading={isConnecting}>
+              Connect
+            </Button>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Profile Header with Banner */}
+      <div className="bg-card rounded-lg shadow-sm overflow-hidden mb-6">
+        {/* Banner */}
+        <ProfileBanner
+          headerUrl={(profile as any).headerUrl}
+          isOwnProfile={viewingOwnProfile}
+          onHeaderChange={handleHeaderChange}
+        />
+        
+        {/* Profile Info - overlapping the banner */}
+        <div className="relative px-4 md:px-6 pb-6">
+          {/* Avatar */}
+          <div className="flex flex-col md:flex-row md:items-end gap-4 -mt-16 md:-mt-20">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            >
+              <AvatarWithStatus
+                src={profile.avatarUrl}
+                alt={profile.displayName}
+                fallback={profile.displayName?.substring(0, 2)}
+                status={avatarStatus}
+                size="2xl"
+                ringClassName={profile.isVerified ? "ring-primary" : "ring-background"}
+              />
+            </motion.div>
+            
+            {/* Action buttons - positioned on the right on desktop */}
+            <div className="flex-1 flex flex-wrap gap-2 md:justify-end md:pb-2">
+              {viewingOwnProfile ? (
+                <>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/profile/edit">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Profile
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/connections">
+                      <Users className="h-4 w-4 mr-2" />
+                      Connections
+                    </Link>
+                  </Button>
+                  {profile.authType === 'federated' && profile.homeInstance && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleSyncFromFediverse}
+                      disabled={isSyncing}
+                      loading={isSyncing}
+                    >
+                      <RefreshCw className={cn("h-4 w-4 mr-2", isSyncing && "animate-spin")} />
+                      Sync
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Button 
+                    onClick={handleConnect}
+                    disabled={isConnecting}
+                    loading={isConnecting}
+                  >
+                    Connect
+                  </Button>
+                  <Button variant="outline" size="icon">
+                    <MessageSquare className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon">
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
           
-          <div className="flex-grow">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
+          {/* Profile Details */}
+          <div className="mt-4">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
               <h1 className="text-2xl font-bold">{profile.displayName}</h1>
               {profile.isVerified && (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
-                  <Check size={14} /> Verified
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1">
+                  <Check size={12} /> Verified
                 </Badge>
               )}
               {profile.authType === 'federated' && profile.homeInstance && (
@@ -215,90 +330,49 @@ const ProfilePage = () => {
               )}
             </div>
             
-            <h2 className="text-xl text-muted-foreground mb-3">{profile.headline}</h2>
+            <h2 className="text-lg text-muted-foreground mb-3">{profile.headline}</h2>
             
             <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-4 gap-y-2 mb-4">
               {profile.contact?.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin size={16} />
+                  <MapPin size={14} />
                   <span>{profile.contact.location}</span>
                 </div>
               )}
               <div className="flex items-center gap-1">
-                <Users size={16} />
-                <Link to="/connections" className="hover:underline">{profile.connections} connections</Link>
+                <Users size={14} />
+                <Link to="/connections" className="hover:underline hover:text-primary transition-colors">
+                  {profile.connections} connections
+                </Link>
               </div>
               <div className="flex items-center gap-1">
-                <LinkIcon size={16} />
-                <span>@{profile.username}</span>
+                <LinkIcon size={14} />
+                <span className="font-medium">@{profile.username}</span>
               </div>
             </div>
             
-            <p className="text-muted-foreground mb-4">{profile.bio}</p>
-            
-            <div className="flex flex-wrap gap-2 mt-4">
-              {viewingOwnProfile ? (
-                <>
-                  <Button variant="outline">
-                    <Link to="/profile/edit">Edit Profile</Link>
-                  </Button>
-                  <Button variant="outline">
-                    <Link to="/connections">Manage Connections</Link>
-                  </Button>
-                  {profile.authType === 'federated' && profile.homeInstance && (
-                    <Button 
-                      variant="outline" 
-                      onClick={handleSyncFromFediverse}
-                      disabled={isSyncing}
-                    >
-                      {isSyncing ? (
-                        <>
-                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                          Syncing...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Sync from {profile.homeInstance}
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Button 
-                    className="bg-primary hover:bg-primary/90" 
-                    onClick={handleConnect}
-                    disabled={isConnecting}
-                  >
-                    {isConnecting ? 'Sending...' : 'Connect'}
-                  </Button>
-                  <Button variant="outline">Message</Button>
-                  <Button variant="outline">Share Profile</Button>
-                </>
-              )}
-            </div>
+            {profile.bio && (
+              <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>
+            )}
           </div>
         </div>
       </div>
       
       {/* Profile Content */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
           <Tabs defaultValue="experience" className="mb-6">
-            <TabsList className="mb-4 flex-wrap h-auto gap-1">
-              <TabsTrigger value="experience">Experience</TabsTrigger>
-              <TabsTrigger value="education">Education</TabsTrigger>
-              <TabsTrigger value="skills">Skills</TabsTrigger>
-              <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-              <TabsTrigger value="articles">Articles</TabsTrigger>
-              <TabsTrigger value="posts">Posts</TabsTrigger>
-              <TabsTrigger value="connections">Connections</TabsTrigger>
+            <TabsList className="mb-4 flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
+              <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Experience</TabsTrigger>
+              <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Education</TabsTrigger>
+              <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Skills</TabsTrigger>
+              <TabsTrigger value="recommendations" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Recommendations</TabsTrigger>
+              <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Posts</TabsTrigger>
+              <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Connections</TabsTrigger>
             </TabsList>
             
             <TabsContent value="experience">
-              <Card>
+              <Card variant="elevated">
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Briefcase size={20} className="text-primary" />
@@ -308,7 +382,12 @@ const ProfilePage = () => {
                   {profile.experience && profile.experience.length > 0 ? (
                     <div className="space-y-6">
                       {profile.experience.map((exp) => (
-                        <div key={exp.id} className="pb-6">
+                        <motion.div 
+                          key={exp.id} 
+                          className="pb-6"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
                           <div className="flex justify-between">
                             <h4 className="font-medium">{exp.title}</h4>
                             {exp.isVerified && (
@@ -317,23 +396,24 @@ const ProfilePage = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-primary">{exp.company}</p>
+                          <p className="text-primary font-medium">{exp.company}</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(exp.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} - 
                             {exp.isCurrentRole ? ' Present' : 
                             ` ${new Date(exp.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}`}
                           </p>
                           {exp.location && <p className="text-sm text-muted-foreground">{exp.location}</p>}
-                          {exp.description && <p className="mt-2">{exp.description}</p>}
+                          {exp.description && <p className="mt-2 text-muted-foreground">{exp.description}</p>}
                           <Separator className="mt-6" />
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
+                      <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-30" />
                       <p>No experience information available</p>
                       {viewingOwnProfile && (
-                        <Button variant="outline" className="mt-4">
+                        <Button variant="outline" className="mt-4" asChild>
                           <Link to="/profile/edit">Add Experience</Link>
                         </Button>
                       )}
@@ -344,7 +424,7 @@ const ProfilePage = () => {
             </TabsContent>
             
             <TabsContent value="education">
-              <Card>
+              <Card variant="elevated">
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <School size={20} className="text-primary" />
@@ -354,7 +434,12 @@ const ProfilePage = () => {
                   {profile.education && profile.education.length > 0 ? (
                     <div className="space-y-6">
                       {profile.education.map((edu) => (
-                        <div key={edu.id} className="pb-6">
+                        <motion.div 
+                          key={edu.id} 
+                          className="pb-6"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
                           <div className="flex justify-between">
                             <h4 className="font-medium">{edu.institution}</h4>
                             {edu.isVerified && (
@@ -363,17 +448,18 @@ const ProfilePage = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-primary">{edu.degree}{edu.field ? `, ${edu.field}` : ''}</p>
+                          <p className="text-primary font-medium">{edu.degree}{edu.field ? `, ${edu.field}` : ''}</p>
                           <p className="text-sm text-muted-foreground">{edu.startYear} - {edu.endYear || 'Present'}</p>
                           <Separator className="mt-6" />
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
+                      <School className="h-12 w-12 mx-auto mb-3 opacity-30" />
                       <p>No education information available</p>
                       {viewingOwnProfile && (
-                        <Button variant="outline" className="mt-4">
+                        <Button variant="outline" className="mt-4" asChild>
                           <Link to="/profile/edit">Add Education</Link>
                         </Button>
                       )}
@@ -384,7 +470,7 @@ const ProfilePage = () => {
             </TabsContent>
             
             <TabsContent value="skills">
-              <Card>
+              <Card variant="elevated">
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Star size={20} className="text-primary" />
@@ -408,7 +494,7 @@ const ProfilePage = () => {
             </TabsContent>
             
             <TabsContent value="recommendations">
-              <Card>
+              <Card variant="elevated">
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <FileText size={20} className="text-primary" />
@@ -423,86 +509,68 @@ const ProfilePage = () => {
               </Card>
             </TabsContent>
             
-            <TabsContent value="articles">
-              <Card>
-                <CardContent className="pt-6 flex items-center justify-center p-12">
-                  <div className="text-center text-muted-foreground">
-                    <p>No articles published yet</p>
-                    {viewingOwnProfile && (
-                      <Button variant="outline" className="mt-4">
-                        <Link to="/articles/create">Write an Article</Link>
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
             <TabsContent value="posts">
-              <Card>
+              <Card variant="elevated">
                 <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <MessageSquare size={20} className="text-primary" />
+                    Posts
+                  </h3>
+                  
                   <UserPostsList userId={profile.id} />
                 </CardContent>
               </Card>
             </TabsContent>
             
             <TabsContent value="connections">
-              <Card>
+              <Card variant="elevated">
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Users size={20} className="text-primary" />
-                    Connections ({profile.connections})
+                    Connections
                   </h3>
                   
-                  {connectionsLoading ? (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  {profile.networkVisibilityEnabled === false ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                      <p>Connections are hidden</p>
                     </div>
-                  ) : profile.networkVisibilityEnabled && userConnections && userConnections.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {userConnections.slice(0, 8).map((connection: NetworkConnection) => (
-                        <Link 
-                          to={`/profile/${connection.username}`} 
-                          key={connection.id} 
-                          className="flex flex-col items-center p-3 border rounded-lg hover:bg-muted transition-colors"
+                  ) : connectionsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : userConnections && userConnections.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {userConnections.slice(0, 6).map((connection: NetworkConnection) => (
+                        <Link
+                          key={connection.id}
+                          to={`/profile/${connection.username}`}
+                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
                         >
-                          <Avatar className="h-16 w-16 mb-2">
-                            <AvatarImage src={connection.avatarUrl} alt={connection.displayName} />
-                            <AvatarFallback>{connection.displayName.substring(0, 2)}</AvatarFallback>
-                          </Avatar>
-                          <div className="text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <p className="font-medium">{connection.displayName}</p>
-                              <ConnectionBadge degree={connection.connectionDegree} showIcon={false} size="sm" />
-                            </div>
-                            <p className="text-xs text-muted-foreground line-clamp-2">{connection.headline}</p>
+                          <AvatarWithStatus
+                            src={connection.avatarUrl}
+                            alt={connection.displayName}
+                            fallback={connection.displayName?.substring(0, 2)}
+                            size="md"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{connection.displayName}</p>
+                            <p className="text-sm text-muted-foreground truncate">{connection.headline}</p>
                           </div>
                         </Link>
                       ))}
-                      
-                      {userConnections.length > 8 && (
-                        <Link 
-                          to="/connections" 
-                          className="flex flex-col items-center justify-center p-3 border rounded-lg hover:bg-muted transition-colors"
-                        >
-                          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-2">
-                            <Users size={24} className="text-muted-foreground" />
-                          </div>
-                          <p className="font-medium text-primary">View All</p>
-                        </Link>
-                      )}
-                    </div>
-                  ) : !profile.networkVisibilityEnabled ? (
-                    <div className="text-center p-8 text-muted-foreground">
-                      <Users size={48} className="mx-auto mb-4 opacity-30" />
-                      <p className="mb-2">This user has chosen not to display their network connections</p>
                     </div>
                   ) : (
-                    <div className="text-center p-8 text-muted-foreground">
-                      <Users size={48} className="mx-auto mb-4 opacity-30" />
-                      <p className="mb-2">No connections yet</p>
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                      <p>No connections yet</p>
+                    </div>
+                  )}
+                  
+                  {userConnections && userConnections.length > 6 && (
+                    <div className="text-center mt-4">
                       <Button variant="outline" asChild>
-                        <Link to="/connections">Find connections</Link>
+                        <Link to="/connections">View All Connections</Link>
                       </Button>
                     </div>
                   )}
@@ -510,57 +578,22 @@ const ProfilePage = () => {
               </Card>
             </TabsContent>
           </Tabs>
-          
-          {/* Contact Information */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
-              
-              <div className="space-y-3">
-                {profile.contact?.email && (
-                  <div className="flex items-center gap-3">
-                    <Mail size={18} className="text-primary" />
-                    <span>{profile.contact.email}</span>
-                  </div>
-                )}
-                
-                {profile.contact?.phone && (
-                  <div className="flex items-center gap-3">
-                    <Phone size={18} className="text-primary" />
-                    <span>{profile.contact.phone}</span>
-                  </div>
-                )}
-                
-                {profile.contact?.location && (
-                  <div className="flex items-center gap-3">
-                    <MapPin size={18} className="text-primary" />
-                    <span>{profile.contact.location}</span>
-                  </div>
-                )}
-                
-                {!profile.contact?.email && !profile.contact?.phone && !profile.contact?.location && (
-                  <p className="text-muted-foreground">No contact information available</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Federation Information */}
-          <FederationInfo 
-            username={displayUsername}
-            isOwnProfile={viewingOwnProfile}
-          />
         </div>
         
-        {/* Right Sidebar */}
+        {/* Sidebar */}
         <div className="space-y-6">
-          {/* Only show profile views widget if viewing own profile and authenticated */}
-          {viewingOwnProfile && isAuthenticated && currentUserId && (
-            <ProfileViewsWidget userId={currentUserId} />
+          {viewingOwnProfile && (
+            <ProfileViewsWidget userId={profile.id} />
           )}
           
-          {/* Achievement Badges */}
           <AchievementBadges userId={profile.id} />
+          
+          {profile.authType === 'federated' && profile.username && (
+            <FederationInfo
+              username={profile.username}
+              isOwnProfile={viewingOwnProfile}
+            />
+          )}
         </div>
       </div>
     </DashboardLayout>
