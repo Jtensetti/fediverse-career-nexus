@@ -23,7 +23,8 @@ const WhyFederated = () => {
             </p>
           </div>
 
-          <div className="bg-card rounded-xl shadow-lg overflow-hidden border">
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-card rounded-xl shadow-lg overflow-hidden border">
             {/* Header */}
             <div className="grid grid-cols-3 bg-muted/50">
               <div className="p-4 font-semibold text-muted-foreground"></div>
@@ -41,16 +42,43 @@ const WhyFederated = () => {
                 key={row.feature}
                 className={`grid grid-cols-3 ${index !== comparisons.length - 1 ? "border-b" : ""}`}
               >
-                <div className="p-4 font-medium text-foreground text-sm md:text-base">
+                <div className="p-4 font-medium text-foreground">
                   {row.feature}
                 </div>
-                <div className="p-4 text-center border-l flex items-center justify-center gap-2 text-muted-foreground text-sm md:text-base">
+                <div className="p-4 text-center border-l flex items-center justify-center gap-2 text-muted-foreground">
                   <X className="h-4 w-4 text-destructive shrink-0" />
-                  <span className="hidden sm:inline">{row.linkedin}</span>
+                  <span>{row.linkedin}</span>
                 </div>
-                <div className="p-4 text-center border-l bg-primary/5 flex items-center justify-center gap-2 text-primary text-sm md:text-base">
+                <div className="p-4 text-center border-l bg-primary/5 flex items-center justify-center gap-2 text-primary">
                   <Check className="h-4 w-4 text-secondary shrink-0" />
-                  <span className="hidden sm:inline">{row.nolto}</span>
+                  <span>{row.nolto}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {comparisons.map((row) => (
+              <div key={row.feature} className="bg-card rounded-lg shadow-md border overflow-hidden">
+                <div className="p-3 bg-muted/50 font-medium text-foreground text-sm">
+                  {row.feature}
+                </div>
+                <div className="grid grid-cols-2 divide-x">
+                  <div className="p-3">
+                    <div className="text-xs text-muted-foreground mb-1">Traditional</div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <X className="h-4 w-4 text-destructive shrink-0" />
+                      <span>{row.linkedin}</span>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-primary/5">
+                    <div className="text-xs text-primary mb-1 font-medium">Nolto</div>
+                    <div className="flex items-center gap-2 text-sm text-primary">
+                      <Check className="h-4 w-4 text-secondary shrink-0" />
+                      <span>{row.nolto}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

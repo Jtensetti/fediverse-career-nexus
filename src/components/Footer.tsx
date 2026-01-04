@@ -1,10 +1,9 @@
-
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-50 border-t border-gray-200">
+    <footer className="bg-muted/50 border-t border-border">
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           <div className="col-span-1">
@@ -14,66 +13,66 @@ const Footer = () => {
                 alt="Nolto Mascot" 
                 className="w-12 h-12 mr-3"
               />
-              <h3 className="text-lg font-bold text-bondy-primary">Nolto</h3>
+              <h3 className="text-lg font-bold text-primary">Nolto</h3>
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               A professional social network built on the ActivityPub federation protocol.
             </p>
           </div>
 
-          <div className="md:col-span-3 grid sm:grid-cols-3 gap-8">
+          <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-sm font-semibold text-bondy-primary mb-4">About</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4">About</h3>
               <ul className="space-y-3">
-                <li><Link to="/mission" className="text-gray-600 hover:text-bondy-accent transition-colors">Our Mission</Link></li>
-                <li><a href="#" className="text-gray-600 hover:text-bondy-accent transition-colors">Team</a></li>
+                <li><Link to="/mission" className="text-muted-foreground hover:text-secondary transition-colors">Our Mission</Link></li>
+                <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors">Team</a></li>
               </ul>
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-bondy-primary mb-4">Resources</h3>
+              <h3 className="text-sm font-semibold text-primary mb-4">Resources</h3>
               <ul className="space-y-3">
-                <li><Link to="/documentation" className="text-gray-600 hover:text-bondy-accent transition-colors">Documentation</Link></li>
-                <li><Link to="/help" className="text-gray-600 hover:text-bondy-accent transition-colors">Help Center</Link></li>
-                <li><Link to="/federation" className="text-gray-600 hover:text-bondy-accent transition-colors">How Federation Works</Link></li>
+                <li><Link to="/documentation" className="text-muted-foreground hover:text-secondary transition-colors">Documentation</Link></li>
+                <li><Link to="/help" className="text-muted-foreground hover:text-secondary transition-colors">Help Center</Link></li>
+                <li><Link to="/federation" className="text-muted-foreground hover:text-secondary transition-colors">How Federation Works</Link></li>
               </ul>
             </div>
 
-            <div>
-              <h3 className="text-sm font-semibold text-bondy-primary mb-4">Legal</h3>
+            <div className="col-span-2 sm:col-span-1">
+              <h3 className="text-sm font-semibold text-primary mb-4">Legal</h3>
               <ul className="space-y-3">
-                <li><Link to="/privacy" className="text-gray-600 hover:text-bondy-accent transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="text-gray-600 hover:text-bondy-accent transition-colors">Terms of Service</Link></li>
-                <li><Link to="/code-of-conduct" className="text-gray-600 hover:text-bondy-accent transition-colors">Code of Conduct</Link></li>
-                <li><Link to="/instance-guidelines" className="text-gray-600 hover:text-bondy-accent transition-colors">Instance Guidelines</Link></li>
+                <li><Link to="/privacy" className="text-muted-foreground hover:text-secondary transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="text-muted-foreground hover:text-secondary transition-colors">Terms of Service</Link></li>
+                <li><Link to="/code-of-conduct" className="text-muted-foreground hover:text-secondary transition-colors">Code of Conduct</Link></li>
+                <li><Link to="/instance-guidelines" className="text-muted-foreground hover:text-secondary transition-colors">Instance Guidelines</Link></li>
               </ul>
             </div>
           </div>
         </div>
 
-        <Separator className="my-8 bg-gray-200" />
+        <Separator className="my-8 bg-border" />
 
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="text-sm text-gray-500 mb-4 md:mb-0">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-muted-foreground text-center md:text-left">
             © {new Date().getFullYear()} Nolto. Open source under the{" "}
             <a 
               href="https://opensource.org/licenses/MIT" 
               target="_blank" 
               rel="noopener"
-              className="text-bondy-accent hover:text-bondy-primary transition-colors underline"
+              className="text-secondary hover:text-primary transition-colors underline"
             >
               MIT license
             </a>.
           </div>
-          <div className="flex space-x-6 items-center">
-            <Link to="/terms" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Terms</Link>
-            <Link to="/privacy" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Privacy</Link>
-            <a href="#" className="text-sm text-gray-500 hover:text-bondy-accent transition-colors">Cookies</a>
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 items-center">
+            <Link to="/terms" className="text-sm text-muted-foreground hover:text-secondary transition-colors">Terms</Link>
+            <Link to="/privacy" className="text-sm text-muted-foreground hover:text-secondary transition-colors">Privacy</Link>
+            <a href="#" className="text-sm text-muted-foreground hover:text-secondary transition-colors">Cookies</a>
             <a 
-              href="https://codeberg.org/Tensetti/Bondy" 
+              href="https://codeberg.org/Tensetti/Nolto" 
               target="_blank" 
               rel="noopener"
-              className="text-gray-500 hover:text-bondy-accent transition-colors"
+              className="text-muted-foreground hover:text-secondary transition-colors"
               title="View source on Codeberg"
             >
               <svg 

@@ -213,7 +213,7 @@ const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex space-x-2">
+              <div className="hidden sm:flex space-x-2">
                 <Button 
                   asChild 
                   variant="ghost" 
@@ -241,71 +241,111 @@ const Navbar = () => {
               </div>
             )}
             
-            {isAuthenticated && (
-              <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className={`md:hidden ${isHomePage && !scrolled ? 'text-primary-foreground' : ''}`}>
-                    <AlignJustify className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="sm:max-w-sm">
-                  <SheetHeader>
-                    <SheetTitle>
-                      <div className="flex items-center gap-2">
-                        <img 
-                          src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                          alt="Nolto" 
-                          className="w-6 h-6" 
-                        />
-                        <span className="font-display">Nolto</span>
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className={`md:hidden ${isHomePage && !scrolled ? 'text-primary-foreground' : ''}`}>
+                  <AlignJustify className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="sm:max-w-sm">
+                <SheetHeader>
+                  <SheetTitle>
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
+                        alt="Nolto" 
+                        className="w-6 h-6" 
+                      />
+                      <span className="font-display">Nolto</span>
+                    </div>
+                  </SheetTitle>
+                  <SheetDescription>
+                    {t("accessibility.navigationMenu", "Navigation menu")}
+                  </SheetDescription>
+                </SheetHeader>
+                <nav className="grid gap-4 text-lg mt-6">
+                  {isAuthenticated ? (
+                    <>
+                      {authenticatedNavigationItems.map((item) => (
+                        <RouterLink 
+                          key={item.href} 
+                          to={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className="px-2 py-1 hover:bg-muted rounded-md transition-colors"
+                        >
+                          {item.name}
+                        </RouterLink>
+                      ))}
+                      <div className="border-t pt-4 mt-4">
+                        <RouterLink 
+                          to="/profile"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors"
+                        >
+                          <User className="h-4 w-4 mr-2" />
+                          Profile
+                        </RouterLink>
+                        <button 
+                          onClick={() => {
+                            handleLogout();
+                            setIsOpen(false);
+                          }}
+                          className="flex items-center px-2 py-1 text-destructive w-full text-left hover:bg-destructive/10 rounded-md transition-colors mt-2"
+                        >
+                          Log out
+                        </button>
+                        <RouterLink 
+                          to="/admin/instances"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground mt-4"
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Instance Management
+                        </RouterLink>
                       </div>
-                    </SheetTitle>
-                    <SheetDescription>
-                      {t("accessibility.navigationMenu", "Navigation menu")}
-                    </SheetDescription>
-                  </SheetHeader>
-                  <nav className="grid gap-4 text-lg mt-6">
-                    {authenticatedNavigationItems.map((item) => (
+                    </>
+                  ) : (
+                    <>
                       <RouterLink 
-                        key={item.href} 
-                        to={item.href}
+                        to="/jobs"
                         onClick={() => setIsOpen(false)}
                         className="px-2 py-1 hover:bg-muted rounded-md transition-colors"
                       >
-                        {item.name}
+                        Jobs
                       </RouterLink>
-                    ))}
-                    <div className="border-t pt-4 mt-4">
                       <RouterLink 
-                        to="/profile"
+                        to="/federation"
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors"
+                        className="px-2 py-1 hover:bg-muted rounded-md transition-colors"
                       >
-                        <User className="h-4 w-4 mr-2" />
-                        Profile
+                        How Federation Works
                       </RouterLink>
-                      <button 
-                        onClick={() => {
-                          handleLogout();
-                          setIsOpen(false);
-                        }}
-                        className="flex items-center px-2 py-1 text-destructive w-full text-left hover:bg-destructive/10 rounded-md transition-colors mt-2"
-                      >
-                        Log out
-                      </button>
                       <RouterLink 
-                        to="/admin/instances"
+                        to="/mission"
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground mt-4"
+                        className="px-2 py-1 hover:bg-muted rounded-md transition-colors"
                       >
-                        <Settings className="h-4 w-4 mr-2" />
-                        Instance Management
+                        Our Mission
                       </RouterLink>
-                    </div>
-                  </nav>
-                </SheetContent>
-              </Sheet>
-            )}
+                      <div className="border-t pt-4 mt-4 space-y-3">
+                        <Button asChild className="w-full">
+                          <RouterLink to="/auth/signup" onClick={() => setIsOpen(false)}>
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Create Account
+                          </RouterLink>
+                        </Button>
+                        <Button asChild variant="outline" className="w-full">
+                          <RouterLink to="/auth/login" onClick={() => setIsOpen(false)}>
+                            <LogIn className="h-4 w-4 mr-2" />
+                            Sign In
+                          </RouterLink>
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
