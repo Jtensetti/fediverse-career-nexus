@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +19,6 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
 
   useEffect(() => {
     if (post) {
-      console.log('📝 Setting edit content from post:', post);
       // Extract content from different ActivityPub formats
       let text = "";
       if (post.type === 'Create' && post.content.object?.content) {
@@ -32,26 +30,19 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
       // Remove HTML tags if present
       text = text.replace(/<[^>]*>/g, '');
       setContent(text);
-      console.log('📝 Extracted content for editing:', text);
     }
   }, [post]);
 
   const handleSave = async () => {
-    if (!post) {
-      console.error('❌ No post to update');
-      return;
-    }
+    if (!post) return;
     
-    console.log('💾 Saving post update:', { postId: post.id, content });
     setLoading(true);
     
     try {
       await updatePost(post.id, { content });
-      console.log('✅ Post update successful');
       onUpdated();
       onOpenChange(false);
     } catch (err: any) {
-      console.error('❌ Post update failed:', err);
       toast.error(err.message || "Failed to update post");
     } finally {
       setLoading(false);

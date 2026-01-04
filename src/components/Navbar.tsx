@@ -24,6 +24,8 @@ import { NotificationBell } from "./NotificationBell";
 import { AlignJustify, LogIn, Settings, User, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -35,6 +37,19 @@ const Navbar = () => {
   
   const isHomePage = location.pathname === "/";
   const isAuthenticated = !!user;
+
+  // Check if user is admin or moderator
+  const { data: isAdminOrModerator } = useQuery({
+    queryKey: ['isAdminOrModerator', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return false;
+      const { data, error } = await supabase.rpc('is_moderator', { _user_id: user.id });
+      if (error) return false;
+      return data === true;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
   const handleLogout = async () => {
     try {
@@ -140,7 +155,7 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder-avatar.jpg" alt="Avatar" />
+                      <AvatarImage src="" alt="Avatar" />
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {user?.email?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
@@ -168,12 +183,14 @@ const Navbar = () => {
                       {t("nav.moderation", "Moderation")}
                     </RouterLink>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/admin/instances" className="cursor-pointer">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Instance Management
-                    </RouterLink>
-                  </DropdownMenuItem>
+                  {isAdminOrModerator && (
+                    <DropdownMenuItem asChild>
+                      <RouterLink to="/admin/instances" className="cursor-pointer">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Instance Management
+                      </RouterLink>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive hover:text-destructive focus:bg-destructive/10">
                     {t("auth.logout", "Log out")}
                   </DropdownMenuItem>
@@ -261,14 +278,16 @@ const Navbar = () => {
                         >
                           Log out
                         </button>
-                        <RouterLink 
-                          to="/admin/instances"
-                          onClick={() => setIsOpen(false)}
-                          className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground mt-4"
-                        >
-                          <Settings className="h-4 w-4 mr-2" />
-                          Instance Management
-                        </RouterLink>
+                        {isAdminOrModerator && (
+                          <RouterLink 
+                            to="/admin/instances"
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center px-2 py-1 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground mt-4"
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Instance Management
+                          </RouterLink>
+                        )}
                       </div>
                     </>
                   ) : (
