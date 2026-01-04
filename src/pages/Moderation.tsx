@@ -74,7 +74,7 @@ const Moderation = () => {
         
         // Check if user is an admin
         const { data: adminData, error: adminError } = await supabase.rpc('is_admin', {
-          user_id: userId
+          _user_id: userId
         });
         
         if (adminError) {
@@ -90,7 +90,7 @@ const Moderation = () => {
         
         // Check if user is a moderator
         const { data: modData, error: modError } = await supabase.rpc('is_moderator', {
-          user_id: userId
+          _user_id: userId
         });
         
         if (modError) {

@@ -49,7 +49,7 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
         const { count: totalViews } = await supabase
           .from('profile_views')
           .select('*', { count: 'exact', head: true })
-          .eq('viewed_id', currentUserId);
+          .eq('profile_id', currentUserId);
 
         // Get recent views (last 7 days)
         const sevenDaysAgo = new Date();
@@ -58,8 +58,8 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
         const { count: recentViews } = await supabase
           .from('profile_views')
           .select('*', { count: 'exact', head: true })
-          .eq('viewed_id', currentUserId)
-          .gte('viewed_at', sevenDaysAgo.toISOString());
+          .eq('profile_id', currentUserId)
+          .gte('created_at', sevenDaysAgo.toISOString());
 
         setViewsData({
           totalViews: totalViews || 0,

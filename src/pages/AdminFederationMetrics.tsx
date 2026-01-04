@@ -34,7 +34,7 @@ export default function AdminFederationMetrics() {
       // Check if user has admin role
       const { data, error } = await supabase.rpc(
         'is_admin',
-        { user_id: session.user.id }
+        { _user_id: session.user.id }
       );
       
       if (error) {

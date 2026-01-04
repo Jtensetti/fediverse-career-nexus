@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 // Experience Types
 export interface Experience {
   id?: string;
-  user_id: string; // Changed from optional to required
+  user_id: string;
   title: string;
   company: string;
   company_domain?: string;
@@ -14,7 +14,7 @@ export interface Experience {
   end_date?: string;
   is_current_role: boolean;
   description?: string;
-  verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected';
+  verification_status?: string; // Changed to string to match database
   created_at?: string;
   updated_at?: string;
 }
@@ -22,13 +22,13 @@ export interface Experience {
 // Education Types
 export interface Education {
   id?: string;
-  user_id: string; // Changed from optional to required
+  user_id: string;
   institution: string;
   degree: string;
   field: string;
   start_year: number;
   end_year?: number;
-  verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected';
+  verification_status?: string; // Changed to string to match database
   created_at?: string;
   updated_at?: string;
 }

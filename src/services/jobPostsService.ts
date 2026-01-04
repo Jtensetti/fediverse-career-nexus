@@ -5,23 +5,30 @@ import { federateJobPost } from "./activityPubService";
 export interface JobPost {
   id: string;
   user_id: string;
-  company_name: string;
-  company_verified: boolean;
+  company: string; // renamed from company_name
   title: string;
-  description: string;
-  location: string;
-  job_type: 'full_time' | 'part_time' | 'contract' | 'internship' | 'temporary';
+  description: string | null;
+  location: string | null;
+  employment_type: string; // renamed from job_type
   salary_min: number | null;
   salary_max: number | null;
   salary_currency: string | null;
-  remote_allowed: boolean;
-  application_url: string | null;
-  contact_email: string | null;
-  skills: string[];
-  published: boolean;
-  published_at: string | null;
+  remote_policy: string | null; // renamed from remote_allowed
+  experience_level: string | null;
+  skills: string[] | null;
+  is_active: boolean; // renamed from published
+  expires_at: string | null;
   created_at: string;
   updated_at: string;
+  // Legacy field mappings for compatibility
+  company_name?: string;
+  company_verified?: boolean;
+  job_type?: string;
+  remote_allowed?: boolean;
+  application_url?: string | null;
+  contact_email?: string | null;
+  published?: boolean;
+  published_at?: string | null;
 }
 
 export interface JobPostFilter {
@@ -38,13 +45,13 @@ export const getPublishedJobPosts = async (filters?: JobPostFilter): Promise<Job
     let query = supabase
       .from('job_posts')
       .select('*')
-      .eq('published', true)
-      .order('published_at', { ascending: false });
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
     
     // Apply filters
     if (filters) {
       if (filters.job_type) {
-        query = query.eq('job_type', filters.job_type);
+        query = query.eq('employment_type', filters.job_type);
       }
       
       if (filters.location) {
@@ -52,11 +59,11 @@ export const getPublishedJobPosts = async (filters?: JobPostFilter): Promise<Job
       }
       
       if (filters.remote_allowed !== undefined) {
-        query = query.eq('remote_allowed', filters.remote_allowed);
+        query = query.eq('remote_policy', filters.remote_allowed ? 'remote' : 'on-site');
       }
       
       if (filters.search) {
-        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,company_name.ilike.%${filters.search}%`);
+        query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,company.ilike.%${filters.search}%`);
       }
       
       if (filters.skills && filters.skills.length > 0) {
@@ -159,9 +166,9 @@ export const createJobPost = async (jobPost: Omit<JobPost, 'id' | 'user_id' | 'c
     
     toast.success('Job post created successfully');
     
-    // If the job post is published, federate it
-    if (data.published) {
-      console.log('Job post is published, federating...');
+    // If the job post is active, federate it
+    if (data.is_active) {
+      console.log('Job post is active, federating...');
       const federationSuccess = await federateJobPost(data);
       if (federationSuccess) {
         toast.success('Job post federated to the network');
@@ -269,7 +276,7 @@ export const toggleJobPostPublished = async (id: string, published: boolean): Pr
     
     const { data, error } = await supabase
       .from('job_posts')
-      .update({ published })
+      .update({ is_active: published })
       .eq('id', id)
       .eq('user_id', session.session.user.id)
       .select('*')
