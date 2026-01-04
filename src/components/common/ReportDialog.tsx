@@ -14,12 +14,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { submitReport, type ContentType } from "@/services/reportService";
 
 interface ReportDialogProps {
-  contentType: "post" | "article" | "job" | "user" | "event";
+  contentType: ContentType;
   contentId: string;
   contentTitle?: string;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const reportReasons = [
@@ -36,11 +39,18 @@ export function ReportDialog({
   contentId,
   contentTitle,
   trigger,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: ReportDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Support both controlled and uncontrolled modes
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
 
   const handleSubmit = async () => {
     if (!reason) {
@@ -50,15 +60,81 @@ export function ReportDialog({
 
     setIsSubmitting(true);
     
-    // Simulate API call - in real implementation, this would call a report endpoint
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const success = await submitReport(contentType, contentId, reason, details || undefined);
     
-    toast.success("Report submitted successfully. We'll review it shortly.");
-    setOpen(false);
-    setReason("");
-    setDetails("");
+    if (success) {
+      toast.success("Report submitted successfully. We'll review it shortly.");
+      setOpen(false);
+      setReason("");
+      setDetails("");
+    } else {
+      toast.error("Failed to submit report. Please try again.");
+    }
     setIsSubmitting(false);
   };
+
+  const dialogContent = (
+    <DialogContent className="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>Report {contentType}</DialogTitle>
+        <DialogDescription>
+          {contentTitle 
+            ? `Reporting: "${contentTitle.substring(0, 50)}${contentTitle.length > 50 ? '...' : ''}"`
+            : `Help us understand what's wrong with this ${contentType}.`
+          }
+        </DialogDescription>
+      </DialogHeader>
+      
+      <div className="space-y-4 py-4">
+        <div className="space-y-3">
+          <Label>Reason for reporting</Label>
+          <RadioGroup value={reason} onValueChange={setReason}>
+            {reportReasons.map((r) => (
+              <div key={r.value} className="flex items-center space-x-2">
+                <RadioGroupItem value={r.value} id={r.value} />
+                <Label htmlFor={r.value} className="font-normal cursor-pointer">
+                  {r.label}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="details">Additional details (optional)</Label>
+          <Textarea
+            id="details"
+            placeholder="Provide any additional context..."
+            value={details}
+            onChange={(e) => setDetails(e.target.value)}
+            rows={3}
+          />
+        </div>
+      </div>
+      
+      <DialogFooter>
+        <Button variant="outline" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSubmit} 
+          disabled={isSubmitting || !reason}
+          className="bg-destructive hover:bg-destructive/90"
+        >
+          {isSubmitting ? "Submitting..." : "Submit Report"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+
+  // If controlled mode without trigger, just render dialog without trigger
+  if (isControlled && !trigger) {
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        {dialogContent}
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -70,57 +146,7 @@ export function ReportDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Report {contentType}</DialogTitle>
-          <DialogDescription>
-            {contentTitle 
-              ? `Reporting: "${contentTitle.substring(0, 50)}${contentTitle.length > 50 ? '...' : ''}"`
-              : `Help us understand what's wrong with this ${contentType}.`
-            }
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-4 py-4">
-          <div className="space-y-3">
-            <Label>Reason for reporting</Label>
-            <RadioGroup value={reason} onValueChange={setReason}>
-              {reportReasons.map((r) => (
-                <div key={r.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={r.value} id={r.value} />
-                  <Label htmlFor={r.value} className="font-normal cursor-pointer">
-                    {r.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="details">Additional details (optional)</Label>
-            <Textarea
-              id="details"
-              placeholder="Provide any additional context..."
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              rows={3}
-            />
-          </div>
-        </div>
-        
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting || !reason}
-            className="bg-destructive hover:bg-destructive/90"
-          >
-            {isSubmitting ? "Submitting..." : "Submit Report"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      {dialogContent}
     </Dialog>
   );
 }

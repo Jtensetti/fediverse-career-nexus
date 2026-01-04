@@ -18,6 +18,7 @@ import { getPostReplies } from "@/services/postReplyService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PostReplyDialog from "./PostReplyDialog";
+import BlockUserDialog from "./BlockUserDialog";
 import type { FederatedPost } from "@/services/federationService";
 
 interface FederatedPostCardProps {
@@ -36,6 +37,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
   const { user } = useAuth();
   
   // Debug logs removed for production
@@ -311,7 +313,10 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
                       <Flag className="mr-2 h-4 w-4" />
                       Report Post
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem 
+                      className="text-destructive"
+                      onClick={() => setShowBlockDialog(true)}
+                    >
                       <UserX className="mr-2 h-4 w-4" />
                       Block User
                     </DropdownMenuItem>
@@ -431,8 +436,19 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
         contentType="post"
         contentId={post.id}
         contentTitle={getContent().replace(/<[^>]*>/g, '').substring(0, 50)}
-        trigger={<span className="hidden" />}
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
       />
+
+      {post.user_id && (
+        <BlockUserDialog
+          open={showBlockDialog}
+          onOpenChange={setShowBlockDialog}
+          userId={post.user_id}
+          userName={getActorName()}
+          onBlocked={() => onDelete?.(post.id)}
+        />
+      )}
     </>
   );
 }
