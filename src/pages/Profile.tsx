@@ -288,9 +288,27 @@ const ProfilePage = () => {
             </div>
           </div>
           {!viewingOwnProfile && (
-            <Button size="sm" onClick={handleConnect} disabled={isConnecting} loading={isConnecting}>
-              Connect
-            </Button>
+            <>
+              {connectionRelationship?.status === 'accepted' ? (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Check size={12} /> Connected
+                </Badge>
+              ) : connectionRelationship?.status === 'pending_outgoing' ? (
+                <Button size="sm" variant="secondary" disabled>
+                  <Clock className="h-4 w-4 mr-1" /> Pending
+                </Button>
+              ) : connectionRelationship?.status === 'pending_incoming' ? (
+                <div className="flex gap-1">
+                  <Button size="sm" onClick={handleAcceptConnection} disabled={isRespondingToConnection} loading={isRespondingToConnection}>
+                    Accept
+                  </Button>
+                </div>
+              ) : (
+                <Button size="sm" onClick={handleConnect} disabled={isConnecting} loading={isConnecting}>
+                  Connect
+                </Button>
+              )}
+            </>
           )}
         </div>
       </motion.div>
@@ -353,14 +371,41 @@ const ProfilePage = () => {
                   )}
                 </>
               ) : (
-                <>
-                  <Button 
-                    onClick={handleConnect}
-                    disabled={isConnecting}
-                    loading={isConnecting}
-                  >
-                    Connect
-                  </Button>
+              <>
+                  {connectionRelationship?.status === 'accepted' ? (
+                    <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
+                      <Check size={14} /> Connected
+                    </Badge>
+                  ) : connectionRelationship?.status === 'pending_outgoing' ? (
+                    <Button variant="secondary" disabled>
+                      <Clock className="h-4 w-4 mr-2" /> Pending
+                    </Button>
+                  ) : connectionRelationship?.status === 'pending_incoming' ? (
+                    <>
+                      <Button 
+                        onClick={handleAcceptConnection}
+                        disabled={isRespondingToConnection}
+                        loading={isRespondingToConnection}
+                      >
+                        Accept
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={handleDeclineConnection}
+                        disabled={isRespondingToConnection}
+                      >
+                        Decline
+                      </Button>
+                    </>
+                  ) : (
+                    <Button 
+                      onClick={handleConnect}
+                      disabled={isConnecting}
+                      loading={isConnecting}
+                    >
+                      Connect
+                    </Button>
+                  )}
                   <Button variant="outline" size="icon">
                     <MessageSquare className="h-4 w-4" />
                   </Button>
