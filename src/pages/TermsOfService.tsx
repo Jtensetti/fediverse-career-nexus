@@ -243,19 +243,19 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">15. Contact</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">15. Contact</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   For questions or notices regarding these Terms, please contact:
                 </p>
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-muted/50 p-4 rounded-lg">
                   <p><strong>Email:</strong> jtensetti@protonmail.com</p>
-                  <p><strong>Bondy Account:</strong> JTensetti (@user_f33be7a8)</p>
+                  <p><strong>Nolto Account:</strong> JTensetti (@user_f33be7a8)</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg mt-4">
+                <div className="bg-muted/50 p-4 rounded-lg mt-4">
                   <p>
                     <strong>By using this Service, you agree to these Terms of Service.</strong><br />
-                    Thank you for being part of the Bondy network.
+                    Thank you for being part of the Nolto network.
                   </p>
                 </div>
               </div>
@@ -265,7 +265,7 @@ const TermsOfService = () => {
       </div>
 
       {/* Navigation */}
-      <div className="border-t border-gray-200 py-6">
+      <div className="border-t py-6">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <Button asChild variant="outline">

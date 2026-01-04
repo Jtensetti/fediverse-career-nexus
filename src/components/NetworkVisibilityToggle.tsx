@@ -63,11 +63,11 @@ const NetworkVisibilityToggle = ({ initialValue, onChange }: NetworkVisibilityTo
     <div className="flex flex-col space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <UsersRound size={18} className="text-bondy-primary" />
+          <UsersRound size={18} className="text-primary" />
           <Label htmlFor="network-visibility" className="font-medium">{t('network.showConnections')}</Label>
         </div>
         {loading ? (
-          <Loader2 size={18} className="animate-spin text-gray-400" aria-label={t('common.loading')} />
+          <Loader2 size={18} className="animate-spin text-muted-foreground" aria-label={t('common.loading')} />
         ) : (
           <Switch 
             id="network-visibility" 
@@ -78,7 +78,7 @@ const NetworkVisibilityToggle = ({ initialValue, onChange }: NetworkVisibilityTo
           />
         )}
       </div>
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-muted-foreground">
         {enabled 
           ? t('network.connectionsVisible')
           : t('network.connectionsHidden')}

@@ -38,16 +38,12 @@ const Navbar = () => {
   const isHomePage = location.pathname === "/";
 
   useEffect(() => {
-    console.log('Navbar: Setting up auth check');
-    
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('Navbar: Current session:', session?.user?.email);
         setUser(session?.user || null);
         setIsAuthenticated(!!session);
       } catch (error) {
-        console.error('Navbar: Error checking auth:', error);
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -58,7 +54,6 @@ const Navbar = () => {
     checkAuth();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Navbar: Auth state changed:', event, session?.user?.email);
       setUser(session?.user || null);
       setIsAuthenticated(!!session);
       setAuthLoading(false);

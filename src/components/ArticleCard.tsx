@@ -18,7 +18,7 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
   return (
     <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <ArticleAuthors articleId={article.id} size="sm" showLabels={false} />
           <span>•</span>
           <span>{publishDate}</span>
@@ -30,11 +30,11 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
         </Link>
       </CardHeader>
       <CardContent className="pb-3 flex-grow">
-        <p className="text-gray-600 line-clamp-3">
+        <p className="text-muted-foreground line-clamp-3">
           {article.excerpt || article.content.substring(0, 150) + "..."}
         </p>
       </CardContent>
-      <CardFooter className="pt-0 flex justify-between text-sm text-gray-500">
+      <CardFooter className="pt-0 flex justify-between text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <FileText size={16} />
           <span>Article</span>

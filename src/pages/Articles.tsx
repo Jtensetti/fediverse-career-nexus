@@ -41,7 +41,7 @@ const Articles = () => {
                 <BookText className="h-8 w-8" />
                 Articles
               </h1>
-              <p className="text-gray-600 mt-1">Read our latest articles and stay informed</p>
+              <p className="text-muted-foreground mt-1">Read our latest articles and stay informed</p>
             </div>
             
             <Link to="/articles/manage">
@@ -52,7 +52,7 @@ const Articles = () => {
           </div>
           
           <div className="relative mb-8">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
               type="text"
               placeholder="Search articles..."
@@ -84,7 +84,7 @@ const Articles = () => {
           ) : (
             <div className="text-center py-12">
               <h2 className="text-xl font-semibold mb-2">No articles found</h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 {searchQuery
                   ? "No articles match your search query."
                   : "There are no published articles yet."}

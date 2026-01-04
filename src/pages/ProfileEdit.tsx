@@ -374,12 +374,12 @@ const ProfileEditPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-muted/30">
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
           <div className="animate-pulse flex flex-col items-center">
-            <div className="h-8 w-64 bg-gray-200 rounded mb-6"></div>
-            <div className="h-64 w-full max-w-2xl bg-gray-100 rounded"></div>
+            <div className="h-8 w-64 bg-muted rounded mb-6"></div>
+            <div className="h-64 w-full max-w-2xl bg-muted/50 rounded"></div>
           </div>
         </main>
         <Footer />
@@ -388,7 +388,7 @@ const ProfileEditPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-muted/30">
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">
@@ -519,7 +519,6 @@ const ProfileEditPage = () => {
                         
                         <Button 
                           type="submit" 
-                          className="bg-bondy-primary hover:bg-bondy-primary/90"
                           disabled={isLoading.saving}
                         >
                           {isLoading.saving ? "Saving..." : "Save Changes"}
@@ -536,7 +535,7 @@ const ProfileEditPage = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Briefcase size={20} className="text-bondy-primary" />
+                  <Briefcase size={20} className="text-primary" />
                   Experience
                 </CardTitle>
                 <Button 
@@ -551,8 +550,8 @@ const ProfileEditPage = () => {
                 {isLoading.experiences ? (
                   <div className="flex justify-center py-8">
                     <div className="flex flex-col items-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bondy-primary"></div>
-                      <p className="mt-2 text-sm text-gray-500">Loading experiences...</p>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="mt-2 text-sm text-muted-foreground">Loading experiences...</p>
                     </div>
                   </div>
                 ) : (
@@ -580,7 +579,7 @@ const ProfileEditPage = () => {
                               variant="ghost" 
                               size="sm" 
                               onClick={() => removeExperience(index)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash size={16} />
                             </Button>
@@ -682,7 +681,6 @@ const ProfileEditPage = () => {
                           <div className="md:col-span-2 flex justify-end">
                             <Button
                               onClick={() => saveExperience(index)}
-                              className="bg-bondy-primary hover:bg-bondy-primary/90"
                             >
                               {exp.id ? 'Update' : 'Save'} Experience
                             </Button>
@@ -692,7 +690,7 @@ const ProfileEditPage = () => {
                     ))}
                     
                     {experiences.length === 0 && (
-                      <div className="text-center py-6 text-gray-500">
+                      <div className="text-center py-6 text-muted-foreground">
                         <p>No experience added yet. Click "Add Experience" to get started.</p>
                       </div>
                     )}
@@ -706,7 +704,7 @@ const ProfileEditPage = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <School size={20} className="text-bondy-primary" />
+                  <School size={20} className="text-primary" />
                   Education
                 </CardTitle>
                 <Button 
@@ -721,8 +719,8 @@ const ProfileEditPage = () => {
                 {isLoading.education ? (
                   <div className="flex justify-center py-8">
                     <div className="flex flex-col items-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bondy-primary"></div>
-                      <p className="mt-2 text-sm text-gray-500">Loading education...</p>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="mt-2 text-sm text-muted-foreground">Loading education...</p>
                     </div>
                   </div>
                 ) : (
@@ -749,7 +747,7 @@ const ProfileEditPage = () => {
                               variant="ghost" 
                               size="sm" 
                               onClick={() => removeEducation(index)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash size={16} />
                             </Button>
@@ -815,7 +813,6 @@ const ProfileEditPage = () => {
                           <div className="md:col-span-2 flex justify-end">
                             <Button
                               onClick={() => saveEducation(index)}
-                              className="bg-bondy-primary hover:bg-bondy-primary/90"
                             >
                               {edu.id ? 'Update' : 'Save'} Education
                             </Button>
@@ -825,7 +822,7 @@ const ProfileEditPage = () => {
                     ))}
                     
                     {education.length === 0 && (
-                      <div className="text-center py-6 text-gray-500">
+                      <div className="text-center py-6 text-muted-foreground">
                         <p>No education added yet. Click "Add Education" to get started.</p>
                       </div>
                     )}
@@ -839,7 +836,7 @@ const ProfileEditPage = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Star size={20} className="text-bondy-primary" />
+                  <Star size={20} className="text-primary" />
                   Skills
                 </CardTitle>
               </CardHeader>
@@ -847,8 +844,8 @@ const ProfileEditPage = () => {
                 {isLoading.skills ? (
                   <div className="flex justify-center py-8">
                     <div className="flex flex-col items-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bondy-primary"></div>
-                      <p className="mt-2 text-sm text-gray-500">Loading skills...</p>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="mt-2 text-sm text-muted-foreground">Loading skills...</p>
                     </div>
                   </div>
                 ) : (
@@ -865,10 +862,10 @@ const ProfileEditPage = () => {
                     
                     <div className="flex flex-wrap gap-2 mt-4">
                       {skills.map((skill) => (
-                        <div key={skill.id} className="bg-gray-100 rounded-lg px-3 py-2 flex items-center gap-2">
+                        <div key={skill.id} className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
                           <span>{skill.name}</span>
                           {skill.endorsements && skill.endorsements > 0 && (
-                            <span className="bg-bondy-primary text-white text-xs px-1.5 py-0.5 rounded-full">
+                            <span className="bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
                               {skill.endorsements}
                             </span>
                           )}
@@ -878,14 +875,14 @@ const ProfileEditPage = () => {
                             className="h-5 w-5 rounded-full" 
                             onClick={() => removeSkill(skill.id)}
                           >
-                            <Trash size={12} className="text-gray-500" />
+                            <Trash size={12} className="text-muted-foreground" />
                           </Button>
                         </div>
                       ))}
                     </div>
                     
                     {skills.length === 0 && (
-                      <div className="text-center py-6 text-gray-500">
+                      <div className="text-center py-6 text-muted-foreground">
                         <p>No skills added yet. Use the field above to add your skills.</p>
                       </div>
                     )}
@@ -899,7 +896,7 @@ const ProfileEditPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Settings size={20} className="text-bondy-primary" />
+                  <Settings size={20} className="text-primary" />
                   Privacy Settings
                 </CardTitle>
               </CardHeader>
@@ -919,14 +916,14 @@ const ProfileEditPage = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label htmlFor="message-privacy" className="font-medium">Message privacy</Label>
-                      <p className="text-sm text-gray-600 mt-1">Only allow messages from your connections</p>
+                      <p className="text-sm text-muted-foreground mt-1">Only allow messages from your connections</p>
                     </div>
                     <Switch id="message-privacy" defaultChecked />
                   </div>
                 </div>
                 
                 <div className="flex justify-end mt-6">
-                  <Button className="bg-bondy-primary hover:bg-bondy-primary/90">
+                  <Button>
                     Save Privacy Settings
                   </Button>
                 </div>
