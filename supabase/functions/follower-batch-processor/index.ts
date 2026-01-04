@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { SignJWT } from "https://esm.sh/jose@4.14.4";
+import { signRequest, ensureActorHasKeys } from "../_shared/http-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,14 +35,12 @@ async function logRequestMetrics(
       .insert({
         remote_host: remoteHost,
         endpoint,
-        success,
         response_time_ms: responseTimeMs,
-        status_code: statusCode,
-        error_message: errorMessage
+        request_id: crypto.randomUUID(),
+        user_agent: "ActivityPub-BatchProcessor/1.0"
       });
   } catch (error) {
     console.error("Failed to log request metrics:", error);
-    // Non-blocking - we don't want metrics logging to break functionality
   }
 }
 
@@ -53,13 +51,15 @@ async function resolveInboxUrl(actorUri: string): Promise<string | null> {
   // First, try to get from local actors table
   const { data: localActor, error: localError } = await supabaseClient
     .from("actors")
-    .select("inbox_url")
+    .select("preferred_username")
     .eq("preferred_username", actorUri.split('/').pop())
     .single();
   
-  if (!localError && localActor?.inbox_url) {
-    console.log(`Found local actor inbox: ${localActor.inbox_url}`);
-    return localActor.inbox_url;
+  if (!localError && localActor) {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const inboxUrl = `${supabaseUrl}/functions/v1/inbox/${localActor.preferred_username}`;
+    console.log(`Found local actor inbox: ${inboxUrl}`);
+    return inboxUrl;
   }
   
   // Try to get from remote actors cache
@@ -158,57 +158,44 @@ async function batchResolveInboxUrls(actorUris: string[]): Promise<Map<string, s
   return inboxMap;
 }
 
-// HTTP Signature implementation
-async function signRequest(url: string, method: string, headers: Headers, body: string, privateKey: string, keyId: string) {
-  const target = new URL(url);
-  const date = headers.get("Date") || new Date().toUTCString();
-  const host = headers.get("Host") || target.host;
-  const digest = headers.get("Digest");
+// Function to check if a domain is blocked
+async function isDomainBlocked(url: string): Promise<boolean> {
+  try {
+    const parsedUrl = new URL(url);
+    const host = parsedUrl.hostname;
+    
+    const { data, error } = await supabaseClient
+      .from('blocked_domains')
+      .select('status')
+      .eq('host', host)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error checking blocked domain:', error);
+      return false; // Fail open - don't block if we can't check
+    }
+    
+    return data?.status === 'blocked';
+  } catch (error) {
+    console.error('Error parsing URL for domain check:', error);
+    return false;
+  }
+}
+
+// Function to filter inbox URLs by blocked domains
+async function filterBlockedInboxUrls(inboxUrls: string[]): Promise<string[]> {
+  const filteredUrls = [];
   
-  // Build signature string
-  let signatureString = `(request-target): ${method.toLowerCase()} ${target.pathname}`;
-  signatureString += `\nhost: ${host}`;
-  signatureString += `\ndate: ${date}`;
-  
-  if (digest && method !== "GET") {
-    signatureString += `\ndigest: ${digest}`;
+  for (const inboxUrl of inboxUrls) {
+    const isBlocked = await isDomainBlocked(inboxUrl);
+    if (isBlocked) {
+      console.log(`Skipping delivery to blocked domain: ${new URL(inboxUrl).hostname}`);
+    } else {
+      filteredUrls.push(inboxUrl);
+    }
   }
   
-  // Import the private key
-  const keyData = privateKey
-    .replace("-----BEGIN PRIVATE KEY-----", "")
-    .replace("-----END PRIVATE KEY-----", "")
-    .replace(/\s/g, "");
-  
-  const binaryKey = Uint8Array.from(atob(keyData), c => c.charCodeAt(0));
-  
-  const cryptoKey = await crypto.subtle.importKey(
-    "pkcs8",
-    binaryKey,
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256",
-    },
-    false,
-    ["sign"]
-  );
-  
-  // Sign the signature string
-  const encoder = new TextEncoder();
-  const data = encoder.encode(signatureString);
-  const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", cryptoKey, data);
-  
-  // Convert to base64
-  const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
-  
-  // Set the signature header
-  let signatureHeader = `keyId="${keyId}",algorithm="rsa-sha256",headers="(request-target) host date`;
-  if (digest && method !== "GET") {
-    signatureHeader += ` digest`;
-  }
-  signatureHeader += `",signature="${signatureBase64}"`;
-  
-  headers.set("Signature", signatureHeader);
+  return filteredUrls;
 }
 
 // Function to check if a domain is blocked

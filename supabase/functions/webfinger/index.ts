@@ -48,8 +48,20 @@ async function logRequestMetrics(
 }
 
 // Create local actor object on-demand
-function createLocalActorObject(profile: any, domain: string) {
+async function createLocalActorObject(profile: any, domain: string) {
   const actorUrl = `https://${domain}/actor/${profile.username}`;
+  
+  // Try to get the actual public key from the actors table
+  let publicKeyPem = "";
+  const { data: actor, error: actorError } = await supabaseClient
+    .from("actors")
+    .select("public_key")
+    .eq("user_id", profile.id)
+    .single();
+  
+  if (!actorError && actor?.public_key) {
+    publicKeyPem = actor.public_key;
+  }
   
   return {
     "@context": [
@@ -68,7 +80,7 @@ function createLocalActorObject(profile: any, domain: string) {
     publicKey: {
       id: `${actorUrl}#main-key`,
       owner: actorUrl,
-      publicKeyPem: "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----" // Placeholder
+      publicKeyPem: publicKeyPem
     }
   };
 }
@@ -336,7 +348,7 @@ serve(async (req) => {
       } else {
         // Create actor on-demand
         console.log(`Creating actor on-demand for ${username}`);
-        actorObject = createLocalActorObject(profile, currentDomain);
+        actorObject = await createLocalActorObject(profile, currentDomain);
         
         // Try to find or create actor record
         let { data: actorRecord } = await supabaseClient

@@ -1,207 +1,20 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { encode as encodeBase64 } from "https://deno.land/std@0.167.0/encoding/base64.ts";
+import { 
+  signRequest, 
+  verifySignature, 
+  ensureActorHasKeys, 
+  signedFetch, 
+  fetchPublicKey,
+  pemToPublicKeyBuffer
+} from "../_shared/http-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Copy of HTTP signature functions to avoid import issues
-import { encode as encodeBase64 } from "https://deno.land/std@0.167.0/encoding/base64.ts";
-
-/**
- * Sign an HTTP request for ActivityPub
- */
-async function signRequest(
-  url: string,
-  method: string,
-  headers: Headers,
-  body: string,
-  privateKey: string,
-  keyId: string
-): Promise<void> {
-  const target = new URL(url);
-  const pathWithQuery = target.pathname + target.search;
-  
-  // Generate digest of the body
-  const encoder = new TextEncoder();
-  const data = encoder.encode(body);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  const digestHeader = `SHA-256=${encodeBase64(hash)}`;
-  headers.set('Digest', digestHeader);
-  
-  // Get the date value if it exists, or set it if it doesn't
-  const date = headers.get('Date') || new Date().toUTCString();
-  if (!headers.has('Date')) {
-    headers.set('Date', date);
-  }
-  
-  // Prepare the string to sign
-  const headersToSign = ['(request-target)', 'host', 'date', 'digest'];
-  const headerValues = {
-    '(request-target)': `${method.toLowerCase()} ${pathWithQuery}`,
-    host: target.host,
-    date: date,
-    digest: digestHeader
-  };
-  
-  const stringToSign = headersToSign
-    .map(header => `${header}: ${headerValues[header as keyof typeof headerValues]}`)
-    .join('\n');
-  
-  // Import the private key
-  const key = await crypto.subtle.importKey(
-    'pkcs8',
-    pemToBuffer(privateKey),
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256',
-    },
-    false,
-    ['sign']
-  );
-  
-  // Sign the string
-  const signature = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5',
-    key,
-    encoder.encode(stringToSign)
-  );
-  
-  // Create the signature header
-  const signatureHeader = [
-    `keyId="${keyId}"`,
-    'algorithm="rsa-sha256"',
-    `headers="${headersToSign.join(' ')}"`,
-    `signature="${encodeBase64(signature)}"`
-  ].join(',');
-  
-  headers.set('Signature', signatureHeader);
-}
-
-// Helper function to convert PEM to ArrayBuffer
-function pemToBuffer(pem: string): ArrayBuffer {
-  const base64 = pem
-    .replace('-----BEGIN PRIVATE KEY-----', '')
-    .replace('-----END PRIVATE KEY-----', '')
-    .replace(/\s/g, '');
-  
-  return Uint8Array.from(
-    atob(base64)
-      .split('')
-      .map(c => c.charCodeAt(0))
-  );
-}
-
-// Helper function to ensure an actor has RSA keys
-async function ensureActorHasKeys(actorId: string): Promise<{
-  keyId: string;
-  privateKey: string;
-} | null> {
-  try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.error("Missing required environment variables");
-      return null;
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Check if actor has keys
-    const { data: actor, error: actorError } = await supabase
-      .from("actors")
-      .select("id, private_key, public_key, preferred_username")
-      .eq("id", actorId)
-      .single();
-    
-    if (actorError || !actor) {
-      console.error("Error fetching actor:", actorError);
-      return null;
-    }
-    
-    // If keys exist, return them
-    if (actor.private_key && actor.public_key) {
-      const keyId = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}#main-key`;
-      return {
-        keyId,
-        privateKey: actor.private_key
-      };
-    }
-    
-    // Generate new keys using the RPC function
-    const { error: generateError } = await supabase.rpc('ensure_actor_keys', {
-      actor_id: actorId
-    });
-    
-    if (generateError) {
-      console.error("Error generating keys:", generateError);
-      return null;
-    }
-    
-    // Fetch the newly generated keys
-    const { data: updatedActor, error: refetchError } = await supabase
-      .from("actors")
-      .select("private_key, preferred_username")
-      .eq("id", actorId)
-      .single();
-    
-    if (refetchError || !updatedActor?.private_key) {
-      console.error("Error retrieving generated keys:", refetchError);
-      return null;
-    }
-    
-    const keyId = `${supabaseUrl}/functions/v1/actor/${updatedActor.preferred_username}#main-key`;
-    return {
-      keyId,
-      privateKey: updatedActor.private_key
-    };
-  } catch (error) {
-    console.error("Error in ensureActorHasKeys:", error);
-    return null;
-  }
-}
-
-// Helper function to sign and send federation requests
-async function signedFetch(
-  url: string,
-  options: RequestInit,
-  actorId: string
-): Promise<Response> {
-  const keys = await ensureActorHasKeys(actorId);
-  
-  if (!keys) {
-    throw new Error("Failed to get actor keys for signing");
-  }
-  
-  const headers = new Headers(options.headers);
-  
-  // Ensure required headers are present
-  if (!headers.has("Date")) {
-    headers.set("Date", new Date().toUTCString());
-  }
-  if (!headers.has("Host")) {
-    headers.set("Host", new URL(url).host);
-  }
-  if (!headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/activity+json");
-  }
-  if (!headers.has("Accept")) {
-    headers.set("Accept", "application/activity+json");
-  }
-  
-  // Sign the request
-  await signRequest(url, options.method || "POST", headers, body, keys.privateKey, keys.keyId);
-
-  // Make the signed request
-  return fetch(url, {
-    ...options,
-    body,
-    headers
-  });
-}
 
 // Fetch a public key for a given keyId
 async function getPublicKey(keyId: string): Promise<string | null> {
@@ -519,6 +332,18 @@ serve(async (req) => {
         break;
       case "Create":
         await handleCreateActivity(activity, actor.id, sender);
+        break;
+      case "Like":
+        await handleLikeActivity(activity, actor.id, sender);
+        break;
+      case "Announce":
+        await handleAnnounceActivity(activity, actor.id, sender);
+        break;
+      case "Delete":
+        await handleDeleteActivity(activity, actor.id, sender);
+        break;
+      case "Update":
+        await handleUpdateActivity(activity, actor.id, sender);
         break;
       default:
         console.log(`Unsupported activity type: ${activity.type}`);
@@ -900,6 +725,177 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
     console.log(`Stored inbox item: ${data.id}`);
   } catch (error) {
     console.error("Error handling Create activity:", error);
+    throw error;
+  }
+}
+
+async function handleLikeActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Like activity from ${sender}`);
+    
+    const objectUrl = typeof activity.object === 'string' ? activity.object : activity.object?.id;
+    if (!objectUrl) {
+      throw new Error("Like activity missing object reference");
+    }
+    
+    // Store the like in inbox_items for processing
+    const { data, error } = await supabaseClient
+      .from("inbox_items")
+      .insert({
+        recipient_id: recipientId,
+        sender: sender,
+        activity_type: "Like",
+        object_type: "Note",
+        content: activity
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    console.log(`Stored Like activity: ${data.id} for object ${objectUrl}`);
+    
+    // TODO: Optionally increment like count on the referenced object
+    // This would require parsing the objectUrl to find the local post
+  } catch (error) {
+    console.error("Error handling Like activity:", error);
+    throw error;
+  }
+}
+
+async function handleAnnounceActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Announce (boost) activity from ${sender}`);
+    
+    const objectUrl = typeof activity.object === 'string' ? activity.object : activity.object?.id;
+    if (!objectUrl) {
+      throw new Error("Announce activity missing object reference");
+    }
+    
+    // Store the boost/announce in inbox_items
+    const { data, error } = await supabaseClient
+      .from("inbox_items")
+      .insert({
+        recipient_id: recipientId,
+        sender: sender,
+        activity_type: "Announce",
+        object_type: "Note",
+        content: activity
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    console.log(`Stored Announce activity: ${data.id} for object ${objectUrl}`);
+    
+    // TODO: Optionally increment boost count on the referenced object
+  } catch (error) {
+    console.error("Error handling Announce activity:", error);
+    throw error;
+  }
+}
+
+async function handleDeleteActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Delete activity from ${sender}`);
+    
+    const objectUrl = typeof activity.object === 'string' ? activity.object : activity.object?.id;
+    if (!objectUrl) {
+      throw new Error("Delete activity missing object reference");
+    }
+    
+    // Check if this is a tombstone (deleted object) 
+    const objectType = typeof activity.object === 'object' ? activity.object.type : null;
+    
+    if (objectType === 'Tombstone') {
+      console.log(`Received tombstone for ${objectUrl}`);
+    }
+    
+    // Mark any inbox items from this sender referencing this object as deleted
+    const { error: updateError } = await supabaseClient
+      .from("inbox_items")
+      .update({ processed_at: new Date().toISOString() })
+      .eq("sender", sender)
+      .contains("content", { object: { id: objectUrl } });
+    
+    if (updateError) {
+      console.warn("Error marking inbox items as processed:", updateError);
+    }
+    
+    // Store the delete activity for auditing
+    const { data, error } = await supabaseClient
+      .from("inbox_items")
+      .insert({
+        recipient_id: recipientId,
+        sender: sender,
+        activity_type: "Delete",
+        object_type: objectType || "Unknown",
+        content: activity,
+        processed_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    console.log(`Processed Delete activity: ${data.id} for object ${objectUrl}`);
+  } catch (error) {
+    console.error("Error handling Delete activity:", error);
+    throw error;
+  }
+}
+
+async function handleUpdateActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Update activity from ${sender}`);
+    
+    const object = activity.object;
+    if (!object) {
+      throw new Error("Update activity missing object");
+    }
+    
+    const objectUrl = typeof object === 'string' ? object : object.id;
+    const objectType = typeof object === 'object' ? object.type : null;
+    
+    // Store the update activity
+    const { data, error } = await supabaseClient
+      .from("inbox_items")
+      .insert({
+        recipient_id: recipientId,
+        sender: sender,
+        activity_type: "Update",
+        object_type: objectType,
+        content: activity
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    console.log(`Stored Update activity: ${data.id} for object ${objectUrl}`);
+    
+    // If this is an actor update, refresh the cache
+    if (objectType === 'Person' || objectType === 'Service' || objectType === 'Application') {
+      console.log(`Actor update received, refreshing cache for ${sender}`);
+      await supabaseClient
+        .from("remote_actors_cache")
+        .upsert({
+          actor_url: sender,
+          actor_data: object,
+          fetched_at: new Date().toISOString()
+        });
+    }
+  } catch (error) {
+    console.error("Error handling Update activity:", error);
     throw error;
   }
 }

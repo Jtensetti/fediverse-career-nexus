@@ -165,10 +165,21 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     // Create a "Create" activity that wraps the Note object
     console.log('💾 Creating post in database...');
 
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const actorUrl = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}`;
+
     const noteObject = {
       type: 'Note',
+      id: `${actorUrl}/posts/${crypto.randomUUID()}`,
+      attributedTo: actorUrl,
       content: postData.content,
-      image: imageUrl,
+      published: new Date().toISOString(),
+      to: ['https://www.w3.org/ns/activitystreams#Public'],
+      cc: [`${actorUrl}/followers`],
+      image: imageUrl ? {
+        type: 'Image',
+        url: imageUrl
+      } : undefined,
       actor: {
         id: actor.id,
         preferredUsername: actor.preferred_username,
@@ -177,8 +188,13 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     };
 
     const createActivity = {
+      '@context': 'https://www.w3.org/ns/activitystreams',
       type: 'Create',
-      actor: actor.id,
+      id: `${actorUrl}/activities/${crypto.randomUUID()}`,
+      actor: actorUrl,
+      published: new Date().toISOString(),
+      to: ['https://www.w3.org/ns/activitystreams#Public'],
+      cc: [`${actorUrl}/followers`],
       object: noteObject
     };
 
@@ -202,6 +218,29 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     }
 
     console.log('✅ Post created successfully:', post.id);
+
+    // Queue the activity for federation delivery
+    console.log('📤 Queueing post for federation...');
+    
+    const { data: session } = await supabase.auth.getSession();
+    if (session?.session?.access_token) {
+      try {
+        const { error: federateError } = await supabase.functions.invoke('outbox', {
+          body: { activity: createActivity },
+          headers: { Authorization: `Bearer ${session.session.access_token}` }
+        });
+        
+        if (federateError) {
+          console.warn('⚠️ Federation queue error (post still created locally):', federateError);
+        } else {
+          console.log('✅ Post queued for federation');
+        }
+      } catch (fedError) {
+        console.warn('⚠️ Could not queue post for federation:', fedError);
+        // Don't fail the post creation if federation fails
+      }
+    }
+
     toast.success("Post created successfully!");
     return true;
 
