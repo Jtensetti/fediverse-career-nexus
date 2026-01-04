@@ -149,12 +149,25 @@ serve(async (req) => {
     let clientId: string;
     let clientSecret: string;
 
-    if (existingClient) {
+    // Check if existing client has matching redirect_uri
+    const needsNewClient = !existingClient || existingClient.redirect_uri !== redirectUri;
+
+    if (existingClient && !needsNewClient) {
       console.log(`Using existing OAuth client for ${domain}`);
       clientId = existingClient.client_id;
       clientSecret = existingClient.client_secret;
     } else {
-      console.log(`Registering new OAuth client for ${domain}`);
+      if (existingClient) {
+        console.log(`Redirect URI changed for ${domain}, registering new OAuth client`);
+        // Delete the old client since redirect_uri doesn't match
+        await supabase
+          .from('oauth_clients')
+          .delete()
+          .eq('instance_domain', domain);
+      } else {
+        console.log(`Registering new OAuth client for ${domain}`);
+      }
+      
       const registration = await registerOAuthClient(domain, redirectUri);
       
       if (!registration) {
