@@ -58,7 +58,12 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
       .single();
     
     if (error) {
-      toast.error(`Error creating article: ${error.message}`);
+      const isDuplicate = error.code === '23505' || /duplicate key/i.test(error.message);
+      toast.error(
+        isDuplicate
+          ? 'That title/slug is already in use. Please choose another.'
+          : `Error creating article: ${error.message}`
+      );
       return null;
     }
     

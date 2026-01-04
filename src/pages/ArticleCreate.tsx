@@ -12,6 +12,7 @@ import MarkdownEditor from "@/components/MarkdownEditor";
 import { toast } from "sonner";
 import { ArrowLeft, Save } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 // Validation schema
 const articleSchema = z.object({
@@ -101,10 +102,10 @@ const ArticleCreate = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate entire form
     const result = articleSchema.safeParse(article);
-    
+
     if (!result.success) {
       const fieldErrors: ValidationErrors = {};
       result.error.errors.forEach((err) => {
@@ -117,9 +118,33 @@ const ArticleCreate = () => {
       toast.error("Please fix the validation errors before submitting");
       return;
     }
-    
+
+    // Validate slug uniqueness (prevents silent failures / confusing redirects)
+    try {
+      const { data: existing, error: existingError } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('slug', article.slug)
+        .limit(1);
+
+      if (existingError) throw existingError;
+
+      if (existing && existing.length > 0) {
+        setErrors((prev) => ({
+          ...prev,
+          slug: "That title/slug is already in use. Please choose another.",
+        }));
+        toast.error("That title has already been used. Please pick a different one.");
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking slug uniqueness:', error);
+      toast.error('Could not validate title uniqueness. Please try again.');
+      return;
+    }
+
     setIsSubmitting(true);
-    
+
     try {
       const articleResult = await createArticle(article);
       if (articleResult) {

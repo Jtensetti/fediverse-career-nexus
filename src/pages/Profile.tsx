@@ -94,15 +94,21 @@ const ProfilePage = () => {
   // Handle header image update
   const handleHeaderChange = async (url: string) => {
     if (!profile?.id) return;
-    
+
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ header_url: url })
         .eq('id', profile.id);
-      
+
       if (error) throw error;
-      
+
+      // Optimistically update the current query cache so the banner updates immediately
+      queryClient.setQueryData(["profile", username, currentUserId], (prev: any) => {
+        if (!prev) return prev;
+        return { ...prev, headerUrl: url };
+      });
+
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (error) {
       console.error("Error updating header:", error);
@@ -240,7 +246,7 @@ const ProfilePage = () => {
       <div className="bg-card rounded-lg shadow-sm overflow-hidden mb-6">
         {/* Banner */}
         <ProfileBanner
-          headerUrl={(profile as any).headerUrl}
+          headerUrl={profile.headerUrl}
           isOwnProfile={viewingOwnProfile}
           onHeaderChange={handleHeaderChange}
         />
