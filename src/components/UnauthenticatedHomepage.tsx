@@ -44,7 +44,7 @@ const UnauthenticatedHomepage = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-              You're here to connect, to share insights, to find opportunities – and to be part of something that actually feels relevant. That shouldn't be complicated. That's why we built Bondy: <strong className="text-bondy-primary">a space where your feed makes sense, your voice is heard, and your data isn't for sale.</strong>
+              You're here to connect, to share insights, to find opportunities – and to be part of something that actually feels relevant. That shouldn't be complicated. That's why we built Nolto: <strong className="text-bondy-primary">a space where your feed makes sense, your voice is heard, and your data isn't for sale.</strong>
             </p>
           </div>
         </div>

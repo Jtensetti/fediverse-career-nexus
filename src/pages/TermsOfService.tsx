@@ -74,11 +74,11 @@ const TermsOfService = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">1. Definitions</h2>
               <div className="space-y-4 text-gray-700">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Bondy:</strong> The open-source, federated platform for professional networking and job postings, including all code, features, and services provided.</li>
-                  <li><strong>Instance:</strong> A server running the Bondy software, managed either by us or by a third-party administrator, participating in the federated Bondy network.</li>
+                  <li><strong>Nolto:</strong> The open-source, federated platform for professional networking and job postings, including all code, features, and services provided.</li>
+                  <li><strong>Instance:</strong> A server running the Nolto software, managed either by us or by a third-party administrator, participating in the federated Nolto network.</li>
                   <li><strong>User:</strong> Any person or entity who accesses, registers for, or uses the Service.</li>
                   <li><strong>Content:</strong> All information, data, text, images, files, links, or other material posted, transmitted, or otherwise made available via the Service.</li>
-                  <li><strong>Federation:</strong> The process by which information is exchanged between Bondy instances using the ActivityPub protocol or other compatible means.</li>
+                  <li><strong>Federation:</strong> The process by which information is exchanged between Nolto instances using the ActivityPub protocol or other compatible means.</li>
                 </ul>
               </div>
             </section>
