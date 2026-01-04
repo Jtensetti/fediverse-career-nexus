@@ -4,10 +4,57 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Eye, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { 
-  getProfileVisibilitySettings, 
-  updateProfileVisibilitySettings 
-} from "@/services/profileViewService";
+import { supabase } from "@/integrations/supabase/client";
+
+// Helper function to get profile visibility settings
+const getProfileVisibilitySettings = async (): Promise<boolean> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return true;
+    
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('show_network_connections')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error fetching visibility settings:', error);
+      return true;
+    }
+    
+    return data?.show_network_connections ?? true;
+  } catch (error) {
+    console.error('Error fetching visibility settings:', error);
+    return true;
+  }
+};
+
+// Helper function to update profile visibility settings
+const updateProfileVisibilitySettings = async (visible: boolean): Promise<boolean> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+    
+    const { error } = await supabase
+      .from('user_settings')
+      .upsert({
+        user_id: user.id,
+        show_network_connections: visible,
+        updated_at: new Date().toISOString()
+      });
+    
+    if (error) {
+      console.error('Error updating visibility settings:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error updating visibility settings:', error);
+    return false;
+  }
+};
 
 const ProfileVisitsToggle = () => {
   const [enabled, setEnabled] = useState(true);

@@ -30,16 +30,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { Event } from '@/services/eventService';
-
-const streamTypes = [
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'peertube', label: 'PeerTube' },
-  { value: 'jitsi', label: 'Jitsi Meet' },
-  { value: 'rtmp', label: 'RTMP Stream' },
-  { value: 'other', label: 'Other' },
-];
 
 const timezones = [
   'UTC',
@@ -80,12 +72,10 @@ const eventFormSchema = z.object({
   end_date: z.date({ required_error: "End date is required" }),
   end_time: z.string({ required_error: "End time is required" }),
   timezone: z.string().default("UTC"),
-  is_virtual: z.boolean().default(false),
-  stream_type: z.string().optional().nullable(),
-  stream_url: z.string().url("Invalid URL format").optional().nullable(),
-  capacity: z.coerce.number().int().positive().optional().nullable(),
-  image_url: z.string().url("Invalid URL format").optional().nullable(),
-  is_public: z.boolean().default(true),
+  is_online: z.boolean().default(false),
+  meeting_url: z.string().url("Invalid URL format").optional().nullable(),
+  max_attendees: z.coerce.number().int().positive().optional().nullable(),
+  cover_image_url: z.string().url("Invalid URL format").optional().nullable(),
 }).refine(data => {
   // Combine date and time for validation
   const startDateTime = new Date(
@@ -108,19 +98,19 @@ const eventFormSchema = z.object({
   message: "End time must be after start time",
   path: ["end_time"],
 }).refine(data => {
-  // If it's virtual, stream_type and stream_url are required
-  if (data.is_virtual) {
-    return data.stream_type !== undefined && data.stream_url !== undefined;
+  // If it's online, meeting_url is recommended
+  if (data.is_online && !data.meeting_url) {
+    return true; // Allow but show warning
   }
   return true;
 }, {
-  message: "Stream type and URL are required for virtual events",
-  path: ["stream_type"],
+  message: "Meeting URL is recommended for online events",
+  path: ["meeting_url"],
 });
 
 interface EventFormProps {
   defaultValues?: Partial<Event>;
-  onSubmit: (data: Event) => void;
+  onSubmit: (data: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => void;
   isSubmitting: boolean;
   submitButtonText?: string;
 }
@@ -132,18 +122,25 @@ const EventForm = ({
   submitButtonText = "Create Event"
 }: EventFormProps) => {
   // Format defaultValues for the form
-  const startDate = defaultValues.start_time ? new Date(defaultValues.start_time) : undefined;
-  const endDate = defaultValues.end_time ? new Date(defaultValues.end_time) : undefined;
+  const startDate = defaultValues.start_date ? new Date(defaultValues.start_date) : undefined;
+  const endDate = defaultValues.end_date ? new Date(defaultValues.end_date) : undefined;
   
   const formattedDefaultValues = {
-    ...defaultValues,
+    title: defaultValues.title || "",
+    description: defaultValues.description || "",
+    location: defaultValues.location || "",
     start_date: startDate,
-    start_time: startDate ? format(startDate, 'HH:mm') : undefined,
+    start_time: startDate ? format(startDate, 'HH:mm') : "09:00",
     end_date: endDate,
-    end_time: endDate ? format(endDate, 'HH:mm') : undefined,
+    end_time: endDate ? format(endDate, 'HH:mm') : "10:00",
+    timezone: "UTC",
+    is_online: defaultValues.is_online || false,
+    meeting_url: defaultValues.meeting_url || null,
+    max_attendees: defaultValues.max_attendees || null,
+    cover_image_url: defaultValues.cover_image_url || null,
   };
 
-  const [isVirtual, setIsVirtual] = useState(defaultValues.is_virtual || false);
+  const [isOnline, setIsOnline] = useState(defaultValues.is_online || false);
   
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
@@ -156,12 +153,10 @@ const EventForm = ({
       end_date: new Date(),
       end_time: "10:00",
       timezone: "UTC",
-      is_virtual: false,
-      stream_type: null,
-      stream_url: null,
-      capacity: null,
-      image_url: null,
-      is_public: true,
+      is_online: false,
+      meeting_url: null,
+      max_attendees: null,
+      cover_image_url: null,
       ...formattedDefaultValues
     },
   });
@@ -182,23 +177,20 @@ const EventForm = ({
       ...values.end_time.split(':').map(Number)
     );
 
-    // Convert to event data format
+    // Convert to event data format matching database schema
     const eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'> = {
       title: values.title,
       description: values.description,
       location: values.location || null,
-      start_time: startDateTime.toISOString(),
-      end_time: endDateTime.toISOString(),
-      timezone: values.timezone,
-      is_virtual: values.is_virtual,
-      stream_type: values.is_virtual ? values.stream_type as Event['stream_type'] : null,
-      stream_url: values.is_virtual ? values.stream_url : null,
-      capacity: values.capacity,
-      image_url: values.image_url,
-      is_public: values.is_public,
+      start_date: startDateTime.toISOString(),
+      end_date: endDateTime.toISOString(),
+      is_online: values.is_online,
+      meeting_url: values.is_online ? values.meeting_url : null,
+      max_attendees: values.max_attendees,
+      cover_image_url: values.cover_image_url,
     };
 
-    onSubmit(eventData as Event);
+    onSubmit(eventData);
   };
 
   return (
@@ -242,7 +234,7 @@ const EventForm = ({
           
           <FormField
             control={form.control}
-            name="image_url"
+            name="cover_image_url"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Event Image URL</FormLabel>
@@ -278,16 +270,10 @@ const EventForm = ({
                       <FormControl>
                         <Button
                           variant="outline"
-                          className={
-                            "w-full pl-3 text-left font-normal"
-                          }
+                          className="w-full pl-3 text-left font-normal"
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -343,16 +329,10 @@ const EventForm = ({
                       <FormControl>
                         <Button
                           variant="outline"
-                          className={
-                            "w-full pl-3 text-left font-normal"
-                          }
+                          className="w-full pl-3 text-left font-normal"
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -395,31 +375,6 @@ const EventForm = ({
               )}
             />
           </div>
-          
-          <FormField
-            control={form.control}
-            name="timezone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Timezone</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select timezone" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {timezones.map((timezone) => (
-                      <SelectItem key={timezone} value={timezone}>
-                        {timezone}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
         
         {/* Location */}
@@ -428,11 +383,11 @@ const EventForm = ({
           
           <FormField
             control={form.control}
-            name="is_virtual"
+            name="is_online"
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
                 <div>
-                  <FormLabel>Virtual Event</FormLabel>
+                  <FormLabel>Online Event</FormLabel>
                   <FormDescription>
                     Will this event be held online?
                   </FormDescription>
@@ -442,7 +397,7 @@ const EventForm = ({
                     checked={field.value}
                     onCheckedChange={(checked) => {
                       field.onChange(checked);
-                      setIsVirtual(checked);
+                      setIsOnline(checked);
                     }}
                   />
                 </FormControl>
@@ -450,7 +405,7 @@ const EventForm = ({
             )}
           />
           
-          {!isVirtual && (
+          {!isOnline && (
             <FormField
               control={form.control}
               name="location"
@@ -470,110 +425,56 @@ const EventForm = ({
             />
           )}
           
-          {isVirtual && (
-            <>
-              <FormField
-                control={form.control}
-                name="stream_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stream Type</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value || undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select stream type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {streamTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Select the platform you'll be using for your virtual event
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="stream_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stream URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://..."
-                        {...field}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Provide the URL for your livestream
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </>
+          {isOnline && (
+            <FormField
+              control={form.control}
+              name="meeting_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Meeting URL</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://meet.example.com/..." 
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Link to your online meeting (Zoom, Google Meet, etc.)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           )}
         </div>
         
-        {/* Additional Settings */}
+        {/* Capacity */}
         <div className="space-y-6">
-          <h3 className="text-lg font-medium">Additional Settings</h3>
+          <h3 className="text-lg font-medium">Capacity</h3>
           
           <FormField
             control={form.control}
-            name="capacity"
+            name="max_attendees"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Capacity (optional)</FormLabel>
+                <FormLabel>Maximum Attendees</FormLabel>
                 <FormControl>
-                  <Input
+                  <Input 
                     type="number"
-                    placeholder="e.g. 100"
+                    placeholder="Leave empty for unlimited" 
                     {...field}
-                    value={field.value || ''}
+                    value={field.value ?? ''}
                     onChange={(e) => {
-                      const value = e.target.value ? parseInt(e.target.value) : null;
-                      field.onChange(value);
+                      const val = e.target.value === '' ? null : Number(e.target.value);
+                      field.onChange(val);
                     }}
                   />
                 </FormControl>
                 <FormDescription>
-                  Maximum number of attendees (leave empty for unlimited)
+                  Set a maximum number of attendees (optional)
                 </FormDescription>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="is_public"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
-                <div>
-                  <FormLabel>Public Event</FormLabel>
-                  <FormDescription>
-                    Make this event visible to everyone
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
               </FormItem>
             )}
           />

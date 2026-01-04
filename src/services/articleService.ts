@@ -19,14 +19,14 @@ export interface ArticleAuthor {
   id: string;
   article_id: string;
   user_id: string;
-  is_primary: boolean;
-  can_edit: boolean;
+  is_primary: boolean | null;
+  can_edit: boolean | null;
   created_at: string;
   profile?: {
     username: string | null;
     fullname: string | null;
     avatar_url: string | null;
-  };
+  } | null;
 }
 
 export interface ArticleFormData {
@@ -269,30 +269,39 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
 // Get article authors
 export const getArticleAuthors = async (articleId: string): Promise<ArticleAuthor[]> => {
   try {
-    // Use !inner join to ensure profiles exist and alias the result directly to "profile"
-    const { data, error } = await supabase
+    // Fetch article authors first
+    const { data: authors, error: authorsError } = await supabase
       .from('article_authors')
-      .select(`
-        id,
-        article_id,
-        user_id,
-        is_primary,
-        can_edit,
-        created_at,
-        profile:profiles(
-          username,
-          fullname,
-          avatar_url
-        )
-      `)
+      .select('id, article_id, user_id, is_primary, can_edit, created_at')
       .eq('article_id', articleId);
     
-    if (error) {
-      console.error('Error fetching article authors:', error);
+    if (authorsError) {
+      console.error('Error fetching article authors:', authorsError);
       return [];
     }
+
+    if (!authors || authors.length === 0) {
+      return [];
+    }
+
+    // Fetch profiles for each author
+    const userIds = authors.map(a => a.user_id);
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username, fullname, avatar_url')
+      .in('id', userIds);
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+    }
+
+    // Map profiles to authors
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
     
-    return data as ArticleAuthor[];
+    return authors.map(author => ({
+      ...author,
+      profile: profileMap.get(author.user_id) || null
+    })) as ArticleAuthor[];
   } catch (error) {
     console.error('Error fetching article authors:', error);
     return [];

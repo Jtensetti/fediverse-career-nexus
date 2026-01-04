@@ -342,3 +342,59 @@ export const getConversationMessages = getMessages;
 export const sendMessageToConversation = async (conversationId: string, content: string): Promise<Message | null> => {
   return sendMessage(conversationId, content);
 };
+
+/**
+ * Get conversation with all messages - for use by MessageConversation page
+ */
+export async function getConversationWithMessages(partnerId: string): Promise<ConversationWithMessages | null> {
+  try {
+    const conversation = await getConversation(partnerId);
+    if (!conversation) return null;
+    
+    const messages = await getMessages(partnerId);
+    
+    return {
+      conversation,
+      messages
+    };
+  } catch (error) {
+    console.error('Error in getConversationWithMessages:', error);
+    return null;
+  }
+}
+
+/**
+ * Unsubscribe from message channel
+ */
+export function unsubscribeFromMessages(channelId: string): void {
+  const fullChannelId = `messages:${channelId}`;
+  if (activeSubscriptions[fullChannelId]) {
+    supabase.removeChannel(activeSubscriptions[fullChannelId]);
+    delete activeSubscriptions[fullChannelId];
+  }
+}
+
+/**
+ * Get the other participant's profile from a conversation
+ */
+export async function getOtherParticipant(conversation: Conversation, currentUserId: string): Promise<any> {
+  try {
+    const partnerId = conversation.id;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, fullname, avatar_url')
+      .eq('id', partnerId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching participant profile:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in getOtherParticipant:', error);
+    return null;
+  }
+}

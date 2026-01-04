@@ -4,8 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface OutgoingFollow {
   id: string;
   local_actor_id: string;
-  remote_actor_uri: string;
-  follow_activity_id: string;
+  remote_actor_url: string;
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
   updated_at: string;
@@ -23,25 +22,18 @@ export const getOutgoingFollows = async (actorId: string): Promise<OutgoingFollo
     throw error;
   }
 
-  return (data || []).map(row => ({
-    ...row,
-    status: row.status as 'pending' | 'accepted' | 'rejected'
-  }));
+  return (data || []) as OutgoingFollow[];
 };
 
-export const getOutgoingFollowStatus = async (actorId: string, remoteActorUri: string): Promise<'pending' | 'accepted' | 'rejected' | null> => {
+export const getOutgoingFollowStatus = async (actorId: string, remoteActorUrl: string): Promise<'pending' | 'accepted' | 'rejected' | null> => {
   const { data, error } = await supabase
     .from('outgoing_follows')
     .select('status')
     .eq('local_actor_id', actorId)
-    .eq('remote_actor_uri', remoteActorUri)
-    .single();
+    .eq('remote_actor_url', remoteActorUrl)
+    .maybeSingle();
 
   if (error) {
-    if (error.code === 'PGRST116') {
-      // No rows found
-      return null;
-    }
     console.error('Error fetching outgoing follow status:', error);
     throw error;
   }
