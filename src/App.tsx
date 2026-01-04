@@ -38,6 +38,7 @@ import TermsOfService from "./pages/TermsOfService";
 import CodeOfConductPage from "./pages/CodeOfConductPage";
 import InstanceGuidelinesPage from "./pages/InstanceGuidelines";
 import Instances from "./pages/Instances";
+import AdminFederationHealth from "./pages/AdminFederationHealth";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -167,6 +168,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Notifications />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/federation-health"
+                      element={
+                        <ProtectedRoute>
+                          <AdminFederationHealth />
                         </ProtectedRoute>
                       }
                     />

@@ -94,8 +94,8 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-// Number of partitions to coordinate
-const NUM_PARTITIONS = 4;
+// Number of partitions to coordinate (increased from 4 to 16 for better scaling)
+const NUM_PARTITIONS = 16;
 
 // Define the schema for the coordinator request
 const coordinatorSchema = z.object({

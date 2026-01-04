@@ -809,6 +809,36 @@ export type Database = {
           },
         ]
       }
+      federation_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          alert_type: string
+          created_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          severity: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          severity: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          severity?: string
+        }
+        Relationships: []
+      }
       federation_queue_partitioned: {
         Row: {
           activity: Json
@@ -818,7 +848,9 @@ export type Database = {
           id: string
           last_error: string | null
           partition_key: number
+          priority: number | null
           processed_at: string | null
+          scheduled_for: string | null
           status: string
         }
         Insert: {
@@ -829,7 +861,9 @@ export type Database = {
           id?: string
           last_error?: string | null
           partition_key?: number
+          priority?: number | null
           processed_at?: string | null
+          scheduled_for?: string | null
           status?: string
         }
         Update: {
@@ -840,7 +874,9 @@ export type Database = {
           id?: string
           last_error?: string | null
           partition_key?: number
+          priority?: number | null
           processed_at?: string | null
+          scheduled_for?: string | null
           status?: string
         }
         Relationships: [
@@ -1576,52 +1612,70 @@ export type Database = {
           actor_url: string
           created_at: string
           expires_at: string | null
+          hit_count: number | null
           id: string
+          last_accessed_at: string | null
         }
         Insert: {
           actor_data: Json
           actor_url: string
           created_at?: string
           expires_at?: string | null
+          hit_count?: number | null
           id?: string
+          last_accessed_at?: string | null
         }
         Update: {
           actor_data?: Json
           actor_url?: string
           created_at?: string
           expires_at?: string | null
+          hit_count?: number | null
           id?: string
+          last_accessed_at?: string | null
         }
         Relationships: []
       }
       remote_instances: {
         Row: {
           created_at: string
+          error_count_24h: number | null
           first_seen_at: string
+          health_score: number | null
           host: string
           id: string
+          last_error_at: string | null
           last_seen_at: string | null
           reason: string | null
+          request_count_24h: number | null
           status: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          error_count_24h?: number | null
           first_seen_at?: string
+          health_score?: number | null
           host: string
           id?: string
+          last_error_at?: string | null
           last_seen_at?: string | null
           reason?: string | null
+          request_count_24h?: number | null
           status?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          error_count_24h?: number | null
           first_seen_at?: string
+          health_score?: number | null
           host?: string
           id?: string
+          last_error_at?: string | null
           last_seen_at?: string | null
           reason?: string | null
+          request_count_24h?: number | null
           status?: string
           updated_at?: string
         }
@@ -1967,7 +2021,20 @@ export type Database = {
         Args: { user1: string; user2: string }
         Returns: boolean
       }
+      check_host_rate_limit: {
+        Args: { p_max_requests_per_minute?: number; p_remote_host: string }
+        Returns: boolean
+      }
       cleanup_expired_actor_cache: { Args: never; Returns: undefined }
+      create_federation_alert: {
+        Args: {
+          p_message: string
+          p_metadata?: Json
+          p_severity: string
+          p_type: string
+        }
+        Returns: string
+      }
       create_follow: {
         Args: { p_local_actor_id: string; p_remote_actor_url: string }
         Returns: string
@@ -1987,6 +2054,16 @@ export type Database = {
         Returns: {
           private_key: string
           public_key: string
+        }[]
+      }
+      get_federation_health: {
+        Args: never
+        Returns: {
+          avg_processing_time_ms: number
+          oldest_pending_age_minutes: number
+          total_failed: number
+          total_pending: number
+          total_processing: number
         }[]
       }
       get_federation_queue_stats: {
@@ -2028,6 +2105,10 @@ export type Database = {
       is_user_blocked: {
         Args: { checker_id: string; target_id: string }
         Returns: boolean
+      }
+      update_instance_health: {
+        Args: { p_host: string; p_success: boolean }
+        Returns: undefined
       }
     }
     Enums: {

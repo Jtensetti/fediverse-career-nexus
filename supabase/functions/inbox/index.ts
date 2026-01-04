@@ -174,6 +174,35 @@ const supabaseClient = createClient(
 );
 
 
+// Rate limit configuration
+const RATE_LIMIT_MAX_REQUESTS = 100; // Max requests per minute per host
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+
+// Check rate limiting for a host
+async function checkRateLimit(remoteHost: string): Promise<boolean> {
+  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
+  
+  const { count } = await supabaseClient
+    .from("federation_request_logs")
+    .select("id", { count: "exact", head: true })
+    .eq("remote_host", remoteHost)
+    .gte("timestamp", windowStart);
+  
+  return (count || 0) < RATE_LIMIT_MAX_REQUESTS;
+}
+
+// Log federation request
+async function logFederationRequest(remoteHost: string, endpoint: string, requestPath: string) {
+  await supabaseClient
+    .from("federation_request_logs")
+    .insert({
+      remote_host: remoteHost,
+      endpoint,
+      request_path: requestPath,
+      request_id: crypto.randomUUID()
+    });
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -183,6 +212,32 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const pathParts = url.pathname.split("/").filter(Boolean);
+    
+    // Extract remote host for rate limiting
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const remoteHost = forwardedFor?.split(",")[0].trim() || 
+                       req.headers.get("x-real-ip") || 
+                       "unknown";
+    
+    // Check rate limit before processing
+    const withinLimit = await checkRateLimit(remoteHost);
+    if (!withinLimit) {
+      console.log(`Rate limit exceeded for host: ${remoteHost}`);
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded. Try again later." }),
+        {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Retry-After": "60"
+          }
+        }
+      );
+    }
+    
+    // Log the request
+    await logFederationRequest(remoteHost, "inbox", url.pathname);
     
     if (pathParts.length !== 1) {
       return new Response(
