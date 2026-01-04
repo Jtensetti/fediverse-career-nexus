@@ -16,6 +16,7 @@ export interface PostReply {
 // Get replies for a post
 export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
   try {
+    // Fetch all Note objects and filter for replies client-side
     const { data: replies, error } = await supabase
       .from('ap_objects')
       .select(`
@@ -28,12 +29,18 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
         )
       `)
       .eq('type', 'Note')
-      .like('content->inReplyTo', `%${postId}%`)
       .order('created_at', { ascending: true });
 
     if (error) return [];
 
-    const processedReplies = replies?.map(reply => {
+    // Filter replies that match the postId
+    const matchingReplies = replies?.filter(reply => {
+      const content = reply.content as any;
+      const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
+      return inReplyTo === postId || (typeof inReplyTo === 'string' && inReplyTo.includes(postId));
+    }) || [];
+
+    const processedReplies = matchingReplies.map(reply => {
       const content = reply.content as any;
       return {
         id: reply.id,
@@ -46,7 +53,7 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
           fullname: undefined
         }
       };
-    }) || [];
+    });
 
     return processedReplies;
   } catch (error) {

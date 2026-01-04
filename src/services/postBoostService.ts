@@ -22,15 +22,20 @@ export const hasUserBoostedPost = async (postId: string): Promise<boolean> => {
 
     if (!actor) return false;
 
-    const { data: boost } = await supabase
+    // Fetch all boosts by this actor and filter client-side
+    const { data: boosts } = await supabase
       .from('ap_objects')
-      .select('id')
+      .select('id, content')
       .eq('type', 'Announce')
-      .eq('attributed_to', actor.id)
-      .like('content->object->id', `%${postId}%`)
-      .maybeSingle();
+      .eq('attributed_to', actor.id);
 
-    return !!boost;
+    const hasBoost = boosts?.some(b => {
+      const content = b.content as any;
+      const objectId = content?.object?.id;
+      return objectId === postId || (typeof objectId === 'string' && objectId.includes(postId));
+    });
+
+    return !!hasBoost;
   } catch (error) {
     return false;
   }
@@ -39,15 +44,21 @@ export const hasUserBoostedPost = async (postId: string): Promise<boolean> => {
 // Get boost count for a post
 export const getPostBoostCount = async (postId: string): Promise<number> => {
   try {
+    // Fetch all Announce objects and filter client-side
     const { data: boosts, error } = await supabase
       .from('ap_objects')
-      .select('id')
-      .eq('type', 'Announce')
-      .like('content->object->id', `%${postId}%`);
+      .select('id, content')
+      .eq('type', 'Announce');
 
     if (error) return 0;
 
-    return boosts?.length || 0;
+    const matchingBoosts = boosts?.filter(b => {
+      const content = b.content as any;
+      const objectId = content?.object?.id;
+      return objectId === postId || (typeof objectId === 'string' && objectId.includes(postId));
+    });
+
+    return matchingBoosts?.length || 0;
   } catch (error) {
     return 0;
   }
@@ -114,14 +125,18 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
       profile = profileData as typeof profile;
     }
 
-    // Check if already boosted
-    const { data: existingBoost } = await supabase
+    // Check if already boosted - fetch all and filter client-side
+    const { data: allBoosts } = await supabase
       .from('ap_objects')
       .select('*')
       .eq('type', 'Announce')
-      .eq('attributed_to', actor.id)
-      .like('content->object->id', `%${postId}%`)
-      .maybeSingle();
+      .eq('attributed_to', actor.id);
+
+    const existingBoost = allBoosts?.find(b => {
+      const content = b.content as any;
+      const objectId = content?.object?.id;
+      return objectId === postId || (typeof objectId === 'string' && objectId.includes(postId));
+    });
 
     if (existingBoost) {
       // Remove boost

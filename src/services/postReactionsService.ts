@@ -22,28 +22,44 @@ export const getPostReactions = async (postId: string): Promise<ReactionCount[]>
     const { data: { user } } = await supabase.auth.getUser();
     const userId = user?.id;
     
-    // Get all reactions for this post from ap_objects
+    // Get user's actor if logged in
+    let userActorId: string | null = null;
+    if (userId) {
+      const { data: actor } = await supabase
+        .from('actors')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+      userActorId = actor?.id || null;
+    }
+    
+    // Get all Like reactions - fetch all and filter client-side for JSONB compatibility
     const { data: reactions, error } = await supabase
       .from('ap_objects')
       .select('*')
-      .eq('type', 'Like')
-      .like('content->object->id', `%${postId}%`);
+      .eq('type', 'Like');
     
     if (error) return [];
+    
+    // Filter reactions that match the postId
+    const matchingReactions = reactions?.filter(r => {
+      const content = r.content as any;
+      const objectId = content?.object?.id;
+      return objectId === postId || (typeof objectId === 'string' && objectId.includes(postId));
+    }) || [];
     
     // Default emojis we support
     const supportedEmojis = ['❤️', '👍', '😂', '😮', '😢', '😡'];
     
     // Process the reactions to count each emoji type
     const reactionCounts: ReactionCount[] = supportedEmojis.map(emoji => {
-      const filteredReactions = reactions?.filter(r => {
+      const filteredReactions = matchingReactions.filter(r => {
         const content = r.content as any;
         return content?.emoji === emoji || (emoji === '👍' && !content?.emoji);
-      }) || [];
+      });
       
       const hasReacted = filteredReactions.some(r => {
-        const content = r.content as any;
-        return content?.actor?.id === userId;
+        return r.attributed_to === userActorId;
       });
       
       return {
@@ -122,14 +138,18 @@ export const togglePostReaction = async (postId: string, emoji: string): Promise
       profile = profileData as typeof profile;
     }
     
-    // Check if the user has already reacted with this emoji
-    const { data: existingReaction } = await supabase
+    // Check if the user has already reacted - fetch all and filter
+    const { data: allReactions } = await supabase
       .from('ap_objects')
       .select('*')
       .eq('type', 'Like')
-      .eq('attributed_to', actor.id)
-      .like('content->object->id', `%${postId}%`)
-      .maybeSingle();
+      .eq('attributed_to', actor.id);
+    
+    const existingReaction = allReactions?.find(r => {
+      const content = r.content as any;
+      const objectId = content?.object?.id;
+      return objectId === postId || (typeof objectId === 'string' && objectId.includes(postId));
+    });
     
     if (existingReaction) {
       // Remove the reaction
