@@ -9,7 +9,7 @@ import RemoteInstancesTable from "@/components/RemoteInstancesTable";
 import ShardedQueueStats from "@/components/ShardedQueueStats";
 import HealthCheckStatus from "@/components/HealthCheckStatus";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -82,7 +82,7 @@ const AdminInstances = () => {
           </Alert>
           <div className="mt-4">
             <Button asChild variant="outline">
-              <a href="/">Return to Home</a>
+              <Link to="/">Return to Home</Link>
             </Button>
           </div>
         </main>

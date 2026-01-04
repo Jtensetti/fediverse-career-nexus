@@ -1,4 +1,5 @@
 
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Scale, Lock, Network, Eye, Settings, Users } from "lucide-react";
 
@@ -107,7 +108,7 @@ const InstanceGuidelines = () => {
         </p>
         <p className="text-lg font-medium text-secondary mb-6">
           If you have questions or need support, consult the{" "}
-          <a href="/documentation" className="underline hover:text-primary-foreground transition-colors">Documentation</a>, 
+          <Link to="/documentation" className="underline hover:text-primary-foreground transition-colors">Documentation</Link>, 
           join the community forum, or contact the Nolto team.
         </p>
       </section>

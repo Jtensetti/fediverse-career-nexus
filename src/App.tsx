@@ -70,9 +70,10 @@ function App() {
                     <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
                     <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
                     <Route path="/instances" element={<Instances />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/auth/login" element={<Auth />} />
-                    <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/login" element={<Auth />} />
+            <Route path="/auth/signup" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="/jobs" element={<Jobs />} />
                     <Route path="/jobs/:id" element={<JobView />} />
                     <Route path="/articles/:slug" element={<ArticleView />} />
