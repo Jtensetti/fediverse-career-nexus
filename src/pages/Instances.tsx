@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -237,10 +238,10 @@ const Instances = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild>
-                    <a href="/auth/signup">Join Nolto</a>
+                    <Link to="/auth/signup">Join Nolto</Link>
                   </Button>
                   <Button variant="outline" asChild>
-                    <a href="/federation">Learn About Federation</a>
+                    <Link to="/federation">Learn About Federation</Link>
                   </Button>
                 </div>
               </div>

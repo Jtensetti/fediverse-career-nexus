@@ -22,51 +22,23 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import { GlobalSearch } from "./GlobalSearch";
 import { NotificationBell } from "./NotificationBell";
 import { AlignJustify, LogIn, Settings, User, UserPlus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const Navbar = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const { user, loading: authLoading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   
   const isHomePage = location.pathname === "/";
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user || null);
-        setIsAuthenticated(!!session);
-      } catch (error) {
-        setUser(null);
-        setIsAuthenticated(false);
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-    
-    checkAuth();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
-      setIsAuthenticated(!!session);
-      setAuthLoading(false);
-    });
-    
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  const isAuthenticated = !!user;
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
       toast.success("Successfully logged out");
       navigate("/");
     } catch (error) {

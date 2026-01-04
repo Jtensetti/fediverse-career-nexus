@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft } from "lucide-react";
 
 export default function AuthPage() {
@@ -21,7 +20,11 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [fediHandle, setFediHandle] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  
+  // Determine default tab based on URL path
+  const defaultTab = location.pathname === "/auth/signup" ? "signup" : "signin";
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -239,7 +242,7 @@ export default function AuthPage() {
               </div>
             </div>
 
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs defaultValue={defaultTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mx-6 mt-4" style={{ width: 'calc(100% - 48px)' }}>
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
