@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2 } from "lucide-react";
+import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw } from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
 import { recordProfileView } from "@/services/profileViewService";
 import { supabase } from "@/integrations/supabase/client";
 import FederationInfo from "@/components/FederationInfo";
+import FediverseBadge from "@/components/FediverseBadge";
 import { getUserProfileByUsername, getCurrentUserProfile, UserProfile } from "@/services/profileService";
 import { getUserConnections, NetworkConnection, sendConnectionRequest } from "@/services/connectionsService";
 import UserPostsList from "@/components/UserPostsList";
@@ -26,6 +27,7 @@ const ProfilePage = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
   
   // Check authentication status
   useEffect(() => {
@@ -124,6 +126,31 @@ const ProfilePage = () => {
     }
   };
   
+  // Handle sync from Fediverse
+  const handleSyncFromFediverse = async () => {
+    setIsSyncing(true);
+    try {
+      const response = await supabase.functions.invoke('sync-federated-profile');
+      
+      if (response.error) {
+        throw new Error(response.error.message || 'Sync failed');
+      }
+      
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+      
+      toast.success("Profile synced successfully from your Fediverse instance!");
+      // Refetch profile to show updated data
+      window.location.reload();
+    } catch (error: any) {
+      console.error("Error syncing profile:", error);
+      toast.error(error.message || "Failed to sync profile");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+  
   // Show loading while checking auth
   if (authLoading) {
     return (
@@ -205,6 +232,9 @@ const ProfilePage = () => {
                   <Check size={14} /> Verified
                 </Badge>
               )}
+              {profile.authType === 'federated' && profile.homeInstance && (
+                <FediverseBadge homeInstance={profile.homeInstance} />
+              )}
               {connectionDegreeValue && (
                 <ConnectionBadge degree={connectionDegreeValue} />
               )}
@@ -240,6 +270,25 @@ const ProfilePage = () => {
                   <Button variant="outline">
                     <Link to="/connections">Manage Connections</Link>
                   </Button>
+                  {profile.authType === 'federated' && profile.homeInstance && (
+                    <Button 
+                      variant="outline" 
+                      onClick={handleSyncFromFediverse}
+                      disabled={isSyncing}
+                    >
+                      {isSyncing ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Sync from {profile.homeInstance}
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </>
               ) : (
                 <>

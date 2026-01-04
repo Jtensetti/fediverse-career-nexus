@@ -15,6 +15,10 @@ export interface UserProfile {
   profileViews?: number;
   networkVisibilityEnabled?: boolean;
   connectionDegree?: number;
+  // Federated auth fields
+  authType?: 'local' | 'federated';
+  homeInstance?: string;
+  remoteActorUrl?: string;
   contact?: {
     email?: string;
     phone?: string;
@@ -203,6 +207,10 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       profileViews: profile.profile_views || 0,
       networkVisibilityEnabled: settings?.show_network_connections ?? true,
       connectionDegree: 0, // Self profile is 0 degree
+      // Federated auth fields
+      authType: (profile.auth_type as 'local' | 'federated') || 'local',
+      homeInstance: profile.home_instance || undefined,
+      remoteActorUrl: profile.remote_actor_url || undefined,
       contact: {
         email: user.email,
         phone: profile.phone || "",
@@ -331,6 +339,10 @@ export const getUserProfileByUsername = async (username: string): Promise<UserPr
       profileViews: profile.profile_views || 0,
       networkVisibilityEnabled,
       connectionDegree,
+      // Federated auth fields
+      authType: (profile.auth_type as 'local' | 'federated') || 'local',
+      homeInstance: profile.home_instance || undefined,
+      remoteActorUrl: profile.remote_actor_url || undefined,
       contact: {
         email: isOwnProfile ? user?.email : null,
         phone: profile.phone || "",
