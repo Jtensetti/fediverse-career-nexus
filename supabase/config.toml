@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.federated-auth-callback]
 verify_jwt = false
+
+[functions.sync-federated-profile]
+verify_jwt = true
