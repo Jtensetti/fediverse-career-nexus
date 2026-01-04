@@ -93,7 +93,7 @@ const ArticleManage = () => {
                 <BookText className="h-6 w-6" />
                 My Articles
               </h1>
-              <p className="text-gray-600">Manage your articles and drafts</p>
+              <p className="text-muted-foreground">Manage your articles and drafts</p>
             </div>
             
             <div className="flex gap-4 mt-4 sm:mt-0">
@@ -137,7 +137,7 @@ const ArticleManage = () => {
           ) : filteredArticles.length > 0 ? (
             <>
               {/* Desktop Table View */}
-              <div className="hidden md:block bg-white rounded-md border">
+              <div className="hidden md:block bg-card rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -199,7 +199,7 @@ const ArticleManage = () => {
               {/* Mobile Card View */}
               <div className="md:hidden space-y-3">
                 {filteredArticles.map((article) => (
-                  <div key={article.id} className="bg-white rounded-lg border p-4">
+                  <div key={article.id} className="bg-card rounded-lg border p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex-1 min-w-0">
                         {article.published ? (
