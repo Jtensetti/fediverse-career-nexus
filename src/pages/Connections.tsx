@@ -154,9 +154,9 @@ const ConnectionsPage = () => {
   if (!isAuthenticated) {
     return (
       <DashboardLayout title="My Network">
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+        <div className="bg-card rounded-lg shadow-sm p-8 text-center">
           <h2 className="text-xl font-medium mb-4">Sign in to view your network</h2>
-          <p className="text-gray-600 mb-6">You need to be logged in to view and manage your connections.</p>
+          <p className="text-muted-foreground mb-6">You need to be logged in to view and manage your connections.</p>
           <Button asChild>
             <Link to="/auth/login">Sign In</Link>
           </Button>
@@ -208,18 +208,18 @@ const ConnectionsPage = () => {
         <TabsContent value="connections">
           {connectionsLoading ? (
             <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : connectionsError ? (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
               <h3 className="text-lg font-medium mb-2 text-red-600">Error Loading Connections</h3>
-              <p className="text-gray-600">There was an error loading your connections. Please try again later.</p>
+              <p className="text-muted-foreground">There was an error loading your connections. Please try again later.</p>
               <Button variant="outline" onClick={() => refetchConnections()} className="mt-4">Retry</Button>
             </div>
           ) : filteredConnections.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredConnections.map((connection: NetworkConnection) => (
-                <div key={connection.id} className="bg-white rounded-lg shadow-sm p-4">
+                <div key={connection.id} className="bg-card rounded-lg shadow-sm p-4">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border-2 border-white">
                       <AvatarImage src={connection.avatarUrl} alt={connection.displayName} />
@@ -233,8 +233,8 @@ const ConnectionsPage = () => {
                         </Link>
                         <ConnectionBadge degree={connection.connectionDegree} />
                       </div>
-                      <p className="text-sm text-gray-600 line-clamp-2">{connection.headline}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-sm text-muted-foreground line-clamp-2">{connection.headline}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
                         {connection.mutualConnections} mutual connections
                       </p>
                     </div>
@@ -252,13 +252,13 @@ const ConnectionsPage = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <UsersRound size={48} className="mx-auto text-gray-400 mb-3" />
+            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
+              <UsersRound size={48} className="mx-auto text-muted-foreground/50 mb-3" />
               <h3 className="text-lg font-medium mb-1">No connections found</h3>
               {searchQuery ? (
-                <p className="text-gray-600">No connections match your search criteria. Try a different search.</p>
+                <p className="text-muted-foreground">No connections match your search criteria. Try a different search.</p>
               ) : (
-                <p className="text-gray-600">You haven't connected with anyone yet. Check out our suggestions.</p>
+                <p className="text-muted-foreground">You haven't connected with anyone yet. Check out our suggestions.</p>
               )}
             </div>
           )}
@@ -267,18 +267,18 @@ const ConnectionsPage = () => {
         <TabsContent value="invitations">
           {pendingLoading ? (
             <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : pendingError ? (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <h3 className="text-lg font-medium mb-2 text-red-600">Error Loading Invitations</h3>
-              <p className="text-gray-600">There was an error loading your invitations. Please try again later.</p>
+            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
+              <h3 className="text-lg font-medium mb-2 text-destructive">Error Loading Invitations</h3>
+              <p className="text-muted-foreground">There was an error loading your invitations. Please try again later.</p>
               <Button variant="outline" onClick={() => refetchPending()} className="mt-4">Retry</Button>
             </div>
           ) : pendingRequests.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {pendingRequests.map((request: PendingConnectionRequest) => (
-                <div key={request.id} className="bg-white rounded-lg shadow-sm p-4">
+                <div key={request.id} className="bg-card rounded-lg shadow-sm p-4">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border-2 border-white">
                       <AvatarImage src={request.avatarUrl} alt={request.displayName} />
@@ -289,8 +289,8 @@ const ConnectionsPage = () => {
                       <Link to={`/profile/${request.username}`} className="font-semibold hover:underline">
                         {request.displayName}
                       </Link>
-                      <p className="text-sm text-gray-600 line-clamp-2">{request.headline}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-sm text-muted-foreground line-clamp-2">{request.headline}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
                         Sent {new Date(request.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -320,10 +320,10 @@ const ConnectionsPage = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <Bell size={48} className="mx-auto text-gray-400 mb-3" />
+            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
+              <Bell size={48} className="mx-auto text-muted-foreground/50 mb-3" />
               <h3 className="text-lg font-medium mb-1">No pending invitations</h3>
-              <p className="text-gray-600">You don't have any pending connection requests at this time.</p>
+              <p className="text-muted-foreground">You don't have any pending connection requests at this time.</p>
             </div>
           )}
         </TabsContent>
@@ -331,18 +331,18 @@ const ConnectionsPage = () => {
         <TabsContent value="suggestions">
           {suggestionsLoading ? (
             <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : suggestionsError ? (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <h3 className="text-lg font-medium mb-2 text-red-600">Error Loading Suggestions</h3>
-              <p className="text-gray-600">There was an error loading connection suggestions. Please try again later.</p>
+            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
+              <h3 className="text-lg font-medium mb-2 text-destructive">Error Loading Suggestions</h3>
+              <p className="text-muted-foreground">There was an error loading connection suggestions. Please try again later.</p>
               <Button variant="outline" onClick={() => refetchSuggestions()} className="mt-4">Retry</Button>
             </div>
           ) : filteredSuggestions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredSuggestions.map((suggestion: NetworkSuggestion) => (
-                <div key={suggestion.id} className="bg-white rounded-lg shadow-sm p-4">
+                <div key={suggestion.id} className="bg-card rounded-lg shadow-sm p-4">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border-2 border-white">
                       <AvatarImage src={suggestion.avatarUrl} alt={suggestion.displayName} />
@@ -356,8 +356,8 @@ const ConnectionsPage = () => {
                         </Link>
                         <ConnectionBadge degree={suggestion.connectionDegree} />
                       </div>
-                      <p className="text-sm text-gray-600 line-clamp-2">{suggestion.headline}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-sm text-muted-foreground line-clamp-2">{suggestion.headline}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
                         {suggestion.mutualConnections} mutual connections
                       </p>
                     </div>
@@ -365,7 +365,7 @@ const ConnectionsPage = () => {
                   
                   <div className="flex gap-2 mt-4">
                     <Button 
-                      className="flex-1 bg-bondy-primary hover:bg-bondy-primary/90"
+                      className="flex-1 bg-primary hover:bg-primary/90"
                       size="sm"
                       onClick={() => handleConnect(suggestion.id)}
                       disabled={isConnecting[suggestion.id]}
@@ -380,16 +380,16 @@ const ConnectionsPage = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <UserRoundPlus size={48} className="mx-auto text-gray-400 mb-3" />
+            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
+              <UserRoundPlus size={48} className="mx-auto text-muted-foreground/50 mb-3" />
               <h3 className="text-lg font-medium mb-1">No suggestions available</h3>
-              <p className="text-gray-600">We couldn't find any connection suggestions at this time.</p>
+              <p className="text-muted-foreground">We couldn't find any connection suggestions at this time.</p>
             </div>
           )}
         </TabsContent>
       </Tabs>
       
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div className="bg-card rounded-lg shadow-sm p-6 mb-6">
         <h2 className="text-lg font-semibold mb-4">Understanding Connection Degrees</h2>
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-1">
@@ -397,7 +397,7 @@ const ConnectionsPage = () => {
               <ConnectionBadge degree={1} />
               <span className="font-medium">1st Degree Connections</span>
             </div>
-            <p className="text-sm text-gray-600">People you are directly connected with. You both have accepted the connection.</p>
+            <p className="text-sm text-muted-foreground">People you are directly connected with. You both have accepted the connection.</p>
           </div>
           
           <div className="flex-1">
@@ -405,7 +405,7 @@ const ConnectionsPage = () => {
               <ConnectionBadge degree={2} />
               <span className="font-medium">2nd Degree Connections</span>
             </div>
-            <p className="text-sm text-gray-600">People who are connected to your 1st-degree connections but not directly to you.</p>
+            <p className="text-sm text-muted-foreground">People who are connected to your 1st-degree connections but not directly to you.</p>
           </div>
         </div>
       </div>

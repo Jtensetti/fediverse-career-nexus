@@ -38,12 +38,12 @@ const LiveStats = () => {
   ];
 
   return (
-    <div className="flex flex-wrap justify-center gap-6 md:gap-10">
+    <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-4 md:gap-10">
       {statItems.map(({ icon: Icon, value, label }) => (
-        <div key={label} className="flex items-center gap-2 text-white/90">
-          <Icon className="h-5 w-5" />
-          <span className="font-bold text-lg">{value.toLocaleString()}</span>
-          <span className="text-white/70 text-sm">{label}</span>
+        <div key={label} className="flex items-center gap-2 text-primary-foreground/90">
+          <Icon className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+          <span className="font-bold text-base md:text-lg">{value.toLocaleString()}</span>
+          <span className="text-primary-foreground/70 text-xs md:text-sm">{label}</span>
         </div>
       ))}
     </div>

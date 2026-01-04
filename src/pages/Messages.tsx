@@ -110,7 +110,7 @@ export default function Messages() {
         ) : (
           <div className="text-center py-16 border rounded-lg">
             <h3 className="text-xl font-medium mb-2">No conversations yet</h3>
-            <p className="text-gray-500 mb-6">Start messaging with your connections</p>
+            <p className="text-muted-foreground mb-6">Start messaging with your connections</p>
             <Button asChild>
               <Link to="/connections">Find People to Message</Link>
             </Button>

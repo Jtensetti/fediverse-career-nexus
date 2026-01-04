@@ -158,7 +158,7 @@ const ProfilePage = () => {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -183,7 +183,7 @@ const ProfilePage = () => {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -212,7 +212,7 @@ const ProfilePage = () => {
   return (
     <DashboardLayout showHeader={false}>
       {/* Profile Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div className="bg-card rounded-lg shadow-sm p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="relative">
             <Avatar className="h-32 w-32 border-4 border-white shadow-md">
@@ -242,9 +242,9 @@ const ProfilePage = () => {
               )}
             </div>
             
-            <h2 className="text-xl text-gray-700 mb-3">{profile.headline}</h2>
+            <h2 className="text-xl text-muted-foreground mb-3">{profile.headline}</h2>
             
-            <div className="flex flex-wrap items-center text-sm text-gray-600 gap-x-4 gap-y-2 mb-4">
+            <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-4 gap-y-2 mb-4">
               {profile.contact?.location && (
                 <div className="flex items-center gap-1">
                   <MapPin size={16} />
@@ -261,7 +261,7 @@ const ProfilePage = () => {
               </div>
             </div>
             
-            <p className="text-gray-700 mb-4">{profile.bio}</p>
+            <p className="text-muted-foreground mb-4">{profile.bio}</p>
             
             <div className="flex flex-wrap gap-2 mt-4">
               {viewingOwnProfile ? (
@@ -295,7 +295,7 @@ const ProfilePage = () => {
               ) : (
                 <>
                   <Button 
-                    className="bg-bondy-primary hover:bg-bondy-primary/90" 
+                    className="bg-primary hover:bg-primary/90" 
                     onClick={handleConnect}
                     disabled={isConnecting}
                   >
@@ -328,7 +328,7 @@ const ProfilePage = () => {
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Briefcase size={20} className="text-bondy-primary" />
+                    <Briefcase size={20} className="text-primary" />
                     Experience
                   </h3>
                   
@@ -344,20 +344,20 @@ const ProfilePage = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-bondy-primary">{exp.company}</p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-primary">{exp.company}</p>
+                          <p className="text-sm text-muted-foreground">
                             {new Date(exp.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} - 
                             {exp.isCurrentRole ? ' Present' : 
                             ` ${new Date(exp.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}`}
                           </p>
-                          {exp.location && <p className="text-sm text-gray-600">{exp.location}</p>}
+                          {exp.location && <p className="text-sm text-muted-foreground">{exp.location}</p>}
                           {exp.description && <p className="mt-2">{exp.description}</p>}
                           <Separator className="mt-6" />
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <p>No experience information available</p>
                       {viewingOwnProfile && (
                         <Button variant="outline" className="mt-4">
@@ -374,7 +374,7 @@ const ProfilePage = () => {
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <School size={20} className="text-bondy-primary" />
+                    <School size={20} className="text-primary" />
                     Education
                   </h3>
                   
@@ -390,14 +390,14 @@ const ProfilePage = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-bondy-primary">{edu.degree}{edu.field ? `, ${edu.field}` : ''}</p>
-                          <p className="text-sm text-gray-600">{edu.startYear} - {edu.endYear || 'Present'}</p>
+                          <p className="text-primary">{edu.degree}{edu.field ? `, ${edu.field}` : ''}</p>
+                          <p className="text-sm text-muted-foreground">{edu.startYear} - {edu.endYear || 'Present'}</p>
                           <Separator className="mt-6" />
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <p>No education information available</p>
                       {viewingOwnProfile && (
                         <Button variant="outline" className="mt-4">
@@ -414,7 +414,7 @@ const ProfilePage = () => {
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Star size={20} className="text-bondy-primary" />
+                    <Star size={20} className="text-primary" />
                     Skills & Endorsements
                   </h3>
                   
@@ -438,7 +438,7 @@ const ProfilePage = () => {
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FileText size={20} className="text-bondy-primary" />
+                    <FileText size={20} className="text-primary" />
                     Recommendations
                   </h3>
                   
@@ -453,7 +453,7 @@ const ProfilePage = () => {
             <TabsContent value="articles">
               <Card>
                 <CardContent className="pt-6 flex items-center justify-center p-12">
-                  <div className="text-center text-gray-500">
+                  <div className="text-center text-muted-foreground">
                     <p>No articles published yet</p>
                     {viewingOwnProfile && (
                       <Button variant="outline" className="mt-4">
@@ -477,13 +477,13 @@ const ProfilePage = () => {
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Users size={20} className="text-bondy-primary" />
+                    <Users size={20} className="text-primary" />
                     Connections ({profile.connections})
                   </h3>
                   
                   {connectionsLoading ? (
                     <div className="flex justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-bondy-primary" />
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                   ) : profile.networkVisibilityEnabled && userConnections && userConnections.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -491,7 +491,7 @@ const ProfilePage = () => {
                         <Link 
                           to={`/profile/${connection.username}`} 
                           key={connection.id} 
-                          className="flex flex-col items-center p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                          className="flex flex-col items-center p-3 border rounded-lg hover:bg-muted transition-colors"
                         >
                           <Avatar className="h-16 w-16 mb-2">
                             <AvatarImage src={connection.avatarUrl} alt={connection.displayName} />
@@ -502,7 +502,7 @@ const ProfilePage = () => {
                               <p className="font-medium">{connection.displayName}</p>
                               <ConnectionBadge degree={connection.connectionDegree} showIcon={false} size="sm" />
                             </div>
-                            <p className="text-xs text-gray-500 line-clamp-2">{connection.headline}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-2">{connection.headline}</p>
                           </div>
                         </Link>
                       ))}
@@ -510,22 +510,22 @@ const ProfilePage = () => {
                       {userConnections.length > 8 && (
                         <Link 
                           to="/connections" 
-                          className="flex flex-col items-center justify-center p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                          className="flex flex-col items-center justify-center p-3 border rounded-lg hover:bg-muted transition-colors"
                         >
-                          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                            <Users size={24} className="text-gray-500" />
+                          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-2">
+                            <Users size={24} className="text-muted-foreground" />
                           </div>
-                          <p className="font-medium text-bondy-primary">View All</p>
+                          <p className="font-medium text-primary">View All</p>
                         </Link>
                       )}
                     </div>
                   ) : !profile.networkVisibilityEnabled ? (
-                    <div className="text-center p-8 text-gray-500">
+                    <div className="text-center p-8 text-muted-foreground">
                       <Users size={48} className="mx-auto mb-4 opacity-30" />
                       <p className="mb-2">This user has chosen not to display their network connections</p>
                     </div>
                   ) : (
-                    <div className="text-center p-8 text-gray-500">
+                    <div className="text-center p-8 text-muted-foreground">
                       <Users size={48} className="mx-auto mb-4 opacity-30" />
                       <p className="mb-2">No connections yet</p>
                       <Button variant="outline" asChild>
@@ -546,27 +546,27 @@ const ProfilePage = () => {
               <div className="space-y-3">
                 {profile.contact?.email && (
                   <div className="flex items-center gap-3">
-                    <Mail size={18} className="text-bondy-primary" />
+                    <Mail size={18} className="text-primary" />
                     <span>{profile.contact.email}</span>
                   </div>
                 )}
                 
                 {profile.contact?.phone && (
                   <div className="flex items-center gap-3">
-                    <Phone size={18} className="text-bondy-primary" />
+                    <Phone size={18} className="text-primary" />
                     <span>{profile.contact.phone}</span>
                   </div>
                 )}
                 
                 {profile.contact?.location && (
                   <div className="flex items-center gap-3">
-                    <MapPin size={18} className="text-bondy-primary" />
+                    <MapPin size={18} className="text-primary" />
                     <span>{profile.contact.location}</span>
                   </div>
                 )}
                 
                 {!profile.contact?.email && !profile.contact?.phone && !profile.contact?.location && (
-                  <p className="text-gray-500">No contact information available</p>
+                  <p className="text-muted-foreground">No contact information available</p>
                 )}
               </div>
             </CardContent>
