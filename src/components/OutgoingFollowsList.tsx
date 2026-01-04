@@ -110,7 +110,7 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <code className="text-sm bg-muted px-2 py-1 rounded">
-                  {extractDomainFromUri(follow.remote_actor_uri)}
+                  {extractDomainFromUri(follow.remote_actor_url)}
                 </code>
                 {getStatusBadge(follow.status)}
               </div>
@@ -127,7 +127,7 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => window.open(follow.remote_actor_uri, '_blank')}
+              onClick={() => window.open(follow.remote_actor_url, '_blank')}
             >
               <ExternalLink size={14} />
             </Button>

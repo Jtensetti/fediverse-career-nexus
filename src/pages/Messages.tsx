@@ -10,7 +10,6 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
@@ -186,13 +185,6 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
                 </p>
                 <span className="text-xs text-muted-foreground">{lastMessageTime}</span>
               </div>
-              {conversation.lastMessage && (
-                <p className="text-sm text-muted-foreground truncate">
-                  {conversation.lastMessage.is_encrypted ? 
-                    '🔒 Encrypted message' : 
-                    conversation.lastMessage.content}
-                </p>
-              )}
             </div>
           </div>
         </CardContent>

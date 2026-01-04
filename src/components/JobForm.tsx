@@ -26,18 +26,17 @@ import {
 
 const jobFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
-  company_name: z.string().min(2, "Company name is required"),
+  company: z.string().min(2, "Company name is required"),
   location: z.string().min(2, "Location is required"),
   description: z.string().min(20, "Description must be at least 20 characters"),
-  job_type: z.enum(["full_time", "part_time", "contract", "internship", "temporary"]),
+  employment_type: z.string().default("full-time"),
   salary_min: z.coerce.number().nullable().optional(),
   salary_max: z.coerce.number().nullable().optional(),
   salary_currency: z.string().optional(),
-  remote_allowed: z.boolean().default(false),
-  application_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  contact_email: z.string().email("Must be a valid email").optional().or(z.literal("")),
+  remote_policy: z.string().default("on-site"),
+  experience_level: z.string().optional(),
   skills: z.string().transform(val => val ? val.split(",").map(s => s.trim()).filter(Boolean) : []),
-  published: z.boolean().default(false),
+  is_active: z.boolean().default(false),
 }).refine(data => {
   // Validate that salary_min is less than or equal to salary_max if both are provided
   if (data.salary_min && data.salary_max) {
@@ -49,9 +48,11 @@ const jobFormSchema = z.object({
   path: ["salary_min"],
 });
 
+type JobFormValues = z.infer<typeof jobFormSchema>;
+
 interface JobFormProps {
   defaultValues?: Partial<JobPost>;
-  onSubmit: (data: z.infer<typeof jobFormSchema>) => void;
+  onSubmit: (data: JobFormValues) => void;
   isSubmitting: boolean;
   submitButtonText?: string;
 }
@@ -62,33 +63,28 @@ const JobForm = ({
   isSubmitting,
   submitButtonText = "Create Job Post"
 }: JobFormProps) => {
-  // Keep skills as array and don't convert salary fields to strings
-  const formattedDefaultValues: Partial<z.infer<typeof jobFormSchema>> = {
-    ...defaultValues,
-    skills: defaultValues.skills || [],
+  // Map database fields to form fields
+  const formattedDefaultValues = {
+    title: defaultValues.title || "",
+    company: defaultValues.company || "",
+    location: defaultValues.location || "",
+    description: defaultValues.description || "",
+    employment_type: defaultValues.employment_type || "full-time",
+    salary_min: defaultValues.salary_min ?? null,
+    salary_max: defaultValues.salary_max ?? null,
+    salary_currency: defaultValues.salary_currency || "USD",
+    remote_policy: defaultValues.remote_policy || "on-site",
+    experience_level: defaultValues.experience_level || "",
+    skills: defaultValues.skills?.join(", ") || "",
+    is_active: defaultValues.is_active ?? false,
   };
   
-  const form = useForm<z.infer<typeof jobFormSchema>>({
+  const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
-    defaultValues: {
-      title: "",
-      company_name: "",
-      location: "",
-      description: "",
-      job_type: "full_time",
-      salary_min: null,
-      salary_max: null,
-      salary_currency: "USD",
-      remote_allowed: false,
-      application_url: "",
-      contact_email: "",
-      skills: [],
-      published: false,
-      ...formattedDefaultValues
-    },
+    defaultValues: formattedDefaultValues as any,
   });
   
-  const handleSubmit = (values: z.infer<typeof jobFormSchema>) => {
+  const handleSubmit = (values: JobFormValues) => {
     onSubmit(values);
   };
 
@@ -114,7 +110,7 @@ const JobForm = ({
           {/* Company name */}
           <FormField
             control={form.control}
-            name="company_name"
+            name="company"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Company Name</FormLabel>
@@ -143,22 +139,22 @@ const JobForm = ({
             )}
           />
           
-          {/* Job type */}
+          {/* Employment type */}
           <FormField
             control={form.control}
-            name="job_type"
+            name="employment_type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Job Type</FormLabel>
+                <FormLabel>Employment Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select job type" />
+                      <SelectValue placeholder="Select employment type" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="full_time">Full-time</SelectItem>
-                    <SelectItem value="part_time">Part-time</SelectItem>
+                    <SelectItem value="full-time">Full-time</SelectItem>
+                    <SelectItem value="part-time">Part-time</SelectItem>
                     <SelectItem value="contract">Contract</SelectItem>
                     <SelectItem value="internship">Internship</SelectItem>
                     <SelectItem value="temporary">Temporary</SelectItem>
@@ -170,24 +166,52 @@ const JobForm = ({
           />
         </div>
         
-        {/* Remote allowed */}
+        {/* Remote policy */}
         <FormField
           control={form.control}
-          name="remote_allowed"
+          name="remote_policy"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Remote Available</FormLabel>
-                <FormDescription>
-                  Can this position be performed remotely?
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
+            <FormItem>
+              <FormLabel>Remote Policy</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select remote policy" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="on-site">On-site</SelectItem>
+                  <SelectItem value="remote">Remote</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        {/* Experience level */}
+        <FormField
+          control={form.control}
+          name="experience_level"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Experience Level</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select experience level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="entry">Entry Level</SelectItem>
+                  <SelectItem value="mid">Mid Level</SelectItem>
+                  <SelectItem value="senior">Senior Level</SelectItem>
+                  <SelectItem value="lead">Lead/Principal</SelectItem>
+                  <SelectItem value="executive">Executive</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -296,15 +320,7 @@ const JobForm = ({
               <FormControl>
                 <Input 
                   placeholder="e.g. React, JavaScript, TypeScript (comma-separated)"
-                  value={Array.isArray(field.value) ? field.value.join(", ") : ""}
-                  onChange={(e) => {
-                    field.onChange(
-                      e.target.value
-                        .split(",")
-                        .map(s => s.trim())
-                        .filter(Boolean)
-                    );
-                  }}
+                  {...field}
                 />
               </FormControl>
               <FormDescription>
@@ -315,56 +331,10 @@ const JobForm = ({
           )}
         />
         
-        {/* Application details */}
-        <div className="border rounded-lg p-4 space-y-4">
-          <h3 className="text-lg font-semibold">Application Details</h3>
-          
-          <FormField
-            control={form.control}
-            name="application_url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Application URL</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="e.g. https://jobs.company.com/apply" 
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  External link where candidates can apply
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="contact_email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contact Email</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="e.g. careers@company.com" 
-                    type="email"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Email address for applications
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
         {/* Published status */}
         <FormField
           control={form.control}
-          name="published"
+          name="is_active"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">

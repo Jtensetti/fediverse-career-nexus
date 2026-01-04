@@ -5,7 +5,7 @@ import { ShieldCheck, ShieldX, Clock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface VerificationBadgeProps {
-  status: 'unverified' | 'pending' | 'verified' | 'rejected' | undefined;
+  status: string | undefined;
   className?: string;
 }
 

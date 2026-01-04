@@ -14,7 +14,7 @@ export interface Experience {
   end_date?: string;
   is_current_role: boolean;
   description?: string;
-  verification_status?: string; // Changed to string to match database
+  verification_status?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -28,7 +28,7 @@ export interface Education {
   field: string;
   start_year: number;
   end_year?: number;
-  verification_status?: string; // Changed to string to match database
+  verification_status?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -36,11 +36,10 @@ export interface Education {
 // Skill Types
 export interface Skill {
   id?: string;
-  user_id: string; // Changed from optional to required
+  user_id: string;
   name: string;
   endorsements?: number;
   created_at?: string;
-  updated_at?: string;
 }
 
 // Experience Services
@@ -364,11 +363,15 @@ export const deleteSkill = async (id: string) => {
   }
 };
 
-// Verification Services
+// Verification Services - Update status directly without RPC
 export const requestExperienceVerification = async (experienceId: string) => {
   try {
     const { data, error } = await supabase
-      .rpc('request_experience_verification', { experience_id: experienceId });
+      .from('experiences')
+      .update({ verification_status: 'pending' })
+      .eq('id', experienceId)
+      .select()
+      .single();
     
     if (error) throw error;
     
@@ -377,7 +380,7 @@ export const requestExperienceVerification = async (experienceId: string) => {
       description: "Your experience verification request has been submitted."
     });
     
-    return data; // This will be the verification token
+    return data;
   } catch (error) {
     console.error('Error requesting experience verification:', error);
     toast({
@@ -392,7 +395,11 @@ export const requestExperienceVerification = async (experienceId: string) => {
 export const requestEducationVerification = async (educationId: string) => {
   try {
     const { data, error } = await supabase
-      .rpc('request_education_verification', { education_id: educationId });
+      .from('education')
+      .update({ verification_status: 'pending' })
+      .eq('id', educationId)
+      .select()
+      .single();
     
     if (error) throw error;
     
@@ -401,7 +408,7 @@ export const requestEducationVerification = async (educationId: string) => {
       description: "Your education verification request has been submitted."
     });
     
-    return data; // This will be the verification token
+    return data;
   } catch (error) {
     console.error('Error requesting education verification:', error);
     toast({

@@ -4,15 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { Send, Lock, LockOpen } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 import { 
   getConversationWithMessages, 
   sendMessage, 
-  Message as DirectMessage,
-  MessageContent,
+  Message,
   subscribeToMessages,
-  unsubscribeFromMessages,
   getOtherParticipant
 } from '@/services/messageService';
 
@@ -28,8 +26,6 @@ import {
   CardTitle,
   CardFooter 
 } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -39,7 +35,6 @@ export default function MessageConversation() {
   const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
-  const [isEncrypted, setIsEncrypted] = useState(false);
   const [otherUser, setOtherUser] = useState<any | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -74,7 +69,7 @@ export default function MessageConversation() {
   useEffect(() => {
     if (!conversationId || !currentUserId) return;
 
-    const handleNewMessage = (message: DirectMessage) => {
+    const handleNewMessage = (message: Message) => {
       // Update query cache with the new message
       queryClient.setQueryData(['conversation', conversationId], (oldData: any) => {
         if (!oldData) return oldData;
@@ -96,11 +91,11 @@ export default function MessageConversation() {
     };
 
     // Subscribe to new messages
-    subscribeToMessages(conversationId, handleNewMessage, handleError);
+    const subscription = subscribeToMessages(conversationId, handleNewMessage);
 
     // Cleanup subscription on unmount
     return () => {
-      unsubscribeFromMessages(conversationId);
+      subscription.unsubscribe();
     };
   }, [conversationId, currentUserId, queryClient, toast]);
 
@@ -127,7 +122,7 @@ export default function MessageConversation() {
 
   // Mutation for sending messages
   const sendMessageMutation = useMutation({
-    mutationFn: (messageContent: MessageContent) => {
+    mutationFn: (messageContent: string) => {
       if (!conversationId) throw new Error('No conversation ID');
       return sendMessage(conversationId, messageContent);
     },
@@ -149,13 +144,7 @@ export default function MessageConversation() {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    const messageContent: MessageContent = {
-      content: newMessage,
-      isEncrypted: isEncrypted,
-      encryptedContent: isEncrypted ? newMessage : undefined // This would actually be encrypted in a real implementation
-    };
-
-    sendMessageMutation.mutate(messageContent);
+    sendMessageMutation.mutate(newMessage);
   };
 
   // Handle loading and error states
@@ -230,7 +219,7 @@ export default function MessageConversation() {
     );
   }
 
-  const { conversation, messages } = data;
+  const { messages } = data;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -270,12 +259,6 @@ export default function MessageConversation() {
                         : 'bg-muted'
                       }
                     `}>
-                      {message.is_encrypted && (
-                        <div className="flex items-center text-xs space-x-1 mb-1">
-                          <Lock className="h-3 w-3" />
-                          <span>Encrypted</span>
-                        </div>
-                      )}
                       <p>{message.content}</p>
                       <p className="text-xs opacity-70">
                         {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
@@ -289,19 +272,7 @@ export default function MessageConversation() {
           </CardContent>
           
           <CardFooter className="border-t p-4">
-            <form onSubmit={handleSendMessage} className="w-full space-y-2">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="encryption"
-                  checked={isEncrypted}
-                  onCheckedChange={setIsEncrypted}
-                />
-                <Label htmlFor="encryption" className="flex items-center space-x-1 cursor-pointer">
-                  {isEncrypted ? <Lock className="h-4 w-4" /> : <LockOpen className="h-4 w-4" />}
-                  <span>{isEncrypted ? 'Encrypted' : 'Not encrypted'}</span>
-                </Label>
-              </div>
-              
+            <form onSubmit={handleSendMessage} className="w-full">
               <div className="flex space-x-2">
                 <Input
                   value={newMessage}
