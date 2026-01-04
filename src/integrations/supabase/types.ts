@@ -53,6 +53,48 @@ export type Database = {
           },
         ]
       }
+      actor_followers: {
+        Row: {
+          created_at: string
+          follower_actor_url: string
+          id: string
+          local_actor_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          follower_actor_url: string
+          id?: string
+          local_actor_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          follower_actor_url?: string
+          id?: string
+          local_actor_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actor_followers_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "actor_followers_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+        ]
+      }
       actors: {
         Row: {
           created_at: string
@@ -711,6 +753,54 @@ export type Database = {
           {
             foreignKeyName: "follower_batches_actor_id_fkey"
             columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+        ]
+      }
+      inbox_items: {
+        Row: {
+          activity_type: string
+          content: Json
+          created_at: string
+          id: string
+          object_type: string | null
+          processed_at: string | null
+          recipient_id: string
+          sender: string
+        }
+        Insert: {
+          activity_type: string
+          content: Json
+          created_at?: string
+          id?: string
+          object_type?: string | null
+          processed_at?: string | null
+          recipient_id: string
+          sender: string
+        }
+        Update: {
+          activity_type?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          object_type?: string | null
+          processed_at?: string | null
+          recipient_id?: string
+          sender?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbox_items_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbox_items_recipient_id_fkey"
+            columns: ["recipient_id"]
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
