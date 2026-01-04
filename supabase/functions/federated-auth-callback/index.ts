@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { encryptToken } from "../_shared/token-encryption.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -86,12 +87,6 @@ async function verifyCredentials(domain: string, accessToken: string): Promise<M
     console.error('Verify credentials error:', error);
     return null;
   }
-}
-
-// Simple encryption for tokens (in production, use Supabase Vault)
-function encryptToken(token: string): string {
-  // Base64 encode with a simple prefix (in production, use proper encryption)
-  return btoa(`federated:${token}`);
 }
 
 // Generate a unique username for the federated user
@@ -287,7 +282,13 @@ serve(async (req) => {
         });
     }
 
-    // Store/update the federated session
+    // Encrypt tokens using AES-GCM
+    const encryptedAccessToken = await encryptToken(tokenResult.accessToken);
+    const encryptedRefreshToken = tokenResult.refreshToken 
+      ? await encryptToken(tokenResult.refreshToken) 
+      : null;
+
+    // Store/update the federated session with encrypted tokens
     const tokenExpiry = tokenResult.expiresIn 
       ? new Date(Date.now() + tokenResult.expiresIn * 1000).toISOString()
       : null;
@@ -298,8 +299,8 @@ serve(async (req) => {
         profile_id: profileId,
         remote_actor_url: remoteActorUrl,
         remote_instance: domain,
-        access_token_encrypted: encryptToken(tokenResult.accessToken),
-        refresh_token_encrypted: tokenResult.refreshToken ? encryptToken(tokenResult.refreshToken) : null,
+        access_token_encrypted: encryptedAccessToken,
+        refresh_token_encrypted: encryptedRefreshToken,
         token_expires_at: tokenExpiry,
         last_verified_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
