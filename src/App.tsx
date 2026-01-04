@@ -11,6 +11,8 @@ import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary, SkipToContent } from "@/components/common";
+import SessionExpiryWarning from "@/components/SessionExpiryWarning";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
@@ -57,6 +59,7 @@ function App() {
               <AuthProvider>
                 <SkipToContent />
                 <Toaster {...toasterConfig} />
+                <SessionExpiryWarning />
                 <main id="main-content">
                   <Routes>
                     {/* Public routes */}
@@ -169,6 +172,7 @@ function App() {
                     />
                   </Routes>
                 </main>
+                <MobileBottomNav />
               </AuthProvider>
             </BrowserRouter>
           </ErrorBoundary>

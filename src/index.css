@@ -102,6 +102,13 @@
   textarea:focus-visible {
     @apply ring-2 ring-primary ring-offset-2 outline-none;
   }
+
+  /* Mobile bottom nav spacing */
+  @media (max-width: 768px) {
+    body {
+      padding-bottom: 4rem;
+    }
+  }
   
   .clip-path-slash {
     clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, FileText, Briefcase, Server, TrendingUp, Sparkles } from "lucide-react";
 
@@ -9,26 +9,40 @@ const LiveStats = () => {
     jobs: 0,
     instances: 1,
   });
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchStats = useCallback(async () => {
+    const [profilesRes, postsRes, jobsRes, instancesRes] = await Promise.all([
+      supabase.from("profiles").select("id", { count: "exact", head: true }),
+      supabase.from("ap_objects").select("id", { count: "exact", head: true }),
+      supabase.from("job_posts").select("id", { count: "exact", head: true }).eq("is_active", true),
+      supabase.from("remote_instances").select("id", { count: "exact", head: true }).eq("status", "active"),
+    ]);
+
+    setStats({
+      users: profilesRes.count || 0,
+      posts: postsRes.count || 0,
+      jobs: jobsRes.count || 0,
+      instances: (instancesRes.count || 0) + 1,
+    });
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const [profilesRes, postsRes, jobsRes, instancesRes] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("ap_objects").select("id", { count: "exact", head: true }),
-        supabase.from("job_posts").select("id", { count: "exact", head: true }).eq("is_active", true),
-        supabase.from("remote_instances").select("id", { count: "exact", head: true }).eq("status", "active"),
-      ]);
-
-      setStats({
-        users: profilesRes.count || 0,
-        posts: postsRes.count || 0,
-        jobs: jobsRes.count || 0,
-        instances: (instancesRes.count || 0) + 1, // +1 for this instance
-      });
-    };
-
     fetchStats();
-  }, []);
+
+    // Set up realtime subscriptions for live updates
+    const channel = supabase
+      .channel('live-stats')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ap_objects' }, fetchStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_posts' }, fetchStats)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchStats]);
 
   // Smart stats: Only show items with positive values, or show "growing" message if all zeros
   const allStatItems = [
