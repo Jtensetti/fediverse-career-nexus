@@ -1,6 +1,6 @@
-
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -10,13 +10,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Image, PenTool, Smile, Calendar as CalendarIcon, ChevronDown } from "lucide-react";
+import { Image, PenTool, Smile, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profileService";
 import { createPost, CreatePostData } from "@/services/postService";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+const MAX_CHARACTERS = 500;
 
 interface PostComposerProps {
   className?: string;
@@ -26,9 +29,11 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [scheduledTime, setScheduledTime] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -39,13 +44,30 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     enabled: !!user,
   });
 
+  // Focus textarea when dialog opens
+  useEffect(() => {
+    if (isOpen && textareaRef.current) {
+      setTimeout(() => textareaRef.current?.focus(), 100);
+    }
+  }, [isOpen]);
+
+  // Generate image preview
+  useEffect(() => {
+    if (selectedImage) {
+      const url = URL.createObjectURL(selectedImage);
+      setImagePreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setImagePreview(null);
+    }
+  }, [selectedImage]);
+
   const createPostMutation = useMutation({
     mutationFn: (postData: CreatePostData) => createPost(postData),
     onSuccess: () => {
       toast.success('Post created successfully!');
       resetForm();
       setIsOpen(false);
-      // Invalidate federated feed to show the new post
       queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
     },
     onError: (error: Error) => {
@@ -57,6 +79,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const resetForm = () => {
     setPostContent("");
     setSelectedImage(null);
+    setImagePreview(null);
     setScheduledDate(undefined);
     setScheduledTime("");
     setShowDatePicker(false);
@@ -65,7 +88,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
         toast.error('Image size must be less than 10MB');
         return;
       }
@@ -134,80 +157,122 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   };
 
   const isLoading = createPostMutation.isPending;
+  const characterCount = postContent.length;
+  const isOverLimit = characterCount > MAX_CHARACTERS;
+  const characterPercentage = Math.min((characterCount / MAX_CHARACTERS) * 100, 100);
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      <Card>
+    <div className={cn("space-y-4", className)}>
+      <Card variant="elevated">
         <CardContent className="pt-6">
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <div className="flex items-center gap-3 w-full p-4 text-left border rounded-lg bg-muted/50 cursor-pointer hover:bg-muted/70 transition-colors">
-                <Avatar className="h-10 w-10">
+              <motion.div 
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="flex items-center gap-3 w-full p-4 text-left border rounded-xl bg-muted/30 cursor-pointer hover:bg-muted/50 transition-all duration-200"
+              >
+                <Avatar className="h-11 w-11 ring-2 ring-offset-2 ring-offset-background ring-primary/20">
                   <AvatarImage src={profile?.avatarUrl} alt={profile?.displayName} />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
                     {profile?.displayName ? getInitials(profile.displayName) : 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-muted-foreground flex-1">What's on your mind?</span>
-              </div>
+              </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh]">
-              <DialogHeader>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden p-0">
+              <DialogHeader className="p-6 pb-0">
                 <DialogTitle className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={profile?.avatarUrl} alt={profile?.displayName} />
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback className="bg-primary/10 text-primary">
                       {profile?.displayName ? getInitials(profile.displayName) : 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span>{profile?.displayName || 'User'}</span>
+                  <div>
+                    <span className="font-semibold">{profile?.displayName || 'User'}</span>
+                    <p className="text-xs text-muted-foreground font-normal">Posting to your feed</p>
+                  </div>
                 </DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
+              
+              <div className="p-6 pt-4 space-y-4 overflow-y-auto max-h-[60vh]">
                 <Textarea
+                  ref={textareaRef}
                   placeholder="What's on your mind?"
                   value={postContent}
                   onChange={(e) => setPostContent(e.target.value)}
-                  className="min-h-[200px] resize-none border-0 focus-visible:ring-0 text-lg p-4"
+                  className={cn(
+                    "min-h-[150px] resize-none border-0 focus-visible:ring-0 text-lg p-0 placeholder:text-muted-foreground/60",
+                    isOverLimit && "text-destructive"
+                  )}
                   disabled={isLoading}
                 />
                 
-                {selectedImage && (
-                  <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center justify-between">
-                    <span>📷 Image selected: {selectedImage.name}</span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setSelectedImage(null)}
-                      disabled={isLoading}
+                {/* Image Preview */}
+                <AnimatePresence>
+                  {imagePreview && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="relative rounded-xl overflow-hidden bg-muted"
                     >
-                      Remove
-                    </Button>
-                  </div>
-                )}
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="w-full max-h-64 object-cover"
+                      />
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
+                        onClick={() => setSelectedImage(null)}
+                        disabled={isLoading}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                {(scheduledDate || scheduledTime) && (
-                  <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center justify-between">
-                    <span>
-                      📅 Scheduled for: {scheduledDate && format(scheduledDate, 'PPP')} {scheduledTime && `at ${scheduledTime}`}
-                    </span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => {
-                        setScheduledDate(undefined);
-                        setScheduledTime("");
-                        setShowDatePicker(false);
-                      }}
-                      disabled={isLoading}
+                {/* Scheduled Info */}
+                <AnimatePresence>
+                  {(scheduledDate || scheduledTime) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10"
                     >
-                      Remove
-                    </Button>
-                  </div>
-                )}
-                
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <CalendarIcon className="h-4 w-4 text-primary" />
+                        <span>
+                          Scheduled for {scheduledDate && format(scheduledDate, 'PPP')} {scheduledTime && `at ${scheduledTime}`}
+                        </span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setScheduledDate(undefined);
+                          setScheduledTime("");
+                          setShowDatePicker(false);
+                        }}
+                        disabled={isLoading}
+                      >
+                        Remove
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              
+              {/* Footer */}
+              <div className="p-4 border-t bg-muted/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
                     <input
                       type="file"
                       accept="image/*"
@@ -218,54 +283,54 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     />
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
                       onClick={() => document.getElementById('image-upload')?.click()}
-                      className="text-muted-foreground hover:text-foreground"
+                      className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
                       disabled={isLoading}
                     >
-                      <Image className="h-4 w-4" />
+                      <Image className="h-5 w-5" />
                     </Button>
                     
                     <Button
                       variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-foreground"
+                      size="icon"
+                      className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
                       disabled={isLoading}
                     >
-                      <Smile className="h-4 w-4" />
+                      <Smile className="h-5 w-5" />
                     </Button>
                     
                     <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className="text-muted-foreground hover:text-foreground"
+                          size="icon"
+                          className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
                           disabled={isLoading}
                         >
-                          <CalendarIcon className="h-4 w-4" />
+                          <CalendarIcon className="h-5 w-5" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-4" align="start">
                         <div className="space-y-4">
                           <div>
-                            <Label htmlFor="scheduled-date">Select Date</Label>
+                            <Label htmlFor="scheduled-date" className="text-sm font-medium">Select Date</Label>
                             <Calendar
                               mode="single"
                               selected={scheduledDate}
                               onSelect={setScheduledDate}
                               disabled={(date) => date <= new Date()}
-                              className="rounded-md border"
+                              className="rounded-md border mt-2"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="scheduled-time">Select Time</Label>
+                            <Label htmlFor="scheduled-time" className="text-sm font-medium">Select Time</Label>
                             <Input
                               id="scheduled-time"
                               type="time"
                               value={scheduledTime}
                               onChange={(e) => setScheduledTime(e.target.value)}
-                              className="mt-1"
+                              className="mt-2"
                             />
                           </div>
                           <Button 
@@ -279,13 +344,52 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     </Popover>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
+                    {/* Character Counter */}
+                    <div className="flex items-center gap-2">
+                      <div className="relative h-6 w-6">
+                        <svg className="h-6 w-6 -rotate-90" viewBox="0 0 24 24">
+                          <circle
+                            className="text-muted"
+                            strokeWidth="2"
+                            stroke="currentColor"
+                            fill="transparent"
+                            r="10"
+                            cx="12"
+                            cy="12"
+                          />
+                          <circle
+                            className={cn(
+                              "transition-all duration-300",
+                              isOverLimit ? "text-destructive" : characterPercentage > 80 ? "text-warning" : "text-primary"
+                            )}
+                            strokeWidth="2"
+                            strokeDasharray={`${characterPercentage * 0.628} 100`}
+                            strokeLinecap="round"
+                            stroke="currentColor"
+                            fill="transparent"
+                            r="10"
+                            cx="12"
+                            cy="12"
+                          />
+                        </svg>
+                      </div>
+                      {characterCount > MAX_CHARACTERS * 0.8 && (
+                        <span className={cn(
+                          "text-xs font-medium",
+                          isOverLimit ? "text-destructive" : "text-muted-foreground"
+                        )}>
+                          {MAX_CHARACTERS - characterCount}
+                        </span>
+                      )}
+                    </div>
+                    
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleScheduledPost}
-                      disabled={!postContent.trim() || isLoading}
-                      className="flex items-center gap-1"
+                      disabled={!postContent.trim() || isLoading || isOverLimit}
+                      className="gap-1"
                     >
                       <ChevronDown className="h-3 w-3" />
                       Schedule
@@ -293,10 +397,18 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     
                     <Button
                       onClick={handlePost}
-                      disabled={!postContent.trim() || isLoading}
+                      disabled={!postContent.trim() || isLoading || isOverLimit}
                       size="sm"
+                      className="gap-2 min-w-[80px]"
                     >
-                      {isLoading ? 'Posting...' : 'Post'}
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          Post
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -308,18 +420,18 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
             <Button
               variant="outline"
               onClick={handleWriteArticle}
-              className="w-full"
+              className="w-full gap-2 hover:bg-primary/5 hover:border-primary/20"
             >
-              <PenTool className="h-4 w-4 mr-2" />
+              <PenTool className="h-4 w-4" />
               Write an Article
             </Button>
             
             <Button
               variant="outline"
               onClick={handleCreateEvent}
-              className="w-full"
+              className="w-full gap-2 hover:bg-primary/5 hover:border-primary/20"
             >
-              <CalendarIcon className="h-4 w-4 mr-2" />
+              <CalendarIcon className="h-4 w-4" />
               Create Event
             </Button>
           </div>

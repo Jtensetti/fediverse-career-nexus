@@ -1428,6 +1428,7 @@ export type Database = {
           created_at: string
           domain: string | null
           fullname: string | null
+          header_url: string | null
           headline: string | null
           home_instance: string | null
           id: string
@@ -1447,6 +1448,7 @@ export type Database = {
           created_at?: string
           domain?: string | null
           fullname?: string | null
+          header_url?: string | null
           headline?: string | null
           home_instance?: string | null
           id: string
@@ -1466,6 +1468,7 @@ export type Database = {
           created_at?: string
           domain?: string | null
           fullname?: string | null
+          header_url?: string | null
           headline?: string | null
           home_instance?: string | null
           id?: string
