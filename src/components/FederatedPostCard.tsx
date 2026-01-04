@@ -35,14 +35,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { user } = useAuth();
   
-  console.log('🔍 FederatedPostCard - Rendering post:', { 
-    postId: post.id,
-    actorName: post.actor_name,
-    profile: post.profile,
-    source: post.source,
-    userId: post.user_id,
-    currentUser: user?.id
-  });
+  // Debug logs removed for production
   
   // Load initial data
   useEffect(() => {
@@ -51,16 +44,12 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   const loadPostData = async () => {
     try {
-      console.log('📊 Loading post data for:', post.id);
-      
       // Load reactions
       const reactions = await getPostReactions(post.id);
-      console.log('❤️ Reactions loaded:', reactions);
       const heartReaction = reactions.find(r => r.emoji === '❤️');
       if (heartReaction) {
         setIsLiked(heartReaction.hasReacted);
         setLikeCount(heartReaction.count);
-        console.log('❤️ Heart reaction state:', { isLiked: heartReaction.hasReacted, count: heartReaction.count });
       }
 
       // Load boost data
@@ -70,14 +59,12 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
       ]);
       setBoostCount(boostCountData);
       setIsBoosted(userBoosted);
-      console.log('🔄 Boost state:', { isBoosted: userBoosted, count: boostCountData });
 
       // Load reply count
       const replies = await getPostReplies(post.id);
       setReplyCount(replies.length);
-      console.log('💬 Reply count:', replies.length);
     } catch (error) {
-      console.error('❌ Error loading post data:', error);
+      // Silently fail - non-critical
     }
   };
   
@@ -96,16 +83,12 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const getActorName = () => {
     // For local posts, prioritize fullname from profile, then username, then fallback
     if (post.source === 'local' && post.profile) {
-      const name = post.profile.fullname || post.profile.username || post.actor_name || 'Unknown user';
-      console.log('👤 Local actor name:', name, 'from profile:', post.profile);
-      return name;
+      return post.profile.fullname || post.profile.username || post.actor_name || 'Unknown user';
     }
     
     // For remote posts, use actor data
     const actor = post.actor;
-    const name = actor?.name || actor?.preferredUsername || post.actor_name || 'Unknown user';
-    console.log('🌐 Remote actor name:', name, 'from actor:', actor);
-    return name;
+    return actor?.name || actor?.preferredUsername || post.actor_name || 'Unknown user';
   };
 
   // Extract username from profile or actor data
@@ -132,23 +115,13 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   
   // Check if current user owns this post
   const isOwnPost = () => {
-    if (!user?.id) {
-      console.log('🔐 No current user, not own post');
-      return false;
-    }
+    if (!user?.id) return false;
 
     // For local posts, check if the post user_id matches current user
     if (post.source === 'local' && post.user_id) {
-      const isOwner = post.user_id === user.id;
-      console.log('🔐 Local post ownership check:', { 
-        postUserId: post.user_id, 
-        currentUserId: user.id, 
-        isOwner 
-      });
-      return isOwner;
+      return post.user_id === user.id;
     }
 
-    console.log('🔐 Remote post or no user_id, not own post');
     return false;
   };
   
@@ -182,41 +155,29 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   // Handle like/react
   const handleLike = async () => {
-    console.log('❤️ Like button clicked, user:', user?.id);
-    
     if (!user) {
       toast.error('Please sign in to react to posts');
       return;
     }
     
-    console.log('❤️ Toggling reaction for post:', post.id);
     const success = await togglePostReaction(post.id, '❤️');
     if (success) {
       setIsLiked(!isLiked);
       setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-      console.log('❤️ Reaction toggled successfully');
-    } else {
-      console.log('❌ Failed to toggle reaction');
     }
   };
 
   // Handle boost/repost
   const handleBoost = async () => {
-    console.log('🔄 Boost button clicked, user:', user?.id);
-    
     if (!user) {
       toast.error('Please sign in to boost posts');
       return;
     }
     
-    console.log('🔄 Toggling boost for post:', post.id);
     const success = await togglePostBoost(post.id);
     if (success) {
       setIsBoosted(!isBoosted);
       setBoostCount(prev => isBoosted ? prev - 1 : prev + 1);
-      console.log('🔄 Boost toggled successfully');
-    } else {
-      console.log('❌ Failed to toggle boost');
     }
   };
 
@@ -237,7 +198,6 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   // Handle edit
   const handleEdit = () => {
-    console.log('✏️ Edit button clicked for post:', post.id);
     if (onEdit) {
       onEdit(post);
     }
@@ -245,16 +205,13 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   // Handle delete
   const handleDelete = async () => {
-    console.log('🗑️ Delete confirmed for post:', post.id);
     
     try {
       await deletePost(post.id);
-      console.log('✅ Post deleted successfully');
       if (onDelete) {
         onDelete(post.id);
       }
     } catch (error) {
-      console.error('❌ Failed to delete post:', error);
       toast.error('Failed to delete post');
     }
   };

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { JobCardSkeleton } from "@/components/common/skeletons";
-import EmptyState from "@/components/common/EmptyState";
+import { EmptyState, SEOHead } from "@/components/common";
 import { Briefcase } from "lucide-react";
 
 const Jobs = () => {
@@ -54,6 +54,10 @@ const Jobs = () => {
   
   return (
     <DashboardLayout title="Job Listings">
+      <SEOHead
+        title="Job Listings"
+        description="Find your next opportunity on Nolto. Browse transparent job listings from companies across the Fediverse."
+      />
       <div className="flex justify-end mb-6">
         {isAuthenticated && (
           <Button asChild>

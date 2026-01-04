@@ -6,6 +6,7 @@ import Home from "./Home";
 import UnauthenticatedHomepage from "@/components/UnauthenticatedHomepage";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { SEOHead } from "@/components/common";
 
 export default function Index() {
   const { user, loading } = useAuth();
@@ -34,6 +35,10 @@ export default function Index() {
   // If not authenticated, show the layout with Navbar, UnauthenticatedHomepage, and Footer
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Nolto - The Federated Professional Network"
+        description="Join the open, federated professional network. Connect with professionals across the Fediverse. No algorithms, no data harvesting, just authentic connections."
+      />
       <Navbar />
       <main className="flex-grow">
         <UnauthenticatedHomepage />

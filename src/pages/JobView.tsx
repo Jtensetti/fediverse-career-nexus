@@ -6,8 +6,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Globe, Link as LinkIcon } from "lucide-react";
+import { Calendar, MapPin, Globe, Link as LinkIcon, Bookmark, Building2, DollarSign } from "lucide-react";
 import { format } from "date-fns";
+import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
+import { toast } from "sonner";
 
 const JobTypeLabels: Record<string, string> = {
   full_time: "Full-time",
@@ -91,8 +93,20 @@ const JobView = () => {
     );
   }
   
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSaveJob = () => {
+    setIsSaved(!isSaved);
+    toast.success(isSaved ? "Job removed from saved" : "Job saved!");
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title={`${job.title} at ${job.company_name}`}
+        description={job.description?.substring(0, 160) || `${job.title} position at ${job.company_name}`}
+        type="website"
+      />
       <Navbar />
       <main className="flex-grow container py-8">
         {/* Back button */}
@@ -104,13 +118,28 @@ const JobView = () => {
         
         {/* Job header */}
         <div className="mb-8">
-          <div className="flex justify-between items-start mb-2">
-            <h1 className="text-3xl font-bold tracking-tight">{job.title}</h1>
-            <Badge variant={job.job_type === "full_time" ? "default" : "outline"}>
-              {JobTypeLabels[job.job_type] || job.job_type}
-            </Badge>
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex items-start gap-4">
+              <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center">
+                <Building2 className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">{job.title}</h1>
+                <h2 className="text-xl font-medium text-muted-foreground">{job.company_name}</h2>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={job.job_type === "full_time" ? "default" : "outline"} className="text-sm">
+                {JobTypeLabels[job.job_type] || job.job_type}
+              </Badge>
+              {job.remote_allowed && (
+                <Badge variant="secondary" className="text-sm">
+                  <Globe className="h-3 w-3 mr-1" />
+                  Remote
+                </Badge>
+              )}
+            </div>
           </div>
-          <h2 className="text-xl font-medium mb-4">{job.company_name}</h2>
           
           {/* Job meta info */}
           <div className="flex flex-wrap gap-4 text-muted-foreground mb-4">
@@ -119,13 +148,6 @@ const JobView = () => {
               <span>{job.location}</span>
             </div>
             
-            {job.remote_allowed && (
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                <span>Remote available</span>
-              </div>
-            )}
-            
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span>Posted {job.published_at ? format(new Date(job.published_at), "PPP") : "recently"}</span>
@@ -133,11 +155,24 @@ const JobView = () => {
           </div>
           
           {/* Salary */}
-          <div className="bg-muted p-4 rounded-lg mb-6">
-            <h3 className="text-lg font-medium mb-1">Compensation</h3>
-            <p className="text-xl font-semibold">
-              {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
-            </p>
+          <div className="bg-muted/50 p-4 rounded-lg mb-6 flex items-center gap-3">
+            <DollarSign className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm text-muted-foreground">Compensation</p>
+              <p className="text-xl font-semibold">
+                {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
+              </p>
+            </div>
+          </div>
+          
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-3">
+            <ShareButton title={`${job.title} at ${job.company_name}`} description={job.description?.substring(0, 100)} />
+            <Button variant="outline" size="sm" onClick={handleSaveJob}>
+              <Bookmark className={`h-4 w-4 mr-2 ${isSaved ? 'fill-current' : ''}`} />
+              {isSaved ? 'Saved' : 'Save Job'}
+            </Button>
+            <ReportDialog contentType="job" contentId={job.id} contentTitle={job.title} />
           </div>
         </div>
         
