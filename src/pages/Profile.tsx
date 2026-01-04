@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, MessageSquare, Share2, Edit } from "lucide-react";
+import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, MessageSquare, Share2, Edit, Activity } from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
 import ProfileBanner from "@/components/profile/ProfileBanner";
@@ -19,6 +19,7 @@ import FediverseBadge from "@/components/FediverseBadge";
 import { getUserProfileByUsername, getCurrentUserProfile, UserProfile } from "@/services/profileService";
 import { getUserConnections, NetworkConnection, sendConnectionRequest } from "@/services/connectionsService";
 import UserPostsList from "@/components/UserPostsList";
+import UserActivityList from "@/components/UserActivityList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
 import AchievementBadges from "@/components/AchievementBadges";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -369,10 +370,11 @@ const ProfilePage = () => {
           <Tabs defaultValue="experience" className="mb-6">
             <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
               <TabsList className="mb-4 flex w-max md:w-auto md:flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
-              <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Experience</TabsTrigger>
+                <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Experience</TabsTrigger>
                 <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Education</TabsTrigger>
                 <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Skills</TabsTrigger>
                 <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Posts</TabsTrigger>
+                <TabsTrigger value="activity" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Activity</TabsTrigger>
                 <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Connections</TabsTrigger>
               </TabsList>
             </div>
@@ -513,6 +515,19 @@ const ProfilePage = () => {
                   </h3>
                   
                   <UserPostsList userId={profile.id} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="activity">
+              <Card variant="elevated">
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Activity size={20} className="text-primary" />
+                    Activity
+                  </h3>
+                  
+                  <UserActivityList userId={profile.id} />
                 </CardContent>
               </Card>
             </TabsContent>

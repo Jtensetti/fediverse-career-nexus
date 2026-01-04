@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ConnectionDegree } from "@/components/ConnectionBadge";
+import { notificationService } from "./notificationService";
 
 export interface NetworkConnection {
   id: string;
@@ -229,6 +230,20 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
       throw error;
     }
 
+    // Create notification for the recipient
+    try {
+      await notificationService.createNotification({
+        type: 'connection_request',
+        recipientId: userId,
+        actorId: user.id,
+        content: 'sent you a connection request',
+        objectId: data.id,
+        objectType: 'connection'
+      });
+    } catch (notifError) {
+      console.warn('Failed to create connection notification:', notifError);
+    }
+
     toast.success("Connection request sent");
     return true;
   } catch (error) {
@@ -243,6 +258,13 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
+    // Get the connection to find the sender
+    const { data: connection } = await supabase
+      .from("user_connections")
+      .select("user_id")
+      .eq("id", connectionId)
+      .single();
+
     const { error } = await supabase
       .from("user_connections")
       .update({ status: "accepted" })
@@ -250,6 +272,22 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
       .eq("connected_user_id", user.id);
 
     if (error) throw error;
+
+    // Notify the original requester that their request was accepted
+    if (connection) {
+      try {
+        await notificationService.createNotification({
+          type: 'connection_accepted',
+          recipientId: connection.user_id,
+          actorId: user.id,
+          content: 'accepted your connection request',
+          objectId: connectionId,
+          objectType: 'connection'
+        });
+      } catch (notifError) {
+        console.warn('Failed to create acceptance notification:', notifError);
+      }
+    }
 
     toast.success("Connection accepted");
     return true;
