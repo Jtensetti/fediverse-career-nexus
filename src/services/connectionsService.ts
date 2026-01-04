@@ -30,18 +30,10 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
-    // First, fetch connections where the user is the initiator
     const { data: connections, error } = await supabase
       .from("user_connections")
-      .select(`
-        id,
-        status,
-        created_at,
-        user_id,
-        connected_user_id,
-        connected_profile:profiles!connected_user_id(id, username, fullname, headline, avatar_url, is_verified)
-      `)
-      .eq("user_id", user.id)
+      .select("id, user_id, connected_user_id, status")
+      .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
       .eq("status", "accepted");
 
     if (error) {
@@ -49,96 +41,46 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
       return [];
     }
 
-    // Get connections where the user is the receiver
-    const { data: reverseConnections, error: reverseError } = await supabase
-      .from("user_connections")
-      .select(`
-        id,
-        status,
-        created_at,
-        user_id,
-        connected_user_id,
-        user_profile:profiles!user_id(id, username, fullname, headline, avatar_url, is_verified)
-      `)
-      .eq("connected_user_id", user.id)
-      .eq("status", "accepted");
+    const otherUserIds = Array.from(
+      new Set(
+        (connections || []).map((c: any) =>
+          c.user_id === user.id ? c.connected_user_id : c.user_id
+        )
+      )
+    );
 
-    if (reverseError) {
-      console.error("Error fetching reverse connections:", reverseError);
+    if (otherUserIds.length === 0) return [];
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, username, fullname, headline, avatar_url, is_verified")
+      .in("id", otherUserIds);
+
+    if (profilesError) {
+      console.error("Error fetching connection profiles:", profilesError);
       return [];
     }
 
-    // Process regular connections (where user is the initiator)
-    const normalizedConnections = connections?.map(connection => {
-      // Check if connected_profile exists
-      if (!connection.connected_profile) {
-        console.warn("Connected profile is missing for connection:", connection.id);
-        return null;
-      }
-      
-      // Try to get the profile either as an array or as an object
-      let profile;
-      if (connection.connected_profile !== null) {
-        if (Array.isArray(connection.connected_profile)) {
-          profile = connection.connected_profile.length > 0 ? connection.connected_profile[0] : null;
-        } else {
-          profile = connection.connected_profile;
-        }
-      }
-      
-      if (!profile) {
-        console.warn("Connected profile data is invalid for connection:", connection.id);
-        return null;
-      }
-      
-      return {
-        id: connection.id,
-        username: profile.username || "",
-        displayName: profile.fullname || profile.username || "",
-        headline: profile.headline || "",
-        avatarUrl: profile.avatar_url || "",
-        connectionDegree: 1 as ConnectionDegree,
-        isVerified: profile.is_verified || false,
-        mutualConnections: 0, 
-      };
-    }).filter(Boolean) as NetworkConnection[] || [];
+    const profileById = new Map((profiles || []).map((p: any) => [p.id, p]));
 
-    // Process reverse connections (where user is the receiver)
-    const normalizedReverseConnections = reverseConnections?.map(connection => {
-      // Check if user_profile exists
-      if (!connection.user_profile) {
-        console.warn("User profile is missing for reverse connection:", connection.id);
-        return null;
-      }
-      
-      // Try to get the profile either as an array or as an object
-      let profile;
-      if (connection.user_profile !== null) {
-        if (Array.isArray(connection.user_profile)) {
-          profile = connection.user_profile.length > 0 ? connection.user_profile[0] : null;
-        } else {
-          profile = connection.user_profile;
-        }
-      }
-      
-      if (!profile) {
-        console.warn("User profile data is invalid for reverse connection:", connection.id);
-        return null;
-      }
-      
-      return {
-        id: connection.id,
-        username: profile.username || "",
-        displayName: profile.fullname || profile.username || "",
-        headline: profile.headline || "",
-        avatarUrl: profile.avatar_url || "",
-        connectionDegree: 1 as ConnectionDegree,
-        isVerified: profile.is_verified || false,
-        mutualConnections: 0,
-      };
-    }).filter(Boolean) as NetworkConnection[] || [];
+    return (connections || [])
+      .map((c: any) => {
+        const otherId = c.user_id === user.id ? c.connected_user_id : c.user_id;
+        const profile = profileById.get(otherId);
+        if (!profile) return null;
 
-    return [...normalizedConnections, ...normalizedReverseConnections];
+        return {
+          id: c.id,
+          username: profile.username || "",
+          displayName: profile.fullname || profile.username || "",
+          headline: profile.headline || "",
+          avatarUrl: profile.avatar_url || "",
+          connectionDegree: 1 as ConnectionDegree,
+          isVerified: profile.is_verified || false,
+          mutualConnections: 0,
+        };
+      })
+      .filter(Boolean) as NetworkConnection[];
   } catch (error) {
     console.error("Error fetching connections:", error);
     toast.error("Failed to load connections");
@@ -211,6 +153,91 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
       return false;
     }
 
+    if (user.id === userId) {
+      toast.error("You can't connect with yourself");
+      return false;
+    }
+
+    // Check existing relationship in either direction.
+    // This prevents duplicate records like:
+    //  - A -> B pending
+    //  - B -> A accepted
+    const { data: existing, error: existingError } = await supabase
+      .from("user_connections")
+      .select("id, user_id, connected_user_id, status, created_at")
+      .or(
+        `and(user_id.eq.${user.id},connected_user_id.eq.${userId}),and(user_id.eq.${userId},connected_user_id.eq.${user.id})`
+      )
+      .order("created_at", { ascending: false });
+
+    if (existingError) throw existingError;
+
+    const rows = existing || [];
+
+    const accepted = rows.find((r: any) => r.status === "accepted");
+    if (accepted) {
+      // Cleanup: remove any outgoing pending duplicates
+      const outgoingDuplicate = rows.find(
+        (r: any) => r.status === "pending" && r.user_id === user.id
+      );
+
+      if (outgoingDuplicate) {
+        await supabase.from("user_connections").delete().eq("id", outgoingDuplicate.id);
+      }
+
+      toast.success("You're already connected");
+      return true;
+    }
+
+    const incomingPending = rows.find(
+      (r: any) => r.status === "pending" && r.user_id === userId && r.connected_user_id === user.id
+    );
+    if (incomingPending) {
+      // If they already requested you, auto-accept.
+      return await acceptConnectionRequest(incomingPending.id);
+    }
+
+    const outgoingPending = rows.find(
+      (r: any) => r.status === "pending" && r.user_id === user.id && r.connected_user_id === userId
+    );
+    if (outgoingPending) {
+      toast.success("Connection request already pending");
+      return true;
+    }
+
+    const rejected = rows.find((r: any) => r.status === "rejected");
+    if (rejected) {
+      const { data: updated, error: updateError } = await supabase
+        .from("user_connections")
+        .update({
+          user_id: user.id,
+          connected_user_id: userId,
+          status: "pending",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", rejected.id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      try {
+        await notificationService.createNotification({
+          type: 'connection_request',
+          recipientId: userId,
+          actorId: user.id,
+          content: 'sent you a connection request',
+          objectId: updated.id,
+          objectType: 'connection'
+        });
+      } catch (notifError) {
+        console.warn('Failed to create connection notification:', notifError);
+      }
+
+      toast.success("Connection request sent");
+      return true;
+    }
+
     // Create the connection request
     const { data, error } = await supabase
       .from("user_connections")
@@ -222,13 +249,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
       .select()
       .single();
 
-    if (error) {
-      if (error.code === "23505") { // Unique constraint violation
-        toast.error("You already have a connection or pending request with this user");
-        return false;
-      }
-      throw error;
-    }
+    if (error) throw error;
 
     // Create notification for the recipient
     try {
@@ -259,22 +280,36 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
     if (!user) return false;
 
     // Get the connection to find the sender
-    const { data: connection } = await supabase
+    const { data: connection, error: connectionError } = await supabase
       .from("user_connections")
       .select("user_id")
       .eq("id", connectionId)
       .single();
 
+    if (connectionError) throw connectionError;
+
     const { error } = await supabase
       .from("user_connections")
-      .update({ status: "accepted" })
+      .update({ 
+        status: "accepted",
+        updated_at: new Date().toISOString()
+      })
       .eq("id", connectionId)
       .eq("connected_user_id", user.id);
 
     if (error) throw error;
 
-    // Notify the original requester that their request was accepted
-    if (connection) {
+    // Cleanup: if both users sent requests to each other, delete the duplicate pending row
+    if (connection?.user_id) {
+      await supabase
+        .from("user_connections")
+        .delete()
+        .eq("status", "pending")
+        .or(
+          `and(user_id.eq.${user.id},connected_user_id.eq.${connection.user_id}),and(user_id.eq.${connection.user_id},connected_user_id.eq.${user.id})`
+        );
+
+      // Notify the original requester that their request was accepted
       try {
         await notificationService.createNotification({
           type: 'connection_accepted',
@@ -406,21 +441,86 @@ export const getSentConnectionRequests = async (): Promise<string[]> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
-    const { data: requests, error } = await supabase
+    const { data: rows, error } = await supabase
       .from("user_connections")
-      .select("connected_user_id")
-      .eq("user_id", user.id)
-      .eq("status", "pending");
+      .select("user_id, connected_user_id, status")
+      .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
+      .in("status", ["pending", "accepted"]);
 
     if (error) {
       console.error("Error fetching sent requests:", error);
       return [];
     }
 
-    return (requests || []).map(r => r.connected_user_id);
+    const accepted = new Set<string>();
+
+    (rows || []).forEach((r: any) => {
+      if (r.status !== 'accepted') return;
+      const otherId = r.user_id === user.id ? r.connected_user_id : r.user_id;
+      accepted.add(otherId);
+    });
+
+    const pendingOutgoing = (rows || [])
+      .filter((r: any) => r.status === 'pending' && r.user_id === user.id)
+      .map((r: any) => r.connected_user_id)
+      .filter((otherId: string) => !accepted.has(otherId));
+
+    return Array.from(new Set(pendingOutgoing));
   } catch (error) {
     console.error("Error fetching sent requests:", error);
     return [];
+  }
+};
+
+export type ConnectionRelationshipStatus =
+  | "none"
+  | "accepted"
+  | "pending_outgoing"
+  | "pending_incoming"
+  | "rejected";
+
+export interface ConnectionRelationship {
+  status: ConnectionRelationshipStatus;
+  connectionId?: string;
+}
+
+export const getConnectionRelationship = async (
+  targetUserId: string
+): Promise<ConnectionRelationship> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { status: "none" };
+
+    const { data: rows, error } = await supabase
+      .from("user_connections")
+      .select("id, user_id, connected_user_id, status, created_at")
+      .or(
+        `and(user_id.eq.${user.id},connected_user_id.eq.${targetUserId}),and(user_id.eq.${targetUserId},connected_user_id.eq.${user.id})`
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const accepted = (rows || []).find((r: any) => r.status === "accepted");
+    if (accepted) return { status: "accepted", connectionId: accepted.id };
+
+    const outgoing = (rows || []).find(
+      (r: any) => r.status === "pending" && r.user_id === user.id
+    );
+    if (outgoing) return { status: "pending_outgoing", connectionId: outgoing.id };
+
+    const incoming = (rows || []).find(
+      (r: any) => r.status === "pending" && r.connected_user_id === user.id
+    );
+    if (incoming) return { status: "pending_incoming", connectionId: incoming.id };
+
+    const rejected = (rows || []).find((r: any) => r.status === "rejected");
+    if (rejected) return { status: "rejected", connectionId: rejected.id };
+
+    return { status: "none" };
+  } catch (error) {
+    console.error("Error fetching connection relationship:", error);
+    return { status: "none" };
   }
 };
 

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, MessageSquare, Share2, Edit, Activity } from "lucide-react";
+import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, MessageSquare, Share2, Edit, Activity, Clock } from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
 import ProfileBanner from "@/components/profile/ProfileBanner";
@@ -17,7 +17,15 @@ import { supabase } from "@/integrations/supabase/client";
 import FederationInfo from "@/components/FederationInfo";
 import FediverseBadge from "@/components/FediverseBadge";
 import { getUserProfileByUsername, getCurrentUserProfile, UserProfile } from "@/services/profileService";
-import { getUserConnections, NetworkConnection, sendConnectionRequest } from "@/services/connectionsService";
+import {
+  getUserConnections,
+  NetworkConnection,
+  sendConnectionRequest,
+  acceptConnectionRequest,
+  rejectConnectionRequest,
+  getConnectionRelationship,
+  ConnectionRelationship,
+} from "@/services/connectionsService";
 import UserPostsList from "@/components/UserPostsList";
 import UserActivityList from "@/components/UserActivityList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
@@ -33,6 +41,7 @@ const ProfilePage = () => {
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const [isRespondingToConnection, setIsRespondingToConnection] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   
@@ -83,6 +92,16 @@ const ProfilePage = () => {
   
   // Determine if viewing own profile
   const viewingOwnProfile = !usernameOrId || (profile && currentUserId === profile.id);
+
+  // Fetch connection relationship status (for action button)
+  const { data: connectionRelationship, isLoading: connectionRelationshipLoading } = useQuery({
+    queryKey: ["connectionRelationship", currentUserId, profile?.id],
+    queryFn: async () => {
+      if (!profile?.id || !currentUserId) return null;
+      return getConnectionRelationship(profile.id);
+    },
+    enabled: !!profile?.id && !!currentUserId && !viewingOwnProfile,
+  });
   
   // Record profile view when visiting another user's profile
   useEffect(() => {
@@ -126,7 +145,9 @@ const ProfilePage = () => {
     setIsConnecting(true);
     try {
       await sendConnectionRequest(profile.id);
-      toast.success(`Connection request sent to ${profile.displayName}`);
+      queryClient.invalidateQueries({ queryKey: ["connectionRelationship", currentUserId, profile.id] });
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+      queryClient.invalidateQueries({ queryKey: ["userConnections"] });
     } catch (error) {
       console.error("Error sending connection request:", error);
       toast.error("Failed to send connection request");
@@ -134,7 +155,39 @@ const ProfilePage = () => {
       setIsConnecting(false);
     }
   };
-  
+
+  const handleAcceptConnection = async () => {
+    if (!connectionRelationship?.connectionId) return;
+
+    setIsRespondingToConnection(true);
+    try {
+      const ok = await acceptConnectionRequest(connectionRelationship.connectionId);
+      if (ok && profile?.id) {
+        queryClient.invalidateQueries({ queryKey: ["connectionRelationship", currentUserId, profile.id] });
+        queryClient.invalidateQueries({ queryKey: ["connections"] });
+        queryClient.invalidateQueries({ queryKey: ["userConnections"] });
+      }
+    } finally {
+      setIsRespondingToConnection(false);
+    }
+  };
+
+  const handleDeclineConnection = async () => {
+    if (!connectionRelationship?.connectionId) return;
+
+    setIsRespondingToConnection(true);
+    try {
+      const ok = await rejectConnectionRequest(connectionRelationship.connectionId);
+      if (ok && profile?.id) {
+        queryClient.invalidateQueries({ queryKey: ["connectionRelationship", currentUserId, profile.id] });
+        queryClient.invalidateQueries({ queryKey: ["connections"] });
+        queryClient.invalidateQueries({ queryKey: ["userConnections"] });
+      }
+    } finally {
+      setIsRespondingToConnection(false);
+    }
+  };
+
   // Handle sync from Fediverse
   const handleSyncFromFediverse = async () => {
     setIsSyncing(true);
