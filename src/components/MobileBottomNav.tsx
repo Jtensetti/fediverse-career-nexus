@@ -23,9 +23,10 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border md:hidden safe-area-bottom"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border md:hidden"
       role="navigation"
       aria-label="Mobile navigation"
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0.5rem)' }}
     >
       <div className="flex items-center justify-around h-16 px-2">
         {/* Left nav items */}

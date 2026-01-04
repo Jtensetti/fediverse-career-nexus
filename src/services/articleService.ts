@@ -62,6 +62,21 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
       return null;
     }
     
+    // Ensure article_authors entry exists (fallback if trigger fails)
+    const { error: authorError } = await supabase
+      .from('article_authors')
+      .upsert({
+        article_id: data.id,
+        user_id: user.id,
+        is_primary: true,
+        can_edit: true
+      }, { onConflict: 'article_id,user_id' });
+    
+    if (authorError) {
+      console.warn('Failed to create article_authors entry:', authorError);
+      // Don't fail the whole operation, the article was created
+    }
+    
     toast.success('Article created successfully!');
     return data;
   } catch (error) {

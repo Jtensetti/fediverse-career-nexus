@@ -395,13 +395,15 @@ const ProfileEditPage = () => {
         <h1 className="text-2xl font-bold mb-6">Edit Profile</h1>
         
         <Tabs defaultValue="basic" className="mb-6">
-          <TabsList className="mb-4">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="experience">Experience</TabsTrigger>
-            <TabsTrigger value="education">Education</TabsTrigger>
-            <TabsTrigger value="skills">Skills</TabsTrigger>
-            <TabsTrigger value="privacy">Privacy</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-4">
+            <TabsList className="w-max md:w-auto">
+              <TabsTrigger value="basic" className="text-xs sm:text-sm whitespace-nowrap">Basic Info</TabsTrigger>
+              <TabsTrigger value="experience" className="text-xs sm:text-sm whitespace-nowrap">Experience</TabsTrigger>
+              <TabsTrigger value="education" className="text-xs sm:text-sm whitespace-nowrap">Education</TabsTrigger>
+              <TabsTrigger value="skills" className="text-xs sm:text-sm whitespace-nowrap">Skills</TabsTrigger>
+              <TabsTrigger value="privacy" className="text-xs sm:text-sm whitespace-nowrap">Privacy</TabsTrigger>
+            </TabsList>
+          </div>
           
           <TabsContent value="basic">
             <Card>

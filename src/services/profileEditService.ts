@@ -80,8 +80,8 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     // Generate a unique filename to prevent collisions
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}-${uuidv4()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
+    const filePath = fileName;
 
     console.log('📤 Uploading avatar to path:', filePath);
 

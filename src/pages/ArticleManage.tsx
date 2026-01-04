@@ -135,64 +135,116 @@ const ArticleManage = () => {
               <p>Loading articles...</p>
             </div>
           ) : filteredArticles.length > 0 ? (
-            <div className="bg-white rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40%]">Title</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredArticles.map((article) => (
-                    <TableRow key={article.id}>
-                      <TableCell className="font-medium">
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block bg-white rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40%]">Title</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredArticles.map((article) => (
+                      <TableRow key={article.id}>
+                        <TableCell className="font-medium">
+                          {article.published ? (
+                            <Link 
+                              to={`/articles/${article.slug}`}
+                              className="hover:text-primary transition-colors hover:underline"
+                            >
+                              {article.title}
+                            </Link>
+                          ) : (
+                            <span>{article.title}</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {article.published ? (
+                            <Badge variant="default" className="bg-green-500">Published</Badge>
+                          ) : (
+                            <Badge variant="outline">Draft</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(article.created_at), 'MMM d, yyyy')}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/articles/edit/${article.id}`)}
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(article.id)}
+                            >
+                              <Trash size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {filteredArticles.map((article) => (
+                  <div key={article.id} className="bg-white rounded-lg border p-4">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
                         {article.published ? (
                           <Link 
                             to={`/articles/${article.slug}`}
-                            className="hover:text-primary transition-colors hover:underline"
+                            className="font-medium hover:text-primary transition-colors hover:underline block truncate"
                           >
                             {article.title}
                           </Link>
                         ) : (
-                          <span>{article.title}</span>
+                          <span className="font-medium block truncate">{article.title}</span>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        {article.published ? (
-                          <Badge variant="default" className="bg-green-500">Published</Badge>
-                        ) : (
-                          <Badge variant="outline">Draft</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(article.created_at), 'MMM d, yyyy')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/articles/edit/${article.id}`)}
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteClick(article.id)}
-                          >
-                            <Trash size={16} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                      </div>
+                      {article.published ? (
+                        <Badge variant="default" className="bg-green-500 flex-shrink-0">Published</Badge>
+                      ) : (
+                        <Badge variant="outline" className="flex-shrink-0">Draft</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {format(new Date(article.created_at), 'MMM d, yyyy')}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => navigate(`/articles/edit/${article.id}`)}
+                      >
+                        <Edit size={14} className="mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteClick(article.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="text-center py-12 border rounded-md">
               <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />

@@ -362,14 +362,16 @@ const ProfilePage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Tabs defaultValue="experience" className="mb-6">
-            <TabsList className="mb-4 flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
-              <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Experience</TabsTrigger>
-              <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Education</TabsTrigger>
-              <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Skills</TabsTrigger>
-              <TabsTrigger value="recommendations" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Recommendations</TabsTrigger>
-              <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Posts</TabsTrigger>
-              <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">Connections</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+              <TabsList className="mb-4 flex w-max md:w-auto md:flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
+                <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Experience</TabsTrigger>
+                <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Education</TabsTrigger>
+                <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Skills</TabsTrigger>
+                <TabsTrigger value="recommendations" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Recommendations</TabsTrigger>
+                <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Posts</TabsTrigger>
+                <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Connections</TabsTrigger>
+              </TabsList>
+            </div>
             
             <TabsContent value="experience">
               <Card variant="elevated">

@@ -8,7 +8,7 @@ import AppScreenshot from "./AppScreenshot";
 
 const HeroWithScreenshot = () => {
   return (
-    <section className="relative bg-gradient-to-br from-primary via-primary to-secondary text-primary-foreground overflow-hidden min-h-[90vh] flex items-center">
+    <section className="relative bg-gradient-to-br from-primary via-primary to-secondary text-primary-foreground overflow-hidden min-h-[90vh] flex items-center overflow-x-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-72 h-72 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: "4s" }} />
@@ -43,14 +43,14 @@ const HeroWithScreenshot = () => {
               className="w-16 h-16 lg:w-20 lg:h-20 mx-auto lg:mx-0 mb-6 drop-shadow-lg" 
             />
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-display mb-6 leading-[1.1] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-display mb-4 sm:mb-6 leading-[1.1] tracking-tight">
               The Professional Network{" "}
               <span className="text-accent inline-block">
                 That Respects Your Freedom
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-primary-foreground/90 mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed px-2 sm:px-0">
               Connect with professionals across the Fediverse. Own your data. Control your network. No algorithms, no ads, no lock-in.
             </p>
 
@@ -60,25 +60,25 @@ const HeroWithScreenshot = () => {
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-8 sm:mb-10 px-2 sm:px-0">
               <Button 
                 asChild 
                 size="lg"
-                className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all w-full sm:w-auto"
               >
                 <Link to="/auth/signup">
                   Get Started Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Link>
               </Button>
               <Button
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-2 border-primary-foreground/80 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 font-semibold px-8 py-6 text-lg hover:scale-105 transition-all backdrop-blur-sm"
+                className="border-2 border-primary-foreground/80 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 font-semibold px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
               >
                 <Link to="/feed">
-                  <Play className="mr-2 h-5 w-5" />
+                  <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Explore the Feed
                 </Link>
               </Button>
