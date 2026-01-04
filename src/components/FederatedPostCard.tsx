@@ -362,13 +362,14 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
           </div>
         </CardHeader>
         
-        <CardContent className="pb-3">
-          {getModerationBanner()}
-          
-          <div 
-            className="prose prose-sm max-w-none dark:prose-invert" 
-            dangerouslySetInnerHTML={{ __html: getContent() }} 
-          />
+        <Link to={`/post/${post.id}`} className="block">
+          <CardContent className="pb-3 cursor-pointer hover:bg-muted/30 transition-colors rounded-md">
+            {getModerationBanner()}
+            
+            <div 
+              className="prose prose-sm max-w-none dark:prose-invert" 
+              dangerouslySetInnerHTML={{ __html: getContent() }} 
+            />
           
           {attachments.length > 0 && (
             <div className="mt-3 grid gap-2 rounded-xl overflow-hidden">
@@ -387,7 +388,8 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
               ))}
             </div>
           )}
-        </CardContent>
+          </CardContent>
+        </Link>
         
         <CardFooter className="pt-0 flex flex-wrap gap-0.5 sm:gap-1 border-t border-border/50 mx-2 sm:mx-4 py-2">
           <Button 

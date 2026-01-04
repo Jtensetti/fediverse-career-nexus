@@ -61,8 +61,12 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
   }
 };
 
-// Create a reply to a post
-export const createPostReply = async (postId: string, content: string): Promise<boolean> => {
+// Create a reply to a post (or to another reply)
+export const createPostReply = async (
+  postId: string, 
+  content: string, 
+  parentReplyId?: string
+): Promise<boolean> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -122,13 +126,16 @@ export const createPostReply = async (postId: string, content: string): Promise<
       profile = profileData as typeof profile;
     }
 
-    // Create reply object
+    // Create reply object - if parentReplyId is provided, reply to that instead
+    const inReplyTo = parentReplyId || postId;
+    
     const replyObject = {
       type: 'Note',
       content: {
         type: 'Note',
         content: content,
-        inReplyTo: postId,
+        inReplyTo: inReplyTo,
+        rootPost: postId, // Keep reference to original post for threading
         actor: {
           id: actor.id,
           preferredUsername: actor.preferred_username,

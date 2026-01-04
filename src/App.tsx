@@ -42,6 +42,7 @@ import CodeOfConductPage from "./pages/CodeOfConductPage";
 import InstanceGuidelinesPage from "./pages/InstanceGuidelines";
 import Instances from "./pages/Instances";
 import AdminFederationHealth from "./pages/AdminFederationHealth";
+import PostView from "./pages/PostView";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -85,6 +86,7 @@ function App() {
                     <Route path="/jobs" element={<Jobs />} />
                     <Route path="/jobs/:id" element={<JobView />} />
                     <Route path="/articles/:slug" element={<ArticleView />} />
+                    <Route path="/post/:postId" element={<PostView />} />
 
                     {/* Protected routes */}
                     <Route
