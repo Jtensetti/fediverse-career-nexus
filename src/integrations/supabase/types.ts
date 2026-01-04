@@ -511,6 +511,45 @@ export type Database = {
           },
         ]
       }
+      event_invitations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_invitations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_invitations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_rsvps: {
         Row: {
           created_at: string
@@ -558,6 +597,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          visibility: string | null
         }
         Insert: {
           cover_image_url?: string | null
@@ -573,6 +613,7 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          visibility?: string | null
         }
         Update: {
           cover_image_url?: string | null
@@ -588,6 +629,7 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          visibility?: string | null
         }
         Relationships: []
       }
@@ -1487,6 +1529,10 @@ export type Database = {
       actor_id_to_partition_key: {
         Args: { actor_uuid: string }
         Returns: number
+      }
+      are_users_connected: {
+        Args: { user1: string; user2: string }
+        Returns: boolean
       }
       cleanup_expired_actor_cache: { Args: never; Returns: undefined }
       create_follow: {

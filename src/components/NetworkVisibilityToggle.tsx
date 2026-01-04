@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { 
   getProfileVisibilitySettings, 
   updateProfileVisibilitySettings 
-} from "@/services/networkConnectionsService";
+} from "@/services/connectionsService";
 
 interface NetworkVisibilityToggleProps {
   initialValue?: boolean;

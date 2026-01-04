@@ -207,7 +207,27 @@ export async function getMessages(partnerId: string): Promise<Message[]> {
 }
 
 /**
- * Send a message to a user
+ * Check if two users are connected
+ */
+export async function areUsersConnected(userId1: string, userId2: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .rpc('are_users_connected', { user1: userId1, user2: userId2 });
+    
+    if (error) {
+      console.error('Error checking connection status:', error);
+      return false;
+    }
+    
+    return data === true;
+  } catch (error) {
+    console.error('Error in areUsersConnected:', error);
+    return false;
+  }
+}
+
+/**
+ * Send a message to a user (must be connected)
  */
 export async function sendMessage(recipientId: string, content: string): Promise<Message | null> {
   try {
@@ -218,6 +238,13 @@ export async function sendMessage(recipientId: string, content: string): Promise
     }
 
     const senderId = sessionData.session.user.id;
+
+    // Check if users are connected first (for better error message)
+    const connected = await areUsersConnected(senderId, recipientId);
+    if (!connected) {
+      toast.error('You can only message users you are connected with');
+      return null;
+    }
 
     const { data, error } = await supabase
       .from('messages')
@@ -231,7 +258,12 @@ export async function sendMessage(recipientId: string, content: string): Promise
 
     if (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message');
+      // Check if it's an RLS violation (not connected)
+      if (error.code === '42501' || error.message.includes('row-level security')) {
+        toast.error('You can only message users you are connected with');
+      } else {
+        toast.error('Failed to send message');
+      }
       return null;
     }
 
