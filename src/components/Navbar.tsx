@@ -20,6 +20,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { GlobalSearch } from "./GlobalSearch";
+import { NotificationBell } from "./NotificationBell";
 import { AlignJustify, LogIn, Settings, User, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -179,7 +181,17 @@ const Navbar = () => {
             )}
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Global Search - only show when authenticated */}
+            {isAuthenticated && (
+              <div className="hidden md:block">
+                <GlobalSearch />
+              </div>
+            )}
+            
+            {/* Notification Bell - only show when authenticated */}
+            {isAuthenticated && <NotificationBell />}
+            
             <LanguageSwitcher />
             <ModeToggle />
             

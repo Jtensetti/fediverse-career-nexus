@@ -78,7 +78,7 @@ export default function AuthCallback() {
         setStatus('success');
         
         if (isNewUser) {
-          toast.success(`Welcome to Bondy! Your account has been linked to your Fediverse identity.`);
+          toast.success(`Welcome to Nolto! Your account has been linked to your Fediverse identity.`);
         } else {
           toast.success(`Welcome back, ${userProfile.fullname || userProfile.username}!`);
         }

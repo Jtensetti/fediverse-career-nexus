@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw } from "lucide-react";
+import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, FileText } from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
 import { recordProfileView } from "@/services/profileViewService";
@@ -17,6 +17,8 @@ import FediverseBadge from "@/components/FediverseBadge";
 import { getUserProfileByUsername, getCurrentUserProfile, UserProfile } from "@/services/profileService";
 import { getUserConnections, NetworkConnection, sendConnectionRequest } from "@/services/connectionsService";
 import UserPostsList from "@/components/UserPostsList";
+import { SkillEndorsements } from "@/components/SkillEndorsements";
+import { RecommendationsSection } from "@/components/RecommendationsSection";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -312,10 +314,11 @@ const ProfilePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Tabs defaultValue="experience" className="mb-6">
-            <TabsList className="mb-4">
+            <TabsList className="mb-4 flex-wrap h-auto gap-1">
               <TabsTrigger value="experience">Experience</TabsTrigger>
               <TabsTrigger value="education">Education</TabsTrigger>
               <TabsTrigger value="skills">Skills</TabsTrigger>
+              <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
               <TabsTrigger value="articles">Articles</TabsTrigger>
               <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="connections">Connections</TabsTrigger>
@@ -412,28 +415,37 @@ const ProfilePage = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Star size={20} className="text-bondy-primary" />
-                    Skills
+                    Skills & Endorsements
                   </h3>
                   
-                  {profile.skills && profile.skills.length > 0 ? (
-                    <div className="flex flex-wrap gap-3">
-                      {profile.skills.map((skill) => (
-                        <div key={skill.id} className="bg-gray-100 rounded-lg p-3 flex flex-col">
-                          <span className="font-medium">{skill.name}</span>
-                          <span className="text-sm text-gray-600">{skill.endorsements} endorsements</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>No skills listed</p>
-                      {viewingOwnProfile && (
-                        <Button variant="outline" className="mt-4">
-                          <Link to="/profile/edit">Add Skills</Link>
-                        </Button>
-                      )}
+                  <SkillEndorsements 
+                    userId={profile.id} 
+                    isOwnProfile={viewingOwnProfile} 
+                  />
+                  
+                  {viewingOwnProfile && (!profile.skills || profile.skills.length === 0) && (
+                    <div className="mt-4 text-center">
+                      <Button variant="outline" asChild>
+                        <Link to="/profile/edit">Add Skills</Link>
+                      </Button>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="recommendations">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <FileText size={20} className="text-bondy-primary" />
+                    Recommendations
+                  </h3>
+                  
+                  <RecommendationsSection 
+                    userId={profile.id} 
+                    isOwnProfile={viewingOwnProfile} 
+                  />
                 </CardContent>
               </Card>
             </TabsContent>

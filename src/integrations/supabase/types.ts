@@ -275,6 +275,7 @@ export type Database = {
           id: string
           published: boolean | null
           published_at: string | null
+          search_vector: unknown
           slug: string | null
           tags: string[] | null
           title: string
@@ -289,6 +290,7 @@ export type Database = {
           id?: string
           published?: boolean | null
           published_at?: string | null
+          search_vector?: unknown
           slug?: string | null
           tags?: string[] | null
           title: string
@@ -303,6 +305,7 @@ export type Database = {
           id?: string
           published?: boolean | null
           published_at?: string | null
+          search_vector?: unknown
           slug?: string | null
           tags?: string[] | null
           title?: string
@@ -602,6 +605,7 @@ export type Database = {
           location: string | null
           max_attendees: number | null
           meeting_url: string | null
+          search_vector: unknown
           start_date: string
           title: string
           updated_at: string
@@ -618,6 +622,7 @@ export type Database = {
           location?: string | null
           max_attendees?: number | null
           meeting_url?: string | null
+          search_vector?: unknown
           start_date: string
           title: string
           updated_at?: string
@@ -634,6 +639,7 @@ export type Database = {
           location?: string | null
           max_attendees?: number | null
           meeting_url?: string | null
+          search_vector?: unknown
           start_date?: string
           title?: string
           updated_at?: string
@@ -920,6 +926,7 @@ export type Database = {
           salary_currency: string | null
           salary_max: number | null
           salary_min: number | null
+          search_vector: unknown
           skills: string[] | null
           title: string
           updated_at: string
@@ -939,6 +946,7 @@ export type Database = {
           salary_currency?: string | null
           salary_max?: number | null
           salary_min?: number | null
+          search_vector?: unknown
           skills?: string[] | null
           title: string
           updated_at?: string
@@ -958,6 +966,7 @@ export type Database = {
           salary_currency?: string | null
           salary_max?: number | null
           salary_min?: number | null
+          search_vector?: unknown
           skills?: string[] | null
           title?: string
           updated_at?: string
@@ -1048,6 +1057,57 @@ export type Database = {
           unsubscribed_at?: string | null
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          content: string | null
+          created_at: string
+          id: string
+          object_id: string | null
+          object_type: string | null
+          read: boolean
+          recipient_id: string
+          type: string
+        }
+        Insert: {
+          actor_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          object_id?: string | null
+          object_type?: string | null
+          read?: boolean
+          recipient_id: string
+          type: string
+        }
+        Update: {
+          actor_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          object_id?: string | null
+          object_type?: string | null
+          read?: boolean
+          recipient_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       oauth_clients: {
         Row: {
@@ -1307,6 +1367,7 @@ export type Database = {
           phone: string | null
           profile_views: number | null
           remote_actor_url: string | null
+          search_vector: unknown
           updated_at: string
           username: string | null
         }
@@ -1325,6 +1386,7 @@ export type Database = {
           phone?: string | null
           profile_views?: number | null
           remote_actor_url?: string | null
+          search_vector?: unknown
           updated_at?: string
           username?: string | null
         }
@@ -1343,10 +1405,62 @@ export type Database = {
           phone?: string | null
           profile_views?: number | null
           remote_actor_url?: string | null
+          search_vector?: unknown
           updated_at?: string
           username?: string | null
         }
         Relationships: []
+      }
+      recommendations: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          position_at_time: string | null
+          recipient_id: string
+          recommender_id: string
+          relationship: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          position_at_time?: string | null
+          recipient_id: string
+          recommender_id: string
+          relationship: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          position_at_time?: string | null
+          recipient_id?: string
+          recommender_id?: string
+          relationship?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_recommender_id_fkey"
+            columns: ["recommender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       remote_actors_cache: {
         Row: {
@@ -1431,6 +1545,42 @@ export type Database = {
           revoked_at?: string | null
         }
         Relationships: []
+      }
+      skill_endorsements: {
+        Row: {
+          created_at: string
+          endorser_id: string
+          id: string
+          skill_id: string
+        }
+        Insert: {
+          created_at?: string
+          endorser_id: string
+          id?: string
+          skill_id: string
+        }
+        Update: {
+          created_at?: string
+          endorser_id?: string
+          id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_endorser_id_fkey"
+            columns: ["endorser_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skills: {
         Row: {

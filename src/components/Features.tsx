@@ -51,7 +51,7 @@ const Features = () => {
             Features Built for Professionals
           </h2>
           <p className="text-lg text-gray-600">
-            Bondy combines the best aspects of professional networking with modern, privacy-focused technology and federation.
+            Nolto combines the best aspects of professional networking with modern, privacy-focused technology and federation.
           </p>
         </div>
 

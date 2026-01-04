@@ -69,7 +69,7 @@ async function registerOAuthClient(domain: string, redirectUri: string): Promise
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        client_name: 'Bondy - Professional Fediverse Network',
+        client_name: 'Nolto - Professional Fediverse Network',
         redirect_uris: redirectUri,
         scopes: 'read',
         website: Deno.env.get("SITE_URL") || redirectUri.split('/auth')[0]

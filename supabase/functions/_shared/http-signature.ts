@@ -330,7 +330,7 @@ export async function signedFetch(
     headers.set("Accept", "application/activity+json");
   }
   if (!headers.has("User-Agent")) {
-    headers.set("User-Agent", "ActivityPub-Federation/1.0 (Bondy)");
+    headers.set("User-Agent", "ActivityPub-Federation/1.0 (Nolto)");
   }
   
   const body = options.body?.toString() || "";

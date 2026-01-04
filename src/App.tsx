@@ -23,6 +23,7 @@ import Articles from "./pages/Articles";
 import ArticleCreate from "./pages/ArticleCreate";
 import Connections from "./pages/Connections";
 import Messages from "./pages/Messages";
+import Notifications from "./pages/Notifications";
 import Mission from "./pages/Mission";
 import Documentation from "./pages/Documentation";
 import FederationGuide from "./pages/FederationGuide";
@@ -141,6 +142,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Messages />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <ProtectedRoute>
+                      <Notifications />
                     </ProtectedRoute>
                   }
                 />
