@@ -3,12 +3,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Quote, CheckCircle, Star } from "lucide-react";
 
+// Import mastodon-style avatars
+import avatarSarah from "@/assets/avatars/avatar-sarah.png";
+import avatarMarcus from "@/assets/avatars/avatar-marcus.png";
+import avatarPriya from "@/assets/avatars/avatar-priya.png";
+import avatarJames from "@/assets/avatars/avatar-james.png";
+import avatarEmma from "@/assets/avatars/avatar-emma.png";
+import avatarCarlos from "@/assets/avatars/avatar-carlos.png";
+
 const testimonials = [
   {
     quote: "Finally, a professional network where I own my data. No more algorithmic manipulation or privacy concerns. This is how networking should work.",
     author: "Sarah Chen",
     role: "Senior Developer at Mozilla",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah&backgroundColor=b6e3f4",
+    avatar: avatarSarah,
     handle: "@sarah@fosstodon.org",
     verified: true,
     featured: true,
@@ -17,7 +25,7 @@ const testimonials = [
     quote: "The federation model means my network isn't locked into one platform. I can switch instances without losing connections. True data portability!",
     author: "Marcus Weber",
     role: "Tech Lead at Fairphone",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=marcus&backgroundColor=d1d4f9",
+    avatar: avatarMarcus,
     handle: "@marcus@mastodon.social",
     verified: true,
   },
@@ -25,7 +33,7 @@ const testimonials = [
     quote: "Transparent, open-source, and community-driven. This is what professional networking should have been from the start.",
     author: "Priya Sharma",
     role: "Open Source Advocate",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=priya&backgroundColor=ffd5dc",
+    avatar: avatarPriya,
     handle: "@priya@hachyderm.io",
     verified: false,
   },
@@ -33,7 +41,7 @@ const testimonials = [
     quote: "I found my current role through a connection made on Nolto. The quality of conversations here is leagues above traditional platforms.",
     author: "James Okoro",
     role: "DevOps Engineer",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=james&backgroundColor=c0aede",
+    avatar: avatarJames,
     handle: "@james@tech.lgbt",
     verified: true,
   },
@@ -41,7 +49,7 @@ const testimonials = [
     quote: "As someone who values privacy, Nolto gives me peace of mind. No tracking, no ads, just genuine professional connections.",
     author: "Emma Lindqvist",
     role: "Security Researcher",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=emma&backgroundColor=b5e8e3",
+    avatar: avatarEmma,
     handle: "@emma@infosec.exchange",
     verified: true,
   },
@@ -49,7 +57,7 @@ const testimonials = [
     quote: "The job board is incredible - salary transparency on every listing. I wish I had discovered this sooner in my career.",
     author: "Carlos Rivera",
     role: "Product Manager",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=carlos&backgroundColor=ffdfbf",
+    avatar: avatarCarlos,
     handle: "@carlos@social.coop",
     verified: false,
   },

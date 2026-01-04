@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Repeat2, Share2, Bell, UserPlus, Briefcase, CheckCircle } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+
+// Import mastodon-style avatars
+import avatarSarah from "@/assets/avatars/avatar-sarah.png";
+import avatarMarcus from "@/assets/avatars/avatar-marcus.png";
 
 interface AppScreenshotProps {
   variant?: "feed" | "profile" | "jobs" | "messages";
@@ -35,6 +39,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="bg-card rounded-lg border p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 border-2 border-secondary">
+                  <AvatarImage src={avatarSarah} alt="Sarah Chen" />
                   <AvatarFallback className="bg-secondary/20 text-secondary font-semibold">SC</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -68,6 +73,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="bg-card rounded-lg border p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 border-2 border-primary">
+                  <AvatarImage src={avatarMarcus} alt="Marcus Weber" />
                   <AvatarFallback className="bg-primary/20 text-primary font-semibold">MW</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -155,6 +161,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
           <div className="px-6 pb-6">
             <div className="flex items-end gap-4 -mt-10">
               <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
+                <AvatarImage src={avatarSarah} alt="Sarah Chen" />
                 <AvatarFallback className="bg-secondary text-white text-2xl font-bold">SC</AvatarFallback>
               </Avatar>
               <div className="flex-1 pb-2">
