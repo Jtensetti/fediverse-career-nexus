@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Dialog,
@@ -12,14 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, ExternalLink, Copy } from "lucide-react";
+import { ShieldCheck, Copy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { requestExperienceVerification, requestEducationVerification } from "@/services/profileCVService";
 
 interface VerificationRequestProps {
   type: "experience" | "education";
   itemId: string;
-  companyDomain?: string; // For experience verification
+  companyDomain?: string;
 }
 
 const VerificationRequest = ({ type, itemId, companyDomain }: VerificationRequestProps) => {
@@ -63,11 +62,11 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
     return (
       <div className="mt-4">
         <h4 className="text-sm font-semibold">Domain Verification</h4>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Add the following TXT record to your domain's DNS settings:
         </p>
-        <div className="bg-gray-100 p-2 rounded mt-2 flex justify-between items-center">
-          <code className="text-xs">{`bondy-verify=${token}`}</code>
+        <div className="bg-muted p-2 rounded mt-2 flex justify-between items-center">
+          <code className="text-xs">{`nolto-verify=${token}`}</code>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -100,7 +99,7 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
         
         {!token ? (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               {type === "experience" 
                 ? "We'll generate a verification token that you can use to prove your employment."
                 : "We'll generate a verification token that you can use to verify your education credentials."}
@@ -137,7 +136,7 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
             
             {getTxtRecordInstructions()}
             
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Share this verification token with the {type === "experience" ? "employer" : "institution"} 
               to verify your credentials.
             </p>

@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Bondy API
+  title: Nolto API
   version: '1.0'
 paths:
   /actor/{username}:

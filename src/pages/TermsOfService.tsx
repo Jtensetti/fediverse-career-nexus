@@ -28,23 +28,23 @@ const TermsOfService = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-bondy-primary text-white py-16">
+      <div className="bg-primary text-primary-foreground py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">
               Terms of Service
             </h1>
-            <p className="text-xl text-bondy-highlight">
-              Legal Terms and Conditions for Using Bondy
+            <p className="text-xl text-accent">
+              Legal Terms and Conditions for Using Nolto
             </p>
-            <p className="text-lg text-white/90 mt-4">
+            <p className="text-lg text-primary-foreground/90 mt-4">
               <strong>Effective Date:</strong> June 16, 2025
             </p>
-            <p className="text-lg text-white/90 mt-2">
+            <p className="text-lg text-primary-foreground/90 mt-2">
               These Terms of Service constitute a legally binding agreement between you and the operator 
-              of this Bondy instance, governing your use of the Bondy platform and associated services.
+              of this Nolto instance, governing your use of the Nolto platform and associated services.
             </p>
           </div>
         </div>
@@ -55,13 +55,13 @@ const TermsOfService = () => {
         <div className="max-w-4xl mx-auto">
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             {keyPoints.map((point, index) => (
-              <div key={index} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="bg-bondy-primary/10 p-3 rounded-lg">
-                  <point.icon className="h-6 w-6 text-bondy-primary" />
+              <div key={index} className="flex items-start space-x-4 p-4 bg-muted rounded-lg">
+                <div className="bg-primary/10 p-3 rounded-lg">
+                  <point.icon className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-bondy-primary mb-2">{point.title}</h3>
-                  <p className="text-gray-700">{point.description}</p>
+                  <h3 className="text-lg font-semibold text-primary mb-2">{point.title}</h3>
+                  <p className="text-muted-foreground">{point.description}</p>
                 </div>
               </div>
             ))}
@@ -71,14 +71,14 @@ const TermsOfService = () => {
           <div className="prose prose-lg max-w-none">
             
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">1. Definitions</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">1. Definitions</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Nolto:</strong> The open-source, federated platform for professional networking and job postings, including all code, features, and services provided.</li>
-                  <li><strong>Instance:</strong> A server running the Nolto software, managed either by us or by a third-party administrator, participating in the federated Nolto network.</li>
-                  <li><strong>User:</strong> Any person or entity who accesses, registers for, or uses the Service.</li>
-                  <li><strong>Content:</strong> All information, data, text, images, files, links, or other material posted, transmitted, or otherwise made available via the Service.</li>
-                  <li><strong>Federation:</strong> The process by which information is exchanged between Nolto instances using the ActivityPub protocol or other compatible means.</li>
+                  <li><strong className="text-foreground">Nolto:</strong> The open-source, federated platform for professional networking and job postings, including all code, features, and services provided.</li>
+                  <li><strong className="text-foreground">Instance:</strong> A server running the Nolto software, managed either by us or by a third-party administrator, participating in the federated Nolto network.</li>
+                  <li><strong className="text-foreground">User:</strong> Any person or entity who accesses, registers for, or uses the Service.</li>
+                  <li><strong className="text-foreground">Content:</strong> All information, data, text, images, files, links, or other material posted, transmitted, or otherwise made available via the Service.</li>
+                  <li><strong className="text-foreground">Federation:</strong> The process by which information is exchanged between Nolto instances using the ActivityPub protocol or other compatible means.</li>
                 </ul>
               </div>
             </section>

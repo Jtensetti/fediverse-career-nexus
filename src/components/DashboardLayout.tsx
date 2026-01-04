@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -17,15 +16,15 @@ const DashboardLayout = ({
   showHeader = true 
 }: DashboardLayoutProps) => {
   return (
-    <div className="min-h-screen flex flex-col bg-bondy-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
       <main className="flex-grow">
         {showHeader && (title || description) && (
-          <div className="bg-white border-b">
+          <div className="bg-card border-b">
             <div className="container mx-auto px-4 py-8">
-              {title && <h1 className="text-3xl font-bold text-bondy-primary font-display">{title}</h1>}
-              {description && <p className="mt-2 text-lg text-gray-600">{description}</p>}
+              {title && <h1 className="text-3xl font-bold text-primary font-display">{title}</h1>}
+              {description && <p className="mt-2 text-lg text-muted-foreground">{description}</p>}
             </div>
           </div>
         )}

@@ -115,7 +115,7 @@ export default function AuthCallback() {
           {status === 'success' && (
             <>
               <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
-              <CardTitle>Welcome to Bondy!</CardTitle>
+              <CardTitle>Welcome to Nolto!</CardTitle>
               <CardDescription>
                 Successfully authenticated via {profile?.home_instance}
               </CardDescription>
