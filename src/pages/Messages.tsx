@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 
 import { Conversation, getConversations, getOtherParticipant } from '@/services/messageService';
+import { getUserConnections } from '@/services/connectionsService';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Users, MessageSquare } from 'lucide-react';
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -38,6 +39,15 @@ export default function Messages() {
     queryFn: getConversations,
     enabled: !!currentUserId
   });
+
+  // Fetch connections to check if user has any
+  const { data: connections } = useQuery({
+    queryKey: ['connections', currentUserId],
+    queryFn: getUserConnections,
+    enabled: !!currentUserId
+  });
+
+  const hasConnections = (connections?.length ?? 0) > 0;
 
   if (authLoading) {
     return (
@@ -113,12 +123,30 @@ export default function Messages() {
               />
             ))}
           </div>
-        ) : (
-          <div className="text-center py-16 border rounded-lg">
-            <h3 className="text-xl font-medium mb-2">No conversations yet</h3>
-            <p className="text-muted-foreground mb-6">Start messaging with your connections</p>
+        ) : !hasConnections ? (
+          <div className="text-center py-16 border rounded-lg bg-card">
+            <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Users className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-medium mb-2">Build your network first</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+              Connect with other professionals before you can message them. This helps maintain a professional environment.
+            </p>
             <Button asChild>
-              <Link to="/connections">Find People to Message</Link>
+              <Link to="/connections">Find Connections</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="text-center py-16 border rounded-lg bg-card">
+            <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+              <MessageSquare className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-medium mb-2">No conversations yet</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+              Start messaging your connections to collaborate and network.
+            </p>
+            <Button asChild>
+              <Link to="/connections">Message a Connection</Link>
             </Button>
           </div>
         )}

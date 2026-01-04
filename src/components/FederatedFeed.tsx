@@ -1,12 +1,11 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFederatedFeed, type FederatedPost } from "@/services/federationService";
 import FederatedPostCard from "./FederatedPostCard";
 import PostEditDialog from "./PostEditDialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, MessageSquare } from "lucide-react";
-import { toast } from "sonner";
 import { PostSkeleton } from "./common/skeletons";
 import EmptyState from "./common/EmptyState";
 
@@ -17,42 +16,59 @@ interface FederatedFeedProps {
 }
 
 export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "all" }: FederatedFeedProps) {
-  const [page, setPage] = useState<number>(1);
   const [allPosts, setAllPosts] = useState<FederatedPost[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
   const [editingPost, setEditingPost] = useState<FederatedPost | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const queryClient = useQueryClient();
   
+  // Track loaded post IDs to prevent duplicates
+  const loadedIds = useMemo(() => new Set(allPosts.map(p => p.id)), [allPosts]);
+  
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ['federatedFeed', limit],
-    queryFn: () => getFederatedFeed(limit),
+    queryKey: ['federatedFeed', limit, offset],
+    queryFn: () => getFederatedFeed(limit, offset),
   });
   
+  // Reset when source filter changes
   useEffect(() => {
-    // Reset to page 1 when source filter changes
-    setPage(1);
+    setOffset(0);
     setAllPosts([]);
+    setHasMore(true);
   }, [sourceFilter]);
   
+  // Process new posts when they arrive
   useEffect(() => {
-    if (posts && posts.length > 0) {
+    if (posts) {
       // Filter posts based on sourceFilter
       const filteredPosts = sourceFilter === "all" 
         ? posts 
         : posts.filter(post => (post.source || 'local') === sourceFilter);
       
-      // For the first page, replace all posts
-      if (page === 1) {
+      if (offset === 0) {
+        // First page - replace all posts
         setAllPosts(filteredPosts);
       } else {
-        // For subsequent pages, append new posts
-        setAllPosts(prev => [...prev, ...filteredPosts]);
+        // Subsequent pages - append only new posts (deduplicate by ID)
+        setAllPosts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newPosts = filteredPosts.filter(p => !existingIds.has(p.id));
+          return [...prev, ...newPosts];
+        });
+      }
+      
+      // Check if we've reached the end
+      if (filteredPosts.length < limit) {
+        setHasMore(false);
       }
     }
-  }, [posts, page, sourceFilter]);
+  }, [posts, offset, sourceFilter, limit]);
   
   const handleLoadMore = () => {
-    setPage(prev => prev + 1);
+    if (!isFetching && hasMore) {
+      setOffset(prev => prev + limit);
+    }
   };
 
   const handleEditPost = (post: FederatedPost) => {
@@ -68,7 +84,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   };
 
   const handlePostUpdated = () => {
-    // Invalidate and refetch the feed
+    // Reset and refetch the feed
+    setOffset(0);
+    setAllPosts([]);
     queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
     refetch();
   };
@@ -76,7 +94,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   if (error) {
     return (
       <div className={`p-6 text-center ${className}`}>
-        <p className="text-red-500 mb-2">Error loading federated posts</p>
+        <p className="text-destructive mb-2">Error loading federated posts</p>
         <Button onClick={() => refetch()} variant="outline">
           Try Again
         </Button>
@@ -86,7 +104,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   
   return (
     <div className={`${className}`}>
-      {isLoading && page === 1 ? (
+      {isLoading && offset === 0 ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
             <PostSkeleton key={i} />
@@ -103,23 +121,25 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
             />
           ))}
           
-          <div className="mt-4 flex justify-center">
-            <Button
-              onClick={handleLoadMore}
-              disabled={isFetching}
-              variant="outline"
-              className="w-full max-w-md"
-            >
-              {isFetching ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                'Load More'
-              )}
-            </Button>
-          </div>
+          {hasMore && (
+            <div className="mt-4 flex justify-center">
+              <Button
+                onClick={handleLoadMore}
+                disabled={isFetching}
+                variant="outline"
+                className="w-full max-w-md"
+              >
+                {isFetching ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load More'
+                )}
+              </Button>
+            </div>
+          )}
           <PostEditDialog
             open={editOpen}
             onOpenChange={setEditOpen}

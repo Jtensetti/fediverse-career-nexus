@@ -27,9 +27,9 @@ export interface FederatedPost {
   moderation_status?: 'normal' | 'probation' | 'blocked';
 }
 
-export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPost[]> => {
+export const getFederatedFeed = async (limit: number = 20, offset: number = 0): Promise<FederatedPost[]> => {
   try {
-    console.log('🌐 Fetching federated feed with limit:', limit);
+    console.log('🌐 Fetching federated feed with limit:', limit, 'offset:', offset);
 
     // Get current user to ensure we can see their posts
     const { data: { user } } = await supabase.auth.getUser();
@@ -53,7 +53,7 @@ export const getFederatedFeed = async (limit: number = 20): Promise<FederatedPos
       `
       )
       .order('published_at', { ascending: false })
-      .limit(limit);
+      .range(offset, offset + limit - 1);
 
     if (apError) {
       console.error('Error fetching from ap_objects:', apError);

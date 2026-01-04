@@ -1952,6 +1952,22 @@ export type Database = {
           source: string | null
           type: string | null
         }
+        Insert: {
+          attributed_to?: string | null
+          content?: Json | null
+          id?: string | null
+          published_at?: string | null
+          source?: never
+          type?: string | null
+        }
+        Update: {
+          attributed_to?: string | null
+          content?: Json | null
+          id?: string | null
+          published_at?: string | null
+          source?: never
+          type?: string | null
+        }
         Relationships: [
           {
             foreignKeyName: "ap_objects_attributed_to_fkey"

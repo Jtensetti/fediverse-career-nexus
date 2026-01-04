@@ -267,12 +267,14 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
     }
 
     // Get posts from ap_objects where the attributed actor belongs to the user
+    // Filter to only include actual posts (Create/Note types), not reactions (Like) or boosts (Announce)
+    // Also exclude replies (posts with inReplyTo)
     console.log('📊 Fetching posts for user:', targetUserId);
     
     const { data: posts, error } = await supabase
       .from('ap_objects')
       .select(
-        `id, content, created_at, published_at, actors!ap_objects_attributed_to_fkey (
+        `id, content, created_at, published_at, type, actors!ap_objects_attributed_to_fkey (
           user_id,
           preferred_username,
           profiles (
@@ -283,6 +285,7 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
         )`
       )
       .eq('actors.user_id', targetUserId)
+      .in('type', ['Create', 'Note']) // Only actual posts, not Like/Announce activities
       .order('published_at', { ascending: false });
 
     console.log('📄 Raw posts query result:', { 
@@ -324,15 +327,25 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
       }
     }
 
-    const transformedPosts = posts?.map((post) => {
+    // Filter out replies (posts with inReplyTo) and transform
+    const transformedPosts = posts?.filter((post) => {
+      const raw = post.content as any;
+      // Check for inReplyTo in various possible locations
+      const inReplyTo = raw?.inReplyTo || raw?.object?.inReplyTo || raw?.content?.inReplyTo;
+      return !inReplyTo; // Exclude replies
+    }).map((post) => {
       const raw = post.content as any;
       const note = raw?.type === 'Create' ? raw.object : raw;
       const authorUserId = (post.actors as any)?.user_id as string | undefined;
       const profile = (authorUserId && profilesMap[authorUserId]) || { fullname: null, avatar_url: null };
 
+      // Skip posts with no actual content
+      const contentText = note?.content || '';
+      if (!contentText) return null;
+
       const transformedPost = {
         id: post.id,
-        content: note?.content || '',
+        content: contentText,
         created_at: post.created_at,
         user_id: targetUserId,
         image_url: note?.image,
@@ -350,7 +363,7 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
       });
 
       return transformedPost;
-    }) || [];
+    }).filter(Boolean) || [];
 
     console.log('✅ Final transformed posts:', transformedPosts.length);
     return transformedPosts;
