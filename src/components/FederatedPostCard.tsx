@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ShareButton } from "@/components/common/ShareButton";
 import { ReportDialog } from "@/components/common/ReportDialog";
+import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import { getProxiedMediaUrl } from "@/services/federationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/postService";
@@ -271,40 +272,52 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
       <Card className="mb-4 overflow-hidden group hover:shadow-md transition-all duration-200 hover:border-primary/20">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
-            <Link 
-              to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
-              className={post.source === 'local' ? 'cursor-pointer' : 'cursor-default'}
-              onClick={(e) => post.source !== 'local' && e.preventDefault()}
+            <ProfileHoverCard 
+              username={post.source === 'local' ? post.profile?.username : undefined}
+              userId={post.source === 'local' ? post.user_id : undefined}
+              disabled={post.source !== 'local'}
             >
-              <div className="relative">
-                <Avatar className="h-11 w-11 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
-                  {getAvatarUrl() && !imageError ? (
-                    <AvatarImage 
-                      src={getAvatarUrl() as string} 
-                      onError={() => setImageError(true)} 
-                      className="object-cover"
-                    />
-                  ) : null}
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {getActorName().charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {post.source === 'remote' && (
-                  <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-purple-500 flex items-center justify-center ring-2 ring-background">
-                    <Globe className="h-2.5 w-2.5 text-white" />
-                  </div>
-                )}
-              </div>
-            </Link>
-            
-            <div className="flex-1 min-w-0">
               <Link 
                 to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
-                className={post.source === 'local' ? 'hover:underline cursor-pointer' : 'cursor-default'}
+                className={post.source === 'local' ? 'cursor-pointer' : 'cursor-default'}
                 onClick={(e) => post.source !== 'local' && e.preventDefault()}
               >
-                <div className="font-semibold truncate">{getActorName()}</div>
+                <div className="relative">
+                  <Avatar className="h-11 w-11 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
+                    {getAvatarUrl() && !imageError ? (
+                      <AvatarImage 
+                        src={getAvatarUrl() as string} 
+                        onError={() => setImageError(true)} 
+                        className="object-cover"
+                      />
+                    ) : null}
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      {getActorName().charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {post.source === 'remote' && (
+                    <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-purple-500 flex items-center justify-center ring-2 ring-background">
+                      <Globe className="h-2.5 w-2.5 text-white" />
+                    </div>
+                  )}
+                </div>
               </Link>
+            </ProfileHoverCard>
+            
+            <div className="flex-1 min-w-0">
+              <ProfileHoverCard 
+                username={post.source === 'local' ? post.profile?.username : undefined}
+                userId={post.source === 'local' ? post.user_id : undefined}
+                disabled={post.source !== 'local'}
+              >
+                <Link 
+                  to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
+                  className={post.source === 'local' ? 'hover:underline cursor-pointer' : 'cursor-default'}
+                  onClick={(e) => post.source !== 'local' && e.preventDefault()}
+                >
+                  <div className="font-semibold truncate">{getActorName()}</div>
+                </Link>
+              </ProfileHoverCard>
               {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">@{getActorUsername()}</div>
               )}
