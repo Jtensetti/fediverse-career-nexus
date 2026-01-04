@@ -9,6 +9,7 @@ export interface UserProfile {
   headline?: string;
   bio?: string;
   avatarUrl?: string;
+  headerUrl?: string;
   isVerified?: boolean;
   domain?: string;
   connections?: number;
@@ -20,7 +21,7 @@ export interface UserProfile {
   homeInstance?: string;
   remoteActorUrl?: string;
   contact?: {
-    email?: string;
+    email?: string | null;
     phone?: string;
     location?: string;
   };
@@ -201,6 +202,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       headline: profile.headline || "",
       bio: profile.bio || "",
       avatarUrl: profile.avatar_url,
+      headerUrl: profile.header_url,
       isVerified: profile.is_verified || false,
       domain: profile.domain || "",
       connections: connectionCount || 0,
@@ -333,6 +335,7 @@ export const getUserProfileByUsername = async (username: string): Promise<UserPr
       headline: profile.headline || "",
       bio: profile.bio || "",
       avatarUrl: profile.avatar_url,
+      headerUrl: profile.header_url,
       isVerified: profile.is_verified || false,
       domain: profile.domain || "",
       connections: connectionCount || 0,

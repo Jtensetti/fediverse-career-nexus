@@ -26,6 +26,8 @@ import EventCreate from "./pages/EventCreate";
 import Articles from "./pages/Articles";
 import ArticleView from "./pages/ArticleView";
 import ArticleCreate from "./pages/ArticleCreate";
+import ArticleManage from "./pages/ArticleManage";
+import ArticleEdit from "./pages/ArticleEdit";
 import Connections from "./pages/Connections";
 import Messages from "./pages/Messages";
 import Notifications from "./pages/Notifications";
@@ -148,18 +150,26 @@ function App() {
                       }
                     />
                     <Route
-                      path="/connections"
+                      path="/articles/manage"
                       element={
                         <ProtectedRoute>
-                          <Connections />
+                          <ArticleManage />
                         </ProtectedRoute>
                       }
                     />
                     <Route
-                      path="/messages"
+                      path="/articles/edit/:id"
                       element={
                         <ProtectedRoute>
-                          <Messages />
+                          <ArticleEdit />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/connections"
+                      element={
+                        <ProtectedRoute>
+                          <Connections />
                         </ProtectedRoute>
                       }
                     />
