@@ -45,9 +45,22 @@ export interface Skill {
 // Experience Services
 export const getUserExperiences = async (userId?: string) => {
   try {
+    // Determine target user ID - use provided ID or fall back to current user
+    let targetUserId = userId;
+    if (!targetUserId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      targetUserId = user?.id;
+    }
+    
+    if (!targetUserId) {
+      console.error('No user ID available for fetching experiences');
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('experiences')
       .select('*')
+      .eq('user_id', targetUserId)
       .order('is_current_role', { ascending: false })
       .order('start_date', { ascending: false });
     
@@ -158,9 +171,22 @@ export const deleteExperience = async (id: string) => {
 // Education Services
 export const getUserEducation = async (userId?: string) => {
   try {
+    // Determine target user ID - use provided ID or fall back to current user
+    let targetUserId = userId;
+    if (!targetUserId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      targetUserId = user?.id;
+    }
+    
+    if (!targetUserId) {
+      console.error('No user ID available for fetching education');
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('education')
       .select('*')
+      .eq('user_id', targetUserId)
       .order('start_year', { ascending: false });
     
     if (error) throw error;
@@ -270,9 +296,22 @@ export const deleteEducation = async (id: string) => {
 // Skills Services
 export const getUserSkills = async (userId?: string) => {
   try {
+    // Determine target user ID - use provided ID or fall back to current user
+    let targetUserId = userId;
+    if (!targetUserId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      targetUserId = user?.id;
+    }
+    
+    if (!targetUserId) {
+      console.error('No user ID available for fetching skills');
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('skills')
       .select('*')
+      .eq('user_id', targetUserId)
       .order('name');
     
     if (error) throw error;
