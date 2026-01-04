@@ -6,15 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { Globe, Loader2 } from "lucide-react";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isFederatedLoading, setIsFederatedLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fediHandle, setFediHandle] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -90,12 +94,62 @@ export default function AuthPage() {
     }
   };
 
+  const handleFederatedLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!fediHandle) {
+      toast.error("Please enter your Fediverse handle");
+      return;
+    }
+
+    // Validate handle format
+    const handlePattern = /^@?[a-zA-Z0-9_]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!handlePattern.test(fediHandle)) {
+      toast.error("Invalid handle format. Use @username@instance.social");
+      return;
+    }
+
+    setIsFederatedLoading(true);
+    try {
+      const redirectUri = `${window.location.origin}/auth/callback`;
+      
+      const response = await supabase.functions.invoke('federated-auth-init', {
+        body: { 
+          handle: fediHandle,
+          redirectUri 
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to initiate federated login');
+      }
+
+      const { authorizationUrl, error } = response.data;
+      
+      if (error) {
+        throw new Error(error);
+      }
+
+      if (authorizationUrl) {
+        // Store state in session storage for callback verification
+        sessionStorage.setItem('federated_auth_redirect', redirectUri);
+        // Redirect to the remote instance for authorization
+        window.location.href = authorizationUrl;
+      }
+    } catch (error: any) {
+      console.error("Federated login error:", error);
+      toast.error(error.message || "Failed to connect with your Fediverse instance");
+    } finally {
+      setIsFederatedLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome to Bondy</h1>
-          <p className="mt-2 text-gray-600">Sign in to your account or create a new one</p>
+          <h1 className="text-3xl font-bold text-foreground">Welcome to Bondy</h1>
+          <p className="mt-2 text-muted-foreground">Sign in to your account or create a new one</p>
         </div>
 
         <Card>
@@ -112,7 +166,7 @@ export default function AuthPage() {
                   Enter your email and password to access your account
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div>
                     <Label htmlFor="signin-email">Email</Label>
@@ -144,6 +198,51 @@ export default function AuthPage() {
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator className="w-full" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
+                <form onSubmit={handleFederatedLogin} className="space-y-4">
+                  <div>
+                    <Label htmlFor="fedi-handle">Fediverse Handle</Label>
+                    <Input
+                      id="fedi-handle"
+                      type="text"
+                      value={fediHandle}
+                      onChange={(e) => setFediHandle(e.target.value)}
+                      placeholder="@username@mastodon.social"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Login with your Mastodon, Pleroma, or other Fediverse account
+                    </p>
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    className="w-full"
+                    disabled={isFederatedLoading}
+                  >
+                    {isFederatedLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="mr-2 h-4 w-4" />
+                        Login with Fediverse
+                      </>
+                    )}
+                  </Button>
+                </form>
               </CardContent>
             </TabsContent>
 
@@ -154,7 +253,7 @@ export default function AuthPage() {
                   Enter your details to create a new account
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div>
                     <Label htmlFor="signup-email">Email</Label>
@@ -185,6 +284,51 @@ export default function AuthPage() {
                     disabled={isLoading}
                   >
                     {isLoading ? "Creating account..." : "Create Account"}
+                  </Button>
+                </form>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator className="w-full" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or sign up with
+                    </span>
+                  </div>
+                </div>
+
+                <form onSubmit={handleFederatedLogin} className="space-y-4">
+                  <div>
+                    <Label htmlFor="fedi-handle-signup">Fediverse Handle</Label>
+                    <Input
+                      id="fedi-handle-signup"
+                      type="text"
+                      value={fediHandle}
+                      onChange={(e) => setFediHandle(e.target.value)}
+                      placeholder="@username@mastodon.social"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Use your existing Mastodon or Fediverse account
+                    </p>
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    className="w-full"
+                    disabled={isFederatedLoading}
+                  >
+                    {isFederatedLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Globe className="mr-2 h-4 w-4" />
+                        Continue with Fediverse
+                      </>
+                    )}
                   </Button>
                 </form>
               </CardContent>

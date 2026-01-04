@@ -1,1 +1,7 @@
 project_id = "anknmcmqljejabxbeohv"
+
+[functions.federated-auth-init]
+verify_jwt = false
+
+[functions.federated-auth-callback]
+verify_jwt = false
