@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useId } from "react";
 import { Camera, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ const ProfileBanner = ({
 }: ProfileBannerProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputId = `profile-header-upload-${useId().replace(/:/g, "")}`;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,6 +65,8 @@ const ProfileBanner = ({
       toast.error("Failed to upload header image");
     } finally {
       setIsUploading(false);
+      // allow re-selecting the same file
+      e.currentTarget.value = "";
     }
   };
 
@@ -89,47 +91,46 @@ const ProfileBanner = ({
       )}
 
       {/* Gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent pointer-events-none" />
 
       {/* Upload button for own profile */}
       {isOwnProfile && (
         <>
-          {/* NOTE: must NOT be display:none, otherwise iOS/Safari may block programmatic click() */}
           <input
-            ref={inputRef}
+            id={fileInputId}
             type="file"
             accept="image/*"
             className="sr-only"
             onChange={handleFileChange}
             disabled={isUploading}
           />
+
           <Button
+            asChild
             type="button"
             variant="secondary"
             size="sm"
             className={cn(
-              "absolute bottom-4 right-4 gap-2 transition-all duration-300",
+              "absolute bottom-4 right-4 z-10 gap-2 transition-all duration-300",
               // Always visible on mobile (no hover), hover-reveal on md+
               "opacity-100 translate-y-0 md:opacity-0 md:translate-y-2",
-              (isHovered || isUploading) && "md:opacity-100 md:translate-y-0"
+              (isHovered || isUploading) && "md:opacity-100 md:translate-y-0",
+              isUploading && "pointer-events-none"
             )}
-            onClick={(e) => {
-              e.preventDefault();
-              inputRef.current?.click();
-            }}
-            disabled={isUploading}
           >
-            {isUploading ? (
-              <>
-                <Upload className="h-4 w-4 animate-pulse" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Camera className="h-4 w-4" />
-                {headerUrl ? "Change Header" : "Add Header"}
-              </>
-            )}
+            <label htmlFor={fileInputId} className="cursor-pointer">
+              {isUploading ? (
+                <>
+                  <Upload className="h-4 w-4 animate-pulse" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Camera className="h-4 w-4" />
+                  {headerUrl ? "Change Header" : "Add Header"}
+                </>
+              )}
+            </label>
           </Button>
         </>
       )}
