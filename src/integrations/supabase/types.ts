@@ -2033,6 +2033,27 @@ export type Database = {
         }
         Relationships: []
       }
+      server_public_keys: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_current: boolean | null
+          public_key: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          is_current?: boolean | null
+          public_key?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          is_current?: boolean | null
+          public_key?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       actor_id_to_partition_key: {
@@ -2075,13 +2096,7 @@ export type Database = {
         Args: { source_user_id: string; target_user_id: string }
         Returns: number
       }
-      get_current_server_key: {
-        Args: never
-        Returns: {
-          private_key: string
-          public_key: string
-        }[]
-      }
+      get_current_public_key: { Args: never; Returns: string }
       get_federation_health: {
         Args: never
         Returns: {

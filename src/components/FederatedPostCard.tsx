@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import PostReplyDialog from "./PostReplyDialog";
 import BlockUserDialog from "./BlockUserDialog";
+import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 
 interface FederatedPostCardProps {
@@ -76,13 +77,21 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   
   // Extract content from different ActivityPub formats
   const getContent = () => {
+    let rawContent = '';
     if (post.type === 'Create' && post.content.object?.content) {
-      return post.content.object.content;
+      rawContent = post.content.object.content;
+    } else if (post.content.content) {
+      rawContent = post.content.content;
+    } else {
+      rawContent = 'No content available';
     }
-    if (post.content.content) {
-      return post.content.content;
-    }
-    return 'No content available';
+    
+    // Sanitize HTML content to prevent XSS attacks from federated content
+    return DOMPurify.sanitize(rawContent, {
+      ALLOWED_TAGS: ['p', 'br', 'a', 'strong', 'em', 'b', 'i', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'span'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+      ALLOW_DATA_ATTR: false,
+    });
   };
   
   // Extract name from actor or use profile data for local posts
