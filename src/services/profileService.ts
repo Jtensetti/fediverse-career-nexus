@@ -260,13 +260,16 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
   }
 };
 
-export const getUserProfileByUsername = async (username: string): Promise<UserProfile | null> => {
+export const getUserProfileByUsername = async (usernameOrId: string): Promise<UserProfile | null> => {
   try {
-    // Get user profile
+    // Check if the input looks like a UUID (handles both UUID and username lookups)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(usernameOrId);
+    
+    // Query by id if UUID, otherwise by username
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
-      .eq("username", username)
+      .eq(isUUID ? "id" : "username", usernameOrId)
       .single();
 
     if (profileError) throw profileError;
