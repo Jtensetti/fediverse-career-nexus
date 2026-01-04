@@ -27,7 +27,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 const ProfilePage = () => {
-  const { username } = useParams();
+  const { usernameOrId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
@@ -49,27 +49,27 @@ const ProfilePage = () => {
   
   // Determine if we should redirect to login
   useEffect(() => {
-    if (!authLoading && !username && !isAuthenticated) {
+    if (!authLoading && !usernameOrId && !isAuthenticated) {
       navigate("/auth/login", { replace: true });
     }
-  }, [authLoading, username, isAuthenticated, navigate]);
+  }, [authLoading, usernameOrId, isAuthenticated, navigate]);
   
   // Fetch profile
   const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
-    queryKey: ["profile", username, currentUserId],
+    queryKey: ["profile", usernameOrId, currentUserId],
     queryFn: async () => {
-      if (!username) {
+      if (!usernameOrId) {
         if (!isAuthenticated || !currentUserId) {
           return null;
         }
         const result = await getCurrentUserProfile();
         return result;
       } else {
-        const result = await getUserProfileByUsername(username);
+        const result = await getUserProfileByUsername(usernameOrId);
         return result;
       }
     },
-    enabled: !authLoading && (!!username || (isAuthenticated && !!currentUserId)),
+    enabled: !authLoading && (!!usernameOrId || (isAuthenticated && !!currentUserId)),
     retry: 1
   });
   
@@ -81,7 +81,7 @@ const ProfilePage = () => {
   });
   
   // Determine if viewing own profile
-  const viewingOwnProfile = !username || (profile && currentUserId === profile.id);
+  const viewingOwnProfile = !usernameOrId || (profile && currentUserId === profile.id);
   
   // Record profile view when visiting another user's profile
   useEffect(() => {
@@ -103,7 +103,7 @@ const ProfilePage = () => {
       if (error) throw error;
 
       // Optimistically update the current query cache so the banner updates immediately
-      queryClient.setQueryData(["profile", username, currentUserId], (prev: any) => {
+      queryClient.setQueryData(["profile", usernameOrId, currentUserId], (prev: any) => {
         if (!prev) return prev;
         return { ...prev, headerUrl: url };
       });
@@ -207,7 +207,7 @@ const ProfilePage = () => {
     );
   }
   
-  const displayUsername = username || profile.username;
+  const displayUsername = usernameOrId || profile.username;
   const connectionDegreeValue = profile.connectionDegree !== undefined ? profile.connectionDegree as ConnectionDegree : null;
   const avatarStatus = profile.isVerified ? "verified" : (profile.authType === 'federated' ? "remote" : "none");
   
