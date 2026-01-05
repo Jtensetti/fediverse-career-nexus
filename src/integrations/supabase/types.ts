@@ -182,6 +182,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_actors_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       ap_objects: {
@@ -632,6 +639,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "event_invitations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       event_rsvps: {
@@ -811,6 +825,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1212,10 +1233,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "notifications_recipient_id_fkey"
             columns: ["recipient_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1460,6 +1495,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profile_views_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -1568,10 +1610,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "recommendations_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "recommendations_recommender_id_fkey"
             columns: ["recommender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_recommender_id_fkey"
+            columns: ["recommender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1766,6 +1822,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "skill_endorsements_endorser_id_fkey"
+            columns: ["endorser_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "skill_endorsements_skill_id_fkey"
             columns: ["skill_id"]
             isOneToOne: false
@@ -1885,10 +1948,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_user_connections_connected_user_id"
+            columns: ["connected_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_user_connections_user_id"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_connections_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2030,6 +2107,69 @@ export type Database = {
           preferred_username: string | null
           processed_batches: number | null
           total_batches: number | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          auth_type: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          domain: string | null
+          fullname: string | null
+          header_url: string | null
+          headline: string | null
+          home_instance: string | null
+          id: string | null
+          is_verified: boolean | null
+          location: string | null
+          phone: string | null
+          profile_views: number | null
+          remote_actor_url: string | null
+          search_vector: unknown
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          auth_type?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          domain?: string | null
+          fullname?: string | null
+          header_url?: string | null
+          headline?: string | null
+          home_instance?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          location?: string | null
+          phone?: never
+          profile_views?: number | null
+          remote_actor_url?: string | null
+          search_vector?: never
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          auth_type?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          domain?: string | null
+          fullname?: string | null
+          header_url?: string | null
+          headline?: string | null
+          home_instance?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          location?: string | null
+          phone?: never
+          profile_views?: number | null
+          remote_actor_url?: string | null
+          search_vector?: never
+          updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
       }
