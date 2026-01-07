@@ -795,8 +795,11 @@ const ProfileEditPage = () => {
                             <Input 
                               id={`startYear-${index}`}
                               type="number"
-                              value={edu.start_year || ''} 
-                              onChange={(e) => updateEducationField(index, 'start_year', parseInt(e.target.value))}
+                              value={edu.start_year ?? ''} 
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                updateEducationField(index, 'start_year', val === '' ? undefined : parseInt(val, 10));
+                              }}
                               className="mt-1"
                             />
                           </div>
@@ -806,8 +809,11 @@ const ProfileEditPage = () => {
                             <Input 
                               id={`endYear-${index}`}
                               type="number"
-                              value={edu.end_year || ''} 
-                              onChange={(e) => updateEducationField(index, 'end_year', parseInt(e.target.value))}
+                              value={edu.end_year ?? ''} 
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                updateEducationField(index, 'end_year', val === '' ? undefined : parseInt(val, 10));
+                              }}
                               className="mt-1"
                             />
                           </div>

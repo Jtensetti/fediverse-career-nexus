@@ -737,6 +737,7 @@ export type Database = {
       experiences: {
         Row: {
           company: string
+          company_domain: string | null
           created_at: string
           description: string | null
           end_date: string | null
@@ -752,6 +753,7 @@ export type Database = {
         }
         Insert: {
           company: string
+          company_domain?: string | null
           created_at?: string
           description?: string | null
           end_date?: string | null
@@ -767,6 +769,7 @@ export type Database = {
         }
         Update: {
           company?: string
+          company_domain?: string | null
           created_at?: string
           description?: string | null
           end_date?: string | null
