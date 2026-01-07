@@ -2,6 +2,31 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
+// =============== Payload Helpers ===============
+// Normalize text: trim and convert empty strings to null
+const normalizeText = (value: string | undefined | null): string | null => {
+  if (value === undefined || value === null) return null;
+  const trimmed = value.trim();
+  return trimmed === '' ? null : trimmed;
+};
+
+// Normalize date: ensure YYYY-MM-DD format or null
+const normalizeDate = (value: string | undefined | null): string | null => {
+  if (value === undefined || value === null || value === '') return null;
+  // If it's already a valid date string, return just the date part
+  const dateOnly = value.substring(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return dateOnly;
+  return null;
+};
+
+// Normalize year: ensure valid integer or null
+const normalizeYear = (value: number | string | undefined | null): number | null => {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = typeof value === 'number' ? value : parseInt(String(value), 10);
+  if (isNaN(parsed)) return null;
+  return parsed;
+};
+
 // Experience Types
 export interface Experience {
   id?: string;
@@ -80,22 +105,39 @@ export const getUserExperiences = async (userId?: string) => {
 export const createExperience = async (experience: Experience) => {
   try {
     // Ensure user_id is set
-    if (!experience.user_id) {
+    let userId = experience.user_id;
+    if (!userId) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        experience.user_id = user.id;
+        userId = user.id;
       } else {
         throw new Error("User not authenticated");
       }
     }
     
+    // Build a sanitized payload with only valid columns
+    const payload = {
+      user_id: userId,
+      title: normalizeText(experience.title) || '',
+      company: normalizeText(experience.company) || '',
+      company_domain: normalizeText(experience.company_domain),
+      location: normalizeText(experience.location),
+      start_date: normalizeDate(experience.start_date),
+      end_date: experience.is_current_role ? null : normalizeDate(experience.end_date),
+      is_current_role: experience.is_current_role || false,
+      description: normalizeText(experience.description),
+    };
+    
     const { data, error } = await supabase
       .from('experiences')
-      .insert(experience)
+      .insert(payload)
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Database error creating experience:', error);
+      throw new Error(error.message || 'Database error');
+    }
     
     toast({
       title: "Experience added",
@@ -103,12 +145,12 @@ export const createExperience = async (experience: Experience) => {
     });
     
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating experience:', error);
     toast({
       variant: "destructive",
       title: "Failed to add experience",
-      description: "There was an error adding your experience."
+      description: error?.message || "There was an error adding your experience."
     });
     return null;
   }
@@ -116,14 +158,31 @@ export const createExperience = async (experience: Experience) => {
 
 export const updateExperience = async (id: string, experience: Partial<Experience>) => {
   try {
+    // Build a sanitized payload with only valid columns (exclude id, created_at, updated_at, user_id)
+    const payload: Record<string, any> = {};
+    
+    if (experience.title !== undefined) payload.title = normalizeText(experience.title) || '';
+    if (experience.company !== undefined) payload.company = normalizeText(experience.company) || '';
+    if (experience.company_domain !== undefined) payload.company_domain = normalizeText(experience.company_domain);
+    if (experience.location !== undefined) payload.location = normalizeText(experience.location);
+    if (experience.start_date !== undefined) payload.start_date = normalizeDate(experience.start_date);
+    if (experience.is_current_role !== undefined) payload.is_current_role = experience.is_current_role;
+    if (experience.end_date !== undefined || experience.is_current_role) {
+      payload.end_date = experience.is_current_role ? null : normalizeDate(experience.end_date);
+    }
+    if (experience.description !== undefined) payload.description = normalizeText(experience.description);
+    
     const { data, error } = await supabase
       .from('experiences')
-      .update(experience)
+      .update(payload)
       .eq('id', id)
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Database error updating experience:', error);
+      throw new Error(error.message || 'Database error');
+    }
     
     toast({
       title: "Experience updated",
@@ -131,12 +190,12 @@ export const updateExperience = async (id: string, experience: Partial<Experienc
     });
     
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating experience:', error);
     toast({
       variant: "destructive",
       title: "Failed to update experience",
-      description: "There was an error updating your experience."
+      description: error?.message || "There was an error updating your experience."
     });
     return null;
   }
@@ -205,22 +264,36 @@ export const getUserEducation = async (userId?: string) => {
 export const createEducation = async (education: Education) => {
   try {
     // Ensure user_id is set
-    if (!education.user_id) {
+    let userId = education.user_id;
+    if (!userId) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        education.user_id = user.id;
+        userId = user.id;
       } else {
         throw new Error("User not authenticated");
       }
     }
     
+    // Build a sanitized payload with only valid columns
+    const payload = {
+      user_id: userId,
+      institution: normalizeText(education.institution) || '',
+      degree: normalizeText(education.degree) || '',
+      field: normalizeText(education.field),
+      start_year: normalizeYear(education.start_year),
+      end_year: normalizeYear(education.end_year),
+    };
+    
     const { data, error } = await supabase
       .from('education')
-      .insert(education)
+      .insert(payload)
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Database error creating education:', error);
+      throw new Error(error.message || 'Database error');
+    }
     
     toast({
       title: "Education added",
@@ -228,12 +301,12 @@ export const createEducation = async (education: Education) => {
     });
     
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating education:', error);
     toast({
       variant: "destructive",
       title: "Failed to add education",
-      description: "There was an error adding your education."
+      description: error?.message || "There was an error adding your education."
     });
     return null;
   }
@@ -241,14 +314,26 @@ export const createEducation = async (education: Education) => {
 
 export const updateEducation = async (id: string, education: Partial<Education>) => {
   try {
+    // Build a sanitized payload with only valid columns
+    const payload: Record<string, any> = {};
+    
+    if (education.institution !== undefined) payload.institution = normalizeText(education.institution) || '';
+    if (education.degree !== undefined) payload.degree = normalizeText(education.degree) || '';
+    if (education.field !== undefined) payload.field = normalizeText(education.field);
+    if (education.start_year !== undefined) payload.start_year = normalizeYear(education.start_year);
+    if (education.end_year !== undefined) payload.end_year = normalizeYear(education.end_year);
+    
     const { data, error } = await supabase
       .from('education')
-      .update(education)
+      .update(payload)
       .eq('id', id)
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Database error updating education:', error);
+      throw new Error(error.message || 'Database error');
+    }
     
     toast({
       title: "Education updated",
@@ -256,12 +341,12 @@ export const updateEducation = async (id: string, education: Partial<Education>)
     });
     
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating education:', error);
     toast({
       variant: "destructive",
       title: "Failed to update education",
-      description: "There was an error updating your education."
+      description: error?.message || "There was an error updating your education."
     });
     return null;
   }
