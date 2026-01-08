@@ -2240,6 +2240,7 @@ export type Database = {
         Returns: number
       }
       get_current_public_key: { Args: never; Returns: string }
+      get_event_owner: { Args: { p_event_id: string }; Returns: string }
       get_federation_health: {
         Args: never
         Returns: {
@@ -2288,6 +2289,10 @@ export type Database = {
       is_moderator: { Args: { _user_id: string }; Returns: boolean }
       is_user_blocked: {
         Args: { checker_id: string; target_id: string }
+        Returns: boolean
+      }
+      is_user_invited_to_event: {
+        Args: { p_event_id: string; p_user_id: string }
         Returns: boolean
       }
       update_instance_health: {
