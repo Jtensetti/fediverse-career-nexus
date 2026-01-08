@@ -85,6 +85,7 @@ const JobForm = ({
   });
   
   const handleSubmit = (values: JobFormValues) => {
+    console.log('JobForm submitting values:', values);
     onSubmit(values);
   };
 

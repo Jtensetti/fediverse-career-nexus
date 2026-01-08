@@ -23,6 +23,7 @@ export interface NetworkSuggestion {
   avatarUrl: string;
   connectionDegree: ConnectionDegree;
   mutualConnections: number;
+  suggestionReason?: string;
 }
 
 export const getUserConnections = async (): Promise<NetworkConnection[]> => {
@@ -93,56 +94,83 @@ export const getConnectionSuggestions = async (): Promise<NetworkSuggestion[]> =
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
-    // Simple suggestion query - get users who are not connected to the current user
+    // Use the smart suggestions RPC function
     const { data: suggestions, error } = await supabase
-      .from("profiles")
-      .select("id, username, fullname, headline, avatar_url, is_verified")
-      .neq("id", user.id)
-      .limit(10);
+      .rpc('get_smart_suggestions', { p_user_id: user.id, p_limit: 10 });
 
     if (error) {
-      console.error("Error fetching connection suggestions:", error);
-      return [];
+      console.error("Error fetching smart suggestions:", error);
+      // Fall back to simple query if RPC fails
+      return await getSimpleSuggestions(user.id);
     }
 
-    // Filter out users who are already connected
-    const { data: connections } = await supabase
-      .from("user_connections")
-      .select("connected_user_id, user_id")
-      .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
-      .in("status", ["accepted", "pending"]);
-
-    const connectedUserIds = new Set<string>();
-    
-    if (connections) {
-      connections.forEach(conn => {
-        if (conn.user_id === user.id) {
-          connectedUserIds.add(conn.connected_user_id);
-        } else {
-          connectedUserIds.add(conn.user_id);
-        }
-      });
+    if (!suggestions || suggestions.length === 0) {
+      // Fall back to simple query if no smart suggestions found
+      return await getSimpleSuggestions(user.id);
     }
 
-    const filteredSuggestions = suggestions?.filter(
-      profile => !connectedUserIds.has(profile.id)
-    ) || [];
-
-    return filteredSuggestions.map(profile => ({
-      id: profile.id,
+    return suggestions.map((profile: any) => ({
+      id: profile.user_id,
       username: profile.username || "",
       displayName: profile.fullname || profile.username || "",
       headline: profile.headline || "",
       avatarUrl: profile.avatar_url || "",
-      connectionDegree: 2 as ConnectionDegree, // Assume 2nd degree for suggestions
+      connectionDegree: profile.mutual_count > 0 ? 2 as ConnectionDegree : 3 as ConnectionDegree,
       isVerified: profile.is_verified || false,
-      mutualConnections: 0
+      mutualConnections: Number(profile.mutual_count) || 0,
+      suggestionReason: profile.suggestion_reason || "Suggested for you"
     }));
   } catch (error) {
     console.error("Error fetching connection suggestions:", error);
     toast.error("Failed to load connection suggestions");
     return [];
   }
+};
+
+// Fallback simple suggestions when RPC is unavailable
+const getSimpleSuggestions = async (userId: string): Promise<NetworkSuggestion[]> => {
+  const { data: suggestions, error } = await supabase
+    .from("profiles")
+    .select("id, username, fullname, headline, avatar_url, is_verified")
+    .neq("id", userId)
+    .limit(10);
+
+  if (error || !suggestions) return [];
+
+  // Filter out users who are already connected
+  const { data: connections } = await supabase
+    .from("user_connections")
+    .select("connected_user_id, user_id")
+    .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
+    .in("status", ["accepted", "pending"]);
+
+  const connectedUserIds = new Set<string>();
+  
+  if (connections) {
+    connections.forEach(conn => {
+      if (conn.user_id === userId) {
+        connectedUserIds.add(conn.connected_user_id);
+      } else {
+        connectedUserIds.add(conn.user_id);
+      }
+    });
+  }
+
+  const filteredSuggestions = suggestions.filter(
+    profile => !connectedUserIds.has(profile.id)
+  );
+
+  return filteredSuggestions.map(profile => ({
+    id: profile.id,
+    username: profile.username || "",
+    displayName: profile.fullname || profile.username || "",
+    headline: profile.headline || "",
+    avatarUrl: profile.avatar_url || "",
+    connectionDegree: 3 as ConnectionDegree,
+    isVerified: profile.is_verified || false,
+    mutualConnections: 0,
+    suggestionReason: "Suggested for you"
+  }));
 };
 
 export const sendConnectionRequest = async (userId: string): Promise<boolean> => {
