@@ -16,6 +16,7 @@ interface PostReplyThreadProps {
   reply: PostReply;
   postId: string;
   depth?: number;
+  childReplies?: PostReply[];
   onReplyCreated: (replyId: string) => void;
 }
 
@@ -25,6 +26,7 @@ export default function PostReplyThread({
   reply, 
   postId,
   depth = 0, 
+  childReplies = [],
   onReplyCreated 
 }: PostReplyThreadProps) {
   const [showReplyComposer, setShowReplyComposer] = useState(false);
@@ -153,6 +155,22 @@ export default function PostReplyThread({
           )}
         </CardContent>
       </Card>
+
+      {/* Render child replies recursively */}
+      {childReplies.length > 0 && (
+        <div className="mt-2 space-y-2">
+          {childReplies.map(childReply => (
+            <PostReplyThread
+              key={childReply.id}
+              reply={childReply}
+              postId={postId}
+              depth={depth + 1}
+              childReplies={[]} // Will be populated by parent
+              onReplyCreated={onReplyCreated}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -30,7 +30,8 @@ const ConnectionsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isConnecting, setIsConnecting] = useState<{ [key: string]: boolean }>({});
   const [isResponding, setIsResponding] = useState<{ [key: string]: boolean }>({});
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  // null = loading, false = not authenticated, true = authenticated
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   // Check authentication status
   useEffect(() => {
@@ -163,6 +164,17 @@ const ConnectionsPage = () => {
     }
   };
   
+  // Show loading state while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <DashboardLayout title="My Network">
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <DashboardLayout title="My Network">

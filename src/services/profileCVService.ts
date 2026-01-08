@@ -12,10 +12,24 @@ const normalizeText = (value: string | undefined | null): string | null => {
 
 // Normalize date: ensure YYYY-MM-DD format or null
 const normalizeDate = (value: string | undefined | null): string | null => {
-  if (value === undefined || value === null || value === '') return null;
-  // If it's already a valid date string, return just the date part
-  const dateOnly = value.substring(0, 10);
+  if (value === undefined || value === null) return null;
+  const trimmed = typeof value === 'string' ? value.trim() : '';
+  if (trimmed === '') return null;
+  
+  // If it's already a valid YYYY-MM-DD format, return it
+  const dateOnly = trimmed.substring(0, 10);
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return dateOnly;
+  
+  // Try to parse and format the date
+  try {
+    const date = new Date(trimmed);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  } catch {
+    // Fall through to return null
+  }
+  
   return null;
 };
 
@@ -115,6 +129,12 @@ export const createExperience = async (experience: Experience) => {
       }
     }
     
+    // Validate start_date is provided and valid
+    const normalizedStartDate = normalizeDate(experience.start_date);
+    if (!normalizedStartDate) {
+      throw new Error("Start date is required and must be a valid date");
+    }
+    
     // Build a sanitized payload with only valid columns
     const payload = {
       user_id: userId,
@@ -122,11 +142,13 @@ export const createExperience = async (experience: Experience) => {
       company: normalizeText(experience.company) || '',
       company_domain: normalizeText(experience.company_domain),
       location: normalizeText(experience.location),
-      start_date: normalizeDate(experience.start_date),
+      start_date: normalizedStartDate,
       end_date: experience.is_current_role ? null : normalizeDate(experience.end_date),
       is_current_role: experience.is_current_role || false,
       description: normalizeText(experience.description),
     };
+    
+    console.log('Creating experience with payload:', JSON.stringify(payload, null, 2));
     
     const { data, error } = await supabase
       .from('experiences')
@@ -135,7 +157,7 @@ export const createExperience = async (experience: Experience) => {
       .single();
     
     if (error) {
-      console.error('Database error creating experience:', error);
+      console.error('Database error creating experience:', JSON.stringify(error, null, 2));
       throw new Error(error.message || 'Database error');
     }
     
