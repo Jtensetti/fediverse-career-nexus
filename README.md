@@ -1,5 +1,8 @@
 # 🌐 Nolto — Federated Professional Network
 
+[![Codeberg](https://img.shields.io/badge/Codeberg-2185D0?logo=codeberg&logoColor=white)](https://codeberg.org/Tensetti/Nolto)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/Jtensetti/fediverse-career-nexus)
+
 A community-driven, federated professional networking platform for the open web.
 
 Built with ❤️ on [Lovable.dev](https://lovable.dev), **Nolto** combines the professional networking features of LinkedIn with the decentralized philosophy of the Fediverse.
@@ -87,9 +90,13 @@ React (Vite) ──supabase-js──► Edge Functions (Deno)
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone & install
+# 1. Clone & install (choose one)
+git clone https://codeberg.org/Tensetti/Nolto.git
+# or
 git clone https://github.com/Jtensetti/fediverse-career-nexus.git
+
 cd nolto
+npm install
 npm install
 
 # 2. Configure environment variables
