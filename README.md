@@ -58,7 +58,7 @@ Built with ❤️ on [Lovable.dev](https://lovable.dev), **Nolto** combines the 
 | Authentication | ✅ Complete | Email + OAuth (Google/GitHub) |
 | Notifications | ✅ Complete | Real-time notification system |
 | Global search | ✅ Complete | Search across content types |
-| Achievements/gamification | ✅ Complete | Badges and progress tracking |
+
 | Referral system | ✅ Complete | Invite friends |
 | Dark/light mode | ✅ Complete | Theme switcher |
 | Internationalization | ✅ Complete | English & Swedish |

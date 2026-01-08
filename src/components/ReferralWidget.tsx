@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Gift, Copy, Check, Users, Trophy, Share2 } from "lucide-react";
+import { Copy, Check, Users, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { getUserReferralCode, getReferralStats } from "@/services/referralService";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,8 +68,8 @@ export default function ReferralWidget() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Gift className="h-5 w-5 text-accent" />
-          Invite & Earn
+          <Users className="h-5 w-5 text-primary" />
+          Invite Colleagues
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -80,29 +79,23 @@ export default function ReferralWidget() {
           </div>
         ) : (
           <>
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="p-2 rounded-lg bg-muted">
-                <Users className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                <div className="font-semibold text-foreground">{stats.total}</div>
-                <div className="text-xs text-muted-foreground">Invited</div>
-              </div>
-              <div className="p-2 rounded-lg bg-muted">
-                <Check className="h-4 w-4 mx-auto mb-1 text-secondary" />
-                <div className="font-semibold text-foreground">{stats.completed}</div>
-                <div className="text-xs text-muted-foreground">Joined</div>
-              </div>
-              <div className="p-2 rounded-lg bg-muted">
-                <Trophy className="h-4 w-4 mx-auto mb-1 text-accent" />
-                <div className="font-semibold text-foreground">{stats.points}</div>
-                <div className="text-xs text-muted-foreground">Points</div>
+            {/* Stats - simplified, no points */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">{stats.completed} joined</div>
+                  <div className="text-xs text-muted-foreground">{stats.pending} pending</div>
+                </div>
               </div>
             </div>
 
             {/* Referral Link */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Your referral link
+                Your invite link
               </label>
               <div className="flex gap-2">
                 <Input
@@ -114,10 +107,10 @@ export default function ReferralWidget() {
                   variant="outline"
                   size="icon"
                   onClick={handleCopy}
-                  aria-label="Copy referral link"
+                  aria-label="Copy invite link"
                 >
                   {copied ? (
-                    <Check className="h-4 w-4 text-secondary" />
+                    <Check className="h-4 w-4 text-primary" />
                   ) : (
                     <Copy className="h-4 w-4" />
                   )}
@@ -127,7 +120,7 @@ export default function ReferralWidget() {
                     variant="outline"
                     size="icon"
                     onClick={handleShare}
-                    aria-label="Share referral link"
+                    aria-label="Share invite link"
                   >
                     <Share2 className="h-4 w-4" />
                   </Button>
@@ -135,16 +128,8 @@ export default function ReferralWidget() {
               </div>
             </div>
 
-            {/* Referral Code Badge */}
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Your code:</span>
-              <Badge variant="secondary" className="font-mono">
-                {referralCode}
-              </Badge>
-            </div>
-
             <p className="text-xs text-muted-foreground">
-              Earn 50 points for each friend who joins and completes their profile!
+              Grow your network by inviting colleagues to join.
             </p>
           </>
         )}
