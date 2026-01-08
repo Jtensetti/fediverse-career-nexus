@@ -13,7 +13,41 @@ export interface Article {
   created_at: string;
   updated_at: string;
   user_id: string;
+  cover_image_url?: string | null;
+  tags?: string[] | null;
 }
+
+export interface ArticleWithAccess extends Article {
+  hasFullAccess: boolean;
+  authorInfo?: {
+    id: string;
+    username: string | null;
+    fullname: string | null;
+    avatar_url: string | null;
+  };
+}
+
+// Get user's published articles for profile page
+export const getUserPublishedArticles = async (userId: string): Promise<Article[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('published', true)
+      .order('published_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user articles:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching user articles:', error);
+    return [];
+  }
+};
 
 export interface ArticleAuthor {
   id: string;

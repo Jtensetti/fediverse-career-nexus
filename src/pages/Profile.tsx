@@ -28,12 +28,15 @@ import {
 } from "@/services/connectionsService";
 import UserPostsList from "@/components/UserPostsList";
 import UserActivityList from "@/components/UserActivityList";
+import UserArticlesList from "@/components/UserArticlesList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
 import AchievementBadges from "@/components/AchievementBadges";
+import FollowAuthorButton from "@/components/FollowAuthorButton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { BookText } from "lucide-react";
 
 const ProfilePage = () => {
   const { usernameOrId } = useParams();
@@ -471,6 +474,7 @@ const ProfilePage = () => {
                 <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Experience</TabsTrigger>
                 <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Education</TabsTrigger>
                 <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Skills</TabsTrigger>
+                <TabsTrigger value="articles" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Articles</TabsTrigger>
                 <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Posts</TabsTrigger>
                 <TabsTrigger value="activity" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Activity</TabsTrigger>
                 <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Connections</TabsTrigger>
@@ -604,6 +608,19 @@ const ProfilePage = () => {
               </Card>
             </TabsContent>
             
+            <TabsContent value="articles">
+              <Card variant="elevated">
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <BookText size={20} className="text-primary" />
+                    Articles
+                  </h3>
+                  
+                  <UserArticlesList userId={profile.id} isOwnProfile={viewingOwnProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
             <TabsContent value="posts">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -692,6 +709,22 @@ const ProfilePage = () => {
         <div className="space-y-6">
           {viewingOwnProfile && (
             <ProfileViewsWidget userId={profile.id} />
+          )}
+          
+          {!viewingOwnProfile && (
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-sm font-semibold mb-3">Follow for Articles</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Get notified when {profile.displayName?.split(' ')[0] || 'this user'} publishes new articles
+                </p>
+                <FollowAuthorButton 
+                  authorId={profile.id} 
+                  authorName={profile.displayName || undefined}
+                  className="w-full"
+                />
+              </CardContent>
+            </Card>
           )}
           
           <AchievementBadges userId={profile.id} />

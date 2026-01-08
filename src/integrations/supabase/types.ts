@@ -372,6 +372,27 @@ export type Database = {
         }
         Relationships: []
       }
+      author_follows: {
+        Row: {
+          author_id: string
+          created_at: string
+          follower_id: string
+          id: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          follower_id: string
+          id?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          follower_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       blocked_actors: {
         Row: {
           actor_url: string

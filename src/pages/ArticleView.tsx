@@ -1,24 +1,29 @@
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getArticleBySlug } from "@/services/articleService";
+import { canAccessFullArticle } from "@/services/authorFollowService";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { ArrowLeft, Calendar } from "lucide-react";
 import ArticleReactions from "@/components/ArticleReactions";
+import ContentGate from "@/components/ContentGate";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ArticleView = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   const { data: article, isLoading, isError } = useQuery({
     queryKey: ['article', slug],
@@ -26,18 +31,55 @@ const ArticleView = () => {
     enabled: !!slug,
   });
 
+  // Fetch author profile
+  const { data: authorProfile } = useQuery({
+    queryKey: ['articleAuthorProfile', article?.user_id],
+    queryFn: async () => {
+      if (!article?.user_id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username, fullname, avatar_url')
+        .eq('id', article.user_id)
+        .single();
+      return data;
+    },
+    enabled: !!article?.user_id,
+  });
+
+  // Check if user has access to full article
+  const { data: hasAccess, isLoading: accessLoading } = useQuery({
+    queryKey: ['articleAccess', article?.user_id, user?.id],
+    queryFn: async () => {
+      if (!article?.user_id) return false;
+      // Own article
+      if (user?.id === article.user_id) return true;
+      return canAccessFullArticle(article.user_id);
+    },
+    enabled: !!article?.user_id,
+  });
+
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
   }, []);
+
+  const handleAccessGranted = () => {
+    queryClient.invalidateQueries({ queryKey: ['articleAccess', article?.user_id] });
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8">
-          <div className="max-w-3xl mx-auto text-center py-12">
-            <p>Loading article...</p>
+          <div className="max-w-3xl mx-auto">
+            <Skeleton className="h-8 w-48 mb-6" />
+            <Skeleton className="h-12 w-full mb-4" />
+            <Skeleton className="h-6 w-64 mb-8" />
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
           </div>
         </main>
         <Footer />
@@ -68,6 +110,13 @@ const ArticleView = () => {
     ? format(new Date(article.published_at), 'MMMM d, yyyy')
     : format(new Date(article.created_at), 'MMMM d, yyyy');
 
+  const authorName = authorProfile?.fullname || authorProfile?.username || 'Author';
+  const authorInitials = authorName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+
+  // Show preview content for gated articles
+  const previewContent = article.excerpt || article.content.substring(0, 500);
+  const showFullContent = hasAccess || accessLoading;
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
@@ -90,12 +139,16 @@ const ArticleView = () => {
             <h1 className="text-3xl md:text-4xl font-bold mb-4">{article.title}</h1>
             
             <div className="flex items-center justify-between gap-3 text-muted-foreground mb-6 not-prose">
-              <div className="flex items-center gap-3">
+              <Link 
+                to={`/profile/${authorProfile?.username || article.user_id}`}
+                className="flex items-center gap-3 group"
+              >
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary/10">AU</AvatarFallback>
+                    <AvatarImage src={authorProfile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary/10">{authorInitials}</AvatarFallback>
                   </Avatar>
-                  <span>Author</span>
+                  <span className="group-hover:text-primary transition-colors">{authorName}</span>
                 </div>
                 
                 <span>•</span>
@@ -104,7 +157,7 @@ const ArticleView = () => {
                   <Calendar size={16} />
                   <span>{publishDate}</span>
                 </div>
-              </div>
+              </Link>
               
               <div className="flex items-center gap-2">
                 <ShareButton title={article.title} description={article.excerpt || undefined} />
@@ -112,16 +165,40 @@ const ArticleView = () => {
               </div>
             </div>
             
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {article.content}
-            </ReactMarkdown>
+            {showFullContent ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {article.content}
+              </ReactMarkdown>
+            ) : (
+              <>
+                {/* Preview content */}
+                <div className="relative">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {previewContent + '...'}
+                  </ReactMarkdown>
+                  
+                  {/* Fade overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                </div>
+                
+                {/* Content gate */}
+                <div className="mt-8">
+                  <ContentGate 
+                    authorId={article.user_id} 
+                    onAccessGranted={handleAccessGranted}
+                  />
+                </div>
+              </>
+            )}
           </article>
           
-          {/* Add the emoji reactions component */}
-          <div className="my-8 p-4 border rounded-md bg-background/50">
-            <h3 className="text-lg font-medium mb-2">Reactions</h3>
-            <ArticleReactions articleId={article.id} />
-          </div>
+          {/* Only show reactions if user has access */}
+          {showFullContent && (
+            <div className="my-8 p-4 border rounded-md bg-background/50">
+              <h3 className="text-lg font-medium mb-2">Reactions</h3>
+              <ArticleReactions articleId={article.id} />
+            </div>
+          )}
           
           <div className="mt-12 pt-8 border-t">
             <NewsletterSubscribe />
