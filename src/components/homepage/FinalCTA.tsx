@@ -8,14 +8,20 @@ const FinalCTA = () => {
     <section className="relative py-24 md:py-32 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-secondary" />
-      
+
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-10 left-10 w-64 h-64 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: "4s" }} />
-        <div className="absolute bottom-10 right-10 w-80 h-80 bg-secondary/30 rounded-full blur-3xl animate-pulse" style={{ animationDuration: "5s", animationDelay: "1s" }} />
-        
+        <div
+          className="absolute top-10 left-10 w-64 h-64 bg-accent/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDuration: "4s" }}
+        />
+        <div
+          className="absolute bottom-10 right-10 w-80 h-80 bg-secondary/30 rounded-full blur-3xl animate-pulse"
+          style={{ animationDuration: "5s", animationDelay: "1s" }}
+        />
+
         {/* Grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-5"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`,
@@ -39,21 +45,21 @@ const FinalCTA = () => {
             className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full mb-8"
           >
             <Sparkles className="h-4 w-4 text-accent" />
-            <span className="text-primary-foreground text-sm font-medium">Join 10,000+ professionals</span>
+            <span className="text-primary-foreground text-sm font-medium">Join other professionals</span>
           </motion.div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display text-primary-foreground mb-6 leading-tight">
-            Ready to Own Your{" "}
-            <span className="text-accent">Professional Identity?</span>
+            Ready to Own Your <span className="text-accent">Professional Identity?</span>
           </h2>
-          
+
           <p className="text-xl text-primary-foreground/90 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Join the movement of professionals who've chosen freedom over algorithms, privacy over surveillance, and community over corporations.
+            Join the movement of professionals who've chosen freedom over algorithms, privacy over surveillance, and
+            community over corporations.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button 
-              asChild 
+            <Button
+              asChild
               size="lg"
               className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-10 py-7 text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
             >
