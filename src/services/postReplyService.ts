@@ -11,9 +11,10 @@ export interface PostReply {
   };
   created_at: string;
   user_id: string;
+  parent_reply_id?: string | null; // For threading support
 }
 
-// Get replies for a post
+// Get replies for a post (including nested replies via rootPost)
 export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
   try {
     // Fetch all Note objects and filter for replies client-side
@@ -33,11 +34,15 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
 
     if (error) return [];
 
-    // Filter replies that match the postId
+    // Filter replies that match the postId (either direct reply or part of thread via rootPost)
     const matchingReplies = replies?.filter(reply => {
       const content = reply.content as any;
       const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
-      return inReplyTo === postId || (typeof inReplyTo === 'string' && inReplyTo.includes(postId));
+      const rootPost = content?.rootPost || content?.content?.rootPost;
+      
+      // Match if this is a direct reply to the post OR a nested reply in the thread (via rootPost)
+      return inReplyTo === postId || rootPost === postId || 
+        (typeof inReplyTo === 'string' && inReplyTo.includes(postId));
     }) || [];
 
     // Get user IDs to fetch profiles for display names
@@ -67,12 +72,17 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
       const content = reply.content as any;
       const actorUserId = (reply.actors as any)?.user_id;
       const profile = actorUserId ? profilesMap[actorUserId] : undefined;
+      
+      // Determine parent_reply_id: if inReplyTo is NOT the main post, it's a parent reply
+      const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
+      const parentReplyId = inReplyTo && inReplyTo !== postId ? inReplyTo : null;
 
       return {
         id: reply.id,
         content: content?.content || '',
         created_at: reply.created_at,
         user_id: actorUserId || '',
+        parent_reply_id: parentReplyId,
         author: {
           username: profile?.username || (reply.actors as any)?.preferred_username || 'Unknown',
           avatar_url: profile?.avatar_url,

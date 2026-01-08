@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,13 +111,31 @@ export default function PostView() {
   };
 
   const handleReplyToReply = async (replyId: string) => {
-    // This will be handled by InlineReplyComposer within PostReplyThread
     // Reload replies after nested reply
     if (postId) {
       const repliesData = await getPostReplies(postId);
       setReplies(repliesData);
     }
   };
+
+  // Build reply tree structure
+  const { topLevelReplies, getChildReplies } = useMemo(() => {
+    // Create a map for quick lookup
+    const replyMap = new Map(replies.map(r => [r.id, r]));
+    
+    // Find top-level replies (direct replies to the main post)
+    const topLevel = replies.filter(r => !r.parent_reply_id);
+    
+    // Function to get child replies for a given parent
+    const getChildren = (parentId: string): PostReply[] => {
+      return replies.filter(r => r.parent_reply_id === parentId);
+    };
+    
+    return {
+      topLevelReplies: topLevel,
+      getChildReplies: getChildren
+    };
+  }, [replies]);
 
   if (loading) {
     return (
@@ -177,11 +195,12 @@ export default function PostView() {
               {replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}
             </h3>
             <div className="space-y-4">
-              {replies.map((reply) => (
+              {topLevelReplies.map((reply) => (
                 <PostReplyThread 
                   key={reply.id} 
                   reply={reply} 
                   postId={post.id}
+                  childReplies={getChildReplies(reply.id)}
                   onReplyCreated={handleReplyToReply}
                 />
               ))}

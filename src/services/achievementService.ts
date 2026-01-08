@@ -79,7 +79,20 @@ export async function grantAchievement(
 
   if (findError || !achievement) return false;
 
-  // Grant the achievement (will fail silently if already granted due to unique constraint)
+  // Check if already granted
+  const { data: existing } = await supabase
+    .from("user_achievements")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("achievement_id", achievement.id)
+    .maybeSingle();
+
+  if (existing) {
+    // Already granted, return true but don't insert again
+    return true;
+  }
+
+  // Grant the achievement
   const { error } = await supabase
     .from("user_achievements")
     .insert({
@@ -87,7 +100,7 @@ export async function grantAchievement(
       achievement_id: achievement.id,
     });
 
-  // Return true even if it already exists (no error or unique violation)
+  // Return true if successful or if it already exists
   return !error || error.code === "23505";
 }
 

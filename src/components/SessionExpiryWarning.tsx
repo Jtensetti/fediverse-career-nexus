@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,7 +13,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const SESSION_WARNING_THRESHOLD = 5 * 60 * 1000; // 5 minutes in ms
+// Reduced to 2 minutes for less intrusive warnings
+const SESSION_WARNING_THRESHOLD = 2 * 60 * 1000; // 2 minutes in ms
+const DISMISS_COOLDOWN = 10 * 60 * 1000; // 10 minutes cooldown after dismissing
+const ACTIVITY_THRESHOLD = 2 * 60 * 1000; // 2 minutes - if active, auto-refresh
 
 export default function SessionExpiryWarning() {
   const { session } = useAuth();
@@ -21,15 +24,51 @@ export default function SessionExpiryWarning() {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Track user activity
+  const updateLastActivity = useCallback(() => {
+    localStorage.setItem('lastActivity', Date.now().toString());
+  }, []);
+
+  // Set up activity listeners
+  useEffect(() => {
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, updateLastActivity, { passive: true }));
+    updateLastActivity(); // Set initial activity
+
+    return () => {
+      events.forEach(event => window.removeEventListener(event, updateLastActivity));
+    };
+  }, [updateLastActivity]);
+
   useEffect(() => {
     if (!session?.expires_at) return;
 
-    const checkExpiry = () => {
+    const checkExpiry = async () => {
       const expiresAt = session.expires_at * 1000; // Convert to ms
       const now = Date.now();
       const remaining = expiresAt - now;
 
+      // Check if user dismissed recently
+      const lastDismissed = localStorage.getItem('sessionWarningDismissed');
+      if (lastDismissed && now - parseInt(lastDismissed) < DISMISS_COOLDOWN) {
+        return;
+      }
+
       if (remaining <= SESSION_WARNING_THRESHOLD && remaining > 0) {
+        // Check if user was recently active - auto refresh instead of warning
+        const lastActivity = parseInt(localStorage.getItem('lastActivity') || '0');
+        if (now - lastActivity < ACTIVITY_THRESHOLD) {
+          // User is active, silently refresh
+          try {
+            await supabase.auth.refreshSession();
+          } catch {
+            // If silent refresh fails, show warning
+            setTimeRemaining(Math.floor(remaining / 1000));
+            setShowWarning(true);
+          }
+          return;
+        }
+
         setTimeRemaining(Math.floor(remaining / 1000));
         setShowWarning(true);
       } else if (remaining <= 0) {
@@ -78,6 +117,11 @@ export default function SessionExpiryWarning() {
     }
   };
 
+  const handleDismiss = () => {
+    localStorage.setItem('sessionWarningDismissed', Date.now().toString());
+    setShowWarning(false);
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -103,7 +147,7 @@ export default function SessionExpiryWarning() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <Button variant="outline" onClick={() => setShowWarning(false)}>
+          <Button variant="outline" onClick={handleDismiss}>
             Dismiss
           </Button>
           <Button onClick={handleExtendSession} disabled={isRefreshing}>
