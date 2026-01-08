@@ -30,7 +30,7 @@ import UserPostsList from "@/components/UserPostsList";
 import UserActivityList from "@/components/UserActivityList";
 import UserArticlesList from "@/components/UserArticlesList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
-import AchievementBadges from "@/components/AchievementBadges";
+
 import FollowAuthorButton from "@/components/FollowAuthorButton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -727,7 +727,7 @@ const ProfilePage = () => {
             </Card>
           )}
           
-          <AchievementBadges userId={profile.id} />
+          
           
           {profile.authType === 'federated' && profile.username && (
             <FederationInfo

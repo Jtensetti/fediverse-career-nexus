@@ -278,41 +278,6 @@
     }
   }
   
-  /* Achievement tier badges */
-  .tier-bronze {
-    background: linear-gradient(135deg, hsl(var(--tier-bronze)) 0%, hsl(30 50% 40%) 100%);
-    box-shadow: 0 0 20px hsl(var(--tier-bronze-glow));
-  }
-  
-  .tier-silver {
-    background: linear-gradient(135deg, hsl(var(--tier-silver)) 0%, hsl(210 5% 60%) 100%);
-    box-shadow: 0 0 20px hsl(var(--tier-silver-glow));
-  }
-  
-  .tier-gold {
-    background: linear-gradient(135deg, hsl(var(--tier-gold)) 0%, hsl(35 85% 45%) 100%);
-    box-shadow: 0 0 25px hsl(var(--tier-gold-glow));
-  }
-  
-  .tier-platinum {
-    background: linear-gradient(135deg, hsl(var(--tier-platinum)) 0%, hsl(210 90% 50%) 100%);
-    box-shadow: 0 0 30px hsl(var(--tier-platinum-glow));
-  }
-  
-  /* Achievement unlock glow pulse */
-  .achievement-glow {
-    animation: achievementGlow 2s ease-in-out infinite;
-  }
-  
-  @keyframes achievementGlow {
-    0%, 100% {
-      box-shadow: 0 0 15px hsl(var(--tier-gold-glow));
-    }
-    50% {
-      box-shadow: 0 0 30px hsl(var(--tier-gold-glow)), 0 0 45px hsl(var(--tier-gold-glow));
-    }
-  }
-  
   /* Gold shimmer effect for premium elements */
   .shimmer-gold {
     @apply relative overflow-hidden;

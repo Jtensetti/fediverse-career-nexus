@@ -14,7 +14,6 @@ const cardVariants = cva(
         glass: "backdrop-blur-lg bg-card/70 border-border/50 shadow-lg",
         flat: "border-0 shadow-none bg-transparent",
         premium: "shadow-md border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 hover:shadow-xl hover:shadow-primary/10",
-        achievement: "border-tier-gold/30 bg-gradient-to-br from-tier-gold/5 via-card to-transparent shadow-md hover:shadow-tier-gold/20",
       },
     },
     defaultVariants: {
