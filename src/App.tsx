@@ -31,6 +31,7 @@ import ArticleManage from "./pages/ArticleManage";
 import ArticleEdit from "./pages/ArticleEdit";
 import Connections from "./pages/Connections";
 import Messages from "./pages/Messages";
+import MessageConversation from "./pages/MessageConversation";
 import Notifications from "./pages/Notifications";
 import Mission from "./pages/Mission";
 import Documentation from "./pages/Documentation";
@@ -174,6 +175,22 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Connections />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/messages"
+                      element={
+                        <ProtectedRoute>
+                          <Messages />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/messages/:conversationId"
+                      element={
+                        <ProtectedRoute>
+                          <MessageConversation />
                         </ProtectedRoute>
                       }
                     />
