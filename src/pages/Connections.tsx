@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -24,32 +24,13 @@ import {
 } from "@/services/connectionsService";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ConnectionsPage = () => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isConnecting, setIsConnecting] = useState<{ [key: string]: boolean }>({});
   const [isResponding, setIsResponding] = useState<{ [key: string]: boolean }>({});
-  // null = loading, false = not authenticated, true = authenticated
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-    };
-    
-    checkAuth();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-    });
-    
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
   
   // Fetch connections data
   const { 
@@ -59,8 +40,7 @@ const ConnectionsPage = () => {
     refetch: refetchConnections
   } = useQuery({
     queryKey: ["userConnections"],
-    queryFn: getUserConnections,
-    enabled: isAuthenticated
+    queryFn: getUserConnections
   });
   
   // Fetch suggestions data
@@ -71,8 +51,7 @@ const ConnectionsPage = () => {
     refetch: refetchSuggestions
   } = useQuery({
     queryKey: ["connectionSuggestions"],
-    queryFn: getConnectionSuggestions,
-    enabled: isAuthenticated
+    queryFn: getConnectionSuggestions
   });
 
   // Fetch pending connection requests
@@ -83,8 +62,7 @@ const ConnectionsPage = () => {
     refetch: refetchPending
   } = useQuery({
     queryKey: ["pendingConnectionRequests"],
-    queryFn: getPendingConnectionRequests,
-    enabled: isAuthenticated
+    queryFn: getPendingConnectionRequests
   });
 
   // Fetch sent (outgoing) connection requests
@@ -93,27 +71,26 @@ const ConnectionsPage = () => {
     refetch: refetchSent
   } = useQuery({
     queryKey: ["sentConnectionRequests"],
-    queryFn: getSentConnectionRequests,
-    enabled: isAuthenticated
+    queryFn: getSentConnectionRequests
   });
   
-  // Filter connections based on search query
-  const filteredConnections = connections.filter(connection => 
-    connection.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    connection.headline.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter connections based on search query - with null-safe access
+  const filteredConnections = connections.filter(connection => {
+    const displayName = connection.displayName || '';
+    const headline = connection.headline || '';
+    return displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           headline.toLowerCase().includes(searchQuery.toLowerCase());
+  });
   
-  // Filter suggestions based on search query
-  const filteredSuggestions = suggestions.filter(suggestion => 
-    suggestion.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    suggestion.headline.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter suggestions based on search query - with null-safe access
+  const filteredSuggestions = suggestions.filter(suggestion => {
+    const displayName = suggestion.displayName || '';
+    const headline = suggestion.headline || '';
+    return displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           headline.toLowerCase().includes(searchQuery.toLowerCase());
+  });
   
   const handleConnect = async (userId: string) => {
-    if (!isAuthenticated) {
-      toast.error("You must be logged in to connect with others");
-      return;
-    }
     
     setIsConnecting(prev => ({ ...prev, [userId]: true }));
     try {
@@ -132,8 +109,6 @@ const ConnectionsPage = () => {
   };
 
   const handleAcceptRequest = async (connectionId: string) => {
-    if (!isAuthenticated) return;
-    
     setIsResponding(prev => ({ ...prev, [connectionId]: true }));
     try {
       const success = await acceptConnectionRequest(connectionId);
@@ -149,8 +124,6 @@ const ConnectionsPage = () => {
   };
 
   const handleRejectRequest = async (connectionId: string) => {
-    if (!isAuthenticated) return;
-    
     setIsResponding(prev => ({ ...prev, [connectionId]: true }));
     try {
       const success = await rejectConnectionRequest(connectionId);
@@ -163,31 +136,6 @@ const ConnectionsPage = () => {
       setIsResponding(prev => ({ ...prev, [connectionId]: false }));
     }
   };
-  
-  // Show loading state while checking auth
-  if (isAuthenticated === null) {
-    return (
-      <DashboardLayout title="My Network">
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <DashboardLayout title="My Network">
-        <div className="bg-card rounded-lg shadow-sm p-8 text-center">
-          <h2 className="text-xl font-medium mb-4">Sign in to view your network</h2>
-          <p className="text-muted-foreground mb-6">You need to be logged in to view and manage your connections.</p>
-          <Button asChild>
-            <Link to="/auth/login">Sign In</Link>
-          </Button>
-        </div>
-      </DashboardLayout>
-    );
-  }
   
   return (
     <DashboardLayout title="My Network" description="Manage your professional connections">
@@ -247,7 +195,7 @@ const ConnectionsPage = () => {
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border-2 border-white">
                       <AvatarImage src={connection.avatarUrl} alt={connection.displayName} />
-                      <AvatarFallback>{connection.displayName.substring(0, 2)}</AvatarFallback>
+                      <AvatarFallback>{(connection.displayName || 'UN').substring(0, 2)}</AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1">
@@ -306,7 +254,7 @@ const ConnectionsPage = () => {
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border-2 border-white">
                       <AvatarImage src={request.avatarUrl} alt={request.displayName} />
-                      <AvatarFallback>{request.displayName.substring(0, 2)}</AvatarFallback>
+                      <AvatarFallback>{(request.displayName || 'UN').substring(0, 2)}</AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1">
@@ -370,7 +318,7 @@ const ConnectionsPage = () => {
                   <div className="flex items-start gap-3">
                     <Avatar className="h-14 w-14 border-2 border-white">
                       <AvatarImage src={suggestion.avatarUrl} alt={suggestion.displayName} />
-                      <AvatarFallback>{suggestion.displayName.substring(0, 2)}</AvatarFallback>
+                      <AvatarFallback>{(suggestion.displayName || 'UN').substring(0, 2)}</AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1">

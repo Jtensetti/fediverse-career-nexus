@@ -21,17 +21,6 @@ export default function Messages() {
   const { user, loading: authLoading } = useAuth();
   const currentUserId = user?.id || null;
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to view your messages",
-        variant: "destructive"
-      });
-      navigate('/auth/login');
-    }
-  }, [authLoading, user, navigate, toast]);
 
   // Fetch conversations
   const { data: conversations, isLoading, error } = useQuery({
@@ -61,19 +50,6 @@ export default function Messages() {
     );
   }
 
-  if (!currentUserId) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
-          <div className="text-center">
-            <p>Please sign in to view your messages</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
