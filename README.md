@@ -88,7 +88,7 @@ React (Vite) ──supabase-js──► Edge Functions (Deno)
 
 ```bash
 # 1. Clone & install
-git clone https://github.com/nolto/nolto.git
+git clone https://github.com/Jtensetti/fediverse-career-nexus.git
 cd nolto
 npm install
 
