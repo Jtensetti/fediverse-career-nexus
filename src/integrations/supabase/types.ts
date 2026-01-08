@@ -2278,6 +2278,19 @@ export type Database = {
           request_count: number
         }[]
       }
+      get_smart_suggestions: {
+        Args: { p_limit?: number; p_user_id: string }
+        Returns: {
+          avatar_url: string
+          fullname: string
+          headline: string
+          is_verified: boolean
+          mutual_count: number
+          suggestion_reason: string
+          user_id: string
+          username: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -25,20 +25,28 @@ const JobCreate = () => {
   }
   
   const handleSubmit = async (values: any) => {
+    console.log('JobCreate handleSubmit called with:', values);
     setIsSubmitting(true);
     
-    const jobData = {
-      ...values,
-      // Convert empty strings to null
-      application_url: values.application_url || null,
-      contact_email: values.contact_email || null,
-    };
-    
-    const jobId = await createJobPost(jobData);
-    setIsSubmitting(false);
-    
-    if (jobId) {
-      navigate(`/jobs/${jobId}`);
+    try {
+      const jobData = {
+        ...values,
+        // Convert empty strings to null
+        application_url: values.application_url || null,
+        contact_email: values.contact_email || null,
+      };
+      
+      console.log('Creating job post with data:', jobData);
+      const jobId = await createJobPost(jobData);
+      console.log('Job creation result:', jobId);
+      
+      if (jobId) {
+        navigate(`/jobs/${jobId}`);
+      }
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   

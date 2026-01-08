@@ -329,8 +329,8 @@ const ConnectionsPage = () => {
                         <ConnectionBadge degree={suggestion.connectionDegree} />
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">{suggestion.headline}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {suggestion.mutualConnections} mutual connections
+                      <p className="text-xs text-primary/80 mt-1 font-medium">
+                        {suggestion.suggestionReason || `${suggestion.mutualConnections} mutual connections`}
                       </p>
                     </div>
                   </div>

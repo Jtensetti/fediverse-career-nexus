@@ -23,7 +23,10 @@ import { Switch } from "@/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Briefcase, School, Star, Trash, Plus, Settings } from "lucide-react";
+import { Briefcase, School, Star, Trash, Plus, Settings, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import { getCurrentUserProfile } from "@/services/profileService";
 import { updateUserProfile, ProfileUpdateData } from "@/services/profileEditService";
@@ -635,13 +638,25 @@ const ProfileEditPage = () => {
                           
                           <div>
                             <Label htmlFor={`startDate-${index}`}>Start Date</Label>
-                            <Input 
-                              id={`startDate-${index}`}
-                              type="date"
-                              value={exp.start_date ? exp.start_date.substring(0, 10) : ''} 
-                              onChange={(e) => updateExperienceField(index, 'start_date', e.target.value)}
-                              className="mt-1"
-                            />
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full mt-1 justify-start text-left font-normal"
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {exp.start_date ? format(new Date(exp.start_date), "PPP") : "Pick a date"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={exp.start_date ? new Date(exp.start_date) : undefined}
+                                  onSelect={(date) => updateExperienceField(index, 'start_date', date?.toISOString().split('T')[0])}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
                           </div>
                           
                           <div className="flex flex-col">
@@ -658,13 +673,25 @@ const ProfileEditPage = () => {
                             {!exp.is_current_role && (
                               <>
                                 <Label htmlFor={`endDate-${index}`}>End Date</Label>
-                                <Input 
-                                  id={`endDate-${index}`}
-                                  type="date"
-                                  value={exp.end_date ? exp.end_date.substring(0, 10) : ''} 
-                                  onChange={(e) => updateExperienceField(index, 'end_date', e.target.value)}
-                                  className="mt-1"
-                                />
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className="w-full mt-1 justify-start text-left font-normal"
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4" />
+                                      {exp.end_date ? format(new Date(exp.end_date), "PPP") : "Pick a date"}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                      mode="single"
+                                      selected={exp.end_date ? new Date(exp.end_date) : undefined}
+                                      onSelect={(date) => updateExperienceField(index, 'end_date', date?.toISOString().split('T')[0])}
+                                      initialFocus
+                                    />
+                                  </PopoverContent>
+                                </Popover>
                               </>
                             )}
                           </div>
