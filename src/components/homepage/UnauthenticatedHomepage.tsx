@@ -7,7 +7,7 @@ import { getPublishedJobPosts, type JobPost } from "@/services/jobPostsService";
 import HeroWithScreenshot from "./HeroWithScreenshot";
 import FeaturedIn from "./FeaturedIn";
 import AlternatingFeatures from "./AlternatingFeature";
-import EnhancedTestimonials from "./EnhancedTestimonials";
+
 import FederationVisual from "./FederationVisual";
 import HomepageFAQ from "./HomepageFAQ";
 import FinalCTA from "./FinalCTA";
@@ -37,10 +37,6 @@ const UnauthenticatedHomepage = () => {
       {/* Alternating Feature Sections with Screenshots */}
       <AlternatingFeatures />
 
-      {/* Enhanced Testimonials with Photos */}
-      <ScrollReveal>
-        <EnhancedTestimonials />
-      </ScrollReveal>
 
       {/* Visual Federation Explainer */}
       <ScrollReveal>
