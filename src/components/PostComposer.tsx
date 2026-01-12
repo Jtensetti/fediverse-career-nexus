@@ -10,11 +10,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Image, PenTool, Smile, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send } from "lucide-react";
+import { Image, PenTool, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send, ImagePlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profileService";
 import { createPost, CreatePostData } from "@/services/postService";
+import { compressImage, formatFileSize } from "@/lib/imageCompression";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,9 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const [postContent, setPostContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageAltText, setImageAltText] = useState<string>("");
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [scheduledTime, setScheduledTime] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -80,19 +84,46 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     setPostContent("");
     setSelectedImage(null);
     setImagePreview(null);
+    setImageAltText("");
+    setCompressionInfo(null);
     setScheduledDate(undefined);
     setScheduledTime("");
     setShowDatePicker(false);
   };
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
         toast.error('Image size must be less than 10MB');
         return;
       }
-      setSelectedImage(file);
+      
+      setIsCompressing(true);
+      try {
+        const originalSize = file.size;
+        const compressedFile = await compressImage(file, {
+          maxWidth: 1920,
+          maxHeight: 1920,
+          quality: 0.8,
+          maxSizeKB: 500
+        });
+        
+        setSelectedImage(compressedFile);
+        setCompressionInfo({
+          original: originalSize,
+          compressed: compressedFile.size
+        });
+        
+        if (compressedFile.size < originalSize) {
+          toast.success(`Image compressed: ${formatFileSize(originalSize)} → ${formatFileSize(compressedFile.size)}`);
+        }
+      } catch (error) {
+        console.error('Compression failed, using original:', error);
+        setSelectedImage(file);
+      } finally {
+        setIsCompressing(false);
+      }
     }
   };
 
@@ -105,6 +136,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     const postData: CreatePostData = {
       content: postContent.trim(),
       imageFile: selectedImage || undefined,
+      imageAltText: imageAltText.trim() || undefined,
     };
 
     createPostMutation.mutate(postData);
@@ -133,6 +165,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     const postData: CreatePostData = {
       content: postContent.trim(),
       imageFile: selectedImage || undefined,
+      imageAltText: imageAltText.trim() || undefined,
       scheduledFor: scheduledDateTime,
     };
 
@@ -210,32 +243,71 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                   disabled={isLoading}
                 />
                 
-                {/* Image Preview */}
+                {/* Image Preview with Alt Text */}
                 <AnimatePresence>
                   {imagePreview && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="relative rounded-xl overflow-hidden bg-muted"
+                      className="space-y-2"
                     >
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="w-full max-h-64 object-cover"
-                      />
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
-                        onClick={() => setSelectedImage(null)}
-                        disabled={isLoading}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      <div className="relative rounded-xl overflow-hidden bg-muted">
+                        <img 
+                          src={imagePreview} 
+                          alt={imageAltText || "Preview"} 
+                          className="w-full max-h-64 object-cover"
+                        />
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
+                          onClick={() => {
+                            setSelectedImage(null);
+                            setImageAltText("");
+                            setCompressionInfo(null);
+                          }}
+                          disabled={isLoading}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        {compressionInfo && compressionInfo.compressed < compressionInfo.original && (
+                          <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-background/80 backdrop-blur-sm text-xs text-muted-foreground">
+                            {formatFileSize(compressionInfo.compressed)}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Alt text input for accessibility */}
+                      <div className="px-1">
+                        <Label htmlFor="alt-text" className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
+                          <ImagePlus className="h-3 w-3" />
+                          Describe this image for people who can't see it
+                        </Label>
+                        <Input
+                          id="alt-text"
+                          placeholder="Add alt text..."
+                          value={imageAltText}
+                          onChange={(e) => setImageAltText(e.target.value)}
+                          className="text-sm h-8"
+                          maxLength={300}
+                          disabled={isLoading}
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-0.5 text-right">
+                          {imageAltText.length}/300
+                        </p>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* Compressing indicator */}
+                {isCompressing && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Optimizing image...
+                  </div>
+                )}
 
                 {/* Scheduled Info */}
                 <AnimatePresence>
@@ -290,16 +362,6 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     >
                       <Image className="h-5 w-5" />
                     </Button>
-                    
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
-                      disabled={isLoading}
-                    >
-                      <Smile className="h-5 w-5" />
-                    </Button>
-                    
                     <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
                       <PopoverTrigger asChild>
                         <Button

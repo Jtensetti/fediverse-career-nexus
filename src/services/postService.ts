@@ -17,6 +17,7 @@ export interface Post {
 export interface CreatePostData {
   content: string;
   imageFile?: File;
+  imageAltText?: string;
   scheduledFor?: Date;
 }
 
@@ -176,10 +177,11 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       published: new Date().toISOString(),
       to: ['https://www.w3.org/ns/activitystreams#Public'],
       cc: [`${actorUrl}/followers`],
-      image: imageUrl ? {
+      attachment: imageUrl ? [{
         type: 'Image',
-        url: imageUrl
-      } : undefined,
+        url: imageUrl,
+        name: postData.imageAltText || '' // Alt text for accessibility
+      }] : undefined,
       actor: {
         id: actor.id,
         preferredUsername: actor.preferred_username,

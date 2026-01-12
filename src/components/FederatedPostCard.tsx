@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
-import { Globe, MessageSquare, Heart, Repeat, MoreHorizontal, Edit, Trash2, Flag, UserX, Share2 } from "lucide-react";
+import { Globe, MessageSquare, Repeat, MoreHorizontal, Edit, Trash2, Flag, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -14,7 +14,6 @@ import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import { getProxiedMediaUrl } from "@/services/federationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/postService";
-import { togglePostReaction, getPostReactions } from "@/services/postReactionsService";
 import { togglePostBoost, getPostBoostCount, hasUserBoostedPost } from "@/services/postBoostService";
 import { getPostReplies } from "@/services/postReplyService";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +21,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import PostReplyDialog from "./PostReplyDialog";
 import BlockUserDialog from "./BlockUserDialog";
+import EnhancedPostReactions from "./EnhancedPostReactions";
+import CommentPreview from "./CommentPreview";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 
@@ -33,8 +34,6 @@ interface FederatedPostCardProps {
 
 export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedPostCardProps) {
   const [imageError, setImageError] = useState<boolean>(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
   const [isBoosted, setIsBoosted] = useState(false);
   const [boostCount, setBoostCount] = useState(0);
   const [replyCount, setReplyCount] = useState(0);
@@ -53,14 +52,6 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   const loadPostData = async () => {
     try {
-      // Load reactions
-      const reactions = await getPostReactions(post.id);
-      const heartReaction = reactions.find(r => r.emoji === '❤️');
-      if (heartReaction) {
-        setIsLiked(heartReaction.hasReacted);
-        setLikeCount(heartReaction.count);
-      }
-
       // Load boost data
       const [boostCountData, userBoosted] = await Promise.all([
         getPostBoostCount(post.id),
@@ -154,7 +145,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     }
   };
   
-  // Extract media attachments if any
+  // Extract media attachments if any - now with alt text support
   const getMediaAttachments = () => {
     const attachments = 
       post.content.attachment || 
@@ -165,24 +156,13 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     
     return attachments.filter(att => 
       att.mediaType && att.mediaType.startsWith('image/') && att.url
-    );
+    ).map(att => ({
+      ...att,
+      altText: att.name || '' // Use name field as alt text
+    }));
   };
   
   const attachments = getMediaAttachments();
-
-  // Handle like/react
-  const handleLike = async () => {
-    if (!user) {
-      toast.error('Please sign in to react to posts');
-      return;
-    }
-    
-    const success = await togglePostReaction(post.id, '❤️');
-    if (success) {
-      setIsLiked(!isLiked);
-      setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-    }
-  };
 
   // Handle boost/repost
   const handleBoost = async () => {
