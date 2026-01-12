@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, Heart } from "lucide-react";
@@ -10,6 +10,7 @@ import InlineReplyComposer from "./InlineReplyComposer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { toggleReplyReaction, getReplyLikeCount } from "@/services/replyReactionsService";
 import type { PostReply } from "@/services/postReplyService";
 
 interface PostReplyThreadProps {
@@ -31,7 +32,19 @@ export default function PostReplyThread({
 }: PostReplyThreadProps) {
   const [showReplyComposer, setShowReplyComposer] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
   const { user } = useAuth();
+
+  // Load initial like state from database
+  useEffect(() => {
+    const loadLikeState = async () => {
+      const { count, hasReacted } = await getReplyLikeCount(reply.id);
+      setLikeCount(count);
+      setIsLiked(hasReacted);
+    };
+    loadLikeState();
+  }, [reply.id]);
 
   const handleReplyClick = () => {
     if (!user) {
@@ -46,12 +59,28 @@ export default function PostReplyThread({
     onReplyCreated(reply.id);
   };
 
-  const handleLike = () => {
+  const handleLike = async () => {
     if (!user) {
       toast.error('Please sign in to like');
       return;
     }
-    setIsLiked(!isLiked);
+    
+    if (isLikeLoading) return;
+    
+    // Optimistic update
+    setIsLiked(prev => !prev);
+    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+    setIsLikeLoading(true);
+    
+    const success = await toggleReplyReaction(reply.id);
+    
+    if (!success) {
+      // Revert on failure
+      setIsLiked(prev => !prev);
+      setLikeCount(prev => isLiked ? prev + 1 : prev - 1);
+    }
+    
+    setIsLikeLoading(false);
   };
 
   const getPublishedDate = () => {
@@ -121,8 +150,10 @@ export default function PostReplyThread({
                     isLiked && "text-red-500"
                   )}
                   onClick={handleLike}
+                  disabled={isLikeLoading}
                 >
                   <Heart className={cn("h-3.5 w-3.5", isLiked && "fill-current")} />
+                  {likeCount > 0 && <span>{likeCount}</span>}
                 </Button>
 
                 {depth < MAX_DEPTH && (
