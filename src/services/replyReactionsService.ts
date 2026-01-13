@@ -33,19 +33,17 @@ const getUserActorId = async (): Promise<string | null> => {
   return cachedActorId;
 };
 
-// Get reactions for a specific reply - optimized to only fetch relevant reactions
+// Get reactions for a specific reply - FIXED: now properly groups by emoji
 export const getReplyReactions = async (replyId: string): Promise<ReplyReactionCount[]> => {
   try {
     const userActorId = await getUserActorId();
     
-    // Use RPC or direct query with JSONB filtering if possible
-    // For now, fetch only Like reactions attributed to anyone, then filter
-    // But limit results to reduce payload
+    // Fetch Like reactions and filter for this specific reply
     const { data: reactions, error } = await supabase
       .from('ap_objects')
       .select('id, content, attributed_to')
       .eq('type', 'Like')
-      .limit(1000); // Reasonable limit to prevent massive payloads
+      .limit(1000);
     
     if (error) {
       console.error('Error fetching reactions:', error);
@@ -57,22 +55,39 @@ export const getReplyReactions = async (replyId: string): Promise<ReplyReactionC
       const content = r.content as any;
       const objectId = content?.object?.id;
       const targetType = content?.object?.type;
+      // Exact match only - no includes() which was causing issues
       return objectId === replyId && targetType === 'reply';
     });
     
-    // Count heart reactions
-    const heartReactions = matchingReactions.filter(r => {
+    // Group reactions by emoji
+    const emojiGroups: Record<string, { count: number; reactorIds: string[] }> = {};
+    
+    matchingReactions.forEach(r => {
       const content = r.content as any;
-      return content?.emoji === '❤️' || !content?.emoji; // Default to heart if no emoji
+      const emoji = content?.emoji || '❤️'; // Default to heart if no emoji
+      
+      if (!emojiGroups[emoji]) {
+        emojiGroups[emoji] = { count: 0, reactorIds: [] };
+      }
+      emojiGroups[emoji].count++;
+      if (r.attributed_to) {
+        emojiGroups[emoji].reactorIds.push(r.attributed_to);
+      }
     });
     
-    const hasReacted = userActorId ? heartReactions.some(r => r.attributed_to === userActorId) : false;
+    // Convert to array with hasReacted flag
+    const result: ReplyReactionCount[] = Object.entries(emojiGroups).map(([emoji, data]) => ({
+      emoji,
+      count: data.count,
+      hasReacted: userActorId ? data.reactorIds.includes(userActorId) : false
+    }));
     
-    return [{
-      emoji: '❤️',
-      count: heartReactions.length,
-      hasReacted
-    }];
+    // Ensure at least heart emoji is present
+    if (!result.find(r => r.emoji === '❤️')) {
+      result.unshift({ emoji: '❤️', count: 0, hasReacted: false });
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error fetching reply reactions:', error);
     return [{ emoji: '❤️', count: 0, hasReacted: false }];
@@ -82,11 +97,13 @@ export const getReplyReactions = async (replyId: string): Promise<ReplyReactionC
 // Get single reaction count (shorthand for heart)
 export const getReplyLikeCount = async (replyId: string): Promise<{ count: number; hasReacted: boolean }> => {
   const reactions = await getReplyReactions(replyId);
-  const heartReaction = reactions.find(r => r.emoji === '❤️');
-  return { count: heartReaction?.count || 0, hasReacted: heartReaction?.hasReacted || false };
+  // Return total count across all emojis, and whether user has reacted with any emoji
+  const totalCount = reactions.reduce((sum, r) => sum + r.count, 0);
+  const hasReacted = reactions.some(r => r.hasReacted);
+  return { count: totalCount, hasReacted };
 };
 
-// Toggle a reaction on a reply
+// Toggle a reaction on a reply - FIXED: proper emoji matching
 export const toggleReplyReaction = async (replyId: string, emoji: string = '❤️'): Promise<boolean> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -101,7 +118,7 @@ export const toggleReplyReaction = async (replyId: string, emoji: string = '❤�
       .from('actors')
       .select('id, preferred_username')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (actorError || !actor) {
       // Create actor on the fly
@@ -133,21 +150,26 @@ export const toggleReplyReaction = async (replyId: string, emoji: string = '❤�
       }
 
       actor = newActor;
+      // Update cache
+      cachedActorId = newActor.id;
+      cachedUserId = user.id;
     }
 
-    // Check if user has already reacted to this reply
-    const { data: allReactions } = await supabase
+    // Check if user has already reacted to this reply with this specific emoji
+    const { data: userReactions } = await supabase
       .from('ap_objects')
-      .select('*')
+      .select('id, content')
       .eq('type', 'Like')
       .eq('attributed_to', actor.id);
     
-    const existingReaction = allReactions?.find(r => {
+    // Find existing reaction for this reply with this emoji
+    const existingReaction = userReactions?.find(r => {
       const content = r.content as any;
       const objectId = content?.object?.id;
       const targetType = content?.object?.type;
-      return (objectId === replyId || (typeof objectId === 'string' && objectId.includes(replyId)))
-        && targetType === 'reply';
+      const reactionEmoji = content?.emoji || '❤️';
+      // Exact match only
+      return objectId === replyId && targetType === 'reply' && reactionEmoji === emoji;
     });
     
     if (existingReaction) {
@@ -180,7 +202,7 @@ export const toggleReplyReaction = async (replyId: string, emoji: string = '❤�
         },
         object: {
           id: replyId,
-          type: 'reply' // Mark this as a reply reaction
+          type: 'reply'
         },
         emoji: emoji,
         published: new Date().toISOString()
