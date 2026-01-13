@@ -62,16 +62,23 @@ export default function EnhancedPostReactions({ postId, compact = false, onReact
 
   const loadReactions = async () => {
     setIsLoading(true);
-    const reactionData = await getPostReactions(postId);
-    
-    // Map to our supported emojis, ensuring all are present
-    const mappedReactions = SUPPORTED_EMOJIS.map(emoji => {
-      const existing = reactionData.find(r => r.emoji === emoji);
-      return existing || { emoji, count: 0, hasReacted: false };
-    });
-    
-    setReactions(mappedReactions);
-    setIsLoading(false);
+    try {
+      const reactionData = await getPostReactions(postId);
+      
+      // Map to our supported emojis, ensuring all are present
+      const mappedReactions = SUPPORTED_EMOJIS.map(emoji => {
+        const existing = reactionData.find(r => r.emoji === emoji);
+        return existing || { emoji, count: 0, hasReacted: false };
+      });
+      
+      setReactions(mappedReactions);
+    } catch (error) {
+      console.error('Error loading reactions:', error);
+      // Set default empty reactions on error
+      setReactions(SUPPORTED_EMOJIS.map(emoji => ({ emoji, count: 0, hasReacted: false })));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleReaction = async (emoji: string) => {

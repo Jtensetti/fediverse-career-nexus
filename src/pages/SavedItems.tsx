@@ -85,7 +85,11 @@ export default function SavedItemsPage() {
       case "post":
         return `/post/${id}`;
       case "comment":
-        return `/post/${id}`; // Comments link to their parent post
+        // For comments, we need to navigate to the post view
+        // The comment will be visible in the post's replies
+        // Note: Currently links to post ID which may not be correct
+        // A future improvement would be to store the post_id alongside comment_id
+        return `/post/${id}`;
       default:
         return "#";
     }
