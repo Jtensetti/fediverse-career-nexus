@@ -41,34 +41,26 @@ const getUserActorId = async (): Promise<string | null> => {
   return cachedActorId;
 };
 
-// Get reactions for a specific reply/comment
+// Get reactions for a specific reply/comment using JSONB containment
 export const getReplyReactions = async (replyId: string): Promise<ReplyReactionCount[]> => {
   try {
     const userActorId = await getUserActorId();
     
-    // Query Likes that reference this reply
+    // Query Likes that reference this reply using JSONB containment
     const { data: reactions, error } = await supabase
       .from('ap_objects')
       .select('id, content, attributed_to')
       .eq('type', 'Like')
-      .textSearch('content', replyId, { type: 'plain' });
+      .contains('content', { object: { id: replyId, type: 'reply' } });
     
     if (error) {
       console.error('Error fetching reply reactions:', error);
       return SUPPORTED_EMOJIS.map(emoji => ({ emoji, count: 0, hasReacted: false }));
     }
     
-    // Filter to exact matches for this reply
-    const matchingReactions = (reactions || []).filter(r => {
-      const content = r.content as any;
-      const objectId = content?.object?.id;
-      const objectType = content?.object?.type;
-      return objectId === replyId && objectType === 'reply';
-    });
-    
     // Count by emoji
     const reactionCounts: ReplyReactionCount[] = SUPPORTED_EMOJIS.map(emoji => {
-      const filteredReactions = matchingReactions.filter(r => {
+      const filteredReactions = (reactions || []).filter(r => {
         const content = r.content as any;
         const reactionEmoji = content?.emoji || '❤️';
         return reactionEmoji === emoji;
@@ -170,20 +162,16 @@ export const toggleReplyReaction = async (replyId: string, emoji: string = '❤�
       profile = profileData as typeof profile;
     }
     
-    // Find existing reaction by this user for this reply
+    // Find existing reaction by this user for this reply using JSONB containment
     const { data: allUserLikes } = await supabase
       .from('ap_objects')
       .select('id, content')
       .eq('type', 'Like')
       .eq('attributed_to', actor.id)
-      .textSearch('content', replyId, { type: 'plain' });
+      .contains('content', { object: { id: replyId, type: 'reply' } });
     
-    const existingReaction = allUserLikes?.find(r => {
-      const content = r.content as any;
-      const objectId = content?.object?.id;
-      const objectType = content?.object?.type;
-      return objectId === replyId && objectType === 'reply';
-    });
+    // First match is our existing reaction (if any)
+    const existingReaction = allUserLikes?.[0];
     
     if (existingReaction) {
       const existingContent = existingReaction.content as any;
