@@ -87,7 +87,7 @@ serve(async (req) => {
 
     // Check if user is a federated user
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('auth_type, home_instance, remote_actor_url')
       .eq('id', user.id)
       .single();

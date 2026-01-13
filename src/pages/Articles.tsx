@@ -37,7 +37,7 @@ const Articles = () => {
     queryFn: async () => {
       if (authorIds.length === 0) return {};
       const { data } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, username, fullname, avatar_url')
         .in('id', authorIds);
       return Object.fromEntries((data || []).map(p => [p.id, p]));

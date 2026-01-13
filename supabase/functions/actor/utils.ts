@@ -98,7 +98,7 @@ export async function fetchActorFromDatabase(username: string) {
 export async function createLocalActor(username: string) {
   // Look up the user profile
   const { data: profile, error: profileError } = await supabaseClient
-    .from("profiles")
+    .from("public_profiles")
     .select("id, username, fullname, avatar_url")
     .eq("username", username)
     .single();

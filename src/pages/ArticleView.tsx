@@ -37,7 +37,7 @@ const ArticleView = () => {
     queryFn: async () => {
       if (!article?.user_id) return null;
       const { data } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, username, fullname, avatar_url')
         .eq('id', article.user_id)
         .single();

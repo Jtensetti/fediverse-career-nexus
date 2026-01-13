@@ -91,7 +91,7 @@ export const createUserActor = async (userId: string): Promise<boolean> => {
   try {
     // Get user profile - now using the RLS policy that ensures users can only see their own profile
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('username, fullname, bio')
       .eq('id', userId)
       .single();

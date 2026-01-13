@@ -341,7 +341,7 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
     // Fetch profiles for each author
     const userIds = authors.map(a => a.user_id);
     const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('id, username, fullname, avatar_url')
       .in('id', userIds);
 
@@ -450,7 +450,7 @@ export const searchUsers = async (query: string): Promise<any[]> => {
     if (!query || query.length < 3) return [];
     
     const { data, error } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('id, username, fullname, avatar_url')
       .or(`username.ilike.%${query}%,fullname.ilike.%${query}%`)
       .limit(10);

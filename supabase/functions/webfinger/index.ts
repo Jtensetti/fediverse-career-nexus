@@ -288,7 +288,7 @@ serve(async (req) => {
 
     // Look up the user in the database
     const { data: profile, error: profileError } = await supabaseClient
-      .from("profiles")
+      .from("public_profiles")
       .select("id, username, fullname, bio")
       .eq("username", username)
       .single();

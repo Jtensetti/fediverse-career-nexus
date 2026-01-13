@@ -60,7 +60,7 @@ serve(async (req) => {
 
     // Get user profile
     const { data: profile, error: profileError } = await supabaseClient
-      .from('profiles')
+      .from('public_profiles')
       .select('username, fullname, bio')
       .eq('id', userId)
       .single();

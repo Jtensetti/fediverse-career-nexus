@@ -53,7 +53,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
     if (otherUserIds.length === 0) return [];
 
     const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("id, username, fullname, headline, avatar_url, is_verified")
       .in("id", otherUserIds);
 
@@ -130,7 +130,7 @@ export const getConnectionSuggestions = async (): Promise<NetworkSuggestion[]> =
 // Fallback simple suggestions when RPC is unavailable
 const getSimpleSuggestions = async (userId: string): Promise<NetworkSuggestion[]> => {
   const { data: suggestions, error } = await supabase
-    .from("profiles")
+    .from("public_profiles")
     .select("id, username, fullname, headline, avatar_url, is_verified")
     .neq("id", userId)
     .limit(10);

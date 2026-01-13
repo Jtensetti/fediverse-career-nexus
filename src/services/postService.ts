@@ -75,7 +75,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
       // Get user profile
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .single();
@@ -130,7 +130,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
     // Fetch profile to include display name in the post content
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('username, fullname')
       .eq('id', user.id)
       .single();
@@ -329,7 +329,7 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
     let profilesMap: Record<string, { fullname: string | null; avatar_url: string | null }> = {};
     if (authorIds.length > 0) {
       const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, fullname, avatar_url')
         .in('id', authorIds);
 

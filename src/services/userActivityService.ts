@@ -39,7 +39,7 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
 
     // Get user profile for display
     const { data: userProfile } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('username, fullname, avatar_url')
       .eq('id', targetUserId)
       .single();
@@ -99,7 +99,7 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
     
     if (authorUserIds.length > 0) {
       const { data: authorProfiles } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, fullname, username, avatar_url')
         .in('id', authorUserIds);
 

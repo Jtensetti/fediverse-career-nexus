@@ -13,7 +13,7 @@ const LiveStats = () => {
 
   const fetchStats = useCallback(async () => {
     const [profilesRes, postsRes, jobsRes, instancesRes] = await Promise.all([
-      supabase.from("profiles").select("id", { count: "exact", head: true }),
+      supabase.from("public_profiles").select("id", { count: "exact", head: true }),
       supabase.from("ap_objects").select("id", { count: "exact", head: true }),
       supabase.from("job_posts").select("id", { count: "exact", head: true }).eq("is_active", true),
       supabase.from("remote_instances").select("id", { count: "exact", head: true }).eq("status", "active"),

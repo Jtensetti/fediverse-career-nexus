@@ -115,7 +115,7 @@ serve(async (req) => {
     
     // Look up the actor
     const { data: profile, error: profileError } = await supabaseClient
-      .from("profiles")
+      .from("public_profiles")
       .select("id, username")
       .eq("username", username)
       .single();

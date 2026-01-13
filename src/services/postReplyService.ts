@@ -53,7 +53,7 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
     let profilesMap: Record<string, { fullname?: string; username?: string; avatar_url?: string }> = {};
     if (userIds.length > 0) {
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, fullname, username, avatar_url')
         .in('id', userIds);
 
@@ -122,7 +122,7 @@ export const createPostReply = async (
     if (!actor) {
       // Attempt to create actor automatically
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .single();
@@ -155,7 +155,7 @@ export const createPostReply = async (
 
     if (!profile) {
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .single();

@@ -58,7 +58,7 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
       // Pre-fill with existing data
       const fetchProfile = async () => {
         const { data } = await supabase
-          .from("profiles")
+          .from("public_profiles")
           .select("fullname, headline, bio")
           .eq("id", user.id)
           .single();
