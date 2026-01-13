@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Heart, Bookmark } from "lucide-react";
+import { MessageSquare, Bookmark } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { getPostReplies, PostReply } from "@/services/postReplyService";
-import { toggleReplyReaction, getReplyLikeCount } from "@/services/replyReactionsService";
+import { getReplyReactions, ReplyReactionCount } from "@/services/replyReactionsService";
 import { toggleSaveItem, isItemSaved } from "@/services/savedItemsService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import InlineReplyComposer from "./InlineReplyComposer";
+import { EnhancedCommentReactions } from "./EnhancedCommentReactions";
 
 interface CommentPreviewProps {
   postId: string;
@@ -19,14 +20,13 @@ interface CommentPreviewProps {
   maxComments?: number;
 }
 
-interface CommentWithReaction extends PostReply {
-  likeCount: number;
-  hasLiked: boolean;
+interface CommentWithState extends PostReply {
+  reactions: ReplyReactionCount[];
   isSaved: boolean;
 }
 
 export default function CommentPreview({ postId, onCommentClick, maxComments = 2 }: CommentPreviewProps) {
-  const [comments, setComments] = useState<CommentWithReaction[]>([]);
+  const [comments, setComments] = useState<CommentWithState[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showReplyComposer, setShowReplyComposer] = useState(false);
@@ -48,63 +48,35 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       // Get the first few with reaction counts and saved status
       const previewReplies = topLevelReplies.slice(0, maxComments);
       
-      // Load reactions and saved status in parallel with error handling
-      const commentsWithReactions = await Promise.all(
+      // Load reactions and saved status in parallel
+      const commentsWithState = await Promise.all(
         previewReplies.map(async (reply) => {
           try {
-            const [reactionResult, saved] = await Promise.all([
-              getReplyLikeCount(reply.id).catch(() => ({ count: 0, hasReacted: false })),
+            const [reactions, saved] = await Promise.all([
+              getReplyReactions(reply.id).catch(() => []),
               user ? isItemSaved("comment", reply.id).catch(() => false) : Promise.resolve(false)
             ]);
             return {
               ...reply,
-              likeCount: reactionResult.count,
-              hasLiked: reactionResult.hasReacted,
+              reactions,
               isSaved: saved
             };
           } catch {
-            // Fallback if individual comment fails
             return {
               ...reply,
-              likeCount: 0,
-              hasLiked: false,
+              reactions: [],
               isSaved: false
             };
           }
         })
       );
       
-      setComments(commentsWithReactions);
+      setComments(commentsWithState);
     } catch (error) {
       console.error('Error loading comment preview:', error);
       setComments([]);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleLikeComment = async (commentId: string) => {
-    if (!user) {
-      toast.error('Please sign in to like comments');
-      return;
-    }
-
-    // Optimistic update
-    setComments(prev => prev.map(c => {
-      if (c.id === commentId) {
-        return {
-          ...c,
-          likeCount: c.hasLiked ? c.likeCount - 1 : c.likeCount + 1,
-          hasLiked: !c.hasLiked
-        };
-      }
-      return c;
-    }));
-
-    const success = await toggleReplyReaction(commentId);
-    if (!success) {
-      // Revert on failure
-      await loadComments();
     }
   };
 
@@ -117,18 +89,21 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
     // Optimistic update
     setComments(prev => prev.map(c => {
       if (c.id === commentId) {
-        return {
-          ...c,
-          isSaved: !c.isSaved
-        };
+        return { ...c, isSaved: !c.isSaved };
       }
       return c;
     }));
 
     const result = await toggleSaveItem("comment", commentId);
     if (!result.success) {
-      // Revert on failure
-      await loadComments();
+      // Revert on failure (don't reload entire list)
+      setComments(prev => prev.map(c => {
+        if (c.id === commentId) {
+          return { ...c, isSaved: !c.isSaved };
+        }
+        return c;
+      }));
+      toast.error('Failed to save comment');
     } else {
       toast.success(result.saved ? "Comment saved" : "Removed from saved");
     }
@@ -212,18 +187,9 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
             </div>
             
             <div className="flex items-center gap-1 mt-0.5 ml-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-5 px-1.5 gap-1 text-[10px] rounded-full",
-                  comment.hasLiked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
-                )}
-                onClick={() => handleLikeComment(comment.id)}
-              >
-                <Heart className={cn("h-3 w-3", comment.hasLiked && "fill-current")} />
-                {comment.likeCount > 0 && comment.likeCount}
-              </Button>
+              {/* Enhanced reactions with full emoji picker */}
+              <EnhancedCommentReactions replyId={comment.id} className="scale-90 origin-left" />
+              
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

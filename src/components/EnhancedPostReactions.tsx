@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -48,21 +48,17 @@ const REACTION_CONFIG: Record<string, { icon: LucideIcon; label: string; activeC
   },
 };
 
-// These must match the supported emojis in postReactionsService.ts for consistency
 const SUPPORTED_EMOJIS = ['❤️', '🎉', '✌️', '🤗', '😮'];
 
 export default function EnhancedPostReactions({ postId, compact = false, onReactionChange }: EnhancedPostReactionsProps) {
-  const [reactions, setReactions] = useState<ReactionCount[]>([]);
+  const [reactions, setReactions] = useState<ReactionCount[]>(
+    SUPPORTED_EMOJIS.map(emoji => ({ emoji, count: 0, hasReacted: false }))
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    loadReactions();
-  }, [postId]);
-
-  const loadReactions = async () => {
-    setIsLoading(true);
+  const loadReactions = useCallback(async () => {
     try {
       const reactionData = await getPostReactions(postId);
       
@@ -75,12 +71,13 @@ export default function EnhancedPostReactions({ postId, compact = false, onReact
       setReactions(mappedReactions);
     } catch (error) {
       console.error('Error loading reactions:', error);
-      // Set default empty reactions on error
-      setReactions(SUPPORTED_EMOJIS.map(emoji => ({ emoji, count: 0, hasReacted: false })));
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [postId]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    loadReactions().finally(() => setIsLoading(false));
+  }, [loadReactions]);
 
   const handleReaction = async (emoji: string) => {
     if (!user) {
@@ -88,47 +85,45 @@ export default function EnhancedPostReactions({ postId, compact = false, onReact
       return;
     }
     
-    // Find current reaction state for this emoji
-    const currentReaction = reactions.find(r => r.emoji === emoji);
-    const wasReacted = currentReaction?.hasReacted || false;
+    // Find current user's reaction (the one where hasReacted is true)
+    const currentUserEmoji = reactions.find(r => r.hasReacted)?.emoji;
+    const targetReaction = reactions.find(r => r.emoji === emoji);
+    const isAlreadyReactedWithThisEmoji = targetReaction?.hasReacted || false;
     
-    // Optimistic update
+    // Optimistic update with proper switching logic
     setReactions(prev => prev.map(r => {
+      if (currentUserEmoji && currentUserEmoji !== emoji && r.emoji === currentUserEmoji) {
+        // Decrement the old emoji (user is switching)
+        return { ...r, count: Math.max(0, r.count - 1), hasReacted: false };
+      }
       if (r.emoji === emoji) {
-        return {
-          ...r,
-          count: wasReacted ? Math.max(0, r.count - 1) : r.count + 1,
-          hasReacted: !wasReacted
-        };
+        if (isAlreadyReactedWithThisEmoji) {
+          // Toggle off
+          return { ...r, count: Math.max(0, r.count - 1), hasReacted: false };
+        } else {
+          // Toggle on (either new or switching to this emoji)
+          return { ...r, count: r.count + 1, hasReacted: true };
+        }
       }
       return r;
     }));
     
     setShowPicker(false);
     
-    const success = await togglePostReaction(postId, emoji);
+    const result = await togglePostReaction(postId, emoji);
     
-    if (!success) {
-      // Revert on failure
-      setReactions(prev => prev.map(r => {
-        if (r.emoji === emoji) {
-          return {
-            ...r,
-            count: wasReacted ? r.count + 1 : Math.max(0, r.count - 1),
-            hasReacted: wasReacted
-          };
-        }
-        return r;
-      }));
+    if (!result.ok) {
+      // Revert on failure by reloading
+      await loadReactions();
     } else {
       onReactionChange?.();
     }
   };
 
-  // Get user's reactions
-  const userReactions = reactions.filter(r => r.hasReacted);
-  const hasAnyReaction = userReactions.length > 0;
-  const primaryEmoji = userReactions[0]?.emoji || '❤️';
+  // Get user's reaction
+  const userReaction = reactions.find(r => r.hasReacted);
+  const hasAnyReaction = !!userReaction;
+  const primaryEmoji = userReaction?.emoji || '❤️';
   const primaryConfig = REACTION_CONFIG[primaryEmoji];
   const PrimaryIcon = primaryConfig?.icon || Heart;
 
