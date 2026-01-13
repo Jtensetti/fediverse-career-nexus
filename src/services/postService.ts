@@ -253,7 +253,24 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
   }
 };
 
-export const getUserPosts = async (userId?: string): Promise<Post[]> => {
+export interface UserPostWithMeta extends Post {
+  type?: string;
+  quotedPost?: {
+    id?: string;
+    content?: string;
+    actor?: {
+      id?: string;
+      preferredUsername?: string;
+      name?: string;
+      icon?: { url?: string };
+    };
+    attachment?: Array<{ url?: string; mediaType?: string }>;
+    published?: string;
+  };
+  isQuoteRepost?: boolean;
+}
+
+export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]> => {
   try {
     console.log('🔍 getUserPosts - Starting with userId:', userId);
     
@@ -269,8 +286,8 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
     }
 
     // Get posts from ap_objects where the attributed actor belongs to the user
-    // Filter to only include actual posts (Create/Note types), not reactions (Like) or boosts (Announce)
-    // Also exclude replies (posts with inReplyTo)
+    // Include Create, Note, AND Announce (reposts/boosts)
+    // Exclude replies (posts with inReplyTo)
     console.log('📊 Fetching posts for user:', targetUserId);
     
     const { data: posts, error } = await supabase
@@ -287,7 +304,7 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
         )`
       )
       .eq('actors.user_id', targetUserId)
-      .in('type', ['Create', 'Note']) // Only actual posts, not Like/Announce activities
+      .in('type', ['Create', 'Note', 'Announce']) // Include Announce for reposts
       .order('published_at', { ascending: false });
 
     console.log('📄 Raw posts query result:', { 
@@ -337,19 +354,50 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
       return !inReplyTo; // Exclude replies
     }).map((post) => {
       const raw = post.content as any;
-      const note = raw?.type === 'Create' ? raw.object : raw;
+      const isAnnounce = post.type === 'Announce';
       const authorUserId = (post.actors as any)?.user_id as string | undefined;
       const profile = (authorUserId && profilesMap[authorUserId]) || { fullname: null, avatar_url: null };
 
+      // For Announce (repost), extract quoted post and user's comment
+      if (isAnnounce) {
+        const quotedPost = raw?.object; // The original post being quoted
+        const userComment = raw?.content || ''; // User's comment on the repost
+
+        return {
+          id: post.id,
+          content: userComment,
+          created_at: post.created_at,
+          user_id: targetUserId,
+          type: 'Announce',
+          isQuoteRepost: true,
+          quotedPost: quotedPost ? {
+            id: quotedPost.id,
+            content: quotedPost.content,
+            actor: quotedPost.actor || quotedPost.attributedTo,
+            attachment: quotedPost.attachment,
+            published: quotedPost.published,
+          } : undefined,
+          author: {
+            username: (post.actors as any)?.preferred_username || 'Unknown',
+            fullname: profile.fullname || (post.actors as any)?.preferred_username || 'Unknown User',
+            avatar_url: profile.avatar_url || undefined,
+          },
+        } as UserPostWithMeta;
+      }
+
+      // Regular post (Create/Note)
+      const note = raw?.type === 'Create' ? raw.object : raw;
+      
       // Skip posts with no actual content
       const contentText = note?.content || '';
       if (!contentText) return null;
 
-      const transformedPost = {
+      const transformedPost: UserPostWithMeta = {
         id: post.id,
         content: contentText,
         created_at: post.created_at,
         user_id: targetUserId,
+        type: post.type,
         image_url: note?.image,
         author: {
           username: (post.actors as any)?.preferred_username || 'Unknown',
@@ -368,7 +416,7 @@ export const getUserPosts = async (userId?: string): Promise<Post[]> => {
     }).filter(Boolean) || [];
 
     console.log('✅ Final transformed posts:', transformedPosts.length);
-    return transformedPosts;
+    return transformedPosts as UserPostWithMeta[];
   } catch (error) {
     console.error('Error fetching user posts:', error);
     return [];

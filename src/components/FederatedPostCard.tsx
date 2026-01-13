@@ -24,6 +24,7 @@ import BlockUserDialog from "./BlockUserDialog";
 import EnhancedPostReactions from "./EnhancedPostReactions";
 import CommentPreview from "./CommentPreview";
 import QuoteRepostDialog from "./QuoteRepostDialog";
+import { QuotedPostPreview, RepostIndicator } from "./QuotedPostPreview";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 
@@ -81,10 +82,24 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     }
   };
   
+  // Check if this is a quote repost
+  const isQuoteRepost = post.type === 'Announce' || post.content?.isQuoteRepost;
+  
+  // Get the quoted post data if this is a repost
+  const getQuotedPost = () => {
+    if (!isQuoteRepost) return null;
+    return post.content?.object || null;
+  };
+
   // Extract content from different ActivityPub formats
   const getContent = () => {
     let rawContent = '';
-    if (post.type === 'Create' && post.content.object?.content) {
+    
+    // For quote reposts, the content is the user's comment (may be empty - that's fine)
+    if (isQuoteRepost) {
+      rawContent = post.content.content || '';
+      // Don't show "No content available" for reposts - the quoted post IS the content
+    } else if (post.type === 'Create' && post.content.object?.content) {
       rawContent = post.content.object.content;
     } else if (post.content.content) {
       rawContent = post.content.content;
@@ -264,7 +279,10 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   return (
     <>
       <Card 
-        className="mb-4 overflow-hidden group hover:shadow-md transition-all duration-200 hover:border-primary/20 cursor-pointer"
+        className={cn(
+          "mb-4 overflow-hidden group hover:shadow-md transition-all duration-200 hover:border-primary/20 cursor-pointer",
+          isQuoteRepost && "border-l-4 border-l-green-500/50"
+        )}
         onClick={handleCardClick}
         role="article"
         tabIndex={0}
@@ -276,6 +294,8 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
         }}
       >
         <CardHeader className="pb-2">
+          {/* Repost indicator */}
+          {isQuoteRepost && <RepostIndicator reposterName={getActorName()} />}
           <div className="flex items-center gap-3">
             <ProfileHoverCard 
               username={post.source === 'local' ? post.profile?.username : undefined}
@@ -383,10 +403,13 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
         <CardContent className="pb-3">
           {getModerationBanner()}
           
-          <div 
-            className="prose prose-sm max-w-none dark:prose-invert" 
-            dangerouslySetInnerHTML={{ __html: getContent() }} 
-          />
+          {/* Only show content div if there's actual text content */}
+          {getContent() && (
+            <div 
+              className="prose prose-sm max-w-none dark:prose-invert" 
+              dangerouslySetInnerHTML={{ __html: getContent() }} 
+            />
+          )}
         
           {attachments.length > 0 && (
             <div className="mt-3 grid gap-2 rounded-xl overflow-hidden">
@@ -403,6 +426,13 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
                   />
                 </div>
               ))}
+            </div>
+          )}
+          
+          {/* Quoted Post Preview for reposts */}
+          {isQuoteRepost && getQuotedPost() && (
+            <div className="mt-3">
+              <QuotedPostPreview quotedPost={getQuotedPost()} />
             </div>
           )}
         </CardContent>
