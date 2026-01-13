@@ -130,7 +130,7 @@ export const togglePostReaction = async (postId: string, emoji: string): Promise
     if (!actor) {
       // Create actor on the fly
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .maybeSingle();
@@ -167,7 +167,7 @@ export const togglePostReaction = async (postId: string, emoji: string): Promise
     // Fetch profile for actor name if not already loaded
     if (!profile) {
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .maybeSingle();

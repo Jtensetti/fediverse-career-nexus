@@ -27,7 +27,7 @@ export const searchService = {
 
     const [profilesRes, jobsRes, articlesRes, eventsRes] = await Promise.all([
       supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, fullname, username, headline, avatar_url')
         .textSearch('search_vector', searchQuery)
         .limit(limit),
@@ -104,7 +104,7 @@ export const searchService = {
     const searchQuery = query.trim().split(' ').join(' & ');
     
     const { data } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('id, fullname, username, headline, avatar_url, location')
       .textSearch('search_vector', searchQuery)
       .limit(limit);

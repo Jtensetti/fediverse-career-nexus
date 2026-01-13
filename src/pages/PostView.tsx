@@ -64,7 +64,7 @@ export default function PostView() {
       
       if (actor?.user_id) {
         const { data: profileData } = await supabase
-          .from('profiles')
+          .from('public_profiles')
           .select('username, fullname, avatar_url')
           .eq('id', actor.user_id)
           .single();

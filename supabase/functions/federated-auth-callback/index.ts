@@ -193,7 +193,7 @@ serve(async (req) => {
 
     // Check if this federated user already has a profile
     const { data: existingProfile } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('*')
       .eq('remote_actor_url', remoteActorUrl)
       .single();
@@ -224,7 +224,7 @@ serve(async (req) => {
       
       // Check if username exists and add suffix if needed
       const { data: usernameCheck } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username')
         .eq('username', username)
         .single();

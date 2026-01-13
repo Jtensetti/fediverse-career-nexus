@@ -67,7 +67,7 @@ export const ensureUserProfile = async (userId: string) => {
     console.log('🔍 ensureUserProfile: Checking profile for user:', userId);
     
     let { data: profile, error } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('id, username, fullname')
       .eq('id', userId)
       .single();
@@ -136,7 +136,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
     // Get user profile
     console.log('🔍 Fetching complete profile for user:', user.id);
     const { data: profile, error: profileError } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("*")
       .eq("id", user.id)
       .single();
@@ -267,7 +267,7 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
     
     // Query by id if UUID, otherwise by username
     const { data: profile, error: profileError } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("*")
       .eq(isUUID ? "id" : "username", usernameOrId)
       .single();

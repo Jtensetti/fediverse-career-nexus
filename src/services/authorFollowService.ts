@@ -99,7 +99,7 @@ export const getFollowedAuthors = async (): Promise<AuthorWithProfile[]> => {
   if (authorIds.length === 0) return [];
 
   const { data: profiles, error: profileError } = await supabase
-    .from('profiles')
+    .from('public_profiles')
     .select('id, username, fullname, avatar_url, headline')
     .in('id', authorIds);
 

@@ -78,7 +78,7 @@ export const getFederatedFeed = async (limit: number = 20, offset: number = 0): 
 
     if (userIds.length > 0) {
       const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, username, fullname, avatar_url')
         .in('id', userIds);
 

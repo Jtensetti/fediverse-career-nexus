@@ -46,7 +46,7 @@ const Navbar = () => {
     queryFn: async () => {
       if (!user?.id) return null;
       const { data } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('avatar_url, fullname, username')
         .eq('id', user.id)
         .single();

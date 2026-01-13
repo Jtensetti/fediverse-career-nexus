@@ -119,7 +119,7 @@ export const toggleReplyReaction = async (replyId: string, emoji: string = '‚ù§Ô
 
     if (!actor) {
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .maybeSingle();
@@ -155,7 +155,7 @@ export const toggleReplyReaction = async (replyId: string, emoji: string = '‚ù§Ô
 
     if (!profile) {
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .maybeSingle();

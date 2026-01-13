@@ -47,7 +47,7 @@ export default function QuoteRepostDialog({
   useEffect(() => {
     if (user && open) {
       supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname, avatar_url')
         .eq('id', user.id)
         .single()

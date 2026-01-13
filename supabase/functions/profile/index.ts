@@ -30,7 +30,7 @@ serve(async (req) => {
   }
 
   if (req.method === 'GET') {
-    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    const { data } = await supabase.from('public_profiles').select('*').eq('id', user.id).single();
     return new Response(JSON.stringify(data), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 

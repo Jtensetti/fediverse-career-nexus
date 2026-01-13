@@ -85,7 +85,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
     if (!actor) {
       // Attempt to create actor automatically
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .single();
@@ -118,7 +118,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
 
     if (!profile) {
       const { data: profileData } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username, fullname')
         .eq('id', user.id)
         .single();

@@ -27,7 +27,7 @@ const ContentGate = ({ authorId, onAccessGranted }: ContentGateProps) => {
   useEffect(() => {
     const fetchData = async () => {
       const [{ data: profile }, count] = await Promise.all([
-        supabase.from('profiles').select('id, username, fullname, avatar_url, headline').eq('id', authorId).single(),
+        supabase.from('public_profiles').select('id, username, fullname, avatar_url, headline').eq('id', authorId).single(),
         getAuthorFollowerCount(authorId)
       ]);
       setAuthor(profile);

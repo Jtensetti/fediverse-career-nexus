@@ -35,7 +35,7 @@ const ProfileCompleteness = () => {
       try {
         // Fetch profile data
         const { data: profile } = await supabase
-          .from("profiles")
+          .from("public_profiles")
           .select("fullname, headline, bio, avatar_url")
           .eq("id", user.id)
           .single();

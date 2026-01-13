@@ -414,7 +414,7 @@ export async function getOtherParticipant(conversation: Conversation, currentUse
     const partnerId = conversation.id;
     
     const { data, error } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('id, username, fullname, avatar_url')
       .eq('id', partnerId)
       .maybeSingle();

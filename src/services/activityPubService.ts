@@ -25,7 +25,7 @@ export const createJobPostActivity = async (jobPost: any): Promise<ActivityPubAc
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('username')
       .eq('id', session.session.user.id)
       .single();
@@ -113,7 +113,7 @@ export const sendActivityToOutbox = async (activity: ActivityPubActivity): Promi
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('username')
       .eq('id', session.session.user.id)
       .single();

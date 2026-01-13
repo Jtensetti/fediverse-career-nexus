@@ -64,7 +64,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
       setIsSearching(true);
       try {
         const { data, error } = await supabase
-          .from('profiles')
+          .from('public_profiles')
           .select('id, username, fullname')
           .or(`username.ilike.%${searchQuery}%,id.eq.${searchQuery}`)
           .limit(5);

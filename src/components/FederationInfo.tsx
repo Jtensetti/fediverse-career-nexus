@@ -47,7 +47,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
         // If logged in, fetch current user's actor info for follow functionality
         if (session?.session?.user) {
           const { data: currentUserProfile } = await supabase
-            .from("profiles")
+            .from("public_profiles")
             .select("username")
             .eq("id", session.session.user.id)
             .single();
