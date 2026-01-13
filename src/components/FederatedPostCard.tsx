@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -42,6 +42,17 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Handle card click to navigate to post view
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    const isInteractive = target.closest('button, a, [role="button"], [data-interactive]');
+    if (isInteractive) return;
+    
+    navigate(`/post/${post.id}`);
+  };
   
   // Debug logs removed for production
   
@@ -249,7 +260,18 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
 
   return (
     <>
-      <Card className="mb-4 overflow-hidden group hover:shadow-md transition-all duration-200 hover:border-primary/20">
+      <Card 
+        className="mb-4 overflow-hidden group hover:shadow-md transition-all duration-200 hover:border-primary/20 cursor-pointer"
+        onClick={handleCardClick}
+        role="article"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            navigate(`/post/${post.id}`);
+          }
+        }}
+      >
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <ProfileHoverCard 
@@ -355,22 +377,21 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
           </div>
         </CardHeader>
         
-        <Link to={`/post/${post.id}`} className="block">
-          <CardContent className="pb-3 cursor-pointer hover:bg-muted/30 transition-colors rounded-md">
-            {getModerationBanner()}
-            
-            <div 
-              className="prose prose-sm max-w-none dark:prose-invert" 
-              dangerouslySetInnerHTML={{ __html: getContent() }} 
-            />
+        <CardContent className="pb-3">
+          {getModerationBanner()}
           
+          <div 
+            className="prose prose-sm max-w-none dark:prose-invert" 
+            dangerouslySetInnerHTML={{ __html: getContent() }} 
+          />
+        
           {attachments.length > 0 && (
             <div className="mt-3 grid gap-2 rounded-xl overflow-hidden">
               {attachments.map((att, idx) => (
                 <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-muted">
                   <img 
                     src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url} 
-                    alt={att.name || 'Media attachment'} 
+                    alt={att.altText || att.name || 'Media attachment'} 
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -381,15 +402,14 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
               ))}
             </div>
           )}
-          </CardContent>
-        </Link>
+        </CardContent>
         
         {/* Comment Preview Section */}
-        <div className="px-4">
+        <div className="px-4" data-interactive="true">
           <CommentPreview postId={post.id} />
         </div>
 
-        <CardFooter className="pt-0 flex items-center gap-1 border-t border-border/50 mx-2 sm:mx-4 py-2">
+        <CardFooter className="pt-0 flex items-center gap-1 border-t border-border/50 mx-2 sm:mx-4 py-2" data-interactive="true">
           {/* Enhanced Reactions - compact mode with reaction picker */}
           <EnhancedPostReactions postId={post.id} compact />
           
