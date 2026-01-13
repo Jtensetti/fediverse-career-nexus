@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Heart, PartyPopper, ThumbsUp, Smile, Lightbulb, LucideIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getPostReactions, togglePostReaction, ReactionCount } from "@/services/postReactionsService";
+import StackedReactionDisplay from "./StackedReactionDisplay";
 
 interface EnhancedPostReactionsProps {
   postId: string;
@@ -53,7 +54,7 @@ const SUPPORTED_EMOJIS = ['❤️', '🎉', '✌️', '🤗', '😮'];
 export default function EnhancedPostReactions({ postId, compact = false, onReactionChange }: EnhancedPostReactionsProps) {
   const [reactions, setReactions] = useState<ReactionCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showAllReactions, setShowAllReactions] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -87,84 +88,98 @@ export default function EnhancedPostReactions({ postId, compact = false, onReact
       return;
     }
     
+    // Find current reaction state for this emoji
+    const currentReaction = reactions.find(r => r.emoji === emoji);
+    const wasReacted = currentReaction?.hasReacted || false;
+    
     // Optimistic update
     setReactions(prev => prev.map(r => {
       if (r.emoji === emoji) {
         return {
           ...r,
-          count: r.hasReacted ? r.count - 1 : r.count + 1,
-          hasReacted: !r.hasReacted
+          count: wasReacted ? Math.max(0, r.count - 1) : r.count + 1,
+          hasReacted: !wasReacted
         };
       }
       return r;
     }));
     
+    setShowPicker(false);
+    
     const success = await togglePostReaction(postId, emoji);
     
     if (!success) {
       // Revert on failure
-      await loadReactions();
+      setReactions(prev => prev.map(r => {
+        if (r.emoji === emoji) {
+          return {
+            ...r,
+            count: wasReacted ? r.count + 1 : Math.max(0, r.count - 1),
+            hasReacted: wasReacted
+          };
+        }
+        return r;
+      }));
     } else {
       onReactionChange?.();
     }
   };
 
-  // Get total reaction count
-  const totalReactions = reactions.reduce((sum, r) => sum + r.count, 0);
-  
-  // Get active reactions (ones with count > 0 or user has reacted)
-  const activeReactions = reactions.filter(r => r.count > 0 || r.hasReacted);
-  
   // Get user's reactions
   const userReactions = reactions.filter(r => r.hasReacted);
+  const hasAnyReaction = userReactions.length > 0;
+  const primaryEmoji = userReactions[0]?.emoji || '❤️';
+  const primaryConfig = REACTION_CONFIG[primaryEmoji];
+  const PrimaryIcon = primaryConfig?.icon || Heart;
 
   if (isLoading) {
     return (
       <div className="flex gap-1">
-        {compact ? (
-          <div className="h-8 w-16 rounded-full bg-muted animate-pulse" />
-        ) : (
-          [...Array(5)].map((_, i) => (
-            <div key={i} className="h-8 w-10 rounded-full bg-muted animate-pulse" />
-          ))
-        )}
+        <div className="h-8 w-20 rounded-full bg-muted animate-pulse" />
       </div>
     );
   }
 
-  // Compact mode: Show primary reaction button with picker on hover
+  // Compact mode: Show stacked icons + reaction picker on hover
   if (compact) {
-    const primaryReaction = userReactions[0] || reactions.find(r => r.count > 0) || reactions[0];
-    const config = REACTION_CONFIG[primaryReaction?.emoji || '❤️'];
-    const Icon = config?.icon || Heart;
-
     return (
       <TooltipProvider delayDuration={100}>
-        <div className="relative group/reactions">
-          <Tooltip>
+        <div className="relative group/reactions flex items-center gap-1">
+          {/* Stacked reaction icons (LinkedIn style) */}
+          <StackedReactionDisplay reactions={reactions} showCount={false} />
+          
+          <Tooltip open={showPicker} onOpenChange={setShowPicker}>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleReaction(primaryReaction?.emoji || '❤️')}
+                onClick={() => handleReaction(primaryEmoji)}
+                onMouseEnter={() => setShowPicker(true)}
                 className={cn(
                   "gap-1.5 rounded-full transition-all px-3",
-                  config?.hoverBg,
-                  primaryReaction?.hasReacted 
-                    ? config?.activeColor 
+                  primaryConfig?.hoverBg,
+                  hasAnyReaction 
+                    ? primaryConfig?.activeColor 
                     : "text-muted-foreground"
                 )}
               >
-                <Icon className={cn(
+                <PrimaryIcon className={cn(
                   "h-4 w-4 transition-transform",
-                  primaryReaction?.hasReacted && "scale-110 fill-current"
+                  hasAnyReaction && "scale-110 fill-current"
                 )} />
-                {totalReactions > 0 && (
-                  <span className="text-xs font-medium">{totalReactions}</span>
+                {reactions.reduce((sum, r) => sum + r.count, 0) > 0 && (
+                  <span className="text-xs font-medium">
+                    {reactions.reduce((sum, r) => sum + r.count, 0)}
+                  </span>
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="p-1">
+            <TooltipContent 
+              side="top" 
+              className="p-1"
+              onMouseEnter={() => setShowPicker(true)}
+              onMouseLeave={() => setShowPicker(false)}
+            >
               <div className="flex gap-0.5">
                 {SUPPORTED_EMOJIS.map(emoji => {
                   const reaction = reactions.find(r => r.emoji === emoji);
@@ -181,7 +196,7 @@ export default function EnhancedPostReactions({ postId, compact = false, onReact
                         handleReaction(emoji);
                       }}
                       className={cn(
-                        "h-8 w-8 p-0 rounded-full",
+                        "h-8 w-8 p-0 rounded-full transition-transform hover:scale-110",
                         cfg.hoverBg,
                         reaction?.hasReacted && cfg.activeColor
                       )}
@@ -205,6 +220,9 @@ export default function EnhancedPostReactions({ postId, compact = false, onReact
   return (
     <TooltipProvider>
       <div className="flex items-center gap-1 flex-wrap">
+        {/* Stacked display at the start */}
+        <StackedReactionDisplay reactions={reactions} className="mr-2" />
+        
         {reactions.map((reaction) => {
           const config = REACTION_CONFIG[reaction.emoji];
           if (!config) return null;

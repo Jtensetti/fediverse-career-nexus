@@ -14,7 +14,7 @@ import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import { getProxiedMediaUrl } from "@/services/federationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/postService";
-import { togglePostBoost, getPostBoostCount, hasUserBoostedPost } from "@/services/postBoostService";
+import { getPostBoostCount, hasUserBoostedPost } from "@/services/postBoostService";
 import { getPostReplies } from "@/services/postReplyService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import PostReplyDialog from "./PostReplyDialog";
 import BlockUserDialog from "./BlockUserDialog";
 import EnhancedPostReactions from "./EnhancedPostReactions";
 import CommentPreview from "./CommentPreview";
+import QuoteRepostDialog from "./QuoteRepostDialog";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 
@@ -38,6 +39,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [boostCount, setBoostCount] = useState(0);
   const [replyCount, setReplyCount] = useState(0);
   const [showReplyDialog, setShowReplyDialog] = useState(false);
+  const [showQuoteRepostDialog, setShowQuoteRepostDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
@@ -175,18 +177,19 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   
   const attachments = getMediaAttachments();
 
-  // Handle boost/repost
-  const handleBoost = async () => {
+  // Handle boost/repost - now opens quote repost dialog
+  const handleBoost = () => {
     if (!user) {
-      toast.error('Please sign in to boost posts');
+      toast.error('Please sign in to repost');
       return;
     }
-    
-    const success = await togglePostBoost(post.id);
-    if (success) {
-      setIsBoosted(!isBoosted);
-      setBoostCount(prev => isBoosted ? prev - 1 : prev + 1);
-    }
+    setShowQuoteRepostDialog(true);
+  };
+
+  // Handle successful repost
+  const handleRepostSuccess = () => {
+    setIsBoosted(true);
+    setBoostCount(prev => prev + 1);
   };
 
   // Handle reply
@@ -489,6 +492,21 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
           onBlocked={() => onDelete?.(post.id)}
         />
       )}
+
+      <QuoteRepostDialog
+        open={showQuoteRepostDialog}
+        onOpenChange={setShowQuoteRepostDialog}
+        originalPost={{
+          id: post.id,
+          content: getContent(),
+          authorName: getActorName(),
+          authorUsername: getActorUsername(),
+          authorAvatar: getAvatarUrl() || undefined,
+          publishedAt: post.content.published || post.published_at || post.created_at,
+          isRemote: post.source === 'remote'
+        }}
+        onSuccess={handleRepostSuccess}
+      />
     </>
   );
 }
