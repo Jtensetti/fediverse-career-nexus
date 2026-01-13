@@ -10,3 +10,4 @@ export { default as EnhancedReactions } from "./EnhancedReactions";
 export { default as SkipToContent } from "./SkipToContent";
 export { default as FocusRing } from "./FocusRing";
 export { ProfileHoverCard } from "./ProfileHoverCard";
+export { SaveButton } from "./SaveButton";

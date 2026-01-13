@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type SavedItemType = "job" | "article" | "post" | "event";
+export type SavedItemType = "job" | "article" | "post" | "event" | "comment";
 
 export interface SavedItem {
   id: string;

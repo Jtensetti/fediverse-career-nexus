@@ -47,6 +47,7 @@ const REACTION_CONFIG: Record<string, { icon: LucideIcon; label: string; activeC
   },
 };
 
+// These must match the supported emojis in postReactionsService.ts for consistency
 const SUPPORTED_EMOJIS = ['❤️', '🎉', '✌️', '🤗', '😮'];
 
 export default function EnhancedPostReactions({ postId, compact = false, onReactionChange }: EnhancedPostReactionsProps) {

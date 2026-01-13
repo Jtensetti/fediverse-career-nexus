@@ -384,51 +384,47 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
           </CardContent>
         </Link>
         
-        <CardFooter className="pt-0 flex flex-wrap gap-0.5 sm:gap-1 border-t border-border/50 mx-2 sm:mx-4 py-2">
+        {/* Comment Preview Section */}
+        <div className="px-4">
+          <CommentPreview postId={post.id} />
+        </div>
+
+        <CardFooter className="pt-0 flex items-center gap-1 border-t border-border/50 mx-2 sm:mx-4 py-2">
+          {/* Enhanced Reactions - compact mode with reaction picker */}
+          <EnhancedPostReactions postId={post.id} compact />
+          
           <Button 
             variant="ghost" 
             size="sm" 
-            className={cn(
-              "flex-1 min-w-0 gap-1 sm:gap-1.5 rounded-full transition-all duration-200 px-2 sm:px-3",
-              isLiked ? "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950" : "hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-            )}
-            onClick={handleLike}
-            aria-label={isLiked ? "Unlike post" : "Like post"}
-            aria-pressed={isLiked}
-          >
-            <Heart className={cn("h-4 w-4 flex-shrink-0 transition-transform", isLiked && "fill-current scale-110")} />
-            <span className="text-xs truncate">{likeCount > 0 ? likeCount : ''}</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex-1 min-w-0 gap-1 sm:gap-1.5 rounded-full hover:text-primary hover:bg-primary/10 transition-all duration-200 px-2 sm:px-3" 
+            className="gap-1.5 rounded-full hover:text-primary hover:bg-primary/10 transition-all duration-200 px-3" 
             onClick={handleReply}
             aria-label="Reply to post"
           >
-            <MessageSquare className="h-4 w-4 flex-shrink-0" />
-            <span className="text-xs truncate">{replyCount > 0 ? replyCount : ''}</span>
+            <MessageSquare className="h-4 w-4" />
+            {replyCount > 0 && <span className="text-xs">{replyCount}</span>}
           </Button>
           <Button 
             variant="ghost" 
             size="sm" 
             className={cn(
-              "flex-1 min-w-0 gap-1 sm:gap-1.5 rounded-full transition-all duration-200 px-2 sm:px-3",
+              "gap-1.5 rounded-full transition-all duration-200 px-3",
               isBoosted ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950" : "hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950"
             )}
             onClick={handleBoost}
             aria-label={isBoosted ? "Remove boost" : "Boost post"}
             aria-pressed={isBoosted}
           >
-            <Repeat className={cn("h-4 w-4 flex-shrink-0 transition-transform", isBoosted && "text-green-500")} />
-            <span className="text-xs truncate">{boostCount > 0 ? boostCount : ''}</span>
+            <Repeat className={cn("h-4 w-4 transition-transform", isBoosted && "text-green-500")} />
+            {boostCount > 0 && <span className="text-xs">{boostCount}</span>}
           </Button>
-          <ShareButton
-            url={`${window.location.origin}/post/${post.id}`}
-            title={getContent().replace(/<[^>]*>/g, '').substring(0, 100)}
-            variant="ghost"
-            size="sm"
-          />
+          <div className="ml-auto">
+            <ShareButton
+              url={`${window.location.origin}/post/${post.id}`}
+              title={getContent().replace(/<[^>]*>/g, '').substring(0, 100)}
+              variant="ghost"
+              size="sm"
+            />
+          </div>
         </CardFooter>
       </Card>
 
