@@ -39,16 +39,21 @@ export default function PostReplyThread({
   const [isSaved, setIsSaved] = useState(false);
   const { user } = useAuth();
 
-  // Load initial like and saved state from database
+  // Load initial like and saved state from database with error handling
   useEffect(() => {
     const loadState = async () => {
-      const [{ count, hasReacted }, saved] = await Promise.all([
-        getReplyLikeCount(reply.id),
-        user ? isItemSaved("comment", reply.id) : Promise.resolve(false)
-      ]);
-      setLikeCount(count);
-      setIsLiked(hasReacted);
-      setIsSaved(saved);
+      try {
+        const [reactionResult, saved] = await Promise.all([
+          getReplyLikeCount(reply.id).catch(() => ({ count: 0, hasReacted: false })),
+          user ? isItemSaved("comment", reply.id).catch(() => false) : Promise.resolve(false)
+        ]);
+        setLikeCount(reactionResult.count);
+        setIsLiked(reactionResult.hasReacted);
+        setIsSaved(saved);
+      } catch (error) {
+        console.error('Error loading reply state:', error);
+        // Keep defaults on error
+      }
     };
     loadState();
   }, [reply.id, user]);

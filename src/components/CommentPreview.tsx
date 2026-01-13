@@ -48,24 +48,36 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       // Get the first few with reaction counts and saved status
       const previewReplies = topLevelReplies.slice(0, maxComments);
       
+      // Load reactions and saved status in parallel with error handling
       const commentsWithReactions = await Promise.all(
         previewReplies.map(async (reply) => {
-          const [{ count, hasReacted }, saved] = await Promise.all([
-            getReplyLikeCount(reply.id),
-            user ? isItemSaved("comment", reply.id) : Promise.resolve(false)
-          ]);
-          return {
-            ...reply,
-            likeCount: count,
-            hasLiked: hasReacted,
-            isSaved: saved
-          };
+          try {
+            const [reactionResult, saved] = await Promise.all([
+              getReplyLikeCount(reply.id).catch(() => ({ count: 0, hasReacted: false })),
+              user ? isItemSaved("comment", reply.id).catch(() => false) : Promise.resolve(false)
+            ]);
+            return {
+              ...reply,
+              likeCount: reactionResult.count,
+              hasLiked: reactionResult.hasReacted,
+              isSaved: saved
+            };
+          } catch {
+            // Fallback if individual comment fails
+            return {
+              ...reply,
+              likeCount: 0,
+              hasLiked: false,
+              isSaved: false
+            };
+          }
         })
       );
       
       setComments(commentsWithReactions);
     } catch (error) {
       console.error('Error loading comment preview:', error);
+      setComments([]);
     } finally {
       setIsLoading(false);
     }

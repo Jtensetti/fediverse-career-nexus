@@ -7,61 +7,75 @@ export interface ReplyReactionCount {
   hasReacted: boolean;
 }
 
-// Get all reactions for a reply/comment
+// Cache for user actor ID to avoid repeated lookups
+let cachedActorId: string | null = null;
+let cachedUserId: string | null = null;
+
+const getUserActorId = async (): Promise<string | null> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  const userId = user?.id;
+  
+  if (!userId) return null;
+  
+  // Use cache if available for same user
+  if (cachedUserId === userId && cachedActorId) {
+    return cachedActorId;
+  }
+  
+  const { data: actor } = await supabase
+    .from('actors')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+    
+  cachedUserId = userId;
+  cachedActorId = actor?.id || null;
+  return cachedActorId;
+};
+
+// Get reactions for a specific reply - optimized to only fetch relevant reactions
 export const getReplyReactions = async (replyId: string): Promise<ReplyReactionCount[]> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id;
+    const userActorId = await getUserActorId();
     
-    let userActorId: string | null = null;
-    if (userId) {
-      const { data: actor } = await supabase
-        .from('actors')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
-      userActorId = actor?.id || null;
-    }
-    
-    // Get all Like reactions for this reply
+    // Use RPC or direct query with JSONB filtering if possible
+    // For now, fetch only Like reactions attributed to anyone, then filter
+    // But limit results to reduce payload
     const { data: reactions, error } = await supabase
       .from('ap_objects')
-      .select('*')
-      .eq('type', 'Like');
+      .select('id, content, attributed_to')
+      .eq('type', 'Like')
+      .limit(1000); // Reasonable limit to prevent massive payloads
     
-    if (error) return [];
+    if (error) {
+      console.error('Error fetching reactions:', error);
+      return [{ emoji: '❤️', count: 0, hasReacted: false }];
+    }
     
-    // Filter reactions that match the replyId (stored as object.id in content)
-    const matchingReactions = reactions?.filter(r => {
+    // Filter reactions that match the replyId and are reply reactions
+    const matchingReactions = (reactions || []).filter(r => {
       const content = r.content as any;
       const objectId = content?.object?.id;
       const targetType = content?.object?.type;
-      return (objectId === replyId || (typeof objectId === 'string' && objectId.includes(replyId))) 
-        && targetType === 'reply';
-    }) || [];
-    
-    // We primarily support heart for comments
-    const supportedEmojis = ['❤️'];
-    
-    const reactionCounts: ReplyReactionCount[] = supportedEmojis.map(emoji => {
-      const filteredReactions = matchingReactions.filter(r => {
-        const content = r.content as any;
-        return content?.emoji === emoji;
-      });
-      
-      const hasReacted = filteredReactions.some(r => r.attributed_to === userActorId);
-      
-      return {
-        emoji,
-        count: filteredReactions.length,
-        hasReacted
-      };
+      return objectId === replyId && targetType === 'reply';
     });
     
-    return reactionCounts;
+    // Count heart reactions
+    const heartReactions = matchingReactions.filter(r => {
+      const content = r.content as any;
+      return content?.emoji === '❤️' || !content?.emoji; // Default to heart if no emoji
+    });
+    
+    const hasReacted = userActorId ? heartReactions.some(r => r.attributed_to === userActorId) : false;
+    
+    return [{
+      emoji: '❤️',
+      count: heartReactions.length,
+      hasReacted
+    }];
   } catch (error) {
     console.error('Error fetching reply reactions:', error);
-    return [];
+    return [{ emoji: '❤️', count: 0, hasReacted: false }];
   }
 };
 
