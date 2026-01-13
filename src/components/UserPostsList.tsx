@@ -1,7 +1,6 @@
-
 import { useQuery } from "@tanstack/react-query";
 import FederatedPostCard from "./FederatedPostCard";
-import { getUserPosts, type Post } from "@/services/postService";
+import { getUserPosts, type UserPostWithMeta } from "@/services/postService";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -11,7 +10,7 @@ interface UserPostsListProps {
 }
 
 export default function UserPostsList({ userId, className = "" }: UserPostsListProps) {
-  const { data: posts, isLoading, error, refetch } = useQuery<Post[]>({
+  const { data: posts, isLoading, error, refetch } = useQuery<UserPostWithMeta[]>({
     queryKey: ["userPosts", userId],
     queryFn: () => getUserPosts(userId),
   });
@@ -46,7 +45,13 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
           key={post.id}
           post={{
             id: post.id,
-            content: { content: post.content },
+            content: post.isQuoteRepost 
+              ? { 
+                  content: post.content, 
+                  isQuoteRepost: true, 
+                  object: post.quotedPost 
+                }
+              : { content: post.content },
             created_at: post.created_at,
             actor_name: post.author?.fullname || post.author?.username || 'Unknown User',
             actor_avatar: post.author?.avatar_url,
@@ -57,7 +62,7 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
               avatar_url: post.author?.avatar_url,
             },
             source: 'local',
-            type: 'Note',
+            type: post.type || 'Note',
           }}
         />
       ))}
