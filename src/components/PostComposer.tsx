@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profileService";
 import { createPost, CreatePostData } from "@/services/postService";
 import { compressImage, formatFileSize } from "@/lib/imageCompression";
+import { LinkPreview, extractUrls } from "@/components/LinkPreview";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -37,10 +38,21 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [scheduledTime, setScheduledTime] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dismissedUrls, setDismissedUrls] = useState<Set<string>>(new Set());
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Extract URLs from post content for link preview
+  const detectedUrls = useMemo(() => {
+    const urls = extractUrls(postContent);
+    return urls.filter(url => !dismissedUrls.has(url));
+  }, [postContent, dismissedUrls]);
+
+  const handleDismissLinkPreview = (url: string) => {
+    setDismissedUrls(prev => new Set([...prev, url]));
+  };
 
   const { data: profile } = useQuery({
     queryKey: ['currentUserProfile'],
@@ -89,6 +101,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     setScheduledDate(undefined);
     setScheduledTime("");
     setShowDatePicker(false);
+    setDismissedUrls(new Set());
   };
 
   const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -308,6 +321,26 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     Optimizing image...
                   </div>
                 )}
+
+                {/* Link Preview */}
+                <AnimatePresence>
+                  {detectedUrls.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-2"
+                    >
+                      {detectedUrls.slice(0, 1).map((url) => (
+                        <LinkPreview
+                          key={url}
+                          url={url}
+                          onRemove={() => handleDismissLinkPreview(url)}
+                        />
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Scheduled Info */}
                 <AnimatePresence>

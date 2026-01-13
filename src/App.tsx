@@ -44,6 +44,7 @@ import InstanceGuidelinesPage from "./pages/InstanceGuidelines";
 import Instances from "./pages/Instances";
 import AdminFederationHealth from "./pages/AdminFederationHealth";
 import PostView from "./pages/PostView";
+import SavedItemsPage from "./pages/SavedItems";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -119,6 +120,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/saved"
+                      element={
+                        <ProtectedRoute>
+                          <SavedItemsPage />
                         </ProtectedRoute>
                       }
                     />
