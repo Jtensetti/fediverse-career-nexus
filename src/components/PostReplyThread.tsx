@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Heart, Bookmark } from "lucide-react";
+import { MessageSquare, Bookmark } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import InlineReplyComposer from "./InlineReplyComposer";
+import { EnhancedCommentReactions } from "./EnhancedCommentReactions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { toggleReplyReaction, getReplyLikeCount } from "@/services/replyReactionsService";
 import { toggleSaveItem, isItemSaved } from "@/services/savedItemsService";
 import type { PostReply } from "@/services/postReplyService";
 
@@ -33,29 +33,21 @@ export default function PostReplyThread({
   onReplyCreated 
 }: PostReplyThreadProps) {
   const [showReplyComposer, setShowReplyComposer] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const { user } = useAuth();
 
-  // Load initial like and saved state from database with error handling
   useEffect(() => {
-    const loadState = async () => {
-      try {
-        const [reactionResult, saved] = await Promise.all([
-          getReplyLikeCount(reply.id).catch(() => ({ count: 0, hasReacted: false })),
-          user ? isItemSaved("comment", reply.id).catch(() => false) : Promise.resolve(false)
-        ]);
-        setLikeCount(reactionResult.count);
-        setIsLiked(reactionResult.hasReacted);
-        setIsSaved(saved);
-      } catch (error) {
-        console.error('Error loading reply state:', error);
-        // Keep defaults on error
+    const loadSavedState = async () => {
+      if (user) {
+        try {
+          const saved = await isItemSaved("comment", reply.id);
+          setIsSaved(saved);
+        } catch (error) {
+          console.error('Error loading saved state:', error);
+        }
       }
     };
-    loadState();
+    loadSavedState();
   }, [reply.id, user]);
 
   const handleReplyClick = () => {
@@ -71,43 +63,18 @@ export default function PostReplyThread({
     onReplyCreated(reply.id);
   };
 
-  const handleLike = async () => {
-    if (!user) {
-      toast.error('Please sign in to like');
-      return;
-    }
-    
-    if (isLikeLoading) return;
-    
-    // Optimistic update
-    setIsLiked(prev => !prev);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-    setIsLikeLoading(true);
-    
-    const success = await toggleReplyReaction(reply.id);
-    
-    if (!success) {
-      // Revert on failure
-      setIsLiked(prev => !prev);
-      setLikeCount(prev => isLiked ? prev + 1 : prev - 1);
-    }
-    
-    setIsLikeLoading(false);
-  };
-
   const handleSave = async () => {
     if (!user) {
       toast.error('Please sign in to save');
       return;
     }
 
-    // Optimistic update
-    setIsSaved(prev => !prev);
+    const prevSaved = isSaved;
+    setIsSaved(!isSaved);
 
     const result = await toggleSaveItem("comment", reply.id);
     if (!result.success) {
-      // Revert on failure
-      setIsSaved(prev => !prev);
+      setIsSaved(prevSaved);
       toast.error('Failed to save comment');
     } else {
       toast.success(result.saved ? "Comment saved" : "Removed from saved");
@@ -173,19 +140,8 @@ export default function PostReplyThread({
 
               {/* Action Buttons */}
               <div className="flex items-center gap-1 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "h-7 px-2 gap-1 text-xs",
-                    isLiked && "text-red-500"
-                  )}
-                  onClick={handleLike}
-                  disabled={isLikeLoading}
-                >
-                  <Heart className={cn("h-3.5 w-3.5", isLiked && "fill-current")} />
-                  {likeCount > 0 && <span>{likeCount}</span>}
-                </Button>
+                {/* Enhanced reactions with full emoji picker */}
+                <EnhancedCommentReactions replyId={reply.id} />
 
                 <TooltipProvider>
                   <Tooltip>
@@ -248,7 +204,7 @@ export default function PostReplyThread({
               reply={childReply}
               postId={postId}
               depth={depth + 1}
-              childReplies={[]} // Will be populated by parent
+              childReplies={[]}
               onReplyCreated={onReplyCreated}
             />
           ))}
