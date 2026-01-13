@@ -41,21 +41,25 @@ export const getPostReactions = async (postId: string): Promise<ReactionCount[]>
     
     if (error) return [];
     
-    // Filter reactions that match the postId
+    // Filter reactions that match the postId AND are not reply reactions
     const matchingReactions = reactions?.filter(r => {
       const content = r.content as any;
       const objectId = content?.object?.id;
-      return objectId === postId || (typeof objectId === 'string' && objectId.includes(postId));
+      const isReplyReaction = content?.object?.type === 'reply';
+      // Only match post reactions, not reply reactions
+      return !isReplyReaction && (objectId === postId || (typeof objectId === 'string' && objectId.includes(postId)));
     }) || [];
     
-    // Default emojis we support
-    const supportedEmojis = ['❤️', '👍', '😂', '😮', '😢', '😡'];
+    // Updated emojis to match article reactions for consistency
+    const supportedEmojis = ['❤️', '🎉', '✌️', '🤗', '😮'];
     
     // Process the reactions to count each emoji type
     const reactionCounts: ReactionCount[] = supportedEmojis.map(emoji => {
       const filteredReactions = matchingReactions.filter(r => {
         const content = r.content as any;
-        return content?.emoji === emoji || (emoji === '👍' && !content?.emoji);
+        // For legacy support, treat '👍' or no emoji as '❤️'
+        const reactionEmoji = content?.emoji || '❤️';
+        return reactionEmoji === emoji || (emoji === '❤️' && !content?.emoji);
       });
       
       const hasReacted = filteredReactions.some(r => {

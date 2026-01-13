@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Heart } from "lucide-react";
+import { MessageSquare, Heart, Bookmark } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { getPostReplies, PostReply } from "@/services/postReplyService";
 import { toggleReplyReaction, getReplyLikeCount } from "@/services/replyReactionsService";
+import { toggleSaveItem, isItemSaved } from "@/services/savedItemsService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import InlineReplyComposer from "./InlineReplyComposer";
@@ -20,6 +22,7 @@ interface CommentPreviewProps {
 interface CommentWithReaction extends PostReply {
   likeCount: number;
   hasLiked: boolean;
+  isSaved: boolean;
 }
 
 export default function CommentPreview({ postId, onCommentClick, maxComments = 2 }: CommentPreviewProps) {
@@ -42,16 +45,20 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       const topLevelReplies = replies.filter(r => !r.parent_reply_id);
       setTotalCount(topLevelReplies.length);
       
-      // Get the first few with reaction counts
+      // Get the first few with reaction counts and saved status
       const previewReplies = topLevelReplies.slice(0, maxComments);
       
       const commentsWithReactions = await Promise.all(
         previewReplies.map(async (reply) => {
-          const { count, hasReacted } = await getReplyLikeCount(reply.id);
+          const [{ count, hasReacted }, saved] = await Promise.all([
+            getReplyLikeCount(reply.id),
+            user ? isItemSaved("comment", reply.id) : Promise.resolve(false)
+          ]);
           return {
             ...reply,
             likeCount: count,
-            hasLiked: hasReacted
+            hasLiked: hasReacted,
+            isSaved: saved
           };
         })
       );
@@ -86,6 +93,32 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
     if (!success) {
       // Revert on failure
       await loadComments();
+    }
+  };
+
+  const handleSaveComment = async (commentId: string) => {
+    if (!user) {
+      toast.error('Please sign in to save comments');
+      return;
+    }
+
+    // Optimistic update
+    setComments(prev => prev.map(c => {
+      if (c.id === commentId) {
+        return {
+          ...c,
+          isSaved: !c.isSaved
+        };
+      }
+      return c;
+    }));
+
+    const result = await toggleSaveItem("comment", commentId);
+    if (!result.success) {
+      // Revert on failure
+      await loadComments();
+    } else {
+      toast.success(result.saved ? "Comment saved" : "Removed from saved");
     }
   };
 
@@ -166,7 +199,7 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
               </p>
             </div>
             
-            <div className="flex items-center gap-2 mt-0.5 ml-1">
+            <div className="flex items-center gap-1 mt-0.5 ml-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -179,6 +212,26 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
                 <Heart className={cn("h-3 w-3", comment.hasLiked && "fill-current")} />
                 {comment.likeCount > 0 && comment.likeCount}
               </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "h-5 px-1.5 text-[10px] rounded-full",
+                        comment.isSaved ? "text-primary" : "text-muted-foreground hover:text-primary"
+                      )}
+                      onClick={() => handleSaveComment(comment.id)}
+                    >
+                      <Bookmark className={cn("h-3 w-3", comment.isSaved && "fill-current")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{comment.isSaved ? "Remove from saved" : "Save comment"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>

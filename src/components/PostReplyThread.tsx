@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Heart } from "lucide-react";
+import { MessageSquare, Heart, Bookmark } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import InlineReplyComposer from "./InlineReplyComposer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toggleReplyReaction, getReplyLikeCount } from "@/services/replyReactionsService";
+import { toggleSaveItem, isItemSaved } from "@/services/savedItemsService";
 import type { PostReply } from "@/services/postReplyService";
 
 interface PostReplyThreadProps {
@@ -34,17 +36,22 @@ export default function PostReplyThread({
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const { user } = useAuth();
 
-  // Load initial like state from database
+  // Load initial like and saved state from database
   useEffect(() => {
-    const loadLikeState = async () => {
-      const { count, hasReacted } = await getReplyLikeCount(reply.id);
+    const loadState = async () => {
+      const [{ count, hasReacted }, saved] = await Promise.all([
+        getReplyLikeCount(reply.id),
+        user ? isItemSaved("comment", reply.id) : Promise.resolve(false)
+      ]);
       setLikeCount(count);
       setIsLiked(hasReacted);
+      setIsSaved(saved);
     };
-    loadLikeState();
-  }, [reply.id]);
+    loadState();
+  }, [reply.id, user]);
 
   const handleReplyClick = () => {
     if (!user) {
@@ -81,6 +88,25 @@ export default function PostReplyThread({
     }
     
     setIsLikeLoading(false);
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      toast.error('Please sign in to save');
+      return;
+    }
+
+    // Optimistic update
+    setIsSaved(prev => !prev);
+
+    const result = await toggleSaveItem("comment", reply.id);
+    if (!result.success) {
+      // Revert on failure
+      setIsSaved(prev => !prev);
+      toast.error('Failed to save comment');
+    } else {
+      toast.success(result.saved ? "Comment saved" : "Removed from saved");
+    }
   };
 
   const getPublishedDate = () => {
@@ -141,7 +167,7 @@ export default function PostReplyThread({
               </p>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-1 mt-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -155,6 +181,27 @@ export default function PostReplyThread({
                   <Heart className={cn("h-3.5 w-3.5", isLiked && "fill-current")} />
                   {likeCount > 0 && <span>{likeCount}</span>}
                 </Button>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "h-7 px-2 text-xs",
+                          isSaved && "text-primary"
+                        )}
+                        onClick={handleSave}
+                      >
+                        <Bookmark className={cn("h-3.5 w-3.5", isSaved && "fill-current")} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isSaved ? "Remove from saved" : "Save comment"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
                 {depth < MAX_DEPTH && (
                   <Button
