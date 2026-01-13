@@ -1,12 +1,46 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Heart } from "lucide-react";
+import { Heart, PartyPopper, ThumbsUp, Smile, Lightbulb, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getReplyReactions, toggleReplyReaction, ReplyReactionCount } from "@/services/replyReactionsService";
 import StackedReactionDisplay from "@/components/StackedReactionDisplay";
 
 const SUPPORTED_EMOJIS = ['❤️', '🎉', '✌️', '🤗', '😮'];
+
+// Same icon config as posts/articles
+const REACTION_CONFIG: Record<string, { icon: LucideIcon; label: string; activeColor: string; hoverBg: string }> = {
+  '❤️': { 
+    icon: Heart, 
+    label: 'Love', 
+    activeColor: 'text-red-500 fill-red-500',
+    hoverBg: 'hover:bg-red-50 dark:hover:bg-red-950'
+  },
+  '🎉': { 
+    icon: PartyPopper, 
+    label: 'Celebrate', 
+    activeColor: 'text-yellow-500',
+    hoverBg: 'hover:bg-yellow-50 dark:hover:bg-yellow-950'
+  },
+  '✌️': { 
+    icon: ThumbsUp, 
+    label: 'Support', 
+    activeColor: 'text-blue-500',
+    hoverBg: 'hover:bg-blue-50 dark:hover:bg-blue-950'
+  },
+  '🤗': { 
+    icon: Smile, 
+    label: 'Empathy', 
+    activeColor: 'text-green-500',
+    hoverBg: 'hover:bg-green-50 dark:hover:bg-green-950'
+  },
+  '😮': { 
+    icon: Lightbulb, 
+    label: 'Insightful', 
+    activeColor: 'text-purple-500',
+    hoverBg: 'hover:bg-purple-50 dark:hover:bg-purple-950'
+  },
+};
 
 interface EnhancedCommentReactionsProps {
   replyId: string;
@@ -39,21 +73,16 @@ export function EnhancedCommentReactions({ replyId, className }: EnhancedComment
     setIsLoading(true);
     setIsOpen(false);
     
-    // Find current user's reaction (if any)
     const currentUserEmoji = reactions.find(r => r.hasReacted)?.emoji;
     
-    // Optimistic update
     setReactions(prev => prev.map(r => {
       if (currentUserEmoji && currentUserEmoji !== emoji && r.emoji === currentUserEmoji) {
-        // Decrement the old emoji
         return { ...r, count: Math.max(0, r.count - 1), hasReacted: false };
       }
       if (r.emoji === emoji) {
         if (r.hasReacted) {
-          // Toggle off
           return { ...r, count: Math.max(0, r.count - 1), hasReacted: false };
         } else {
-          // Toggle on
           return { ...r, count: r.count + 1, hasReacted: true };
         }
       }
@@ -62,9 +91,7 @@ export function EnhancedCommentReactions({ replyId, className }: EnhancedComment
 
     try {
       const result = await toggleReplyReaction(replyId, emoji);
-      
       if (!result.ok) {
-        // Revert on failure
         await loadReactions();
       }
     } catch (error) {
@@ -76,8 +103,10 @@ export function EnhancedCommentReactions({ replyId, className }: EnhancedComment
   };
 
   const totalReactions = reactions.reduce((sum, r) => sum + r.count, 0);
-  const reactedEmojis = reactions.filter(r => r.count > 0);
-  const userHasReacted = reactions.some(r => r.hasReacted);
+  const userReaction = reactions.find(r => r.hasReacted);
+  const primaryEmoji = userReaction?.emoji || '❤️';
+  const primaryConfig = REACTION_CONFIG[primaryEmoji];
+  const PrimaryIcon = primaryConfig?.icon || Heart;
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
@@ -87,15 +116,16 @@ export function EnhancedCommentReactions({ replyId, className }: EnhancedComment
             variant="ghost"
             size="sm"
             className={cn(
-              "h-7 px-2 gap-1 text-xs",
-              userHasReacted && "text-primary"
+              "h-7 px-2 gap-1 text-xs rounded-full",
+              primaryConfig?.hoverBg,
+              userReaction ? primaryConfig?.activeColor : "text-muted-foreground"
             )}
             disabled={isLoading}
           >
             {totalReactions > 0 ? (
-              <StackedReactionDisplay reactions={reactedEmojis} />
+              <StackedReactionDisplay reactions={reactions.filter(r => r.count > 0)} showCount={false} />
             ) : (
-              <Heart className={cn("h-3.5 w-3.5", userHasReacted && "fill-current")} />
+              <PrimaryIcon className={cn("h-3.5 w-3.5", userReaction && "fill-current")} />
             )}
             {totalReactions > 0 && (
               <span className="ml-0.5">{totalReactions}</span>
@@ -110,6 +140,8 @@ export function EnhancedCommentReactions({ replyId, className }: EnhancedComment
           <div className="flex gap-0.5">
             {SUPPORTED_EMOJIS.map(emoji => {
               const reaction = reactions.find(r => r.emoji === emoji);
+              const cfg = REACTION_CONFIG[emoji];
+              const ReactionIcon = cfg.icon;
               const isActive = reaction?.hasReacted || false;
               
               return (
@@ -118,13 +150,14 @@ export function EnhancedCommentReactions({ replyId, className }: EnhancedComment
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "h-8 w-8 p-0 text-base hover:scale-110 transition-transform",
-                    isActive && "bg-primary/10 ring-1 ring-primary"
+                    "h-8 w-8 p-0 rounded-full transition-transform hover:scale-110",
+                    cfg.hoverBg,
+                    isActive && cfg.activeColor
                   )}
                   onClick={() => handleReaction(emoji)}
                   disabled={isLoading}
                 >
-                  {emoji}
+                  <ReactionIcon className={cn("h-4 w-4", isActive && "fill-current")} />
                 </Button>
               );
             })}
