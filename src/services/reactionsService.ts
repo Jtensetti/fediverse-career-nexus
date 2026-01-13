@@ -1,0 +1,159 @@
+import { supabase } from "@/integrations/supabase/client";
+import { ReactionKey, REACTIONS } from "@/lib/reactions";
+import { toast } from "sonner";
+
+export interface ReactionCount {
+  reaction: ReactionKey;
+  count: number;
+  hasReacted: boolean;
+}
+
+export interface ToggleReactionResult {
+  success: boolean;
+  action: 'added' | 'removed' | 'switched' | 'error';
+  reaction: ReactionKey;
+}
+
+type TargetType = 'post' | 'reply';
+
+// Get reactions for a target (post or reply)
+export async function getReactions(
+  targetType: TargetType,
+  targetId: string
+): Promise<ReactionCount[]> {
+  try {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
+
+    // Fetch all reactions for this target
+    const { data: reactions, error } = await supabase
+      .from('reactions')
+      .select('reaction, user_id')
+      .eq('target_type', targetType)
+      .eq('target_id', targetId);
+
+    if (error) {
+      console.error('Error fetching reactions:', error);
+      return REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }));
+    }
+
+    // Count reactions and check user's reaction
+    const counts: Record<ReactionKey, { count: number; hasReacted: boolean }> = {} as any;
+    REACTIONS.forEach(r => {
+      counts[r] = { count: 0, hasReacted: false };
+    });
+
+    reactions?.forEach(r => {
+      const key = r.reaction as ReactionKey;
+      if (counts[key]) {
+        counts[key].count++;
+        if (userId && r.user_id === userId) {
+          counts[key].hasReacted = true;
+        }
+      }
+    });
+
+    return REACTIONS.map(r => ({
+      reaction: r,
+      count: counts[r].count,
+      hasReacted: counts[r].hasReacted,
+    }));
+  } catch (error) {
+    console.error('Error in getReactions:', error);
+    return REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }));
+  }
+}
+
+// Toggle a reaction (add, remove, or switch)
+export async function toggleReaction(
+  targetType: TargetType,
+  targetId: string,
+  reaction: ReactionKey
+): Promise<ToggleReactionResult> {
+  try {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Please sign in to react");
+      return { success: false, action: 'error', reaction };
+    }
+
+    // Check for existing reaction
+    const { data: existing, error: fetchError } = await supabase
+      .from('reactions')
+      .select('id, reaction')
+      .eq('target_type', targetType)
+      .eq('target_id', targetId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('Error checking existing reaction:', fetchError);
+      toast.error("Failed to process reaction");
+      return { success: false, action: 'error', reaction };
+    }
+
+    if (existing) {
+      if (existing.reaction === reaction) {
+        // Same reaction - remove it
+        const { error: deleteError } = await supabase
+          .from('reactions')
+          .delete()
+          .eq('id', existing.id);
+
+        if (deleteError) {
+          console.error('Error removing reaction:', deleteError);
+          toast.error("Failed to remove reaction");
+          return { success: false, action: 'error', reaction };
+        }
+
+        return { success: true, action: 'removed', reaction };
+      } else {
+        // Different reaction - switch it
+        const { error: updateError } = await supabase
+          .from('reactions')
+          .update({ reaction, updated_at: new Date().toISOString() })
+          .eq('id', existing.id);
+
+        if (updateError) {
+          console.error('Error switching reaction:', updateError);
+          toast.error("Failed to update reaction");
+          return { success: false, action: 'error', reaction };
+        }
+
+        return { success: true, action: 'switched', reaction };
+      }
+    } else {
+      // No existing reaction - add new one
+      const { error: insertError } = await supabase
+        .from('reactions')
+        .insert({
+          target_type: targetType,
+          target_id: targetId,
+          user_id: user.id,
+          reaction,
+        });
+
+      if (insertError) {
+        console.error('Error adding reaction:', insertError);
+        toast.error("Failed to add reaction");
+        return { success: false, action: 'error', reaction };
+      }
+
+      return { success: true, action: 'added', reaction };
+    }
+  } catch (error) {
+    console.error('Error in toggleReaction:', error);
+    toast.error("Failed to process reaction");
+    return { success: false, action: 'error', reaction };
+  }
+}
+
+// Convenience functions for posts and replies
+export const getPostReactions = (postId: string) => getReactions('post', postId);
+export const getReplyReactions = (replyId: string) => getReactions('reply', replyId);
+export const togglePostReaction = (postId: string, reaction: ReactionKey) => 
+  toggleReaction('post', postId, reaction);
+export const toggleReplyReaction = (replyId: string, reaction: ReactionKey) => 
+  toggleReaction('reply', replyId, reaction);

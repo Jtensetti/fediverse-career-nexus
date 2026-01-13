@@ -1,97 +1,76 @@
-import { Heart, PartyPopper, ThumbsUp, Smile, Lightbulb, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface ReactionData {
-  emoji: string;
-  count: number;
-  hasReacted?: boolean;
-}
+import { REACTION_CONFIG, ReactionKey, REACTIONS } from "@/lib/reactions";
+import { ReactionCount } from "@/services/reactionsService";
 
 interface StackedReactionDisplayProps {
-  reactions: ReactionData[];
-  className?: string;
+  reactions: ReactionCount[];
   showCount?: boolean;
+  totalCount?: number;
   maxIcons?: number;
+  size?: 'sm' | 'md';
+  className?: string;
 }
 
-// Unified reaction config
-const REACTION_CONFIG: Record<string, { icon: LucideIcon; color: string; bgColor: string }> = {
-  '❤️': { 
-    icon: Heart, 
-    color: 'text-white',
-    bgColor: 'bg-red-500'
-  },
-  '🎉': { 
-    icon: PartyPopper, 
-    color: 'text-white',
-    bgColor: 'bg-yellow-500'
-  },
-  '✌️': { 
-    icon: ThumbsUp, 
-    color: 'text-white',
-    bgColor: 'bg-blue-500'
-  },
-  '🤗': { 
-    icon: Smile, 
-    color: 'text-white',
-    bgColor: 'bg-green-500'
-  },
-  '😮': { 
-    icon: Lightbulb, 
-    color: 'text-white',
-    bgColor: 'bg-purple-500'
-  },
-};
-
-export default function StackedReactionDisplay({ 
-  reactions, 
-  className,
+const StackedReactionDisplay = ({
+  reactions,
   showCount = true,
-  maxIcons = 5
-}: StackedReactionDisplayProps) {
-  // Filter reactions with count > 0 and sort by count (most popular first)
+  totalCount,
+  maxIcons = 3,
+  size = 'md',
+  className,
+}: StackedReactionDisplayProps) => {
+  // Filter to only reactions with count > 0 and sort by count descending
   const activeReactions = reactions
     .filter(r => r.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, maxIcons);
-  
-  const totalCount = reactions.reduce((sum, r) => sum + r.count, 0);
-  
-  if (activeReactions.length === 0 || totalCount === 0) {
+
+  if (activeReactions.length === 0) {
     return null;
   }
 
+  const total = totalCount ?? reactions.reduce((sum, r) => sum + r.count, 0);
+  const iconSize = size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5';
+  const containerSize = size === 'sm' ? 'h-[18px] w-[18px]' : 'h-5 w-5';
+
+  // Background colors for each reaction type
+  const bgColors: Record<ReactionKey, string> = {
+    love: 'bg-red-500',
+    celebrate: 'bg-amber-500',
+    support: 'bg-blue-500',
+    empathy: 'bg-green-500',
+    insightful: 'bg-purple-500',
+  };
+
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      {/* Stacked reaction icons - overlapping like LinkedIn */}
-      <div className="flex items-center -space-x-1">
+      <div className="flex items-center -space-x-1.5">
         {activeReactions.map((reaction, index) => {
-          const config = REACTION_CONFIG[reaction.emoji];
-          if (!config) return null;
-          
+          const config = REACTION_CONFIG[reaction.reaction];
           const Icon = config.icon;
           
           return (
             <div
-              key={reaction.emoji}
+              key={reaction.reaction}
               className={cn(
-                "h-[18px] w-[18px] rounded-full flex items-center justify-center ring-2 ring-background",
-                config.bgColor
+                "rounded-full flex items-center justify-center ring-2 ring-background",
+                containerSize,
+                bgColors[reaction.reaction]
               )}
-              style={{ zIndex: activeReactions.length - index }}
+              style={{ zIndex: maxIcons - index }}
             >
-              <Icon className={cn("h-2.5 w-2.5", config.color)} />
+              <Icon className={cn(iconSize, "text-white")} />
             </div>
           );
         })}
       </div>
-      
-      {/* Total count */}
-      {showCount && totalCount > 0 && (
-        <span className="text-xs text-muted-foreground ml-0.5">
-          {totalCount}
+      {showCount && total > 0 && (
+        <span className="text-xs text-muted-foreground font-medium">
+          {total}
         </span>
       )}
     </div>
   );
-}
+};
+
+export default StackedReactionDisplay;

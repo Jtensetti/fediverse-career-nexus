@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { getPostReplies, PostReply } from "@/services/postReplyService";
-import { getReplyReactions, ReplyReactionCount } from "@/services/replyReactionsService";
 import { toggleSaveItem, isItemSaved } from "@/services/savedItemsService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -21,7 +20,6 @@ interface CommentPreviewProps {
 }
 
 interface CommentWithState extends PostReply {
-  reactions: ReplyReactionCount[];
   isSaved: boolean;
 }
 
@@ -48,23 +46,17 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       // Get the first few with reaction counts and saved status
       const previewReplies = topLevelReplies.slice(0, maxComments);
       
-      // Load reactions and saved status in parallel
       const commentsWithState = await Promise.all(
         previewReplies.map(async (reply) => {
           try {
-            const [reactions, saved] = await Promise.all([
-              getReplyReactions(reply.id).catch(() => []),
-              user ? isItemSaved("comment", reply.id).catch(() => false) : Promise.resolve(false)
-            ]);
+            const saved = user ? await isItemSaved("comment", reply.id).catch(() => false) : false;
             return {
               ...reply,
-              reactions,
               isSaved: saved
             };
           } catch {
             return {
               ...reply,
-              reactions: [],
               isSaved: false
             };
           }
