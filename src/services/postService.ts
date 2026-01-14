@@ -18,6 +18,7 @@ export interface CreatePostData {
   content: string;
   imageFile?: File;
   imageAltText?: string;
+  contentWarning?: string;
   scheduledFor?: Date;
 }
 
@@ -169,7 +170,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const actorUrl = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}`;
 
-    const noteObject = {
+    const noteObject: Record<string, unknown> = {
       type: 'Note',
       id: `${actorUrl}/posts/${crypto.randomUUID()}`,
       attributedTo: actorUrl,
@@ -189,6 +190,12 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       }
     };
 
+    // Add content warning (summary in ActivityPub) if provided
+    if (postData.contentWarning) {
+      noteObject.summary = postData.contentWarning;
+      noteObject.sensitive = true;
+    }
+
     const createActivity = {
       '@context': 'https://www.w3.org/ns/activitystreams',
       type: 'Create',
@@ -201,10 +208,11 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     };
 
     const postObject = {
-      type: 'Create',
-      content: createActivity,
+      type: 'Create' as const,
+      content: createActivity as unknown as import("@/integrations/supabase/types").Json,
       attributed_to: actor.id,
-      published_at: new Date().toISOString()
+      published_at: new Date().toISOString(),
+      content_warning: postData.contentWarning || null,
     };
 
     const { data: post, error: postError } = await supabase

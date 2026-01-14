@@ -15,6 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   User, 
   Briefcase, 
@@ -23,9 +26,12 @@ import {
   Check,
   ArrowRight,
   ArrowLeft,
-  Sparkles
+  Sparkles,
+  Package,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { getStarterPacks, followStarterPack, StarterPack } from "@/services/starterPackService";
 
 interface OnboardingFlowProps {
   open: boolean;
@@ -36,7 +42,8 @@ const steps = [
   { id: 1, title: "Welcome", icon: Sparkles },
   { id: 2, title: "Your Profile", icon: User },
   { id: 3, title: "Your Role", icon: Briefcase },
-  { id: 4, title: "Get Started", icon: MessageSquare },
+  { id: 4, title: "Starter Packs", icon: Package },
+  { id: 5, title: "Get Started", icon: MessageSquare },
 ];
 
 const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
@@ -52,6 +59,10 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
     currentRole: "",
     company: "",
   });
+  const [starterPacks, setStarterPacks] = useState<StarterPack[]>([]);
+  const [selectedPacks, setSelectedPacks] = useState<Set<string>>(new Set());
+  const [loadingPacks, setLoadingPacks] = useState(false);
+  const [followingPacks, setFollowingPacks] = useState(false);
 
   useEffect(() => {
     if (user && open) {
@@ -73,8 +84,34 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         }
       };
       fetchProfile();
+      
+      // Fetch starter packs
+      const fetchStarterPacks = async () => {
+        setLoadingPacks(true);
+        try {
+          const packs = await getStarterPacks();
+          setStarterPacks(packs.filter(p => p.is_featured));
+        } catch (error) {
+          console.error("Error fetching starter packs:", error);
+        } finally {
+          setLoadingPacks(false);
+        }
+      };
+      fetchStarterPacks();
     }
   }, [user, open]);
+
+  const togglePackSelection = (packId: string) => {
+    setSelectedPacks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(packId)) {
+        newSet.delete(packId);
+      } else {
+        newSet.add(packId);
+      }
+      return newSet;
+    });
+  };
 
   const handleNext = async () => {
     if (currentStep === 2) {
@@ -119,14 +156,27 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
       setLoading(false);
     }
     
-    if (currentStep < 4) {
+    if (currentStep === 4 && selectedPacks.size > 0) {
+      // Follow selected starter packs
+      setFollowingPacks(true);
+      try {
+        await Promise.all(
+          Array.from(selectedPacks).map(packId => followStarterPack(packId))
+        );
+      } catch (error) {
+        console.error("Error following starter packs:", error);
+      }
+      setFollowingPacks(false);
+    }
+    
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     } else {
       onComplete();
     }
   };
 
-  const progress = (currentStep / 4) * 100;
+  const progress = (currentStep / 5) * 100;
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -277,6 +327,71 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
 
         {currentStep === 4 && (
           <>
+            <DialogHeader>
+              <DialogTitle>Follow Starter Packs</DialogTitle>
+              <DialogDescription>
+                Get a living feed instantly by following curated packs of professionals in your interests
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              {loadingPacks ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : starterPacks.length > 0 ? (
+                <ScrollArea className="h-[300px] pr-4">
+                  <div className="space-y-3">
+                    {starterPacks.map((pack) => (
+                      <div
+                        key={pack.id}
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          selectedPacks.has(pack.id)
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => togglePackSelection(pack.id)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            checked={selectedPacks.has(pack.id)}
+                            onCheckedChange={() => togglePackSelection(pack.id)}
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium">{pack.name}</h4>
+                              {pack.category && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {pack.category}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {pack.description}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {pack.member_count || 0} members
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>No starter packs available yet</p>
+                </div>
+              )}
+              <p className="text-sm text-muted-foreground mt-4">
+                You can skip this step and explore packs later
+              </p>
+            </div>
+          </>
+        )}
+
+        {currentStep === 5 && (
+          <>
             <DialogHeader className="text-center">
               <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                 <Check className="h-8 w-8 text-primary" />
@@ -334,11 +449,11 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         )}
 
         <div className="flex justify-between mt-6">
-          {currentStep > 1 && currentStep < 4 ? (
+          {currentStep > 1 && currentStep < 5 ? (
             <Button
               variant="ghost"
               onClick={() => setCurrentStep(currentStep - 1)}
-              disabled={loading}
+              disabled={loading || followingPacks}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
@@ -347,9 +462,9 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
             <div />
           )}
           
-          {currentStep < 4 ? (
-            <Button onClick={handleNext} disabled={loading}>
-              {loading ? "Saving..." : currentStep === 1 ? "Let's Go" : "Continue"}
+          {currentStep < 5 ? (
+            <Button onClick={handleNext} disabled={loading || followingPacks}>
+              {loading || followingPacks ? "Saving..." : currentStep === 1 ? "Let's Go" : currentStep === 4 ? (selectedPacks.size > 0 ? "Follow & Continue" : "Skip") : "Continue"}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
