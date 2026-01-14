@@ -12,8 +12,9 @@ import ProfileCompleteness from "@/components/onboarding/ProfileCompleteness";
 import SuggestedActions from "@/components/onboarding/SuggestedActions";
 import ReferralWidget from "@/components/ReferralWidget";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { getFeedPreferences, type FeedType } from "@/services/feedPreferencesService";
+import { getFeedPreferences } from "@/services/feedPreferencesService";
 import { useQuery } from "@tanstack/react-query";
+import type { FeedType } from "@/services/federationService";
 
 const FederatedFeedPage = () => {
   const [activeFeed, setActiveFeed] = useState<FeedType>("following");
@@ -29,19 +30,9 @@ const FederatedFeedPage = () => {
   // Set default feed from preferences
   useEffect(() => {
     if (preferences?.default_feed) {
-      setActiveFeed(preferences.default_feed);
+      setActiveFeed(preferences.default_feed as FeedType);
     }
   }, [preferences]);
-
-  // Map feed type to source filter
-  const getSourceFilter = (feed: FeedType): string => {
-    switch (feed) {
-      case 'following': return 'all'; // Following feed shows all followed accounts
-      case 'local': return 'local';
-      case 'federated': return 'all';
-      default: return 'all';
-    }
-  };
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
@@ -84,7 +75,7 @@ const FederatedFeedPage = () => {
             
             <FederatedFeed 
               className="mb-8" 
-              sourceFilter={getSourceFilter(activeFeed)} 
+              feedType={activeFeed}
             />
           </div>
           

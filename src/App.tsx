@@ -46,6 +46,9 @@ import AdminFederationHealth from "./pages/AdminFederationHealth";
 import PostView from "./pages/PostView";
 import SavedItemsPage from "./pages/SavedItems";
 import StarterPacks from "./pages/StarterPacks";
+import StarterPackView from "./pages/StarterPackView";
+import StarterPackCreate from "./pages/StarterPackCreate";
+import FeedSettings from "./pages/FeedSettings";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -83,6 +86,9 @@ function App() {
                     <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
                     <Route path="/instances" element={<Instances />} />
                     <Route path="/packs" element={<StarterPacks />} />
+                    <Route path="/packs/:slug" element={<StarterPackView />} />
+                    <Route path="/packs/create" element={<ProtectedRoute><StarterPackCreate /></ProtectedRoute>} />
+                    <Route path="/settings/feeds" element={<ProtectedRoute><FeedSettings /></ProtectedRoute>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />
