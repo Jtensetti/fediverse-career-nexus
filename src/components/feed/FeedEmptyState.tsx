@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, PenLine, Users, TrendingUp } from "lucide-react";
+import { Sparkles, PenLine, Users, TrendingUp, Package } from "lucide-react";
 
 interface FeedEmptyStateProps {
   onCreatePost?: () => void;
@@ -10,11 +10,21 @@ interface FeedEmptyStateProps {
 export default function FeedEmptyState({ onCreatePost }: FeedEmptyStateProps) {
   const suggestions = [
     {
+      icon: Package,
+      title: "Browse Starter Packs",
+      description: "Discover curated lists of professionals to follow",
+      action: (
+        <Button size="sm" variant="default" asChild>
+          <Link to="/packs">Explore Packs</Link>
+        </Button>
+      ),
+    },
+    {
       icon: PenLine,
       title: "Share your first post",
       description: "Tell the community about your work or interests",
       action: onCreatePost ? (
-        <Button size="sm" onClick={onCreatePost}>
+        <Button size="sm" variant="outline" onClick={onCreatePost}>
           Create Post
         </Button>
       ) : null,
@@ -53,16 +63,16 @@ export default function FeedEmptyState({ onCreatePost }: FeedEmptyStateProps) {
             Your feed is ready for content
           </h3>
           <p className="text-muted-foreground max-w-md mb-6">
-            You're early – that's a good thing! Be the first to share something
-            or explore what others in the network are posting.
+            Start by following some people! Browse Starter Packs to discover 
+            curated lists of professionals, or explore what others are posting.
           </p>
           <div className="flex gap-3">
-            {onCreatePost && (
-              <Button onClick={onCreatePost}>
-                <PenLine className="mr-2 h-4 w-4" />
-                Create First Post
-              </Button>
-            )}
+            <Button asChild>
+              <Link to="/packs">
+                <Package className="mr-2 h-4 w-4" />
+                Browse Starter Packs
+              </Link>
+            </Button>
             <Button variant="outline" asChild>
               <Link to="/jobs">Browse Jobs</Link>
             </Button>

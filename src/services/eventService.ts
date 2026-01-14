@@ -176,8 +176,31 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
     
     if (error) throw error;
     
+    const event = data as Event;
+    
+    // Auto-post event announcement to feed
+    try {
+      const { createPost } = await import('./postService');
+      const eventDate = new Date(event.start_date);
+      const formattedDate = eventDate.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'long', 
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+      
+      const eventUrl = `${window.location.origin}/events/${event.id}`;
+      const postContent = `🎉 Just created an event: <strong>${event.title}</strong><br><br>📅 ${formattedDate}${event.location ? `<br>📍 ${event.location}` : ''}${event.is_online ? '<br>💻 Online event' : ''}<br><br>Join us! <a href="${eventUrl}">${eventUrl}</a>`;
+      
+      await createPost({ content: postContent });
+    } catch (postError) {
+      console.warn('Could not create event announcement post:', postError);
+      // Don't fail event creation if post fails
+    }
+    
     toast.success('Event created successfully');
-    return data as Event;
+    return event;
   } catch (error) {
     console.error('Error creating event:', error);
     toast.error('Failed to create event');
