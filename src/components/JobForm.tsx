@@ -37,6 +37,12 @@ const jobFormSchema = z.object({
   experience_level: z.string().optional(),
   skills: z.string().transform(val => val ? val.split(",").map(s => s.trim()).filter(Boolean) : []),
   is_active: z.boolean().default(false),
+  // New transparency fields
+  interview_process: z.string().optional(),
+  response_time: z.string().optional(),
+  team_size: z.string().optional(),
+  growth_path: z.string().optional(),
+  visa_sponsorship: z.boolean().default(false),
 }).refine(data => {
   // Validate that salary_min is less than or equal to salary_max if both are provided
   if (data.salary_min && data.salary_max) {
@@ -77,6 +83,12 @@ const JobForm = ({
     experience_level: defaultValues.experience_level || "",
     skills: defaultValues.skills?.join(", ") || "",
     is_active: defaultValues.is_active ?? false,
+    // Transparency fields
+    interview_process: defaultValues.interview_process || "",
+    response_time: defaultValues.response_time || "",
+    team_size: defaultValues.team_size || "",
+    growth_path: defaultValues.growth_path || "",
+    visa_sponsorship: defaultValues.visa_sponsorship ?? false,
   };
   
   const form = useForm<JobFormValues>({
@@ -331,6 +343,107 @@ const JobForm = ({
             </FormItem>
           )}
         />
+
+        {/* Transparency Section */}
+        <div className="border rounded-lg p-4 space-y-4 bg-primary/5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Transparency Details</h3>
+            <span className="text-xs text-muted-foreground">Helps candidates trust your listing</span>
+          </div>
+          
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="interview_process"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Interview Process</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="e.g. 3 rounds: phone screen, technical, final"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="response_time"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Response Time</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="e.g. We respond within 5 business days"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="team_size"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Team Size</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="e.g. You'll join a team of 8"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="growth_path"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Growth Path</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="e.g. Path to senior in 18-24 months"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="visa_sponsorship"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 bg-background">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-sm">Visa Sponsorship</FormLabel>
+                  <FormDescription className="text-xs">
+                    Available for candidates requiring visa sponsorship
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
         
         {/* Published status */}
         <FormField

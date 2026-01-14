@@ -4,28 +4,39 @@ import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 
 import { Conversation, getConversations, getOtherParticipant } from '@/services/messageService';
+import { getReceivedMessageRequests, MessageRequest } from '@/services/messageRequestService';
 import { getUserConnections } from '@/services/connectionsService';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import MessageRequestCard from '@/components/MessageRequestCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Users, MessageSquare } from 'lucide-react';
+import { Loader2, Users, MessageSquare, Inbox } from 'lucide-react';
 
 export default function Messages() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
   const currentUserId = user?.id || null;
-
+  const [activeTab, setActiveTab] = useState('messages');
 
   // Fetch conversations
   const { data: conversations, isLoading, error } = useQuery({
     queryKey: ['conversations'],
     queryFn: getConversations,
+    enabled: !!currentUserId
+  });
+
+  // Fetch message requests
+  const { data: messageRequests, refetch: refetchRequests } = useQuery<MessageRequest[]>({
+    queryKey: ['messageRequests'],
+    queryFn: getReceivedMessageRequests,
     enabled: !!currentUserId
   });
 
@@ -37,6 +48,7 @@ export default function Messages() {
   });
 
   const hasConnections = (connections?.length ?? 0) > 0;
+  const pendingRequests = messageRequests?.filter(r => r.status === 'pending') || [];
 
   if (authLoading) {
     return (
@@ -50,7 +62,6 @@ export default function Messages() {
     );
   }
 
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -62,70 +73,114 @@ export default function Messages() {
           </Button>
         </div>
 
-        {isLoading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-4">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-[200px]" />
-                      <Skeleton className="h-4 w-[150px]" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center py-8">
-            <p className="text-red-500">Error loading conversations</p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => window.location.reload()}
-            >
-              Try Again
-            </Button>
-          </div>
-        ) : conversations && conversations.length > 0 ? (
-          <div className="space-y-4">
-            {conversations.map((conversation) => (
-              <ConversationItem 
-                key={conversation.id} 
-                conversation={conversation} 
-                currentUserId={currentUserId}
-              />
-            ))}
-          </div>
-        ) : !hasConnections ? (
-          <div className="text-center py-16 border rounded-lg bg-card">
-            <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Users className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-medium mb-2">Build your network first</h3>
-            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-              Connect with other professionals before you can message them. This helps maintain a professional environment.
-            </p>
-            <Button asChild>
-              <Link to="/connections">Find Connections</Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="text-center py-16 border rounded-lg bg-card">
-            <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-              <MessageSquare className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-medium mb-2">No conversations yet</h3>
-            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-              Start messaging your connections to collaborate and network.
-            </p>
-            <Button asChild>
-              <Link to="/connections">Message a Connection</Link>
-            </Button>
-          </div>
-        )}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="messages" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Messages
+            </TabsTrigger>
+            <TabsTrigger value="requests" className="flex items-center gap-2">
+              <Inbox className="h-4 w-4" />
+              Requests
+              {pendingRequests.length > 0 && (
+                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  {pendingRequests.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="messages">
+            {isLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-4">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-[200px]" />
+                          <Skeleton className="h-4 w-[150px]" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-500">Error loading conversations</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => window.location.reload()}
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : conversations && conversations.length > 0 ? (
+              <div className="space-y-4">
+                {conversations.map((conversation) => (
+                  <ConversationItem 
+                    key={conversation.id} 
+                    conversation={conversation} 
+                    currentUserId={currentUserId}
+                  />
+                ))}
+              </div>
+            ) : !hasConnections ? (
+              <div className="text-center py-16 border rounded-lg bg-card">
+                <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <Users className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">Build your network first</h3>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                  Connect with other professionals before you can message them. This helps maintain a professional environment.
+                </p>
+                <Button asChild>
+                  <Link to="/connections">Find Connections</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center py-16 border rounded-lg bg-card">
+                <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <MessageSquare className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">No conversations yet</h3>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                  Start messaging your connections to collaborate and network.
+                </p>
+                <Button asChild>
+                  <Link to="/connections">Message a Connection</Link>
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="requests">
+            {pendingRequests.length > 0 ? (
+              <div className="space-y-4">
+                {pendingRequests.map((request) => (
+                  <MessageRequestCard 
+                    key={request.id} 
+                    request={request}
+                    onAction={() => refetchRequests()}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 border rounded-lg bg-card">
+                <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <Inbox className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">No message requests</h3>
+                <p className="text-muted-foreground max-w-sm mx-auto">
+                  When someone outside your network wants to message you, their request will appear here.
+                </p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
       <Footer />
     </div>
