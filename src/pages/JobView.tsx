@@ -6,10 +6,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Globe, Link as LinkIcon, Bookmark, Building2, DollarSign } from "lucide-react";
+import { Calendar, MapPin, Globe, Link as LinkIcon, Bookmark, Building2, DollarSign, Clock, Users, TrendingUp, Plane } from "lucide-react";
 import { format } from "date-fns";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
 import { toast } from "sonner";
+import TransparencyScore from "@/components/TransparencyScore";
 
 const JobTypeLabels: Record<string, string> = {
   full_time: "Full-time",
@@ -154,14 +155,32 @@ const JobView = () => {
             </div>
           </div>
           
-          {/* Salary */}
-          <div className="bg-muted/50 p-4 rounded-lg mb-6 flex items-center gap-3">
-            <DollarSign className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Compensation</p>
-              <p className="text-xl font-semibold">
-                {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
-              </p>
+          {/* Salary and Transparency Score */}
+          <div className="flex flex-wrap gap-4 mb-6">
+            <div className="bg-muted/50 p-4 rounded-lg flex items-center gap-3 flex-1 min-w-[200px]">
+              <DollarSign className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Compensation</p>
+                <p className="text-xl font-semibold">
+                  {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
+                </p>
+              </div>
+            </div>
+            
+            <div className="bg-muted/50 p-4 rounded-lg flex items-center gap-3">
+              <TransparencyScore 
+                score={job.transparency_score || 0}
+                details={{
+                  hasSalary: !!(job.salary_min || job.salary_max),
+                  hasRemotePolicy: !!job.remote_policy,
+                  hasInterviewProcess: !!job.interview_process,
+                  hasResponseTime: !!job.response_time,
+                  hasTeamSize: !!job.team_size,
+                  hasGrowthPath: !!job.growth_path,
+                  hasVisaInfo: job.visa_sponsorship !== null
+                }}
+                showDetails
+              />
             </div>
           </div>
           
@@ -199,6 +218,62 @@ const JobView = () => {
             )}
           </div>
         </div>
+        
+        {/* Transparency Details */}
+        {(job.interview_process || job.response_time || job.team_size || job.growth_path || job.visa_sponsorship !== null) && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-4">Hiring Details</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {job.interview_process && (
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
+                  <Clock className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">Interview Process</p>
+                    <p className="text-sm text-muted-foreground">{job.interview_process}</p>
+                  </div>
+                </div>
+              )}
+              {job.response_time && (
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
+                  <Calendar className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">Response Time</p>
+                    <p className="text-sm text-muted-foreground">{job.response_time}</p>
+                  </div>
+                </div>
+              )}
+              {job.team_size && (
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
+                  <Users className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">Team Size</p>
+                    <p className="text-sm text-muted-foreground">{job.team_size}</p>
+                  </div>
+                </div>
+              )}
+              {job.growth_path && (
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
+                  <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">Growth Path</p>
+                    <p className="text-sm text-muted-foreground">{job.growth_path}</p>
+                  </div>
+                </div>
+              )}
+              {job.visa_sponsorship !== null && (
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
+                  <Plane className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">Visa Sponsorship</p>
+                    <p className="text-sm text-muted-foreground">
+                      {job.visa_sponsorship ? 'Available' : 'Not available'}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         
         {/* Apply section */}
         <div className="border rounded-lg p-6 bg-card">

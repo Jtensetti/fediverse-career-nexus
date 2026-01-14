@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import TransparencyScore from "@/components/TransparencyScore";
 
 interface JobCardProps {
   job: JobPost;
@@ -126,13 +127,29 @@ const JobCard = ({ job }: JobCardProps) => {
             </div>
           )}
           
-          {/* Salary */}
-          {salary && (
-            <div className="flex items-center gap-2 text-sm font-medium text-primary">
-              <DollarSign className="h-4 w-4" />
-              <span>{salary}</span>
-            </div>
-          )}
+          {/* Salary and Transparency Score */}
+          <div className="flex items-center justify-between">
+            {salary && (
+              <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                <DollarSign className="h-4 w-4" />
+                <span>{salary}</span>
+              </div>
+            )}
+            {job.transparency_score !== undefined && job.transparency_score > 0 && (
+              <TransparencyScore 
+                score={job.transparency_score}
+                details={{
+                  hasSalary: !!(job.salary_min || job.salary_max),
+                  hasRemotePolicy: !!job.remote_policy,
+                  hasInterviewProcess: !!job.interview_process,
+                  hasResponseTime: !!job.response_time,
+                  hasTeamSize: !!job.team_size,
+                  hasGrowthPath: !!job.growth_path,
+                  hasVisaInfo: job.visa_sponsorship !== null
+                }}
+              />
+            )}
+          </div>
         </CardContent>
         <CardFooter className="pt-0">
           <Button asChild className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="outline">

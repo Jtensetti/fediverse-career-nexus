@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Briefcase, School, Star, Trash, Plus, Settings, CalendarIcon } from "lucide-react";
+import DMPrivacySettings from "@/components/DMPrivacySettings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -947,21 +948,7 @@ const ProfileEditPage = () => {
                 
                 <Separator />
                 
-                <div className="flex flex-col space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="message-privacy" className="font-medium">Message privacy</Label>
-                      <p className="text-sm text-muted-foreground mt-1">Only allow messages from your connections</p>
-                    </div>
-                    <Switch id="message-privacy" defaultChecked />
-                  </div>
-                </div>
-                
-                <div className="flex justify-end mt-6">
-                  <Button>
-                    Save Privacy Settings
-                  </Button>
-                </div>
+                <DMPrivacySettings />
               </CardContent>
             </Card>
           </TabsContent>
