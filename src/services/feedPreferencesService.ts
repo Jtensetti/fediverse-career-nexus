@@ -161,7 +161,7 @@ export async function createCustomFeed(feed: {
         name: feed.name,
         description: feed.description,
         icon: feed.icon || 'filter',
-        rules: feed.rules as unknown as Record<string, unknown>,
+        rules: feed.rules as unknown as import('@/integrations/supabase/types').Json,
         is_public: feed.is_public || false,
         position: nextPosition
       })
@@ -188,13 +188,16 @@ export async function updateCustomFeed(
 ): Promise<boolean> {
   try {
     const { rules, ...rest } = updates;
+    const updateData: Record<string, unknown> = {
+      ...rest,
+      updated_at: new Date().toISOString()
+    };
+    if (rules) {
+      updateData.rules = rules as unknown as import('@/integrations/supabase/types').Json;
+    }
     const { error } = await supabase
       .from('custom_feeds')
-      .update({
-        ...rest,
-        ...(rules && { rules: rules as unknown as Record<string, unknown> }),
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', feedId);
 
     if (error) throw error;
