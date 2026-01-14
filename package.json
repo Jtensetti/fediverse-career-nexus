@@ -53,6 +53,7 @@
     "dompurify": "^3.3.1",
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^12.23.26",
+    "html-to-image": "^1.11.13",
     "i18next": "^23.6.0",
     "i18next-browser-languagedetector": "^8.1.0",
     "input-otp": "^1.2.4",

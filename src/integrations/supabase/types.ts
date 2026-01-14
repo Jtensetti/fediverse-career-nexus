@@ -195,6 +195,7 @@ export type Database = {
         Row: {
           attributed_to: string | null
           content: Json | null
+          content_warning: string | null
           created_at: string
           id: string
           published_at: string | null
@@ -204,6 +205,7 @@ export type Database = {
         Insert: {
           attributed_to?: string | null
           content?: Json | null
+          content_warning?: string | null
           created_at?: string
           id?: string
           published_at?: string | null
@@ -213,6 +215,7 @@ export type Database = {
         Update: {
           attributed_to?: string | null
           content?: Json | null
+          content_warning?: string | null
           created_at?: string
           id?: string
           published_at?: string | null
@@ -491,6 +494,108 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      cross_post_settings: {
+        Row: {
+          auto_crosspost: boolean | null
+          bluesky_handle: string | null
+          created_at: string | null
+          crosspost_scope: string | null
+          id: string
+          mastodon_handle: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_crosspost?: boolean | null
+          bluesky_handle?: string | null
+          created_at?: string | null
+          crosspost_scope?: string | null
+          id?: string
+          mastodon_handle?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_crosspost?: boolean | null
+          bluesky_handle?: string | null
+          created_at?: string | null
+          crosspost_scope?: string | null
+          id?: string
+          mastodon_handle?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cross_post_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cross_post_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_feeds: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          position: number | null
+          rules: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          position?: number | null
+          rules?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          position?: number | null
+          rules?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_feeds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_feeds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cv_sections: {
         Row: {
@@ -1075,18 +1180,24 @@ export type Database = {
           employment_type: string | null
           experience_level: string | null
           expires_at: string | null
+          growth_path: string | null
           id: string
+          interview_process: string | null
           is_active: boolean | null
           location: string | null
           remote_policy: string | null
+          response_time: string | null
           salary_currency: string | null
           salary_max: number | null
           salary_min: number | null
           search_vector: unknown
           skills: string[] | null
+          team_size: string | null
           title: string
+          transparency_score: number | null
           updated_at: string
           user_id: string
+          visa_sponsorship: boolean | null
         }
         Insert: {
           company: string
@@ -1095,18 +1206,24 @@ export type Database = {
           employment_type?: string | null
           experience_level?: string | null
           expires_at?: string | null
+          growth_path?: string | null
           id?: string
+          interview_process?: string | null
           is_active?: boolean | null
           location?: string | null
           remote_policy?: string | null
+          response_time?: string | null
           salary_currency?: string | null
           salary_max?: number | null
           salary_min?: number | null
           search_vector?: unknown
           skills?: string[] | null
+          team_size?: string | null
           title: string
+          transparency_score?: number | null
           updated_at?: string
           user_id: string
+          visa_sponsorship?: boolean | null
         }
         Update: {
           company?: string
@@ -1115,20 +1232,88 @@ export type Database = {
           employment_type?: string | null
           experience_level?: string | null
           expires_at?: string | null
+          growth_path?: string | null
           id?: string
+          interview_process?: string | null
           is_active?: boolean | null
           location?: string | null
           remote_policy?: string | null
+          response_time?: string | null
           salary_currency?: string | null
           salary_max?: number | null
           salary_min?: number | null
           search_vector?: unknown
           skills?: string[] | null
+          team_size?: string | null
           title?: string
+          transparency_score?: number | null
           updated_at?: string
           user_id?: string
+          visa_sponsorship?: boolean | null
         }
         Relationships: []
+      }
+      message_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          intro_template: string | null
+          preview_text: string | null
+          recipient_id: string
+          responded_at: string | null
+          sender_id: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          intro_template?: string | null
+          preview_text?: string | null
+          recipient_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          intro_template?: string | null
+          preview_text?: string | null
+          recipient_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_requests_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_requests_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_requests_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_requests_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -1534,6 +1719,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          dm_privacy: string | null
           domain: string | null
           fullname: string | null
           header_url: string | null
@@ -1546,6 +1732,7 @@ export type Database = {
           profile_views: number | null
           remote_actor_url: string | null
           search_vector: unknown
+          trust_level: number | null
           updated_at: string
           username: string | null
         }
@@ -1554,6 +1741,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          dm_privacy?: string | null
           domain?: string | null
           fullname?: string | null
           header_url?: string | null
@@ -1566,6 +1754,7 @@ export type Database = {
           profile_views?: number | null
           remote_actor_url?: string | null
           search_vector?: unknown
+          trust_level?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -1574,6 +1763,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          dm_privacy?: string | null
           domain?: string | null
           fullname?: string | null
           header_url?: string | null
@@ -1586,6 +1776,7 @@ export type Database = {
           profile_views?: number | null
           remote_actor_url?: string | null
           search_vector?: unknown
+          trust_level?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -1915,6 +2106,126 @@ export type Database = {
         }
         Relationships: []
       }
+      starter_pack_members: {
+        Row: {
+          added_at: string | null
+          added_by: string | null
+          id: string
+          pack_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          added_by?: string | null
+          id?: string
+          pack_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          added_by?: string | null
+          id?: string
+          pack_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "starter_pack_members_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "starter_pack_members_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "starter_pack_members_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "starter_packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "starter_pack_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "starter_pack_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      starter_packs: {
+        Row: {
+          category: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          creator_id: string | null
+          description: string | null
+          follower_count: number | null
+          id: string
+          is_featured: boolean | null
+          member_count: number | null
+          name: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string | null
+          follower_count?: number | null
+          id?: string
+          is_featured?: boolean | null
+          member_count?: number | null
+          name: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string | null
+          follower_count?: number | null
+          id?: string
+          is_featured?: boolean | null
+          member_count?: number | null
+          name?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "starter_packs_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "starter_packs_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -2017,6 +2328,145 @@ export type Database = {
           },
           {
             foreignKeyName: "fk_user_connections_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_cw_preferences: {
+        Row: {
+          always_show_cw_tags: string[] | null
+          auto_expand_cws: boolean | null
+          created_at: string | null
+          hidden_cw_tags: string[] | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          always_show_cw_tags?: string[] | null
+          auto_expand_cws?: boolean | null
+          created_at?: string | null
+          hidden_cw_tags?: string[] | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          always_show_cw_tags?: string[] | null
+          auto_expand_cws?: boolean | null
+          created_at?: string | null
+          hidden_cw_tags?: string[] | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cw_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_cw_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_feed_preferences: {
+        Row: {
+          created_at: string | null
+          default_feed: string | null
+          id: string
+          language_filter: string[] | null
+          muted_words: string[] | null
+          show_replies: boolean | null
+          show_reposts: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_feed?: string | null
+          id?: string
+          language_filter?: string[] | null
+          muted_words?: string[] | null
+          show_replies?: boolean | null
+          show_reposts?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_feed?: string | null
+          id?: string
+          language_filter?: string[] | null
+          muted_words?: string[] | null
+          show_replies?: boolean | null
+          show_reposts?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feed_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_feed_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_followed_packs: {
+        Row: {
+          followed_at: string | null
+          id: string
+          pack_id: string
+          user_id: string
+        }
+        Insert: {
+          followed_at?: string | null
+          id?: string
+          pack_id: string
+          user_id: string
+        }
+        Update: {
+          followed_at?: string | null
+          id?: string
+          pack_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_followed_packs_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "starter_packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_followed_packs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_followed_packs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
