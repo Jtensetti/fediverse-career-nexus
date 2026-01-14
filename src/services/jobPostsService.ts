@@ -5,21 +5,28 @@ import { federateJobPost } from "./activityPubService";
 export interface JobPost {
   id: string;
   user_id: string;
-  company: string; // renamed from company_name
+  company: string;
   title: string;
   description: string | null;
   location: string | null;
-  employment_type: string; // renamed from job_type
+  employment_type: string;
   salary_min: number | null;
   salary_max: number | null;
   salary_currency: string | null;
-  remote_policy: string | null; // renamed from remote_allowed
+  remote_policy: string | null;
   experience_level: string | null;
   skills: string[] | null;
-  is_active: boolean; // renamed from published
+  is_active: boolean;
   expires_at: string | null;
   created_at: string;
   updated_at: string;
+  // Transparency fields
+  interview_process?: string | null;
+  response_time?: string | null;
+  team_size?: string | null;
+  growth_path?: string | null;
+  visa_sponsorship?: boolean | null;
+  transparency_score?: number | null;
   // Legacy field mappings for compatibility
   company_name?: string;
   company_verified?: boolean;

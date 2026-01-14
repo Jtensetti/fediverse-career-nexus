@@ -1,26 +1,49 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FederatedFeed from "@/components/FederatedFeed";
 import PostComposer from "@/components/PostComposer";
+import FeedSelector from "@/components/FeedSelector";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import ProfileCompleteness from "@/components/onboarding/ProfileCompleteness";
 import SuggestedActions from "@/components/onboarding/SuggestedActions";
 import ReferralWidget from "@/components/ReferralWidget";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { getFeedPreferences, type FeedType } from "@/services/feedPreferencesService";
+import { useQuery } from "@tanstack/react-query";
 
 const FederatedFeedPage = () => {
-  const [feedSource, setFeedSource] = useState<string>("all");
+  const [activeFeed, setActiveFeed] = useState<FeedType>("following");
   const queryClient = useQueryClient();
   const { showOnboarding, completeOnboarding, hasChecked } = useOnboarding();
 
+  // Load user's feed preferences
+  const { data: preferences } = useQuery({
+    queryKey: ['feedPreferences'],
+    queryFn: getFeedPreferences,
+  });
+
+  // Set default feed from preferences
+  useEffect(() => {
+    if (preferences?.default_feed) {
+      setActiveFeed(preferences.default_feed);
+    }
+  }, [preferences]);
+
+  // Map feed type to source filter
+  const getSourceFilter = (feed: FeedType): string => {
+    switch (feed) {
+      case 'following': return 'all'; // Following feed shows all followed accounts
+      case 'local': return 'local';
+      case 'federated': return 'all';
+      default: return 'all';
+    }
+  };
+
   const handleRefresh = () => {
-    // Invalidate the feed query to force a refresh
     queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
   };
 
@@ -40,31 +63,29 @@ const FederatedFeedPage = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Feed Column */}
           <div className="flex-grow max-w-2xl">
+            {/* Feed Header with Selector */}
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold flex items-center gap-2 text-foreground">
-                <Globe className="h-7 w-7" />
-                Federated Feed
-              </h1>
+              <FeedSelector
+                value={activeFeed}
+                onChange={(val) => setActiveFeed(val as FeedType)}
+              />
               
-              <div className="flex items-center gap-2">
-                <Select value={feedSource} onValueChange={setFeedSource}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Sources</SelectItem>
-                    <SelectItem value="local">Local Only</SelectItem>
-                    <SelectItem value="remote">Remote Only</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Button variant="outline" onClick={handleRefresh}>Refresh</Button>
-              </div>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={handleRefresh}
+                className="shrink-0"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
             </div>
             
             <PostComposer className="mb-6" />
             
-            <FederatedFeed className="mb-8" sourceFilter={feedSource} />
+            <FederatedFeed 
+              className="mb-8" 
+              sourceFilter={getSourceFilter(activeFeed)} 
+            />
           </div>
           
           {/* Sidebar */}

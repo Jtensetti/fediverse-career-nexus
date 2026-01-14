@@ -45,6 +45,7 @@ import Instances from "./pages/Instances";
 import AdminFederationHealth from "./pages/AdminFederationHealth";
 import PostView from "./pages/PostView";
 import SavedItemsPage from "./pages/SavedItems";
+import StarterPacks from "./pages/StarterPacks";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -81,6 +82,7 @@ function App() {
                     <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
                     <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
                     <Route path="/instances" element={<Instances />} />
+                    <Route path="/packs" element={<StarterPacks />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />
