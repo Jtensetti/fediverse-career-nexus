@@ -25,6 +25,7 @@ import EnhancedPostReactions from "./EnhancedPostReactions";
 import CommentPreview from "./CommentPreview";
 import QuoteRepostDialog from "./QuoteRepostDialog";
 import { QuotedPostPreview, RepostIndicator } from "./QuotedPostPreview";
+import ContentWarningDisplay from "./ContentWarningDisplay";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 
@@ -403,38 +404,41 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
         <CardContent className="pb-3">
           {getModerationBanner()}
           
-          {/* Only show content div if there's actual text content */}
-          {getContent() && (
-            <div 
-              className="prose prose-sm max-w-none dark:prose-invert" 
-              dangerouslySetInnerHTML={{ __html: getContent() }} 
-            />
-          )}
-        
-          {attachments.length > 0 && (
-            <div className="mt-3 grid gap-2 rounded-xl overflow-hidden">
-              {attachments.map((att, idx) => (
-                <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                  <img 
-                    src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url} 
-                    alt={att.altText || att.name || 'Media attachment'} 
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Content with optional Content Warning */}
+          <ContentWarningDisplay warning={post.content_warning || post.content?.summary || ''}>
+            {/* Only show content div if there's actual text content */}
+            {getContent() && (
+              <div 
+                className="prose prose-sm max-w-none dark:prose-invert" 
+                dangerouslySetInnerHTML={{ __html: getContent() }} 
+              />
+            )}
           
-          {/* Quoted Post Preview for reposts */}
-          {isQuoteRepost && getQuotedPost() && (
-            <div className="mt-3">
-              <QuotedPostPreview quotedPost={getQuotedPost()} />
-            </div>
-          )}
+            {attachments.length > 0 && (
+              <div className="mt-3 grid gap-2 rounded-xl overflow-hidden">
+                {attachments.map((att, idx) => (
+                  <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                    <img 
+                      src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url} 
+                      alt={att.altText || att.name || 'Media attachment'} 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Quoted Post Preview for reposts */}
+            {isQuoteRepost && getQuotedPost() && (
+              <div className="mt-3">
+                <QuotedPostPreview quotedPost={getQuotedPost()} />
+              </div>
+            )}
+          </ContentWarningDisplay>
         </CardContent>
         
         {/* Comment Preview Section */}

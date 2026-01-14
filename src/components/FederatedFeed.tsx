@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getFederatedFeed, type FederatedPost } from "@/services/federationService";
+import { getFederatedFeed, type FederatedPost, type FeedType } from "@/services/federationService";
 import FederatedPostCard from "./FederatedPostCard";
 import PostEditDialog from "./PostEditDialog";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,10 @@ interface FederatedFeedProps {
   limit?: number;
   className?: string;
   sourceFilter?: string;
+  feedType?: FeedType;
 }
 
-export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "all" }: FederatedFeedProps) {
+export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "all", feedType = "all" }: FederatedFeedProps) {
   const [allPosts, setAllPosts] = useState<FederatedPost[]>([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -26,44 +27,45 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   // Track loaded post IDs to prevent duplicates
   const loadedIds = useMemo(() => new Set(allPosts.map(p => p.id)), [allPosts]);
   
+  // Determine the effective feed type from either prop
+  const effectiveFeedType: FeedType = feedType !== 'all' ? feedType : 
+    (sourceFilter === 'local' ? 'local' : 
+     sourceFilter === 'remote' ? 'remote' : 
+     sourceFilter === 'following' ? 'following' : 'all');
+  
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ['federatedFeed', limit, offset],
-    queryFn: () => getFederatedFeed(limit, offset),
+    queryKey: ['federatedFeed', limit, offset, effectiveFeedType],
+    queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType),
   });
   
-  // Reset when source filter changes
+  // Reset when feed type changes
   useEffect(() => {
     setOffset(0);
     setAllPosts([]);
     setHasMore(true);
-  }, [sourceFilter]);
+  }, [effectiveFeedType]);
   
   // Process new posts when they arrive
   useEffect(() => {
     if (posts) {
-      // Filter posts based on sourceFilter
-      const filteredPosts = sourceFilter === "all" 
-        ? posts 
-        : posts.filter(post => (post.source || 'local') === sourceFilter);
-      
       if (offset === 0) {
         // First page - replace all posts
-        setAllPosts(filteredPosts);
+        setAllPosts(posts);
       } else {
         // Subsequent pages - append only new posts (deduplicate by ID)
         setAllPosts(prev => {
           const existingIds = new Set(prev.map(p => p.id));
-          const newPosts = filteredPosts.filter(p => !existingIds.has(p.id));
+          const newPosts = posts.filter(p => !existingIds.has(p.id));
           return [...prev, ...newPosts];
         });
       }
       
       // Check if we've reached the end
-      if (filteredPosts.length < limit) {
+      if (posts.length < limit) {
         setHasMore(false);
       }
     }
-  }, [posts, offset, sourceFilter, limit]);
+  }, [posts, offset, limit]);
   
   const handleLoadMore = () => {
     if (!isFetching && hasMore) {
