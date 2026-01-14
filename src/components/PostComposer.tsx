@@ -10,13 +10,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Image, PenTool, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send, ImagePlus } from "lucide-react";
+import { Image, PenTool, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send, ImagePlus, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profileService";
 import { createPost, CreatePostData } from "@/services/postService";
 import { compressImage, formatFileSize } from "@/lib/imageCompression";
 import { LinkPreview, extractUrls } from "@/components/LinkPreview";
+import ContentWarningInput from "@/components/ContentWarningInput";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const [scheduledTime, setScheduledTime] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dismissedUrls, setDismissedUrls] = useState<Set<string>>(new Set());
+  const [contentWarning, setContentWarning] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -102,6 +104,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     setScheduledTime("");
     setShowDatePicker(false);
     setDismissedUrls(new Set());
+    setContentWarning("");
   };
 
   const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,6 +153,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
       content: postContent.trim(),
       imageFile: selectedImage || undefined,
       imageAltText: imageAltText.trim() || undefined,
+      contentWarning: contentWarning.trim() || undefined,
     };
 
     createPostMutation.mutate(postData);
@@ -179,6 +183,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
       content: postContent.trim(),
       imageFile: selectedImage || undefined,
       imageAltText: imageAltText.trim() || undefined,
+      contentWarning: contentWarning.trim() || undefined,
       scheduledFor: scheduledDateTime,
     };
 
@@ -341,6 +346,12 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* Content Warning Input */}
+                <ContentWarningInput
+                  value={contentWarning}
+                  onChange={setContentWarning}
+                />
 
                 {/* Scheduled Info */}
                 <AnimatePresence>
