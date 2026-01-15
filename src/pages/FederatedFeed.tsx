@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { FeedType } from "@/services/federationService";
 
 const FederatedFeedPage = () => {
-  const [activeFeed, setActiveFeed] = useState<FeedType>("following");
+  const [activeFeed, setActiveFeed] = useState<FeedType>("all");
   const queryClient = useQueryClient();
   const { showOnboarding, completeOnboarding, hasChecked } = useOnboarding();
 
