@@ -33,9 +33,16 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
      sourceFilter === 'remote' ? 'remote' : 
      sourceFilter === 'following' ? 'following' : 'all');
   
+  // Track which offset the current query is for
+  const [queryOffset, setQueryOffset] = useState(0);
+  
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['federatedFeed', limit, offset, effectiveFeedType],
-    queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType),
+    queryFn: () => {
+      // Capture offset at query time
+      setQueryOffset(offset);
+      return getFederatedFeed(limit, offset, effectiveFeedType);
+    },
   });
   
   // Reset when feed type changes
@@ -43,29 +50,40 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setOffset(0);
     setAllPosts([]);
     setHasMore(true);
+    setQueryOffset(0);
   }, [effectiveFeedType]);
   
-  // Process new posts when they arrive
+  // Process new posts when they arrive - remove offset from dependencies
   useEffect(() => {
-    if (posts) {
-      if (offset === 0) {
-        // First page - replace all posts
-        setAllPosts(posts);
-      } else {
-        // Subsequent pages - append only new posts (deduplicate by ID)
-        setAllPosts(prev => {
-          const existingIds = new Set(prev.map(p => p.id));
-          const newPosts = posts.filter(p => !existingIds.has(p.id));
-          return [...prev, ...newPosts];
-        });
-      }
-      
-      // Check if we've reached the end
-      if (posts.length < limit) {
+    if (!posts || posts.length === 0) {
+      if (posts && posts.length === 0 && queryOffset === 0) {
+        // Empty feed on first page
+        setAllPosts([]);
         setHasMore(false);
       }
+      return;
     }
-  }, [posts, offset, limit]);
+    
+    setAllPosts(currentPosts => {
+      // For first page (queryOffset === 0), replace entirely
+      if (queryOffset === 0) {
+        return posts;
+      }
+      
+      // For pagination, deduplicate and append
+      const existingIds = new Set(currentPosts.map(p => p.id));
+      const newPosts = posts.filter(p => !existingIds.has(p.id));
+      
+      // Only append if we actually have new posts
+      if (newPosts.length === 0) return currentPosts;
+      return [...currentPosts, ...newPosts];
+    });
+    
+    // Check if we've reached the end
+    if (posts.length < limit) {
+      setHasMore(false);
+    }
+  }, [posts, queryOffset, limit]);
   
   const handleLoadMore = () => {
     if (!isFetching && hasMore) {
