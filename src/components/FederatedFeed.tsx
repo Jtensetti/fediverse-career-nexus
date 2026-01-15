@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFederatedFeed, type FederatedPost, type FeedType } from "@/services/federationService";
 import FederatedPostCard from "./FederatedPostCard";
@@ -35,6 +35,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   
   // Track which offset the current query is for
   const [queryOffset, setQueryOffset] = useState(0);
+  
+  // Ref for infinite scroll sentinel
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['federatedFeed', limit, offset, effectiveFeedType],
@@ -85,11 +88,23 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     }
   }, [posts, queryOffset, limit]);
   
-  const handleLoadMore = () => {
-    if (!isFetching && hasMore) {
-      setOffset(prev => prev + limit);
-    }
-  };
+  // Infinite scroll with IntersectionObserver
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore || isFetching) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetching) {
+          setOffset(prev => prev + limit);
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+    
+    observer.observe(loadMoreRef.current);
+    
+    return () => observer.disconnect();
+  }, [hasMore, isFetching, limit]);
 
   const handleEditPost = (post: FederatedPost) => {
     setEditingPost(post);
@@ -142,22 +157,13 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
           ))}
           
           {hasMore && (
-            <div className="mt-4 flex justify-center">
-              <Button
-                onClick={handleLoadMore}
-                disabled={isFetching}
-                variant="outline"
-                className="w-full max-w-md"
-              >
-                {isFetching ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  'Load More'
-                )}
-              </Button>
+            <div ref={loadMoreRef} className="mt-4 flex justify-center py-4">
+              {isFetching && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading more posts...</span>
+                </div>
+              )}
             </div>
           )}
           <PostEditDialog
