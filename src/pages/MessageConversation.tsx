@@ -4,14 +4,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { Send } from 'lucide-react';
+import { Send, AlertCircle } from 'lucide-react';
 
 import { 
   getConversationWithMessages, 
   sendMessage, 
   Message,
   subscribeToMessages,
-  getOtherParticipant
+  getOtherParticipant,
+  areUsersConnected
 } from '@/services/messageService';
 
 import Navbar from '@/components/Navbar';
@@ -36,6 +37,7 @@ export default function MessageConversation() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [otherUser, setOtherUser] = useState<any | null>(null);
+  const [canMessage, setCanMessage] = useState<boolean | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -99,21 +101,29 @@ export default function MessageConversation() {
     };
   }, [conversationId, currentUserId, queryClient, toast]);
 
-  // Get other participant details
+  // Get other participant details and check connection status
   useEffect(() => {
-    if (!data?.conversation || !currentUserId) return;
+    if (!conversationId || !currentUserId) return;
 
-    const loadUser = async () => {
+    const loadUserAndCheckConnection = async () => {
       try {
-        const user = await getOtherParticipant(data.conversation, currentUserId);
-        setOtherUser(user);
+        // Check if users are connected
+        const connected = await areUsersConnected(currentUserId, conversationId);
+        setCanMessage(connected);
+        
+        // Load user profile
+        if (data?.conversation) {
+          const user = await getOtherParticipant(data.conversation, currentUserId);
+          setOtherUser(user);
+        }
       } catch (error) {
         console.error('Error loading participant:', error);
+        setCanMessage(false);
       }
     };
 
-    loadUser();
-  }, [data?.conversation, currentUserId]);
+    loadUserAndCheckConnection();
+  }, [data?.conversation, currentUserId, conversationId]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -235,7 +245,9 @@ export default function MessageConversation() {
                 </AvatarFallback>
               </Avatar>
               <CardTitle>
-                {otherUser?.username || otherUser?.fullname || 'Unknown User'}
+                {otherUser?.username || otherUser?.fullname || (
+                  <span className="text-muted-foreground">User not found</span>
+                )}
               </CardTitle>
             </div>
           </CardHeader>
@@ -272,23 +284,31 @@ export default function MessageConversation() {
           </CardContent>
           
           <CardFooter className="border-t p-4">
-            <form onSubmit={handleSendMessage} className="w-full">
-              <div className="flex space-x-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-grow"
-                />
-                <Button 
-                  type="submit" 
-                  size="icon"
-                  disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+            {canMessage === false ? (
+              <div className="w-full flex items-center justify-center gap-2 text-muted-foreground py-2">
+                <AlertCircle className="h-4 w-4" />
+                <span>You must be connected to send messages</span>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={handleSendMessage} className="w-full">
+                <div className="flex space-x-2">
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder={canMessage === null ? "Checking connection..." : "Type your message..."}
+                    className="flex-grow"
+                    disabled={canMessage === null}
+                  />
+                  <Button 
+                    type="submit" 
+                    size="icon"
+                    disabled={!newMessage.trim() || sendMessageMutation.isPending || canMessage !== true}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </form>
+            )}
           </CardFooter>
         </Card>
       </div>
