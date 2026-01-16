@@ -41,16 +41,12 @@ const LiveStats = () => {
   useEffect(() => {
     fetchStats();
 
-    // Set up realtime subscriptions for live updates
-    const channel = supabase
-      .channel('live-stats')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ap_objects' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_posts' }, fetchStats)
-      .subscribe();
+    // Use interval instead of realtime to reduce WebSocket overhead
+    // Stats don't need to be real-time - refresh every 60 seconds
+    const interval = setInterval(fetchStats, 60000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [fetchStats]);
 

@@ -1,6 +1,56 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+// Lightweight profile data for hover cards - single query, no joins
+export interface ProfilePreview {
+  id: string;
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  headline?: string;
+  isVerified?: boolean;
+  contact?: {
+    location?: string;
+  };
+  connections?: number;
+  experience?: Array<{
+    title: string;
+    company: string;
+  }>;
+}
+
+/**
+ * Lightweight profile fetch for hover cards - single query only
+ * Reduces 7 queries to 1 query per hover card
+ */
+export const getProfilePreview = async (usernameOrId: string): Promise<ProfilePreview | null> => {
+  try {
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(usernameOrId);
+    
+    const { data: profile, error } = await supabase
+      .from("public_profiles")
+      .select("id, username, fullname, headline, avatar_url, is_verified, location")
+      .eq(isUUID ? "id" : "username", usernameOrId)
+      .maybeSingle();
+
+    if (error || !profile) return null;
+
+    return {
+      id: profile.id,
+      username: profile.username || undefined,
+      displayName: profile.fullname || profile.username || undefined,
+      avatarUrl: profile.avatar_url || undefined,
+      headline: profile.headline || undefined,
+      isVerified: profile.is_verified || false,
+      contact: {
+        location: profile.location || undefined,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching profile preview:", error);
+    return null;
+  }
+};
 
 export interface UserProfile {
   id: string;
@@ -196,14 +246,14 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
 
     if (skillsError) throw skillsError;
 
-    // Get user settings
-    const { data: settings, error: settingsError } = await supabase
+    // Get user settings - use maybeSingle to avoid 406 errors when no settings exist
+    const { data: settings } = await supabase
       .from("user_settings")
       .select("show_network_connections")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (settingsError && settingsError.code !== "PGRST116") throw settingsError;
+    // Don't throw for missing settings, use default value
 
     // Get connection count
     const { count: connectionCount, error: connectionError } = await supabase
@@ -321,15 +371,14 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
 
     if (skillsError) throw skillsError;
 
-    // Get user settings
-    const { data: settings, error: settingsError } = await supabase
+    // Get user settings - use maybeSingle to avoid 406 errors when no settings exist
+    const { data: settings } = await supabase
       .from("user_settings")
       .select("show_network_connections")
       .eq("user_id", profile.id)
-      .single();
+      .maybeSingle();
 
-    // Don't throw for no settings
-    const networkVisibilityEnabled = settingsError ? true : (settings?.show_network_connections ?? true);
+    const networkVisibilityEnabled = settings?.show_network_connections ?? true;
 
     // Get connection count
     const { count: connectionCount, error: connectionError } = await supabase

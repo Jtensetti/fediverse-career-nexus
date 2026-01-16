@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Users, Briefcase, Check, ExternalLink } from "lucide-react";
-import { getUserProfileByUsername } from "@/services/profileService";
-import { cn } from "@/lib/utils";
+import { getProfilePreview } from "@/services/profileService";
 
 interface ProfileHoverCardProps {
   children: ReactNode;
@@ -19,11 +18,13 @@ interface ProfileHoverCardProps {
 
 export function ProfileHoverCard({ children, username, userId, disabled = false }: ProfileHoverCardProps) {
   const identifier = username || userId;
+  const [isOpen, setIsOpen] = useState(false);
   
+  // Only fetch when hover card is actually opened - prevents N+1 queries on page load
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile-hover", identifier],
-    queryFn: () => getUserProfileByUsername(identifier!),
-    enabled: !!identifier && !disabled,
+    queryFn: () => getProfilePreview(identifier!),
+    enabled: !!identifier && !disabled && isOpen,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
@@ -32,7 +33,7 @@ export function ProfileHoverCard({ children, username, userId, disabled = false 
   }
 
   return (
-    <HoverCard openDelay={300} closeDelay={100}>
+    <HoverCard openDelay={300} closeDelay={100} onOpenChange={setIsOpen}>
       <HoverCardTrigger asChild>
         {children}
       </HoverCardTrigger>
