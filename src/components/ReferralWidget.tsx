@@ -7,6 +7,9 @@ import { toast } from "sonner";
 import { getUserReferralCode, getReferralStats } from "@/services/referralService";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Use published URL for professional-looking links
+const PUBLISHED_URL = "https://fediverse-career.lovable.app";
+
 export default function ReferralWidget() {
   const { user } = useAuth();
   const [referralCode, setReferralCode] = useState<string | null>(null);
@@ -31,8 +34,9 @@ export default function ReferralWidget() {
     setLoading(false);
   };
 
+  // Use published URL for cleaner, more professional links
   const referralLink = referralCode
-    ? `${window.location.origin}/auth/signup?ref=${referralCode}`
+    ? `${PUBLISHED_URL}/join/${referralCode}`
     : "";
 
   const handleCopy = async () => {
@@ -79,15 +83,21 @@ export default function ReferralWidget() {
           </div>
         ) : (
           <>
-            {/* Stats - simplified, no points */}
+            {/* Stats - show actual conversions */}
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <div className="font-semibold text-foreground">{stats.completed} joined</div>
-                  <div className="text-xs text-muted-foreground">{stats.pending} pending</div>
+                  <div className="font-semibold text-foreground">
+                    {stats.completed} {stats.completed === 1 ? 'colleague' : 'colleagues'} joined
+                  </div>
+                  {stats.total > 0 && (
+                    <div className="text-xs text-muted-foreground">
+                      {stats.total} total referrals
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -101,7 +111,7 @@ export default function ReferralWidget() {
                 <Input
                   value={referralLink}
                   readOnly
-                  className="text-sm bg-muted"
+                  className="text-sm bg-muted font-mono"
                 />
                 <Button
                   variant="outline"
@@ -129,7 +139,7 @@ export default function ReferralWidget() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Grow your network by inviting colleagues to join.
+              Share this link to grow your professional network.
             </p>
           </>
         )}

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { processReferralCode } from "@/services/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft } from "lucide-react";
 
 export default function AuthPage() {
@@ -18,13 +19,29 @@ export default function AuthPage() {
   const [isFederatedLoading, setIsFederatedLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [fediHandle, setFediHandle] = useState("");
+  const [refCode, setRefCode] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   
   // Determine default tab based on URL path
   const defaultTab = location.pathname === "/auth/signup" ? "signup" : "signin";
+
+  // Capture referral code from URL or localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setRefCode(ref.toUpperCase());
+      localStorage.setItem('referral_code', ref.toUpperCase());
+    } else {
+      const stored = localStorage.getItem('referral_code');
+      if (stored) setRefCode(stored);
+    }
+  }, [location.search]);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -33,25 +50,76 @@ export default function AuthPage() {
     }
   }, [user, navigate]);
 
+  // Name validation helper
+  const validateName = (name: string, field: string): string | null => {
+    const trimmed = name.trim();
+    if (trimmed.length < 2) {
+      return `${field} must be at least 2 characters`;
+    }
+    if (trimmed.length > 50) {
+      return `${field} must be less than 50 characters`;
+    }
+    // Allow letters (including international), spaces, hyphens, apostrophes
+    if (!/^[a-zA-ZÀ-ÿ\s\-']+$/.test(trimmed)) {
+      return `${field} can only contain letters, spaces, and hyphens`;
+    }
+    return null;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    
+    // Validate all fields
+    if (!email || !password || !firstName || !lastName) {
       toast.error("Please fill in all fields");
+      return;
+    }
+
+    // Validate names
+    const firstNameError = validateName(firstName, "First name");
+    if (firstNameError) {
+      toast.error(firstNameError);
+      return;
+    }
+
+    const lastNameError = validateName(lastName, "Last name");
+    if (lastNameError) {
+      toast.error(lastNameError);
       return;
     }
 
     setIsLoading(true);
     try {
+      const trimmedFirstName = firstName.trim();
+      const trimmedLastName = lastName.trim();
+      const fullname = `${trimmedFirstName} ${trimmedLastName}`;
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            first_name: trimmedFirstName,
+            last_name: trimmedLastName,
+            fullname: fullname
+          }
         }
       });
 
       if (error) {
         throw error;
+      }
+
+      // Process referral code if exists
+      if (data.user && refCode) {
+        try {
+          await processReferralCode(refCode, data.user.id);
+          localStorage.removeItem('referral_code');
+        } catch (refError) {
+          console.error('Failed to process referral:', refError);
+          // Don't block signup for referral errors
+        }
       }
 
       if (data.user && !data.user.email_confirmed_at) {
@@ -179,6 +247,13 @@ export default function AuthPage() {
               The federated professional network that puts you in control
             </p>
             
+            {/* Referral badge */}
+            {refCode && (
+              <Badge variant="secondary" className="mt-2">
+                Invited with code: {refCode}
+              </Badge>
+            )}
+            
             {/* Trust Badges */}
             <div className="flex flex-wrap justify-center gap-2 mt-4">
               {trustFeatures.map((feature, index) => (
@@ -288,6 +363,34 @@ export default function AuthPage() {
               <TabsContent value="signup">
                 <CardContent className="space-y-4 pt-4">
                   <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="signup-firstname">First Name</Label>
+                        <Input
+                          id="signup-firstname"
+                          type="text"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="Erik"
+                          required
+                          minLength={2}
+                          maxLength={50}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="signup-lastname">Last Name</Label>
+                        <Input
+                          id="signup-lastname"
+                          type="text"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="Hjärtberg"
+                          required
+                          minLength={2}
+                          maxLength={50}
+                        />
+                      </div>
+                    </div>
                     <div>
                       <Label htmlFor="signup-email">Email</Label>
                       <Input

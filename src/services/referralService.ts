@@ -16,11 +16,12 @@ export async function getUserReferralCode(): Promise<string | null> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  // Check if user already has a referral code
+  // Check if user already has a referral code (their own invite link)
   const { data: existing } = await supabase
     .from("referrals")
     .select("referral_code")
     .eq("referrer_id", user.id)
+    .is("referred_user_id", null) // Their invite template, not a completed referral
     .limit(1)
     .single();
 
@@ -34,7 +35,7 @@ export async function getUserReferralCode(): Promise<string | null> {
 
   if (!code) return null;
 
-  // Create a referral entry for tracking
+  // Create a referral entry for tracking (this is their invite template)
   const { error } = await supabase
     .from("referrals")
     .insert({
@@ -58,15 +59,20 @@ export async function getReferralStats(): Promise<{
 
   const { data, error } = await supabase
     .from("referrals")
-    .select("status")
+    .select("status, referred_user_id")
     .eq("referrer_id", user.id);
 
   if (error || !data) return { total: 0, pending: 0, completed: 0, points: 0 };
 
+  // Only count actual referrals (where someone was referred)
+  const actualReferrals = data.filter((r) => r.referred_user_id !== null);
+  
   const stats = {
-    total: data.length,
-    pending: data.filter((r) => r.status === "pending").length,
-    completed: data.filter((r) => r.status === "completed").length,
+    total: actualReferrals.length,
+    // Pending = referred but not completed
+    pending: actualReferrals.filter((r) => r.status === "signed_up").length,
+    // Completed = fully converted
+    completed: actualReferrals.filter((r) => r.status === "completed").length,
     points: 0,
   };
   stats.points = stats.completed * 50; // 50 points per successful referral
@@ -82,6 +88,7 @@ export async function getUserReferrals(): Promise<Referral[]> {
     .from("referrals")
     .select("*")
     .eq("referrer_id", user.id)
+    .not("referred_user_id", "is", null) // Only show actual referrals
     .order("created_at", { ascending: false });
 
   if (error) return [];
@@ -96,4 +103,53 @@ export async function validateReferralCode(code: string): Promise<boolean> {
     .single();
 
   return !error && !!data;
+}
+
+/**
+ * Process a referral code after a new user signs up.
+ * Finds the referral record and updates it with the new user's ID.
+ */
+export async function processReferralCode(code: string, newUserId: string): Promise<boolean> {
+  try {
+    // Find the referral template by code (where referred_user_id is null)
+    const { data: referral, error: findError } = await supabase
+      .from("referrals")
+      .select("id, referrer_id")
+      .eq("referral_code", code.toUpperCase())
+      .is("referred_user_id", null)
+      .single();
+
+    if (findError || !referral) {
+      console.log('Referral code not found or already used:', code);
+      return false;
+    }
+
+    // Don't allow self-referral
+    if (referral.referrer_id === newUserId) {
+      console.log('Cannot self-refer');
+      return false;
+    }
+
+    // Create a new referral record for this conversion
+    const { error: insertError } = await supabase
+      .from("referrals")
+      .insert({
+        referrer_id: referral.referrer_id,
+        referral_code: code.toUpperCase(),
+        referred_user_id: newUserId,
+        status: "completed",
+        converted_at: new Date().toISOString()
+      });
+
+    if (insertError) {
+      console.error('Failed to create referral record:', insertError);
+      return false;
+    }
+
+    console.log('✅ Referral processed successfully for user:', newUserId);
+    return true;
+  } catch (error) {
+    console.error('Error processing referral:', error);
+    return false;
+  }
 }
