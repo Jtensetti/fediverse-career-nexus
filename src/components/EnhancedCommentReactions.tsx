@@ -16,15 +16,21 @@ export function EnhancedCommentReactions({ replyId, className }: EnhancedComment
     REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }))
   );
   const [isOpen, setIsOpen] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const loadReactions = useCallback(async () => {
+    if (hasLoaded) return;
+    setHasLoaded(true);
     const data = await getReplyReactions(replyId);
     setReactions(data);
-  }, [replyId]);
+  }, [replyId, hasLoaded]);
 
+  // Only load reactions when popover opens (lazy loading to avoid N+1)
   useEffect(() => {
-    loadReactions();
-  }, [loadReactions]);
+    if (isOpen && !hasLoaded) {
+      loadReactions();
+    }
+  }, [isOpen, hasLoaded, loadReactions]);
 
   const handleReaction = async (reaction: ReactionKey) => {
     // Optimistic update
