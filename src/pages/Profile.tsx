@@ -415,7 +415,18 @@ const ProfilePage = () => {
                       Connect
                     </Button>
                   )}
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => {
+                      if (connectionRelationship?.status === 'accepted') {
+                        navigate(`/messages/${profile.id}`);
+                      } else {
+                        toast.info("Connect with this person first to send messages");
+                      }
+                    }}
+                    title="Message"
+                  >
                     <MessageSquare className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="icon">
