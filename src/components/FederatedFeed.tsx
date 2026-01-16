@@ -1,13 +1,14 @@
-
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFederatedFeed, type FederatedPost, type FeedType } from "@/services/federationService";
+import { getBatchPostData, BatchPostData } from "@/services/batchDataService";
 import FederatedPostCard from "./FederatedPostCard";
 import PostEditDialog from "./PostEditDialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, MessageSquare } from "lucide-react";
 import { PostSkeleton } from "./common/skeletons";
 import EmptyState from "./common/EmptyState";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FederatedFeedProps {
   limit?: number;
@@ -22,10 +23,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const [hasMore, setHasMore] = useState(true);
   const [editingPost, setEditingPost] = useState<FederatedPost | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [batchData, setBatchData] = useState<Map<string, BatchPostData>>(new Map());
   const queryClient = useQueryClient();
-  
-  // Track loaded post IDs to prevent duplicates
-  const loadedIds = useMemo(() => new Set(allPosts.map(p => p.id)), [allPosts]);
+  const { user } = useAuth();
   
   // Determine the effective feed type from either prop
   const effectiveFeedType: FeedType = feedType !== 'all' ? feedType : 
@@ -46,6 +46,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       setQueryOffset(offset);
       return getFederatedFeed(limit, offset, effectiveFeedType);
     },
+    staleTime: 30000, // 30 seconds
   });
   
   // Reset when feed type changes
@@ -54,9 +55,10 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setAllPosts([]);
     setHasMore(true);
     setQueryOffset(0);
+    setBatchData(new Map());
   }, [effectiveFeedType]);
   
-  // Process new posts when they arrive - remove offset from dependencies
+  // Process new posts and fetch batch data when posts arrive
   useEffect(() => {
     if (!posts || posts.length === 0) {
       if (posts && posts.length === 0 && queryOffset === 0) {
@@ -67,26 +69,33 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       return;
     }
     
+    // Update allPosts
     setAllPosts(currentPosts => {
-      // For first page (queryOffset === 0), replace entirely
       if (queryOffset === 0) {
         return posts;
       }
       
-      // For pagination, deduplicate and append
       const existingIds = new Set(currentPosts.map(p => p.id));
       const newPosts = posts.filter(p => !existingIds.has(p.id));
       
-      // Only append if we actually have new posts
       if (newPosts.length === 0) return currentPosts;
       return [...currentPosts, ...newPosts];
     });
     
-    // Check if we've reached the end
     if (posts.length < limit) {
       setHasMore(false);
     }
-  }, [posts, queryOffset, limit]);
+    
+    // Fetch batch data for all posts in ONE request
+    const postIds = posts.map(p => p.id);
+    getBatchPostData(postIds, user?.id).then(data => {
+      setBatchData(prev => {
+        const newMap = new Map(prev);
+        data.forEach((value, key) => newMap.set(key, value));
+        return newMap;
+      });
+    });
+  }, [posts, queryOffset, limit, user?.id]);
   
   // Infinite scroll with IntersectionObserver
   useEffect(() => {
@@ -112,14 +121,11 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   };
 
   const handleDeletePost = (postId: string) => {
-    // Remove the deleted post from the local state
     setAllPosts(prev => prev.filter(post => post.id !== postId));
-    // Invalidate and refetch to ensure we have the latest data
     queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
   };
 
   const handlePostUpdated = () => {
-    // Reset and refetch the feed
     setOffset(0);
     setAllPosts([]);
     queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
@@ -153,6 +159,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
               post={post}
               onEdit={handleEditPost}
               onDelete={handleDeletePost}
+              initialData={batchData.get(post.id)}
             />
           ))}
           

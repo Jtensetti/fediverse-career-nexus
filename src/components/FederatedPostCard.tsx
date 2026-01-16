@@ -14,32 +14,30 @@ import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import { getProxiedMediaUrl } from "@/services/federationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/postService";
-import { getPostBoostCount, hasUserBoostedPost } from "@/services/postBoostService";
-import { getPostReplies } from "@/services/postReplyService";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import PostReplyDialog from "./PostReplyDialog";
 import BlockUserDialog from "./BlockUserDialog";
 import EnhancedPostReactions from "./EnhancedPostReactions";
-import CommentPreview from "./CommentPreview";
 import QuoteRepostDialog from "./QuoteRepostDialog";
 import { QuotedPostPreview, RepostIndicator } from "./QuotedPostPreview";
 import ContentWarningDisplay from "./ContentWarningDisplay";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
+import type { BatchPostData } from "@/services/batchDataService";
 
 interface FederatedPostCardProps {
   post: FederatedPost;
   onEdit?: (post: FederatedPost) => void;
   onDelete?: (postId: string) => void;
+  initialData?: BatchPostData;
 }
 
-export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedPostCardProps) {
+export default function FederatedPostCard({ post, onEdit, onDelete, initialData }: FederatedPostCardProps) {
   const [imageError, setImageError] = useState<boolean>(false);
-  const [isBoosted, setIsBoosted] = useState(false);
-  const [boostCount, setBoostCount] = useState(0);
-  const [replyCount, setReplyCount] = useState(0);
+  const [isBoosted, setIsBoosted] = useState(initialData?.userBoosted ?? false);
+  const [boostCount, setBoostCount] = useState(initialData?.boostCount ?? 0);
+  const [replyCount, setReplyCount] = useState(initialData?.replyCount ?? 0);
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [showQuoteRepostDialog, setShowQuoteRepostDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -47,6 +45,15 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Update state when initialData changes (from parent batch fetch)
+  useEffect(() => {
+    if (initialData) {
+      setIsBoosted(initialData.userBoosted);
+      setBoostCount(initialData.boostCount);
+      setReplyCount(initialData.replyCount);
+    }
+  }, [initialData]);
 
   // Handle card click to navigate to post view
   const handleCardClick = (e: React.MouseEvent) => {
@@ -56,31 +63,6 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
     if (isInteractive) return;
     
     navigate(`/post/${post.id}`);
-  };
-  
-  // Debug logs removed for production
-  
-  // Load initial data
-  useEffect(() => {
-    loadPostData();
-  }, [post.id, user?.id]);
-
-  const loadPostData = async () => {
-    try {
-      // Load boost data
-      const [boostCountData, userBoosted] = await Promise.all([
-        getPostBoostCount(post.id),
-        hasUserBoostedPost(post.id)
-      ]);
-      setBoostCount(boostCountData);
-      setIsBoosted(userBoosted);
-
-      // Load reply count
-      const replies = await getPostReplies(post.id);
-      setReplyCount(replies.length);
-    } catch (error) {
-      // Silently fail - non-critical
-    }
   };
   
   // Check if this is a quote repost
@@ -442,15 +424,10 @@ export default function FederatedPostCard({ post, onEdit, onDelete }: FederatedP
             )}
           </ContentWarningDisplay>
         </CardContent>
-        
-        {/* Comment Preview Section */}
-        <div className="px-4" data-interactive="true">
-          <CommentPreview postId={post.id} />
-        </div>
 
         <CardFooter className="pt-0 flex items-center gap-1 border-t border-border/50 mx-2 sm:mx-4 py-2" data-interactive="true">
           {/* Enhanced Reactions - compact mode with reaction picker */}
-          <EnhancedPostReactions postId={post.id} compact />
+          <EnhancedPostReactions postId={post.id} compact initialReactions={initialData?.reactions} />
           
           <Button 
             variant="ghost" 
