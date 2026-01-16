@@ -246,7 +246,7 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center">
                 <p className="font-medium truncate">
-                  {otherUser?.username || otherUser?.fullname || 'Unknown User'}
+                  {otherUser?.fullname || otherUser?.username || 'Unknown User'}
                 </p>
                 <span className="text-xs text-muted-foreground">{lastMessageTime}</span>
               </div>

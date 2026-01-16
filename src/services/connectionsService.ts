@@ -5,7 +5,8 @@ import { ConnectionDegree } from "@/components/ConnectionBadge";
 import { notificationService } from "./notificationService";
 
 export interface NetworkConnection {
-  id: string;
+  id: string;           // User's profile ID (for messaging)
+  connectionId: string; // Connection record ID (for removal)
   username: string;
   displayName: string;
   headline: string;
@@ -71,7 +72,8 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
         if (!profile) return null;
 
         return {
-          id: c.id,
+          id: otherId,              // User's profile ID (for messaging)
+          connectionId: c.id,       // Connection record ID (for removal)
           username: profile.username || "",
           displayName: profile.fullname || profile.username || "",
           headline: profile.headline || "",
