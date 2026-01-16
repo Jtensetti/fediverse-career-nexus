@@ -17,31 +17,22 @@ export interface PostReply {
 // Get replies for a post (including nested replies via rootPost)
 export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
   try {
-    // Use JSON filtering in the database query instead of fetching all notes
-    // This dramatically reduces data transfer from ~1000 rows to just relevant replies
+    // Use RPC function to properly filter by JSON fields
+    // PostgREST .or() doesn't support JSON operators, so we use a database function
     const { data: replies, error } = await supabase
-      .from('ap_objects')
-      .select(`
-        id,
-        content,
-        created_at,
-        actors!ap_objects_attributed_to_fkey (
-          user_id,
-          preferred_username
-        )
-      `)
-      .eq('type', 'Note')
-      .or(`content->inReplyTo.eq.${postId},content->rootPost.eq.${postId},content->>inReplyTo.eq.${postId},content->>rootPost.eq.${postId}`)
-      .order('created_at', { ascending: true })
-      .limit(50); // Limit replies to prevent huge payloads
+      .rpc('get_post_replies', { 
+        post_id: postId,
+        max_replies: 50 
+      });
 
-    if (error) return [];
-
-    const matchingReplies = replies || [];
+    if (error) {
+      console.error('Error fetching replies:', error);
+      return [];
+    }
 
     // Get user IDs to fetch profiles for display names
-    const userIds = matchingReplies
-      .map(r => (r.actors as any)?.user_id)
+    const userIds = (replies || [])
+      .map((r: any) => r.actor_user_id)
       .filter(Boolean);
 
     let profilesMap: Record<string, { fullname?: string; username?: string; avatar_url?: string }> = {};
@@ -62,10 +53,9 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
       }
     }
 
-    const processedReplies = matchingReplies.map(reply => {
+    return (replies || []).map((reply: any) => {
       const content = reply.content as any;
-      const actorUserId = (reply.actors as any)?.user_id;
-      const profile = actorUserId ? profilesMap[actorUserId] : undefined;
+      const profile = reply.actor_user_id ? profilesMap[reply.actor_user_id] : undefined;
       
       // Determine parent_reply_id: if inReplyTo is NOT the main post, it's a parent reply
       const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
@@ -75,18 +65,17 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
         id: reply.id,
         content: content?.content || '',
         created_at: reply.created_at,
-        user_id: actorUserId || '',
+        user_id: reply.actor_user_id || '',
         parent_reply_id: parentReplyId,
         author: {
-          username: profile?.username || (reply.actors as any)?.preferred_username || 'Unknown',
+          username: profile?.username || reply.actor_username || 'Unknown',
           avatar_url: profile?.avatar_url,
           fullname: profile?.fullname
         }
       };
     });
-
-    return processedReplies;
   } catch (error) {
+    console.error('Error in getPostReplies:', error);
     return [];
   }
 };

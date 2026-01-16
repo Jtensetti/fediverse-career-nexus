@@ -2785,6 +2785,16 @@ export type Database = {
           total_batches: number
         }[]
       }
+      get_post_replies: {
+        Args: { max_replies?: number; post_id: string }
+        Returns: {
+          actor_user_id: string
+          actor_username: string
+          content: Json
+          created_at: string
+          id: string
+        }[]
+      }
       get_rate_limited_hosts: {
         Args: { request_threshold: number; window_start: string }
         Returns: {
