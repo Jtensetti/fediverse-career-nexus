@@ -760,8 +760,8 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
       throw new Error("Create activity missing object");
     }
     
-    // Store the object in the inbox_items table
-    const { data, error } = await supabaseClient
+    // Store the object in the inbox_items table for auditing
+    const { data: inboxData, error: inboxError } = await supabaseClient
       .from("inbox_items")
       .insert({
         recipient_id: recipientId,
@@ -773,11 +773,98 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
       .select()
       .single();
     
-    if (error) {
-      throw error;
+    if (inboxError) {
+      throw inboxError;
     }
     
-    console.log(`Stored inbox item: ${data.id}`);
+    console.log(`Stored inbox item: ${inboxData.id}`);
+    
+    // Also store in ap_objects so it appears in the federated feed!
+    // Only store Note/Article type objects
+    if (object.type === 'Note' || object.type === 'Article') {
+      // Get or create a remote actor entry for the sender
+      let remoteActorId: string | null = null;
+      
+      // First check if we have this actor cached
+      const { data: cachedActor } = await supabaseClient
+        .from("remote_actors_cache")
+        .select("actor_url")
+        .eq("actor_url", sender)
+        .single();
+      
+      // Check if we have a local actor entry for this remote sender
+      const { data: existingActor } = await supabaseClient
+        .from("actors")
+        .select("id")
+        .eq("remote_actor_url", sender)
+        .single();
+      
+      if (existingActor) {
+        remoteActorId = existingActor.id;
+      } else {
+        // Create a placeholder actor for the remote sender
+        const actorUsername = sender.split('/').pop() || 'remote_user';
+        const { data: newActor, error: actorError } = await supabaseClient
+          .from("actors")
+          .insert({
+            preferred_username: `remote_${actorUsername}_${Date.now()}`,
+            type: "Person",
+            is_remote: true,
+            remote_actor_url: sender,
+            remote_inbox_url: `${sender}/inbox`
+          })
+          .select()
+          .single();
+        
+        if (!actorError && newActor) {
+          remoteActorId = newActor.id;
+          console.log(`Created remote actor entry: ${remoteActorId}`);
+        }
+      }
+      
+      // Store the Note/Article in ap_objects with remote source
+      const { data: apObject, error: apError } = await supabaseClient
+        .from("ap_objects")
+        .insert({
+          type: object.type,
+          content: object, // Store just the object, not the full activity
+          attributed_to: remoteActorId,
+          published_at: object.published || activity.published || new Date().toISOString(),
+          content_warning: object.summary || null // ActivityPub uses summary for CW
+        })
+        .select()
+        .single();
+      
+      if (apError) {
+        console.error("Error storing in ap_objects:", apError);
+        // Don't throw - we already stored in inbox_items
+      } else {
+        console.log(`Stored remote content in ap_objects: ${apObject.id}`);
+      }
+      
+      // If we don't have the actor cached, try to fetch and cache it
+      if (!cachedActor) {
+        try {
+          const actorRes = await fetch(sender, {
+            headers: { Accept: 'application/activity+json' }
+          });
+          if (actorRes.ok) {
+            const actorData = await actorRes.json();
+            await supabaseClient
+              .from('remote_actors_cache')
+              .upsert({
+                actor_url: sender,
+                actor_data: actorData,
+                fetched_at: new Date().toISOString(),
+                expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+              });
+            console.log(`Cached remote actor: ${sender}`);
+          }
+        } catch (fetchError) {
+          console.warn(`Could not cache remote actor ${sender}:`, fetchError);
+        }
+      }
+    }
   } catch (error) {
     console.error("Error handling Create activity:", error);
     throw error;

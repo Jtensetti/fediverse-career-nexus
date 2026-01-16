@@ -41,6 +41,58 @@ export const getOutgoingFollowStatus = async (actorId: string, remoteActorUrl: s
   return data?.status as 'pending' | 'accepted' | 'rejected' || null;
 };
 
+// Send a Follow activity to a remote actor
+export const followRemoteActor = async (localActorId: string, remoteActorUrl: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    console.log(`🌐 Following remote actor: ${remoteActorUrl}`);
+    
+    const { data, error } = await supabase.functions.invoke('send-follow', {
+      body: {
+        localActorId,
+        remoteActorUrl,
+        action: 'follow'
+      }
+    });
+    
+    if (error) {
+      console.error('Error sending follow:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ Follow request sent:', data);
+    return { success: true };
+  } catch (error) {
+    console.error('Error following remote actor:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+};
+
+// Send an Undo Follow activity to a remote actor
+export const unfollowRemoteActor = async (localActorId: string, remoteActorUrl: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    console.log(`🌐 Unfollowing remote actor: ${remoteActorUrl}`);
+    
+    const { data, error } = await supabase.functions.invoke('send-follow', {
+      body: {
+        localActorId,
+        remoteActorUrl,
+        action: 'unfollow'
+      }
+    });
+    
+    if (error) {
+      console.error('Error sending unfollow:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ Unfollow request sent:', data);
+    return { success: true };
+  } catch (error) {
+    console.error('Error unfollowing remote actor:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+};
+
 export const subscribeToOutgoingFollows = (
   actorId: string,
   callback: (follows: OutgoingFollow[]) => void
