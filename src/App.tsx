@@ -5,6 +5,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useParams,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
@@ -54,6 +55,12 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
+// Redirect component for referral join links
+function JoinRedirect() {
+  const { code } = useParams();
+  return <Navigate to={`/auth/signup?ref=${code}`} replace />;
+}
+
 function App() {
   const toasterConfig = {
     position: "top-center" as const,
@@ -93,6 +100,8 @@ function App() {
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            {/* Referral join route - redirects to signup with ref param */}
+            <Route path="/join/:code" element={<JoinRedirect />} />
                     <Route path="/jobs" element={<Jobs />} />
                     <Route path="/jobs/:id" element={<JobView />} />
                     <Route path="/articles/:slug" element={<ArticleView />} />

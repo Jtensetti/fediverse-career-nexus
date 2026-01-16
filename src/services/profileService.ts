@@ -79,12 +79,31 @@ export const ensureUserProfile = async (userId: string) => {
 
     if (!profile) {
       console.log('ensureUserProfile: Creating new profile for user:', userId);
-      const username = `user_${userId.slice(0, 8)}`;
+      
+      // Try to get user metadata for name
+      const { data: { user } } = await supabase.auth.getUser();
+      const metadata = user?.user_metadata || {};
+      const firstName = metadata.first_name || '';
+      const lastName = metadata.last_name || '';
+      const fullname = metadata.fullname || `${firstName} ${lastName}`.trim() || null;
+      
+      // Generate a friendlier username from the name, or fallback to user_xxxxx
+      let username: string;
+      if (firstName && lastName) {
+        // e.g., "erik_h" from "Erik Hjärtberg"
+        const baseUsername = `${firstName.toLowerCase()}_${lastName.charAt(0).toLowerCase()}`;
+        // Clean up non-alphanumeric characters
+        username = baseUsername.replace(/[^a-z0-9_]/g, '');
+      } else {
+        username = `user_${userId.slice(0, 8)}`;
+      }
+      
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
         .insert({ 
           id: userId, 
           username, 
+          fullname,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
