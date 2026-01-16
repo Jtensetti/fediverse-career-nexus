@@ -17,7 +17,8 @@ export interface PostReply {
 // Get replies for a post (including nested replies via rootPost)
 export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
   try {
-    // Fetch all Note objects and filter for replies client-side
+    // Use JSON filtering in the database query instead of fetching all notes
+    // This dramatically reduces data transfer from ~1000 rows to just relevant replies
     const { data: replies, error } = await supabase
       .from('ap_objects')
       .select(`
@@ -30,20 +31,13 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
         )
       `)
       .eq('type', 'Note')
-      .order('created_at', { ascending: true });
+      .or(`content->inReplyTo.eq.${postId},content->rootPost.eq.${postId},content->>inReplyTo.eq.${postId},content->>rootPost.eq.${postId}`)
+      .order('created_at', { ascending: true })
+      .limit(50); // Limit replies to prevent huge payloads
 
     if (error) return [];
 
-    // Filter replies that match the postId (either direct reply or part of thread via rootPost)
-    const matchingReplies = replies?.filter(reply => {
-      const content = reply.content as any;
-      const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
-      const rootPost = content?.rootPost || content?.content?.rootPost;
-      
-      // Match if this is a direct reply to the post OR a nested reply in the thread (via rootPost)
-      return inReplyTo === postId || rootPost === postId || 
-        (typeof inReplyTo === 'string' && inReplyTo.includes(postId));
-    }) || [];
+    const matchingReplies = replies || [];
 
     // Get user IDs to fetch profiles for display names
     const userIds = matchingReplies
