@@ -53,7 +53,17 @@ import FeedSettings from "./pages/FeedSettings";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30000, // 30 seconds before data is considered stale
+      gcTime: 300000, // 5 minutes cache time (formerly cacheTime)
+      refetchOnMount: false, // Don't refetch if data exists
+      refetchOnWindowFocus: false, // Don't refetch on tab focus
+      retry: 1, // Only retry once on failure
+    },
+  },
+});
 
 // Redirect component for referral join links
 function JoinRedirect() {

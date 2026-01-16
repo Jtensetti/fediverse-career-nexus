@@ -30,11 +30,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Handle sign in - ensure user has proper setup
         if (event === 'SIGNED_IN' && session?.user) {
+          // Check cache to avoid repeated setup calls
+          const cacheKey = `user_setup_${session.user.id}`;
+          const cachedSetup = localStorage.getItem(cacheKey);
+          const now = Date.now();
+          
+          // Cache valid for 5 minutes
+          if (cachedSetup) {
+            const cached = JSON.parse(cachedSetup);
+            if (now - cached.timestamp < 300000) {
+              // Cache hit - skip setup
+              return;
+            }
+          }
+          
           // Use setTimeout to avoid blocking the auth state change
           setTimeout(async () => {
             try {
-              // Setting up user after sign in
-              
               // Ensure profile exists first
               const profile = await ensureUserProfile(session.user.id);
               if (!profile) {
@@ -61,10 +73,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   console.error('AuthProvider: Error creating actor:', error);
                 }
               }
+              
+              // Update cache
+              localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
             } catch (error) {
               console.error('AuthProvider: Error in user setup:', error);
             }
           }, 100);
+        }
+        
+        // Clear cache on sign out
+        if (event === 'SIGNED_OUT') {
+          // Clear all user setup caches
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('user_setup_')) {
+              localStorage.removeItem(key);
+            }
+          });
         }
       }
     );

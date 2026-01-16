@@ -6,29 +6,47 @@ import { cn } from "@/lib/utils";
 import { REACTIONS, REACTION_CONFIG, ReactionKey } from "@/lib/reactions";
 import { getPostReactions, togglePostReaction, ReactionCount } from "@/services/reactionsService";
 import StackedReactionDisplay from "./StackedReactionDisplay";
+import type { BatchReactionCount } from "@/services/batchDataService";
 
 interface EnhancedPostReactionsProps {
   postId: string;
   compact?: boolean;
   onReactionChange?: () => void;
+  initialReactions?: BatchReactionCount[];
 }
 
-const EnhancedPostReactions = ({ postId, compact = false, onReactionChange }: EnhancedPostReactionsProps) => {
+const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, initialReactions }: EnhancedPostReactionsProps) => {
   const [reactions, setReactions] = useState<ReactionCount[]>(
-    REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }))
+    initialReactions || REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }))
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialReactions);
   const [showPicker, setShowPicker] = useState(false);
 
   const loadReactions = useCallback(async () => {
+    // Skip loading if we already have initial data
+    if (initialReactions) {
+      setIsLoading(false);
+      return;
+    }
     const data = await getPostReactions(postId);
     setReactions(data);
     setIsLoading(false);
-  }, [postId]);
+  }, [postId, initialReactions]);
 
   useEffect(() => {
-    loadReactions();
-  }, [loadReactions]);
+    // Update from initialReactions when they change
+    if (initialReactions) {
+      setReactions(initialReactions);
+      setIsLoading(false);
+    }
+  }, [initialReactions]);
+
+  useEffect(() => {
+    // Only load if no initial data provided
+    if (!initialReactions) {
+      loadReactions();
+    }
+  }, [loadReactions, initialReactions]);
 
   const handleReaction = async (reaction: ReactionKey) => {
     // Optimistic update
