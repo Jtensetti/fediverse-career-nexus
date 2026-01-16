@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.send-follow]
 verify_jwt = false
+
+[functions.send-dm]
+verify_jwt = false

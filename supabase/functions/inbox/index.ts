@@ -759,6 +759,26 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
     if (!object) {
       throw new Error("Create activity missing object");
     }
+
+    // Check if this is a Direct Message (private Note)
+    const toArray = Array.isArray(activity.to) ? activity.to : (activity.to ? [activity.to] : []);
+    const ccArray = Array.isArray(activity.cc) ? activity.cc : (activity.cc ? [activity.cc] : []);
+    const allRecipients = [...toArray, ...ccArray];
+    
+    // A DM is a Note that is NOT addressed to public followers
+    const isPublic = allRecipients.some(r => 
+      r.includes('#Public') || 
+      r.includes('/followers') ||
+      r === 'https://www.w3.org/ns/activitystreams#Public' ||
+      r === 'as:Public'
+    );
+    
+    if (object.type === 'Note' && !isPublic && toArray.length > 0) {
+      // This appears to be a Direct Message
+      console.log(`Detected incoming DM from ${sender}`);
+      await handleDirectMessageActivity(activity, recipientId, sender);
+      return;
+    }
     
     // Store the object in the inbox_items table for auditing
     const { data: inboxData, error: inboxError } = await supabaseClient
@@ -867,6 +887,165 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
     }
   } catch (error) {
     console.error("Error handling Create activity:", error);
+    throw error;
+  }
+}
+
+// Handle incoming Direct Messages from Fediverse
+async function handleDirectMessageActivity(activity: any, recipientActorId: string, sender: string) {
+  try {
+    const object = activity.object;
+    const messageContent = object.content || object.contentMap?.en || '';
+    
+    console.log(`Processing DM from ${sender} to actor ${recipientActorId}`);
+    
+    // Get the local user ID from the recipient actor
+    const { data: localActor, error: actorError } = await supabaseClient
+      .from("actors")
+      .select("user_id")
+      .eq("id", recipientActorId)
+      .single();
+    
+    if (actorError || !localActor?.user_id) {
+      console.error("Could not find local user for actor:", recipientActorId);
+      throw new Error("Recipient user not found");
+    }
+    
+    const recipientUserId = localActor.user_id;
+    
+    // Find or create the remote sender actor
+    let senderUserId: string | null = null;
+    
+    // Check if we have an existing actor for this sender
+    const { data: existingActor } = await supabaseClient
+      .from("actors")
+      .select("id, user_id")
+      .eq("remote_actor_url", sender)
+      .eq("is_remote", true)
+      .single();
+    
+    if (existingActor) {
+      senderUserId = existingActor.user_id;
+    } else {
+      // Create a placeholder actor for the remote sender
+      const actorUsername = sender.split('/').pop() || 'remote_user';
+      
+      // First create a placeholder profile for the remote user
+      const { data: newProfile, error: profileError } = await supabaseClient
+        .from("profiles")
+        .insert({
+          id: crypto.randomUUID(),
+          username: `fediverse_${actorUsername}_${Date.now()}`,
+          auth_type: 'federated',
+          home_instance: new URL(sender).hostname,
+          remote_actor_url: sender
+        })
+        .select()
+        .single();
+      
+      if (profileError) {
+        console.error("Error creating remote profile:", profileError);
+        throw profileError;
+      }
+      
+      senderUserId = newProfile.id;
+      
+      // Create actor entry
+      const { error: actorCreateError } = await supabaseClient
+        .from("actors")
+        .insert({
+          preferred_username: actorUsername,
+          type: "Person",
+          is_remote: true,
+          remote_actor_url: sender,
+          remote_inbox_url: `${sender}/inbox`,
+          user_id: senderUserId
+        });
+      
+      if (actorCreateError) {
+        console.error("Error creating remote actor:", actorCreateError);
+      }
+      
+      // Try to fetch and cache actor data for display
+      try {
+        const actorRes = await fetch(sender, {
+          headers: { Accept: 'application/activity+json' }
+        });
+        if (actorRes.ok) {
+          const actorData = await actorRes.json();
+          
+          // Update profile with fetched data
+          await supabaseClient
+            .from("profiles")
+            .update({
+              fullname: actorData.name,
+              avatar_url: actorData.icon?.url,
+              bio: actorData.summary
+            })
+            .eq("id", senderUserId);
+          
+          // Cache actor data
+          await supabaseClient
+            .from('remote_actors_cache')
+            .upsert({
+              actor_url: sender,
+              actor_data: actorData,
+              expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            }, { onConflict: "actor_url" });
+        }
+      } catch (fetchError) {
+        console.warn(`Could not fetch remote actor data for ${sender}:`, fetchError);
+      }
+    }
+    
+    if (!senderUserId) {
+      throw new Error("Could not resolve sender user ID");
+    }
+    
+    // Store the message in the messages table
+    const { data: message, error: messageError } = await supabaseClient
+      .from("messages")
+      .insert({
+        sender_id: senderUserId,
+        recipient_id: recipientUserId,
+        content: messageContent,
+        is_federated: true,
+        federated_activity_id: activity.id,
+        remote_sender_url: sender,
+        delivery_status: 'received'
+      })
+      .select()
+      .single();
+    
+    if (messageError) {
+      console.error("Error storing DM:", messageError);
+      throw messageError;
+    }
+    
+    console.log(`Stored federated DM: ${message.id}`);
+    
+    // Create notification for the recipient
+    const { error: notifError } = await supabaseClient
+      .from("notifications")
+      .insert({
+        type: 'direct_message',
+        recipient_id: recipientUserId,
+        actor_id: senderUserId,
+        object_id: message.id,
+        object_type: 'message',
+        content: 'sent you a message',
+        read: false
+      });
+    
+    if (notifError) {
+      console.error("Error creating DM notification:", notifError);
+      // Don't throw - message was stored successfully
+    }
+    
+    console.log(`Created notification for DM to user ${recipientUserId}`);
+    
+  } catch (error) {
+    console.error("Error handling DM activity:", error);
     throw error;
   }
 }

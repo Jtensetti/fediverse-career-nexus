@@ -12,7 +12,8 @@ import {
   Message,
   subscribeToMessages,
   getOtherParticipant,
-  areUsersConnected
+  canMessageUser,
+  ParticipantInfo
 } from '@/services/messageService';
 
 import Navbar from '@/components/Navbar';
@@ -36,8 +37,9 @@ export default function MessageConversation() {
   const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
-  const [otherUser, setOtherUser] = useState<any | null>(null);
+  const [otherUser, setOtherUser] = useState<ParticipantInfo | null>(null);
   const [canMessage, setCanMessage] = useState<boolean | null>(null);
+  const [isFederated, setIsFederated] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -107,9 +109,10 @@ export default function MessageConversation() {
 
     const loadUserAndCheckConnection = async () => {
       try {
-        // Check if users are connected
-        const connected = await areUsersConnected(currentUserId, conversationId);
-        setCanMessage(connected);
+        // Check messaging capability using new RPC
+        const messageResult = await canMessageUser(conversationId);
+        setCanMessage(messageResult.can_message);
+        setIsFederated(messageResult.is_federated);
         
         // Load user profile
         if (data?.conversation) {

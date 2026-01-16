@@ -10,6 +10,8 @@ export interface Message {
   content: string;
   read_at: string | null;
   created_at: string;
+  is_federated?: boolean;
+  delivery_status?: string;
   sender?: {
     id: string;
     username?: string;
@@ -63,8 +65,56 @@ export interface ConversationWithMessages {
   messages: Message[];
 }
 
+export interface ParticipantInfo {
+  id: string;
+  username?: string;
+  fullname?: string;
+  avatar_url?: string;
+  isFederated: boolean;
+  homeInstance?: string;
+  found: boolean;
+}
+
+export interface CanMessageResult {
+  can_message: boolean;
+  is_federated: boolean;
+  remote_actor_url?: string;
+  reason: string;
+}
+
 // Store active channel subscriptions
 const activeSubscriptions: Record<string, ReturnType<typeof supabase.channel>> = {};
+
+/**
+ * Check if current user can message another user
+ */
+export async function canMessageUser(recipientId: string): Promise<CanMessageResult> {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      return { can_message: false, is_federated: false, reason: 'not_authenticated' };
+    }
+
+    const senderId = sessionData.session.user.id;
+
+    const { data, error } = await supabase.rpc('can_message_user', {
+      sender_id: senderId,
+      recipient_id: recipientId
+    });
+
+    if (error) {
+      console.error('Error checking message permission:', error);
+      return { can_message: false, is_federated: false, reason: 'error' };
+    }
+
+    // Cast the JSONB response
+    const result = data as unknown as CanMessageResult;
+    return result || { can_message: false, is_federated: false, reason: 'error' };
+  } catch (error) {
+    console.error('Error in canMessageUser:', error);
+    return { can_message: false, is_federated: false, reason: 'error' };
+  }
+}
 
 /**
  * Get all conversations for the current user
@@ -89,7 +139,9 @@ export async function getConversations(): Promise<Conversation[]> {
         recipient_id,
         content,
         read_at,
-        created_at
+        created_at,
+        is_federated,
+        delivery_status
       `)
       .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
       .order('created_at', { ascending: false });
@@ -227,7 +279,7 @@ export async function areUsersConnected(userId1: string, userId2: string): Promi
 }
 
 /**
- * Send a message to a user (must be connected)
+ * Send a message to a user (handles both local and federated)
  */
 export async function sendMessage(recipientId: string, content: string): Promise<Message | null> {
   try {
@@ -239,19 +291,34 @@ export async function sendMessage(recipientId: string, content: string): Promise
 
     const senderId = sessionData.session.user.id;
 
-    // Check if users are connected first (for better error message)
-    const connected = await areUsersConnected(senderId, recipientId);
-    if (!connected) {
-      toast.error('You can only message users you are connected with');
+    // Check messaging capability using new RPC
+    const canMessageResult = await canMessageUser(recipientId);
+
+    if (!canMessageResult.can_message) {
+      if (canMessageResult.reason === 'not_connected') {
+        toast.error('You can only message users you are connected with');
+      } else if (canMessageResult.reason === 'cannot_message_self') {
+        toast.error('You cannot message yourself');
+      } else {
+        toast.error('Cannot send message to this user');
+      }
       return null;
     }
 
+    // If federated, call edge function
+    if (canMessageResult.is_federated && canMessageResult.remote_actor_url) {
+      return await sendFederatedMessage(recipientId, content, canMessageResult.remote_actor_url);
+    }
+
+    // Local message - insert directly
     const { data, error } = await supabase
       .from('messages')
       .insert({
         sender_id: senderId,
         recipient_id: recipientId,
-        content
+        content,
+        is_federated: false,
+        delivery_status: 'local'
       })
       .select()
       .single();
@@ -271,6 +338,45 @@ export async function sendMessage(recipientId: string, content: string): Promise
   } catch (error) {
     console.error('Error in sendMessage:', error);
     toast.error('Failed to send message');
+    return null;
+  }
+}
+
+/**
+ * Send a federated message via edge function
+ */
+async function sendFederatedMessage(
+  recipientId: string,
+  content: string,
+  remoteActorUrl: string
+): Promise<Message | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke('send-dm', {
+      body: { recipientId, content, remoteActorUrl }
+    });
+
+    if (error) {
+      console.error('Error sending federated message:', error);
+      toast.error('Failed to send message to federated user');
+      return null;
+    }
+
+    if (data.error) {
+      console.error('Federated message error:', data.error);
+      if (data.message) {
+        // Message was stored but delivery failed
+        toast.warning('Message saved but delivery to remote server failed');
+        return data.message as Message;
+      }
+      toast.error('Failed to deliver message');
+      return null;
+    }
+
+    toast.success('Message sent to federated user');
+    return data.message as Message;
+  } catch (error) {
+    console.error('Error in sendFederatedMessage:', error);
+    toast.error('Failed to send federated message');
     return null;
   }
 }
@@ -407,26 +513,106 @@ export function unsubscribeFromMessages(channelId: string): void {
 }
 
 /**
- * Get the other participant's profile from a conversation
+ * Get the other participant's profile from a conversation (handles both local and federated users)
  */
-export async function getOtherParticipant(conversation: Conversation, currentUserId: string): Promise<any> {
+export async function getOtherParticipant(conversation: Conversation, currentUserId: string): Promise<ParticipantInfo | null> {
   try {
     const partnerId = conversation.id;
     
-    const { data, error } = await supabase
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!partnerId || !uuidRegex.test(partnerId)) {
+      console.error('Invalid partner ID format:', partnerId);
+      return null;
+    }
+
+    // Use the RPC function to get participant info
+    const { data, error } = await supabase.rpc('get_participant_info', {
+      participant_id: partnerId
+    });
+
+    if (error) {
+      console.error('Error fetching participant info:', error);
+      // Fallback to direct query
+      return await getParticipantFallback(partnerId);
+    }
+
+    // Cast the JSONB response
+    const result = data as unknown as {
+      id: string;
+      username?: string;
+      fullname?: string;
+      avatar_url?: string;
+      is_federated?: boolean;
+      home_instance?: string;
+      found: boolean;
+    };
+
+    if (!result || !result.found) {
+      // Try fallback
+      return await getParticipantFallback(partnerId);
+    }
+
+    return {
+      id: result.id,
+      username: result.username,
+      fullname: result.fullname,
+      avatar_url: result.avatar_url,
+      isFederated: result.is_federated || false,
+      homeInstance: result.home_instance,
+      found: true
+    };
+  } catch (error) {
+    console.error('Error in getOtherParticipant:', error);
+    return null;
+  }
+}
+
+/**
+ * Fallback function to get participant info when RPC fails
+ */
+async function getParticipantFallback(partnerId: string): Promise<ParticipantInfo | null> {
+  try {
+    // Try local profile first
+    const { data: localProfile } = await supabase
       .from('public_profiles')
       .select('id, username, fullname, avatar_url')
       .eq('id', partnerId)
       .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching participant profile:', error);
-      return null;
+    if (localProfile) {
+      return {
+        id: localProfile.id,
+        username: localProfile.username || undefined,
+        fullname: localProfile.fullname || undefined,
+        avatar_url: localProfile.avatar_url || undefined,
+        isFederated: false,
+        found: true
+      };
     }
 
-    return data;
+    // Try to find as remote actor via profiles table (federated users)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, username, fullname, avatar_url, auth_type, home_instance')
+      .eq('id', partnerId)
+      .maybeSingle();
+
+    if (profile) {
+      return {
+        id: profile.id,
+        username: profile.username || undefined,
+        fullname: profile.fullname || undefined,
+        avatar_url: profile.avatar_url || undefined,
+        isFederated: profile.auth_type === 'federated',
+        homeInstance: profile.home_instance || undefined,
+        found: true
+      };
+    }
+
+    return null;
   } catch (error) {
-    console.error('Error in getOtherParticipant:', error);
+    console.error('Error in getParticipantFallback:', error);
     return null;
   }
 }

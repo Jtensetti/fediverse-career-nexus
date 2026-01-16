@@ -1319,25 +1319,40 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          delivery_status: string | null
+          federated_activity_id: string | null
           id: string
+          is_federated: boolean | null
           read_at: string | null
           recipient_id: string
+          remote_recipient_url: string | null
+          remote_sender_url: string | null
           sender_id: string
         }
         Insert: {
           content: string
           created_at?: string
+          delivery_status?: string | null
+          federated_activity_id?: string | null
           id?: string
+          is_federated?: boolean | null
           read_at?: string | null
           recipient_id: string
+          remote_recipient_url?: string | null
+          remote_sender_url?: string | null
           sender_id: string
         }
         Update: {
           content?: string
           created_at?: string
+          delivery_status?: string | null
+          federated_activity_id?: string | null
           id?: string
+          is_federated?: boolean | null
           read_at?: string | null
           recipient_id?: string
+          remote_recipient_url?: string | null
+          remote_sender_url?: string | null
           sender_id?: string
         }
         Relationships: []
@@ -2712,6 +2727,10 @@ export type Database = {
         Args: { user1: string; user2: string }
         Returns: boolean
       }
+      can_message_user: {
+        Args: { recipient_id: string; sender_id: string }
+        Returns: Json
+      }
       check_host_rate_limit: {
         Args: { p_max_requests_per_minute?: number; p_remote_host: string }
         Returns: boolean
@@ -2785,6 +2804,7 @@ export type Database = {
           total_batches: number
         }[]
       }
+      get_participant_info: { Args: { participant_id: string }; Returns: Json }
       get_post_replies: {
         Args: { max_replies?: number; post_id: string }
         Returns: {
