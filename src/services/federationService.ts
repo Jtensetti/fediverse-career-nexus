@@ -355,7 +355,21 @@ export const getRateLimitedHosts = async (requestThreshold: number, timeWindow: 
 };
 
 export const getProxiedMediaUrl = (originalUrl: string): string => {
-  // For now, just return the original URL
-  // In production, this would proxy through our media endpoint
-  return originalUrl;
+  // Don't proxy empty URLs or local URLs
+  if (!originalUrl) return originalUrl;
+  
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  
+  // Don't proxy our own URLs
+  if (originalUrl.startsWith(supabaseUrl)) {
+    return originalUrl;
+  }
+  
+  // Don't proxy data URLs
+  if (originalUrl.startsWith('data:')) {
+    return originalUrl;
+  }
+  
+  // Proxy remote media through our edge function for privacy
+  return `${supabaseUrl}/functions/v1/proxy-media?url=${encodeURIComponent(originalUrl)}`;
 };

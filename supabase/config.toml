@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.sync-federated-profile]
 verify_jwt = true
+
+[functions.send-follow]
+verify_jwt = false
