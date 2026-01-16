@@ -14,16 +14,26 @@ const LiveStats = () => {
   const fetchStats = useCallback(async () => {
     const [profilesRes, postsRes, jobsRes, instancesRes] = await Promise.all([
       supabase.from("public_profiles").select("id", { count: "exact", head: true }),
-      supabase.from("ap_objects").select("id", { count: "exact", head: true }),
+      // Only count Note types (actual posts, not all AP objects)
+      supabase.from("ap_objects").select("id", { count: "exact", head: true }).eq("type", "Note"),
       supabase.from("job_posts").select("id", { count: "exact", head: true }).eq("is_active", true),
-      supabase.from("remote_instances").select("id", { count: "exact", head: true }).eq("status", "active"),
+      // Get unique home_instance from federated users
+      supabase.from("profiles")
+        .select("home_instance")
+        .not("home_instance", "is", null)
+        .eq("auth_type", "federated"),
     ]);
+
+    // Calculate unique instances from federated users
+    const uniqueInstances = new Set(
+      instancesRes.data?.map(p => p.home_instance).filter(Boolean) || []
+    );
 
     setStats({
       users: profilesRes.count || 0,
       posts: postsRes.count || 0,
       jobs: jobsRes.count || 0,
-      instances: (instancesRes.count || 0) + 1,
+      instances: uniqueInstances.size + 1, // +1 for nolto.app itself
     });
     setIsLoading(false);
   }, []);
@@ -54,6 +64,15 @@ const LiveStats = () => {
 
   // Filter to only show stats with positive values (except instances which always shows)
   const visibleStats = allStatItems.filter(item => item.value > 0 || item.showWhenZero);
+  
+  // Check if any stat has reached triple digits (100+)
+  const hasTripleDigits = stats.users >= 100 || stats.posts >= 100 || 
+                          stats.jobs >= 100 || stats.instances >= 100;
+  
+  // Hide component entirely until we reach triple digits
+  if (isLoading || !hasTripleDigits) {
+    return null;
+  }
   
   // If we have very few stats, show a "growing community" message instead
   const hasMinimalData = visibleStats.length <= 1 && stats.users === 0;
