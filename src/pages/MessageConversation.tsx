@@ -1,11 +1,10 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
-import { Send, AlertCircle } from 'lucide-react';
+import { Send, AlertCircle, Loader2 } from 'lucide-react';
 
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   getConversationWithMessages, 
   sendMessage, 
@@ -30,37 +29,20 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
+import FediverseBadge from '@/components/FediverseBadge';
 
 export default function MessageConversation() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const currentUserId = user?.id || null;
   const [newMessage, setNewMessage] = useState('');
   const [otherUser, setOtherUser] = useState<ParticipantInfo | null>(null);
   const [canMessage, setCanMessage] = useState<boolean | null>(null);
   const [isFederated, setIsFederated] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
-
-  // Get current user
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to view your messages",
-          variant: "destructive"
-        });
-        navigate('/');
-        return;
-      }
-      setCurrentUserId(data.session.user.id);
-    };
-
-    checkAuth();
-  }, [navigate, toast]);
 
   // Fetch conversation and messages
   const { data, isLoading, error } = useQuery({
@@ -161,6 +143,18 @@ export default function MessageConversation() {
   };
 
   // Handle loading and error states
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow container max-w-4xl mx-auto px-4 py-10 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!currentUserId) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -168,6 +162,13 @@ export default function MessageConversation() {
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center">
             <p>Please sign in to view your messages</p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => navigate('/auth')}
+            >
+              Sign In
+            </Button>
           </div>
         </div>
         <Footer />
@@ -247,11 +248,16 @@ export default function MessageConversation() {
                   {otherUser?.username?.substring(0, 2).toUpperCase() || 'UN'}
                 </AvatarFallback>
               </Avatar>
-              <CardTitle>
-                {otherUser?.username || otherUser?.fullname || (
-                  <span className="text-muted-foreground">User not found</span>
+              <div className="flex items-center gap-2">
+                <CardTitle>
+                  {otherUser?.fullname || otherUser?.username || (
+                    <span className="text-muted-foreground">Loading...</span>
+                  )}
+                </CardTitle>
+                {isFederated && otherUser?.homeInstance && (
+                  <FediverseBadge homeInstance={otherUser.homeInstance} />
                 )}
-              </CardTitle>
+              </div>
             </div>
           </CardHeader>
           
