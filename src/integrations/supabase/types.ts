@@ -2736,6 +2736,20 @@ export type Database = {
       }
       ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
       generate_referral_code: { Args: never; Returns: string }
+      get_batch_boost_counts: {
+        Args: { post_ids: string[] }
+        Returns: {
+          boost_count: number
+          post_id: string
+        }[]
+      }
+      get_batch_reply_counts: {
+        Args: { post_ids: string[] }
+        Returns: {
+          post_id: string
+          reply_count: number
+        }[]
+      }
       get_connection_degree: {
         Args: { source_user_id: string; target_user_id: string }
         Returns: number

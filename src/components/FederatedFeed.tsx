@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFederatedFeed, type FederatedPost, type FeedType } from "@/services/federationService";
 import { getBatchPostData, BatchPostData } from "@/services/batchDataService";
@@ -24,6 +24,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const [editingPost, setEditingPost] = useState<FederatedPost | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [batchData, setBatchData] = useState<Map<string, BatchPostData>>(new Map());
+  const [batchDataLoading, setBatchDataLoading] = useState(false);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   
@@ -58,6 +59,22 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setBatchData(new Map());
   }, [effectiveFeedType]);
   
+  // Memoized batch data fetcher
+  const fetchBatchData = useCallback(async (postIds: string[]) => {
+    if (postIds.length === 0) return;
+    setBatchDataLoading(true);
+    try {
+      const data = await getBatchPostData(postIds, user?.id);
+      setBatchData(prev => {
+        const newMap = new Map(prev);
+        data.forEach((value, key) => newMap.set(key, value));
+        return newMap;
+      });
+    } finally {
+      setBatchDataLoading(false);
+    }
+  }, [user?.id]);
+
   // Process new posts and fetch batch data when posts arrive
   useEffect(() => {
     if (!posts || posts.length === 0) {
@@ -65,6 +82,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
         // Empty feed on first page
         setAllPosts([]);
         setHasMore(false);
+        setBatchDataLoading(false);
       }
       return;
     }
@@ -86,16 +104,10 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       setHasMore(false);
     }
     
-    // Fetch batch data for all posts in ONE request
+    // Fetch batch data for new posts in ONE request
     const postIds = posts.map(p => p.id);
-    getBatchPostData(postIds, user?.id).then(data => {
-      setBatchData(prev => {
-        const newMap = new Map(prev);
-        data.forEach((value, key) => newMap.set(key, value));
-        return newMap;
-      });
-    });
-  }, [posts, queryOffset, limit, user?.id]);
+    fetchBatchData(postIds);
+  }, [posts, queryOffset, limit, fetchBatchData]);
   
   // Infinite scroll with IntersectionObserver
   useEffect(() => {
@@ -143,9 +155,12 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     );
   }
   
+  // Show loading state during initial load OR while fetching first batch data
+  const showInitialLoading = (isLoading && offset === 0) || (offset === 0 && batchDataLoading && allPosts.length > 0 && batchData.size === 0);
+
   return (
     <div className={`${className}`}>
-      {isLoading && offset === 0 ? (
+      {showInitialLoading && allPosts.length === 0 ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
             <PostSkeleton key={i} />

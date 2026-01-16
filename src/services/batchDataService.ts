@@ -14,7 +14,7 @@ export interface BatchPostData {
   userBoosted: boolean;
 }
 
-// Batch fetch all data for multiple posts at once
+// Batch fetch all data for multiple posts at once - using efficient RPC calls
 export async function getBatchPostData(
   postIds: string[],
   userId?: string
@@ -57,7 +57,7 @@ export async function getBatchPostData(
       });
     }
 
-    // Get user's actor ID for boost checking
+    // Get user's actor ID for boost checking (single query)
     let userActorId: string | null = null;
     if (userId) {
       const { data: actor } = await supabase
@@ -68,62 +68,61 @@ export async function getBatchPostData(
       userActorId = actor?.id || null;
     }
 
-    // Batch fetch boosts (Announce objects) - only fetch boosts for these specific posts
-    // We need to fetch and filter since content->object->id is in JSON
-    const { data: boosts } = await supabase
-      .from('ap_objects')
-      .select('id, content, attributed_to')
-      .eq('type', 'Announce')
-      .limit(500); // Reasonable limit for performance
+    // Use efficient RPC for boost counts - fetches only counts for our posts
+    const { data: boostCounts } = await supabase.rpc('get_batch_boost_counts', {
+      post_ids: postIds
+    });
 
-    if (boosts) {
-      boosts.forEach(boost => {
-        const content = boost.content as any;
-        const objectId = content?.object?.id;
-        
-        // Check if this boost is for one of our posts
-        const matchingPostId = postIds.find(pid => 
-          objectId === pid || (typeof objectId === 'string' && objectId.includes(pid))
-        );
-        
-        if (matchingPostId) {
-          const postData = result.get(matchingPostId);
-          if (postData) {
-            postData.boostCount++;
-            if (userActorId && boost.attributed_to === userActorId) {
-              postData.userBoosted = true;
-            }
-          }
+    if (boostCounts && Array.isArray(boostCounts)) {
+      boostCounts.forEach((bc: { post_id: string; boost_count: number }) => {
+        const postData = result.get(bc.post_id);
+        if (postData) {
+          postData.boostCount = Number(bc.boost_count) || 0;
         }
       });
     }
 
-    // Batch fetch reply counts - use efficient count query with grouping
-    const { data: replies } = await supabase
-      .from('ap_objects')
-      .select('id, content')
-      .eq('type', 'Note')
-      .limit(1000); // Reasonable limit
+    // Use efficient RPC for reply counts - fetches only counts for our posts
+    const { data: replyCounts } = await supabase.rpc('get_batch_reply_counts', {
+      post_ids: postIds
+    });
 
-    if (replies) {
-      replies.forEach(reply => {
-        const content = reply.content as any;
-        const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
-        const rootPost = content?.rootPost || content?.content?.rootPost;
-        
-        // Match if this is a direct reply or nested reply
-        const matchingPostId = postIds.find(pid => 
-          inReplyTo === pid || rootPost === pid || 
-          (typeof inReplyTo === 'string' && inReplyTo.includes(pid))
-        );
-        
-        if (matchingPostId) {
-          const postData = result.get(matchingPostId);
-          if (postData) {
-            postData.replyCount++;
-          }
+    if (replyCounts && Array.isArray(replyCounts)) {
+      replyCounts.forEach((rc: { post_id: string; reply_count: number }) => {
+        const postData = result.get(rc.post_id);
+        if (postData) {
+          postData.replyCount = Number(rc.reply_count) || 0;
         }
       });
+    }
+
+    // Check if user has boosted any of these posts (if logged in)
+    if (userActorId) {
+      const { data: userBoosts } = await supabase
+        .from('ap_objects')
+        .select('id, content')
+        .eq('type', 'Announce')
+        .eq('attributed_to', userActorId)
+        .limit(100);
+
+      if (userBoosts) {
+        userBoosts.forEach(boost => {
+          const content = boost.content as any;
+          const objectId = content?.object?.id || content?.object;
+          
+          // Find matching post ID
+          const matchingPostId = postIds.find(pid => 
+            objectId === pid || (typeof objectId === 'string' && objectId.includes(pid))
+          );
+          
+          if (matchingPostId) {
+            const postData = result.get(matchingPostId);
+            if (postData) {
+              postData.userBoosted = true;
+            }
+          }
+        });
+      }
     }
 
   } catch (error) {

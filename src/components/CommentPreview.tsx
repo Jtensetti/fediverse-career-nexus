@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, Bookmark } from "lucide-react";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { getPostReplies, PostReply } from "@/services/postReplyService";
-import { toggleSaveItem, isItemSaved } from "@/services/savedItemsService";
+import { toggleSaveItem } from "@/services/savedItemsService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import InlineReplyComposer from "./InlineReplyComposer";
@@ -28,14 +28,38 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showReplyComposer, setShowReplyComposer] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
+  // Lazy loading: only load when visible
   useEffect(() => {
-    loadComments();
-  }, [postId]);
+    if (!containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasLoaded) {
+          setIsVisible(true);
+        }
+      },
+      { rootMargin: '50px', threshold: 0.1 }
+    );
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [hasLoaded]);
+
+  // Load comments when visible
+  useEffect(() => {
+    if (isVisible && !hasLoaded) {
+      loadComments();
+    }
+  }, [isVisible, hasLoaded, postId]);
 
   const loadComments = async () => {
     setIsLoading(true);
+    setHasLoaded(true);
     try {
       const replies = await getPostReplies(postId);
       
@@ -43,25 +67,14 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       const topLevelReplies = replies.filter(r => !r.parent_reply_id);
       setTotalCount(topLevelReplies.length);
       
-      // Get the first few with reaction counts and saved status
+      // Get the first few - skip individual isItemSaved calls for performance
+      // Users can see saved status on the full post view
       const previewReplies = topLevelReplies.slice(0, maxComments);
       
-      const commentsWithState = await Promise.all(
-        previewReplies.map(async (reply) => {
-          try {
-            const saved = user ? await isItemSaved("comment", reply.id).catch(() => false) : false;
-            return {
-              ...reply,
-              isSaved: saved
-            };
-          } catch {
-            return {
-              ...reply,
-              isSaved: false
-            };
-          }
-        })
-      );
+      const commentsWithState = previewReplies.map(reply => ({
+        ...reply,
+        isSaved: false // Default to false in preview for performance
+      }));
       
       setComments(commentsWithState);
     } catch (error) {
@@ -88,7 +101,7 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
 
     const result = await toggleSaveItem("comment", commentId);
     if (!result.success) {
-      // Revert on failure (don't reload entire list)
+      // Revert on failure
       setComments(prev => prev.map(c => {
         if (c.id === commentId) {
           return { ...c, isSaved: !c.isSaved };
@@ -106,10 +119,19 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
     loadComments();
   };
 
+  // Show minimal skeleton while not visible
+  if (!isVisible && !hasLoaded) {
+    return (
+      <div ref={containerRef} className="pt-2 border-t border-border/50 min-h-[40px]">
+        <div className="h-8" /> {/* Placeholder space */}
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
-      <div className="space-y-2 pt-2 border-t border-border/50">
-        {[...Array(maxComments)].map((_, i) => (
+      <div ref={containerRef} className="space-y-2 pt-2 border-t border-border/50">
+        {[...Array(Math.min(maxComments, 2))].map((_, i) => (
           <div key={i} className="flex gap-2 animate-pulse">
             <div className="h-6 w-6 rounded-full bg-muted" />
             <div className="flex-1">
@@ -124,7 +146,7 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
 
   if (comments.length === 0 && totalCount === 0) {
     return (
-      <div className="pt-2 border-t border-border/50">
+      <div ref={containerRef} className="pt-2 border-t border-border/50">
         {showReplyComposer ? (
           <InlineReplyComposer
             postId={postId}
@@ -146,7 +168,7 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
   }
 
   return (
-    <div className="pt-2 border-t border-border/50 space-y-2">
+    <div ref={containerRef} className="pt-2 border-t border-border/50 space-y-2">
       {comments.map((comment) => (
         <div key={comment.id} className="flex gap-2 group/comment">
           <Link to={`/profile/${comment.author.username || comment.user_id}`}>

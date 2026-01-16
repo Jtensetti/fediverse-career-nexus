@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,6 +25,9 @@ import ContentWarningDisplay from "./ContentWarningDisplay";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 import type { BatchPostData } from "@/services/batchDataService";
+
+// Lazy load CommentPreview for performance
+const CommentPreview = lazy(() => import("./CommentPreview"));
 
 interface FederatedPostCardProps {
   post: FederatedPost;
@@ -462,6 +465,13 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
             />
           </div>
         </CardFooter>
+        
+        {/* Lazy-loaded Comment Preview */}
+        <div className="px-4 pb-3" data-interactive="true">
+          <Suspense fallback={<div className="h-10 animate-pulse bg-muted/30 rounded" />}>
+            <CommentPreview postId={post.id} maxComments={2} />
+          </Suspense>
+        </div>
       </Card>
 
       <PostReplyDialog
