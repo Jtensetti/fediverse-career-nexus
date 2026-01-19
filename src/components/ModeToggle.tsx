@@ -10,94 +10,73 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function ModeToggle() {
   const { t } = useTranslation();
   const { setTheme, theme } = useTheme();
   const { toast } = useToast();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState<boolean>(true);
+  const hasLoadedTheme = useRef(false);
 
-  // Check auth status and get user theme preference
+  // Fetch user theme preference when user changes
   useEffect(() => {
-    const checkAuthAndGetTheme = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const isAuth = !!session?.user;
-      setIsAuthenticated(isAuth);
+    const fetchTheme = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       
-      if (isAuth) {
-        try {
-          const { data, error } = await supabase
-            .from('user_settings')
-            .select('theme')
-            .eq('user_id', session.user.id)
-            .single();
-            
-          if (error) {
-            console.error('Error fetching theme preference:', error);
-          } else if (data?.theme) {
-            setTheme(data.theme);
-          }
-        } catch (error) {
-          console.error('Error fetching user theme:', error);
+      // Only fetch theme once per user to avoid redundant calls
+      if (hasLoadedTheme.current) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('user_settings')
+          .select('theme')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (error) {
+          console.error('Error fetching theme preference:', error);
+        } else if (data?.theme) {
+          setTheme(data.theme);
+          hasLoadedTheme.current = true;
         }
+      } catch (error) {
+        console.error('Error fetching user theme:', error);
       }
       setLoading(false);
     };
 
-    checkAuthAndGetTheme();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setIsAuthenticated(!!session);
-        if (session?.user) {
-          try {
-            const { data, error } = await supabase
-              .from('user_settings')
-              .select('theme')
-              .eq('user_id', session.user.id)
-              .single();
-              
-            if (error) {
-              console.error('Error fetching theme preference:', error);
-            } else if (data?.theme) {
-              setTheme(data.theme);
-            }
-          } catch (error) {
-            console.error('Error fetching user theme:', error);
-          }
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [setTheme]);
+    if (!authLoading) {
+      fetchTheme();
+    }
+  }, [user, authLoading, setTheme]);
 
   const saveThemePreference = async (newTheme: string) => {
     setTheme(newTheme);
     
-    if (isAuthenticated) {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { error } = await supabase
-          .from('user_settings')
-          .update({ theme: newTheme })
-          .eq('user_id', session.user.id);
-          
-        if (error) {
-          console.error('Error saving theme preference:', error);
-          toast({
-            title: t('common.error'),
-            description: 'Failed to save theme preference',
-            variant: 'destructive',
-          });
-        }
+    if (user) {
+      const { error } = await supabase
+        .from('user_settings')
+        .update({ theme: newTheme })
+        .eq('user_id', user.id);
+        
+      if (error) {
+        console.error('Error saving theme preference:', error);
+        toast({
+          title: t('common.error'),
+          description: 'Failed to save theme preference',
+          variant: 'destructive',
+        });
       }
     }
   };

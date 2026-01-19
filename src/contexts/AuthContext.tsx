@@ -20,6 +20,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Timeout to prevent indefinite loading state
+    const loadingTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('AuthProvider: Loading timeout reached, forcing completion');
+        setLoading(false);
+      }
+    }, 10000);
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -37,10 +44,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           // Cache valid for 5 minutes
           if (cachedSetup) {
-            const cached = JSON.parse(cachedSetup);
-            if (now - cached.timestamp < 300000) {
-              // Cache hit - skip setup
-              return;
+            try {
+              const cached = JSON.parse(cachedSetup);
+              if (now - cached.timestamp < 300000) {
+                // Cache hit - skip setup
+                return;
+              }
+            } catch {
+              // Invalid cache, continue with setup
             }
           }
           
@@ -54,9 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 return;
               }
               
-              // Check if user has an actor
+              // Check if user has an actor using the public_actors view
               const { data: existingActor, error: actorError } = await supabase
-                .from('actors')
+                .from('public_actors')
                 .select('id')
                 .eq('user_id', session.user.id)
                 .single();
@@ -93,6 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     );
+    
+    // Clear timeout on cleanup
+    return () => {
+      clearTimeout(loadingTimeout);
+      subscription.unsubscribe();
+    };
 
     // THEN check for existing session
     const getInitialSession = async () => {

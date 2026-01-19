@@ -81,6 +81,13 @@ export type Database = {
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
           },
+          {
+            foreignKeyName: "activities_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       actor_followers: {
@@ -122,6 +129,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "actor_followers_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -236,6 +250,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1050,6 +1071,13 @@ export type Database = {
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
           },
+          {
+            foreignKeyName: "federation_queue_partitioned_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       federation_request_logs: {
@@ -1122,6 +1150,13 @@ export type Database = {
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
           },
+          {
+            foreignKeyName: "follower_batches_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       inbox_items: {
@@ -1169,6 +1204,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "inbox_items_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1551,6 +1593,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "outgoing_follows_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2579,6 +2628,13 @@ export type Database = {
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
           },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       federated_posts_with_moderation: {
@@ -2606,6 +2662,13 @@ export type Database = {
             referencedRelation: "follower_batch_stats"
             referencedColumns: ["actor_id"]
           },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       federation_queue_stats: {
@@ -2628,6 +2691,69 @@ export type Database = {
           total_batches: number | null
         }
         Relationships: []
+      }
+      public_actors: {
+        Row: {
+          created_at: string | null
+          follower_count: number | null
+          following_count: number | null
+          id: string | null
+          is_remote: boolean | null
+          preferred_username: string | null
+          public_key: string | null
+          remote_actor_url: string | null
+          remote_inbox_url: string | null
+          status: string | null
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          follower_count?: number | null
+          following_count?: number | null
+          id?: string | null
+          is_remote?: boolean | null
+          preferred_username?: string | null
+          public_key?: string | null
+          remote_actor_url?: string | null
+          remote_inbox_url?: string | null
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          follower_count?: number | null
+          following_count?: number | null
+          id?: string | null
+          is_remote?: boolean | null
+          preferred_username?: string | null
+          public_key?: string | null
+          remote_actor_url?: string | null
+          remote_inbox_url?: string | null
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_actors_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_actors_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       public_profiles: {
         Row: {
@@ -2755,6 +2881,11 @@ export type Database = {
       }
       ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
       generate_referral_code: { Args: never; Returns: string }
+      get_actor_private_key: { Args: { actor_uuid: string }; Returns: string }
+      get_actor_private_key_service: {
+        Args: { actor_uuid: string }
+        Returns: string
+      }
       get_batch_boost_counts: {
         Args: { post_ids: string[] }
         Returns: {

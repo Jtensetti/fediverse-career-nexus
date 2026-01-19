@@ -28,6 +28,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const queryClient = useQueryClient();
   const { user } = useAuth();
   
+  // Track which post IDs we've already fetched batch data for to prevent redundant calls
+  const fetchedPostIds = useRef<Set<string>>(new Set());
+  
   // Determine the effective feed type from either prop
   const effectiveFeedType: FeedType = feedType !== 'all' ? feedType : 
     (sourceFilter === 'local' ? 'local' : 
@@ -57,14 +60,21 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setHasMore(true);
     setQueryOffset(0);
     setBatchData(new Map());
+    fetchedPostIds.current.clear();
   }, [effectiveFeedType]);
   
-  // Memoized batch data fetcher
+  // Memoized batch data fetcher - only fetches posts we haven't fetched before
   const fetchBatchData = useCallback(async (postIds: string[]) => {
-    if (postIds.length === 0) return;
+    // Filter out posts we've already fetched
+    const newPostIds = postIds.filter(id => !fetchedPostIds.current.has(id));
+    if (newPostIds.length === 0) return;
+    
+    // Mark as fetched immediately to prevent duplicate calls
+    newPostIds.forEach(id => fetchedPostIds.current.add(id));
+    
     setBatchDataLoading(true);
     try {
-      const data = await getBatchPostData(postIds, user?.id);
+      const data = await getBatchPostData(newPostIds, user?.id);
       setBatchData(prev => {
         const newMap = new Map(prev);
         data.forEach((value, key) => newMap.set(key, value));
