@@ -279,7 +279,11 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
         role="article"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          // Only navigate if the Card itself is focused, not child elements like textareas
+          const target = e.target as HTMLElement;
+          const isInsideInteractive = target.closest('input, textarea, select, button, a, [role="button"], [data-interactive], [contenteditable="true"]');
+          
+          if ((e.key === 'Enter' || e.key === ' ') && !isInsideInteractive && e.currentTarget === e.target) {
             e.preventDefault();
             navigate(`/post/${post.id}`);
           }

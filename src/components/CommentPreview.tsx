@@ -166,7 +166,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   // Show minimal skeleton while not visible
   if (!isVisible && !hasLoaded) {
     return (
-      <div ref={containerRef} className="pt-2 border-t border-border/50 min-h-[40px]" onClick={(e) => e.stopPropagation()}>
+      <div ref={containerRef} className="pt-2 border-t border-border/50 min-h-[40px]" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
         <div className="h-8" /> {/* Placeholder space */}
       </div>
     );
@@ -174,7 +174,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
 
   if (isLoading) {
     return (
-      <div ref={containerRef} className="space-y-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+      <div ref={containerRef} className="space-y-2 pt-2 border-t border-border/50" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
         {[...Array(Math.min(maxComments, 2))].map((_, i) => (
           <div key={i} className="flex gap-2 animate-pulse">
             <div className="h-6 w-6 rounded-full bg-muted" />
@@ -190,7 +190,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
 
   if (comments.length === 0 && totalCount === 0) {
     return (
-      <div ref={containerRef} className="pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+      <div ref={containerRef} className="pt-2 border-t border-border/50" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
         {showReplyComposer ? (
           <div ref={composerRef}>
             <InlineReplyComposer
@@ -214,7 +214,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   }
 
   return (
-    <div ref={containerRef} className="pt-2 border-t border-border/50 space-y-2" onClick={(e) => e.stopPropagation()}>
+    <div ref={containerRef} className="pt-2 border-t border-border/50 space-y-2" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
       {comments.map((comment) => (
         <div key={comment.id} className="flex gap-2 group/comment">
           <Link to={`/profile/${comment.author.username || comment.user_id}`}>

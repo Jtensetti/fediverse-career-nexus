@@ -72,6 +72,9 @@ export default function InlineReplyComposer({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // CRITICAL: Stop all keyboard events from bubbling to parent Card
+    e.stopPropagation();
+    
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       handleSubmit();
@@ -99,7 +102,9 @@ export default function InlineReplyComposer({
         showExpanded ? "ring-1 ring-primary/20" : "",
         loading && "opacity-70"
       )}
+      data-interactive="true"
       onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
     >
       <Textarea
         ref={textareaRef}
