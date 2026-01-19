@@ -125,6 +125,8 @@ export function NotificationBell() {
       case 'recommendation_request':
       case 'recommendation_received':
         return <FileText className="h-4 w-4 text-amber-500" />;
+      case 'article_published':
+        return <FileText className="h-4 w-4 text-primary" />;
       default:
         return <Bell className="h-4 w-4" />;
     }
@@ -156,6 +158,8 @@ export function NotificationBell() {
         return `${actorName} requested a recommendation`;
       case 'recommendation_received':
         return `${actorName} wrote you a recommendation`;
+      case 'article_published':
+        return `${actorName} ${notification.content || 'published a new article'}`;
       default:
         return notification.content || 'New notification';
     }

@@ -12,7 +12,8 @@ export type NotificationType =
   | 'boost' 
   | 'reply'
   | 'recommendation_request'
-  | 'recommendation_received';
+  | 'recommendation_received'
+  | 'article_published';
 
 export interface Notification {
   id: string;

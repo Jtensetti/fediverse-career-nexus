@@ -74,11 +74,11 @@ const JobManage = () => {
     setJobToDelete(null);
   };
   
-  const handleTogglePublished = async (jobId: string, published: boolean) => {
-    const success = await toggleJobPostPublished(jobId, published);
+  const handleTogglePublished = async (jobId: string, isActive: boolean) => {
+    const success = await toggleJobPostPublished(jobId, isActive);
     if (success) {
       setJobs((prevJobs) => prevJobs.map(job => 
-        job.id === jobId ? { ...job, published, published_at: published && !job.published_at ? new Date().toISOString() : job.published_at } : job
+        job.id === jobId ? { ...job, is_active: isActive } : job
       ));
     }
   };
@@ -121,10 +121,10 @@ const JobManage = () => {
                         {job.title}
                       </Link>
                     </TableCell>
-                    <TableCell>{job.company_name}</TableCell>
+                    <TableCell>{job.company}</TableCell>
                     <TableCell>
-                      <Badge variant={job.published ? "default" : "outline"}>
-                        {job.published ? "Published" : "Draft"}
+                      <Badge variant={job.is_active ? "default" : "outline"}>
+                        {job.is_active ? "Published" : "Draft"}
                       </Badge>
                     </TableCell>
                     <TableCell>{format(new Date(job.created_at), "MMM d, yyyy")}</TableCell>
@@ -136,11 +136,11 @@ const JobManage = () => {
                           </Link>
                         </Button>
                         <Button 
-                          variant={job.published ? "outline" : "default"} 
+                          variant={job.is_active ? "outline" : "default"} 
                           size="sm"
-                          onClick={() => handleTogglePublished(job.id, !job.published)}
+                          onClick={() => handleTogglePublished(job.id, !job.is_active)}
                         >
-                          {job.published ? "Unpublish" : "Publish"}
+                          {job.is_active ? "Unpublish" : "Publish"}
                         </Button>
                         <Button 
                           variant="outline" 
