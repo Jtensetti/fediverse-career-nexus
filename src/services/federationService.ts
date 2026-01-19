@@ -142,7 +142,7 @@ export const getFederatedFeed = async (
 
     console.log('👥 User IDs found:', userIds);
 
-    let profilesMap: Record<string, { username: string | null; fullname: string | null; avatar_url: string | null }> = {};
+    let profilesMap: Record<string, { username: string | null; fullname: string | null; avatar_url: string | null; home_instance: string | null }> = {};
 
     if (userIds.length > 0) {
       const { data: profiles, error: profileError } = await supabase
@@ -179,7 +179,7 @@ export const getFederatedFeed = async (
         actor_name: displayName,
         actor_avatar: profile?.avatar_url || null,
         user_id: actor?.user_id || null,
-        profile: profile ? { username: profile.username || undefined, fullname: profile.fullname || undefined, avatar_url: profile.avatar_url || undefined } : undefined,
+        profile: profile ? { username: profile.username || undefined, fullname: profile.fullname || undefined, avatar_url: profile.avatar_url || undefined, home_instance: profile.home_instance || undefined } : undefined,
         source: (obj as any).source === 'local' ? 'local' : 'remote',
         type: note?.type || 'Note',
         content_warning: contentWarning,
