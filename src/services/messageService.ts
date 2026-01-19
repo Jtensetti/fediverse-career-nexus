@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { notificationService } from "./notificationService";
 
 // Simple message interface matching our database schema
 export interface Message {
@@ -334,6 +334,20 @@ export async function sendMessage(recipientId: string, content: string): Promise
       return null;
     }
 
+    // Create notification for the recipient
+    try {
+      await notificationService.createNotification({
+        type: 'message',
+        recipientId: recipientId,
+        actorId: senderId,
+        content: content.length > 100 ? content.substring(0, 100) + '...' : content,
+        objectId: data.id,
+        objectType: 'message'
+      });
+    } catch (notifError) {
+      console.error('Failed to create message notification:', notifError);
+    }
+
     return data as Message;
   } catch (error) {
     console.error('Error in sendMessage:', error);
@@ -403,7 +417,7 @@ export async function markMessagesAsRead(partnerId: string): Promise<void> {
 }
 
 /**
- * Subscribe to new messages
+ * Subscribe to new messages with a specific partner
  */
 export function subscribeToMessages(
   partnerId: string,
@@ -416,6 +430,12 @@ export function subscribeToMessages(
     supabase.removeChannel(activeSubscriptions[channelId]);
   }
 
+  // Get current user id for filtering
+  let currentUserId: string | null = null;
+  supabase.auth.getSession().then(({ data }) => {
+    currentUserId = data.session?.user?.id || null;
+  });
+
   const channel = supabase
     .channel(channelId)
     .on(
@@ -427,7 +447,14 @@ export function subscribeToMessages(
       },
       (payload) => {
         const message = payload.new as Message;
-        onMessage(message);
+        // Only process messages for this conversation
+        const isRelevant = 
+          (message.sender_id === partnerId && message.recipient_id === currentUserId) ||
+          (message.sender_id === currentUserId && message.recipient_id === partnerId);
+        
+        if (isRelevant) {
+          onMessage(message);
+        }
       }
     )
     .subscribe();

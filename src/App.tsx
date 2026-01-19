@@ -20,6 +20,9 @@ import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
 import Jobs from "./pages/Jobs";
 import JobView from "./pages/JobView";
+import JobCreate from "./pages/JobCreate";
+import JobEdit from "./pages/JobEdit";
+import JobManage from "./pages/JobManage";
 import FederatedFeedPage from "./pages/FederatedFeed";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
@@ -114,6 +117,9 @@ function App() {
             <Route path="/join/:code" element={<JoinRedirect />} />
                     <Route path="/jobs" element={<Jobs />} />
                     <Route path="/jobs/:id" element={<JobView />} />
+                    <Route path="/jobs/create" element={<ProtectedRoute><JobCreate /></ProtectedRoute>} />
+                    <Route path="/jobs/manage" element={<ProtectedRoute><JobManage /></ProtectedRoute>} />
+                    <Route path="/jobs/edit/:id" element={<ProtectedRoute><JobEdit /></ProtectedRoute>} />
                     <Route path="/articles/:slug" element={<ArticleView />} />
                     <Route path="/post/:postId" element={<PostView />} />
 

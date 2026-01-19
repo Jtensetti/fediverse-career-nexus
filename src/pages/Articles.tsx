@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ArticleCard from "@/components/ArticleCard";
 import ArticlePreviewCard from "@/components/ArticlePreviewCard";
-import NewsletterSubscribe from "@/components/NewsletterSubscribe";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -141,9 +141,6 @@ const Articles = () => {
             </Tabs>
           )}
 
-          <div className="mb-8">
-            <NewsletterSubscribe />
-          </div>
           
           <Separator className="my-6" />
           
