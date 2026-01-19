@@ -36,6 +36,7 @@ import ProfileVisitsToggle from "@/components/ProfileVisitsToggle";
 import VerificationBadge from "@/components/VerificationBadge";
 import VerificationRequest from "@/components/VerificationRequest";
 import { toast } from "sonner";
+import DeleteAccountSection from "@/components/DeleteAccountSection";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   getUserExperiences, 
@@ -928,7 +929,7 @@ const ProfileEditPage = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="privacy">
+          <TabsContent value="privacy" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -951,6 +952,8 @@ const ProfileEditPage = () => {
                 <DMPrivacySettings />
               </CardContent>
             </Card>
+            
+            <DeleteAccountSection />
           </TabsContent>
         </Tabs>
       </main>
