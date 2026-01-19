@@ -42,6 +42,8 @@ export default function MessageConversation() {
   const [canMessage, setCanMessage] = useState<boolean | null>(null);
   const [isFederated, setIsFederated] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const previousMessageCountRef = useRef<number>(0);
+  const hasInitializedRef = useRef<boolean>(false);
   const queryClient = useQueryClient();
 
   // Fetch conversation and messages
@@ -110,9 +112,23 @@ export default function MessageConversation() {
     loadUserAndCheckConnection();
   }, [data?.conversation, currentUserId, conversationId]);
 
-  // Auto-scroll to bottom of messages
+  // Auto-scroll to bottom only when NEW messages are added (not on initial load)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const currentCount = data?.messages?.length || 0;
+    
+    // Skip initial load - don't auto-scroll when first viewing the conversation
+    if (!hasInitializedRef.current && currentCount > 0) {
+      hasInitializedRef.current = true;
+      previousMessageCountRef.current = currentCount;
+      return;
+    }
+    
+    // Only scroll if message count increased (new message received/sent)
+    if (currentCount > previousMessageCountRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    previousMessageCountRef.current = currentCount;
   }, [data?.messages]);
 
   // Mutation for sending messages
