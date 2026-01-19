@@ -2761,6 +2761,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          dm_privacy: string | null
           domain: string | null
           fullname: string | null
           header_url: string | null
@@ -2772,7 +2773,6 @@ export type Database = {
           phone: string | null
           profile_views: number | null
           remote_actor_url: string | null
-          search_vector: unknown
           updated_at: string | null
           username: string | null
         }
@@ -2781,6 +2781,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          dm_privacy?: never
           domain?: string | null
           fullname?: string | null
           header_url?: string | null
@@ -2792,7 +2793,6 @@ export type Database = {
           phone?: never
           profile_views?: number | null
           remote_actor_url?: string | null
-          search_vector?: never
           updated_at?: string | null
           username?: string | null
         }
@@ -2801,6 +2801,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          dm_privacy?: never
           domain?: string | null
           fullname?: string | null
           header_url?: string | null
@@ -2812,7 +2813,6 @@ export type Database = {
           phone?: never
           profile_views?: number | null
           remote_actor_url?: string | null
-          search_vector?: never
           updated_at?: string | null
           username?: string | null
         }
@@ -2856,6 +2856,10 @@ export type Database = {
       can_message_user: {
         Args: { recipient_id: string; sender_id: string }
         Returns: Json
+      }
+      can_view_own_profile_phone: {
+        Args: { profile_id: string }
+        Returns: boolean
       }
       check_host_rate_limit: {
         Args: { p_max_requests_per_minute?: number; p_remote_host: string }
