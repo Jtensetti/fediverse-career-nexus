@@ -2773,6 +2773,7 @@ export type Database = {
           phone: string | null
           profile_views: number | null
           remote_actor_url: string | null
+          search_vector: unknown
           updated_at: string | null
           username: string | null
         }
@@ -2793,6 +2794,7 @@ export type Database = {
           phone?: never
           profile_views?: number | null
           remote_actor_url?: string | null
+          search_vector?: unknown
           updated_at?: string | null
           username?: string | null
         }
@@ -2813,6 +2815,7 @@ export type Database = {
           phone?: never
           profile_views?: number | null
           remote_actor_url?: string | null
+          search_vector?: unknown
           updated_at?: string | null
           username?: string | null
         }
