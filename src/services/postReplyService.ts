@@ -174,6 +174,38 @@ export const createPostReply = async (
       return false;
     }
 
+    // Create notification for the post author
+    try {
+      const { data: postData } = await supabase
+        .from('ap_objects')
+        .select('attributed_to')
+        .eq('id', postId)
+        .single();
+
+      if (postData?.attributed_to) {
+        const { data: postActor } = await supabase
+          .from('actors')
+          .select('user_id')
+          .eq('id', postData.attributed_to)
+          .single();
+
+        // Don't notify yourself
+        if (postActor?.user_id && postActor.user_id !== user.id) {
+          await supabase.from('notifications').insert({
+            type: 'reply',
+            recipient_id: postActor.user_id,
+            actor_id: user.id,
+            object_id: postId,
+            object_type: 'post',
+            content: content.substring(0, 100)
+          });
+        }
+      }
+    } catch (notifError) {
+      // Don't fail the reply if notification fails
+      console.error('Failed to create notification:', notifError);
+    }
+
     toast.success('Reply posted successfully!');
     return true;
   } catch (error) {

@@ -18,6 +18,8 @@ interface CommentPreviewProps {
   postId: string;
   onCommentClick?: () => void;
   maxComments?: number;
+  autoOpenComposer?: boolean;
+  onComposerOpened?: () => void;
 }
 
 export interface CommentPreviewHandle {
@@ -30,7 +32,7 @@ interface CommentWithState extends PostReply {
 }
 
 const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
-  ({ postId, onCommentClick, maxComments = 2 }, ref) => {
+  ({ postId, onCommentClick, maxComments = 2, autoOpenComposer, onComposerOpened }, ref) => {
   const [comments, setComments] = useState<CommentWithState[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,6 +81,17 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
       loadComments();
     }
   }, [isVisible, hasLoaded, postId]);
+
+  // Auto-open composer when prop is set (for when lazy load completes)
+  useEffect(() => {
+    if (autoOpenComposer && user && hasLoaded) {
+      setShowReplyComposer(true);
+      onComposerOpened?.();
+      setTimeout(() => {
+        composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [autoOpenComposer, user, hasLoaded, onComposerOpened]);
 
   const loadComments = async () => {
     setIsLoading(true);

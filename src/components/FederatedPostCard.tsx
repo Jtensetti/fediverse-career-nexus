@@ -45,6 +45,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [shouldOpenComposer, setShouldOpenComposer] = useState(false);
   const commentPreviewRef = useRef<CommentPreviewHandle>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -200,7 +201,12 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
       return;
     }
     
-    commentPreviewRef.current?.openComposer();
+    // Try to open via ref, or set flag for when component loads
+    if (commentPreviewRef.current) {
+      commentPreviewRef.current.openComposer();
+    } else {
+      setShouldOpenComposer(true);
+    }
   };
 
   // Handle reply created
@@ -471,7 +477,13 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
         {/* Lazy-loaded Comment Preview with ref for inline commenting */}
         <div className="px-4 pb-3" data-interactive="true">
           <Suspense fallback={<div className="h-10 animate-pulse bg-muted/30 rounded" />}>
-            <CommentPreview ref={commentPreviewRef} postId={post.id} maxComments={2} />
+            <CommentPreview 
+              ref={commentPreviewRef} 
+              postId={post.id} 
+              maxComments={2}
+              autoOpenComposer={shouldOpenComposer}
+              onComposerOpened={() => setShouldOpenComposer(false)}
+            />
           </Suspense>
         </div>
       </Card>
