@@ -141,6 +141,57 @@ export async function toggleReaction(
         return { success: false, action: 'error', reaction };
       }
 
+      // Create notification for the content owner
+      try {
+        let ownerId: string | null = null;
+
+        if (targetType === 'post') {
+          const { data: postData } = await supabase
+            .from('ap_objects')
+            .select('attributed_to')
+            .eq('id', targetId)
+            .single();
+
+          if (postData?.attributed_to) {
+            const { data: actor } = await supabase
+              .from('actors')
+              .select('user_id')
+              .eq('id', postData.attributed_to)
+              .single();
+            ownerId = actor?.user_id || null;
+          }
+        } else if (targetType === 'reply') {
+          const { data: replyData } = await supabase
+            .from('ap_objects')
+            .select('attributed_to')
+            .eq('id', targetId)
+            .single();
+
+          if (replyData?.attributed_to) {
+            const { data: actor } = await supabase
+              .from('actors')
+              .select('user_id')
+              .eq('id', replyData.attributed_to)
+              .single();
+            ownerId = actor?.user_id || null;
+          }
+        }
+
+        // Don't notify yourself
+        if (ownerId && ownerId !== user.id) {
+          await supabase.from('notifications').insert({
+            type: 'like',
+            recipient_id: ownerId,
+            actor_id: user.id,
+            object_id: targetId,
+            object_type: targetType,
+          });
+        }
+      } catch (notifError) {
+        // Don't fail the reaction if notification fails
+        console.error('Failed to create notification:', notifError);
+      }
+
       return { success: true, action: 'added', reaction };
     }
   } catch (error) {
