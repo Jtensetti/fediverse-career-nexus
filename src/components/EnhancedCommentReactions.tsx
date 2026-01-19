@@ -9,14 +9,25 @@ import StackedReactionDisplay from "./StackedReactionDisplay";
 interface EnhancedCommentReactionsProps {
   replyId: string;
   className?: string;
+  initialReactions?: ReactionCount[];
 }
 
-export function EnhancedCommentReactions({ replyId, className }: EnhancedCommentReactionsProps) {
+const DEFAULT_REACTIONS: ReactionCount[] = REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }));
+
+export function EnhancedCommentReactions({ replyId, className, initialReactions }: EnhancedCommentReactionsProps) {
   const [reactions, setReactions] = useState<ReactionCount[]>(
-    REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }))
+    initialReactions || DEFAULT_REACTIONS
   );
   const [isOpen, setIsOpen] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(!!initialReactions);
+
+  // Update from initialReactions when they change (from parent batch fetch)
+  useEffect(() => {
+    if (initialReactions) {
+      setReactions(initialReactions);
+      setHasLoaded(true);
+    }
+  }, [initialReactions]);
 
   const loadReactions = useCallback(async () => {
     if (hasLoaded) return;
@@ -25,12 +36,12 @@ export function EnhancedCommentReactions({ replyId, className }: EnhancedComment
     setReactions(data);
   }, [replyId, hasLoaded]);
 
-  // Only load reactions when popover opens (lazy loading to avoid N+1)
+  // Load reactions on mount if no initial data provided
   useEffect(() => {
-    if (isOpen && !hasLoaded) {
+    if (!initialReactions && !hasLoaded) {
       loadReactions();
     }
-  }, [isOpen, hasLoaded, loadReactions]);
+  }, [initialReactions, hasLoaded, loadReactions]);
 
   const handleReaction = async (reaction: ReactionKey) => {
     // Optimistic update

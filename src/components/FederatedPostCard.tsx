@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,7 +16,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/postService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import PostReplyDialog from "./PostReplyDialog";
 import BlockUserDialog from "./BlockUserDialog";
 import EnhancedPostReactions from "./EnhancedPostReactions";
 import QuoteRepostDialog from "./QuoteRepostDialog";
@@ -25,6 +24,7 @@ import ContentWarningDisplay from "./ContentWarningDisplay";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 import type { BatchPostData } from "@/services/batchDataService";
+import type { CommentPreviewHandle } from "./CommentPreview";
 
 // Lazy load CommentPreview for performance
 const CommentPreview = lazy(() => import("./CommentPreview"));
@@ -41,11 +41,11 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
   const [isBoosted, setIsBoosted] = useState(initialData?.userBoosted ?? false);
   const [boostCount, setBoostCount] = useState(initialData?.boostCount ?? 0);
   const [replyCount, setReplyCount] = useState(initialData?.replyCount ?? 0);
-  const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [showQuoteRepostDialog, setShowQuoteRepostDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const commentPreviewRef = useRef<CommentPreviewHandle>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -193,14 +193,14 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
     setBoostCount(prev => prev + 1);
   };
 
-  // Handle reply
+  // Handle reply - now activates inline composer
   const handleReply = () => {
     if (!user) {
       toast.error('Please sign in to reply to posts');
       return;
     }
     
-    setShowReplyDialog(true);
+    commentPreviewRef.current?.openComposer();
   };
 
   // Handle reply created
@@ -468,20 +468,13 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
           </div>
         </CardFooter>
         
-        {/* Lazy-loaded Comment Preview */}
+        {/* Lazy-loaded Comment Preview with ref for inline commenting */}
         <div className="px-4 pb-3" data-interactive="true">
           <Suspense fallback={<div className="h-10 animate-pulse bg-muted/30 rounded" />}>
-            <CommentPreview postId={post.id} maxComments={2} />
+            <CommentPreview ref={commentPreviewRef} postId={post.id} maxComments={2} />
           </Suspense>
         </div>
       </Card>
-
-      <PostReplyDialog
-        open={showReplyDialog}
-        onOpenChange={setShowReplyDialog}
-        postId={post.id}
-        onReplyCreated={handleReplyCreated}
-      />
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

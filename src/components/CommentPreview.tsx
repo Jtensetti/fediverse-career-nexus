@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, Bookmark } from "lucide-react";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { getPostReplies, PostReply } from "@/services/postReplyService";
+import { getBatchReplyReactions, ReactionCount } from "@/services/reactionsService";
 import { toggleSaveItem } from "@/services/savedItemsService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -19,11 +20,17 @@ interface CommentPreviewProps {
   maxComments?: number;
 }
 
-interface CommentWithState extends PostReply {
-  isSaved: boolean;
+export interface CommentPreviewHandle {
+  openComposer: () => void;
 }
 
-export default function CommentPreview({ postId, onCommentClick, maxComments = 2 }: CommentPreviewProps) {
+interface CommentWithState extends PostReply {
+  isSaved: boolean;
+  reactions?: ReactionCount[];
+}
+
+const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
+  ({ postId, onCommentClick, maxComments = 2 }, ref) => {
   const [comments, setComments] = useState<CommentWithState[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +38,23 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+
+  // Expose openComposer method to parent via ref
+  useImperativeHandle(ref, () => ({
+    openComposer: () => {
+      if (!user) {
+        toast.error('Please sign in to comment');
+        return;
+      }
+      setShowReplyComposer(true);
+      // Scroll to composer after state updates
+      setTimeout(() => {
+        composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }));
 
   // Lazy loading: only load when visible
   useEffect(() => {
@@ -67,13 +90,17 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       const topLevelReplies = replies.filter(r => !r.parent_reply_id);
       setTotalCount(topLevelReplies.length);
       
-      // Get the first few - skip individual isItemSaved calls for performance
-      // Users can see saved status on the full post view
+      // Get the first few
       const previewReplies = topLevelReplies.slice(0, maxComments);
+      
+      // Batch fetch reactions for all preview comments
+      const replyIds = previewReplies.map(r => r.id);
+      const reactionsMap = await getBatchReplyReactions(replyIds);
       
       const commentsWithState = previewReplies.map(reply => ({
         ...reply,
-        isSaved: false // Default to false in preview for performance
+        isSaved: false, // Default to false in preview for performance
+        reactions: reactionsMap[reply.id] || undefined
       }));
       
       setComments(commentsWithState);
@@ -148,13 +175,15 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
     return (
       <div ref={containerRef} className="pt-2 border-t border-border/50">
         {showReplyComposer ? (
-          <InlineReplyComposer
-            postId={postId}
-            onReplyCreated={handleReplyCreated}
-            onCancel={() => setShowReplyComposer(false)}
-            placeholder="Write a comment..."
-            autoFocus
-          />
+          <div ref={composerRef}>
+            <InlineReplyComposer
+              postId={postId}
+              onReplyCreated={handleReplyCreated}
+              onCancel={() => setShowReplyComposer(false)}
+              placeholder="Write a comment..."
+              autoFocus
+            />
+          </div>
         ) : (
           <button
             onClick={() => user ? setShowReplyComposer(true) : toast.error('Please sign in to comment')}
@@ -201,8 +230,12 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
             </div>
             
             <div className="flex items-center gap-1 mt-0.5 ml-1">
-              {/* Enhanced reactions with full emoji picker */}
-              <EnhancedCommentReactions replyId={comment.id} className="scale-90 origin-left" />
+              {/* Enhanced reactions with full emoji picker - now with initial data */}
+              <EnhancedCommentReactions 
+                replyId={comment.id} 
+                className="scale-90 origin-left" 
+                initialReactions={comment.reactions}
+              />
               
               <TooltipProvider>
                 <Tooltip>
@@ -241,7 +274,7 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       
       {/* Quick reply input */}
       {showReplyComposer ? (
-        <div className="pt-1">
+        <div className="pt-1" ref={composerRef}>
           <InlineReplyComposer
             postId={postId}
             onReplyCreated={handleReplyCreated}
@@ -261,4 +294,8 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       )}
     </div>
   );
-}
+});
+
+CommentPreview.displayName = 'CommentPreview';
+
+export default CommentPreview;
