@@ -172,7 +172,7 @@ export default function CommentPreview({ postId, onCommentClick, maxComments = 2
       {comments.map((comment) => (
         <div key={comment.id} className="flex gap-2 group/comment">
           <Link to={`/profile/${comment.author.username || comment.user_id}`}>
-            <Avatar className="h-6 w-6">
+            <Avatar className="h-6 w-6 aspect-square flex-shrink-0">
               {comment.author.avatar_url && (
                 <AvatarImage src={comment.author.avatar_url} />
               )}
