@@ -33,7 +33,7 @@ const LiveStats = () => {
       users: profilesRes.count || 0,
       posts: postsRes.count || 0,
       jobs: jobsRes.count || 0,
-      instances: uniqueInstances.size + 1, // +1 for nolto.app itself
+      instances: uniqueInstances.size + 1, // +1 for local instance
     });
     setIsLoading(false);
   }, []);

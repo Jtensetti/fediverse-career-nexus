@@ -329,9 +329,11 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
                   <div className="font-semibold truncate">{getActorName()}</div>
                 </Link>
               </ProfileHoverCard>
-              {getActorUsername() && (
+            {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">
-                  @{getActorUsername()}{post.source === 'local' ? '@nolto.app' : post.instance ? `@${post.instance}` : ''}
+                  @{getActorUsername()}{post.source === 'local' 
+                    ? (post.profile?.home_instance ? `@${post.profile.home_instance}` : '@local') 
+                    : post.instance ? `@${post.instance}` : ''}
                 </div>
               )}
               <div className="text-xs text-muted-foreground flex items-center gap-1">

@@ -6,34 +6,17 @@ import JobSearchFilter from "@/components/JobSearchFilter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { JobCardSkeleton } from "@/components/common/skeletons";
 import { EmptyState, SEOHead } from "@/components/common";
 import { Briefcase } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Jobs = () => {
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<JobPostFilter>({});
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-    };
-    
-    checkAuth();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-    });
-    
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   
   useEffect(() => {
     const fetchJobs = async () => {

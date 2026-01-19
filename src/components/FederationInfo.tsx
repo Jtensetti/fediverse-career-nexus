@@ -120,7 +120,8 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
     return null; // This user doesn't have a federated profile
   }
   
-  const domain = window.location.hostname;
+  // Use home_instance if available (for federated users), otherwise 'local'
+  const domain = actor?.home_instance || 'local';
   const federatedHandle = `@${username}@${domain}`;
   const remoteActorUri = `${window.location.origin}/actor/${username}`;
   

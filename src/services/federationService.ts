@@ -13,6 +13,7 @@ export interface FederatedPost {
     username?: string;
     fullname?: string;
     avatar_url?: string;
+    home_instance?: string;
   };
   actor?: {
     name?: string;
@@ -146,14 +147,14 @@ export const getFederatedFeed = async (
     if (userIds.length > 0) {
       const { data: profiles, error: profileError } = await supabase
         .from('public_profiles')
-        .select('id, username, fullname, avatar_url')
+        .select('id, username, fullname, avatar_url, home_instance')
         .in('id', userIds);
 
       console.log('📝 Profiles fetched:', profiles?.length, 'error:', profileError);
 
       if (profiles) {
         profilesMap = Object.fromEntries(
-          profiles.map(p => [p.id, { username: p.username, fullname: p.fullname, avatar_url: p.avatar_url }])
+          profiles.map(p => [p.id, { username: p.username, fullname: p.fullname, avatar_url: p.avatar_url, home_instance: p.home_instance }])
         );
       }
     }
