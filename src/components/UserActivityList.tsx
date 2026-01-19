@@ -72,7 +72,7 @@ function ActivityCard({ activity }: { activity: ActivityItem }) {
           <div className="pl-6 border-l-2 border-muted">
             <div className="flex items-center gap-2 mb-2">
               <ProfileHoverCard username={activity.originalPost.author.username}>
-                <Avatar className="h-6 w-6 cursor-pointer">
+                <Avatar className="h-6 w-6 aspect-square flex-shrink-0 cursor-pointer">
                   <AvatarImage src={activity.originalPost.author.avatar_url} />
                   <AvatarFallback className="text-xs">
                     {(activity.originalPost.author.fullname || activity.originalPost.author.username || '?')[0].toUpperCase()}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Search, User, Briefcase, FileText, Calendar, X, Loader2 } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Search, User, Briefcase, FileText, Calendar, X, Loader2, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,7 +20,7 @@ export function GlobalSearch() {
 
   // Debounced search
   useEffect(() => {
-    if (query.length < 2) {
+    if (query.length < 1) {
       setResults(null);
       return;
     }
@@ -180,7 +180,7 @@ export function GlobalSearch() {
         )}
       </div>
 
-      {isOpen && query.length >= 2 && (
+      {isOpen && query.length >= 1 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-popover border rounded-lg shadow-lg z-50 max-h-[400px] overflow-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -198,6 +198,21 @@ export function GlobalSearch() {
               No results found for "{query}"
             </div>
           )}
+          
+          {/* Link to advanced search */}
+          <div className="border-t px-3 py-2">
+            <Link 
+              to={`/search?q=${encodeURIComponent(query)}`}
+              className="flex items-center justify-between text-sm text-primary hover:underline"
+              onClick={() => {
+                setIsOpen(false);
+                setQuery("");
+              }}
+            >
+              <span>Advanced search</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       )}
     </div>

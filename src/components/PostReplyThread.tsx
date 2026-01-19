@@ -102,7 +102,7 @@ export default function PostReplyThread({
           <div className="flex items-start gap-3">
             <ProfileHoverCard username={reply.author.username} userId={reply.user_id}>
               <Link to={`/profile/${reply.author.username || reply.user_id}`}>
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-8 w-8 aspect-square flex-shrink-0">
                   {reply.author.avatar_url ? (
                     <AvatarImage src={reply.author.avatar_url} />
                   ) : null}

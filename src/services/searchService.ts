@@ -25,11 +25,13 @@ export const searchService = {
 
     const searchQuery = query.trim().split(' ').join(' & ');
 
+    const searchPattern = `%${query.trim()}%`;
+    
     const [profilesRes, jobsRes, articlesRes, eventsRes] = await Promise.all([
       supabase
         .from('public_profiles')
-        .select('id, fullname, username, headline, avatar_url')
-        .textSearch('search_vector', searchQuery)
+        .select('id, fullname, username, headline, avatar_url, home_instance')
+        .or(`username.ilike.${searchPattern},fullname.ilike.${searchPattern},headline.ilike.${searchPattern}`)
         .limit(limit),
       
       supabase
@@ -99,14 +101,14 @@ export const searchService = {
   },
 
   async searchProfiles(query: string, limit = 20) {
-    if (!query || query.trim().length < 2) return [];
+    if (!query || query.trim().length < 1) return [];
     
-    const searchQuery = query.trim().split(' ').join(' & ');
+    const searchPattern = `%${query.trim()}%`;
     
     const { data } = await supabase
       .from('public_profiles')
-      .select('id, fullname, username, headline, avatar_url, location')
-      .textSearch('search_vector', searchQuery)
+      .select('id, fullname, username, headline, avatar_url, location, home_instance')
+      .or(`username.ilike.${searchPattern},fullname.ilike.${searchPattern}`)
       .limit(limit);
     
     return data || [];
