@@ -77,6 +77,9 @@ export function NotificationBell() {
         case 'event':
           navigate(`/events/${notification.object_id}`);
           break;
+        case 'message':
+          navigate(`/messages/${notification.actor_id}`);
+          break;
         case 'skill':
           if (notification.actor_id) {
             navigate(`/profile/${notification.actor_id}`);

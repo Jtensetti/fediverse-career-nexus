@@ -294,7 +294,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
                 onClick={(e) => post.source !== 'local' && e.preventDefault()}
               >
                 <div className="relative">
-                  <Avatar className="h-11 w-11 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
+                  <Avatar className="h-11 w-11 aspect-square flex-shrink-0 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
                     {getAvatarUrl() && !imageError ? (
                       <AvatarImage 
                         src={getAvatarUrl() as string} 
