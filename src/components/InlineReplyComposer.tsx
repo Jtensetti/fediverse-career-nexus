@@ -34,7 +34,8 @@ export default function InlineReplyComposer({
 
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
-      textareaRef.current.focus();
+      // Small delay to ensure DOM is ready
+      setTimeout(() => textareaRef.current?.focus(), 50);
     }
   }, [autoFocus]);
 
@@ -92,11 +93,14 @@ export default function InlineReplyComposer({
   const showExpanded = isFocused || content.length > 0;
 
   return (
-    <div className={cn(
-      "relative rounded-lg border bg-background transition-all",
-      showExpanded ? "ring-1 ring-primary/20" : "",
-      loading && "opacity-70"
-    )}>
+    <div 
+      className={cn(
+        "relative rounded-lg border bg-background transition-all",
+        showExpanded ? "ring-1 ring-primary/20" : "",
+        loading && "opacity-70"
+      )}
+      onClick={(e) => e.stopPropagation()}
+    >
       <Textarea
         ref={textareaRef}
         placeholder={placeholder}

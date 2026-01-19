@@ -82,16 +82,20 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
     }
   }, [isVisible, hasLoaded, postId]);
 
-  // Auto-open composer when prop is set (for when lazy load completes)
+  // Auto-open composer when prop is set - don't wait for hasLoaded
   useEffect(() => {
-    if (autoOpenComposer && user && hasLoaded) {
+    if (autoOpenComposer && user) {
       setShowReplyComposer(true);
       onComposerOpened?.();
+      // Force load comments if not already loaded
+      if (!hasLoaded) {
+        loadComments();
+      }
       setTimeout(() => {
         composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     }
-  }, [autoOpenComposer, user, hasLoaded, onComposerOpened]);
+  }, [autoOpenComposer, user]);
 
   const loadComments = async () => {
     setIsLoading(true);
@@ -162,7 +166,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   // Show minimal skeleton while not visible
   if (!isVisible && !hasLoaded) {
     return (
-      <div ref={containerRef} className="pt-2 border-t border-border/50 min-h-[40px]">
+      <div ref={containerRef} className="pt-2 border-t border-border/50 min-h-[40px]" onClick={(e) => e.stopPropagation()}>
         <div className="h-8" /> {/* Placeholder space */}
       </div>
     );
@@ -170,7 +174,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
 
   if (isLoading) {
     return (
-      <div ref={containerRef} className="space-y-2 pt-2 border-t border-border/50">
+      <div ref={containerRef} className="space-y-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
         {[...Array(Math.min(maxComments, 2))].map((_, i) => (
           <div key={i} className="flex gap-2 animate-pulse">
             <div className="h-6 w-6 rounded-full bg-muted" />
@@ -186,7 +190,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
 
   if (comments.length === 0 && totalCount === 0) {
     return (
-      <div ref={containerRef} className="pt-2 border-t border-border/50">
+      <div ref={containerRef} className="pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
         {showReplyComposer ? (
           <div ref={composerRef}>
             <InlineReplyComposer
@@ -210,7 +214,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   }
 
   return (
-    <div ref={containerRef} className="pt-2 border-t border-border/50 space-y-2">
+    <div ref={containerRef} className="pt-2 border-t border-border/50 space-y-2" onClick={(e) => e.stopPropagation()}>
       {comments.map((comment) => (
         <div key={comment.id} className="flex gap-2 group/comment">
           <Link to={`/profile/${comment.author.username || comment.user_id}`}>
