@@ -157,3 +157,57 @@ export const togglePostReaction = (postId: string, reaction: ReactionKey) =>
   toggleReaction('post', postId, reaction);
 export const toggleReplyReaction = (replyId: string, reaction: ReactionKey) => 
   toggleReaction('reply', replyId, reaction);
+
+// Batch fetch reactions for multiple replies (avoids N+1)
+export async function getBatchReplyReactions(
+  replyIds: string[]
+): Promise<Record<string, ReactionCount[]>> {
+  if (replyIds.length === 0) return {};
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
+
+    const { data: reactions, error } = await supabase
+      .from('reactions')
+      .select('reaction, user_id, target_id')
+      .eq('target_type', 'reply')
+      .in('target_id', replyIds);
+
+    if (error) {
+      console.error('Error batch fetching reply reactions:', error);
+      return {};
+    }
+
+    // Build result map
+    const result: Record<string, ReactionCount[]> = {};
+    
+    replyIds.forEach(replyId => {
+      const counts: Record<ReactionKey, { count: number; hasReacted: boolean }> = {} as any;
+      REACTIONS.forEach(r => {
+        counts[r] = { count: 0, hasReacted: false };
+      });
+      
+      reactions?.filter(r => r.target_id === replyId).forEach(r => {
+        const key = r.reaction as ReactionKey;
+        if (counts[key]) {
+          counts[key].count++;
+          if (userId && r.user_id === userId) {
+            counts[key].hasReacted = true;
+          }
+        }
+      });
+      
+      result[replyId] = REACTIONS.map(r => ({
+        reaction: r,
+        count: counts[r].count,
+        hasReacted: counts[r].hasReacted,
+      }));
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Error in getBatchReplyReactions:', error);
+    return {};
+  }
+}
