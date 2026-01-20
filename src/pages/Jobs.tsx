@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { getPublishedJobPosts, type JobPost, type JobPostFilter } from "@/services/jobPostsService";
 import JobCard from "@/components/JobCard";
 import JobSearchFilter from "@/components/JobSearchFilter";
@@ -12,6 +12,7 @@ import { Briefcase } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Jobs = () => {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<JobPostFilter>({});
@@ -36,15 +37,15 @@ const Jobs = () => {
   const hasFilters = Object.keys(filters).length > 0;
   
   return (
-    <DashboardLayout title="Job Listings">
+    <DashboardLayout title={t("jobs.title")}>
       <SEOHead
-        title="Job Listings"
-        description="Find your next opportunity on Nolto. Browse transparent job listings from companies across the Fediverse."
+        title={t("jobs.title")}
+        description={t("jobs.subtitle")}
       />
       <div className="flex justify-end mb-6">
         {isAuthenticated && (
           <Button asChild>
-            <Link to="/jobs/manage">Manage My Job Posts</Link>
+            <Link to="/jobs/manage">{t("jobs.manage")}</Link>
           </Button>
         )}
       </div>
@@ -66,20 +67,20 @@ const Jobs = () => {
       ) : (
         <EmptyState
           icon={Briefcase}
-          title={hasFilters ? "No matching jobs found" : "Be the first to post a job!"}
+          title={hasFilters ? t("jobs.noMatching") : t("jobs.beFirst")}
           description={
             hasFilters 
-              ? "Try adjusting your filters to discover more opportunities."
-              : "Reach professionals across the Fediverse. Post transparent job listings that respect candidates."
+              ? t("jobs.adjustFilters")
+              : t("jobs.reachProfessionals")
           }
           action={
             isAuthenticated 
-              ? { label: "Post a Job", link: "/jobs/create" }
-              : { label: "Sign up to post", link: "/auth/signup" }
+              ? { label: t("jobs.postJob"), link: "/jobs/create" }
+              : { label: t("jobs.signUpToPost"), link: "/auth/signup" }
           }
           secondaryAction={
             hasFilters 
-              ? { label: "Clear filters", onClick: () => handleFilterChange({}) }
+              ? { label: t("jobs.clearFilters"), onClick: () => handleFilterChange({}) }
               : undefined
           }
         />

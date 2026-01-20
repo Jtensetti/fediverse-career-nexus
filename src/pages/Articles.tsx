@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { getPublishedArticles, Article, ArticleWithAccess } from "@/services/articleService";
 import { canAccessFullArticle } from "@/services/authorFollowService";
 import Navbar from "@/components/Navbar";
@@ -18,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Articles = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
@@ -101,16 +103,16 @@ const Articles = () => {
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-2">
                 <BookText className="h-8 w-8" />
-                Articles
+                {t("articles.title")}
               </h1>
               <p className="text-muted-foreground mt-1">
-                Discover insights from professionals in your network
+                {t("articles.subtitle")}
               </p>
             </div>
             
             <Link to="/articles/manage">
               <Button className="mt-4 md:mt-0">
-                Manage My Articles
+                {t("articles.manage")}
               </Button>
             </Link>
           </div>
@@ -119,7 +121,7 @@ const Articles = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
               type="text"
-              placeholder="Search articles..."
+              placeholder={t("articles.search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -131,11 +133,11 @@ const Articles = () => {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="all" className="flex items-center gap-2">
                   <BookText className="h-4 w-4" />
-                  All Articles
+                  {t("articles.all")}
                 </TabsTrigger>
                 <TabsTrigger value="accessible" className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4" />
-                  From My Network
+                  {t("articles.fromNetwork")}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -168,23 +170,23 @@ const Articles = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <h2 className="text-xl font-semibold mb-2">No articles found</h2>
+              <h2 className="text-xl font-semibold mb-2">{t("articles.noArticles")}</h2>
               <p className="text-muted-foreground mb-6">
                 {searchQuery
-                  ? "No articles match your search query."
+                  ? t("articles.noMatchSearch")
                   : activeTab === "accessible"
-                  ? "No articles from your network yet. Follow authors to see their content here."
-                  : "There are no published articles yet."}
+                  ? t("articles.noNetworkArticles")
+                  : t("articles.noPublished")}
               </p>
               {activeTab === "accessible" && (
                 <Button variant="outline" onClick={() => setActiveTab("all")}>
                   <Users className="h-4 w-4 mr-2" />
-                  Browse All Articles
+                  {t("articles.browseAll")}
                 </Button>
               )}
               {activeTab === "all" && !searchQuery && (
                 <Link to="/articles/create">
-                  <Button>Write Your First Article</Button>
+                  <Button>{t("articles.writeFirst")}</Button>
                 </Link>
               )}
             </div>

@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ interface JobSearchFilterProps {
 }
 
 const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [jobType, setJobType] = useState<"full_time" | "part_time" | "contract" | "internship" | "temporary" | undefined>(undefined);
   const [location, setLocation] = useState("");
@@ -53,7 +54,7 @@ const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search job title, company, or keywords..."
+              placeholder={t("jobs.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -68,16 +69,16 @@ const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
             onValueChange={(value: "full_time" | "part_time" | "contract" | "internship" | "temporary" | undefined) => setJobType(value)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Job type" />
+              <SelectValue placeholder={t("jobs.jobType")} />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Job Type</SelectLabel>
-                <SelectItem value="full_time">Full-time</SelectItem>
-                <SelectItem value="part_time">Part-time</SelectItem>
-                <SelectItem value="contract">Contract</SelectItem>
-                <SelectItem value="internship">Internship</SelectItem>
-                <SelectItem value="temporary">Temporary</SelectItem>
+                <SelectLabel>{t("jobs.jobType")}</SelectLabel>
+                <SelectItem value="full_time">{t("jobs.fullTime")}</SelectItem>
+                <SelectItem value="part_time">{t("jobs.partTime")}</SelectItem>
+                <SelectItem value="contract">{t("jobs.contract")}</SelectItem>
+                <SelectItem value="internship">{t("jobs.internship")}</SelectItem>
+                <SelectItem value="temporary">{t("jobs.temporary")}</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -87,7 +88,7 @@ const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
         <div className="w-full md:w-[200px]">
           <Input
             type="text"
-            placeholder="Location"
+            placeholder={t("jobs.location")}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
@@ -97,10 +98,10 @@ const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
         <div className="flex gap-2">
           <Button onClick={handleSearch} className="w-full md:w-auto">
             <Filter className="mr-2 h-4 w-4" />
-            Filter
+            {t("jobs.filter")}
           </Button>
           <Button onClick={handleClear} variant="outline" className="w-full md:w-auto">
-            Clear
+            {t("jobs.clear")}
           </Button>
         </div>
       </div>
@@ -114,7 +115,7 @@ const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
             setRemoteAllowed(checked ? true : undefined);
           }}
         />
-        <Label htmlFor="remote-allowed">Remote allowed</Label>
+        <Label htmlFor="remote-allowed">{t("jobs.remoteAllowed")}</Label>
       </div>
     </div>
   );

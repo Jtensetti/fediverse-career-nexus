@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
 
 import { Conversation, getConversations, getOtherParticipant } from '@/services/messageService';
@@ -20,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Users, MessageSquare, Inbox } from 'lucide-react';
 
 export default function Messages() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
@@ -67,9 +69,9 @@ export default function Messages() {
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Messages</h1>
+          <h1 className="text-3xl font-bold">{t("messages.title")}</h1>
           <Button asChild>
-            <Link to="/connections">New Message</Link>
+            <Link to="/connections">{t("messages.newMessage")}</Link>
           </Button>
         </div>
 
@@ -77,11 +79,11 @@ export default function Messages() {
           <TabsList className="mb-6">
             <TabsTrigger value="messages" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              Messages
+              {t("messages.messages")}
             </TabsTrigger>
             <TabsTrigger value="requests" className="flex items-center gap-2">
               <Inbox className="h-4 w-4" />
-              Requests
+              {t("messages.requests")}
               {pendingRequests.length > 0 && (
                 <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                   {pendingRequests.length}
@@ -109,13 +111,13 @@ export default function Messages() {
               </div>
             ) : error ? (
               <div className="text-center py-8">
-                <p className="text-red-500">Error loading conversations</p>
+                <p className="text-red-500">{t("messages.errorLoading")}</p>
                 <Button 
                   variant="outline" 
                   className="mt-4"
                   onClick={() => window.location.reload()}
                 >
-                  Try Again
+                  {t("messages.tryAgain")}
                 </Button>
               </div>
             ) : conversations && conversations.length > 0 ? (
@@ -133,12 +135,12 @@ export default function Messages() {
                 <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
                   <Users className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-medium mb-2">Build your network first</h3>
+                <h3 className="text-xl font-medium mb-2">{t("messages.buildNetworkFirst")}</h3>
                 <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                  Connect with other professionals before you can message them. This helps maintain a professional environment.
+                  {t("messages.buildNetworkDesc")}
                 </p>
                 <Button asChild>
-                  <Link to="/connections">Find Connections</Link>
+                  <Link to="/connections">{t("messages.findConnections")}</Link>
                 </Button>
               </div>
             ) : (
@@ -146,12 +148,12 @@ export default function Messages() {
                 <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
                   <MessageSquare className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-medium mb-2">No conversations yet</h3>
+                <h3 className="text-xl font-medium mb-2">{t("messages.noConversations")}</h3>
                 <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                  Start messaging your connections to collaborate and network.
+                  {t("messages.noConversationsDesc")}
                 </p>
                 <Button asChild>
-                  <Link to="/connections">Message a Connection</Link>
+                  <Link to="/connections">{t("messages.messageConnection")}</Link>
                 </Button>
               </div>
             )}
@@ -173,9 +175,9 @@ export default function Messages() {
                 <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
                   <Inbox className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-medium mb-2">No message requests</h3>
+                <h3 className="text-xl font-medium mb-2">{t("messages.noRequests")}</h3>
                 <p className="text-muted-foreground max-w-sm mx-auto">
-                  When someone outside your network wants to message you, their request will appear here.
+                  {t("messages.noRequestsDesc")}
                 </p>
               </div>
             )}
@@ -212,9 +214,10 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
   }, [conversation, currentUserId]);
 
   // Get the last message time
+  const { t } = useTranslation();
   const lastMessageTime = conversation.last_message_at 
     ? formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })
-    : 'No messages yet';
+    : t("messages.noMessagesYet");
 
   if (isLoading) {
     return (

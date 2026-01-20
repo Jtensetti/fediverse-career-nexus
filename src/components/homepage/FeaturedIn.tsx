@@ -1,14 +1,17 @@
 import { motion } from "framer-motion";
 import { Globe, Code, Lock, Server, Shield, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const FeaturedIn = () => {
+  const { t } = useTranslation();
+  
   const badges = [
-    { icon: Globe, label: "ActivityPub", description: "Open Protocol" },
-    { icon: Code, label: "Open Source", description: "MIT Licensed" },
-    { icon: Lock, label: "Privacy First", description: "GDPR Compliant" },
-    { icon: Server, label: "Self-Hostable", description: "Your Infrastructure" },
-    { icon: Shield, label: "Secure", description: "End-to-End Encrypted" },
-    { icon: Users, label: "Community", description: "User Governed" },
+    { icon: Globe, labelKey: "activityPub", descKey: "openProtocol" },
+    { icon: Code, labelKey: "openSource", descKey: "mitLicensed" },
+    { icon: Lock, labelKey: "privacyFirst", descKey: "gdprCompliant" },
+    { icon: Server, labelKey: "selfHostable", descKey: "yourInfrastructure" },
+    { icon: Shield, labelKey: "secure", descKey: "e2eEncrypted" },
+    { icon: Users, labelKey: "community", descKey: "userGoverned" },
   ];
 
   return (
@@ -22,14 +25,14 @@ const FeaturedIn = () => {
           className="text-center mb-10"
         >
           <p className="text-sm text-muted-foreground uppercase tracking-wide font-medium">
-            Built on open standards trusted by millions
+            {t("homepage.featuredIn.tagline")}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 max-w-5xl mx-auto">
           {badges.map((badge, index) => (
             <motion.div
-              key={badge.label}
+              key={badge.labelKey}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -39,8 +42,12 @@ const FeaturedIn = () => {
               <div className="w-14 h-14 rounded-xl bg-background shadow-sm border flex items-center justify-center mb-3 group-hover:shadow-md group-hover:border-primary/30 transition-all">
                 <badge.icon className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
               </div>
-              <h4 className="font-semibold text-foreground text-sm">{badge.label}</h4>
-              <p className="text-xs text-muted-foreground">{badge.description}</p>
+              <h4 className="font-semibold text-foreground text-sm">
+                {t(`homepage.featuredIn.${badge.labelKey}`)}
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                {t(`homepage.featuredIn.${badge.descKey}`)}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -53,7 +60,9 @@ const FeaturedIn = () => {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="mt-12 flex flex-wrap justify-center items-center gap-4 text-sm text-muted-foreground"
         >
-          <span className="font-medium text-foreground">Compatible with:</span>
+          <span className="font-medium text-foreground">
+            {t("homepage.featuredIn.compatibleWith")}:
+          </span>
           <div className="flex flex-wrap justify-center gap-3">
             {["Mastodon", "Pleroma", "Pixelfed", "PeerTube", "Lemmy", "Misskey"].map((platform) => (
               <span 
