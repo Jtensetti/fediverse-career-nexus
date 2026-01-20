@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,9 +24,20 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  const isMultipleChoice = Array.isArray(content.anyOf);
-  const options = (content.oneOf || content.anyOf || []) as Array<{ name: string }>;
-  const endTime = content.endTime as string | undefined;
+  // Normalize content: extract Question from Create activity if nested
+  const pollContent = useMemo(() => {
+    if (content?.type === 'Create' && 
+        content?.object && 
+        typeof content.object === 'object' &&
+        (content.object as Record<string, unknown>).type === 'Question') {
+      return content.object as Record<string, unknown>;
+    }
+    return content;
+  }, [content]);
+
+  const isMultipleChoice = Array.isArray(pollContent.anyOf);
+  const options = (pollContent.oneOf || pollContent.anyOf || []) as Array<{ name: string }>;
+  const endTime = pollContent.endTime as string | undefined;
   const isClosed = endTime ? new Date(endTime) < new Date() : false;
 
   useEffect(() => {
@@ -34,7 +45,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
   }, [pollId]);
 
   const loadResults = async () => {
-    const data = await getPollResults(pollId, content);
+    const data = await getPollResults(pollId, pollContent);
     if (data) {
       setResults(data);
       setHasVoted(data.userVotes.length > 0);
