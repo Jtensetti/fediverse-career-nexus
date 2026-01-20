@@ -200,7 +200,10 @@ export async function toggleReaction(
             actor_id: user.id,
             object_id: targetId,
             object_type: targetType,
-            content: parentId ? JSON.stringify({ parentId }) : null,
+            content: JSON.stringify({ 
+              parentId: parentId || undefined,
+              reaction: reaction 
+            }),
           });
         }
       } catch (notifError) {
