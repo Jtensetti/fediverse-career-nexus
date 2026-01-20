@@ -20,6 +20,7 @@ export interface CreatePostData {
   imageAltText?: string;
   contentWarning?: string;
   scheduledFor?: Date;
+  pollData?: Record<string, unknown>;
 }
 
 // Helper to fetch a post along with its owner's user_id
@@ -164,31 +165,55 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       console.log('✅ Image uploaded:', imageUrl);
     }
 
-    // Create a "Create" activity that wraps the Note object
+    // Create a "Create" activity that wraps the Note or Question object
     console.log('💾 Creating post in database...');
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const actorUrl = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}`;
+    const postId = crypto.randomUUID();
 
-    const noteObject: Record<string, unknown> = {
-      type: 'Note',
-      id: `${actorUrl}/posts/${crypto.randomUUID()}`,
-      attributedTo: actorUrl,
-      content: postData.content,
-      published: new Date().toISOString(),
-      to: ['https://www.w3.org/ns/activitystreams#Public'],
-      cc: [`${actorUrl}/followers`],
-      attachment: imageUrl ? [{
-        type: 'Image',
-        url: imageUrl,
-        name: postData.imageAltText || '' // Alt text for accessibility
-      }] : undefined,
-      actor: {
-        id: actor.id,
-        preferredUsername: actor.preferred_username,
-        name: actorName
-      }
-    };
+    // Determine if this is a poll (Question type) or regular post (Note type)
+    const isPoll = postData.pollData && postData.pollData.type === 'Question';
+
+    let noteObject: Record<string, unknown>;
+
+    if (isPoll && postData.pollData) {
+      // Create a Question object for polls
+      noteObject = {
+        ...postData.pollData,
+        id: `${actorUrl}/posts/${postId}`,
+        attributedTo: actorUrl,
+        published: new Date().toISOString(),
+        to: ['https://www.w3.org/ns/activitystreams#Public'],
+        cc: [`${actorUrl}/followers`],
+        actor: {
+          id: actor.id,
+          preferredUsername: actor.preferred_username,
+          name: actorName
+        }
+      };
+    } else {
+      // Create a Note object for regular posts
+      noteObject = {
+        type: 'Note',
+        id: `${actorUrl}/posts/${postId}`,
+        attributedTo: actorUrl,
+        content: postData.content,
+        published: new Date().toISOString(),
+        to: ['https://www.w3.org/ns/activitystreams#Public'],
+        cc: [`${actorUrl}/followers`],
+        attachment: imageUrl ? [{
+          type: 'Image',
+          url: imageUrl,
+          name: postData.imageAltText || '' // Alt text for accessibility
+        }] : undefined,
+        actor: {
+          id: actor.id,
+          preferredUsername: actor.preferred_username,
+          name: actorName
+        }
+      };
+    }
 
     // Add content warning (summary in ActivityPub) if provided
     if (postData.contentWarning) {

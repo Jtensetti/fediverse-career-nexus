@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Image, PenTool, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send, ImagePlus, AlertTriangle } from "lucide-react";
+import { Image, PenTool, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send, ImagePlus, AlertTriangle, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profileService";
@@ -18,6 +18,8 @@ import { createPost, CreatePostData } from "@/services/postService";
 import { compressImage, formatFileSize } from "@/lib/imageCompression";
 import { LinkPreview, extractUrls } from "@/components/LinkPreview";
 import ContentWarningInput from "@/components/ContentWarningInput";
+import { PollCreator, PollCreatorData } from "@/components/PollCreator";
+import { createPollObject } from "@/services/pollService";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -41,6 +43,8 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dismissedUrls, setDismissedUrls] = useState<Set<string>>(new Set());
   const [contentWarning, setContentWarning] = useState<string>("");
+  const [pollData, setPollData] = useState<PollCreatorData | null>(null);
+  const [showPollCreator, setShowPollCreator] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -105,6 +109,8 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     setShowDatePicker(false);
     setDismissedUrls(new Set());
     setContentWarning("");
+    setPollData(null);
+    setShowPollCreator(false);
   };
 
   const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,19 +150,41 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   };
 
   const handlePost = () => {
-    if (!postContent.trim()) {
+    if (!postContent.trim() && !showPollCreator) {
       toast.error('Please enter some content for your post');
       return;
     }
 
-    const postData: CreatePostData = {
+    // Validate poll options if poll is active
+    if (showPollCreator && pollData) {
+      const validOptions = pollData.options.filter(opt => opt.trim().length > 0);
+      if (validOptions.length < 2) {
+        toast.error('Please enter at least 2 poll options');
+        return;
+      }
+    }
+
+    // Build post data with optional poll
+    let finalPostData: CreatePostData = {
       content: postContent.trim(),
       imageFile: selectedImage || undefined,
       imageAltText: imageAltText.trim() || undefined,
       contentWarning: contentWarning.trim() || undefined,
     };
 
-    createPostMutation.mutate(postData);
+    // If poll is active, add poll object to the post
+    if (showPollCreator && pollData) {
+      const validOptions = pollData.options.filter(opt => opt.trim().length > 0);
+      const pollObject = createPollObject(
+        postContent.trim(),
+        validOptions,
+        pollData.durationMinutes,
+        pollData.multipleChoice
+      );
+      finalPostData.pollData = pollObject;
+    }
+
+    createPostMutation.mutate(finalPostData);
   };
 
   const handleScheduledPost = () => {
@@ -353,6 +381,25 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                   onChange={setContentWarning}
                 />
 
+                {/* Poll Creator */}
+                <AnimatePresence>
+                  {showPollCreator && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                    >
+                      <PollCreator
+                        onPollChange={setPollData}
+                        onRemove={() => {
+                          setShowPollCreator(false);
+                          setPollData(null);
+                        }}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Scheduled Info */}
                 <AnimatePresence>
                   {(scheduledDate || scheduledTime) && (
@@ -405,6 +452,18 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       disabled={isLoading}
                     >
                       <Image className="h-5 w-5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowPollCreator(!showPollCreator)}
+                      className={cn(
+                        "h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10",
+                        showPollCreator && "text-primary bg-primary/10"
+                      )}
+                      disabled={isLoading}
+                    >
+                      <BarChart3 className="h-5 w-5" />
                     </Button>
                     <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
                       <PopoverTrigger asChild>
