@@ -23,6 +23,8 @@ import { QuotedPostPreview, RepostIndicator } from "./QuotedPostPreview";
 import ContentWarningDisplay from "./ContentWarningDisplay";
 import { LinkPreview, extractUrls } from "./LinkPreview";
 import { linkifyText, smartTruncate, stripHtml } from "@/lib/linkify";
+import { PollDisplay } from "./PollDisplay";
+import { isPoll } from "@/services/pollService";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 import type { BatchPostData } from "@/services/batchDataService";
@@ -449,18 +451,37 @@ export default function FederatedPostCard({
           
           {/* Content with optional Content Warning */}
           <ContentWarningDisplay warning={post.content_warning || post.content?.summary || ''}>
-            {/* Post text content */}
-            {displayContent && displayContent !== 'No content available' && (
-              <div 
-                className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all" 
-                dangerouslySetInnerHTML={{ __html: displayContent }} 
-                onClick={(e) => {
-                  // Prevent card navigation when clicking links
-                  if ((e.target as HTMLElement).tagName === 'A') {
-                    e.stopPropagation();
-                  }
-                }}
-              />
+            {/* Poll display if this is a Question type */}
+            {post.content && isPoll(post.content as Record<string, unknown>) ? (
+              <div className="space-y-3">
+                {/* Poll question text */}
+                {displayContent && displayContent !== 'No content available' && (
+                  <div 
+                    className="prose prose-sm max-w-none dark:prose-invert" 
+                    dangerouslySetInnerHTML={{ __html: displayContent }} 
+                  />
+                )}
+                <PollDisplay 
+                  pollId={post.id} 
+                  content={post.content as Record<string, unknown>} 
+                />
+              </div>
+            ) : (
+              <>
+                {/* Post text content */}
+                {displayContent && displayContent !== 'No content available' && (
+                  <div 
+                    className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all" 
+                    dangerouslySetInnerHTML={{ __html: displayContent }} 
+                    onClick={(e) => {
+                      // Prevent card navigation when clicking links
+                      if ((e.target as HTMLElement).tagName === 'A') {
+                        e.stopPropagation();
+                      }
+                    }}
+                  />
+                )}
+              </>
             )}
 
             {/* "Read more" indicator when truncated */}

@@ -1603,6 +1603,52 @@ export type Database = {
           },
         ]
       }
+      poll_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_boosts: {
         Row: {
           created_at: string
@@ -2943,6 +2989,13 @@ export type Database = {
         }[]
       }
       get_participant_info: { Args: { participant_id: string }; Returns: Json }
+      get_poll_results: {
+        Args: { poll_uuid: string }
+        Returns: {
+          option_index: number
+          vote_count: number
+        }[]
+      }
       get_post_replies: {
         Args: { max_replies?: number; post_id: string }
         Returns: {
@@ -2980,6 +3033,12 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      has_user_voted: {
+        Args: { check_user_id: string; poll_uuid: string }
+        Returns: {
+          option_index: number
+        }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_moderator: { Args: { _user_id: string }; Returns: boolean }
