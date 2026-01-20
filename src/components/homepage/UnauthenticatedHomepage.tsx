@@ -4,10 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import FederatedFeed from "../FederatedFeed";
 import { useEffect, useState } from "react";
 import { getPublishedJobPosts, type JobPost } from "@/services/jobPostsService";
+import { useTranslation } from "react-i18next";
 import HeroWithScreenshot from "./HeroWithScreenshot";
 import FeaturedIn from "./FeaturedIn";
 import AlternatingFeatures from "./AlternatingFeature";
-
 import FederationVisual from "./FederationVisual";
 import HomepageFAQ from "./HomepageFAQ";
 import FinalCTA from "./FinalCTA";
@@ -15,6 +15,7 @@ import StickyCTA from "./StickyCTA";
 import ScrollReveal from "../common/ScrollReveal";
 
 const UnauthenticatedHomepage = () => {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobPost[]>([]);
 
   useEffect(() => {
@@ -37,7 +38,6 @@ const UnauthenticatedHomepage = () => {
       {/* Alternating Feature Sections with Screenshots */}
       <AlternatingFeatures />
 
-
       {/* Visual Federation Explainer */}
       <ScrollReveal>
         <FederationVisual />
@@ -50,23 +50,23 @@ const UnauthenticatedHomepage = () => {
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-10">
                 <span className="text-secondary font-semibold text-sm uppercase tracking-wide mb-2 block">
-                  See It In Action
+                  {t("homepage.liveFeed.subtitle")}
                 </span>
                 <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-4">
-                  Real Conversations, Real Professionals
+                  {t("homepage.liveFeed.title")}
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Explore what's happening across the network right now
+                  {t("homepage.liveFeed.description")}
                 </p>
               </div>
               
               <Card className="shadow-xl border-0 overflow-hidden">
                 <CardContent className="p-0">
                   <div className="bg-muted/50 px-6 py-3 border-b flex items-center justify-between">
-                    <span className="font-semibold text-foreground">Live Feed</span>
+                    <span className="font-semibold text-foreground">{t("homepage.liveFeed.liveFeed")}</span>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                      <span className="text-xs text-muted-foreground">Real-time</span>
+                      <span className="text-xs text-muted-foreground">{t("homepage.liveFeed.realTime")}</span>
                     </div>
                   </div>
                   <div className="p-6">
@@ -75,7 +75,7 @@ const UnauthenticatedHomepage = () => {
                     </div>
                     <div className="mt-6 text-center">
                       <Button asChild variant="outline" size="lg">
-                        <Link to="/feed">View Full Feed</Link>
+                        <Link to="/feed">{t("homepage.liveFeed.viewFullFeed")}</Link>
                       </Button>
                     </div>
                   </div>
@@ -94,13 +94,13 @@ const UnauthenticatedHomepage = () => {
               <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-10">
                   <span className="text-secondary font-semibold text-sm uppercase tracking-wide mb-2 block">
-                    Career Opportunities
+                    {t("homepage.jobs.subtitle")}
                   </span>
                   <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-4">
-                    Jobs From Companies You Can Trust
+                    {t("homepage.jobs.title")}
                   </h2>
                   <p className="text-lg text-muted-foreground">
-                    Transparent roles from organizations that respect your values
+                    {t("homepage.jobs.description")}
                   </p>
                 </div>
                 
@@ -125,7 +125,7 @@ const UnauthenticatedHomepage = () => {
                 
                 <div className="text-center">
                   <Button asChild variant="outline" size="lg">
-                    <Link to="/jobs">Browse All Jobs</Link>
+                    <Link to="/jobs">{t("homepage.jobs.browseAll")}</Link>
                   </Button>
                 </div>
               </div>

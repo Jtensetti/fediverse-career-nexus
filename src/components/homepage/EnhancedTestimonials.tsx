@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Quote, CheckCircle, Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // Import mastodon-style avatars
 import avatarSarah from "@/assets/avatars/avatar-sarah.png";
@@ -68,6 +69,8 @@ const featuredTestimonial = testimonials.find(t => t.featured);
 const regularTestimonials = testimonials.filter(t => !t.featured);
 
 const EnhancedTestimonials = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="py-20 bg-gradient-to-b from-background to-muted/30">
       <div className="container mx-auto px-4">
@@ -84,10 +87,10 @@ const EnhancedTestimonials = () => {
             ))}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-4">
-            Trusted by Professionals Who Value Freedom
+            {t("homepage.testimonials.title")}
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Join thousands of professionals building their networks on their own terms
+            {t("homepage.testimonials.description")}
           </p>
         </motion.div>
 

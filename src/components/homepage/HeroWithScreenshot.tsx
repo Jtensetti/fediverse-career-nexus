@@ -2,11 +2,14 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import TrustBadges from "./TrustBadges";
 import LiveStats from "./LiveStats";
 import AppScreenshot from "./AppScreenshot";
 
 const HeroWithScreenshot = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="relative bg-gradient-to-br from-primary via-primary to-secondary text-primary-foreground overflow-hidden min-h-[90vh] flex items-center overflow-x-hidden">
       {/* Animated background elements */}
@@ -44,14 +47,14 @@ const HeroWithScreenshot = () => {
             />
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-display mb-4 sm:mb-6 leading-[1.1] tracking-tight">
-              The Professional Network{" "}
+              {t("homepage.hero.title")}{" "}
               <span className="text-accent inline-block">
-                That Respects Your Freedom
+                {t("homepage.hero.titleAccent")}
               </span>
             </h1>
             
             <p className="text-base sm:text-lg md:text-xl text-primary-foreground/90 mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed px-2 sm:px-0">
-              Connect with professionals across the Fediverse. Own your data. Control your network. No algorithms, no ads, no lock-in.
+              {t("homepage.hero.description")}
             </p>
 
             {/* Trust Badges */}
@@ -67,7 +70,7 @@ const HeroWithScreenshot = () => {
                 className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all w-full sm:w-auto"
               >
                 <Link to="/auth/signup">
-                  Get Started Free
+                  {t("homepage.hero.getStarted")}
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Link>
               </Button>
@@ -79,7 +82,7 @@ const HeroWithScreenshot = () => {
               >
                 <Link to="/feed">
                   <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Explore the Feed
+                  {t("homepage.hero.exploreFeed")}
                 </Link>
               </Button>
             </div>

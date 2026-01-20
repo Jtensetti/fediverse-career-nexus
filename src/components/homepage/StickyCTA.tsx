@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const StickyCTA = () => {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -38,23 +40,23 @@ const StickyCTA = () => {
           <div className="bg-card border shadow-2xl rounded-xl p-4 flex items-center gap-4 max-w-md mx-auto md:mx-0">
             <div className="flex-1">
               <p className="font-semibold text-foreground text-sm md:text-base">
-                Ready to join?
+                {t("homepage.stickyCta.readyToJoin")}
               </p>
               <p className="text-xs md:text-sm text-muted-foreground">
-                Create your free account today
+                {t("homepage.stickyCta.createFree")}
               </p>
             </div>
             <div className="flex items-center gap-2">
               <Button asChild size="sm" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
                 <Link to="/auth/signup">
-                  Get Started
+                  {t("homepage.stickyCta.getStarted")}
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
               <button
                 onClick={handleDismiss}
                 className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-                aria-label="Dismiss"
+                aria-label={t("homepage.stickyCta.dismiss")}
               >
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
