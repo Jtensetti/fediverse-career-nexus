@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, Bookmark, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,6 +39,7 @@ export default function PostReplyThread({
   onReplyCreated,
   isHighlighted = false
 }: PostReplyThreadProps) {
+  const { t } = useTranslation();
   const [showReplyComposer, setShowReplyComposer] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -63,7 +65,7 @@ export default function PostReplyThread({
 
   const handleReplyClick = () => {
     if (!user) {
-      toast.error('Please sign in to reply');
+      toast.error(t("comments.signInToReply", "Please sign in to reply"));
       return;
     }
     setShowReplyComposer(!showReplyComposer);
@@ -76,7 +78,7 @@ export default function PostReplyThread({
 
   const handleSave = async () => {
     if (!user) {
-      toast.error('Please sign in to save');
+      toast.error(t("comments.signInToReply", "Please sign in to save"));
       return;
     }
 
@@ -88,7 +90,7 @@ export default function PostReplyThread({
       setIsSaved(prevSaved);
       toast.error('Failed to save comment');
     } else {
-      toast.success(result.saved ? "Comment saved" : "Removed from saved");
+      toast.success(result.saved ? t("comments.saved", "Comment saved") : t("comments.removedFromSaved", "Removed from saved"));
     }
   };
 
@@ -104,7 +106,7 @@ export default function PostReplyThread({
     setIsDeleting(true);
     try {
       await deletePostReply(reply.id);
-      toast.success("Comment deleted");
+      toast.success(t("comments.deleted", "Comment deleted"));
       onReplyCreated(reply.id); // Trigger refresh
     } catch (err: any) {
       toast.error(err.message || "Failed to delete comment");
@@ -127,19 +129,19 @@ export default function PostReplyThread({
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete comment?</AlertDialogTitle>
+            <AlertDialogTitle>{t("comments.deleteComment", "Delete comment?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your comment.
+              {t("comments.deleteCommentDesc", "This action cannot be undone. This will permanently delete your comment.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t("common.cancel", "Cancel")}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete} 
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? t("comments.deleting", "Deleting...") : t("common.delete", "Delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -218,7 +220,7 @@ export default function PostReplyThread({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{isSaved ? "Remove from saved" : "Save comment"}</p>
+                      <p>{isSaved ? t("comments.removeFromSaved", "Remove from saved") : t("comments.saveComment", "Save comment")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -231,7 +233,7 @@ export default function PostReplyThread({
                     onClick={handleReplyClick}
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
-                    Reply
+                    {t("comments.reply", "Reply")}
                   </Button>
                 )}
 
@@ -245,14 +247,14 @@ export default function PostReplyThread({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                        {t("common.edit", "Edit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setShowDeleteConfirm(true)}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+                        {t("common.delete", "Delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -269,7 +271,7 @@ export default function PostReplyThread({
                 parentReplyId={reply.id}
                 onReplyCreated={handleReplyCreated}
                 onCancel={() => setShowReplyComposer(false)}
-                placeholder={`Reply to @${reply.author.username || 'user'}...`}
+                placeholder={`${t("comments.replyTo", "Reply to")} @${reply.author.username || 'user'}...`}
                 autoFocus
               />
             </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,6 +17,7 @@ interface EnhancedPostReactionsProps {
 }
 
 const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, initialReactions }: EnhancedPostReactionsProps) => {
+  const { t } = useTranslation();
   const [reactions, setReactions] = useState<ReactionCount[]>(
     initialReactions || REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }))
   );
@@ -115,7 +117,7 @@ const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, init
             ) : (
               <>
                 <PrimaryIcon className="h-4 w-4" />
-                <span className="text-xs">React</span>
+                <span className="text-xs">{t("reactions.react", "React")}</span>
               </>
             )}
           </Button>
@@ -146,7 +148,7 @@ const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, init
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{config.label}</p>
+                      <p>{t(`reactions.${reaction}`, config.label)}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -187,7 +189,7 @@ const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, init
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{config.label}</p>
+                <p>{t(`reactions.${reaction}`, config.label)}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
