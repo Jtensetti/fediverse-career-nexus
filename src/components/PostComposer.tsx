@@ -481,7 +481,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       <PopoverContent className="w-auto p-4" align="start">
                         <div className="space-y-4">
                           <div>
-                            <Label htmlFor="scheduled-date" className="text-sm font-medium">Select Date</Label>
+                            <Label htmlFor="scheduled-date" className="text-sm font-medium">{t("posts.selectDate", "Select Date")}</Label>
                             <Calendar
                               mode="single"
                               selected={scheduledDate}
@@ -491,7 +491,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="scheduled-time" className="text-sm font-medium">Select Time</Label>
+                            <Label htmlFor="scheduled-time" className="text-sm font-medium">{t("posts.selectTime", "Select Time")}</Label>
                             <Input
                               id="scheduled-time"
                               type="time"
@@ -504,7 +504,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                             onClick={() => setShowDatePicker(false)}
                             className="w-full"
                           >
-                            Done
+                            {t("posts.done", "Done")}
                           </Button>
                         </div>
                       </PopoverContent>
@@ -559,7 +559,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       className="gap-1"
                     >
                       <ChevronDown className="h-3 w-3" />
-                      Schedule
+                      {t("posts.schedule", "Schedule")}
                     </Button>
                     
                     <Button
@@ -573,7 +573,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       ) : (
                         <>
                           <Send className="h-4 w-4" />
-                          Post
+                          {t("posts.post", "Post")}
                         </>
                       )}
                     </Button>
@@ -590,7 +590,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
               className="w-full gap-2 hover:bg-primary/5 hover:border-primary/20"
             >
               <PenTool className="h-4 w-4" />
-              Write an Article
+              {t("posts.writeArticle", "Write an Article")}
             </Button>
             
             <Button
@@ -599,7 +599,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
               className="w-full gap-2 hover:bg-primary/5 hover:border-primary/20"
             >
               <CalendarIcon className="h-4 w-4" />
-              Create Event
+              {t("posts.createEvent", "Create Event")}
             </Button>
           </div>
         </CardContent>

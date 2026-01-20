@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, Bookmark } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,6 +34,7 @@ interface CommentWithState extends PostReply {
 
 const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   ({ postId, onCommentClick, maxComments = 2, autoOpenComposer, onComposerOpened }, ref) => {
+  const { t } = useTranslation();
   const [comments, setComments] = useState<CommentWithState[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +49,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   useImperativeHandle(ref, () => ({
     openComposer: () => {
       if (!user) {
-        toast.error('Please sign in to comment');
+        toast.error(t("comments.signInToReply", "Please sign in to comment"));
         return;
       }
       setShowReplyComposer(true);
@@ -270,7 +272,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{comment.isSaved ? "Remove from saved" : "Save comment"}</p>
+                    <p>{comment.isSaved ? t("comments.removeFromSaved", "Remove from saved") : t("comments.saveComment", "Save comment")}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -285,7 +287,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
           className="block text-xs text-primary hover:underline pl-8"
           onClick={onCommentClick}
         >
-          View all {totalCount} comments
+          {t("comments.viewAll", "View all {{count}} comments", { count: totalCount })}
         </Link>
       )}
       
@@ -296,17 +298,17 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
             postId={postId}
             onReplyCreated={handleReplyCreated}
             onCancel={() => setShowReplyComposer(false)}
-            placeholder="Write a comment..."
+            placeholder={t("comments.writeComment", "Write a comment...")}
             autoFocus
           />
         </div>
       ) : (
         <button
-          onClick={() => user ? setShowReplyComposer(true) : toast.error('Please sign in to comment')}
+          onClick={() => user ? setShowReplyComposer(true) : toast.error(t("comments.signInToReply", "Please sign in to comment"))}
           className="w-full text-left text-xs text-muted-foreground hover:text-foreground py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-2"
         >
           <MessageSquare className="h-3 w-3" />
-          Add a comment...
+          {t("comments.addComment", "Add a comment...")}
         </button>
       )}
     </div>
