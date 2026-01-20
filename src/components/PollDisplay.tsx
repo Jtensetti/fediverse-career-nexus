@@ -26,6 +26,8 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
 
   // Normalize content: extract Question from Create activity if nested
   const pollContent = useMemo(() => {
+    if (!content) return {} as Record<string, unknown>;
+    
     if (content?.type === 'Create' && 
         content?.object && 
         typeof content.object === 'object' &&
@@ -36,8 +38,21 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
   }, [content]);
 
   const isMultipleChoice = Array.isArray(pollContent?.anyOf);
-  const rawOptions = pollContent?.oneOf || pollContent?.anyOf || [];
-  const options = (Array.isArray(rawOptions) ? rawOptions : []) as Array<{ name: string }>;
+  const rawOptions = pollContent?.oneOf || pollContent?.anyOf;
+  
+  // Ensure options is a valid array with objects containing name strings
+  const options = useMemo(() => {
+    if (!Array.isArray(rawOptions)) return [];
+    return rawOptions.map((opt: unknown) => {
+      if (typeof opt === 'object' && opt !== null && 'name' in opt) {
+        // Ensure name is a string, not an object
+        const name = (opt as { name: unknown }).name;
+        return { name: typeof name === 'string' ? name : String(name) };
+      }
+      return { name: 'Unknown option' };
+    });
+  }, [rawOptions]);
+  
   const endTime = pollContent?.endTime as string | undefined;
   const isClosed = endTime ? new Date(endTime) < new Date() : false;
   

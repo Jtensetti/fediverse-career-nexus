@@ -102,9 +102,13 @@ export default function FederatedPostCard({
       rawContent = post.content.content || '';
       // Don't show "No content available" for reposts - the quoted post IS the content
     } else if (post.type === 'Create' && post.content.object?.content) {
-      rawContent = post.content.object.content;
+      // Handle Create wrapping a Question or other object
+      const objectContent = post.content.object.content;
+      // Ensure we're getting a string, not an object
+      rawContent = typeof objectContent === 'string' ? objectContent : '';
     } else if (post.content.content) {
-      rawContent = post.content.content;
+      const contentValue = post.content.content;
+      rawContent = typeof contentValue === 'string' ? contentValue : '';
     } else {
       rawContent = 'No content available';
     }

@@ -101,6 +101,15 @@ export const getPollResults = async (
   try {
     const { data: session } = await supabase.auth.getSession();
     const userId = session.session?.user?.id;
+    
+    // Normalize: extract Question from Create if nested
+    let normalizedContent = pollContent;
+    if (pollContent?.type === 'Create' && 
+        pollContent?.object && 
+        typeof pollContent.object === 'object' &&
+        (pollContent.object as Record<string, unknown>).type === 'Question') {
+      normalizedContent = pollContent.object as Record<string, unknown>;
+    }
 
     // Get vote counts using the database function
     const { data: voteCounts, error: countError } = await supabase
@@ -119,20 +128,28 @@ export const getPollResults = async (
       userVotes = (userVoteData || []).map((v: { option_index: number }) => v.option_index);
     }
 
-    // Parse options from poll content
-    const optionsArray = (pollContent.oneOf || pollContent.anyOf || []) as Array<{ name: string }>;
+    // Parse options from normalized poll content
+    const rawOptions = normalizedContent?.oneOf || normalizedContent?.anyOf || [];
+    const optionsArray = Array.isArray(rawOptions) ? rawOptions : [];
     
-    // Build results with vote counts
+    // Build results with vote counts - ensure name is a string
     const voteCountMap = new Map<number, number>();
     (voteCounts || []).forEach((vc: { option_index: number; vote_count: number }) => {
       voteCountMap.set(vc.option_index, Number(vc.vote_count));
     });
 
-    const options = optionsArray.map((opt, index) => ({
-      index,
-      name: opt.name,
-      voteCount: voteCountMap.get(index) || 0
-    }));
+    const options = optionsArray.map((opt: unknown, index: number) => {
+      let name = 'Unknown option';
+      if (typeof opt === 'object' && opt !== null && 'name' in opt) {
+        const optName = (opt as { name: unknown }).name;
+        name = typeof optName === 'string' ? optName : String(optName);
+      }
+      return {
+        index,
+        name,
+        voteCount: voteCountMap.get(index) || 0
+      };
+    });
 
     const totalVotes = options.reduce((sum, opt) => sum + opt.voteCount, 0);
     
@@ -141,14 +158,14 @@ export const getPollResults = async (
       (voteCounts || []).map(() => 1)
     ).size;
 
-    // Check if poll is closed
-    const endTime = pollContent.endTime as string | undefined;
+    // Check if poll is closed - use normalized content
+    const endTime = normalizedContent?.endTime as string | undefined;
     const isClosed = endTime ? new Date(endTime) < new Date() : false;
 
     return {
       options,
       totalVotes,
-      votersCount: (pollContent.votersCount as number) || votersCount,
+      votersCount: (normalizedContent?.votersCount as number) || votersCount,
       userVotes,
       isClosed
     };
