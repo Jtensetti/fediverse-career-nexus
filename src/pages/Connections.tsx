@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const ConnectionsPage = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isConnecting, setIsConnecting] = useState<{ [key: string]: boolean }>({});
   const [isResponding, setIsResponding] = useState<{ [key: string]: boolean }>({});
@@ -138,13 +140,13 @@ const ConnectionsPage = () => {
   };
   
   return (
-    <DashboardLayout title="My Network" description="Manage your professional connections">
+    <DashboardLayout title={t("connections.title", "My Network")} description={t("connections.description", "Manage your professional connections")}>
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
         <div className="mt-4 md:mt-0 flex gap-2">
           <div className="relative w-full md:w-auto">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
             <Input 
-              placeholder="Search connections..." 
+              placeholder={t("connections.searchPlaceholder", "Search connections...")} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 w-full md:w-64"
@@ -160,11 +162,11 @@ const ConnectionsPage = () => {
         <TabsList className="mb-4">
           <TabsTrigger value="connections" className="flex items-center gap-2">
             <UsersRound size={16} />
-            <span>My Connections</span>
+            <span>{t("connections.myConnections", "My Connections")}</span>
           </TabsTrigger>
           <TabsTrigger value="invitations" className="flex items-center gap-2">
             <Bell size={16} />
-            <span>Invitations</span>
+            <span>{t("connections.invitations", "Invitations")}</span>
             {pendingRequests.length > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                 {pendingRequests.length}
@@ -173,7 +175,7 @@ const ConnectionsPage = () => {
           </TabsTrigger>
           <TabsTrigger value="suggestions" className="flex items-center gap-2">
             <UserRoundPlus size={16} />
-            <span>Suggestions</span>
+            <span>{t("connections.suggestions", "Suggestions")}</span>
           </TabsTrigger>
         </TabsList>
         
@@ -184,16 +186,16 @@ const ConnectionsPage = () => {
             </div>
           ) : connectionsError ? (
             <div className="bg-card rounded-lg shadow-sm p-8 text-center">
-              <h3 className="text-lg font-medium mb-2 text-red-600">Error Loading Connections</h3>
-              <p className="text-muted-foreground">There was an error loading your connections. Please try again later.</p>
-              <Button variant="outline" onClick={() => refetchConnections()} className="mt-4">Retry</Button>
+              <h3 className="text-lg font-medium mb-2 text-destructive">{t("connections.errorLoading", "Error Loading Connections")}</h3>
+              <p className="text-muted-foreground">{t("connections.errorLoadingDesc", "There was an error loading your connections. Please try again later.")}</p>
+              <Button variant="outline" onClick={() => refetchConnections()} className="mt-4">{t("connections.retry", "Retry")}</Button>
             </div>
           ) : filteredConnections.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredConnections.map((connection: NetworkConnection) => (
                 <div key={connection.id} className="bg-card rounded-lg shadow-sm p-4">
                   <div className="flex items-start gap-3">
-                    <Avatar className="h-14 w-14 border-2 border-white">
+                    <Avatar className="h-14 w-14 border-2 border-background">
                       <AvatarImage src={connection.avatarUrl} alt={connection.displayName} />
                       <AvatarFallback>{(connection.displayName || 'UN').substring(0, 2)}</AvatarFallback>
                     </Avatar>
@@ -207,17 +209,17 @@ const ConnectionsPage = () => {
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">{connection.headline}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {connection.mutualConnections} mutual connections
+                        {connection.mutualConnections} {t("connections.mutualConnections", "mutual connections")}
                       </p>
                     </div>
                   </div>
                   
                   <div className="flex gap-2 mt-4">
                     <Button variant="outline" size="sm" className="flex-1" asChild>
-                      <Link to={`/messages/${connection.id}`}>Message</Link>
+                      <Link to={`/messages/${connection.id}`}>{t("connections.message", "Message")}</Link>
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1" asChild>
-                      <Link to={`/profile/${connection.username}`}>View Profile</Link>
+                      <Link to={`/profile/${connection.username}`}>{t("connections.viewProfile", "View Profile")}</Link>
                     </Button>
                   </div>
                 </div>
@@ -226,12 +228,76 @@ const ConnectionsPage = () => {
           ) : (
             <div className="bg-card rounded-lg shadow-sm p-8 text-center">
               <UsersRound size={48} className="mx-auto text-muted-foreground/50 mb-3" />
-              <h3 className="text-lg font-medium mb-1">No connections found</h3>
+              <h3 className="text-lg font-medium mb-1">{t("connections.noConnections", "No connections found")}</h3>
               {searchQuery ? (
-                <p className="text-muted-foreground">No connections match your search criteria. Try a different search.</p>
+                <p className="text-muted-foreground">{t("connections.noConnectionsSearch", "No connections match your search criteria. Try a different search.")}</p>
               ) : (
-                <p className="text-muted-foreground">You haven't connected with anyone yet. Check out our suggestions.</p>
+                <p className="text-muted-foreground">{t("connections.noConnectionsYet", "You haven't connected with anyone yet. Check out our suggestions.")}</p>
               )}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="invitations">
+          {pendingLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : pendingError ? (
+            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
+              <h3 className="text-lg font-medium mb-2 text-destructive">{t("connections.errorLoading", "Error Loading Invitations")}</h3>
+              <p className="text-muted-foreground">{t("connections.errorLoadingDesc", "There was an error loading your invitations. Please try again later.")}</p>
+              <Button variant="outline" onClick={() => refetchPending()} className="mt-4">{t("connections.retry", "Retry")}</Button>
+            </div>
+          ) : pendingRequests.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pendingRequests.map((request: PendingConnectionRequest) => (
+                <div key={request.id} className="bg-card rounded-lg shadow-sm p-4">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-14 w-14 border-2 border-background">
+                      <AvatarImage src={request.avatarUrl} alt={request.displayName} />
+                      <AvatarFallback>{(request.displayName || 'UN').substring(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1">
+                      <Link to={`/profile/${request.username}`} className="font-semibold hover:underline">
+                        {request.displayName}
+                      </Link>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{request.headline}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t("connections.sent", "Sent")} {new Date(request.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      className="flex-1"
+                      size="sm"
+                      onClick={() => handleAcceptRequest(request.id)}
+                      disabled={isResponding[request.id]}
+                    >
+                      <UserCheck size={16} className="mr-1" />
+                      {isResponding[request.id] ? t("connections.accepting", "Accepting...") : t("connections.accept", "Accept")}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleRejectRequest(request.id)}
+                      disabled={isResponding[request.id]}
+                    >
+                      {isResponding[request.id] ? t("connections.declining", "Declining...") : t("connections.decline", "Decline")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
+              <Bell size={48} className="mx-auto text-muted-foreground/50 mb-3" />
+              <h3 className="text-lg font-medium mb-1">{t("connections.noPendingInvitations", "No pending invitations")}</h3>
+              <p className="text-muted-foreground">{t("connections.noPendingDesc", "You don't have any pending connection requests at this time.")}</p>
             </div>
           )}
         </TabsContent>
@@ -307,16 +373,16 @@ const ConnectionsPage = () => {
             </div>
           ) : suggestionsError ? (
             <div className="bg-card rounded-lg shadow-sm p-8 text-center">
-              <h3 className="text-lg font-medium mb-2 text-destructive">Error Loading Suggestions</h3>
-              <p className="text-muted-foreground">There was an error loading connection suggestions. Please try again later.</p>
-              <Button variant="outline" onClick={() => refetchSuggestions()} className="mt-4">Retry</Button>
+              <h3 className="text-lg font-medium mb-2 text-destructive">{t("connections.errorLoading", "Error Loading Suggestions")}</h3>
+              <p className="text-muted-foreground">{t("connections.errorLoadingDesc", "There was an error loading connection suggestions. Please try again later.")}</p>
+              <Button variant="outline" onClick={() => refetchSuggestions()} className="mt-4">{t("connections.retry", "Retry")}</Button>
             </div>
           ) : filteredSuggestions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredSuggestions.map((suggestion: NetworkSuggestion) => (
                 <div key={suggestion.id} className="bg-card rounded-lg shadow-sm p-4">
                   <div className="flex items-start gap-3">
-                    <Avatar className="h-14 w-14 border-2 border-white">
+                    <Avatar className="h-14 w-14 border-2 border-background">
                       <AvatarImage src={suggestion.avatarUrl} alt={suggestion.displayName} />
                       <AvatarFallback>{(suggestion.displayName || 'UN').substring(0, 2)}</AvatarFallback>
                     </Avatar>
@@ -330,7 +396,7 @@ const ConnectionsPage = () => {
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">{suggestion.headline}</p>
                       <p className="text-xs text-primary/80 mt-1 font-medium">
-                        {suggestion.suggestionReason || `${suggestion.mutualConnections} mutual connections`}
+                        {suggestion.suggestionReason || `${suggestion.mutualConnections} ${t("connections.mutualConnections", "mutual connections")}`}
                       </p>
                     </div>
                   </div>
@@ -344,7 +410,7 @@ const ConnectionsPage = () => {
                         disabled
                       >
                         <Clock size={16} className="mr-1" />
-                        Pending
+                        {t("connections.pending", "Pending")}
                       </Button>
                     ) : (
                       <Button 
@@ -353,11 +419,11 @@ const ConnectionsPage = () => {
                         onClick={() => handleConnect(suggestion.id)}
                         disabled={isConnecting[suggestion.id]}
                       >
-                        {isConnecting[suggestion.id] ? 'Connecting...' : 'Connect'}
+                        {isConnecting[suggestion.id] ? t("connections.connecting", "Connecting...") : t("connections.connect", "Connect")}
                       </Button>
                     )}
                     <Button variant="outline" size="sm" className="flex-1" asChild>
-                      <Link to={`/profile/${suggestion.username}`}>View Profile</Link>
+                      <Link to={`/profile/${suggestion.username}`}>{t("connections.viewProfile", "View Profile")}</Link>
                     </Button>
                   </div>
                 </div>
@@ -366,30 +432,30 @@ const ConnectionsPage = () => {
           ) : (
             <div className="bg-card rounded-lg shadow-sm p-8 text-center">
               <UserRoundPlus size={48} className="mx-auto text-muted-foreground/50 mb-3" />
-              <h3 className="text-lg font-medium mb-1">No suggestions available</h3>
-              <p className="text-muted-foreground">We couldn't find any connection suggestions at this time.</p>
+              <h3 className="text-lg font-medium mb-1">{t("connections.noSuggestions", "No suggestions available")}</h3>
+              <p className="text-muted-foreground">{t("connections.noSuggestionsDesc", "We couldn't find any connection suggestions at this time.")}</p>
             </div>
           )}
         </TabsContent>
       </Tabs>
       
       <div className="bg-card rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Understanding Connection Degrees</h2>
+        <h2 className="text-lg font-semibold mb-4">{t("connections.understandingDegrees", "Understanding Connection Degrees")}</h2>
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <ConnectionBadge degree={1} />
-              <span className="font-medium">1st Degree Connections</span>
+              <span className="font-medium">{t("connections.firstDegree", "1st Degree Connections")}</span>
             </div>
-            <p className="text-sm text-muted-foreground">People you are directly connected with. You both have accepted the connection.</p>
+            <p className="text-sm text-muted-foreground">{t("connections.firstDegreeDesc", "People you are directly connected with. You both have accepted the connection.")}</p>
           </div>
           
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <ConnectionBadge degree={2} />
-              <span className="font-medium">2nd Degree Connections</span>
+              <span className="font-medium">{t("connections.secondDegree", "2nd Degree Connections")}</span>
             </div>
-            <p className="text-sm text-muted-foreground">People who are connected to your 1st-degree connections but not directly to you.</p>
+            <p className="text-sm text-muted-foreground">{t("connections.secondDegreeDesc", "People who are connected to your 1st-degree connections but not directly to you.")}</p>
           </div>
         </div>
       </div>
