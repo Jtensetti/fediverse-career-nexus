@@ -80,12 +80,95 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
   }
 };
 
+// Helper to get comment owner
+async function getCommentOwner(commentId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('ap_objects')
+    .select('attributed_to')
+    .eq('id', commentId)
+    .single();
+  
+  if (!data?.attributed_to) return null;
+  
+  // Get the user_id from the actor
+  const { data: actor } = await supabase
+    .from('actors')
+    .select('user_id')
+    .eq('id', data.attributed_to)
+    .single();
+  
+  return actor?.user_id || null;
+}
+
+// Update a comment/reply
+export async function updatePostReply(commentId: string, content: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be logged in to edit a comment');
+
+  const ownerId = await getCommentOwner(commentId);
+  if (ownerId !== user.id) {
+    throw new Error('You can only edit your own comments');
+  }
+
+  // Get current content to preserve structure
+  const { data: currentData, error: fetchError } = await supabase
+    .from('ap_objects')
+    .select('content')
+    .eq('id', commentId)
+    .single();
+
+  if (fetchError || !currentData) {
+    throw new Error('Comment not found');
+  }
+
+  const currentContent = currentData.content as Record<string, unknown>;
+  const innerContent = (currentContent.content || {}) as Record<string, unknown>;
+  
+  const updatedContent = {
+    ...currentContent,
+    content: {
+      ...innerContent,
+      content: content, // Plain text, HTML handled on display
+      updated: new Date().toISOString()
+    }
+  };
+
+  const { error } = await supabase
+    .from('ap_objects')
+    .update({ 
+      content: updatedContent,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', commentId);
+
+  if (error) throw new Error('Failed to update comment');
+}
+
+// Delete a comment/reply
+export async function deletePostReply(commentId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be logged in to delete a comment');
+
+  const ownerId = await getCommentOwner(commentId);
+  if (ownerId !== user.id) {
+    throw new Error('You can only delete your own comments');
+  }
+
+  // Delete the comment
+  const { error } = await supabase
+    .from('ap_objects')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) throw new Error('Failed to delete comment');
+}
+
 // Create a reply to a post (or to another reply)
-export const createPostReply = async (
+export async function createPostReply(
   postId: string, 
   content: string, 
   parentReplyId?: string
-): Promise<boolean> => {
+): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     

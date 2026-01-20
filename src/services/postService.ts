@@ -503,8 +503,14 @@ export const updatePost = async (postId: string, updates: { content: string }): 
           content: updates.content
         }
       };
+    } else if (currentContent?.type === 'Question') {
+      // Poll (Question) type - only update the question text, preserve options
+      updatedContent = {
+        ...currentContent,
+        content: updates.content
+      };
     } else {
-      // Direct content structure
+      // Direct content structure (Note type)
       updatedContent = {
         ...currentContent,
         content: updates.content
