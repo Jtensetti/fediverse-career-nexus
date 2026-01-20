@@ -25,7 +25,12 @@ export default function PostView() {
   }, [postId]);
 
   const loadPostWithReplies = async () => {
-    if (!postId) return;
+    // Validate postId before fetching
+    if (!postId || postId === 'undefined' || postId === 'null' || postId.trim() === '') {
+      setError('Invalid post ID');
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -50,9 +55,16 @@ export default function PostView() {
           )
         `)
         .eq('id', postId)
-        .single();
+        .maybeSingle();
 
-      if (postError || !postData) {
+      if (postError) {
+        console.error('Error fetching post:', postError);
+        setError('Failed to load post');
+        setLoading(false);
+        return;
+      }
+      
+      if (!postData) {
         setError('Post not found');
         setLoading(false);
         return;
