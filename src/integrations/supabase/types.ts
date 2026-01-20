@@ -2744,6 +2744,54 @@ export type Database = {
           },
         ]
       }
+      federated_sessions_safe: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          last_verified_at: string | null
+          profile_id: string | null
+          remote_actor_url: string | null
+          remote_instance: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          last_verified_at?: string | null
+          profile_id?: string | null
+          remote_actor_url?: string | null
+          remote_instance?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          last_verified_at?: string | null
+          profile_id?: string | null
+          remote_actor_url?: string | null
+          remote_instance?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federated_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       federation_queue_stats: {
         Row: {
           failed_count: number | null
@@ -2843,10 +2891,9 @@ export type Database = {
           id: string | null
           is_verified: boolean | null
           location: string | null
-          phone: string | null
           profile_views: number | null
           remote_actor_url: string | null
-          search_vector: unknown
+          trust_level: number | null
           updated_at: string | null
           username: string | null
         }
@@ -2855,7 +2902,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
-          dm_privacy?: never
+          dm_privacy?: string | null
           domain?: string | null
           fullname?: string | null
           header_url?: string | null
@@ -2864,10 +2911,9 @@ export type Database = {
           id?: string | null
           is_verified?: boolean | null
           location?: string | null
-          phone?: never
           profile_views?: number | null
           remote_actor_url?: string | null
-          search_vector?: unknown
+          trust_level?: number | null
           updated_at?: string | null
           username?: string | null
         }
@@ -2876,7 +2922,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
-          dm_privacy?: never
+          dm_privacy?: string | null
           domain?: string | null
           fullname?: string | null
           header_url?: string | null
@@ -2885,10 +2931,9 @@ export type Database = {
           id?: string | null
           is_verified?: boolean | null
           location?: string | null
-          phone?: never
           profile_views?: number | null
           remote_actor_url?: string | null
-          search_vector?: unknown
+          trust_level?: number | null
           updated_at?: string | null
           username?: string | null
         }
@@ -2937,6 +2982,7 @@ export type Database = {
         Args: { profile_id: string }
         Returns: boolean
       }
+      can_view_phone: { Args: { profile_owner_id: string }; Returns: boolean }
       check_host_rate_limit: {
         Args: { p_max_requests_per_minute?: number; p_remote_host: string }
         Returns: boolean

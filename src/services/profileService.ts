@@ -202,10 +202,10 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       return null;
     }
 
-    // Get user profile
+    // Get user profile - for own profile, fetch from base profiles table to include phone
     console.log('🔍 Fetching complete profile for user:', user.id);
     const { data: profile, error: profileError } = await supabase
-      .from("public_profiles")
+      .from("profiles")
       .select("*")
       .eq("id", user.id)
       .single();
@@ -334,7 +334,10 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
     // Check if the input looks like a UUID (handles both UUID and username lookups)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(usernameOrId);
     
-    // Query by id if UUID, otherwise by username
+    // Get current authenticated user for comparison
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Always query public_profiles view first (safe, excludes phone)
     const { data: profile, error: profileError } = await supabase
       .from("public_profiles")
       .select("*")
@@ -343,9 +346,18 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
 
     if (profileError) throw profileError;
 
-    // Get current authenticated user for comparison
-    const { data: { user } } = await supabase.auth.getUser();
     const isOwnProfile = user?.id === profile.id;
+    
+    // For own profile, fetch phone from base profiles table (RLS allows this)
+    let phoneNumber = "";
+    if (isOwnProfile) {
+      const { data: ownProfile } = await supabase
+        .from("profiles")
+        .select("phone")
+        .eq("id", profile.id)
+        .single();
+      phoneNumber = ownProfile?.phone || "";
+    }
 
     // Get experience
     const { data: experience, error: experienceError } = await supabase
@@ -419,7 +431,7 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
       remoteActorUrl: profile.remote_actor_url || undefined,
       contact: {
         email: isOwnProfile ? user?.email : null,
-        phone: profile.phone || "",
+        phone: phoneNumber,
         location: profile.location || ""
       },
       experience: (experience || []).map(exp => ({
