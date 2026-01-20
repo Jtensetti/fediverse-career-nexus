@@ -332,20 +332,28 @@ const ProfilePage = () => {
         <div className="relative px-4 md:px-6 pb-6">
           {/* Avatar */}
           <div className="flex flex-col md:flex-row md:items-end gap-4 -mt-16 md:-mt-20">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            >
-              <AvatarWithStatus
-                src={profile.avatarUrl}
-                alt={profile.displayName}
-                fallback={profile.displayName?.substring(0, 2)}
-                status={avatarStatus}
-                size="2xl"
-                ringClassName={profile.isVerified ? "ring-primary" : "ring-background"}
-              />
-            </motion.div>
+            <div className="flex items-end gap-4">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="shrink-0"
+              >
+                <AvatarWithStatus
+                  src={profile.avatarUrl}
+                  alt={profile.displayName}
+                  fallback={profile.displayName?.substring(0, 2)}
+                  status={avatarStatus}
+                  size="2xl"
+                  ringClassName={profile.isVerified ? "ring-primary" : "ring-background"}
+                />
+              </motion.div>
+              
+              {/* Stats next to avatar */}
+              <div className="hidden md:block pb-2">
+                <ProfileStats userId={profile.id} username={profile.username} compact />
+              </div>
+            </div>
             
             {/* Action buttons - positioned on the right on desktop */}
             <div className="flex-1 flex flex-wrap gap-2 md:justify-end md:pb-2">
@@ -467,23 +475,19 @@ const ProfilePage = () => {
                 </div>
               )}
               <div className="flex items-center gap-1">
-                <Users size={14} />
-                <Link to="/connections" className="hover:underline hover:text-primary transition-colors">
-                  {profile.connections} connections
-                </Link>
-              </div>
-              <div className="flex items-center gap-1">
                 <LinkIcon size={14} />
                 <span className="font-medium">@{profile.username}</span>
               </div>
             </div>
             
+            {/* Mobile stats - shown below on small screens */}
+            <div className="md:hidden mb-4">
+              <ProfileStats userId={profile.id} username={profile.username} />
+            </div>
+            
             {profile.bio && (
               <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>
             )}
-            
-            {/* Stats Bar */}
-            <ProfileStats userId={profile.id} username={profile.username} />
           </div>
         </div>
       </div>
