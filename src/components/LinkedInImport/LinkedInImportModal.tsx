@@ -123,14 +123,12 @@ export default function LinkedInImportModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {getStepTitle()}
-          </DialogTitle>
+          <DialogTitle>{getStepTitle()}</DialogTitle>
         </DialogHeader>
 
-        <Progress value={progress} className="h-1 mb-4" />
+        <Progress value={progress} className="h-1" />
 
         {currentStep === 'instructions' && (
           <InstructionsStep

@@ -77,7 +77,7 @@ export default function UploadStep({
         className={`
           border-2 border-dashed rounded-lg p-8 text-center transition-colors
           ${isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}
-          ${isProcessing ? 'opacity-50 pointer-events-none' : 'cursor-pointer hover:border-primary/50'}
+          ${isProcessing ? 'opacity-50 pointer-events-none' : 'cursor-pointer hover:border-primary/50 hover:bg-muted/30'}
         `}
       >
         <input
@@ -94,26 +94,30 @@ export default function UploadStep({
         >
           {isProcessing ? (
             <>
-              <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-              <p className="font-medium">Processing your LinkedIn data...</p>
+              <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+              <p className="font-medium text-foreground">Processing your data...</p>
               <p className="text-sm text-muted-foreground mt-1">
-                This may take a moment depending on the file size
+                This may take a moment
               </p>
             </>
           ) : (
             <>
               <div className="relative mb-4">
-                <FileArchive className="h-12 w-12 text-muted-foreground" />
-                <Upload className="h-5 w-5 text-primary absolute -bottom-1 -right-1 bg-background rounded-full p-0.5" />
+                <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+                  <FileArchive className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                  <Upload className="h-3 w-3 text-primary-foreground" />
+                </div>
               </div>
-              <p className="font-medium">
-                Drop your LinkedIn ZIP file here
+              <p className="font-medium text-foreground">
+                Drop your LinkedIn ZIP here
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 or click to browse
               </p>
               <p className="text-xs text-muted-foreground mt-3">
-                Maximum file size: 100MB
+                Max file size: 100MB
               </p>
             </>
           )}
@@ -128,19 +132,19 @@ export default function UploadStep({
       )}
 
       <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack} disabled={isProcessing}>
+        <Button variant="ghost" onClick={onBack} disabled={isProcessing}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
       </div>
 
-      <div className="text-xs text-muted-foreground bg-muted/30 rounded p-3">
-        <p className="font-medium mb-1">Expected files in your LinkedIn export:</p>
-        <ul className="list-disc list-inside space-y-0.5">
-          <li>Profile.csv - Your basic profile information</li>
-          <li>Positions.csv - Your work experience</li>
-          <li>Education.csv - Your education history</li>
-          <li>Skills.csv - Your skills and endorsements</li>
+      <div className="p-3 rounded-lg bg-muted/50 text-sm">
+        <p className="font-medium text-foreground mb-2">Expected files:</p>
+        <ul className="space-y-1 text-muted-foreground">
+          <li>• Profile.csv – Basic profile info</li>
+          <li>• Positions.csv – Work experience</li>
+          <li>• Education.csv – Education history</li>
+          <li>• Skills.csv – Skills and endorsements</li>
         </ul>
       </div>
     </div>

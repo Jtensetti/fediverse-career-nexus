@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Download, Clock, FileArchive, ArrowRight } from 'lucide-react';
+import { ExternalLink, ArrowRight, Lock } from 'lucide-react';
 
 interface InstructionsStepProps {
   onNext: () => void;
@@ -9,76 +9,43 @@ interface InstructionsStepProps {
 export default function InstructionsStep({ onNext, onSkipToUpload }: InstructionsStepProps) {
   const linkedInExportUrl = 'https://www.linkedin.com/mypreferences/d/download-my-data';
 
+  const steps = [
+    {
+      title: "Open LinkedIn's data export",
+      description: "Click the button below to go to LinkedIn's data download settings.",
+    },
+    {
+      title: "Request your data",
+      description: 'Select "Download larger data archive" and check the data you want to export.',
+    },
+    {
+      title: "Wait for the email",
+      description: "LinkedIn will email you when ready. Usually a few minutes, up to 24 hours.",
+    },
+    {
+      title: "Upload the ZIP file",
+      description: "Download the ZIP from LinkedIn and upload it here.",
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="bg-muted/50 rounded-lg p-4 border">
-        <h3 className="font-medium mb-3 flex items-center gap-2">
-          <Download className="h-5 w-5 text-primary" />
-          How to export your LinkedIn data
-        </h3>
-        
-        <ol className="space-y-4 text-sm">
-          <li className="flex gap-3">
-            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-              1
-            </span>
-            <div>
-              <p className="font-medium">Go to LinkedIn's data export page</p>
-              <p className="text-muted-foreground mt-1">
-                Click the button below to open LinkedIn's data download settings.
-              </p>
+      <div className="space-y-4">
+        {steps.map((step, index) => (
+          <div key={index} className="flex gap-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+              {index + 1}
             </div>
-          </li>
-          
-          <li className="flex gap-3">
-            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-              2
-            </span>
-            <div>
-              <p className="font-medium">Request your data</p>
-              <p className="text-muted-foreground mt-1">
-                Select "Download larger data archive" and check the boxes for the data you want to export (Profile, Positions, Education, Skills, etc.)
-              </p>
+            <div className="flex-1 pt-1">
+              <p className="font-medium text-foreground">{step.title}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{step.description}</p>
             </div>
-          </li>
-          
-          <li className="flex gap-3">
-            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-              3
-            </span>
-            <div className="flex items-start gap-2">
-              <div>
-                <p className="font-medium">Wait for the email</p>
-                <p className="text-muted-foreground mt-1">
-                  LinkedIn will send you an email when your data is ready. This usually takes a few minutes but can take up to 24 hours.
-                </p>
-              </div>
-              <Clock className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-            </div>
-          </li>
-          
-          <li className="flex gap-3">
-            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-              4
-            </span>
-            <div className="flex items-start gap-2">
-              <div>
-                <p className="font-medium">Download the ZIP file</p>
-                <p className="text-muted-foreground mt-1">
-                  Once ready, download the ZIP file from LinkedIn and upload it here.
-                </p>
-              </div>
-              <FileArchive className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-            </div>
-          </li>
-        </ol>
+          </div>
+        ))}
       </div>
       
-      <div className="flex flex-col gap-3">
-        <Button
-          asChild
-          className="w-full"
-        >
+      <div className="space-y-3 pt-2">
+        <Button asChild className="w-full">
           <a
             href={linkedInExportUrl}
             target="_blank"
@@ -92,28 +59,27 @@ export default function InstructionsStep({ onNext, onSkipToUpload }: Instruction
         
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">or</span>
           </div>
         </div>
         
-        <Button
-          variant="outline"
-          onClick={onSkipToUpload}
-          className="w-full"
-        >
-          I already have my LinkedIn export
+        <Button variant="outline" onClick={onSkipToUpload} className="w-full">
+          I already have my export
           <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
       </div>
       
-      <div className="text-xs text-muted-foreground bg-muted/30 rounded p-3">
-        <p className="font-medium mb-1">🔒 Your privacy is protected</p>
-        <p>
-          Your LinkedIn data is processed entirely in your browser. We never store or send your export file to any server.
-        </p>
+      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 text-sm">
+        <Lock className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+        <div>
+          <p className="font-medium text-foreground">Your privacy is protected</p>
+          <p className="text-muted-foreground mt-0.5">
+            Data is processed in your browser. We never store or send your file to any server.
+          </p>
+        </div>
       </div>
     </div>
   );
