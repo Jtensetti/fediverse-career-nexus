@@ -24,6 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Briefcase, School, Star, Trash, Plus, Settings, CalendarIcon } from "lucide-react";
+import { LinkedInImportButton } from "@/components/LinkedInImport";
 import DMPrivacySettings from "@/components/DMPrivacySettings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -398,7 +399,15 @@ const ProfileEditPage = () => {
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">{t("profileEdit.title")}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h1 className="text-2xl font-bold">{t("profileEdit.title")}</h1>
+          <LinkedInImportButton 
+            onImportComplete={() => {
+              // Refresh profile data after import
+              window.location.reload();
+            }}
+          />
+        </div>
         
         <Tabs defaultValue="basic" className="mb-6">
           <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-4">
