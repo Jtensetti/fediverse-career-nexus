@@ -175,8 +175,8 @@ export default function PostView() {
           </Button>
         </Link>
 
-        {/* Main Post */}
-        <FederatedPostCard post={post} />
+        {/* Main Post - show full content and hide inline comments (shown below instead) */}
+        <FederatedPostCard post={post} hideComments showFullContent />
 
         {/* Reply Composer */}
         <div className="mt-4 mb-6">
