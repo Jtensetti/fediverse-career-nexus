@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isRespondingToConnection, setIsRespondingToConnection] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -141,7 +143,7 @@ const ProfilePage = () => {
   // Handle connect button
   const handleConnect = async () => {
     if (!profile?.id || !isAuthenticated) {
-      toast.error("You must be logged in to connect with others");
+      toast.error(t("profile.mustBeLoggedIn", "You must be logged in to connect with others"));
       return;
     }
     
@@ -153,7 +155,7 @@ const ProfilePage = () => {
       queryClient.invalidateQueries({ queryKey: ["userConnections"] });
     } catch (error) {
       console.error("Error sending connection request:", error);
-      toast.error("Failed to send connection request");
+      toast.error(t("connections.errorLoading", "Failed to send connection request"));
     } finally {
       setIsConnecting(false);
     }
@@ -205,11 +207,11 @@ const ProfilePage = () => {
         throw new Error(response.data.error);
       }
       
-      toast.success("Profile synced successfully from your Fediverse instance!");
+      toast.success(t("profile.syncSuccess", "Profile synced successfully from your Fediverse instance!"));
       window.location.reload();
     } catch (error: any) {
       console.error("Error syncing profile:", error);
-      toast.error(error.message || "Failed to sync profile");
+      toast.error(error.message || t("profile.syncFailed", "Failed to sync profile"));
     } finally {
       setIsSyncing(false);
     }
@@ -230,10 +232,10 @@ const ProfilePage = () => {
     return (
       <DashboardLayout>
         <div className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2 text-destructive">Error Loading Profile</h2>
-          <p>There was an error loading the profile. Please try again later.</p>
+          <h2 className="text-2xl font-bold mb-2 text-destructive">{t("profile.errorLoading", "Error Loading Profile")}</h2>
+          <p>{t("profile.errorLoadingDesc", "There was an error loading the profile. Please try again later.")}</p>
           <Button className="mt-4" onClick={() => navigate("/")}>
-            Return Home
+            {t("profile.returnHome", "Return Home")}
           </Button>
         </div>
       </DashboardLayout>
@@ -254,10 +256,10 @@ const ProfilePage = () => {
     return (
       <DashboardLayout>
         <div className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">Profile Not Found</h2>
-          <p>The profile you're looking for doesn't exist or you don't have permission to view it.</p>
+          <h2 className="text-2xl font-bold mb-2">{t("profile.notFound", "Profile Not Found")}</h2>
+          <p>{t("profile.notFoundDesc", "The profile you're looking for doesn't exist or you don't have permission to view it.")}</p>
           <Button className="mt-4" onClick={() => navigate("/")}>
-            Return Home
+            {t("profile.returnHome", "Return Home")}
           </Button>
         </div>
       </DashboardLayout>
@@ -294,21 +296,21 @@ const ProfilePage = () => {
             <>
               {connectionRelationship?.status === 'accepted' ? (
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  <Check size={12} /> Connected
+                  <Check size={12} /> {t("profile.connected", "Connected")}
                 </Badge>
               ) : connectionRelationship?.status === 'pending_outgoing' ? (
                 <Button size="sm" variant="secondary" disabled>
-                  <Clock className="h-4 w-4 mr-1" /> Pending
+                  <Clock className="h-4 w-4 mr-1" /> {t("profile.pending", "Pending")}
                 </Button>
               ) : connectionRelationship?.status === 'pending_incoming' ? (
                 <div className="flex gap-1">
                   <Button size="sm" onClick={handleAcceptConnection} disabled={isRespondingToConnection} loading={isRespondingToConnection}>
-                    Accept
+                    {t("profile.accept", "Accept")}
                   </Button>
                 </div>
               ) : (
                 <Button size="sm" onClick={handleConnect} disabled={isConnecting} loading={isConnecting}>
-                  Connect
+                  {t("profile.connect", "Connect")}
                 </Button>
               )}
             </>
@@ -351,19 +353,19 @@ const ProfilePage = () => {
                   <Button variant="outline" size="sm" asChild>
                     <Link to="/profile/edit">
                       <Edit className="h-4 w-4 mr-2" />
-                      Edit Profile
+                      {t("profile.editProfile", "Edit Profile")}
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
                     <Link to="/saved">
                       <Bookmark className="h-4 w-4 mr-2" />
-                      Saved
+                      {t("profile.saved", "Saved")}
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
                     <Link to="/connections">
                       <Users className="h-4 w-4 mr-2" />
-                      Connections
+                      {t("profile.connections", "Connections")}
                     </Link>
                   </Button>
                   {profile.authType === 'federated' && profile.homeInstance && (
@@ -375,7 +377,7 @@ const ProfilePage = () => {
                       loading={isSyncing}
                     >
                       <RefreshCw className={cn("h-4 w-4 mr-2", isSyncing && "animate-spin")} />
-                      Sync
+                      {t("profile.sync", "Sync")}
                     </Button>
                   )}
                 </>
@@ -383,11 +385,11 @@ const ProfilePage = () => {
               <>
                   {connectionRelationship?.status === 'accepted' ? (
                     <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
-                      <Check size={14} /> Connected
+                      <Check size={14} /> {t("profile.connected", "Connected")}
                     </Badge>
                   ) : connectionRelationship?.status === 'pending_outgoing' ? (
                     <Button variant="secondary" disabled>
-                      <Clock className="h-4 w-4 mr-2" /> Pending
+                      <Clock className="h-4 w-4 mr-2" /> {t("profile.pending", "Pending")}
                     </Button>
                   ) : connectionRelationship?.status === 'pending_incoming' ? (
                     <>
@@ -396,14 +398,14 @@ const ProfilePage = () => {
                         disabled={isRespondingToConnection}
                         loading={isRespondingToConnection}
                       >
-                        Accept
+                        {t("profile.accept", "Accept")}
                       </Button>
                       <Button 
                         variant="outline"
                         onClick={handleDeclineConnection}
                         disabled={isRespondingToConnection}
                       >
-                        Decline
+                        {t("profile.decline", "Decline")}
                       </Button>
                     </>
                   ) : (
@@ -412,7 +414,7 @@ const ProfilePage = () => {
                       disabled={isConnecting}
                       loading={isConnecting}
                     >
-                      Connect
+                      {t("profile.connect", "Connect")}
                     </Button>
                   )}
                   <Button 
@@ -422,10 +424,10 @@ const ProfilePage = () => {
                       if (connectionRelationship?.status === 'accepted') {
                         navigate(`/messages/${profile.id}`);
                       } else {
-                        toast.info("Connect with this person first to send messages");
+                        toast.info(t("profile.connectFirst", "Connect with this person first to send messages"));
                       }
                     }}
-                    title="Message"
+                    title={t("profile.message", "Message")}
                   >
                     <MessageSquare className="h-4 w-4" />
                   </Button>
@@ -443,7 +445,7 @@ const ProfilePage = () => {
               <h1 className="text-2xl font-bold">{profile.displayName}</h1>
               {profile.isVerified && (
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1">
-                  <Check size={12} /> Verified
+                  <Check size={12} /> {t("profile.verified", "Verified")}
                 </Badge>
               )}
               {profile.authType === 'federated' && profile.homeInstance && (
@@ -488,13 +490,13 @@ const ProfilePage = () => {
           <Tabs defaultValue="experience" className="mb-6">
             <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
               <TabsList className="mb-4 flex w-max md:w-auto md:flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
-                <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Experience</TabsTrigger>
-                <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Education</TabsTrigger>
-                <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Skills</TabsTrigger>
-                <TabsTrigger value="articles" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Articles</TabsTrigger>
-                <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Posts</TabsTrigger>
-                <TabsTrigger value="activity" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Activity</TabsTrigger>
-                <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">Connections</TabsTrigger>
+                <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.experience", "Experience")}</TabsTrigger>
+                <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.education", "Education")}</TabsTrigger>
+                <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.skills", "Skills")}</TabsTrigger>
+                <TabsTrigger value="articles" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.articles", "Articles")}</TabsTrigger>
+                <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.posts", "Posts")}</TabsTrigger>
+                <TabsTrigger value="activity" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.activity", "Activity")}</TabsTrigger>
+                <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.connections", "Connections")}</TabsTrigger>
               </TabsList>
             </div>
             
@@ -503,7 +505,7 @@ const ProfilePage = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Briefcase size={20} className="text-primary" />
-                    Experience
+                    {t("profile.experience", "Experience")}
                   </h3>
                   
                   {profile.experience && profile.experience.length > 0 ? (
@@ -518,15 +520,15 @@ const ProfilePage = () => {
                           <div className="flex justify-between">
                             <h4 className="font-medium">{exp.title}</h4>
                             {exp.isVerified && (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 flex items-center gap-1">
-                                <Check size={14} /> Verified
+                              <Badge variant="outline" className="bg-accent text-accent-foreground flex items-center gap-1">
+                                <Check size={14} /> {t("verification.verified", "Verified")}
                               </Badge>
                             )}
                           </div>
                           <p className="text-primary font-medium">{exp.company}</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(exp.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} - 
-                            {exp.isCurrentRole ? ' Present' : 
+                            {exp.isCurrentRole ? ` ${t("profileEdit.present", "Present")}` : 
                             ` ${new Date(exp.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}`}
                           </p>
                           {exp.location && <p className="text-sm text-muted-foreground">{exp.location}</p>}
@@ -538,10 +540,10 @@ const ProfilePage = () => {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>No experience information available</p>
+                      <p>{t("profile.experience", "Experience")}</p>
                       {viewingOwnProfile && (
                         <Button variant="outline" className="mt-4" asChild>
-                          <Link to="/profile/edit">Add Experience</Link>
+                          <Link to="/profile/edit">{t("profileEdit.addExperience", "Add Experience")}</Link>
                         </Button>
                       )}
                     </div>
@@ -555,7 +557,7 @@ const ProfilePage = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <School size={20} className="text-primary" />
-                    Education
+                    {t("profile.education", "Education")}
                   </h3>
                   
                   {profile.education && profile.education.length > 0 ? (
@@ -570,13 +572,13 @@ const ProfilePage = () => {
                           <div className="flex justify-between">
                             <h4 className="font-medium">{edu.institution}</h4>
                             {edu.isVerified && (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 flex items-center gap-1">
-                                <Check size={14} /> Verified
+                              <Badge variant="outline" className="bg-accent text-accent-foreground flex items-center gap-1">
+                                <Check size={14} /> {t("verification.verified", "Verified")}
                               </Badge>
                             )}
                           </div>
                           <p className="text-primary font-medium">{edu.degree}{edu.field ? `, ${edu.field}` : ''}</p>
-                          <p className="text-sm text-muted-foreground">{edu.startYear} - {edu.endYear || 'Present'}</p>
+                          <p className="text-sm text-muted-foreground">{edu.startYear} - {edu.endYear || t("profileEdit.present", "Present")}</p>
                           <Separator className="mt-6" />
                         </motion.div>
                       ))}
@@ -584,10 +586,10 @@ const ProfilePage = () => {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <School className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>No education information available</p>
+                      <p>{t("profile.education", "Education")}</p>
                       {viewingOwnProfile && (
                         <Button variant="outline" className="mt-4" asChild>
-                          <Link to="/profile/edit">Add Education</Link>
+                          <Link to="/profile/edit">{t("profileEdit.addEducation", "Add Education")}</Link>
                         </Button>
                       )}
                     </div>
@@ -601,12 +603,12 @@ const ProfilePage = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                     <Star size={20} className="text-primary" />
-                    Skills & Endorsements
+                    {t("profile.skills", "Skills")} & {t("skills.endorsements", "Endorsements")}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-6">
                     {viewingOwnProfile 
-                      ? "Add skills to showcase your expertise. Your connections can endorse your skills to validate your abilities."
-                      : "Endorse skills to validate this person's expertise and help others understand their strengths."}
+                      ? t("skills.addSkillsDesc", "Add skills to let your connections endorse your expertise")
+                      : t("skills.skillsAppearDesc", "Skills will appear here once they're added")}
                   </p>
                   
                   <SkillEndorsements 
@@ -617,7 +619,7 @@ const ProfilePage = () => {
                   {viewingOwnProfile && (!profile.skills || profile.skills.length === 0) && (
                     <div className="mt-4 text-center">
                       <Button variant="outline" asChild>
-                        <Link to="/profile/edit">Add Skills</Link>
+                        <Link to="/profile/edit">{t("profileEdit.addSkill", "Add Skill")}</Link>
                       </Button>
                     </div>
                   )}
@@ -630,7 +632,7 @@ const ProfilePage = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <BookText size={20} className="text-primary" />
-                    Articles
+                    {t("profile.articles", "Articles")}
                   </h3>
                   
                   <UserArticlesList userId={profile.id} isOwnProfile={viewingOwnProfile} />

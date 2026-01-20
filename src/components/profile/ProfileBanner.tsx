@@ -1,5 +1,6 @@
 import { useState, useId } from "react";
 import { Camera, Upload } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,18 +22,19 @@ const ProfileBanner = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const fileInputId = `profile-header-upload-${useId().replace(/:/g, "")}`;
+  const { t } = useTranslation();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error(t("banner.invalidImage", "Please upload an image file"));
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Please upload an image smaller than 10MB");
+      toast.error(t("banner.imageTooLarge", "Please upload an image smaller than 10MB"));
       return;
     }
 
@@ -41,7 +43,7 @@ const ProfileBanner = ({
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("You must be logged in");
+        toast.error(t("banner.mustBeLoggedIn", "You must be logged in"));
         return;
       }
 
@@ -59,10 +61,10 @@ const ProfileBanner = ({
         .getPublicUrl(fileName);
 
       onHeaderChange?.(publicUrl);
-      toast.success("Header image updated!");
+      toast.success(t("banner.headerUpdated", "Header image updated!"));
     } catch (error) {
       console.error("Error uploading header:", error);
-      toast.error("Failed to upload header image");
+      toast.error(t("banner.uploadError", "Failed to upload header image"));
     } finally {
       setIsUploading(false);
       // allow re-selecting the same file
@@ -122,12 +124,12 @@ const ProfileBanner = ({
               {isUploading ? (
                 <>
                   <Upload className="h-4 w-4 animate-pulse" />
-                  Uploading...
+                  {t("banner.uploading", "Uploading...")}
                 </>
               ) : (
                 <>
                   <Camera className="h-4 w-4" />
-                  {headerUrl ? "Change Header" : "Add Header"}
+                  {headerUrl ? t("banner.changeHeader", "Change Header") : t("banner.addHeader", "Add Header")}
                 </>
               )}
             </label>

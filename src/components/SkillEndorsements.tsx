@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ThumbsUp, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +25,7 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
   const [isLoading, setIsLoading] = useState(true);
   const [endorsingSkillId, setEndorsingSkillId] = useState<string | null>(null);
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadSkills();
@@ -38,12 +40,12 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
 
   const handleToggleEndorsement = async (skill: SkillWithEndorsements) => {
     if (!user) {
-      toast.error("Please sign in to endorse skills");
+      toast.error(t("skills.signInToEndorse", "Please sign in to endorse skills"));
       return;
     }
 
     if (isOwnProfile) {
-      toast.error("You can't endorse your own skills");
+      toast.error(t("skills.cantEndorseOwn", "You can't endorse your own skills"));
       return;
     }
 
@@ -67,9 +69,9 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
             : s
         )
       );
-      toast.success(skill.user_has_endorsed ? "Endorsement removed" : "Skill endorsed!");
+      toast.success(skill.user_has_endorsed ? t("skills.endorsementRemoved", "Endorsement removed") : t("skills.skillEndorsed", "Skill endorsed!"));
     } else {
-      toast.error("Failed to update endorsement");
+      toast.error(t("skills.failedToEndorse", "Failed to update endorsement"));
     }
 
     setEndorsingSkillId(null);
@@ -87,11 +89,11 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
     return (
       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
         <ThumbsUp className="h-10 w-10 mx-auto mb-3 opacity-30" />
-        <p className="font-medium">{isOwnProfile ? "No skills added yet" : "No skills listed yet"}</p>
+        <p className="font-medium">{isOwnProfile ? t("skills.noSkillsOwn", "No skills added yet") : t("skills.noSkillsOther", "No skills listed yet")}</p>
         <p className="text-sm mt-1">
           {isOwnProfile 
-            ? "Add skills to let your connections endorse your expertise" 
-            : "Skills will appear here once they're added"}
+            ? t("skills.addSkillsDesc", "Add skills to let your connections endorse your expertise") 
+            : t("skills.skillsAppearDesc", "Skills will appear here once they're added")}
         </p>
       </div>
     );
@@ -124,7 +126,7 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
                         ))}
                       </div>
                       <span className="text-sm text-muted-foreground ml-1">
-                        {skill.endorsements} endorsement{skill.endorsements !== 1 ? 's' : ''}
+                        {skill.endorsements} {skill.endorsements !== 1 ? t("skills.endorsements", "endorsements") : t("skills.endorsement", "endorsement")}
                       </span>
                     </div>
                   </TooltipTrigger>
@@ -137,7 +139,7 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
                       ))}
                       {skill.endorsements > 5 && (
                         <div className="text-muted-foreground">
-                          +{skill.endorsements - 5} more
+                          +{skill.endorsements - 5} {t("skills.more", "more")}
                         </div>
                       )}
                     </div>
@@ -163,7 +165,7 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
               ) : (
                 <ThumbsUp className={cn("h-4 w-4", skill.user_has_endorsed && "fill-current")} />
               )}
-              {skill.user_has_endorsed ? "Endorsed" : "Endorse"}
+              {skill.user_has_endorsed ? t("skills.endorsed", "Endorsed") : t("skills.endorse", "Endorse")}
             </Button>
           )}
         </div>
