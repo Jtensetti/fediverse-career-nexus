@@ -349,12 +349,12 @@ const ProfilePage = () => {
                 />
               </motion.div>
               
-              {/* Stats next to avatar 
+              {/* Stats next to avatar */}
               <div className="hidden md:block pb-2">
                 <ProfileStats userId={profile.id} username={profile.username} compact />
               </div>
             </div>
-            */}
+            
             {/* Action buttons - positioned on the right on desktop */}
             <div className="flex-1 flex flex-wrap gap-2 md:justify-end md:pb-2">
               {viewingOwnProfile ? (
@@ -480,11 +480,11 @@ const ProfilePage = () => {
               </div>
             </div>
             
-            {/* Mobile stats - shown below on small screens 
+            {/* Mobile stats - shown below on small screens */}
             <div className="md:hidden mb-4">
               <ProfileStats userId={profile.id} username={profile.username} />
             </div>
-            */}
+            
             {profile.bio && (
               <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>
             )}
