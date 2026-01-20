@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,6 +32,7 @@ interface PostComposerProps {
 }
 
 export default function PostComposer({ className = "" }: PostComposerProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -87,7 +89,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const createPostMutation = useMutation({
     mutationFn: (postData: CreatePostData) => createPost(postData),
     onSuccess: () => {
-      toast.success('Post created successfully!');
+      toast.success(t("posts.postCreated", "Post created successfully!"));
       resetForm();
       setIsOpen(false);
       queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
@@ -117,7 +119,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
-        toast.error('Image size must be less than 10MB');
+        toast.error(t("posts.imageTooLarge", "Image size must be less than 10MB"));
         return;
       }
       
@@ -138,7 +140,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
         });
         
         if (compressedFile.size < originalSize) {
-          toast.success(`Image compressed: ${formatFileSize(originalSize)} → ${formatFileSize(compressedFile.size)}`);
+          toast.success(`${t("posts.imageCompressed", "Image compressed")}: ${formatFileSize(originalSize)} → ${formatFileSize(compressedFile.size)}`);
         }
       } catch (error) {
         console.error('Compression failed, using original:', error);
@@ -151,7 +153,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
 
   const handlePost = () => {
     if (!postContent.trim() && !showPollCreator) {
-      toast.error('Please enter some content for your post');
+      toast.error(t("posts.enterContent", "Please enter some content for your post"));
       return;
     }
 
@@ -159,7 +161,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     if (showPollCreator && pollData) {
       const validOptions = pollData.options.filter(opt => opt.trim().length > 0);
       if (validOptions.length < 2) {
-        toast.error('Please enter at least 2 poll options');
+        toast.error(t("posts.addPollOptions", "Please enter at least 2 poll options"));
         return;
       }
     }
@@ -189,12 +191,12 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
 
   const handleScheduledPost = () => {
     if (!postContent.trim()) {
-      toast.error('Please enter some content for your post');
+      toast.error(t("posts.enterContent", "Please enter some content for your post"));
       return;
     }
 
     if (!scheduledDate || !scheduledTime) {
-      toast.error('Please select a date and time for scheduling');
+      toast.error(t("posts.selectDateTime", "Please select a date and time for scheduling"));
       return;
     }
 
@@ -203,7 +205,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     scheduledDateTime.setHours(hours, minutes, 0, 0);
 
     if (scheduledDateTime <= new Date()) {
-      toast.error('Scheduled time must be in the future');
+      toast.error(t("posts.scheduleFuture", "Scheduled time must be in the future"));
       return;
     }
 
@@ -257,7 +259,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     {profile?.displayName ? getInitials(profile.displayName) : 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-muted-foreground flex-1">What's on your mind?</span>
+                <span className="text-muted-foreground flex-1">{t("posts.whatsOnMind", "What's on your mind?")}</span>
               </motion.div>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden p-0">
@@ -271,7 +273,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                   </Avatar>
                   <div>
                     <span className="font-semibold">{profile?.displayName || 'User'}</span>
-                    <p className="text-xs text-muted-foreground font-normal">Posting to your feed</p>
+                    <p className="text-xs text-muted-foreground font-normal">{t("posts.postingToFeed", "Posting to your feed")}</p>
                   </div>
                 </DialogTitle>
               </DialogHeader>
@@ -279,7 +281,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
               <div className="p-6 pt-4 space-y-4 overflow-y-auto max-h-[60vh]">
                 <Textarea
                   ref={textareaRef}
-                  placeholder="What's on your mind?"
+                  placeholder={t("posts.whatsOnMind", "What's on your mind?")}
                   value={postContent}
                   onChange={(e) => setPostContent(e.target.value)}
                   className={cn(
@@ -328,11 +330,11 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       <div className="px-1">
                         <Label htmlFor="alt-text" className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
                           <ImagePlus className="h-3 w-3" />
-                          Describe this image for people who can't see it
+                          {t("posts.describeImage", "Describe this image for people who can't see it")}
                         </Label>
                         <Input
                           id="alt-text"
-                          placeholder="Add alt text..."
+                          placeholder={t("posts.addAltText", "Add alt text...")}
                           value={imageAltText}
                           onChange={(e) => setImageAltText(e.target.value)}
                           className="text-sm h-8"
@@ -351,7 +353,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                 {isCompressing && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Optimizing image...
+                    {t("posts.optimizingImage", "Optimizing image...")}
                   </div>
                 )}
 
@@ -412,7 +414,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-primary" />
                         <span>
-                          Scheduled for {scheduledDate && format(scheduledDate, 'PPP')} {scheduledTime && `at ${scheduledTime}`}
+                          {t("posts.scheduledFor", "Scheduled for")} {scheduledDate && format(scheduledDate, 'PPP')} {scheduledTime && `at ${scheduledTime}`}
                         </span>
                       </div>
                       <Button 
@@ -425,7 +427,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                         }}
                         disabled={isLoading}
                       >
-                        Remove
+                        {t("posts.remove", "Remove")}
                       </Button>
                     </motion.div>
                   )}

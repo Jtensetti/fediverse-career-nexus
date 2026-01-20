@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,9 +24,10 @@ export default function InlineReplyComposer({
   parentReplyId,
   onReplyCreated,
   onCancel,
-  placeholder = "Write a reply...",
+  placeholder,
   autoFocus = false,
 }: InlineReplyComposerProps) {
+  const { t } = useTranslation();
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -41,18 +43,18 @@ export default function InlineReplyComposer({
 
   const handleSubmit = async () => {
     if (!user) {
-      toast.error('Please sign in to reply');
+      toast.error(t("comments.signInToReply", "Please sign in to reply"));
       return;
     }
 
     const trimmedContent = content.trim();
     if (!trimmedContent) {
-      toast.error('Reply cannot be empty');
+      toast.error(t("comments.emptyReply", "Reply cannot be empty"));
       return;
     }
 
     if (trimmedContent.length > MAX_REPLY_LENGTH) {
-      toast.error(`Reply must be less than ${MAX_REPLY_LENGTH} characters`);
+      toast.error(t("comments.replyTooLong", `Reply must be less than ${MAX_REPLY_LENGTH} characters`));
       return;
     }
 
@@ -65,7 +67,7 @@ export default function InlineReplyComposer({
         onReplyCreated();
       }
     } catch {
-      toast.error('Failed to post reply');
+      toast.error(t("comments.failedToPost", "Failed to post reply"));
     } finally {
       setLoading(false);
     }
@@ -108,7 +110,7 @@ export default function InlineReplyComposer({
     >
       <Textarea
         ref={textareaRef}
-        placeholder={placeholder}
+        placeholder={placeholder || t("comments.writeReply", "Write a reply...")}
         value={content}
         onChange={(e) => setContent(e.target.value.slice(0, MAX_REPLY_LENGTH + 50))}
         onFocus={() => setIsFocused(true)}
@@ -133,7 +135,7 @@ export default function InlineReplyComposer({
                 className="h-7 px-2"
               >
                 <X className="h-4 w-4 mr-1" />
-                Cancel
+                {t("comments.cancel", "Cancel")}
               </Button>
             )}
             <span className={cn(
@@ -151,11 +153,11 @@ export default function InlineReplyComposer({
             className="h-7 px-3 gap-1"
           >
             {loading ? (
-              "Posting..."
+              t("comments.posting", "Posting...")
             ) : (
               <>
                 <Send className="h-3.5 w-3.5" />
-                Reply
+                {t("comments.reply", "Reply")}
               </>
             )}
           </Button>

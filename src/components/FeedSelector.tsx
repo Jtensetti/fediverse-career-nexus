@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Home, Users, Globe, Filter, Settings2, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +13,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
-  getFeedPreferences, 
   getCustomFeeds, 
   type FeedType, 
   type CustomFeed 
@@ -26,16 +25,17 @@ export interface FeedSelectorProps {
   className?: string;
 }
 
-const feedTabs = [
-  { id: 'following', label: 'Following', icon: Home, description: 'Posts from people you follow' },
-  { id: 'local', label: 'Local', icon: Users, description: 'Posts from this instance' },
-  { id: 'federated', label: 'Federated', icon: Globe, description: 'All posts including remote' },
-] as const;
-
 export default function FeedSelector({ value, onChange, className }: FeedSelectorProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [customFeeds, setCustomFeeds] = useState<CustomFeed[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const feedTabs = [
+    { id: 'following', label: t("feed.following", "Following"), icon: Home, description: t("feed.followingDesc", "Posts from people you follow") },
+    { id: 'local', label: t("feed.local", "Local"), icon: Users, description: t("feed.localDesc", "Posts from this instance") },
+    { id: 'federated', label: t("feed.federated", "Federated"), icon: Globe, description: t("feed.federatedDesc", "All posts including remote") },
+  ] as const;
 
   useEffect(() => {
     if (user) {
@@ -50,7 +50,7 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
     setIsLoading(false);
   };
 
-  const selectedFeed = feedTabs.find(t => t.id === value);
+  const selectedFeed = feedTabs.find(tab => tab.id === value);
   const selectedCustomFeed = customFeeds.find(f => f.id === value);
 
   return (
@@ -97,7 +97,7 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
               {selectedCustomFeed ? (
                 <span className="hidden sm:inline max-w-24 truncate">{selectedCustomFeed.name}</span>
               ) : (
-                <span className="hidden sm:inline">Feeds</span>
+                <span className="hidden sm:inline">{t("feed.feeds", "Feeds")}</span>
               )}
             </Button>
           </DropdownMenuTrigger>
@@ -128,13 +128,13 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
             <DropdownMenuItem asChild className="gap-2 cursor-pointer">
               <a href="/settings/feeds">
                 <Plus className="h-4 w-4" />
-                Create custom feed
+                {t("feed.createCustomFeed", "Create custom feed")}
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="gap-2 cursor-pointer">
               <a href="/settings/feeds">
                 <Settings2 className="h-4 w-4" />
-                Manage feeds
+                {t("feed.manageFeeds", "Manage feeds")}
               </a>
             </DropdownMenuItem>
           </DropdownMenuContent>

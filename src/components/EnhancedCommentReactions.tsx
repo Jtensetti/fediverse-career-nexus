@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ interface EnhancedCommentReactionsProps {
 const DEFAULT_REACTIONS: ReactionCount[] = REACTIONS.map(r => ({ reaction: r, count: 0, hasReacted: false }));
 
 export function EnhancedCommentReactions({ replyId, className, initialReactions }: EnhancedCommentReactionsProps) {
+  const { t } = useTranslation();
   const [reactions, setReactions] = useState<ReactionCount[]>(
     initialReactions || DEFAULT_REACTIONS
   );
@@ -97,7 +99,7 @@ export function EnhancedCommentReactions({ replyId, className, initialReactions 
           ) : (
             <>
               <PrimaryIcon className="h-3.5 w-3.5" />
-              <span>React</span>
+              <span>{t("reactions.react", "React")}</span>
             </>
           )}
         </Button>
