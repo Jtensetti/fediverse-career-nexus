@@ -42,9 +42,7 @@ const FederationVisual = () => {
           <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-4">
             {t("homepage.federation.title")}
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t("homepage.federation.description")}
-          </p>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("homepage.federation.description")}</p>
         </motion.div>
 
         {/* Visual Federation Diagram */}
@@ -54,7 +52,10 @@ const FederationVisual = () => {
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 400">
               {/* Animated connection lines */}
               <motion.line
-                x1="200" y1="200" x2="80" y2="80"
+                x1="200"
+                y1="200"
+                x2="80"
+                y2="80"
                 stroke="hsl(var(--secondary))"
                 strokeWidth="2"
                 strokeDasharray="5,5"
@@ -64,7 +65,10 @@ const FederationVisual = () => {
                 transition={{ duration: 1, delay: 0.5 }}
               />
               <motion.line
-                x1="200" y1="200" x2="320" y2="80"
+                x1="200"
+                y1="200"
+                x2="320"
+                y2="80"
                 stroke="hsl(var(--primary))"
                 strokeWidth="2"
                 strokeDasharray="5,5"
@@ -74,7 +78,10 @@ const FederationVisual = () => {
                 transition={{ duration: 1, delay: 0.7 }}
               />
               <motion.line
-                x1="200" y1="200" x2="80" y2="320"
+                x1="200"
+                y1="200"
+                x2="80"
+                y2="320"
                 stroke="hsl(var(--accent))"
                 strokeWidth="2"
                 strokeDasharray="5,5"
@@ -84,7 +91,10 @@ const FederationVisual = () => {
                 transition={{ duration: 1, delay: 0.9 }}
               />
               <motion.line
-                x1="200" y1="200" x2="320" y2="320"
+                x1="200"
+                y1="200"
+                x2="320"
+                y2="320"
                 stroke="hsl(var(--secondary))"
                 strokeWidth="2"
                 strokeDasharray="5,5"
@@ -105,7 +115,7 @@ const FederationVisual = () => {
             >
               <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary shadow-xl flex flex-col items-center justify-center text-primary-foreground border-4 border-background">
                 <Server className="h-8 w-8 mb-1" />
-                <span className="font-bold text-sm">nolto.org</span>
+                <span className="font-bold text-sm">nolto.social</span>
                 <span className="text-xs opacity-80">{t("homepage.federation.youAreHere")}</span>
               </div>
             </motion.div>
@@ -127,7 +137,9 @@ const FederationVisual = () => {
               >
                 <div className="w-20 h-20 rounded-full bg-card shadow-lg border-2 border-border flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors">
                   <Server className="h-5 w-5 text-muted-foreground mb-1" />
-                  <span className="text-xs font-medium text-foreground leading-tight">{instance.name.split(".")[0]}</span>
+                  <span className="text-xs font-medium text-foreground leading-tight">
+                    {instance.name.split(".")[0]}
+                  </span>
                   <span className="text-[10px] text-muted-foreground">{instance.users}</span>
                 </div>
               </motion.div>
@@ -135,17 +147,17 @@ const FederationVisual = () => {
 
             {/* Animated data flow indicators */}
             <motion.div
-              animate={{ 
+              animate={{
                 scale: [1, 1.2, 1],
-                opacity: [0.5, 1, 0.5]
+                opacity: [0.5, 1, 0.5],
               }}
               transition={{ duration: 2, repeat: Infinity }}
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full border-2 border-secondary/30"
             />
             <motion.div
-              animate={{ 
+              animate={{
                 scale: [1, 1.3, 1],
-                opacity: [0.3, 0.6, 0.3]
+                opacity: [0.3, 0.6, 0.3],
               }}
               transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border border-primary/20"

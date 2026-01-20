@@ -28,7 +28,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                nolto.org/feed
+                nolto.social/feed
               </div>
             </div>
           </div>
@@ -150,14 +150,14 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                nolto.org/@sarah
+                nolto.social/@sarah
               </div>
             </div>
           </div>
 
           {/* Profile Header */}
           <div className="h-20 bg-gradient-to-r from-primary to-secondary" />
-          
+
           <div className="px-6 pb-6">
             <div className="flex items-end gap-4 -mt-10">
               <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
@@ -179,10 +179,18 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
 
             {/* Skills */}
             <div className="flex flex-wrap gap-2 mt-4">
-              <Badge variant="secondary" className="text-xs">React</Badge>
-              <Badge variant="secondary" className="text-xs">TypeScript</Badge>
-              <Badge variant="secondary" className="text-xs">ActivityPub</Badge>
-              <Badge variant="secondary" className="text-xs">Open Source</Badge>
+              <Badge variant="secondary" className="text-xs">
+                React
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                TypeScript
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                ActivityPub
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                Open Source
+              </Badge>
             </div>
 
             {/* Stats */}
@@ -216,7 +224,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                nolto.org/jobs
+                nolto.social/jobs
               </div>
             </div>
           </div>
@@ -233,8 +241,12 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
                   <h4 className="font-semibold text-sm text-foreground">Senior Frontend Engineer</h4>
                   <p className="text-xs text-muted-foreground">Mozilla • Remote</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="secondary" className="text-xs">React</Badge>
-                    <Badge variant="secondary" className="text-xs">TypeScript</Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      React
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      TypeScript
+                    </Badge>
                   </div>
                   <p className="text-sm font-semibold text-secondary mt-2">$150k - $200k</p>
                 </div>
@@ -251,8 +263,12 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
                   <h4 className="font-semibold text-sm text-foreground">DevOps Engineer</h4>
                   <p className="text-xs text-muted-foreground">Fairphone • Amsterdam</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="secondary" className="text-xs">Kubernetes</Badge>
-                    <Badge variant="secondary" className="text-xs">AWS</Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      Kubernetes
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      AWS
+                    </Badge>
                   </div>
                   <p className="text-sm font-semibold text-secondary mt-2">€80k - €100k</p>
                 </div>
