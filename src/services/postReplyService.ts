@@ -14,6 +14,65 @@ export interface PostReply {
   parent_reply_id?: string | null; // For threading support
 }
 
+/**
+ * Safely extract the text content from various ActivityPub content structures.
+ * Handles:
+ * - Direct strings
+ * - { content: "text" }
+ * - { content: { content: "text" } }
+ * - Corrupted "char-map" objects where a string was spread ({ "0": "H", "1": "i", ..., "content": "actual text" })
+ */
+function extractReplyText(raw: unknown): string {
+  // Direct string
+  if (typeof raw === 'string') {
+    return raw;
+  }
+
+  // Not an object at all
+  if (raw === null || raw === undefined || typeof raw !== 'object') {
+    return '';
+  }
+
+  const obj = raw as Record<string, unknown>;
+
+  // Check if obj.content exists
+  const innerContent = obj.content;
+
+  // If innerContent is a string, return it
+  if (typeof innerContent === 'string') {
+    return innerContent;
+  }
+
+  // If innerContent is an object, dig deeper
+  if (innerContent !== null && typeof innerContent === 'object') {
+    const inner = innerContent as Record<string, unknown>;
+
+    // Check for nested content field (normal structure or char-map with content field)
+    if (typeof inner.content === 'string') {
+      return inner.content;
+    }
+
+    // If inner.content is also an object, try one more level
+    if (inner.content !== null && typeof inner.content === 'object') {
+      const deepInner = inner.content as Record<string, unknown>;
+      if (typeof deepInner.content === 'string') {
+        return deepInner.content;
+      }
+    }
+
+    // Fallback: check if this looks like a char-map (keys are "0", "1", "2"...)
+    // but doesn't have a content field - we can't recover
+    if ('0' in inner && '1' in inner) {
+      console.warn('[extractReplyText] Detected char-map without recoverable content field');
+      return '';
+    }
+  }
+
+  // Fallback: return empty string
+  console.warn('[extractReplyText] Unexpected content structure:', JSON.stringify(raw).slice(0, 200));
+  return '';
+}
+
 // Get replies for a post (including nested replies via rootPost)
 export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
   try {
@@ -61,9 +120,12 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
       const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
       const parentReplyId = inReplyTo && inReplyTo !== postId ? inReplyTo : null;
 
+      // Use safe extraction to always get a string
+      const textContent = extractReplyText(content);
+
       return {
         id: reply.id,
-        content: content?.content || '',
+        content: textContent,
         created_at: reply.created_at,
         user_id: reply.actor_user_id || '',
         parent_reply_id: parentReplyId,
@@ -122,21 +184,39 @@ export async function updatePostReply(commentId: string, content: string): Promi
   }
 
   const currentContent = currentData.content as Record<string, unknown>;
-  const innerContent = (currentContent.content || {}) as Record<string, unknown>;
+  
+  // Safely extract existing inner content - handle corrupt structures
+  let innerContent: Record<string, string | Record<string, unknown>> = {};
+  const rawInner = currentContent.content;
+  
+  if (rawInner !== null && typeof rawInner === 'object' && !Array.isArray(rawInner)) {
+    const inner = rawInner as Record<string, unknown>;
+    // Only preserve valid fields, ignore char-map keys like "0", "1", etc.
+    const validKeys = ['type', 'inReplyTo', 'rootPost', 'actor', 'published'];
+    for (const key of validKeys) {
+      if (key in inner && inner[key] !== undefined) {
+        innerContent[key] = inner[key] as string | Record<string, unknown>;
+      }
+    }
+  }
+  
+  // Build clean updated content structure with explicit type casting for Json compatibility
+  const updatedInner = {
+    ...innerContent,
+    type: (innerContent.type as string) || 'Note',
+    content: content, // Plain text - always a string
+    updated: new Date().toISOString()
+  };
   
   const updatedContent = {
     ...currentContent,
-    content: {
-      ...innerContent,
-      content: content, // Plain text, HTML handled on display
-      updated: new Date().toISOString()
-    }
-  };
+    content: updatedInner
+  } as Record<string, unknown>;
 
   const { error } = await supabase
     .from('ap_objects')
     .update({ 
-      content: updatedContent,
+      content: updatedContent as unknown as Record<string, never>,
       updated_at: new Date().toISOString()
     })
     .eq('id', commentId);

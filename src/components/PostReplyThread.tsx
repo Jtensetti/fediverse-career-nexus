@@ -186,9 +186,9 @@ export default function PostReplyThread({
                 </span>
               </div>
 
-              {/* Reply Content */}
+              {/* Reply Content - with failsafe for non-string content */}
               <p className="mt-1 text-sm whitespace-pre-wrap break-words">
-                {reply.content}
+                {typeof reply.content === 'string' ? reply.content : 'Comment unavailable'}
               </p>
 
               {/* Action Buttons */}
