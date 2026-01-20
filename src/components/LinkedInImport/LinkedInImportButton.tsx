@@ -30,11 +30,6 @@ export default function LinkedInImportButton({
         size={size}
         onClick={() => setIsModalOpen(true)}
         className={`gap-2 ${className}`}
-        style={{ 
-          backgroundColor: variant === 'default' ? '#0077B5' : undefined,
-          borderColor: '#0077B5',
-          color: variant === 'default' ? 'white' : '#0077B5',
-        }}
       >
         <Linkedin className="h-4 w-4" />
         Import from LinkedIn
