@@ -153,6 +153,7 @@ export async function toggleReaction(
       // Create notification for the content owner
       try {
         let ownerId: string | null = null;
+        let parentId: string | null = null;
 
         if (targetType === 'post') {
           const { data: postData } = await supabase
@@ -172,7 +173,7 @@ export async function toggleReaction(
         } else if (targetType === 'reply') {
           const { data: replyData } = await supabase
             .from('ap_objects')
-            .select('attributed_to')
+            .select('attributed_to, content')
             .eq('id', targetId)
             .single();
 
@@ -183,6 +184,11 @@ export async function toggleReaction(
               .eq('id', replyData.attributed_to)
               .single();
             ownerId = actor?.user_id || null;
+            
+            // Extract rootPost or inReplyTo for navigation
+            const content = replyData.content as any;
+            parentId = content?.rootPost || content?.content?.rootPost || 
+                       content?.inReplyTo || content?.content?.inReplyTo || null;
           }
         }
 
@@ -194,6 +200,7 @@ export async function toggleReaction(
             actor_id: user.id,
             object_id: targetId,
             object_type: targetType,
+            content: parentId ? JSON.stringify({ parentId }) : null,
           });
         }
       } catch (notifError) {

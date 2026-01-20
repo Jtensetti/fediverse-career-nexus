@@ -25,6 +25,7 @@ interface PostReplyThreadProps {
   depth?: number;
   childReplies?: PostReply[];
   onReplyCreated: (replyId: string) => void;
+  isHighlighted?: boolean;
 }
 
 const MAX_DEPTH = 3;
@@ -34,7 +35,8 @@ export default function PostReplyThread({
   postId,
   depth = 0, 
   childReplies = [],
-  onReplyCreated 
+  onReplyCreated,
+  isHighlighted = false
 }: PostReplyThreadProps) {
   const [showReplyComposer, setShowReplyComposer] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -144,12 +146,16 @@ export default function PostReplyThread({
       </AlertDialog>
 
       <div 
+        id={`reply-${reply.id}`}
         className={cn(
-          "relative",
+          "relative scroll-mt-20",
           depth > 0 && "ml-6 pl-4 border-l-2 border-border/50"
         )}
       >
-      <Card className="border-0 shadow-none bg-muted/30">
+      <Card className={cn(
+        "border-0 shadow-none bg-muted/30 transition-all duration-500",
+        isHighlighted && "ring-2 ring-primary/50 bg-primary/5"
+      )}>
         <CardContent className="p-4">
           {/* Author Info */}
           <div className="flex items-start gap-3">

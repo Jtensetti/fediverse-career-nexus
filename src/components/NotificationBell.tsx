@@ -96,10 +96,27 @@ export function NotificationBell() {
           }
           break;
         case 'post':
-        case 'reply':
-          // Navigate to post if object_id exists, otherwise fall back to actor profile
           if (notification.object_id) {
             navigate(`/post/${notification.object_id}`);
+          } else if (notification.actor_id) {
+            navigate(`/profile/${notification.actor_id}`);
+          }
+          break;
+        case 'reply':
+          // For replies, navigate to the parent post with highlight parameter
+          // The content field may contain parentId for direct navigation
+          if (notification.object_id) {
+            try {
+              const contentData = notification.content ? JSON.parse(notification.content) : {};
+              if (contentData.parentId) {
+                navigate(`/post/${contentData.parentId}?highlight=${notification.object_id}`);
+              } else {
+                // Fallback: navigate to reply and let PostView handle redirect
+                navigate(`/post/${notification.object_id}`);
+              }
+            } catch {
+              navigate(`/post/${notification.object_id}`);
+            }
           } else if (notification.actor_id) {
             navigate(`/profile/${notification.actor_id}`);
           }
