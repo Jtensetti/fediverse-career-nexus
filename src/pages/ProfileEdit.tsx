@@ -432,9 +432,9 @@ const ProfileEditPage = () => {
                           name="displayName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Display Name</FormLabel>
+                              <FormLabel>{t("profileEdit.displayName")}</FormLabel>
                               <FormControl>
-                                <Input placeholder="Your name" {...field} />
+                                <Input placeholder={t("profileEdit.displayNamePlaceholder")} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -446,12 +446,12 @@ const ProfileEditPage = () => {
                           name="headline"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Professional Headline</FormLabel>
+                              <FormLabel>{t("profileEdit.headline")}</FormLabel>
                               <FormControl>
-                                <Input placeholder="Your professional headline" {...field} />
+                                <Input placeholder={t("profileEdit.headlinePlaceholder")} {...field} />
                               </FormControl>
                               <FormDescription>
-                                A short description of your current role or expertise
+                                {t("profileEdit.headlineDesc")}
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -463,10 +463,10 @@ const ProfileEditPage = () => {
                           name="bio"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Bio</FormLabel>
+                              <FormLabel>{t("profileEdit.bio")}</FormLabel>
                               <FormControl>
                                 <Textarea 
-                                  placeholder="Tell us about yourself" 
+                                  placeholder={t("profileEdit.bioPlaceholder")} 
                                   className="min-h-32" 
                                   {...field} 
                                 />
@@ -477,7 +477,7 @@ const ProfileEditPage = () => {
                         />
                         
                         <div className="pt-4">
-                          <h3 className="text-lg font-medium mb-4">Contact Information</h3>
+                          <h3 className="text-lg font-medium mb-4">{t("profileEdit.contactInfo")}</h3>
                           
                           <div className="grid md:grid-cols-2 gap-4">
                             <FormField
@@ -485,11 +485,11 @@ const ProfileEditPage = () => {
                               name="email"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Email</FormLabel>
+                                  <FormLabel>{t("profileEdit.email")}</FormLabel>
                                   <FormControl>
                                     <Input placeholder="your.email@example.com" {...field} disabled />
                                   </FormControl>
-                                  <FormDescription>Email cannot be changed here</FormDescription>
+                                  <FormDescription>{t("profileEdit.emailDesc")}</FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -500,9 +500,9 @@ const ProfileEditPage = () => {
                               name="phone"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Phone</FormLabel>
+                                  <FormLabel>{t("profileEdit.phone")}</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="+1 (555) 123-4567" {...field} />
+                                    <Input placeholder={t("profileEdit.phonePlaceholder")} {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -514,9 +514,9 @@ const ProfileEditPage = () => {
                               name="location"
                               render={({ field }) => (
                                 <FormItem className="md:col-span-2">
-                                  <FormLabel>Location</FormLabel>
+                                  <FormLabel>{t("profileEdit.location")}</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="City, Country" {...field} />
+                                    <Input placeholder={t("profileEdit.locationPlaceholder")} {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -529,7 +529,7 @@ const ProfileEditPage = () => {
                           type="submit" 
                           disabled={isLoading.saving}
                         >
-                          {isLoading.saving ? "Saving..." : "Save Changes"}
+                          {isLoading.saving ? t("profileEdit.saving") : t("profileEdit.saveChanges")}
                         </Button>
                       </form>
                     </Form>
@@ -544,14 +544,14 @@ const ProfileEditPage = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Briefcase size={20} className="text-primary" />
-                  Experience
+                  {t("profileEdit.experience.title")}
                 </CardTitle>
                 <Button 
                   onClick={addExperience} 
                   variant="outline"
                   className="flex items-center gap-1"
                 >
-                  <Plus size={16} /> Add Experience
+                  <Plus size={16} /> {t("profileEdit.experience.add")}
                 </Button>
               </CardHeader>
               <CardContent>
@@ -559,7 +559,7 @@ const ProfileEditPage = () => {
                   <div className="flex justify-center py-8">
                     <div className="flex flex-col items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="mt-2 text-sm text-muted-foreground">Loading experiences...</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t("profileEdit.experience.loading")}</p>
                     </div>
                   </div>
                 ) : (
@@ -596,51 +596,51 @@ const ProfileEditPage = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor={`title-${index}`}>Job Title</Label>
+                            <Label htmlFor={`title-${index}`}>{t("profileEdit.experience.jobTitle")}</Label>
                             <Input 
                               id={`title-${index}`}
                               value={exp.title || ''} 
                               onChange={(e) => updateExperienceField(index, 'title', e.target.value)}
-                              placeholder="Job Title"
+                              placeholder={t("profileEdit.experience.jobTitlePlaceholder")}
                               className="mt-1"
                             />
                           </div>
                           
                           <div>
-                            <Label htmlFor={`company-${index}`}>Company</Label>
+                            <Label htmlFor={`company-${index}`}>{t("profileEdit.experience.company")}</Label>
                             <Input 
                               id={`company-${index}`}
                               value={exp.company || ''} 
                               onChange={(e) => updateExperienceField(index, 'company', e.target.value)}
-                              placeholder="Company"
+                              placeholder={t("profileEdit.experience.companyPlaceholder")}
                               className="mt-1"
                             />
                           </div>
                           
                           <div>
-                            <Label htmlFor={`company_domain-${index}`}>Company Website/Domain</Label>
+                            <Label htmlFor={`company_domain-${index}`}>{t("profileEdit.experience.companyDomain")}</Label>
                             <Input 
                               id={`company_domain-${index}`}
                               value={exp.company_domain || ''} 
                               onChange={(e) => updateExperienceField(index, 'company_domain', e.target.value)}
-                              placeholder="company.com"
+                              placeholder={t("profileEdit.experience.companyDomainPlaceholder")}
                               className="mt-1"
                             />
                           </div>
                           
                           <div>
-                            <Label htmlFor={`location-${index}`}>Location</Label>
+                            <Label htmlFor={`location-${index}`}>{t("profileEdit.location")}</Label>
                             <Input 
                               id={`location-${index}`}
                               value={exp.location || ''} 
                               onChange={(e) => updateExperienceField(index, 'location', e.target.value)}
-                              placeholder="City, Country (Remote)"
+                              placeholder={t("profileEdit.experience.locationPlaceholder")}
                               className="mt-1"
                             />
                           </div>
                           
                           <div>
-                            <Label htmlFor={`startDate-${index}`}>Start Date</Label>
+                            <Label htmlFor={`startDate-${index}`}>{t("profileEdit.experience.startDate")}</Label>
                             <Popover>
                               <PopoverTrigger asChild>
                                 <Button
@@ -648,7 +648,7 @@ const ProfileEditPage = () => {
                                   className="w-full mt-1 justify-start text-left font-normal"
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {exp.start_date ? format(new Date(exp.start_date), "PPP") : "Pick a date"}
+                                  {exp.start_date ? format(new Date(exp.start_date), "PPP") : t("profileEdit.experience.pickDate")}
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent className="w-auto p-0" align="start">
@@ -670,12 +670,12 @@ const ProfileEditPage = () => {
                                 onCheckedChange={(checked) => updateExperienceField(index, 'is_current_role', checked)}
                                 className="mr-2"
                               />
-                              <Label htmlFor={`current-${index}`}>I currently work here</Label>
+                              <Label htmlFor={`current-${index}`}>{t("profileEdit.experience.currentRole")}</Label>
                             </div>
                             
                             {!exp.is_current_role && (
                               <>
-                                <Label htmlFor={`endDate-${index}`}>End Date</Label>
+                                <Label htmlFor={`endDate-${index}`}>{t("profileEdit.experience.endDate")}</Label>
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <Button
@@ -683,7 +683,7 @@ const ProfileEditPage = () => {
                                       className="w-full mt-1 justify-start text-left font-normal"
                                     >
                                       <CalendarIcon className="mr-2 h-4 w-4" />
-                                      {exp.end_date ? format(new Date(exp.end_date), "PPP") : "Pick a date"}
+                                      {exp.end_date ? format(new Date(exp.end_date), "PPP") : t("profileEdit.experience.pickDate")}
                                     </Button>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-auto p-0" align="start">
@@ -700,12 +700,12 @@ const ProfileEditPage = () => {
                           </div>
                           
                           <div className="md:col-span-2">
-                            <Label htmlFor={`description-${index}`}>Description</Label>
+                            <Label htmlFor={`description-${index}`}>{t("profileEdit.experience.description")}</Label>
                             <Textarea 
                               id={`description-${index}`}
                               value={exp.description || ''} 
                               onChange={(e) => updateExperienceField(index, 'description', e.target.value)}
-                              placeholder="Describe your responsibilities and achievements"
+                              placeholder={t("profileEdit.experience.descriptionPlaceholder")}
                               className="mt-1 h-24"
                             />
                           </div>
@@ -714,7 +714,7 @@ const ProfileEditPage = () => {
                             <Button
                               onClick={() => saveExperience(index)}
                             >
-                              {exp.id ? 'Update' : 'Save'} Experience
+                              {exp.id ? t("profileEdit.experience.update") : t("profileEdit.experience.save")}
                             </Button>
                           </div>
                         </div>
@@ -723,7 +723,7 @@ const ProfileEditPage = () => {
                     
                     {experiences.length === 0 && (
                       <div className="text-center py-6 text-muted-foreground">
-                        <p>No experience added yet. Click "Add Experience" to get started.</p>
+                        <p>{t("profileEdit.experience.noExperience")}</p>
                       </div>
                     )}
                   </div>
@@ -737,14 +737,14 @@ const ProfileEditPage = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <School size={20} className="text-primary" />
-                  Education
+                  {t("profileEdit.education.title")}
                 </CardTitle>
                 <Button 
                   onClick={addEducation} 
                   variant="outline"
                   className="flex items-center gap-1"
                 >
-                  <Plus size={16} /> Add Education
+                  <Plus size={16} /> {t("profileEdit.education.add")}
                 </Button>
               </CardHeader>
               <CardContent>
@@ -752,7 +752,7 @@ const ProfileEditPage = () => {
                   <div className="flex justify-center py-8">
                     <div className="flex flex-col items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="mt-2 text-sm text-muted-foreground">Loading education...</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t("profileEdit.education.loading")}</p>
                     </div>
                   </div>
                 ) : (
@@ -788,40 +788,40 @@ const ProfileEditPage = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="md:col-span-2">
-                            <Label htmlFor={`institution-${index}`}>School/University</Label>
+                            <Label htmlFor={`institution-${index}`}>{t("profileEdit.education.institution")}</Label>
                             <Input 
                               id={`institution-${index}`}
                               value={edu.institution || ''} 
                               onChange={(e) => updateEducationField(index, 'institution', e.target.value)}
-                              placeholder="Institution name"
+                              placeholder={t("profileEdit.education.institutionPlaceholder")}
                               className="mt-1"
                             />
                           </div>
                           
                           <div>
-                            <Label htmlFor={`degree-${index}`}>Degree</Label>
+                            <Label htmlFor={`degree-${index}`}>{t("profileEdit.education.degree")}</Label>
                             <Input 
                               id={`degree-${index}`}
                               value={edu.degree || ''} 
                               onChange={(e) => updateEducationField(index, 'degree', e.target.value)}
-                              placeholder="e.g. Bachelor's, Master's"
+                              placeholder={t("profileEdit.education.degreePlaceholder")}
                               className="mt-1"
                             />
                           </div>
                           
                           <div>
-                            <Label htmlFor={`field-${index}`}>Field of Study</Label>
+                            <Label htmlFor={`field-${index}`}>{t("profileEdit.education.field")}</Label>
                             <Input 
                               id={`field-${index}`}
                               value={edu.field || ''} 
                               onChange={(e) => updateEducationField(index, 'field', e.target.value)}
-                              placeholder="e.g. Computer Science"
+                              placeholder={t("profileEdit.education.fieldPlaceholder")}
                               className="mt-1"
                             />
                           </div>
                           
                           <div>
-                            <Label htmlFor={`startYear-${index}`}>Start Year</Label>
+                            <Label htmlFor={`startYear-${index}`}>{t("profileEdit.education.startYear")}</Label>
                             <Input 
                               id={`startYear-${index}`}
                               type="number"
@@ -835,7 +835,7 @@ const ProfileEditPage = () => {
                           </div>
                           
                           <div>
-                            <Label htmlFor={`endYear-${index}`}>End Year (or expected)</Label>
+                            <Label htmlFor={`endYear-${index}`}>{t("profileEdit.education.endYear")}</Label>
                             <Input 
                               id={`endYear-${index}`}
                               type="number"
@@ -852,7 +852,7 @@ const ProfileEditPage = () => {
                             <Button
                               onClick={() => saveEducation(index)}
                             >
-                              {edu.id ? 'Update' : 'Save'} Education
+                              {edu.id ? t("profileEdit.education.update") : t("profileEdit.education.save")}
                             </Button>
                           </div>
                         </div>
@@ -861,7 +861,7 @@ const ProfileEditPage = () => {
                     
                     {education.length === 0 && (
                       <div className="text-center py-6 text-muted-foreground">
-                        <p>No education added yet. Click "Add Education" to get started.</p>
+                        <p>{t("profileEdit.education.noEducation")}</p>
                       </div>
                     )}
                   </div>
@@ -875,7 +875,7 @@ const ProfileEditPage = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Star size={20} className="text-primary" />
-                  Skills
+                  {t("profileEdit.skills.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -883,19 +883,19 @@ const ProfileEditPage = () => {
                   <div className="flex justify-center py-8">
                     <div className="flex flex-col items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="mt-2 text-sm text-muted-foreground">Loading skills...</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{t("profileEdit.skills.loading")}</p>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-6">
                     <div className="flex gap-2">
                       <Input 
-                        placeholder="Add a skill" 
+                        placeholder={t("profileEdit.skills.placeholder")} 
                         value={newSkill}
                         onChange={(e) => setNewSkill(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && addSkill()}
                       />
-                      <Button onClick={addSkill} type="button">Add</Button>
+                      <Button onClick={addSkill} type="button">{t("profileEdit.skills.add")}</Button>
                     </div>
                     
                     <div className="flex flex-wrap gap-2 mt-4">
@@ -921,7 +921,7 @@ const ProfileEditPage = () => {
                     
                     {skills.length === 0 && (
                       <div className="text-center py-6 text-muted-foreground">
-                        <p>No skills added yet. Use the field above to add your skills.</p>
+                        <p>{t("profileEdit.skills.noSkills")}</p>
                       </div>
                     )}
                   </div>
@@ -935,7 +935,7 @@ const ProfileEditPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Settings size={20} className="text-primary" />
-                  Privacy Settings
+                  {t("profileEdit.privacy.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
