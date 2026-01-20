@@ -62,23 +62,33 @@ export function NotificationBell() {
 
     setIsOpen(false);
 
-    // Navigate based on notification type
-    if (notification.object_type && notification.object_id) {
+    // Navigate based on notification type - with null safety
+    if (notification.object_type) {
       switch (notification.object_type) {
         case 'profile':
-          navigate(`/profile/${notification.object_id}`);
+          if (notification.object_id) {
+            navigate(`/profile/${notification.object_id}`);
+          }
           break;
         case 'job':
-          navigate(`/jobs/${notification.object_id}`);
+          if (notification.object_id) {
+            navigate(`/jobs/${notification.object_id}`);
+          }
           break;
         case 'article':
-          navigate(`/articles/${notification.object_id}`);
+          if (notification.object_id) {
+            navigate(`/articles/${notification.object_id}`);
+          }
           break;
         case 'event':
-          navigate(`/events/${notification.object_id}`);
+          if (notification.object_id) {
+            navigate(`/events/${notification.object_id}`);
+          }
           break;
         case 'message':
-          navigate(`/messages/${notification.actor_id}`);
+          if (notification.actor_id) {
+            navigate(`/messages/${notification.actor_id}`);
+          }
           break;
         case 'skill':
           if (notification.actor_id) {
@@ -87,7 +97,12 @@ export function NotificationBell() {
           break;
         case 'post':
         case 'reply':
-          navigate(`/post/${notification.object_id}`);
+          // Navigate to post if object_id exists, otherwise fall back to actor profile
+          if (notification.object_id) {
+            navigate(`/post/${notification.object_id}`);
+          } else if (notification.actor_id) {
+            navigate(`/profile/${notification.actor_id}`);
+          }
           break;
         default:
           if (notification.actor_id) {

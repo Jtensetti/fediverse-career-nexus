@@ -461,10 +461,24 @@ export default function FederatedPostCard({
                     dangerouslySetInnerHTML={{ __html: displayContent }} 
                   />
                 )}
-                <PollDisplay 
-                  pollId={post.id} 
-                  content={post.content as Record<string, unknown>} 
-                />
+                {/* Wrap PollDisplay in try-catch via error boundary pattern */}
+                {(() => {
+                  try {
+                    return (
+                      <PollDisplay 
+                        pollId={post.id} 
+                        content={post.content as Record<string, unknown>} 
+                      />
+                    );
+                  } catch (e) {
+                    console.error('Poll rendering error:', e);
+                    return (
+                      <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+                        Failed to load poll
+                      </div>
+                    );
+                  }
+                })()}
               </div>
             ) : (
               <>

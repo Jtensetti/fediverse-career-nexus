@@ -35,14 +35,20 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
     return content;
   }, [content]);
 
-  const isMultipleChoice = Array.isArray(pollContent.anyOf);
-  const options = (pollContent.oneOf || pollContent.anyOf || []) as Array<{ name: string }>;
-  const endTime = pollContent.endTime as string | undefined;
+  const isMultipleChoice = Array.isArray(pollContent?.anyOf);
+  const rawOptions = pollContent?.oneOf || pollContent?.anyOf || [];
+  const options = (Array.isArray(rawOptions) ? rawOptions : []) as Array<{ name: string }>;
+  const endTime = pollContent?.endTime as string | undefined;
   const isClosed = endTime ? new Date(endTime) < new Date() : false;
+  
+  // Check if poll has valid options
+  const hasValidOptions = options && options.length > 0;
 
   useEffect(() => {
-    loadResults();
-  }, [pollId]);
+    if (hasValidOptions) {
+      loadResults();
+    }
+  }, [pollId, hasValidOptions]);
 
   const loadResults = async () => {
     const data = await getPollResults(pollId, pollContent);
@@ -52,6 +58,15 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
       setShowResults(data.userVotes.length > 0 || data.isClosed);
     }
   };
+  
+  // If no valid options, don't render the poll (after all hooks)
+  if (!hasValidOptions) {
+    return (
+      <div className={cn("p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground", className)}>
+        Poll data unavailable
+      </div>
+    );
+  }
 
   const handleVote = async () => {
     if (!user || selectedOptions.length === 0) return;
