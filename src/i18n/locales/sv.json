@@ -418,5 +418,124 @@
     "verifiedTooltip": "Denna information har verifierats",
     "pendingTooltip": "Verifiering pågår",
     "rejectedTooltip": "Denna information kunde inte verifieras"
+  },
+  "homepage": {
+    "hero": {
+      "title": "Det professionella nätverket",
+      "titleAccent": "som respekterar din frihet",
+      "description": "Anslut med yrkesverksamma över Fediverse. Äg din data. Kontrollera ditt nätverk. Inga algoritmer, ingen reklam, ingen inlåsning.",
+      "getStarted": "Kom igång gratis",
+      "exploreFeed": "Utforska flödet"
+    },
+    "trustBadges": {
+      "activityPub": "ActivityPub-kompatibel",
+      "activityPubShort": "ActivityPub",
+      "privacy": "Integritet först",
+      "privacyShort": "Integritet",
+      "openSource": "Öppen källkod",
+      "openSourceShort": "Öppen",
+      "selfHostable": "Självhostbar",
+      "selfHostableShort": "Hostbar"
+    },
+    "liveStats": {
+      "professionals": "Yrkesverksamma",
+      "posts": "Inlägg",
+      "openPositions": "Lediga tjänster",
+      "connectedInstances": "Anslutna instanser",
+      "joinGrowing": "Gå med i vår växande gemenskap",
+      "earlyAdopter": "Bli en tidig användare"
+    },
+    "liveFeed": {
+      "subtitle": "Se det i aktion",
+      "title": "Riktiga samtal, riktiga yrkesverksamma",
+      "description": "Utforska vad som händer över nätverket just nu",
+      "liveFeed": "Liveflöde",
+      "realTime": "Realtid",
+      "viewFullFeed": "Visa hela flödet"
+    },
+    "jobs": {
+      "subtitle": "Karriärmöjligheter",
+      "title": "Jobb från företag du kan lita på",
+      "description": "Transparenta roller från organisationer som respekterar dina värderingar",
+      "browseAll": "Bläddra bland alla jobb"
+    },
+    "features": {
+      "noAlgorithms": "Inga algoritmer",
+      "portableProfile": "Portabel profil",
+      "transparentHiring": "Transparent rekrytering",
+      "timelineTitle": "Din tidslinje, din kontroll",
+      "timelineDesc": "Se inlägg i kronologisk ordning från personer du faktiskt följer. Inget engagemangsbete som manipulerar din uppmärksamhet.",
+      "chronological": "Kronologisk tidslinje — ingen algoritmisk manipulation",
+      "noTracking": "Inga spårningspixlar eller invasiv analys",
+      "fastExperience": "Blixtsnabb, distraktionsfri upplevelse",
+      "exploreFeed": "Utforska flödet",
+      "profileTitle": "Bygg din professionella identitet",
+      "profileDesc": "Skapa en professionell profil som du äger för alltid. Ta med dina kontakter, inlägg och rykte om du byter instans.",
+      "verifiedCredentials": "Verifierade meriter och kompetensrekommendationer",
+      "dataExport": "Full dataexport när som helst",
+      "yourRules": "Din identitet, dina regler",
+      "createProfile": "Skapa din profil",
+      "jobsTitle": "Hitta möjligheter som betyder något",
+      "jobsDesc": "Bläddra bland jobbannonser från företag som respekterar integritet och öppen källkod. Lönetransparens, remote-first-roller och ingen rekryterarspam.",
+      "salaryRanges": "Löneintervall på varje jobbannons",
+      "directConnections": "Direkta kontakter, inga mellanhänder",
+      "crossInstance": "Jobbupptäckt över instanser",
+      "browseJobs": "Bläddra bland jobb"
+    },
+    "federation": {
+      "subtitle": "Hur federation fungerar",
+      "title": "Ett konto, obegränsade anslutningar",
+      "description": "Som e-post, men för professionellt nätverkande. Gå med på vilken instans som helst och anslut med alla över Fediverse.",
+      "step1Title": "Skapa din profil",
+      "step1Desc": "Registrera dig på en instans som delar dina värderingar",
+      "step2Title": "Välj ditt hem",
+      "step2Desc": "Välj en gemenskap som matchar dina intressen",
+      "step3Title": "Anslut överallt",
+      "step3Desc": "Följ och interagera med vem som helst över Fediverse",
+      "youAreHere": "Du är här",
+      "dataPortability": "Dataportabilitet",
+      "dataPortabilityDesc": "Exportera och migrera ditt konto när som helst",
+      "universalReach": "Universell räckvidd",
+      "universalReachDesc": "Anslut med 5 000+ federerade servrar",
+      "yourChoice": "Ditt val",
+      "yourChoiceDesc": "Välj en instans som matchar dina värderingar"
+    },
+    "faq": {
+      "title": "Vanliga frågor",
+      "description": "Allt du behöver veta om Nolto och Fediverse",
+      "q1": "Vad är Fediverse?",
+      "a1": "Fediverse är ett nätverk av sammankopplade, decentraliserade sociala plattformar som kommunicerar med öppna protokoll som ActivityPub. Tänk på det som e-post – du kan skicka meddelanden till vem som helst oavsett vilken e-postleverantör de använder. På samma sätt kan du på Fediverse följa och interagera med användare på vilken kompatibel plattform som helst.",
+      "q2": "Hur skiljer sig Nolto från LinkedIn?",
+      "a2": "Till skillnad från LinkedIn är Nolto decentraliserat, öppen källkod och sätter dig i kontroll. Det finns inga algoritmer som manipulerar ditt flöde, ingen reklam, ingen dataförsäljning, och du kan exportera din data när som helst. Din professionella identitet är portabel – om du vill flytta till en annan instans följer dina kontakter med.",
+      "q3": "Är Nolto verkligen gratis?",
+      "a3": "Ja! Nolto är helt gratis att använda. Vi finansieras av gemenskapen och är engagerade i att aldrig visa reklam eller sälja din data. Vissa instanser kan acceptera donationer för att täcka hostingkostnader, men kärnplattformen kommer alltid att vara gratis.",
+      "q4": "Vad är en instans?",
+      "a4": "En instans är en server som kör Nolto eller annan Fediverse-kompatibel programvara. Varje instans drivs oberoende och kan ha egna gemenskapsriktlinjer och fokus. Du kan gå med i vilken instans som helst och ändå ansluta med användare över alla andra instanser i Fediverse.",
+      "q5": "Kan jag migrera min data till en annan instans?",
+      "a5": "Absolut! Full dataportabilitet är en kärnfunktion i Nolto. Du kan exportera din profil, inlägg och kontakter när som helst och importera dem till en annan instans. Dina följare kommer automatiskt att omdirigeras till ditt nya konto.",
+      "q6": "Är min data säker?",
+      "a6": "Säkerhet och integritet är våra högsta prioriteringar. All data är krypterad under överföring, vi säljer aldrig din information, och du kontrollerar exakt vad som är offentligt och vad som är privat. Eftersom Nolto är öppen källkod kan vår kod granskas offentligt av vem som helst."
+    },
+    "finalCta": {
+      "badge": "Gå med andra yrkesverksamma",
+      "title": "Redo att äga din",
+      "titleAccent": "professionella identitet?",
+      "description": "Gå med i rörelsen av yrkesverksamma som valt frihet framför algoritmer, integritet framför övervakning och gemenskap framför storföretag.",
+      "createAccount": "Skapa gratis konto",
+      "exploreFirst": "Utforska först",
+      "freeForever": "Gratis för alltid",
+      "noAds": "Aldrig reklam",
+      "openSource": "Öppen källkod"
+    },
+    "stickyCta": {
+      "readyToJoin": "Redo att gå med?",
+      "createFree": "Skapa ditt gratis konto idag",
+      "getStarted": "Kom igång",
+      "dismiss": "Stäng"
+    },
+    "testimonials": {
+      "title": "Betrodd av yrkesverksamma som värdesätter frihet",
+      "description": "Gå med tusentals yrkesverksamma som bygger sina nätverk på egna villkor"
+    }
   }
 }

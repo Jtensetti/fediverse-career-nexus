@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import AppScreenshot from "./AppScreenshot";
 
 interface FeatureBlockProps {
@@ -104,45 +105,47 @@ const FeatureBlock = ({
 };
 
 const AlternatingFeatures = () => {
+  const { t } = useTranslation();
+
   const features: FeatureBlockProps[] = [
     {
-      title: "Your Timeline, Your Control",
-      subtitle: "No Algorithms",
-      description: "See posts in chronological order from people you actually follow. No engagement-bait promoted to manipulate your attention.",
+      title: t("homepage.features.timelineTitle"),
+      subtitle: t("homepage.features.noAlgorithms"),
+      description: t("homepage.features.timelineDesc"),
       benefits: [
-        { icon: <Clock className="h-4 w-4 text-secondary" />, text: "Chronological timeline — no algorithmic manipulation" },
-        { icon: <Shield className="h-4 w-4 text-secondary" />, text: "No tracking pixels or invasive analytics" },
-        { icon: <Zap className="h-4 w-4 text-secondary" />, text: "Lightning fast, distraction-free experience" },
+        { icon: <Clock className="h-4 w-4 text-secondary" />, text: t("homepage.features.chronological") },
+        { icon: <Shield className="h-4 w-4 text-secondary" />, text: t("homepage.features.noTracking") },
+        { icon: <Zap className="h-4 w-4 text-secondary" />, text: t("homepage.features.fastExperience") },
       ],
       screenshotVariant: "feed",
-      ctaText: "Explore the Feed",
+      ctaText: t("homepage.features.exploreFeed"),
       ctaLink: "/feed"
     },
     {
-      title: "Build Your Professional Identity",
-      subtitle: "Portable Profile",
-      description: "Create a professional profile that you own forever. Take your connections, posts, and reputation with you if you ever switch instances.",
+      title: t("homepage.features.profileTitle"),
+      subtitle: t("homepage.features.portableProfile"),
+      description: t("homepage.features.profileDesc"),
       benefits: [
-        { icon: <UserCheck className="h-4 w-4 text-secondary" />, text: "Verified credentials and skill endorsements" },
-        { icon: <Database className="h-4 w-4 text-secondary" />, text: "Full data export at any time" },
-        { icon: <Lock className="h-4 w-4 text-secondary" />, text: "Your identity, your rules" },
+        { icon: <UserCheck className="h-4 w-4 text-secondary" />, text: t("homepage.features.verifiedCredentials") },
+        { icon: <Database className="h-4 w-4 text-secondary" />, text: t("homepage.features.dataExport") },
+        { icon: <Lock className="h-4 w-4 text-secondary" />, text: t("homepage.features.yourRules") },
       ],
       screenshotVariant: "profile",
       reversed: true,
-      ctaText: "Create Your Profile",
+      ctaText: t("homepage.features.createProfile"),
       ctaLink: "/auth/signup"
     },
     {
-      title: "Find Opportunities That Matter",
-      subtitle: "Transparent Hiring",
-      description: "Browse job listings from companies that respect privacy and open-source values. Salary transparency, remote-first roles, and no recruiter spam.",
+      title: t("homepage.features.jobsTitle"),
+      subtitle: t("homepage.features.transparentHiring"),
+      description: t("homepage.features.jobsDesc"),
       benefits: [
-        { icon: <Briefcase className="h-4 w-4 text-secondary" />, text: "Salary ranges on every job listing" },
-        { icon: <Users className="h-4 w-4 text-secondary" />, text: "Direct connections, no middlemen" },
-        { icon: <Globe className="h-4 w-4 text-secondary" />, text: "Cross-instance job discovery" },
+        { icon: <Briefcase className="h-4 w-4 text-secondary" />, text: t("homepage.features.salaryRanges") },
+        { icon: <Users className="h-4 w-4 text-secondary" />, text: t("homepage.features.directConnections") },
+        { icon: <Globe className="h-4 w-4 text-secondary" />, text: t("homepage.features.crossInstance") },
       ],
       screenshotVariant: "jobs",
-      ctaText: "Browse Jobs",
+      ctaText: t("homepage.features.browseJobs"),
       ctaLink: "/jobs"
     },
   ];

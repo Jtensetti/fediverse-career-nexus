@@ -2,8 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Users, Shield, Globe } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const FinalCTA = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="relative py-24 md:py-32 overflow-hidden">
       {/* Background gradient */}
@@ -45,16 +48,15 @@ const FinalCTA = () => {
             className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm px-4 py-2 rounded-full mb-8"
           >
             <Sparkles className="h-4 w-4 text-accent" />
-            <span className="text-primary-foreground text-sm font-medium">Join other professionals</span>
+            <span className="text-primary-foreground text-sm font-medium">{t("homepage.finalCta.badge")}</span>
           </motion.div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display text-primary-foreground mb-6 leading-tight">
-            Ready to Own Your <span className="text-accent">Professional Identity?</span>
+            {t("homepage.finalCta.title")} <span className="text-accent">{t("homepage.finalCta.titleAccent")}</span>
           </h2>
 
           <p className="text-xl text-primary-foreground/90 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Join the movement of professionals who've chosen freedom over algorithms, privacy over surveillance, and
-            community over corporations.
+            {t("homepage.finalCta.description")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -64,7 +66,7 @@ const FinalCTA = () => {
               className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-10 py-7 text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
             >
               <Link to="/auth/signup">
-                Create Free Account
+                {t("homepage.finalCta.createAccount")}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -74,7 +76,7 @@ const FinalCTA = () => {
               variant="outline"
               className="border-2 border-primary-foreground/60 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 font-semibold px-10 py-7 text-lg hover:scale-105 transition-all"
             >
-              <Link to="/feed">Explore First</Link>
+              <Link to="/feed">{t("homepage.finalCta.exploreFirst")}</Link>
             </Button>
           </div>
 
@@ -88,7 +90,7 @@ const FinalCTA = () => {
               className="flex flex-col items-center"
             >
               <Users className="h-6 w-6 text-primary-foreground/80 mb-2" />
-              <span className="text-sm text-primary-foreground/70">Free Forever</span>
+              <span className="text-sm text-primary-foreground/70">{t("homepage.finalCta.freeForever")}</span>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -98,7 +100,7 @@ const FinalCTA = () => {
               className="flex flex-col items-center"
             >
               <Shield className="h-6 w-6 text-primary-foreground/80 mb-2" />
-              <span className="text-sm text-primary-foreground/70">No Ads Ever</span>
+              <span className="text-sm text-primary-foreground/70">{t("homepage.finalCta.noAds")}</span>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -108,7 +110,7 @@ const FinalCTA = () => {
               className="flex flex-col items-center"
             >
               <Globe className="h-6 w-6 text-primary-foreground/80 mb-2" />
-              <span className="text-sm text-primary-foreground/70">Open Source</span>
+              <span className="text-sm text-primary-foreground/70">{t("homepage.finalCta.openSource")}</span>
             </motion.div>
           </div>
         </motion.div>

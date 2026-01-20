@@ -1,34 +1,28 @@
 import { motion } from "framer-motion";
 import { User, Server, Globe, ArrowRight, ArrowLeftRight, CheckCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const FederationVisual = () => {
-  // Instance nodes for the visual
-  const instances = [
-    { name: "nolto.org", users: "10K+", color: "bg-primary", position: "center" },
-    { name: "fosstodon.org", users: "50K+", color: "bg-secondary", position: "top-left" },
-    { name: "mastodon.social", users: "1M+", color: "bg-accent", position: "top-right" },
-    { name: "hachyderm.io", users: "30K+", color: "bg-primary", position: "bottom-left" },
-    { name: "tech.lgbt", users: "15K+", color: "bg-secondary", position: "bottom-right" },
-  ];
+  const { t } = useTranslation();
 
   const steps = [
     {
       icon: User,
       number: 1,
-      title: "Create Your Profile",
-      description: "Sign up on any instance that shares your values",
+      titleKey: "step1Title",
+      descKey: "step1Desc",
     },
     {
       icon: Server,
       number: 2,
-      title: "Choose Your Home",
-      description: "Pick a community that aligns with your interests",
+      titleKey: "step2Title",
+      descKey: "step2Desc",
     },
     {
       icon: Globe,
       number: 3,
-      title: "Connect Everywhere",
-      description: "Follow and interact with anyone across the Fediverse",
+      titleKey: "step3Title",
+      descKey: "step3Desc",
     },
   ];
 
@@ -43,13 +37,13 @@ const FederationVisual = () => {
           className="text-center mb-16"
         >
           <span className="text-secondary font-semibold text-sm uppercase tracking-wide mb-2 block">
-            How Federation Works
+            {t("homepage.federation.subtitle")}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-4">
-            One Account, Unlimited Connections
+            {t("homepage.federation.title")}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Like email, but for professional networking. Join any instance and connect with everyone across the Fediverse.
+            {t("homepage.federation.description")}
           </p>
         </motion.div>
 
@@ -112,7 +106,7 @@ const FederationVisual = () => {
               <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary shadow-xl flex flex-col items-center justify-center text-primary-foreground border-4 border-background">
                 <Server className="h-8 w-8 mb-1" />
                 <span className="font-bold text-sm">nolto.org</span>
-                <span className="text-xs opacity-80">You are here</span>
+                <span className="text-xs opacity-80">{t("homepage.federation.youAreHere")}</span>
               </div>
             </motion.div>
 
@@ -164,7 +158,7 @@ const FederationVisual = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {steps.map((step, index) => (
               <motion.div
-                key={step.title}
+                key={step.titleKey}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -186,8 +180,8 @@ const FederationVisual = () => {
                     {step.number}
                   </div>
                 </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">{step.title}</h3>
-                <p className="text-muted-foreground text-sm">{step.description}</p>
+                <h3 className="text-lg font-bold text-foreground mb-2">{t(`homepage.federation.${step.titleKey}`)}</h3>
+                <p className="text-muted-foreground text-sm">{t(`homepage.federation.${step.descKey}`)}</p>
               </motion.div>
             ))}
           </div>
@@ -208,8 +202,8 @@ const FederationVisual = () => {
                   <ArrowLeftRight className="h-5 w-5 text-secondary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground mb-1">Data Portability</h4>
-                  <p className="text-sm text-muted-foreground">Export and migrate your account anytime</p>
+                  <h4 className="font-semibold text-foreground mb-1">{t("homepage.federation.dataPortability")}</h4>
+                  <p className="text-sm text-muted-foreground">{t("homepage.federation.dataPortabilityDesc")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -217,8 +211,8 @@ const FederationVisual = () => {
                   <Globe className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground mb-1">Universal Reach</h4>
-                  <p className="text-sm text-muted-foreground">Connect with 5,000+ federated servers</p>
+                  <h4 className="font-semibold text-foreground mb-1">{t("homepage.federation.universalReach")}</h4>
+                  <p className="text-sm text-muted-foreground">{t("homepage.federation.universalReachDesc")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -226,8 +220,8 @@ const FederationVisual = () => {
                   <CheckCircle className="h-5 w-5 text-accent" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground mb-1">Your Choice</h4>
-                  <p className="text-sm text-muted-foreground">Pick an instance that matches your values</p>
+                  <h4 className="font-semibold text-foreground mb-1">{t("homepage.federation.yourChoice")}</h4>
+                  <p className="text-sm text-muted-foreground">{t("homepage.federation.yourChoiceDesc")}</p>
                 </div>
               </div>
             </div>

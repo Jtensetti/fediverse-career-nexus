@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, FileText, Briefcase, Server, TrendingUp, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const LiveStats = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     users: 0,
     posts: 0,
@@ -52,10 +54,10 @@ const LiveStats = () => {
 
   // Smart stats: Only show items with positive values, or show "growing" message if all zeros
   const allStatItems = [
-    { icon: Users, value: stats.users, label: "Professionals", showWhenZero: false },
-    { icon: FileText, value: stats.posts, label: "Posts", showWhenZero: false },
-    { icon: Briefcase, value: stats.jobs, label: "Open Positions", showWhenZero: false },
-    { icon: Server, value: stats.instances, label: "Connected Instances", showWhenZero: true },
+    { icon: Users, value: stats.users, labelKey: "professionals", showWhenZero: false },
+    { icon: FileText, value: stats.posts, labelKey: "posts", showWhenZero: false },
+    { icon: Briefcase, value: stats.jobs, labelKey: "openPositions", showWhenZero: false },
+    { icon: Server, value: stats.instances, labelKey: "connectedInstances", showWhenZero: true },
   ];
 
   // Filter to only show stats with positive values (except instances which always shows)
@@ -78,17 +80,17 @@ const LiveStats = () => {
       <div className="flex flex-wrap justify-center gap-4 md:gap-8">
         <div className="flex items-center gap-2 text-primary-foreground/90">
           <Sparkles className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
-          <span className="text-sm md:text-base">Join our growing community</span>
+          <span className="text-sm md:text-base">{t("homepage.liveStats.joinGrowing")}</span>
         </div>
         <div className="flex items-center gap-2 text-primary-foreground/90">
           <TrendingUp className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
-          <span className="text-sm md:text-base">Be an early adopter</span>
+          <span className="text-sm md:text-base">{t("homepage.liveStats.earlyAdopter")}</span>
         </div>
         {stats.instances > 0 && (
           <div className="flex items-center gap-2 text-primary-foreground/90">
             <Server className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
             <span className="font-bold text-base md:text-lg">{stats.instances}</span>
-            <span className="text-primary-foreground/70 text-xs md:text-sm">Connected Instances</span>
+            <span className="text-primary-foreground/70 text-xs md:text-sm">{t("homepage.liveStats.connectedInstances")}</span>
           </div>
         )}
       </div>
@@ -97,11 +99,11 @@ const LiveStats = () => {
 
   return (
     <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-4 md:gap-10">
-      {visibleStats.map(({ icon: Icon, value, label }) => (
-        <div key={label} className="flex items-center gap-2 text-primary-foreground/90">
+      {visibleStats.map(({ icon: Icon, value, labelKey }) => (
+        <div key={labelKey} className="flex items-center gap-2 text-primary-foreground/90">
           <Icon className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
           <span className="font-bold text-base md:text-lg">{value.toLocaleString()}</span>
-          <span className="text-primary-foreground/70 text-xs md:text-sm">{label}</span>
+          <span className="text-primary-foreground/70 text-xs md:text-sm">{t(`homepage.liveStats.${labelKey}`)}</span>
         </div>
       ))}
     </div>
