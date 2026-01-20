@@ -8,7 +8,27 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Briefcase, School, Award, Star, Link as LinkIcon, Mail, Phone, MapPin, Check, Users, Loader2, RefreshCw, MessageSquare, Share2, Edit, Activity, Clock, Bookmark } from "lucide-react";
+import {
+  User,
+  Briefcase,
+  School,
+  Award,
+  Star,
+  Link as LinkIcon,
+  Mail,
+  Phone,
+  MapPin,
+  Check,
+  Users,
+  Loader2,
+  RefreshCw,
+  MessageSquare,
+  Share2,
+  Edit,
+  Activity,
+  Clock,
+  Bookmark,
+} from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
 import ProfileBanner from "@/components/profile/ProfileBanner";
@@ -50,28 +70,32 @@ const ProfilePage = () => {
   const [isRespondingToConnection, setIsRespondingToConnection] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
-  
+
   const isAuthenticated = !!user;
   const currentUserId = user?.id || null;
-  
+
   // Handle scroll for sticky header
   useEffect(() => {
     const handleScroll = () => {
       setShowStickyHeader(window.scrollY > 280);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  
+
   // Determine if we should redirect to login
   useEffect(() => {
     if (!authLoading && !usernameOrId && !isAuthenticated) {
       navigate("/auth/login", { replace: true });
     }
   }, [authLoading, usernameOrId, isAuthenticated, navigate]);
-  
+
   // Fetch profile
-  const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    error: profileError,
+  } = useQuery({
     queryKey: ["profile", usernameOrId, currentUserId],
     queryFn: async () => {
       if (!usernameOrId) {
@@ -86,16 +110,16 @@ const ProfilePage = () => {
       }
     },
     enabled: !authLoading && (!!usernameOrId || (isAuthenticated && !!currentUserId)),
-    retry: 1
+    retry: 1,
   });
-  
+
   // Fetch user connections for the connections tab
   const { data: userConnections, isLoading: connectionsLoading } = useQuery({
     queryKey: ["connections", profile?.id],
     queryFn: () => getUserConnections(),
-    enabled: !!profile?.id && profile.networkVisibilityEnabled === true
+    enabled: !!profile?.id && profile.networkVisibilityEnabled === true,
   });
-  
+
   // Determine if viewing own profile
   const viewingOwnProfile = !usernameOrId || (profile && currentUserId === profile.id);
 
@@ -108,7 +132,7 @@ const ProfilePage = () => {
     },
     enabled: !!profile?.id && !!currentUserId && !viewingOwnProfile,
   });
-  
+
   // Record profile view when visiting another user's profile
   useEffect(() => {
     if (!viewingOwnProfile && profile?.id && isAuthenticated) {
@@ -121,10 +145,7 @@ const ProfilePage = () => {
     if (!profile?.id) return;
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ header_url: url })
-        .eq('id', profile.id);
+      const { error } = await supabase.from("profiles").update({ header_url: url }).eq("id", profile.id);
 
       if (error) throw error;
 
@@ -140,14 +161,14 @@ const ProfilePage = () => {
       toast.error("Failed to update header image");
     }
   };
-  
+
   // Handle connect button
   const handleConnect = async () => {
     if (!profile?.id || !isAuthenticated) {
       toast.error(t("profile.mustBeLoggedIn", "You must be logged in to connect with others"));
       return;
     }
-    
+
     setIsConnecting(true);
     try {
       await sendConnectionRequest(profile.id);
@@ -198,16 +219,16 @@ const ProfilePage = () => {
   const handleSyncFromFediverse = async () => {
     setIsSyncing(true);
     try {
-      const response = await supabase.functions.invoke('sync-federated-profile');
-      
+      const response = await supabase.functions.invoke("sync-federated-profile");
+
       if (response.error) {
-        throw new Error(response.error.message || 'Sync failed');
+        throw new Error(response.error.message || "Sync failed");
       }
-      
+
       if (response.data?.error) {
         throw new Error(response.data.error);
       }
-      
+
       toast.success(t("profile.syncSuccess", "Profile synced successfully from your Fediverse instance!"));
       window.location.reload();
     } catch (error: any) {
@@ -217,7 +238,7 @@ const ProfilePage = () => {
       setIsSyncing(false);
     }
   };
-  
+
   // Show loading while checking auth
   if (authLoading) {
     return (
@@ -228,12 +249,14 @@ const ProfilePage = () => {
       </DashboardLayout>
     );
   }
-  
+
   if (profileError) {
     return (
       <DashboardLayout>
         <div className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-2 text-destructive">{t("profile.errorLoading", "Error Loading Profile")}</h2>
+          <h2 className="text-2xl font-bold mb-2 text-destructive">
+            {t("profile.errorLoading", "Error Loading Profile")}
+          </h2>
           <p>{t("profile.errorLoadingDesc", "There was an error loading the profile. Please try again later.")}</p>
           <Button className="mt-4" onClick={() => navigate("/")}>
             {t("profile.returnHome", "Return Home")}
@@ -242,7 +265,7 @@ const ProfilePage = () => {
       </DashboardLayout>
     );
   }
-  
+
   if (profileLoading) {
     return (
       <DashboardLayout>
@@ -258,7 +281,12 @@ const ProfilePage = () => {
       <DashboardLayout>
         <div className="p-8 text-center">
           <h2 className="text-2xl font-bold mb-2">{t("profile.notFound", "Profile Not Found")}</h2>
-          <p>{t("profile.notFoundDesc", "The profile you're looking for doesn't exist or you don't have permission to view it.")}</p>
+          <p>
+            {t(
+              "profile.notFoundDesc",
+              "The profile you're looking for doesn't exist or you don't have permission to view it.",
+            )}
+          </p>
           <Button className="mt-4" onClick={() => navigate("/")}>
             {t("profile.returnHome", "Return Home")}
           </Button>
@@ -266,11 +294,12 @@ const ProfilePage = () => {
       </DashboardLayout>
     );
   }
-  
+
   const displayUsername = usernameOrId || profile.username;
-  const connectionDegreeValue = profile.connectionDegree !== undefined ? profile.connectionDegree as ConnectionDegree : null;
-  const avatarStatus = profile.isVerified ? "verified" : (profile.authType === 'federated' ? "remote" : "none");
-  
+  const connectionDegreeValue =
+    profile.connectionDegree !== undefined ? (profile.connectionDegree as ConnectionDegree) : null;
+  const avatarStatus = profile.isVerified ? "verified" : profile.authType === "federated" ? "remote" : "none";
+
   return (
     <DashboardLayout showHeader={false}>
       {/* Sticky Mini Header */}
@@ -295,17 +324,22 @@ const ProfilePage = () => {
           </div>
           {!viewingOwnProfile && (
             <>
-              {connectionRelationship?.status === 'accepted' ? (
+              {connectionRelationship?.status === "accepted" ? (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Check size={12} /> {t("profile.connected", "Connected")}
                 </Badge>
-              ) : connectionRelationship?.status === 'pending_outgoing' ? (
+              ) : connectionRelationship?.status === "pending_outgoing" ? (
                 <Button size="sm" variant="secondary" disabled>
                   <Clock className="h-4 w-4 mr-1" /> {t("profile.pending", "Pending")}
                 </Button>
-              ) : connectionRelationship?.status === 'pending_incoming' ? (
+              ) : connectionRelationship?.status === "pending_incoming" ? (
                 <div className="flex gap-1">
-                  <Button size="sm" onClick={handleAcceptConnection} disabled={isRespondingToConnection} loading={isRespondingToConnection}>
+                  <Button
+                    size="sm"
+                    onClick={handleAcceptConnection}
+                    disabled={isRespondingToConnection}
+                    loading={isRespondingToConnection}
+                  >
                     {t("profile.accept", "Accept")}
                   </Button>
                 </div>
@@ -327,7 +361,7 @@ const ProfilePage = () => {
           isOwnProfile={viewingOwnProfile}
           onHeaderChange={handleHeaderChange}
         />
-        
+
         {/* Profile Info - overlapping the banner */}
         <div className="relative px-4 md:px-6 pb-6">
           {/* Avatar */}
@@ -348,13 +382,13 @@ const ProfilePage = () => {
                   ringClassName={profile.isVerified ? "ring-primary" : "ring-background"}
                 />
               </motion.div>
-              
-              {/* Stats next to avatar */}
+
+              {/* Stats next to avatar - HIDDEN */}
               <div className="hidden md:block pb-2">
-                <ProfileStats userId={profile.id} username={profile.username} compact />
+                {/* <ProfileStats userId={profile.id} username={profile.username} compact /> */}
               </div>
             </div>
-            
+
             {/* Action buttons - positioned on the right on desktop */}
             <div className="flex-1 flex flex-wrap gap-2 md:justify-end md:pb-2">
               {viewingOwnProfile ? (
@@ -377,9 +411,9 @@ const ProfilePage = () => {
                       {t("profile.connections", "Connections")}
                     </Link>
                   </Button>
-                  {profile.authType === 'federated' && profile.homeInstance && (
-                    <Button 
-                      variant="outline" 
+                  {profile.authType === "federated" && profile.homeInstance && (
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={handleSyncFromFediverse}
                       disabled={isSyncing}
@@ -391,46 +425,38 @@ const ProfilePage = () => {
                   )}
                 </>
               ) : (
-              <>
-                  {connectionRelationship?.status === 'accepted' ? (
+                <>
+                  {connectionRelationship?.status === "accepted" ? (
                     <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
                       <Check size={14} /> {t("profile.connected", "Connected")}
                     </Badge>
-                  ) : connectionRelationship?.status === 'pending_outgoing' ? (
+                  ) : connectionRelationship?.status === "pending_outgoing" ? (
                     <Button variant="secondary" disabled>
                       <Clock className="h-4 w-4 mr-2" /> {t("profile.pending", "Pending")}
                     </Button>
-                  ) : connectionRelationship?.status === 'pending_incoming' ? (
+                  ) : connectionRelationship?.status === "pending_incoming" ? (
                     <>
-                      <Button 
+                      <Button
                         onClick={handleAcceptConnection}
                         disabled={isRespondingToConnection}
                         loading={isRespondingToConnection}
                       >
                         {t("profile.accept", "Accept")}
                       </Button>
-                      <Button 
-                        variant="outline"
-                        onClick={handleDeclineConnection}
-                        disabled={isRespondingToConnection}
-                      >
+                      <Button variant="outline" onClick={handleDeclineConnection} disabled={isRespondingToConnection}>
                         {t("profile.decline", "Decline")}
                       </Button>
                     </>
                   ) : (
-                    <Button 
-                      onClick={handleConnect}
-                      disabled={isConnecting}
-                      loading={isConnecting}
-                    >
+                    <Button onClick={handleConnect} disabled={isConnecting} loading={isConnecting}>
                       {t("profile.connect", "Connect")}
                     </Button>
                   )}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     onClick={() => {
-                      if (connectionRelationship?.status === 'accepted') {
+                      if (connectionRelationship?.status === "accepted") {
                         navigate(`/messages/${profile.id}`);
                       } else {
                         toast.info(t("profile.connectFirst", "Connect with this person first to send messages"));
@@ -447,26 +473,27 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-          
+
           {/* Profile Details */}
           <div className="mt-4">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <h1 className="text-2xl font-bold">{profile.displayName}</h1>
               {profile.isVerified && (
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1">
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1"
+                >
                   <Check size={12} /> {t("profile.verified", "Verified")}
                 </Badge>
               )}
-              {profile.authType === 'federated' && profile.homeInstance && (
+              {profile.authType === "federated" && profile.homeInstance && (
                 <FediverseBadge homeInstance={profile.homeInstance} />
               )}
-              {connectionDegreeValue && (
-                <ConnectionBadge degree={connectionDegreeValue} />
-              )}
+              {connectionDegreeValue && <ConnectionBadge degree={connectionDegreeValue} />}
             </div>
-            
+
             <h2 className="text-lg text-muted-foreground mb-3">{profile.headline}</h2>
-            
+
             <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-4 gap-y-2 mb-4">
               {profile.contact?.location && (
                 <div className="flex items-center gap-1">
@@ -479,35 +506,68 @@ const ProfilePage = () => {
                 <span className="font-medium">@{profile.username}</span>
               </div>
             </div>
-            
-            {/* Mobile stats - shown below on small screens */}
+
+            {/* Mobile stats - HIDDEN */}
             <div className="md:hidden mb-4">
-              <ProfileStats userId={profile.id} username={profile.username} />
+              {/* <ProfileStats userId={profile.id} username={profile.username} /> */}
             </div>
-            
-            {profile.bio && (
-              <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>
-            )}
+
+            {profile.bio && <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>}
           </div>
         </div>
       </div>
-      
+
       {/* Profile Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Tabs defaultValue="experience" className="mb-6">
             <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
               <TabsList className="mb-4 flex w-max md:w-auto md:flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-lg">
-                <TabsTrigger value="experience" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.experience", "Experience")}</TabsTrigger>
-                <TabsTrigger value="education" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.education", "Education")}</TabsTrigger>
-                <TabsTrigger value="skills" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.skills", "Skills")}</TabsTrigger>
-                <TabsTrigger value="articles" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.articles", "Articles")}</TabsTrigger>
-                <TabsTrigger value="posts" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.posts", "Posts")}</TabsTrigger>
-                <TabsTrigger value="activity" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.activity", "Activity")}</TabsTrigger>
-                <TabsTrigger value="connections" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap">{t("profile.connections", "Connections")}</TabsTrigger>
+                <TabsTrigger
+                  value="experience"
+                  className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {t("profile.experience", "Experience")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="education"
+                  className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {t("profile.education", "Education")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="skills"
+                  className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {t("profile.skills", "Skills")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="articles"
+                  className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {t("profile.articles", "Articles")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="posts"
+                  className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {t("profile.posts", "Posts")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="activity"
+                  className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {t("profile.activity", "Activity")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="connections"
+                  className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
+                >
+                  {t("profile.connections", "Connections")}
+                </TabsTrigger>
               </TabsList>
             </div>
-            
+
             <TabsContent value="experience">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -515,12 +575,12 @@ const ProfilePage = () => {
                     <Briefcase size={20} className="text-primary" />
                     {t("profile.experience", "Experience")}
                   </h3>
-                  
+
                   {profile.experience && profile.experience.length > 0 ? (
                     <div className="space-y-6">
                       {profile.experience.map((exp) => (
-                        <motion.div 
-                          key={exp.id} 
+                        <motion.div
+                          key={exp.id}
                           className="pb-6"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -528,16 +588,20 @@ const ProfilePage = () => {
                           <div className="flex justify-between">
                             <h4 className="font-medium">{exp.title}</h4>
                             {exp.isVerified && (
-                              <Badge variant="outline" className="bg-accent text-accent-foreground flex items-center gap-1">
+                              <Badge
+                                variant="outline"
+                                className="bg-accent text-accent-foreground flex items-center gap-1"
+                              >
                                 <Check size={14} /> {t("verification.verified", "Verified")}
                               </Badge>
                             )}
                           </div>
                           <p className="text-primary font-medium">{exp.company}</p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(exp.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} - 
-                            {exp.isCurrentRole ? ` ${t("profileEdit.present", "Present")}` : 
-                            ` ${new Date(exp.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}`}
+                            {new Date(exp.startDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })} -
+                            {exp.isCurrentRole
+                              ? ` ${t("profileEdit.present", "Present")}`
+                              : ` ${new Date(exp.endDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })}`}
                           </p>
                           {exp.location && <p className="text-sm text-muted-foreground">{exp.location}</p>}
                           {exp.description && <p className="mt-2 text-muted-foreground">{exp.description}</p>}
@@ -559,7 +623,7 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="education">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -567,12 +631,12 @@ const ProfilePage = () => {
                     <School size={20} className="text-primary" />
                     {t("profile.education", "Education")}
                   </h3>
-                  
+
                   {profile.education && profile.education.length > 0 ? (
                     <div className="space-y-6">
                       {profile.education.map((edu) => (
-                        <motion.div 
-                          key={edu.id} 
+                        <motion.div
+                          key={edu.id}
                           className="pb-6"
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -580,13 +644,21 @@ const ProfilePage = () => {
                           <div className="flex justify-between">
                             <h4 className="font-medium">{edu.institution}</h4>
                             {edu.isVerified && (
-                              <Badge variant="outline" className="bg-accent text-accent-foreground flex items-center gap-1">
+                              <Badge
+                                variant="outline"
+                                className="bg-accent text-accent-foreground flex items-center gap-1"
+                              >
                                 <Check size={14} /> {t("verification.verified", "Verified")}
                               </Badge>
                             )}
                           </div>
-                          <p className="text-primary font-medium">{edu.degree}{edu.field ? `, ${edu.field}` : ''}</p>
-                          <p className="text-sm text-muted-foreground">{edu.startYear} - {edu.endYear || t("profileEdit.present", "Present")}</p>
+                          <p className="text-primary font-medium">
+                            {edu.degree}
+                            {edu.field ? `, ${edu.field}` : ""}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {edu.startYear} - {edu.endYear || t("profileEdit.present", "Present")}
+                          </p>
                           <Separator className="mt-6" />
                         </motion.div>
                       ))}
@@ -605,7 +677,7 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="skills">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -614,16 +686,13 @@ const ProfilePage = () => {
                     {t("profile.skills", "Skills")} & {t("skills.endorsements", "Endorsements")}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-6">
-                    {viewingOwnProfile 
+                    {viewingOwnProfile
                       ? t("skills.addSkillsDesc", "Add skills to let your connections endorse your expertise")
                       : t("skills.skillsAppearDesc", "Skills will appear here once they're added")}
                   </p>
-                  
-                  <SkillEndorsements 
-                    userId={profile.id} 
-                    isOwnProfile={viewingOwnProfile} 
-                  />
-                  
+
+                  <SkillEndorsements userId={profile.id} isOwnProfile={viewingOwnProfile} />
+
                   {viewingOwnProfile && (!profile.skills || profile.skills.length === 0) && (
                     <div className="mt-4 text-center">
                       <Button variant="outline" asChild>
@@ -634,7 +703,7 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="articles">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -642,12 +711,12 @@ const ProfilePage = () => {
                     <BookText size={20} className="text-primary" />
                     {t("profile.articles", "Articles")}
                   </h3>
-                  
+
                   <UserArticlesList userId={profile.id} isOwnProfile={viewingOwnProfile} />
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="posts">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -655,12 +724,12 @@ const ProfilePage = () => {
                     <MessageSquare size={20} className="text-primary" />
                     Posts
                   </h3>
-                  
+
                   <UserPostsList userId={profile.id} />
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="activity">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -668,12 +737,12 @@ const ProfilePage = () => {
                     <Activity size={20} className="text-primary" />
                     Activity
                   </h3>
-                  
+
                   <UserActivityList userId={profile.id} />
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="connections">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -681,7 +750,7 @@ const ProfilePage = () => {
                     <Users size={20} className="text-primary" />
                     Connections
                   </h3>
-                  
+
                   {profile.networkVisibilityEnabled === false ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
@@ -697,17 +766,17 @@ const ProfilePage = () => {
                         <Link
                           key={connection.id}
                           to={`/profile/${connection.username}`}
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent transition-colors"
                         >
                           <AvatarWithStatus
                             src={connection.avatarUrl}
                             alt={connection.displayName}
                             fallback={connection.displayName?.substring(0, 2)}
-                            size="md"
+                            size="sm"
                           />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{connection.displayName}</p>
-                            <p className="text-sm text-muted-foreground truncate">{connection.headline}</p>
+                          <div className="overflow-hidden">
+                            <p className="font-medium text-sm truncate">{connection.displayName}</p>
+                            <p className="text-xs text-muted-foreground truncate">@{connection.username}</p>
                           </div>
                         </Link>
                       ))}
@@ -718,49 +787,17 @@ const ProfilePage = () => {
                       <p>No connections yet</p>
                     </div>
                   )}
-                  
-                  {userConnections && userConnections.length > 6 && (
-                    <div className="text-center mt-4">
-                      <Button variant="outline" asChild>
-                        <Link to="/connections">View All Connections</Link>
-                      </Button>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
-        
-        {/* Sidebar */}
+
         <div className="space-y-6">
-          {viewingOwnProfile && (
-            <ProfileViewsWidget userId={profile.id} />
-          )}
-          
-          {!viewingOwnProfile && (
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-sm font-semibold mb-3">Follow for Articles</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Get notified when {profile.displayName?.split(' ')[0] || 'this user'} publishes new articles
-                </p>
-                <FollowAuthorButton 
-                  authorId={profile.id} 
-                  authorName={profile.displayName || undefined}
-                  className="w-full"
-                />
-              </CardContent>
-            </Card>
-          )}
-          
-          
-          
-          {profile.authType === 'federated' && profile.username && (
-            <FederationInfo
-              username={profile.username}
-              isOwnProfile={viewingOwnProfile}
-            />
+          <ProfileViewsWidget userId={profile.id} />
+
+          {profile.authType === "federated" && (
+            <FederationInfo homeInstance={profile.homeInstance} fediverseHandle={profile.fediverseHandle} />
           )}
         </div>
       </div>
