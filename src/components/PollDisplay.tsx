@@ -91,13 +91,30 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
             const voteCount = results?.options.find(o => o.index === index)?.voteCount || 0;
             const percentage = getPercentage(voteCount);
             const isUserVote = results?.userVotes.includes(index);
+            
+            // Fun themed colors that work in both light and dark modes
+            const barColors = [
+              "bg-primary",
+              "bg-success", 
+              "bg-info",
+              "bg-warning",
+            ];
+            const barColor = barColors[index % barColors.length];
 
             return (
-              <div key={index} className="relative">
-                <div className="relative z-10 flex items-center justify-between py-2 px-3 rounded-lg border border-border bg-background/50">
+              <div key={index} className="relative overflow-hidden rounded-lg">
+                {/* Colored background bar */}
+                <div 
+                  className={cn(
+                    "absolute inset-0 h-full transition-all duration-500 ease-out opacity-20 dark:opacity-30",
+                    barColor
+                  )}
+                  style={{ width: `${percentage}%` }}
+                />
+                <div className="relative z-10 flex items-center justify-between py-2 px-3 border border-border bg-background/50 rounded-lg">
                   <div className="flex items-center gap-2">
                     {isUserVote && (
-                      <Check className="h-4 w-4 text-primary shrink-0" />
+                      <Check className={cn("h-4 w-4 shrink-0", barColor.replace("bg-", "text-"))} />
                     )}
                     <span className={cn(
                       "text-sm",
@@ -110,10 +127,6 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
                     {percentage}%
                   </span>
                 </div>
-                <Progress 
-                  value={percentage} 
-                  className="absolute inset-0 h-full rounded-lg opacity-20"
-                />
               </div>
             );
           })
