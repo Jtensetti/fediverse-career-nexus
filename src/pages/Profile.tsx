@@ -766,17 +766,17 @@ const ProfilePage = () => {
                         <Link
                           key={connection.id}
                           to={`/profile/${connection.username}`}
-                          className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
                         >
                           <AvatarWithStatus
                             src={connection.avatarUrl}
                             alt={connection.displayName}
                             fallback={connection.displayName?.substring(0, 2)}
-                            size="sm"
+                            size="md"
                           />
-                          <div className="overflow-hidden">
-                            <p className="font-medium text-sm truncate">{connection.displayName}</p>
-                            <p className="text-xs text-muted-foreground truncate">@{connection.username}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{connection.displayName}</p>
+                            <p className="text-sm text-muted-foreground truncate">{connection.headline}</p>
                           </div>
                         </Link>
                       ))}
@@ -787,17 +787,42 @@ const ProfilePage = () => {
                       <p>No connections yet</p>
                     </div>
                   )}
+
+                  {userConnections && userConnections.length > 6 && (
+                    <div className="text-center mt-4">
+                      <Button variant="outline" asChild>
+                        <Link to="/connections">View All Connections</Link>
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
 
+        {/* Sidebar */}
         <div className="space-y-6">
-          <ProfileViewsWidget userId={profile.id} />
+          {viewingOwnProfile && <ProfileViewsWidget userId={profile.id} />}
 
-          {profile.authType === "federated" && (
-            <FederationInfo homeInstance={profile.homeInstance} fediverseHandle={profile.fediverseHandle} />
+          {!viewingOwnProfile && (
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-sm font-semibold mb-3">Follow for Articles</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Get notified when {profile.displayName?.split(" ")[0] || "this user"} publishes new articles
+                </p>
+                <FollowAuthorButton
+                  authorId={profile.id}
+                  authorName={profile.displayName || undefined}
+                  className="w-full"
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {profile.authType === "federated" && profile.username && (
+            <FederationInfo username={profile.username} isOwnProfile={viewingOwnProfile} />
           )}
         </div>
       </div>
