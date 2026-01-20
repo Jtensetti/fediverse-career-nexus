@@ -242,7 +242,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
                 </span>
               </div>
               <p className="text-sm text-foreground/90 line-clamp-2">
-                {comment.content}
+                {typeof comment.content === 'string' ? comment.content : 'Comment unavailable'}
               </p>
             </div>
             
