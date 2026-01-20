@@ -1603,6 +1603,33 @@ export type Database = {
           },
         ]
       }
+      password_reset_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          used: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          used?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
       poll_votes: {
         Row: {
           created_at: string | null
@@ -2915,6 +2942,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_actor_cache: { Args: never; Returns: undefined }
+      cleanup_expired_reset_codes: { Args: never; Returns: undefined }
       create_federation_alert: {
         Args: {
           p_message: string
