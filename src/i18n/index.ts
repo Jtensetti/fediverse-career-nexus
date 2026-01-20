@@ -8,8 +8,9 @@ import enTranslation from './locales/en.json';
 import svTranslation from './locales/sv.json';
 
 // Configure i18next
+// Note: Language detection disabled - using English for all users
+// Translation files are preserved for future use
 i18n
-  .use(LanguageDetector) // Automatically detect language
   .use(initReactI18next) // Passes i18n down to react-i18next
   .init({
     resources: {
@@ -20,13 +21,10 @@ i18n
         translation: svTranslation
       }
     },
+    lng: 'en', // Force English for all users
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false // React already escapes values
-    },
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage']
     }
   });
 
