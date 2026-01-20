@@ -71,13 +71,18 @@ export async function toggleReaction(
   targetId: string,
   reaction: ReactionKey
 ): Promise<ToggleReactionResult> {
+  console.log('🎯 toggleReaction called:', { targetType, targetId, reaction });
+  
   try {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      console.warn('⚠️ toggleReaction: User not authenticated');
       toast.error("Please sign in to react");
       return { success: false, action: 'error', reaction };
     }
+    
+    console.log('👤 toggleReaction: User authenticated:', user.id);
 
     // Check for existing reaction
     const { data: existing, error: fetchError } = await supabase
@@ -103,11 +108,12 @@ export async function toggleReaction(
           .eq('id', existing.id);
 
         if (deleteError) {
-          console.error('Error removing reaction:', deleteError);
+          console.error('❌ toggleReaction: Error removing reaction:', deleteError);
           toast.error("Failed to remove reaction");
           return { success: false, action: 'error', reaction };
         }
 
+        console.log('✅ toggleReaction: Reaction removed successfully');
         return { success: true, action: 'removed', reaction };
       } else {
         // Different reaction - switch it
@@ -117,11 +123,12 @@ export async function toggleReaction(
           .eq('id', existing.id);
 
         if (updateError) {
-          console.error('Error switching reaction:', updateError);
+          console.error('❌ toggleReaction: Error switching reaction:', updateError);
           toast.error("Failed to update reaction");
           return { success: false, action: 'error', reaction };
         }
 
+        console.log('✅ toggleReaction: Reaction switched successfully');
         return { success: true, action: 'switched', reaction };
       }
     } else {
@@ -136,10 +143,12 @@ export async function toggleReaction(
         });
 
       if (insertError) {
-        console.error('Error adding reaction:', insertError);
+        console.error('❌ toggleReaction: Error adding reaction:', insertError);
         toast.error("Failed to add reaction");
         return { success: false, action: 'error', reaction };
       }
+      
+      console.log('✅ toggleReaction: Reaction added successfully');
 
       // Create notification for the content owner
       try {
