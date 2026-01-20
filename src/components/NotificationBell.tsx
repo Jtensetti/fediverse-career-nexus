@@ -174,6 +174,42 @@ export function NotificationBell() {
   const getNotificationText = (notification: Notification) => {
     const actorName = notification.actor?.fullname || notification.actor?.username || 'Someone';
     
+    // For like notifications, try to extract reaction type and target type
+    if (notification.type === 'like') {
+      const targetType = notification.object_type === 'reply' ? 'comment' : 'post';
+      
+      // Try to parse reaction from content
+      let reactionText = 'liked';
+      try {
+        const contentData = notification.content ? JSON.parse(notification.content) : {};
+        const reaction = contentData.reaction;
+        
+        switch (reaction) {
+          case 'love':
+            reactionText = 'loved';
+            break;
+          case 'celebrate':
+            reactionText = 'celebrated';
+            break;
+          case 'support':
+            reactionText = 'supported';
+            break;
+          case 'insightful':
+            reactionText = 'found insightful';
+            break;
+          case 'empathy':
+            reactionText = 'empathized with';
+            break;
+          default:
+            reactionText = 'liked';
+        }
+      } catch {
+        // Default to "liked" if parsing fails
+      }
+      
+      return `${actorName} ${reactionText} your ${targetType}`;
+    }
+    
     switch (notification.type) {
       case 'connection_request':
         return `${actorName} sent you a connection request`;
@@ -185,8 +221,6 @@ export function NotificationBell() {
         return `${actorName} sent you a message`;
       case 'follow':
         return `${actorName} started following you`;
-      case 'like':
-        return `${actorName} liked your post`;
       case 'boost':
         return `${actorName} boosted your post`;
       case 'reply':
