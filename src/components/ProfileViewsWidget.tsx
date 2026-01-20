@@ -1,5 +1,5 @@
-
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +10,7 @@ interface ProfileViewsWidgetProps {
 }
 
 export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) {
+  const { t } = useTranslation();
   const [viewsData, setViewsData] = useState<{
     totalViews: number;
     recentViews: number;
@@ -82,10 +83,10 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Eye size={20} className="text-primary" />
-            Profile Views
+            {t("profileViews.title")}
           </CardTitle>
           <CardDescription>
-            Track who's viewing your profile
+            {t("profileViews.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -107,19 +108,19 @@ export default function ProfileViewsWidget({ userId }: ProfileViewsWidgetProps) 
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Eye size={20} className="text-primary" />
-          Profile Views
+          {t("profileViews.title")}
         </CardTitle>
         <CardDescription>
-          Track who's viewing your profile
+          {t("profileViews.description")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <p className="text-sm text-muted-foreground">Total Views</p>
+          <p className="text-sm text-muted-foreground">{t("profileViews.totalViews")}</p>
           <p className="text-2xl font-bold">{viewsData?.totalViews || 0}</p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">Views This Week</p>
+          <p className="text-sm text-muted-foreground">{t("profileViews.viewsThisWeek")}</p>
           <p className="text-2xl font-bold">{viewsData?.recentViews || 0}</p>
         </div>
       </CardContent>

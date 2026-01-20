@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,14 +17,15 @@ import {
 
 interface SuggestedAction {
   id: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   icon: React.ElementType;
   link: string;
   completed: boolean;
 }
 
 const SuggestedActions = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [actions, setActions] = useState<SuggestedAction[]>([]);
   const [dismissedActions, setDismissedActions] = useState<string[]>([]);
@@ -74,40 +76,40 @@ const SuggestedActions = () => {
         const suggestedActions: SuggestedAction[] = [
           {
             id: "first-post",
-            title: "Share your first post",
-            description: "Introduce yourself to the network",
+            titleKey: "suggestions.shareFirstPost",
+            descriptionKey: "suggestions.introduceYourself",
             icon: MessageSquare,
             link: "/feed",
             completed: (posts?.length || 0) > 0,
           },
           {
             id: "write-article",
-            title: "Write an article",
-            description: "Share your expertise with the community",
+            titleKey: "suggestions.writeArticle",
+            descriptionKey: "suggestions.shareExpertise",
             icon: FileText,
             link: "/articles/create",
             completed: (articles?.length || 0) > 0,
           },
           {
             id: "connect",
-            title: "Connect with peers",
-            description: "Build your professional network",
+            titleKey: "suggestions.connectWithPeers",
+            descriptionKey: "suggestions.buildNetwork",
             icon: Users,
             link: "/connections",
             completed: (connections?.length || 0) > 0,
           },
           {
             id: "post-job",
-            title: "Post a job",
-            description: "Reach professionals across the Fediverse",
+            titleKey: "suggestions.postJob",
+            descriptionKey: "suggestions.reachProfessionals",
             icon: Briefcase,
             link: "/jobs",
             completed: (jobPosts?.length || 0) > 0,
           },
           {
             id: "create-event",
-            title: "Create an event",
-            description: "Host meetups and networking events",
+            titleKey: "suggestions.createEvent",
+            descriptionKey: "suggestions.hostMeetups",
             icon: Calendar,
             link: "/events/create",
             completed: (events?.length || 0) > 0,
@@ -158,7 +160,7 @@ const SuggestedActions = () => {
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">Suggested for You</CardTitle>
+          <CardTitle className="text-lg">{t("suggestions.title")}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
@@ -172,8 +174,8 @@ const SuggestedActions = () => {
                 <action.icon className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-grow min-w-0">
-                <p className="font-medium text-foreground text-sm">{action.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{action.description}</p>
+                <p className="font-medium text-foreground text-sm">{t(action.titleKey)}</p>
+                <p className="text-xs text-muted-foreground truncate">{t(action.descriptionKey)}</p>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Button 
@@ -185,7 +187,7 @@ const SuggestedActions = () => {
                   <X className="h-4 w-4" />
                 </Button>
                 <Button asChild size="sm" variant="secondary">
-                  <Link to={action.link}>Do it</Link>
+                  <Link to={action.link}>{t("suggestions.doIt")}</Link>
                 </Button>
               </div>
             </div>

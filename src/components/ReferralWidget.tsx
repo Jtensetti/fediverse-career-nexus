@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const PUBLISHED_URL = "https://fediverse-career.lovable.app";
 
 export default function ReferralWidget() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0, points: 0 });
@@ -45,10 +47,10 @@ export default function ReferralWidget() {
     try {
       await navigator.clipboard.writeText(referralLink);
       setCopied(true);
-      toast.success("Referral link copied!");
+      toast.success(t("referral.copied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy link");
+      toast.error(t("referral.copyFailed"));
     }
   };
 
@@ -57,8 +59,8 @@ export default function ReferralWidget() {
 
     try {
       await navigator.share({
-        title: "Join me on Nolto",
-        text: "Join the federated professional network that respects your freedom!",
+        title: t("referral.shareTitle"),
+        text: t("referral.shareText"),
         url: referralLink,
       });
     } catch {
@@ -73,7 +75,7 @@ export default function ReferralWidget() {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Users className="h-5 w-5 text-primary" />
-          Invite Colleagues
+          {t("referral.title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -91,11 +93,11 @@ export default function ReferralWidget() {
                 </div>
                 <div>
                   <div className="font-semibold text-foreground">
-                    {stats.completed} {stats.completed === 1 ? 'colleague' : 'colleagues'} joined
+                    {stats.completed} {stats.completed === 1 ? t("referral.colleagueJoined") : t("referral.colleaguesJoined")}
                   </div>
                   {stats.total > 0 && (
                     <div className="text-xs text-muted-foreground">
-                      {stats.total} total referrals
+                      {stats.total} {t("referral.totalReferrals")}
                     </div>
                   )}
                 </div>
@@ -105,7 +107,7 @@ export default function ReferralWidget() {
             {/* Referral Link */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Your invite link
+                {t("referral.inviteLink")}
               </label>
               <div className="flex gap-2">
                 <Input
@@ -117,7 +119,7 @@ export default function ReferralWidget() {
                   variant="outline"
                   size="icon"
                   onClick={handleCopy}
-                  aria-label="Copy invite link"
+                  aria-label={t("referral.inviteLink")}
                 >
                   {copied ? (
                     <Check className="h-4 w-4 text-primary" />
@@ -130,7 +132,7 @@ export default function ReferralWidget() {
                     variant="outline"
                     size="icon"
                     onClick={handleShare}
-                    aria-label="Share invite link"
+                    aria-label={t("referral.shareTitle")}
                   >
                     <Share2 className="h-4 w-4" />
                   </Button>
@@ -139,7 +141,7 @@ export default function ReferralWidget() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Share this link to grow your professional network.
+              {t("referral.shareMessage")}
             </p>
           </>
         )}
