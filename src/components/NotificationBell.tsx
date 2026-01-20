@@ -85,6 +85,10 @@ export function NotificationBell() {
             navigate(`/profile/${notification.actor_id}`);
           }
           break;
+        case 'post':
+        case 'reply':
+          navigate(`/post/${notification.object_id}`);
+          break;
         default:
           if (notification.actor_id) {
             navigate(`/profile/${notification.actor_id}`);

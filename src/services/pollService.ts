@@ -160,9 +160,22 @@ export const getPollResults = async (
 
 // Check if content is a poll
 export const isPoll = (content: Record<string, unknown>): boolean => {
-  return content?.type === "Question" && (
+  // Direct Question type
+  if (content?.type === "Question" && (
     Array.isArray(content.oneOf) || Array.isArray(content.anyOf)
-  );
+  )) {
+    return true;
+  }
+  
+  // Create activity wrapping a Question
+  const obj = content?.object as Record<string, unknown> | undefined;
+  if (content?.type === "Create" && obj?.type === "Question" && (
+    Array.isArray(obj.oneOf) || Array.isArray(obj.anyOf)
+  )) {
+    return true;
+  }
+  
+  return false;
 };
 
 // Get poll duration options
