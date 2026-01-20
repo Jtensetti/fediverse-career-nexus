@@ -35,7 +35,7 @@ export default function ConfirmStep({ result, onClose }: ConfirmStepProps) {
       <div className="text-center">
         {success ? (
           <>
-            <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <CheckCircle2 className="h-16 w-16 text-secondary mx-auto mb-4" />
             <h3 className="text-lg font-semibold">Import Successful!</h3>
             <p className="text-muted-foreground mt-1">
               {getTotalImported()} items have been imported to your profile
@@ -43,7 +43,7 @@ export default function ConfirmStep({ result, onClose }: ConfirmStepProps) {
           </>
         ) : (
           <>
-            <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+            <AlertCircle className="h-16 w-16 text-accent mx-auto mb-4" />
             <h3 className="text-lg font-semibold">Import Completed with Issues</h3>
             <p className="text-muted-foreground mt-1">
               Some items were imported, but there were some errors
