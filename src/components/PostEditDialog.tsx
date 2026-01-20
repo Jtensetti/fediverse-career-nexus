@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 import { toast } from "sonner";
 import { updatePost } from "@/services/postService";
+import { isPoll } from "@/services/pollService";
 import type { FederatedPost } from "@/services/federationService";
 
 interface PostEditDialogProps {
@@ -16,6 +19,11 @@ interface PostEditDialogProps {
 export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: PostEditDialogProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const postIsPoll = useMemo(() => {
+    if (!post?.content) return false;
+    return isPoll(post.content);
+  }, [post]);
 
   useEffect(() => {
     if (post) {
@@ -40,6 +48,7 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
     
     try {
       await updatePost(post.id, { content });
+      toast.success("Post updated");
       onUpdated();
       onOpenChange(false);
     } catch (err: any) {
@@ -53,16 +62,27 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Post</DialogTitle>
+          <DialogTitle>{postIsPoll ? "Edit Poll" : "Edit Post"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What's on your mind?"
-            className="min-h-[200px] resize-none"
+            placeholder={postIsPoll ? "Edit your poll question..." : "What's on your mind?"}
+            className="min-h-[150px] resize-none"
             disabled={loading}
           />
+          
+          {postIsPoll && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Poll options cannot be edited after creation to preserve vote integrity. 
+                You can only edit the question text above.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancel

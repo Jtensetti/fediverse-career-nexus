@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Bookmark } from "lucide-react";
+import { MessageSquare, Bookmark, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import InlineReplyComposer from "./InlineReplyComposer";
+import CommentEditDialog from "./CommentEditDialog";
 import { EnhancedCommentReactions } from "./EnhancedCommentReactions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toggleSaveItem, isItemSaved } from "@/services/savedItemsService";
+import { deletePostReply } from "@/services/postReplyService";
 import type { PostReply } from "@/services/postReplyService";
 
 interface PostReplyThreadProps {
@@ -34,7 +38,12 @@ export default function PostReplyThread({
 }: PostReplyThreadProps) {
   const [showReplyComposer, setShowReplyComposer] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useAuth();
+
+  const isOwnComment = user?.id === reply.user_id;
 
   useEffect(() => {
     const loadSavedState = async () => {
@@ -89,13 +98,57 @@ export default function PostReplyThread({
     }
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deletePostReply(reply.id);
+      toast.success("Comment deleted");
+      onReplyCreated(reply.id); // Trigger refresh
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete comment");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   return (
-    <div 
-      className={cn(
-        "relative",
-        depth > 0 && "ml-6 pl-4 border-l-2 border-border/50"
-      )}
-    >
+    <>
+      <CommentEditDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        commentId={reply.id}
+        initialContent={reply.content}
+        onUpdated={() => onReplyCreated(reply.id)}
+      />
+      
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete comment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your comment.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete} 
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div 
+        className={cn(
+          "relative",
+          depth > 0 && "ml-6 pl-4 border-l-2 border-border/50"
+        )}
+      >
       <Card className="border-0 shadow-none bg-muted/30">
         <CardContent className="p-4">
           {/* Author Info */}
@@ -175,6 +228,29 @@ export default function PostReplyThread({
                     Reply
                   </Button>
                 )}
+
+                {isOwnComment && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-7 px-2">
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
           </div>
@@ -210,6 +286,7 @@ export default function PostReplyThread({
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
