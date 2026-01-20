@@ -31,6 +31,7 @@ import UserPostsList from "@/components/UserPostsList";
 import UserActivityList from "@/components/UserActivityList";
 import UserArticlesList from "@/components/UserArticlesList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
+import { ProfileStats } from "@/components/profile/ProfileStats";
 
 import FollowAuthorButton from "@/components/FollowAuthorButton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -480,6 +481,9 @@ const ProfilePage = () => {
             {profile.bio && (
               <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>
             )}
+            
+            {/* Stats Bar */}
+            <ProfileStats userId={profile.id} username={profile.username} />
           </div>
         </div>
       </div>
