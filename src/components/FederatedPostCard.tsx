@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,6 +21,8 @@ import EnhancedPostReactions from "./EnhancedPostReactions";
 import QuoteRepostDialog from "./QuoteRepostDialog";
 import { QuotedPostPreview, RepostIndicator } from "./QuotedPostPreview";
 import ContentWarningDisplay from "./ContentWarningDisplay";
+import { LinkPreview, extractUrls } from "./LinkPreview";
+import { linkifyText, smartTruncate, stripHtml } from "@/lib/linkify";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 import type { BatchPostData } from "@/services/batchDataService";
@@ -34,9 +36,20 @@ interface FederatedPostCardProps {
   onEdit?: (post: FederatedPost) => void;
   onDelete?: (postId: string) => void;
   initialData?: BatchPostData;
+  /** Hide inline comments (use on PostView where comments are shown separately) */
+  hideComments?: boolean;
+  /** Show full content without truncation (use on PostView) */
+  showFullContent?: boolean;
 }
 
-export default function FederatedPostCard({ post, onEdit, onDelete, initialData }: FederatedPostCardProps) {
+export default function FederatedPostCard({ 
+  post, 
+  onEdit, 
+  onDelete, 
+  initialData,
+  hideComments = false,
+  showFullContent = false,
+}: FederatedPostCardProps) {
   const [imageError, setImageError] = useState<boolean>(false);
   const [isBoosted, setIsBoosted] = useState(initialData?.userBoosted ?? false);
   const [boostCount, setBoostCount] = useState(initialData?.boostCount ?? 0);
@@ -79,7 +92,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
   };
 
   // Extract content from different ActivityPub formats
-  const getContent = () => {
+  const getRawContent = () => {
     let rawContent = '';
     
     // For quote reposts, the content is the user's comment (may be empty - that's fine)
@@ -101,6 +114,37 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
       ALLOW_DATA_ATTR: false,
     });
   };
+
+  // Extract URLs and prepare content for display
+  const { displayContent, contentUrls, isTruncated } = useMemo(() => {
+    const raw = getRawContent();
+    const urls = extractUrls(raw);
+    
+    // Make URLs clickable
+    const linkedContent = linkifyText(raw);
+    
+    // If showing full content (PostView), don't truncate
+    if (showFullContent) {
+      return { displayContent: linkedContent, contentUrls: urls, isTruncated: false };
+    }
+    
+    // Smart truncate for feed view - URLs count as 25 chars each
+    const plainText = stripHtml(raw);
+    const truncated = smartTruncate(plainText, 350, 25);
+    const wasTruncated = truncated.endsWith('…');
+    
+    // If truncated, use plain text version; otherwise use linkified HTML
+    if (wasTruncated) {
+      // Re-linkify the truncated plain text
+      const linkedTruncated = linkifyText(truncated);
+      return { displayContent: linkedTruncated, contentUrls: urls, isTruncated: true };
+    }
+    
+    return { displayContent: linkedContent, contentUrls: urls, isTruncated: false };
+  }, [post.id, showFullContent]);
+
+  // Get the first URL to show as a preview card
+  const previewUrl = contentUrls.length > 0 ? contentUrls[0] : null;
   
   // Extract name from actor or use profile data for local posts
   const getActorName = () => {
@@ -390,7 +434,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
                 <DropdownMenuItem asChild>
                   <ShareButton
                     url={`${window.location.origin}/post/${post.id}`}
-                    title={getContent().replace(/<[^>]*>/g, '').substring(0, 100)}
+                    title={stripHtml(displayContent).substring(0, 100)}
                     variant="ghost"
                     size="sm"
                   />
@@ -405,12 +449,38 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
           
           {/* Content with optional Content Warning */}
           <ContentWarningDisplay warning={post.content_warning || post.content?.summary || ''}>
-            {/* Only show content div if there's actual text content */}
-            {getContent() && (
+            {/* Post text content */}
+            {displayContent && displayContent !== 'No content available' && (
               <div 
-                className="prose prose-sm max-w-none dark:prose-invert" 
-                dangerouslySetInnerHTML={{ __html: getContent() }} 
+                className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all" 
+                dangerouslySetInnerHTML={{ __html: displayContent }} 
+                onClick={(e) => {
+                  // Prevent card navigation when clicking links
+                  if ((e.target as HTMLElement).tagName === 'A') {
+                    e.stopPropagation();
+                  }
+                }}
               />
+            )}
+
+            {/* "Read more" indicator when truncated */}
+            {isTruncated && (
+              <button 
+                className="text-sm text-primary hover:underline mt-1 font-medium"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/post/${post.id}`);
+                }}
+              >
+                Read more
+              </button>
+            )}
+
+            {/* Link Preview Card for first URL - only in feed (not on full post view) */}
+            {previewUrl && !showFullContent && (
+              <div className="mt-3">
+                <LinkPreview url={previewUrl} compact={attachments.length > 0} />
+              </div>
             )}
           
             {attachments.length > 0 && (
@@ -471,25 +541,27 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
           <div className="ml-auto">
             <ShareButton
               url={`${window.location.origin}/post/${post.id}`}
-              title={getContent().replace(/<[^>]*>/g, '').substring(0, 100)}
+              title={stripHtml(displayContent).substring(0, 100)}
               variant="ghost"
               size="sm"
             />
           </div>
         </CardFooter>
         
-        {/* Lazy-loaded Comment Preview with ref for inline commenting */}
-        <div className="px-4 pb-3" data-interactive="true">
-          <Suspense fallback={<div className="h-10 animate-pulse bg-muted/30 rounded" />}>
-            <CommentPreview 
-              ref={commentPreviewRef} 
-              postId={post.id} 
-              maxComments={2}
-              autoOpenComposer={shouldOpenComposer}
-              onComposerOpened={() => setShouldOpenComposer(false)}
-            />
-          </Suspense>
-        </div>
+        {/* Lazy-loaded Comment Preview with ref for inline commenting - hidden on PostView */}
+        {!hideComments && (
+          <div className="px-4 pb-3" data-interactive="true">
+            <Suspense fallback={<div className="h-10 animate-pulse bg-muted/30 rounded" />}>
+              <CommentPreview 
+                ref={commentPreviewRef} 
+                postId={post.id} 
+                maxComments={2}
+                autoOpenComposer={shouldOpenComposer}
+                onComposerOpened={() => setShouldOpenComposer(false)}
+              />
+            </Suspense>
+          </div>
+        )}
       </Card>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -512,7 +584,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
       <ReportDialog
         contentType="post"
         contentId={post.id}
-        contentTitle={getContent().replace(/<[^>]*>/g, '').substring(0, 50)}
+        contentTitle={stripHtml(displayContent).substring(0, 50)}
         open={showReportDialog}
         onOpenChange={setShowReportDialog}
       />
@@ -532,7 +604,7 @@ export default function FederatedPostCard({ post, onEdit, onDelete, initialData 
         onOpenChange={setShowQuoteRepostDialog}
         originalPost={{
           id: post.id,
-          content: getContent(),
+          content: getRawContent(),
           authorName: getActorName(),
           authorUsername: getActorUsername(),
           authorAvatar: getAvatarUrl() || undefined,
