@@ -71,7 +71,7 @@ async function registerOAuthClient(domain: string, redirectUri: string): Promise
       body: JSON.stringify({
         client_name: 'Nolto - Professional Fediverse Network',
         redirect_uris: redirectUri,
-        scopes: 'read',
+        scopes: 'read:accounts',
         website: Deno.env.get("SITE_URL") || redirectUri.split('/auth')[0]
       })
     });
@@ -187,7 +187,7 @@ serve(async (req) => {
           client_id: registration.clientId,
           client_secret: registration.clientSecret,
           redirect_uri: redirectUri,
-          scopes: 'read'
+          scopes: 'read:accounts'
         });
 
       if (insertError) {
@@ -212,7 +212,7 @@ serve(async (req) => {
     // Build the authorization URL
     const authUrl = new URL(`https://${domain}/oauth/authorize`);
     authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('scope', 'read');
+    authUrl.searchParams.set('scope', 'read:accounts');
     authUrl.searchParams.set('redirect_uri', redirectUri);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('state', stateData);

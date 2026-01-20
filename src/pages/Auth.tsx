@@ -347,6 +347,14 @@ export default function AuthPage() {
                         placeholder="Enter your password"
                         required
                       />
+                      <div className="flex justify-end mt-1">
+                        <Link 
+                          to="/auth/recovery" 
+                          className="text-sm text-muted-foreground hover:text-primary underline"
+                        >
+                          Forgot password?
+                        </Link>
+                      </div>
                     </div>
                     <Button
                       type="submit"
