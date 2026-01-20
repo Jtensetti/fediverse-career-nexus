@@ -284,7 +284,7 @@ const Navbar = () => {
                   )}
                 >
                   <RouterLink to="/auth/login">
-                    Sign In
+                    {t("auth.signIn", "Sign In")}
                   </RouterLink>
                 </Button>
                 <Button 
@@ -298,7 +298,7 @@ const Navbar = () => {
                   )}
                 >
                   <RouterLink to="/auth/signup">
-                    Get Started
+                    {t("auth.signUp", "Get Started")}
                   </RouterLink>
                 </Button>
               </div>
@@ -351,7 +351,7 @@ const Navbar = () => {
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold truncate">{userProfile?.fullname || 'User'}</p>
-                          <p className="text-sm text-muted-foreground truncate">View your profile</p>
+                          <p className="text-sm text-muted-foreground truncate">{t("nav.viewProfile", "View your profile")}</p>
                         </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </RouterLink>
@@ -381,7 +381,7 @@ const Navbar = () => {
                           className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors"
                         >
                           <Settings className="h-5 w-5" />
-                          Settings
+                          {t("common.settings", "Settings")}
                         </RouterLink>
                         {isAdminOrModerator && (
                           <RouterLink 
@@ -390,7 +390,7 @@ const Navbar = () => {
                             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
                           >
                             <Settings className="h-5 w-5" />
-                            Instance Management
+                            {t("nav.instanceManagement", "Instance Management")}
                           </RouterLink>
                         )}
                         <button 
@@ -401,7 +401,7 @@ const Navbar = () => {
                           className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-colors mt-2"
                         >
                           <LogOut className="h-5 w-5" />
-                          Log out
+                          {t("auth.logout", "Log out")}
                         </button>
                       </div>
                     </>
@@ -413,21 +413,21 @@ const Navbar = () => {
                           onClick={() => setIsOpen(false)}
                           className="flex items-center px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
                         >
-                          Jobs
+                          {t("nav.jobs", "Jobs")}
                         </RouterLink>
                         <RouterLink 
                           to="/federation"
                           onClick={() => setIsOpen(false)}
                           className="flex items-center px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
                         >
-                          How Federation Works
+                          {t("footer.howFederationWorks", "How Federation Works")}
                         </RouterLink>
                         <RouterLink 
                           to="/mission"
                           onClick={() => setIsOpen(false)}
                           className="flex items-center px-4 py-3 rounded-lg hover:bg-muted transition-colors font-medium"
                         >
-                          Our Mission
+                          {t("footer.ourMission", "Our Mission")}
                         </RouterLink>
                       </div>
                       
@@ -435,13 +435,13 @@ const Navbar = () => {
                         <Button asChild className="w-full" size="lg">
                           <RouterLink to="/auth/signup" onClick={() => setIsOpen(false)}>
                             <UserPlus className="h-4 w-4 mr-2" />
-                            Create Account
+                            {t("auth.signUp", "Create Account")}
                           </RouterLink>
                         </Button>
                         <Button asChild variant="outline" className="w-full" size="lg">
                           <RouterLink to="/auth/login" onClick={() => setIsOpen(false)}>
                             <LogIn className="h-4 w-4 mr-2" />
-                            Sign In
+                            {t("auth.signIn", "Sign In")}
                           </RouterLink>
                         </Button>
                       </div>

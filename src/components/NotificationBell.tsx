@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Bell, Check, Trash2, UserPlus, ThumbsUp, MessageSquare, Briefcase, AtSign, Heart, Repeat, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function NotificationBell() {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -176,63 +178,65 @@ export function NotificationBell() {
     
     // For like notifications, try to extract reaction type and target type
     if (notification.type === 'like') {
-      const targetType = notification.object_type === 'reply' ? 'comment' : 'post';
+      const targetType = notification.object_type === 'reply' 
+        ? t("notifications.yourComment", "your comment") 
+        : t("notifications.yourPost", "your post");
       
       // Try to parse reaction from content
-      let reactionText = 'liked';
+      let reactionText = t("notifications.liked", "liked");
       try {
         const contentData = notification.content ? JSON.parse(notification.content) : {};
         const reaction = contentData.reaction;
         
         switch (reaction) {
           case 'love':
-            reactionText = 'loved';
+            reactionText = t("notifications.loved", "loved");
             break;
           case 'celebrate':
-            reactionText = 'celebrated';
+            reactionText = t("notifications.celebrated", "celebrated");
             break;
           case 'support':
-            reactionText = 'supported';
+            reactionText = t("notifications.supported", "supported");
             break;
           case 'insightful':
-            reactionText = 'found insightful';
+            reactionText = t("notifications.foundInsightful", "found insightful");
             break;
           case 'empathy':
-            reactionText = 'empathized with';
+            reactionText = t("notifications.empathizedWith", "empathized with");
             break;
           default:
-            reactionText = 'liked';
+            reactionText = t("notifications.liked", "liked");
         }
       } catch {
         // Default to "liked" if parsing fails
       }
       
-      return `${actorName} ${reactionText} your ${targetType}`;
+      return `${actorName} ${reactionText} ${targetType}`;
     }
     
     switch (notification.type) {
       case 'connection_request':
-        return `${actorName} sent you a connection request`;
+        return `${actorName} ${t("notifications.connectionRequest", "sent you a connection request")}`;
       case 'connection_accepted':
-        return `${actorName} accepted your connection request`;
+        return `${actorName} ${t("notifications.connectionAccepted", "accepted your connection request")}`;
       case 'endorsement':
-        return `${actorName} ${notification.content || 'endorsed your skill'}`;
+        return `${actorName} ${notification.content || t("notifications.endorsedSkill", "endorsed your skill")}`;
       case 'message':
-        return `${actorName} sent you a message`;
+        return `${actorName} ${t("notifications.sentMessage", "sent you a message")}`;
       case 'follow':
-        return `${actorName} started following you`;
+        return `${actorName} ${t("notifications.startedFollowing", "started following you")}`;
       case 'boost':
-        return `${actorName} boosted your post`;
+        return `${actorName} ${t("notifications.boostedPost", "boosted your post")}`;
       case 'reply':
-        return `${actorName} replied to your post`;
+        return `${actorName} ${t("notifications.repliedToPost", "replied to your post")}`;
       case 'mention':
-        return `${actorName} mentioned you`;
+        return `${actorName} ${t("notifications.mentionedYou", "mentioned you")}`;
       case 'recommendation_request':
-        return `${actorName} requested a recommendation`;
+        return `${actorName} ${t("notifications.recommendationRequest", "requested a recommendation")}`;
       case 'recommendation_received':
-        return `${actorName} wrote you a recommendation`;
+        return `${actorName} ${t("notifications.recommendationReceived", "wrote you a recommendation")}`;
       case 'article_published':
-        return `${actorName} ${notification.content || 'published a new article'}`;
+        return `${actorName} ${notification.content || t("notifications.publishedArticle", "published a new article")}`;
       default:
         return notification.content || 'New notification';
     }
@@ -257,11 +261,11 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-3 border-b">
-          <h3 className="font-semibold">Notifications</h3>
+          <h3 className="font-semibold">{t("notifications.title", "Notifications")}</h3>
           {unreadCount > 0 && (
             <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
               <Check className="h-4 w-4 mr-1" />
-              Mark all read
+              {t("notifications.markAllRead", "Mark all read")}
             </Button>
           )}
         </div>
@@ -269,7 +273,7 @@ export function NotificationBell() {
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Bell className="h-12 w-12 mb-4 opacity-20" />
-              <p>No notifications yet</p>
+              <p>{t("notifications.noNotifications", "No notifications yet")}</p>
             </div>
           ) : (
             <div>
@@ -318,7 +322,7 @@ export function NotificationBell() {
               setIsOpen(false);
             }}
           >
-            View all notifications
+            {t("notifications.viewAll", "View all notifications")}
           </Button>
         </div>
       </PopoverContent>

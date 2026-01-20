@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { processReferralCode } from "@/services/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft } from "lucide-react";
 
 export default function AuthPage() {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [isFederatedLoading, setIsFederatedLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -214,9 +215,9 @@ export default function AuthPage() {
   };
 
   const trustFeatures = [
-    { icon: Shield, text: "No tracking or data selling" },
-    { icon: Users, text: "Own your professional identity" },
-    { icon: Zap, text: "Connect across the Fediverse" },
+    { icon: Shield, text: t("auth.noTracking", "No tracking or data selling") },
+    { icon: Users, text: t("auth.ownIdentity", "Own your professional identity") },
+    { icon: Zap, text: t("auth.connectFediverse", "Connect across the Fediverse") },
   ];
 
   return (
@@ -226,7 +227,7 @@ export default function AuthPage() {
         <Button variant="ghost" asChild>
           <Link to="/">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+            {t("auth.backToHome", "Back to Home")}
           </Link>
         </Button>
       </div>
@@ -242,15 +243,15 @@ export default function AuthPage() {
                 className="w-16 h-16" 
               />
             </div>
-            <h1 className="text-3xl font-bold text-foreground font-display">Welcome to Nolto</h1>
+            <h1 className="text-3xl font-bold text-foreground font-display">{t("auth.welcomeTitle", "Welcome to Nolto")}</h1>
             <p className="mt-2 text-muted-foreground">
-              The federated professional network that puts you in control
+              {t("auth.welcomeSubtitle", "The federated professional network that puts you in control")}
             </p>
             
             {/* Referral badge */}
             {refCode && (
               <Badge variant="secondary" className="mt-2">
-                Invited with code: {refCode}
+                {t("auth.invitedWithCode", "Invited with code")}: {refCode}
               </Badge>
             )}
             
@@ -270,10 +271,10 @@ export default function AuthPage() {
             <CardHeader className="pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Globe className="h-5 w-5 text-primary" />
-                Login with Fediverse
+                {t("auth.fediLogin", "Login with Fediverse")}
               </CardTitle>
               <CardDescription>
-                Use your existing Mastodon, Pleroma, or other Fediverse account
+                {t("auth.fediLoginDesc", "Use your existing Mastodon, Pleroma, or other Fediverse account")}
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-6">
@@ -294,12 +295,12 @@ export default function AuthPage() {
                   {isFederatedLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Connecting...
+                      {t("auth.connecting", "Connecting...")}
                     </>
                   ) : (
                     <>
                       <Globe className="mr-2 h-4 w-4" />
-                      Continue with Fediverse
+                      {t("auth.continueWithFediverse", "Continue with Fediverse")}
                     </>
                   )}
                 </Button>
@@ -312,39 +313,39 @@ export default function AuthPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                  Or use email
+                  {t("auth.orUseEmail", "Or use email")}
                 </span>
               </div>
             </div>
 
             <Tabs defaultValue={defaultTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mx-6 mt-4" style={{ width: 'calc(100% - 48px)' }}>
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="signin">{t("auth.signIn", "Sign In")}</TabsTrigger>
+                <TabsTrigger value="signup">{t("auth.signUp", "Sign Up")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin">
                 <CardContent className="space-y-4 pt-4">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div>
-                      <Label htmlFor="signin-email">Email</Label>
+                      <Label htmlFor="signin-email">{t("auth.email", "Email")}</Label>
                       <Input
                         id="signin-email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email"
+                        placeholder={t("auth.enterEmail", "Enter your email")}
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="signin-password">Password</Label>
+                      <Label htmlFor="signin-password">{t("auth.password", "Password")}</Label>
                       <Input
                         id="signin-password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
+                        placeholder={t("auth.enterPassword", "Enter your password")}
                         required
                       />
                       <div className="flex justify-end mt-1">
@@ -352,7 +353,7 @@ export default function AuthPage() {
                           to="/auth/recovery" 
                           className="text-sm text-muted-foreground hover:text-primary underline"
                         >
-                          Forgot password?
+                          {t("auth.forgotPassword", "Forgot password?")}
                         </Link>
                       </div>
                     </div>
@@ -362,7 +363,7 @@ export default function AuthPage() {
                       className="w-full"
                       disabled={isLoading}
                     >
-                      {isLoading ? "Signing in..." : "Sign In with Email"}
+                      {isLoading ? t("auth.signingIn", "Signing in...") : t("auth.signInWithEmail", "Sign In with Email")}
                     </Button>
                   </form>
                 </CardContent>
@@ -373,7 +374,7 @@ export default function AuthPage() {
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label htmlFor="signup-firstname">First Name</Label>
+                        <Label htmlFor="signup-firstname">{t("auth.firstName", "First Name")}</Label>
                         <Input
                           id="signup-firstname"
                           type="text"
@@ -386,7 +387,7 @@ export default function AuthPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="signup-lastname">Last Name</Label>
+                        <Label htmlFor="signup-lastname">{t("auth.lastName", "Last Name")}</Label>
                         <Input
                           id="signup-lastname"
                           type="text"
@@ -400,24 +401,24 @@ export default function AuthPage() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="signup-email">Email</Label>
+                      <Label htmlFor="signup-email">{t("auth.email", "Email")}</Label>
                       <Input
                         id="signup-email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email"
+                        placeholder={t("auth.enterEmail", "Enter your email")}
                         required
                       />
                     </div>
                     <div>
-                      <Label htmlFor="signup-password">Password</Label>
+                      <Label htmlFor="signup-password">{t("auth.password", "Password")}</Label>
                       <Input
                         id="signup-password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Create a password (min 6 characters)"
+                        placeholder={t("auth.createPassword", "Create a password (min 6 characters)")}
                         required
                         minLength={6}
                       />
@@ -428,7 +429,7 @@ export default function AuthPage() {
                       className="w-full"
                       disabled={isLoading}
                     >
-                      {isLoading ? "Creating account..." : "Create Account with Email"}
+                      {isLoading ? t("auth.creatingAccount", "Creating account...") : t("auth.createAccountWithEmail", "Create Account with Email")}
                     </Button>
                   </form>
                 </CardContent>
@@ -438,10 +439,10 @@ export default function AuthPage() {
 
           {/* Footer note */}
           <p className="text-center text-xs text-muted-foreground">
-            By signing up, you agree to our{" "}
-            <Link to="/terms" className="underline hover:text-foreground">Terms of Service</Link>
-            {" "}and{" "}
-            <Link to="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>
+            {t("auth.termsAgreement", "By signing up, you agree to our")}{" "}
+            <Link to="/terms" className="underline hover:text-foreground">{t("auth.termsOfService", "Terms of Service")}</Link>
+            {" "}{t("auth.and", "and")}{" "}
+            <Link to="/privacy" className="underline hover:text-foreground">{t("auth.privacyPolicy", "Privacy Policy")}</Link>
           </p>
         </div>
       </div>
