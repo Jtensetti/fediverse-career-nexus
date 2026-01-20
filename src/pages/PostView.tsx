@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +13,10 @@ import type { FederatedPost } from "@/services/federationService";
 
 export default function PostView() {
   const { postId } = useParams<{ postId: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const highlightReplyId = searchParams.get('highlight');
+  
   const [post, setPost] = useState<FederatedPost | null>(null);
   const [replies, setReplies] = useState<PostReply[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,6 +74,20 @@ export default function PostView() {
         return;
       }
 
+      // Check if this is a reply (has inReplyTo or rootPost in content)
+      const content = postData.content as any;
+      const rootPost = content?.rootPost || content?.content?.rootPost;
+      const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
+      
+      // If this is a reply, redirect to the parent post with highlight
+      if (rootPost && rootPost !== postId) {
+        navigate(`/post/${rootPost}?highlight=${postId}`, { replace: true });
+        return;
+      } else if (inReplyTo && inReplyTo !== postId && !rootPost) {
+        navigate(`/post/${inReplyTo}?highlight=${postId}`, { replace: true });
+        return;
+      }
+
       // Fetch profile data if it's a local post
       const actor = postData.actors as any;
       let profile = null;
@@ -112,6 +130,16 @@ export default function PostView() {
       setError('Failed to load post');
     } finally {
       setLoading(false);
+      
+      // Scroll to highlighted reply after loading
+      if (highlightReplyId) {
+        setTimeout(() => {
+          const element = document.getElementById(`reply-${highlightReplyId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 300);
+      }
     }
   };
 
@@ -214,6 +242,7 @@ export default function PostView() {
                   postId={post.id}
                   childReplies={getChildReplies(reply.id)}
                   onReplyCreated={handleReplyToReply}
+                  isHighlighted={reply.id === highlightReplyId}
                 />
               ))}
             </div>
