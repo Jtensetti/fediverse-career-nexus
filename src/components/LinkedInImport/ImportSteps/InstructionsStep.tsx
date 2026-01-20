@@ -78,7 +78,6 @@ export default function InstructionsStep({ onNext, onSkipToUpload }: Instruction
         <Button
           asChild
           className="w-full"
-          style={{ backgroundColor: '#0077B5' }}
         >
           <a
             href={linkedInExportUrl}
