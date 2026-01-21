@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,7 @@ const profileSchema = z.object({
 const ProfileEditPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [profile, setProfile] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
@@ -215,7 +217,7 @@ const ProfileEditPage = () => {
       title: "",
       company: "",
       is_current_role: false,
-      start_date: "",
+      start_date: new Date().toISOString().split('T')[0], // Default to today
       description: "",
       user_id: userId
     };
@@ -230,6 +232,8 @@ const ProfileEditPage = () => {
       const success = await deleteExperience(exp.id);
       if (success) {
         setExperiences(experiences.filter((_, i) => i !== index));
+        // Invalidate profile cache so Profile page shows updated data
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
     } else {
       // If not yet saved, just remove from state
@@ -267,6 +271,8 @@ const ProfileEditPage = () => {
         const updatedExperiences = [...experiences];
         updatedExperiences[index] = updated;
         setExperiences(updatedExperiences);
+        // Invalidate profile cache
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
     } else {
       const created = await createExperience(exp);
@@ -274,6 +280,8 @@ const ProfileEditPage = () => {
         const updatedExperiences = [...experiences];
         updatedExperiences[index] = created;
         setExperiences(updatedExperiences);
+        // Invalidate profile cache
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
     }
   };
@@ -303,6 +311,8 @@ const ProfileEditPage = () => {
       const success = await deleteEducation(edu.id);
       if (success) {
         setEducation(education.filter((_, i) => i !== index));
+        // Invalidate profile cache so Profile page shows updated data
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
     } else {
       // If not yet saved, just remove from state
@@ -340,6 +350,8 @@ const ProfileEditPage = () => {
         const updatedEducation = [...education];
         updatedEducation[index] = updated;
         setEducation(updatedEducation);
+        // Invalidate profile cache
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
     } else {
       const created = await createEducation(edu);
@@ -347,6 +359,8 @@ const ProfileEditPage = () => {
         const updatedEducation = [...education];
         updatedEducation[index] = created;
         setEducation(updatedEducation);
+        // Invalidate profile cache
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
     }
   };
@@ -369,6 +383,8 @@ const ProfileEditPage = () => {
     if (createdSkill) {
       setSkills([...skills, createdSkill]);
       setNewSkill("");
+      // Invalidate profile cache
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     }
   };
 
@@ -376,6 +392,8 @@ const ProfileEditPage = () => {
     const success = await deleteSkill(id);
     if (success) {
       setSkills(skills.filter(skill => skill.id !== id));
+      // Invalidate profile cache
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     }
   };
 
@@ -663,6 +681,9 @@ const ProfileEditPage = () => {
                               <PopoverContent className="w-auto p-0" align="start">
                                 <Calendar
                                   mode="single"
+                                  captionLayout="dropdown-buttons"
+                                  fromYear={1960}
+                                  toYear={new Date().getFullYear()}
                                   selected={exp.start_date ? new Date(exp.start_date) : undefined}
                                   onSelect={(date) => updateExperienceField(index, 'start_date', date?.toISOString().split('T')[0])}
                                   initialFocus
@@ -698,6 +719,9 @@ const ProfileEditPage = () => {
                                   <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                       mode="single"
+                                      captionLayout="dropdown-buttons"
+                                      fromYear={1960}
+                                      toYear={new Date().getFullYear()}
                                       selected={exp.end_date ? new Date(exp.end_date) : undefined}
                                       onSelect={(date) => updateExperienceField(index, 'end_date', date?.toISOString().split('T')[0])}
                                       initialFocus
