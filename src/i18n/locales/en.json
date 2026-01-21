@@ -304,81 +304,6 @@
     "message": "Message",
     "sync": "Sync"
   },
-  "profileEdit": {
-    "title": "Edit Profile",
-    "tabs": {
-      "basicInfo": "Basic Info",
-      "experience": "Experience",
-      "education": "Education",
-      "skills": "Skills",
-      "privacy": "Privacy"
-    },
-    "personalInfo": "Personal Information",
-    "displayName": "Display Name",
-    "displayNamePlaceholder": "Your name",
-    "headline": "Professional Headline",
-    "headlinePlaceholder": "Your professional headline",
-    "headlineDesc": "A short description of your current role or expertise",
-    "bio": "Bio",
-    "bioPlaceholder": "Tell us about yourself",
-    "contactInfo": "Contact Information",
-    "email": "Email",
-    "emailDesc": "Email cannot be changed here",
-    "phone": "Phone",
-    "phonePlaceholder": "+1 (555) 123-4567",
-    "location": "Location",
-    "locationPlaceholder": "City, Country",
-    "saveChanges": "Save Changes",
-    "saving": "Saving...",
-    "experience": {
-      "title": "Experience",
-      "add": "Add Experience",
-      "loading": "Loading experiences...",
-      "jobTitle": "Job Title",
-      "jobTitlePlaceholder": "Enter job title",
-      "company": "Company",
-      "companyPlaceholder": "Company name",
-      "companyDomain": "Company Website/Domain",
-      "companyDomainPlaceholder": "company.com",
-      "locationPlaceholder": "City, Country (Remote)",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "pickDate": "Pick a date",
-      "currentRole": "I currently work here",
-      "description": "Description",
-      "descriptionPlaceholder": "Describe your responsibilities and achievements",
-      "save": "Save Experience",
-      "update": "Update Experience",
-      "delete": "Delete",
-      "noExperience": "No experience added yet. Click \"Add Experience\" to get started."
-    },
-    "education": {
-      "title": "Education",
-      "add": "Add Education",
-      "loading": "Loading education...",
-      "institution": "School/University",
-      "institutionPlaceholder": "Institution name",
-      "degree": "Degree",
-      "degreePlaceholder": "e.g. Bachelor's, Master's",
-      "field": "Field of Study",
-      "fieldPlaceholder": "e.g. Computer Science",
-      "startYear": "Start Year",
-      "endYear": "End Year (or expected)",
-      "save": "Save Education",
-      "update": "Update Education",
-      "noEducation": "No education added yet. Click \"Add Education\" to get started."
-    },
-    "skills": {
-      "title": "Skills",
-      "loading": "Loading skills...",
-      "placeholder": "Add a skill",
-      "add": "Add",
-      "noSkills": "No skills added yet. Use the field above to add your skills."
-    },
-    "privacy": {
-      "title": "Privacy Settings"
-    }
-  },
   "connections": {
     "title": "My Network",
     "description": "Manage your professional connections",
@@ -583,12 +508,12 @@
       "add": "Add Experience",
       "loading": "Loading experiences...",
       "jobTitle": "Job Title",
-      "jobTitlePlaceholder": "Job Title",
+      "jobTitlePlaceholder": "Enter job title",
       "company": "Company",
-      "companyPlaceholder": "Company",
+      "companyPlaceholder": "Company name",
       "companyDomain": "Company Website/Domain",
       "companyDomainPlaceholder": "company.com",
-      "locationPlaceholder": "City, Country (Remote)",
+      "locationPlaceholder": "City, Country (e.g. Remote)",
       "startDate": "Start Date",
       "endDate": "End Date",
       "pickDate": "Pick a date",
@@ -597,6 +522,7 @@
       "descriptionPlaceholder": "Describe your responsibilities and achievements",
       "save": "Save Experience",
       "update": "Update Experience",
+      "delete": "Delete",
       "noExperience": "No experience added yet. Click \"Add Experience\" to get started."
     },
     "education": {
@@ -829,58 +755,5 @@
     "noRequests": "No message requests",
     "noRequestsDesc": "When someone outside your network wants to message you, their request will appear here.",
     "noMessagesYet": "No messages yet"
-  },
-  "profileEdit": {
-    "title": "Edit Profile",
-    "tabs": {
-      "basicInfo": "Basic Info",
-      "experience": "Experience",
-      "education": "Education",
-      "skills": "Skills",
-      "privacy": "Privacy"
-    },
-    "personalInfo": "Personal Information",
-    "displayName": "Display Name",
-    "displayNamePlaceholder": "Your name",
-    "headline": "Professional Headline",
-    "headlinePlaceholder": "Your professional headline",
-    "headlineDesc": "A short description of your current role or expertise",
-    "bio": "Bio",
-    "bioPlaceholder": "Tell us about yourself",
-    "contactInfo": "Contact Information",
-    "email": "Email",
-    "emailDesc": "Email cannot be changed here",
-    "phone": "Phone",
-    "location": "Location",
-    "saveChanges": "Save Changes",
-    "saving": "Saving...",
-    "experience": {
-      "title": "Experience",
-      "company": "Company",
-      "position": "Position",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "currentRole": "Current Role",
-      "description": "Description",
-      "add": "Add Experience",
-      "save": "Save Experience",
-      "delete": "Delete"
-    },
-    "education": {
-      "title": "Education",
-      "institution": "Institution",
-      "degree": "Degree",
-      "field": "Field of Study",
-      "startYear": "Start Year",
-      "endYear": "End Year",
-      "add": "Add Education",
-      "save": "Save Education"
-    },
-    "skills": {
-      "title": "Skills",
-      "add": "Add Skill",
-      "placeholder": "Enter a skill...",
-      "addButton": "Add"
-    }
   }
 }
