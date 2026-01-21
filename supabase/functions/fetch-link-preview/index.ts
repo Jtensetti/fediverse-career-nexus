@@ -1,6 +1,6 @@
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface LinkPreviewData {
@@ -28,22 +28,22 @@ function extractMetaContent(html: string, patterns: RegExp[]): string | undefine
 
 function decodeHTMLEntities(text: string): string {
   return text
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, '/')
-    .replace(/&nbsp;/g, ' ');
+    .replace(/&#x2F;/g, "/")
+    .replace(/&nbsp;/g, " ");
 }
 
 function resolveUrl(base: string, relative: string | undefined): string | undefined {
   if (!relative) return undefined;
-  if (relative.startsWith('http://') || relative.startsWith('https://')) {
+  if (relative.startsWith("http://") || relative.startsWith("https://")) {
     return relative;
   }
-  if (relative.startsWith('//')) {
+  if (relative.startsWith("//")) {
     return `https:${relative}`;
   }
   try {
@@ -56,16 +56,16 @@ function resolveUrl(base: string, relative: string | undefined): string | undefi
 async function fetchWithTimeout(url: string, timeout = 5000): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
-  
+
   try {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; LinkPreviewBot/1.0; +https://fediverse-career.lovable.app)',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9',
+        "User-Agent": "Mozilla/5.0 (compatible; LinkPreviewBot/1.0; +https://nolto.social)",
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9",
       },
-      redirect: 'follow',
+      redirect: "follow",
     });
     return response;
   } finally {
@@ -75,76 +75,73 @@ async function fetchWithTimeout(url: string, timeout = 5000): Promise<Response> 
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { url } = await req.json();
 
-    if (!url || typeof url !== 'string') {
-      return new Response(
-        JSON.stringify({ success: false, error: 'URL is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!url || typeof url !== "string") {
+      return new Response(JSON.stringify({ success: false, error: "URL is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Validate URL
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(url);
-      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-        throw new Error('Invalid protocol');
+      if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+        throw new Error("Invalid protocol");
       }
     } catch {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid URL' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ success: false, error: "Invalid URL" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const domain = parsedUrl.hostname.replace(/^www\./, '');
+    const domain = parsedUrl.hostname.replace(/^www\./, "");
 
     // Check cache
     const cached = cache.get(url);
     if (cached && cached.expires > Date.now()) {
-      console.log('Cache hit for:', url);
-      return new Response(
-        JSON.stringify({ success: true, data: cached.data }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.log("Cache hit for:", url);
+      return new Response(JSON.stringify({ success: true, data: cached.data }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    console.log('Fetching preview for:', url);
+    console.log("Fetching preview for:", url);
 
     // Fetch the page
     let html: string;
     try {
       const response = await fetchWithTimeout(url);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('text/html') && !contentType.includes('application/xhtml')) {
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("text/html") && !contentType.includes("application/xhtml")) {
         // Not HTML, return basic info
         const data: LinkPreviewData = { url, domain };
-        return new Response(
-          JSON.stringify({ success: true, data }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ success: true, data }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
       html = await response.text();
     } catch (error) {
-      console.error('Fetch error:', error);
+      console.error("Fetch error:", error);
       // Return basic info on fetch failure
       const data: LinkPreviewData = { url, domain };
-      return new Response(
-        JSON.stringify({ success: true, data }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ success: true, data }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Extract OpenGraph and meta tags using regex (simpler than DOM parsing for edge functions)
@@ -191,18 +188,16 @@ Deno.serve(async (req) => {
     // Cache the result
     cache.set(url, { data, expires: Date.now() + CACHE_TTL });
 
-    console.log('Preview extracted:', { url, title: data.title, hasImage: !!data.image });
+    console.log("Preview extracted:", { url, title: data.title, hasImage: !!data.image });
 
-    return new Response(
-      JSON.stringify({ success: true, data }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return new Response(JSON.stringify({ success: true, data }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
-    console.error('Error fetching link preview:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: 'Failed to fetch link preview' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error("Error fetching link preview:", error);
+    return new Response(JSON.stringify({ success: false, error: "Failed to fetch link preview" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
