@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { getUserReferralCode, getReferralStats } from "@/services/referralService";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Use published URL for professional-looking links
-const PUBLISHED_URL = "https://nolto.social";
+// Use dynamic origin - will be nolto.social when accessed via custom domain
+const getPublishedUrl = () => window.location.origin;
 
 export default function ReferralWidget() {
   const { t } = useTranslation();
@@ -33,8 +33,8 @@ export default function ReferralWidget() {
     setLoading(false);
   };
 
-  // Use published URL for cleaner, more professional links
-  const referralLink = referralCode ? `${PUBLISHED_URL}/join/${referralCode}` : "";
+  // Use dynamic origin for cleaner, more professional links
+  const referralLink = referralCode ? `${getPublishedUrl()}/join/${referralCode}` : "";
 
   const handleCopy = async () => {
     if (!referralLink) return;
