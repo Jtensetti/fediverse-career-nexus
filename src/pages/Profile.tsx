@@ -9,25 +9,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import {
-  User,
   Briefcase,
   School,
-  Award,
   Star,
   Link as LinkIcon,
-  Mail,
-  Phone,
   MapPin,
   Check,
   Users,
   Loader2,
   RefreshCw,
   MessageSquare,
-  Share2,
   Edit,
   Activity,
   Clock,
   Bookmark,
+  BookText,
+  UserPlus,
 } from "lucide-react";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
@@ -52,13 +49,14 @@ import UserActivityList from "@/components/UserActivityList";
 import UserArticlesList from "@/components/UserArticlesList";
 import { SkillEndorsements } from "@/components/SkillEndorsements";
 import { ProfileStats } from "@/components/profile/ProfileStats";
-
 import FollowAuthorButton from "@/components/FollowAuthorButton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { BookText } from "lucide-react";
+import { SEOHead } from "@/components/common/SEOHead";
+import { ShareButton } from "@/components/common/ShareButton";
+import { ShareProfileCard } from "@/components/profile/ShareProfileCard";
 
 const ProfilePage = () => {
   const { usernameOrId } = useParams();
@@ -302,6 +300,14 @@ const ProfilePage = () => {
 
   return (
     <DashboardLayout showHeader={false}>
+      {/* SEO Meta Tags for social sharing */}
+      <SEOHead
+        title={`${profile.displayName} (@${profile.username})`}
+        description={profile.headline || profile.bio || `View ${profile.displayName}'s professional profile on Nolto`}
+        image={profile.avatarUrl || "/og-image.png"}
+        url={`${window.location.origin}/profile/${profile.username}`}
+        type="profile"
+      />
       {/* Sticky Mini Header */}
       <motion.div
         initial={{ y: -100, opacity: 0 }}
@@ -322,7 +328,7 @@ const ProfilePage = () => {
               <p className="text-xs text-muted-foreground">@{displayUsername}</p>
             </div>
           </div>
-          {!viewingOwnProfile && (
+          {!viewingOwnProfile && isAuthenticated && (
             <>
               {connectionRelationship?.status === "accepted" ? (
                 <Badge variant="secondary" className="flex items-center gap-1">
@@ -349,6 +355,13 @@ const ProfilePage = () => {
                 </Button>
               )}
             </>
+          )}
+          {!viewingOwnProfile && !isAuthenticated && (
+            <Button size="sm" asChild>
+              <Link to="/auth/signup">
+                <UserPlus className="h-4 w-4 mr-1" /> Sign up to connect
+              </Link>
+            </Button>
           )}
         </div>
       </motion.div>
@@ -424,7 +437,7 @@ const ProfilePage = () => {
                     </Button>
                   )}
                 </>
-              ) : (
+              ) : isAuthenticated ? (
                 <>
                   {connectionRelationship?.status === "accepted" ? (
                     <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
@@ -466,9 +479,28 @@ const ProfilePage = () => {
                   >
                     <MessageSquare className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon">
-                    <Share2 className="h-4 w-4" />
+                  <ShareButton
+                    url={`${window.location.origin}/profile/${profile.username}`}
+                    title={`${profile.displayName} on Nolto`}
+                    description={profile.headline || profile.bio || undefined}
+                    variant="outline"
+                    size="icon"
+                  />
+                </>
+              ) : (
+                <>
+                  <Button asChild>
+                    <Link to="/auth/signup">
+                      <UserPlus className="h-4 w-4 mr-2" /> Sign up to connect
+                    </Link>
                   </Button>
+                  <ShareButton
+                    url={`${window.location.origin}/profile/${profile.username}`}
+                    title={`${profile.displayName} on Nolto`}
+                    description={profile.headline || profile.bio || undefined}
+                    variant="outline"
+                    size="icon"
+                  />
                 </>
               )}
             </div>
@@ -803,6 +835,13 @@ const ProfilePage = () => {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {viewingOwnProfile && (
+            <ShareProfileCard
+              username={profile.username}
+              displayName={profile.displayName}
+            />
+          )}
+          
           {viewingOwnProfile && <ProfileViewsWidget userId={profile.id} />}
 
           {!viewingOwnProfile && (

@@ -144,14 +144,8 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
-                    <Route
-                      path="/profile/:usernameOrId"
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      }
-                    />
+                    {/* Public profile route - anyone can view profiles */}
+                    <Route path="/profile/:usernameOrId" element={<Profile />} />
                     <Route
                       path="/profile"
                       element={
