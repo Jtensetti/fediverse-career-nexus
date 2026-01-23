@@ -45,6 +45,15 @@ export const REACTION_CONFIG: Record<ReactionKey, ReactionConfigItem> = {
   },
 };
 
+// Emoji display for reactions
+export const REACTION_EMOJIS: Record<ReactionKey, string> = {
+  love: '❤️',
+  celebrate: '🎉',
+  support: '👍',
+  empathy: '🤗',
+  insightful: '💡',
+};
+
 // Legacy emoji to reaction key mapping (for backfill/migration)
 export const EMOJI_TO_REACTION: Record<string, ReactionKey> = {
   '❤️': 'love',
@@ -53,6 +62,7 @@ export const EMOJI_TO_REACTION: Record<string, ReactionKey> = {
   '✌️': 'support',
   '🤗': 'empathy',
   '😮': 'insightful',
+  '💡': 'insightful',
 };
 
 // Get reaction key from emoji (with fallback)

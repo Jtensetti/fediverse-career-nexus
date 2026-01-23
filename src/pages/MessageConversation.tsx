@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { Send, AlertCircle, Loader2 } from 'lucide-react';
+import DOMPurify from 'dompurify';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -14,11 +15,12 @@ import {
   canMessageUser,
   ParticipantInfo
 } from '@/services/messageService';
+import { linkifyText } from '@/lib/linkify';
 
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Card, 
@@ -30,6 +32,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
 import FediverseBadge from '@/components/FediverseBadge';
+import MessageReactions from '@/components/MessageReactions';
 
 export default function MessageConversation() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -42,6 +45,10 @@ export default function MessageConversation() {
   const [canMessage, setCanMessage] = useState<boolean | null>(null);
   const [isFederated, setIsFederated] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isNearBottomRef = useRef(true);
+  const hasInitialScrolled = useRef(false);
   const queryClient = useQueryClient();
 
   // Fetch conversation and messages
@@ -50,6 +57,35 @@ export default function MessageConversation() {
     queryFn: () => conversationId ? getConversationWithMessages(conversationId) : null,
     enabled: !!conversationId && !!currentUserId
   });
+
+  // Scroll to bottom of messages container (not page)
+  const scrollToBottom = useCallback((smooth = false) => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
+  }, []);
+
+  // Check if user is near bottom of messages
+  const checkIfNearBottom = useCallback(() => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 100;
+    }
+  }, []);
+
+  // Initial scroll to bottom when messages load
+  useEffect(() => {
+    if (data?.messages && data.messages.length > 0 && !hasInitialScrolled.current) {
+      // Use requestAnimationFrame to ensure DOM has updated
+      requestAnimationFrame(() => {
+        scrollToBottom(false);
+        hasInitialScrolled.current = true;
+      });
+    }
+  }, [data?.messages, scrollToBottom]);
 
   // Set up real-time subscription to new messages
   useEffect(() => {
@@ -65,6 +101,13 @@ export default function MessageConversation() {
           messages: [...oldData.messages, message]
         };
       });
+
+      // Auto-scroll only if user was near bottom
+      if (isNearBottomRef.current) {
+        requestAnimationFrame(() => {
+          scrollToBottom(true);
+        });
+      }
     };
 
     const handleError = (error: any) => {
@@ -83,7 +126,7 @@ export default function MessageConversation() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [conversationId, currentUserId, queryClient, toast]);
+  }, [conversationId, currentUserId, queryClient, toast, scrollToBottom]);
 
   // Get other participant details and check connection status
   useEffect(() => {
@@ -110,6 +153,14 @@ export default function MessageConversation() {
     loadUserAndCheckConnection();
   }, [data?.conversation, currentUserId, conversationId]);
 
+  // Auto-resize textarea as user types
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const newHeight = Math.min(textareaRef.current.scrollHeight, 150);
+      textareaRef.current.style.height = `${newHeight}px`;
+    }
+  }, [newMessage]);
 
   // Mutation for sending messages
   const sendMessageMutation = useMutation({
@@ -119,7 +170,14 @@ export default function MessageConversation() {
     },
     onSuccess: () => {
       setNewMessage('');
-      // The realtime subscription will update the messages
+      // Reset textarea height
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
+      // Scroll to bottom after sending
+      requestAnimationFrame(() => {
+        scrollToBottom(true);
+      });
     },
     onError: (error) => {
       console.error('Failed to send message:', error);
@@ -136,6 +194,26 @@ export default function MessageConversation() {
     if (!newMessage.trim()) return;
 
     sendMessageMutation.mutate(newMessage);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on Enter, new line on Shift+Enter
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (newMessage.trim() && canMessage === true && !sendMessageMutation.isPending) {
+        sendMessageMutation.mutate(newMessage);
+      }
+    }
+  };
+
+  // Sanitize and linkify message content
+  const renderMessageContent = (content: string) => {
+    const linkedContent = linkifyText(content);
+    const sanitized = DOMPurify.sanitize(linkedContent, {
+      ALLOWED_TAGS: ['a', 'br'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+    });
+    return sanitized;
   };
 
   // Handle loading and error states
@@ -257,7 +335,11 @@ export default function MessageConversation() {
             </div>
           </CardHeader>
           
-          <CardContent className="flex-grow overflow-y-auto p-4">
+          <CardContent 
+            ref={messagesContainerRef}
+            onScroll={checkIfNearBottom}
+            className="flex-grow overflow-y-auto p-4"
+          >
             <div className="space-y-4">
               {messages.length === 0 ? (
                 <div className="text-center py-10">
@@ -265,24 +347,45 @@ export default function MessageConversation() {
                   <p className="text-sm">Start the conversation!</p>
                 </div>
               ) : (
-                messages.map((message) => (
-                  <div 
-                    key={message.id} 
-                    className={`flex ${message.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-[70%] p-3 rounded-lg space-y-1
-                      ${message.sender_id === currentUserId 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted'
-                      }
-                    `}>
-                      <p>{message.content}</p>
-                      <p className="text-xs opacity-70">
-                        {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-                      </p>
+                messages.map((message) => {
+                  const isOwnMessage = message.sender_id === currentUserId;
+                  return (
+                    <div 
+                      key={message.id} 
+                      className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
+                    >
+                      <div 
+                        className={`group max-w-[70%] p-3 rounded-lg space-y-1
+                          ${isOwnMessage 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted'
+                          }
+                        `}
+                      >
+                        <p 
+                          className="break-words whitespace-pre-wrap"
+                          dangerouslySetInnerHTML={{ 
+                            __html: renderMessageContent(message.content) 
+                          }}
+                          onClick={(e) => {
+                            // Prevent navigation when clicking links
+                            const target = e.target as HTMLElement;
+                            if (target.tagName === 'A') {
+                              e.stopPropagation();
+                            }
+                          }}
+                        />
+                        <p className="text-xs opacity-70">
+                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                        </p>
+                        <MessageReactions 
+                          messageId={message.id} 
+                          isOwnMessage={isOwnMessage}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
               <div ref={messagesEndRef} />
             </div>
@@ -296,17 +399,21 @@ export default function MessageConversation() {
               </div>
             ) : (
               <form onSubmit={handleSendMessage} className="w-full">
-                <div className="flex space-x-2">
-                  <Input
+                <div className="flex space-x-2 items-end">
+                  <Textarea
+                    ref={textareaRef}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder={canMessage === null ? "Checking connection..." : "Type your message..."}
-                    className="flex-grow"
+                    className="flex-grow min-h-[40px] max-h-[150px] resize-none py-2"
                     disabled={canMessage === null}
+                    rows={1}
                   />
                   <Button 
                     type="submit" 
                     size="icon"
+                    className="h-10 w-10 flex-shrink-0"
                     disabled={!newMessage.trim() || sendMessageMutation.isPending || canMessage !== true}
                   >
                     <Send className="h-4 w-4" />
