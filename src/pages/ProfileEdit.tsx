@@ -32,7 +32,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import { getCurrentUserProfile } from "@/services/profileService";
-import { updateUserProfile, ProfileUpdateData } from "@/services/profileEditService";
+import { updateUserProfile, ProfileUpdateData, checkUsernameAvailability } from "@/services/profileEditService";
 import NetworkVisibilityToggle from "@/components/NetworkVisibilityToggle";
 import ProfileVisitsToggle from "@/components/ProfileVisitsToggle";
 import VerificationBadge from "@/components/VerificationBadge";
@@ -61,6 +61,11 @@ import {
 
 // Schema for the basic profile information
 const profileSchema = z.object({
+  username: z.string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must be 20 characters or less")
+    .regex(/^[a-z0-9_]+$/, "Username can only contain lowercase letters, numbers, and underscores")
+    .optional(),
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
   headline: z.string().min(5, "Headline must be at least 5 characters"),
   bio: z.string().optional(),
@@ -96,6 +101,7 @@ const ProfileEditPage = () => {
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      username: "",
       displayName: "",
       headline: "",
       bio: "",
@@ -124,6 +130,7 @@ const ProfileEditPage = () => {
             
             // Initialize the form with data
             form.reset({
+              username: userProfile.username || "",
               displayName: userProfile.displayName || "",
               headline: userProfile.headline || "",
               bio: userProfile.bio || "",
@@ -175,8 +182,18 @@ const ProfileEditPage = () => {
     try {
       setIsLoading(prev => ({ ...prev, saving: true }));
       
+      // Check if username changed and validate uniqueness
+      if (data.username && data.username !== profile?.username) {
+        const isAvailable = await checkUsernameAvailability(data.username);
+        if (!isAvailable) {
+          toast.error("Username is already taken");
+          setIsLoading(prev => ({ ...prev, saving: false }));
+          return;
+        }
+      }
       
       const profileData: ProfileUpdateData = {
+        username: data.username,
         fullname: data.displayName, // Map displayName to fullname for database
         headline: data.headline,
         bio: data.bio,
@@ -188,7 +205,8 @@ const ProfileEditPage = () => {
       const success = await updateUserProfile(profileData);
       
       if (success) {
-        toast.success("Profile updated successfully");
+        // Invalidate profile cache
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
         // Refresh the profile data
         const updatedProfile = await getCurrentUserProfile();
         if (updatedProfile) {
@@ -465,6 +483,30 @@ const ProfileEditPage = () => {
                               <FormControl>
                                 <Input placeholder={t("profileEdit.displayNamePlaceholder")} {...field} />
                               </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="username"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t("profileEdit.username", "Username")}</FormLabel>
+                              <FormControl>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground">@</span>
+                                  <Input 
+                                    placeholder={t("profileEdit.usernamePlaceholder", "your_username")} 
+                                    {...field} 
+                                    onChange={(e) => field.onChange(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormDescription>
+                                {t("profileEdit.usernameDesc", "Your unique handle for your profile URL and Fediverse identity. Only lowercase letters, numbers, and underscores.")}
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
