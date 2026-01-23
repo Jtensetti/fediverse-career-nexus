@@ -34,14 +34,26 @@ export async function getBatchPostData(
   });
 
   try {
-    // Batch fetch reactions for all posts in ONE query
-    const { data: reactions } = await supabase
-      .from('reactions')
-      .select('target_id, reaction, user_id')
-      .eq('target_type', 'post')
-      .in('target_id', postIds);
+    // Run all independent queries in PARALLEL for maximum performance
+    const [reactionsResult, boostCountsResult, replyCountsResult, actorResult] = await Promise.all([
+      // Batch fetch reactions
+      supabase
+        .from('reactions')
+        .select('target_id, reaction, user_id')
+        .eq('target_type', 'post')
+        .in('target_id', postIds),
+      // Boost counts RPC
+      supabase.rpc('get_batch_boost_counts', { post_ids: postIds }),
+      // Reply counts RPC
+      supabase.rpc('get_batch_reply_counts', { post_ids: postIds }),
+      // User's actor ID (only if logged in)
+      userId 
+        ? supabase.from('actors').select('id').eq('user_id', userId).maybeSingle()
+        : Promise.resolve({ data: null, error: null })
+    ]);
 
     // Process reactions
+    const reactions = reactionsResult.data;
     if (reactions) {
       reactions.forEach(r => {
         const postData = result.get(r.target_id);
@@ -57,22 +69,8 @@ export async function getBatchPostData(
       });
     }
 
-    // Get user's actor ID for boost checking (single query)
-    let userActorId: string | null = null;
-    if (userId) {
-      const { data: actor } = await supabase
-        .from('actors')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
-      userActorId = actor?.id || null;
-    }
-
-    // Use efficient RPC for boost counts - fetches only counts for our posts
-    const { data: boostCounts } = await supabase.rpc('get_batch_boost_counts', {
-      post_ids: postIds
-    });
-
+    // Process boost counts
+    const boostCounts = boostCountsResult.data;
     if (boostCounts && Array.isArray(boostCounts)) {
       boostCounts.forEach((bc: { post_id: string; boost_count: number }) => {
         const postData = result.get(bc.post_id);
@@ -82,11 +80,8 @@ export async function getBatchPostData(
       });
     }
 
-    // Use efficient RPC for reply counts - fetches only counts for our posts
-    const { data: replyCounts } = await supabase.rpc('get_batch_reply_counts', {
-      post_ids: postIds
-    });
-
+    // Process reply counts
+    const replyCounts = replyCountsResult.data;
     if (replyCounts && Array.isArray(replyCounts)) {
       replyCounts.forEach((rc: { post_id: string; reply_count: number }) => {
         const postData = result.get(rc.post_id);
@@ -97,6 +92,7 @@ export async function getBatchPostData(
     }
 
     // Check if user has boosted any of these posts (if logged in)
+    const userActorId = actorResult.data?.id || null;
     if (userActorId) {
       const { data: userBoosts } = await supabase
         .from('ap_objects')
