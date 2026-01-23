@@ -43,8 +43,8 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const loadMoreLockRef = useRef(false);
   
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ['federatedFeed', limit, offset, effectiveFeedType],
-    queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType),
+    queryKey: ['federatedFeed', limit, offset, effectiveFeedType, user?.id],
+    queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType, user?.id),
     staleTime: 30000,
     enabled: true,
   });

@@ -65,21 +65,18 @@ const getFollowedUserIds = async (userId: string): Promise<string[]> => {
 export const getFederatedFeed = async (
   limit: number = 20, 
   offset: number = 0,
-  feedType: FeedType = 'all'
+  feedType: FeedType = 'all',
+  userId?: string  // Accept userId from context instead of calling getUser()
 ): Promise<FederatedPost[]> => {
   try {
     console.log('🌐 Fetching federated feed with limit:', limit, 'offset:', offset, 'feedType:', feedType);
 
-    // Get current user to ensure we can see their posts
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log('👤 Current user for feed:', user?.id);
-
     // For "following" feed, get the list of followed user IDs first
     let followedUserIds: string[] = [];
-    if (feedType === 'following' && user) {
-      followedUserIds = await getFollowedUserIds(user.id);
+    if (feedType === 'following' && userId) {
+      followedUserIds = await getFollowedUserIds(userId);
       // Always include user's own posts in the following feed
-      followedUserIds.push(user.id);
+      followedUserIds.push(userId);
       console.log('👥 Following feed - followed user IDs:', followedUserIds.length);
       
       // If user follows no one, return empty (they'll only see their own posts)
@@ -124,7 +121,7 @@ export const getFederatedFeed = async (
     // Filter posts based on feed type
     let filteredObjects = apObjects;
     
-    if (feedType === 'following' && user) {
+    if (feedType === 'following' && userId) {
       filteredObjects = apObjects.filter((obj: any) => {
         const actorUserId = obj.actors?.user_id;
         return actorUserId && followedUserIds.includes(actorUserId);

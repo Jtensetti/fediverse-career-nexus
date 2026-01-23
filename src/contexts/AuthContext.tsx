@@ -14,6 +14,51 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Background user setup - non-blocking
+const setupUserInBackground = async (userId: string) => {
+  const cacheKey = `user_setup_${userId}`;
+  const cachedSetup = localStorage.getItem(cacheKey);
+  
+  // Cache valid for 5 minutes
+  if (cachedSetup) {
+    try {
+      const cached = JSON.parse(cachedSetup);
+      if (Date.now() - cached.timestamp < 300000) {
+        return; // Cache hit - skip setup
+      }
+    } catch {
+      // Invalid cache, continue with setup
+    }
+  }
+  
+  try {
+    // Run profile and actor checks in PARALLEL
+    const [profile, existingActor] = await Promise.all([
+      ensureUserProfile(userId),
+      supabase.from('public_actors').select('id').eq('user_id', userId).maybeSingle()
+    ]);
+    
+    if (!profile) {
+      console.error('AuthProvider: Failed to create/ensure profile');
+      return;
+    }
+    
+    // Create actor if needed
+    if (!existingActor.data && !existingActor.error) {
+      try {
+        await createUserActor(userId);
+      } catch (error) {
+        console.error('AuthProvider: Error creating actor:', error);
+      }
+    }
+    
+    // Update cache
+    localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
+  } catch (error) {
+    console.error('AuthProvider: Error in user setup:', error);
+  }
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -59,60 +104,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Handle sign in - ensure user has proper setup
+        // Handle sign in - run setup in background (non-blocking)
         if (event === 'SIGNED_IN' && session?.user) {
-          // Check cache to avoid repeated setup calls
-          const cacheKey = `user_setup_${session.user.id}`;
-          const cachedSetup = localStorage.getItem(cacheKey);
-          const now = Date.now();
-          
-          // Cache valid for 5 minutes
-          if (cachedSetup) {
-            try {
-              const cached = JSON.parse(cachedSetup);
-              if (now - cached.timestamp < 300000) {
-                // Cache hit - skip setup
-                return;
-              }
-            } catch {
-              // Invalid cache, continue with setup
-            }
-          }
-          
-          // Run profile/actor setup synchronously (no setTimeout to avoid race conditions)
-          try {
-            // Ensure profile exists first
-            const profile = await ensureUserProfile(session.user.id);
-            if (!profile) {
-              console.error('AuthProvider: Failed to create/ensure profile');
-              return;
-            }
-            
-            // Check if user has an actor using the public_actors view
-            const { data: existingActor, error: actorError } = await supabase
-              .from('public_actors')
-              .select('id')
-              .eq('user_id', session.user.id)
-              .single();
-            
-            if (actorError && actorError.code !== 'PGRST116') {
-              console.error('AuthProvider: Error checking for actor:', actorError);
-              return;
-            }
-            
-            if (!existingActor) {
-              try {
-                await createUserActor(session.user.id);
-              } catch (error) {
-                console.error('AuthProvider: Error creating actor:', error);
-              }
-            }
-            
-            // Update cache
-            localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
-          } catch (error) {
-            console.error('AuthProvider: Error in user setup:', error);
-          }
+          // Fire and forget - don't block the UI
+          void setupUserInBackground(session.user.id);
         }
         
         // Clear cache on sign out
