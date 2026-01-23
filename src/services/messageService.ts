@@ -350,12 +350,17 @@ export async function sendMessage(recipientId: string, content: string): Promise
         body: { action: 'encrypt', content }
       });
       
-      if (!encryptError && encryptData?.encryptedContent) {
+      if (encryptError) {
+        console.error('Encryption error:', encryptError);
+      } else if (encryptData?.encryptedContent) {
         encryptedContent = encryptData.encryptedContent;
         isEncrypted = true;
+        console.log('Message encrypted successfully');
+      } else {
+        console.error('Encryption returned no data:', encryptData);
       }
     } catch (encryptErr) {
-      console.warn('Message encryption failed, storing as plain text:', encryptErr);
+      console.error('Message encryption failed:', encryptErr);
     }
 
     // Local message - insert with encryption

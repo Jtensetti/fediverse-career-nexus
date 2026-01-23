@@ -359,10 +359,10 @@ export default function MessageConversation() {
                   return (
                     <div 
                       key={message.id} 
-                      className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
+                      className={`group flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
                     >
                       <div 
-                        className={`group max-w-[70%] p-3 rounded-lg space-y-1
+                        className={`max-w-[70%] p-3 rounded-lg
                           ${isOwnMessage 
                             ? 'bg-primary text-primary-foreground' 
                             : 'bg-muted'
@@ -382,14 +382,16 @@ export default function MessageConversation() {
                             }
                           }}
                         />
-                        <p className="text-xs opacity-70">
+                        <p className="text-xs opacity-70 mt-1">
                           {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                         </p>
-                        <MessageReactions 
-                          messageId={message.id} 
-                          isOwnMessage={isOwnMessage}
-                        />
                       </div>
+                      {/* Reactions moved OUTSIDE the bubble for better visibility */}
+                      <MessageReactions 
+                        messageId={message.id} 
+                        isOwnMessage={isOwnMessage}
+                        className="mt-1"
+                      />
                     </div>
                   );
                 })
