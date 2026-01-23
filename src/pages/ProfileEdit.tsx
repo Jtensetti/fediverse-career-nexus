@@ -729,7 +729,7 @@ const ProfileEditPage = () => {
                                   fromYear={1960}
                                   toYear={new Date().getFullYear()}
                                   selected={exp.start_date ? new Date(exp.start_date) : undefined}
-                                  onSelect={(date) => updateExperienceField(index, 'start_date', date?.toISOString().split('T')[0])}
+                                  onSelect={(date) => updateExperienceField(index, 'start_date', date ? format(date, 'yyyy-MM-dd') : undefined)}
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -767,7 +767,7 @@ const ProfileEditPage = () => {
                                       fromYear={1960}
                                       toYear={new Date().getFullYear()}
                                       selected={exp.end_date ? new Date(exp.end_date) : undefined}
-                                      onSelect={(date) => updateExperienceField(index, 'end_date', date?.toISOString().split('T')[0])}
+                                      onSelect={(date) => updateExperienceField(index, 'end_date', date ? format(date, 'yyyy-MM-dd') : undefined)}
                                       initialFocus
                                     />
                                   </PopoverContent>
