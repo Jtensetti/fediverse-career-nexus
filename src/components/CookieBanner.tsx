@@ -9,17 +9,27 @@ export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // Ensure we're in a browser environment
+    if (typeof window === 'undefined') return;
+    
     // Check if user has already accepted cookie notice
     const accepted = localStorage.getItem("cookie_notice_accepted");
-    if (!accepted) {
-      // Small delay to prevent flash on page load
-      const timer = setTimeout(() => setIsVisible(true), 1000);
-      return () => clearTimeout(timer);
+    if (accepted) {
+      // Already accepted, keep hidden
+      return;
     }
+    
+    // Small delay to prevent flash on page load
+    const timer = setTimeout(() => setIsVisible(true), 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem("cookie_notice_accepted", new Date().toISOString());
+    try {
+      localStorage.setItem("cookie_notice_accepted", new Date().toISOString());
+    } catch (e) {
+      console.error("Failed to save cookie preference:", e);
+    }
     setIsVisible(false);
   };
 
