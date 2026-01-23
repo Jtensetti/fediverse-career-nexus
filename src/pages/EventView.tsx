@@ -140,14 +140,15 @@ export default function EventView() {
     );
   }
 
-  const startDate = parseISO(event.start_time);
-  const endDate = parseISO(event.end_time);
+  const startDate = parseISO(event.start_date);
+  const endDate = event.end_date ? parseISO(event.end_date) : startDate;
   const isCreator = session?.user?.id === event.user_id;
-  const isPastEvent = new Date(event.end_time) < new Date();
+  const isPastEvent = new Date(event.end_date || event.start_date) < new Date();
 
   const formattedDate = format(startDate, 'EEEE, MMMM d, yyyy');
   const formattedStartTime = format(startDate, 'h:mm a');
   const formattedEndTime = format(endDate, 'h:mm a');
+  const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return (
     <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
@@ -169,24 +170,19 @@ export default function EventView() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {event.is_virtual && (
+            {event.is_online && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <Video className="h-3 w-3" />
                 <span>Virtual</span>
               </Badge>
             )}
-            {!event.is_public && (
-              <Badge variant="outline" className="flex items-center gap-1">
-                <span>Private</span>
-              </Badge>
-            )}
           </div>
         </div>
 
-        {event.image_url && (
+        {event.cover_image_url && (
           <div className="w-full aspect-video rounded-lg overflow-hidden">
             <img
-              src={event.image_url}
+              src={event.cover_image_url}
               alt={event.title}
               className="w-full h-full object-cover"
             />
@@ -200,52 +196,41 @@ export default function EventView() {
               <div className="whitespace-pre-wrap">{event.description}</div>
             </div>
 
-            {event.is_virtual && event.stream_url && event.stream_type && (
+            {event.is_online && event.meeting_url && (
               <div>
-                <h2 className="text-xl font-semibold mb-4">Livestream</h2>
+                <h2 className="text-xl font-semibold mb-4">Meeting Link</h2>
                 {videoOpen ? (
                   <div className="aspect-video w-full mb-4">
-                    {event.stream_type === 'youtube' && (
+                    {event.meeting_url.includes('youtube') || event.meeting_url.includes('youtu.be') ? (
                       <iframe
                         className="w-full h-full rounded-lg"
-                        src={event.stream_url.includes('embed') ? event.stream_url : event.stream_url.replace('watch?v=', 'embed/')}
+                        src={event.meeting_url.includes('embed') ? event.meeting_url : event.meeting_url.replace('watch?v=', 'embed/')}
                         title={event.title}
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                       ></iframe>
-                    )}
-                    {event.stream_type === 'peertube' && (
+                    ) : event.meeting_url.includes('jitsi') || event.meeting_url.includes('meet.') ? (
                       <iframe
                         className="w-full h-full rounded-lg"
-                        src={event.stream_url}
-                        title={event.title}
-                        frameBorder="0"
-                        allowFullScreen
-                      ></iframe>
-                    )}
-                    {event.stream_type === 'jitsi' && (
-                      <iframe
-                        className="w-full h-full rounded-lg"
-                        src={event.stream_url}
+                        src={event.meeting_url}
                         title={event.title}
                         frameBorder="0"
                         allow="camera; microphone; fullscreen; display-capture"
                         allowFullScreen
                       ></iframe>
-                    )}
-                    {(event.stream_type === 'rtmp' || event.stream_type === 'other') && (
+                    ) : (
                       <div className="h-full w-full flex items-center justify-center bg-muted rounded-lg">
                         <div className="text-center p-6">
-                          <Youtube className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                          <h3 className="text-lg font-medium mb-1">Stream URL</h3>
+                          <Video className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                          <h3 className="text-lg font-medium mb-1">Meeting Link</h3>
                           <a 
-                            href={event.stream_url} 
+                            href={event.meeting_url} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline break-all"
+                            className="text-primary hover:underline break-all"
                           >
-                            {event.stream_url}
+                            {event.meeting_url}
                           </a>
                         </div>
                       </div>
@@ -258,7 +243,7 @@ export default function EventView() {
                     onClick={() => setVideoOpen(true)}
                   >
                     <Video className="h-10 w-10" />
-                    <span>Click to view livestream</span>
+                    <span>Click to view meeting</span>
                   </Button>
                 )}
               </div>
@@ -275,12 +260,12 @@ export default function EventView() {
                       <div className="font-medium">Date and time</div>
                       <div className="text-sm text-muted-foreground">{formattedDate}</div>
                       <div className="text-sm text-muted-foreground">
-                        {formattedStartTime} - {formattedEndTime} ({event.timezone})
+                        {formattedStartTime} - {formattedEndTime} ({browserTimezone})
                       </div>
                     </div>
                   </div>
 
-                  {event.location && !event.is_virtual && (
+                  {event.location && !event.is_online && (
                     <div className="flex items-start gap-3">
                       <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div>
@@ -290,13 +275,13 @@ export default function EventView() {
                     </div>
                   )}
 
-                  {event.capacity && (
+                  {event.max_attendees && (
                     <div className="flex items-start gap-3">
                       <User className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div>
                         <div className="font-medium">Capacity</div>
                         <div className="text-sm text-muted-foreground">
-                          {event.rsvp_count || 0} / {event.capacity} attendees
+                          {event.rsvp_count || 0} / {event.max_attendees} attendees
                         </div>
                       </div>
                     </div>

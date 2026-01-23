@@ -111,16 +111,17 @@ interface EventCardProps {
 
 function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation();
-  const eventDate = parseISO(event.start_time);
+  const eventDate = parseISO(event.start_date);
   const formattedDate = format(eventDate, 'EEEE, MMMM d, yyyy');
   const formattedTime = format(eventDate, 'h:mm a');
+  const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   
   return (
     <Card className="overflow-hidden flex flex-col">
-      {event.image_url ? (
+      {event.cover_image_url ? (
         <div className="aspect-video w-full overflow-hidden">
           <img 
-            src={event.image_url} 
+            src={event.cover_image_url} 
             alt={event.title} 
             className="object-cover w-full h-full"
           />
@@ -140,7 +141,7 @@ function EventCard({ event }: EventCardProps) {
         <CardDescription>
           <div className="flex flex-col gap-1">
             <span>{formattedDate}</span>
-            <span>{formattedTime} ({event.timezone})</span>
+            <span>{formattedTime} ({browserTimezone})</span>
           </div>
         </CardDescription>
       </CardHeader>
@@ -153,13 +154,13 @@ function EventCard({ event }: EventCardProps) {
       
       <CardFooter className="flex items-center justify-between border-t pt-4">
         <div className="flex items-center gap-2">
-          {event.is_virtual && (
+          {event.is_online && (
             <div className="flex items-center text-xs text-muted-foreground">
               <Video className="h-3 w-3 mr-1" />
               {t("events.virtual")}
             </div>
           )}
-          {!event.is_virtual && event.location && (
+          {!event.is_online && event.location && (
             <div className="flex items-center text-xs text-muted-foreground line-clamp-1 max-w-[150px]">
               {event.location}
             </div>

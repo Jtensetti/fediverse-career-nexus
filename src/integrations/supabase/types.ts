@@ -1417,28 +1417,37 @@ export type Database = {
       moderation_actions: {
         Row: {
           created_at: string
+          expires_at: string | null
           id: string
           is_public: boolean | null
           moderator_id: string
           reason: string | null
+          target_content_id: string | null
+          target_content_type: string | null
           target_user_id: string | null
           type: string
         }
         Insert: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           is_public?: boolean | null
           moderator_id: string
           reason?: string | null
+          target_content_id?: string | null
+          target_content_type?: string | null
           target_user_id?: string | null
           type: string
         }
         Update: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           is_public?: boolean | null
           moderator_id?: string
           reason?: string | null
+          target_content_id?: string | null
+          target_content_type?: string | null
           target_user_id?: string | null
           type?: string
         }
@@ -2467,6 +2476,39 @@ export type Database = {
           },
         ]
       }
+      user_bans: {
+        Row: {
+          banned_by: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          reason: string
+          revoked_at: string | null
+          revoked_by: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_by: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          reason: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_by?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          reason?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_blocks: {
         Row: {
           blocked_user_id: string
@@ -3249,6 +3291,7 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_moderator: { Args: { _user_id: string }; Returns: boolean }
+      is_user_banned: { Args: { check_user_id: string }; Returns: boolean }
       is_user_blocked: {
         Args: { checker_id: string; target_id: string }
         Returns: boolean

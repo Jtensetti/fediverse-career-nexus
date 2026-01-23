@@ -303,13 +303,13 @@ export function generateICalEvent(event: Event): string {
     return d.toISOString().replace(/-|:|\.\d+/g, '');
   };
 
-  const startDate = formatDate(event.start_time);
-  const endDate = formatDate(event.end_time);
+  const startDate = formatDate(event.start_date);
+  const endDate = formatDate(event.end_date || event.start_date);
   const now = formatDate(new Date().toISOString());
   
   let location = event.location || '';
-  if (event.is_virtual && event.stream_url) {
-    location = location ? `${location} and ${event.stream_url}` : event.stream_url;
+  if (event.is_online && event.meeting_url) {
+    location = location ? `${location} and ${event.meeting_url}` : event.meeting_url;
   }
 
   return [
@@ -322,7 +322,7 @@ export function generateICalEvent(event: Event): string {
     `DTSTART:${startDate}`,
     `DTEND:${endDate}`,
     `SUMMARY:${event.title}`,
-    `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}`,
+    `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
     `LOCATION:${location}`,
     'END:VEVENT',
     'END:VCALENDAR'
