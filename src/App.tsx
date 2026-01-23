@@ -28,6 +28,7 @@ import FederatedFeedPage from "./pages/FederatedFeed";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import AuthRecovery from "./pages/AuthRecovery";
+import ConfirmEmail from "./pages/ConfirmEmail";
 import Events from "./pages/Events";
 import EventCreate from "./pages/EventCreate";
 import Articles from "./pages/Articles";
@@ -119,6 +120,7 @@ function App() {
             <Route path="/auth/signup" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/recovery" element={<AuthRecovery />} />
+            <Route path="/confirm-email" element={<ConfirmEmail />} />
             {/* Referral join route - redirects to signup with ref param */}
             <Route path="/join/:code" element={<JoinRedirect />} />
                     <Route path="/jobs" element={<Jobs />} />
