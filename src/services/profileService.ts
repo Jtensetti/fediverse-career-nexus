@@ -329,6 +329,13 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       authType: (profile.auth_type as "local" | "federated") || "local",
       homeInstance: profile.home_instance || undefined,
       remoteActorUrl: profile.remote_actor_url || undefined,
+      // Freelancer fields
+      isFreelancer: profile.is_freelancer || false,
+      freelancerSkills: profile.freelancer_skills || [],
+      freelancerRate: profile.freelancer_rate || undefined,
+      freelancerAvailability: profile.freelancer_availability || undefined,
+      website: profile.website || undefined,
+      contactEmail: profile.public_email || undefined,
       contact: {
         email: user.email,
         phone: profile.phone || "",
