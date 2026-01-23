@@ -336,22 +336,14 @@ export default function EventView() {
             </Card>
 
             <div className="flex gap-3">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => downloadICalFile(event)}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add to calendar</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Button 
+                variant="outline" 
+                onClick={() => downloadICalFile(event)}
+                className="gap-2"
+              >
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">Add to calendar</span>
+              </Button>
 
               <TooltipProvider>
                 <Tooltip>
