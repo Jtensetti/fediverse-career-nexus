@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { SEOHead } from "@/components/common/SEOHead";
 
 type CallbackStatus = 'processing' | 'success' | 'error';
 
@@ -100,6 +100,7 @@ export default function AuthCallback() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4">
+      <SEOHead title="Completing Sign In" description="Verifying your identity with your Fediverse instance." />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           {status === 'processing' && (

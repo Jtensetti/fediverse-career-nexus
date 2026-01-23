@@ -19,6 +19,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const Moderation = () => {
   const { t } = useTranslation();
@@ -320,6 +321,7 @@ const Moderation = () => {
 
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6">
+      <SEOHead title={t('moderation.title')} description="Community moderation tools for administrators and moderators." />
       <ModerationHeader isAdmin={isAdmin} isModerator={isModerator} />
       
       <Tabs defaultValue={acceptedCoC ? "log" : "coc"} className="w-full">

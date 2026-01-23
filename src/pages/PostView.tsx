@@ -198,7 +198,7 @@ export default function PostView() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <DashboardLayout title="Loading Post" description="Loading post details...">
         <div className="min-h-[50vh] flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -208,7 +208,7 @@ export default function PostView() {
 
   if (error || !post) {
     return (
-      <DashboardLayout>
+      <DashboardLayout title="Post Not Found" description="This post could not be found.">
         <div className="max-w-2xl mx-auto px-4 py-8">
           <Link to="/feed">
             <Button variant="ghost" size="sm" className="mb-4">
@@ -224,8 +224,14 @@ export default function PostView() {
     );
   }
 
+  // Extract post title/content for SEO
+  const postContent = post.content?.content || '';
+  const postTitle = typeof postContent === 'string' 
+    ? postContent.slice(0, 60) + (postContent.length > 60 ? '...' : '')
+    : 'Post';
+  
   return (
-    <DashboardLayout>
+    <DashboardLayout title={postTitle || 'Post'} description="View post and replies on Nolto.">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Link to="/feed">
           <Button variant="ghost" size="sm" className="mb-4">

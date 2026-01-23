@@ -14,6 +14,7 @@ import { ArrowLeft, Settings, X, Loader2 } from "lucide-react";
 import { getFeedPreferences, updateFeedPreferences, type FeedPreferences } from "@/services/feedPreferencesService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const FeedSettings = () => {
   const navigate = useNavigate();
@@ -114,6 +115,7 @@ const FeedSettings = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Feed Settings" description="Customize your feed preferences, default feeds, and muted words." />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8 max-w-2xl">

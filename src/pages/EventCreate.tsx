@@ -1,14 +1,16 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { createEvent, Event } from '@/services/eventService';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import EventForm from '@/components/EventForm';
+import { SEOHead } from '@/components/common/SEOHead';
 
 export default function EventCreate() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,6 +40,10 @@ export default function EventCreate() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead 
+        title={t("events.createTitle")} 
+        description={t("events.createDescription")} 
+      />
       <Navbar />
       <main className="flex-grow">
         <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">

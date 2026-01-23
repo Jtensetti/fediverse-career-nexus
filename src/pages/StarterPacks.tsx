@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Package, Plus, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const categories = [
   { value: "all", label: "All Packs" },
@@ -40,6 +41,7 @@ export default function StarterPacks() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Starter Packs" description="Discover curated lists of people to help you find great accounts on Nolto." />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">

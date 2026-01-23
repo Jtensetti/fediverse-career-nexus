@@ -1,13 +1,11 @@
-
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getEvent, updateEvent, Event } from '@/services/eventService';
-
 import EventForm from '@/components/EventForm';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { SEOHead } from '@/components/common/SEOHead';
 
 export default function EventEdit() {
   const { id } = useParams<{ id: string }>();
@@ -70,6 +68,10 @@ export default function EventEdit() {
 
   return (
     <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
+      <SEOHead 
+        title={event?.title ? `Edit: ${event.title}` : t('events.editTitle')} 
+        description={t('events.editDescription')} 
+      />
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">{t('events.editTitle')}</h1>
         <p className="text-muted-foreground mt-2">

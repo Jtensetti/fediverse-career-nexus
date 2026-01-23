@@ -33,6 +33,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
 import FediverseBadge from '@/components/FediverseBadge';
 import MessageReactions from '@/components/MessageReactions';
+import { SEOHead } from '@/components/common/SEOHead';
 
 export default function MessageConversation() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -309,8 +310,14 @@ export default function MessageConversation() {
 
   const { messages } = data;
 
+  const conversationTitle = otherUser?.fullname || otherUser?.username || 'Messages';
+  
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead 
+        title={`Chat with ${conversationTitle}`} 
+        description="Private conversation on Nolto." 
+      />
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
         <Card className="flex flex-col h-[calc(100vh-200px)]">

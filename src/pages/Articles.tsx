@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const Articles = () => {
   const { t } = useTranslation();
@@ -95,6 +96,7 @@ const Articles = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title={t("articles.title")} description={t("articles.subtitle")} />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">
