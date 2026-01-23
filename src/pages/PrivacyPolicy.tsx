@@ -1,47 +1,6 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Database, Users, Lock, Type } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { getFontPreference, setFontPreference } from "@/components/FontLoader";
-
-// Font preference toggle component
-function FontPreferenceToggle() {
-  const [useGoogleFonts, setUseGoogleFonts] = useState(() => getFontPreference() === 'google');
-
-  const handleToggle = (checked: boolean) => {
-    const newPreference = checked ? 'google' : 'system';
-    setFontPreference(newPreference);
-    setUseGoogleFonts(checked);
-    // Reload to apply font change
-    window.location.reload();
-  };
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <Type className="h-5 w-5 text-muted-foreground" />
-        <div>
-          <Label htmlFor="font-preference" className="text-base font-medium">
-            Use Google Fonts
-          </Label>
-          <p className="text-sm text-muted-foreground">
-            {useGoogleFonts 
-              ? "Fonts are loaded from Google (your IP is shared with Google)"
-              : "Using system fonts (no external requests)"}
-          </p>
-        </div>
-      </div>
-      <Switch
-        id="font-preference"
-        checked={useGoogleFonts}
-        onCheckedChange={handleToggle}
-        aria-label="Toggle Google Fonts"
-      />
-    </div>
-  );
-}
+import { ArrowLeft, Shield, Database, Users, Lock } from "lucide-react";
 
 const PrivacyPolicy = () => {
   const keyPoints = [
@@ -247,17 +206,14 @@ const PrivacyPolicy = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-bondy-primary mb-3">8.2 Typography Fonts (Optional)</h3>
+                  <h3 className="text-xl font-semibold text-primary mb-3">8.2 Typography Fonts</h3>
                   <p className="mb-3">
-                    By default, Bondy loads fonts (Inter and Montserrat) from Google Fonts to provide a 
-                    consistent visual experience across devices. When fonts are loaded, your IP address 
-                    is transmitted to Google's servers.
+                    Nolto uses the Inter and Montserrat fonts, which are self-hosted on our own servers. 
+                    No requests are made to external font providers (such as Google Fonts), ensuring that 
+                    your IP address is not shared with third parties for typography purposes.
                   </p>
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <FontPreferenceToggle />
-                  </div>
-                  <p className="text-sm text-gray-600 mt-3">
-                    Your preference is stored locally on your device and is not transmitted to our servers.
+                  <p className="text-sm text-muted-foreground">
+                    This approach ensures full GDPR compliance for font loading.
                   </p>
                 </div>
 

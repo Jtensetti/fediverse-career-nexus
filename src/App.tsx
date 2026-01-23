@@ -13,10 +13,8 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary, SkipToContent } from "@/components/common";
-import { FontLoader } from "@/components/FontLoader";
 import SessionExpiryWarning from "@/components/SessionExpiryWarning";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import CookieConsentBanner from "@/components/CookieConsentBanner";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
@@ -95,7 +93,6 @@ function App() {
             <ErrorBoundary>
               <BrowserRouter>
                 <AuthProvider>
-                <FontLoader />
                 <SkipToContent />
                 <Toaster {...toasterConfig} />
                 <SessionExpiryWarning />
@@ -267,7 +264,6 @@ function App() {
                   </Routes>
                 </main>
                 <MobileBottomNav />
-                <CookieConsentBanner />
                 </AuthProvider>
               </BrowserRouter>
             </ErrorBoundary>

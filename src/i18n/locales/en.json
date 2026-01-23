@@ -797,16 +797,10 @@
     "federationTransfers": "Federation transfers to other Fediverse instances may involve servers in various countries. Each remote instance is responsible for its own data protection practices."
   },
   "cookies": {
-    "title": "Cookie Preferences",
-    "description": "We use essential cookies for authentication and security. You can customize optional preferences below.",
+    "title": "Cookie Notice",
+    "description": "We use only essential cookies for authentication and security. We do not use tracking cookies or share data with third parties. Fonts are self-hosted for privacy.",
     "learnMore": "Privacy Policy",
-    "customize": "Customize preferences",
     "essential": "Essential Cookies",
-    "essentialDesc": "Required for authentication, security (Cloudflare), and basic functionality. Cannot be disabled.",
-    "typography": "Typography (Google Fonts)",
-    "typographyDesc": "Loads custom fonts from Google for better readability. Your IP is shared with Google when enabled.",
-    "rejectOptional": "Essential Only",
-    "savePreferences": "Save Preferences",
-    "acceptAll": "Accept All"
+    "essentialDesc": "Required for authentication, security (Cloudflare), and basic functionality."
   }
 }
