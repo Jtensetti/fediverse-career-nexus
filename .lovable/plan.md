@@ -1,243 +1,176 @@
 
 
-# Fixes: Feed Freelancer Badge, Favicon, and OG Image
+# Fix: Browser Tab Title Not Updating on Page Navigation
 
 ## Problem Summary
 
-Three issues need to be resolved:
-1. **Feed avatars don't show green "open to work" ring** - The avatar in posts doesn't display the freelancer badge
-2. **Favicon uses Lovable heart** - The favicon points to an external URL instead of the project's icon
-3. **OG image is plain teal** - The social share image is just "Nolto" on teal, not the actual homepage design
+When navigating away from a profile page, the browser tab title remains stuck on the profile name (e.g., "John Doe (@johndoe) | Nolto") instead of updating to reflect the current page. This happens because most pages in the application are **missing the `SEOHead` component** to set their own titles.
 
 ---
 
-## Issue 1: Feed Avatars Missing Freelancer Badge
+## Root Cause Analysis
 
-### Root Cause Analysis
+### How React Helmet Works
 
-The `FederatedPostCard` component uses a plain `Avatar` instead of `AvatarWithStatus`:
+`react-helmet-async` manages the document `<title>` declaratively. When you navigate from Page A (with SEOHead) to Page B (without SEOHead):
+- Page A's `<Helmet>` component is unmounted
+- **But no new `<Helmet>` component replaces it**, so the title persists
 
-**Current code (lines 360-372):**
-```tsx
-<Avatar className="h-11 w-11 aspect-square flex-shrink-0 ring-2...">
-  <AvatarImage src={...} />
-  <AvatarFallback>...</AvatarFallback>
-</Avatar>
-```
+### Current State
 
-Additionally, the feed data doesn't include freelancer status because:
+| Page | Has SEOHead? | Result |
+|------|-------------|--------|
+| Profile.tsx | Yes - sets `"${displayName} (@${username}) \| Nolto"` | Title updates correctly |
+| Index.tsx | Yes - sets `"Nolto - The Federated Professional Network"` | Only for unauthenticated users |
+| **FederatedFeed.tsx** | **No** | Title stays as previous page |
+| Messages.tsx | No | Title stays as previous page |
+| Notifications.tsx | No | Title stays as previous page |
+| Jobs.tsx | No | Title stays as previous page |
+| Articles.tsx | No | Title stays as previous page |
+| ... (40+ more pages) | No | Title stays as previous page |
 
-1. The `FederatedPost.profile` interface only includes `username`, `fullname`, `avatar_url`, `home_instance`
-2. The `getFederatedFeed` function in `federationService.ts` only fetches those 4 fields from `public_profiles`
-3. The `public_profiles` view DOES have `is_freelancer` column - it just isn't being fetched
+### The Specific Bug Path
 
-### Solution
-
-**Step 1: Update FederatedPost interface** to include freelancer status:
-```tsx
-profile?: {
-  username?: string;
-  fullname?: string;
-  avatar_url?: string;
-  home_instance?: string;
-  is_freelancer?: boolean;  // ADD THIS
-};
-```
-
-**Step 2: Update getFederatedFeed query** to fetch `is_freelancer`:
-```tsx
-const { data: profiles } = await supabase
-  .from('public_profiles')
-  .select('id, username, fullname, avatar_url, home_instance, is_freelancer')  // ADD is_freelancer
-  .in('id', userIds);
-```
-
-**Step 3: Include is_freelancer in profilesMap transformation**
-
-**Step 4: Replace Avatar with AvatarWithStatus in FederatedPostCard:**
-```tsx
-import AvatarWithStatus from "@/components/common/AvatarWithStatus";
-
-// In the render:
-<AvatarWithStatus
-  src={getAvatarUrl()}
-  alt={getActorName()}
-  fallback={getActorName().charAt(0).toUpperCase()}
-  size="md"
-  status={post.source === 'remote' ? 'remote' : 'none'}
-  isFreelancer={post.profile?.is_freelancer}
-/>
-```
-
-This removes the need for the separate "remote" globe badge div since `AvatarWithStatus` handles it automatically.
+1. User visits `/profile/johndoe` → Title becomes "John Doe (@johndoe) | Nolto"
+2. User navigates to `/feed` (home) → **FederatedFeed.tsx has no SEOHead**
+3. Browser tab still shows "John Doe (@johndoe) | Nolto" ❌
 
 ---
 
-## Issue 2: Favicon Uses Lovable Heart
+## Solution
 
-### Root Cause
-
-The favicon in `index.html` (lines 23-27) points to an external Google Storage URL:
-```html
-<link
-  rel="icon"
-  type="image/png"
-  href="https://storage.googleapis.com/gpt-engineer-file-uploads/hXPrdOqSYOSEXsgA2jxePGGKRT93/uploads/1767868098985-082a3beb-46f5-4b8a-9569-2da582063f92-removebg-preview.png"
-/>
-```
-
-This is likely a placeholder that didn't get updated. The project has `public/favicon.ico` which should be used instead.
-
-### Solution
-
-Update the favicon link to use the local file:
-```html
-<link rel="icon" type="image/x-icon" href="/favicon.ico" />
-```
-
----
-
-## Issue 3: OG Image is Plain Teal
-
-### Root Cause
-
-The current `public/og-image.png` is a simple graphic with just "Nolto" text on a teal background. This doesn't showcase the product effectively.
-
-### Solution Options
-
-**Option A: Create a professional OG image programmatically**
-- Design a new image with the hero section content: "The Professional Network That Respects Your Freedom"
-- Include the app screenshot mockup shown on the homepage
-- Use the teal/green gradient background
-- Standard size: 1200x630 pixels
-
-**Option B: Use an existing asset**
-- Check if the project has a marketing image in `public/lovable-uploads/`
-- The file `8dbd04e2-165c-4205-ba34-e66173afac69.png` might be a logo or marketing asset
-
-For a quick fix, I recommend creating a simple but effective OG image that includes:
-- The tagline "The Professional Network That Respects Your Freedom"
-- The Nolto logo
-- A clean gradient background
-
-This would require either:
-1. User providing a new OG image file
-2. Creating one programmatically with canvas/image generation
-
-**Recommendation**: Ask the user if they have a marketing image to use, or if they want me to describe what the ideal OG image should look like so they can create it externally.
-
----
-
-## Files to Modify
-
-| File | Change |
-|------|--------|
-| `src/services/federationService.ts` | Add `is_freelancer` to FederatedPost interface and query |
-| `src/components/FederatedPostCard.tsx` | Replace Avatar with AvatarWithStatus component |
-| `index.html` | Fix favicon to use local `/favicon.ico` |
-| `public/og-image.png` | Needs new image (requires user input) |
+Add `SEOHead` component to all pages that render visible content. This ensures:
+1. Every page sets its own title
+2. Social sharing from any page has correct meta tags
+3. The title always reflects the current page
 
 ---
 
 ## Implementation Details
 
-### Fix 1A: federationService.ts - Update Interface
+### Priority 1: Most Frequently Used Pages
 
-**Lines 12-18** - Add is_freelancer to profile type:
+These are the pages users navigate to most often and will notice the bug immediately:
+
+| File | Title to Set |
+|------|-------------|
+| `src/pages/FederatedFeed.tsx` | "Feed \| Nolto" |
+| `src/pages/Messages.tsx` | "Messages \| Nolto" |
+| `src/pages/Notifications.tsx` | "Notifications \| Nolto" |
+| `src/pages/Connections.tsx` | "Connections \| Nolto" |
+| `src/pages/SavedItems.tsx` | "Saved Items \| Nolto" |
+| `src/pages/ProfileEdit.tsx` | "Edit Profile \| Nolto" |
+
+### Priority 2: Content Pages
+
+| File | Title to Set |
+|------|-------------|
+| `src/pages/Jobs.tsx` | "Jobs \| Nolto" |
+| `src/pages/JobView.tsx` | Dynamic: "{job.title} \| Nolto" |
+| `src/pages/JobCreate.tsx` | "Create Job Post \| Nolto" |
+| `src/pages/JobEdit.tsx` | "Edit Job Post \| Nolto" |
+| `src/pages/JobManage.tsx` | "Manage Jobs \| Nolto" |
+| `src/pages/Articles.tsx` | "Articles \| Nolto" |
+| `src/pages/ArticleCreate.tsx` | "Write Article \| Nolto" |
+| `src/pages/ArticleEdit.tsx` | "Edit Article \| Nolto" |
+| `src/pages/ArticleManage.tsx` | "Manage Articles \| Nolto" |
+| `src/pages/PostView.tsx` | Dynamic: post preview or "Post \| Nolto" |
+
+### Priority 3: Events & Other Features
+
+| File | Title to Set |
+|------|-------------|
+| `src/pages/Events.tsx` | "Events \| Nolto" |
+| `src/pages/EventCreate.tsx` | "Create Event \| Nolto" |
+| `src/pages/EventEdit.tsx` | "Edit Event \| Nolto" |
+| `src/pages/EventView.tsx` | Dynamic: "{event.title} \| Nolto" |
+| `src/pages/Freelancers.tsx` | "Freelancers \| Nolto" |
+| `src/pages/Search.tsx` | "Search \| Nolto" |
+| `src/pages/FeedSettings.tsx` | "Feed Settings \| Nolto" |
+| `src/pages/StarterPacks.tsx` | "Starter Packs \| Nolto" |
+| `src/pages/StarterPackView.tsx` | Dynamic: "{pack.name} \| Nolto" |
+| `src/pages/StarterPackCreate.tsx` | "Create Starter Pack \| Nolto" |
+
+### Priority 4: Static/Info Pages
+
+| File | Title to Set |
+|------|-------------|
+| `src/pages/Mission.tsx` | "Our Mission \| Nolto" |
+| `src/pages/Documentation.tsx` | "Documentation \| Nolto" |
+| `src/pages/FederationGuide.tsx` | "Federation Guide \| Nolto" |
+| `src/pages/HelpCenter.tsx` | "Help Center \| Nolto" |
+| `src/pages/PrivacyPolicy.tsx` | "Privacy Policy \| Nolto" |
+| `src/pages/TermsOfService.tsx` | "Terms of Service \| Nolto" |
+| `src/pages/Instances.tsx` | "Instances \| Nolto" |
+| `src/pages/NotFound.tsx` | "Page Not Found \| Nolto" |
+
+### Priority 5: Auth & Admin Pages
+
+| File | Title to Set |
+|------|-------------|
+| `src/pages/Auth.tsx` | "Sign In \| Nolto" |
+| `src/pages/AuthRecovery.tsx` | "Reset Password \| Nolto" |
+| `src/pages/ConfirmEmail.tsx` | "Confirm Email \| Nolto" |
+| `src/pages/Moderation.tsx` | "Moderation \| Nolto" |
+| `src/pages/AdminFederationHealth.tsx` | "Federation Health \| Nolto" |
+| `src/pages/AdminFederationMetrics.tsx` | "Federation Metrics \| Nolto" |
+| `src/pages/AdminInstances.tsx` | "Manage Instances \| Nolto" |
+| `src/pages/MessageConversation.tsx` | Dynamic: "Chat with {name} \| Nolto" |
+
+---
+
+## Code Pattern
+
+Each page will add the SEOHead component like this:
+
 ```tsx
-profile?: {
-  username?: string;
-  fullname?: string;
-  avatar_url?: string;
-  home_instance?: string;
-  is_freelancer?: boolean;
-};
+import { SEOHead } from "@/components/common/SEOHead";
+
+// In the component return:
+<>
+  <SEOHead title="Page Title" />
+  {/* existing page content */}
+</>
 ```
 
-### Fix 1B: federationService.ts - Update Query
+For dynamic titles (like job details):
 
-**Line 147** - Add is_freelancer to select:
 ```tsx
-.select('id, username, fullname, avatar_url, home_instance, is_freelancer')
-```
-
-**Lines 153-155** - Include in profilesMap:
-```tsx
-profilesMap = Object.fromEntries(
-  profiles.map(p => [p.id, { 
-    username: p.username, 
-    fullname: p.fullname, 
-    avatar_url: p.avatar_url, 
-    home_instance: p.home_instance,
-    is_freelancer: p.is_freelancer 
-  }])
-);
-```
-
-**Line 179** - Add to profile object:
-```tsx
-profile: profile ? { 
-  username: profile.username || undefined, 
-  fullname: profile.fullname || undefined, 
-  avatar_url: profile.avatar_url || undefined, 
-  home_instance: profile.home_instance || undefined,
-  is_freelancer: profile.is_freelancer || false
-} : undefined,
-```
-
-### Fix 1C: FederatedPostCard.tsx - Replace Avatar
-
-**Line 4** - Add import:
-```tsx
-import AvatarWithStatus from "@/components/common/AvatarWithStatus";
-```
-
-**Lines 360-378** - Replace Avatar with AvatarWithStatus:
-```tsx
-<AvatarWithStatus
-  src={getAvatarUrl()}
-  alt={getActorName()}
-  fallback={getActorName().charAt(0).toUpperCase()}
-  size="md"
-  status={post.source === 'remote' ? 'remote' : 'none'}
-  isFreelancer={post.source === 'local' && post.profile?.is_freelancer}
+<SEOHead 
+  title={job?.title || "Job Details"}
+  description={job?.description?.slice(0, 160)}
 />
 ```
 
-This automatically handles:
-- Green ring + briefcase icon for freelancers
-- Purple ring + globe icon for remote/federated users
-- Proper sizing and styling
+---
 
-### Fix 2: index.html - Favicon
+## Files to Modify
 
-**Lines 23-27** - Replace with:
-```html
-<link rel="icon" type="image/x-icon" href="/favicon.ico" />
-```
+A total of **~35 files** need to be updated. The implementation will:
 
-### Fix 3: OG Image
-
-The current OG image is a simple teal graphic. For a professional social preview, the ideal image would be 1200x630 pixels and show:
-- The main headline text
-- A preview of the app interface
-- The Nolto branding
-
-This requires either a new image file to be uploaded, or we could create a simple text-based image with the key messaging.
+1. Add `import { SEOHead } from "@/components/common/SEOHead";` to each file
+2. Add `<SEOHead title="..." />` at the top of the returned JSX
+3. For pages using `Helmet` directly (like CodeOfConductPage), replace with `SEOHead` for consistency
 
 ---
 
 ## Expected Outcomes
 
-| Issue | Before | After |
-|-------|--------|-------|
-| Feed avatars | Plain avatar, no freelancer indicator | Green ring + briefcase for "open to work" users |
-| Favicon | Lovable heart icon | Nolto's custom favicon |
-| OG image | Plain "Nolto" on teal | Needs new image |
+| Scenario | Before | After |
+|----------|--------|-------|
+| Visit profile, then go to feed | Tab shows "John Doe (@johndoe) \| Nolto" | Tab shows "Feed \| Nolto" |
+| Navigate to messages | Title unchanged | Tab shows "Messages \| Nolto" |
+| View a job posting | Title unchanged | Tab shows "Senior Developer at Acme \| Nolto" |
+| Share feed on social media | Inconsistent meta tags | Proper "Feed \| Nolto" with correct OG tags |
 
 ---
 
-## Question for User
+## Note on Profile Sharing
 
-For the OG image: Would you like to provide a new marketing image to use as the social share preview? The ideal size is 1200x630 pixels. Alternatively, I can create a simple image using the headline text and logo, though this would be basic. What would you prefer?
+The profile sharing functionality continues to work correctly because:
+- `Profile.tsx` already sets proper SEO meta tags via `SEOHead`
+- The `ShareProfileCard` component uses `window.location.origin` for dynamic URLs
+- The OG image and description are set per-profile for social previews
+
+This fix ensures that after viewing a shared profile URL, navigating away will properly update the tab title.
 
