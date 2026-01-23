@@ -849,16 +849,10 @@
     "federationTransfers": "Federationsöverföringar till andra Fediverse-instanser kan involvera servrar i olika länder. Varje fjärrinstans ansvarar för sina egna dataskyddsrutiner."
   },
   "cookies": {
-    "title": "Cookie-inställningar",
-    "description": "Vi använder nödvändiga cookies för autentisering och säkerhet. Du kan anpassa valfria inställningar nedan.",
+    "title": "Cookie-meddelande",
+    "description": "Vi använder endast nödvändiga cookies för autentisering och säkerhet. Vi använder inga spårningscookies och delar inte data med tredje part. Typsnitt är självhostade för integritetsskydd.",
     "learnMore": "Integritetspolicy",
-    "customize": "Anpassa inställningar",
     "essential": "Nödvändiga cookies",
-    "essentialDesc": "Krävs för autentisering, säkerhet (Cloudflare) och grundläggande funktionalitet. Kan inte avaktiveras.",
-    "typography": "Typsnitt (Google Fonts)",
-    "typographyDesc": "Laddar anpassade typsnitt från Google för bättre läsbarhet. Din IP delas med Google när aktiverat.",
-    "rejectOptional": "Endast nödvändiga",
-    "savePreferences": "Spara inställningar",
-    "acceptAll": "Acceptera alla"
+    "essentialDesc": "Krävs för autentisering, säkerhet (Cloudflare) och grundläggande funktionalitet."
   }
 }
