@@ -41,7 +41,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   // Ref for infinite scroll sentinel
   const loadMoreRef = useRef<HTMLDivElement>(null);
   
-  // Use a ref to track offset for the query to avoid stale closure issues
+  // Use refs to track values for the observer callback to avoid stale closure issues
   const currentOffset = useRef(0);
   currentOffset.current = offset;
   
@@ -51,6 +51,10 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     staleTime: 30000, // 30 seconds
     enabled: true,
   });
+  
+  // Track isFetching in a ref so observer callback always has current value
+  const isFetchingRef = useRef(false);
+  isFetchingRef.current = isFetching;
   
   // Reset when feed type changes
   useEffect(() => {
@@ -124,11 +128,12 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   
   // Infinite scroll with IntersectionObserver
   useEffect(() => {
-    if (!loadMoreRef.current || !hasMore || isFetching) return;
+    if (!loadMoreRef.current || !hasMore) return;
     
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isFetching) {
+        // Use ref to get current isFetching value (avoids stale closure)
+        if (entries[0].isIntersecting && hasMore && !isFetchingRef.current) {
           setOffset(prev => prev + limit);
         }
       },
@@ -142,7 +147,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     observer.observe(loadMoreRef.current);
     
     return () => observer.disconnect();
-  }, [hasMore, isFetching, limit]);
+  }, [hasMore, limit]); // Removed isFetching - observer stays active during fetches
 
   const handleEditPost = (post: FederatedPost) => {
     setEditingPost(post);
