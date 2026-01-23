@@ -125,7 +125,7 @@ serve(async (req) => {
     }
 
     // Decode and validate the state
-    let stateData: { domain: string; username: string; actorUrl?: string; timestamp: number };
+    let stateData: { domain: string; username: string; actorUrl?: string; redirectUri?: string; timestamp: number };
     try {
       stateData = JSON.parse(atob(state));
     } catch {
@@ -161,13 +161,16 @@ serve(async (req) => {
       });
     }
 
-    // Exchange code for token
+    // Exchange code for token - prioritize state-embedded redirectUri for exact match
+    const tokenRedirectUri = stateData.redirectUri || redirectUri || oauthClient.redirect_uri;
+    console.log(`Using redirect URI for token exchange: ${tokenRedirectUri}`);
+    
     const tokenResult = await exchangeCodeForToken(
       domain,
       code,
       oauthClient.client_id,
       oauthClient.client_secret,
-      redirectUri || oauthClient.redirect_uri
+      tokenRedirectUri
     );
 
     if (!tokenResult) {
