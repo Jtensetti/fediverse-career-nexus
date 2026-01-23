@@ -56,8 +56,8 @@ const AvatarWithStatus = ({
   const sizes = sizeClasses[size];
   const displayFallback = fallback || alt?.charAt(0).toUpperCase() || "U";
   
-  // If user is a freelancer and no other status, use freelancer status
-  const effectiveStatus = isFreelancer && status === "none" ? "freelancer" : status;
+  // Freelancer status takes priority to clearly show "open for work"
+  const effectiveStatus = isFreelancer ? "freelancer" : status;
 
   return (
     <div className={cn("relative inline-block", className)}>
