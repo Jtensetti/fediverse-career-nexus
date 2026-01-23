@@ -65,18 +65,41 @@ serve(async (req) => {
       .update({ used: true })
       .eq("id", resetCode.id);
 
-    // Find the user
-    const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
+    // Find the user using pagination (listUsers returns max 50 by default)
+    let user = null;
+    let page = 1;
+    const perPage = 100;
     
-    if (userError) {
-      console.error("Error listing users:", userError);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    while (!user) {
+      const { data: userData, error: userError } = await supabase.auth.admin.listUsers({
+        page,
+        perPage,
       });
+      
+      if (userError) {
+        console.error("Error listing users:", userError);
+        return new Response(JSON.stringify({ error: "Internal server error" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      // Search for user in this page
+      user = userData.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      
+      // If we found the user or there are no more users, stop
+      if (user || userData.users.length < perPage) {
+        break;
+      }
+      
+      page++;
+      
+      // Safety limit
+      if (page > 100) {
+        console.error("Too many pages when searching for user");
+        break;
+      }
     }
-
-    const user = userData.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
     
     if (!user) {
       return new Response(JSON.stringify({ error: "User not found" }), {
