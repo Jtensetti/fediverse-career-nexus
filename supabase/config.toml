@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.send-dm]
 verify_jwt = false
+
+[functions.encrypt-message]
+verify_jwt = false

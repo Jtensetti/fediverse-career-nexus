@@ -74,20 +74,21 @@ const toggleMutation = useMutation({
         ))}
       </AnimatePresence>
 
-      {/* Reaction picker trigger */}
+      {/* Reaction picker trigger - more visible */}
       <Popover open={showPicker} onOpenChange={setShowPicker}>
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "p-1 rounded-full transition-colors",
-              isOwnMessage 
-                ? "hover:bg-primary-foreground/20 text-primary-foreground/40 hover:text-primary-foreground/70"
-                : "hover:bg-muted text-muted-foreground/40 hover:text-muted-foreground",
-              hasReactions && "text-primary"
+              "p-1.5 rounded-full transition-all",
+              "opacity-0 group-hover:opacity-100",
+              "border border-transparent hover:border-border",
+              "hover:bg-muted text-muted-foreground hover:text-foreground",
+              hasReactions && "opacity-100 text-primary border-primary/30"
             )}
             aria-label="Add reaction"
+            title="React to this message"
           >
-            <Smile className="h-3.5 w-3.5" />
+            <Smile className="h-4 w-4" />
           </button>
         </PopoverTrigger>
         <PopoverContent 
