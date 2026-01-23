@@ -117,8 +117,11 @@ serve(async (req) => {
     }
 
     // Send email via Resend
+    // Use nolto.social domain for production emails
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Nolto <noreply@nolto.social>";
+    
     const { error: emailError } = await resend.emails.send({
-      from: "Nolto <noreply@resend.dev>",
+      from: fromEmail,
       to: [email],
       subject: "Your Nolto Password Reset Code",
       html: `

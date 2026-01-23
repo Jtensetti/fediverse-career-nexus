@@ -69,10 +69,11 @@ serve(async (req) => {
   if (resendApiKey) {
     const resend = new Resend(resendApiKey);
     const confirmUrl = `${siteUrl}/confirm-email?token=${token}`;
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Nolto <noreply@nolto.social>";
     await resend.emails.send({
-      from: 'noreply@bondy.local',
+      from: fromEmail,
       to: email,
-      subject: 'Confirm your Bondy account',
+      subject: 'Confirm your Nolto account',
       html: `<p>Please confirm your account by clicking <a href="${confirmUrl}">here</a>.</p>`
     });
   }

@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/referralService";
-import { Globe, Loader2, Shield, Users, Zap, ArrowLeft } from "lucide-react";
+import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -22,6 +22,9 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
   const [fediHandle, setFediHandle] = useState("");
   const [refCode, setRefCode] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -67,6 +70,41 @@ export default function AuthPage() {
     return null;
   };
 
+  // Username validation
+  const validateUsername = (value: string): string | null => {
+    if (value.length > 0 && value.length < 3) return "At least 3 characters";
+    if (value.length > 20) return "Maximum 20 characters";
+    if (!/^[a-z0-9_]*$/.test(value)) return "Lowercase letters, numbers, underscores only";
+    return null;
+  };
+
+  // Check username availability (debounced)
+  useEffect(() => {
+    if (!username || username.length < 3 || validateUsername(username)) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setCheckingUsername(true);
+      try {
+        const { data } = await supabase
+          .from('public_profiles')
+          .select('id')
+          .eq('username', username.toLowerCase())
+          .maybeSingle();
+        
+        setUsernameAvailable(!data);
+      } catch {
+        setUsernameAvailable(null);
+      } finally {
+        setCheckingUsername(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [username]);
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -94,6 +132,22 @@ export default function AuthPage() {
       const trimmedFirstName = firstName.trim();
       const trimmedLastName = lastName.trim();
       const fullname = `${trimmedFirstName} ${trimmedLastName}`;
+      const preferredUsername = username.trim().toLowerCase() || null;
+
+      // Validate username if provided
+      if (preferredUsername) {
+        const usernameError = validateUsername(preferredUsername);
+        if (usernameError) {
+          toast.error(`Username: ${usernameError}`);
+          setIsLoading(false);
+          return;
+        }
+        if (usernameAvailable === false) {
+          toast.error("This username is already taken");
+          setIsLoading(false);
+          return;
+        }
+      }
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -103,7 +157,8 @@ export default function AuthPage() {
           data: {
             first_name: trimmedFirstName,
             last_name: trimmedLastName,
-            fullname: fullname
+            fullname: fullname,
+            preferred_username: preferredUsername
           }
         }
       });
@@ -399,6 +454,34 @@ export default function AuthPage() {
                           maxLength={50}
                         />
                       </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="signup-username">{t("auth.username", "Username")} <span className="text-muted-foreground text-xs">({t("auth.optional", "optional")})</span></Label>
+                      <div className="relative">
+                        <Input
+                          id="signup-username"
+                          type="text"
+                          value={username}
+                          onChange={(e) => {
+                            const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                            setUsername(val);
+                          }}
+                          placeholder="your_username"
+                          maxLength={20}
+                          className="pr-9"
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {checkingUsername && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                          {!checkingUsername && usernameAvailable === true && <CheckCircle className="h-4 w-4 text-green-500" />}
+                          {!checkingUsername && usernameAvailable === false && <XCircle className="h-4 w-4 text-destructive" />}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {username ? `@${username}@nolto.social` : t("auth.usernameHint", "Your @username@nolto.social handle")}
+                      </p>
+                      {usernameAvailable === false && (
+                        <p className="text-xs text-destructive mt-1">{t("auth.usernameTaken", "This username is taken")}</p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="signup-email">{t("auth.email", "Email")}</Label>

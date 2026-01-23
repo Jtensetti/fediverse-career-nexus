@@ -29,6 +29,7 @@ import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 import type { BatchPostData } from "@/services/batchDataService";
 import type { CommentPreviewHandle } from "./CommentPreview";
+import { getNoltoInstanceDomain } from "@/lib/federation";
 
 // Lazy load CommentPreview for performance
 const CommentPreview = lazy(() => import("./CommentPreview"));
@@ -392,7 +393,7 @@ export default function FederatedPostCard({
             {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">
                   @{getActorUsername()}{post.source === 'local' 
-                    ? (post.profile?.home_instance ? `@${post.profile.home_instance}` : '@local') 
+                    ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}` 
                     : post.instance ? `@${post.instance}` : ''}
                 </div>
               )}

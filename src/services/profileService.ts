@@ -135,17 +135,52 @@ export const ensureUserProfile = async (userId: string) => {
       const metadata = user?.user_metadata || {};
       const firstName = metadata.first_name || '';
       const lastName = metadata.last_name || '';
+      const email = user?.email || '';
       const fullname = metadata.fullname || `${firstName} ${lastName}`.trim() || null;
       
-      // Generate a friendlier username from the name, or fallback to user_xxxxx
+      // Check for preferred_username from signup
+      const preferredUsername = metadata.preferred_username;
+      
+      // Generate username with improved algorithm
       let username: string;
-      if (firstName && lastName) {
-        // e.g., "erik_h" from "Erik Hjärtberg"
-        const baseUsername = `${firstName.toLowerCase()}_${lastName.charAt(0).toLowerCase()}`;
-        // Clean up non-alphanumeric characters
-        username = baseUsername.replace(/[^a-z0-9_]/g, '');
+      
+      if (preferredUsername && /^[a-z0-9_]{3,20}$/.test(preferredUsername)) {
+        // Use the preferred username if valid
+        username = preferredUsername;
+      } else if (firstName && lastName) {
+        // e.g., "erik_hjartberg" from "Erik Hjärtberg"
+        const baseUsername = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`;
+        // Clean up non-alphanumeric characters and limit length
+        username = baseUsername.replace(/[^a-z0-9_]/g, '').substring(0, 20);
+        
+        // If username is too short after cleanup, add first name only
+        if (username.length < 3) {
+          username = firstName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+      } else if (email) {
+        // Use email prefix: "john.doe@gmail.com" → "john_doe"
+        const emailPrefix = email.split('@')[0].replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        username = emailPrefix.substring(0, 20);
+        
+        // If still too short, add random suffix
+        if (username.length < 3) {
+          username = `user_${Math.random().toString(36).substring(2, 8)}`;
+        }
       } else {
-        username = `user_${userId.slice(0, 8)}`;
+        // Last resort: short random suffix
+        username = `user_${Math.random().toString(36).substring(2, 8)}`;
+      }
+      
+      // Check for uniqueness and add suffix if needed
+      const { data: existingUser } = await supabase
+        .from('public_profiles')
+        .select('username')
+        .eq('username', username)
+        .maybeSingle();
+      
+      if (existingUser) {
+        // Add random suffix to make unique
+        username = `${username.substring(0, 15)}_${Math.random().toString(36).substring(2, 6)}`;
       }
       
       const { data: newProfile, error: insertError } = await supabase

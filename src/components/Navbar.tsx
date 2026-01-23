@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ModeToggle";
 import { GlobalSearch } from "./GlobalSearch";
+import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
 import { AlignJustify, LogIn, Settings, User, UserPlus, LogOut, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -193,6 +194,7 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center gap-2 md:gap-3">
+            {isAuthenticated && <MobileSearch />}
             {isAuthenticated && (
               <div className="hidden md:block">
                 <GlobalSearch />
