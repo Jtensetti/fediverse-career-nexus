@@ -626,12 +626,14 @@ const ProfilePage = () => {
                 >
                   {t("profile.articles", "Articles")}
                 </TabsTrigger>
+                {/* Posts tab commented out for now
                 <TabsTrigger
                   value="posts"
                   className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
                 >
                   {t("profile.posts", "Posts")}
                 </TabsTrigger>
+                */}
                 <TabsTrigger
                   value="activity"
                   className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs sm:text-sm whitespace-nowrap"
@@ -796,6 +798,7 @@ const ProfilePage = () => {
               </Card>
             </TabsContent>
 
+            {/* Posts tab content commented out for now
             <TabsContent value="posts">
               <Card variant="elevated">
                 <CardContent className="pt-6">
@@ -808,6 +811,7 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+            */}
 
             <TabsContent value="activity">
               <Card variant="elevated">
