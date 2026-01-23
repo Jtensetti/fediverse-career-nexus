@@ -15,8 +15,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   User, 
@@ -27,11 +25,17 @@ import {
   ArrowRight,
   ArrowLeft,
   Sparkles,
-  Package,
+  Heart,
   Loader2
 } from "lucide-react";
 import { toast } from "sonner";
-import { getStarterPacks, followStarterPack, StarterPack } from "@/services/starterPackService";
+import { 
+  getOnboardingRecommendations, 
+  followSelectedUsers,
+  RecommendedUser 
+} from "@/services/onboardingRecommendationService";
+import { InterestSelector } from "./InterestSelector";
+import { RecommendedUserCard } from "./RecommendedUserCard";
 
 interface OnboardingFlowProps {
   open: boolean;
@@ -42,8 +46,9 @@ const steps = [
   { id: 1, title: "Welcome", icon: Sparkles },
   { id: 2, title: "Your Profile", icon: User },
   { id: 3, title: "Your Role", icon: Briefcase },
-  { id: 4, title: "Starter Packs", icon: Package },
-  { id: 5, title: "Get Started", icon: MessageSquare },
+  { id: 4, title: "Interests", icon: Heart },
+  { id: 5, title: "Discover", icon: Users },
+  { id: 6, title: "Get Started", icon: MessageSquare },
 ];
 
 const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
@@ -58,11 +63,13 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
     bio: "",
     currentRole: "",
     company: "",
+    interests: [] as string[],
   });
-  const [starterPacks, setStarterPacks] = useState<StarterPack[]>([]);
-  const [selectedPacks, setSelectedPacks] = useState<Set<string>>(new Set());
-  const [loadingPacks, setLoadingPacks] = useState(false);
-  const [followingPacks, setFollowingPacks] = useState(false);
+  
+  const [recommendations, setRecommendations] = useState<RecommendedUser[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [followingUsers, setFollowingUsers] = useState(false);
 
   useEffect(() => {
     if (user && open) {
@@ -84,30 +91,47 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         }
       };
       fetchProfile();
-      
-      // Fetch starter packs
-      const fetchStarterPacks = async () => {
-        setLoadingPacks(true);
-        try {
-          const packs = await getStarterPacks();
-          setStarterPacks(packs.filter(p => p.is_featured));
-        } catch (error) {
-          console.error("Error fetching starter packs:", error);
-        } finally {
-          setLoadingPacks(false);
-        }
-      };
-      fetchStarterPacks();
     }
   }, [user, open]);
 
-  const togglePackSelection = (packId: string) => {
-    setSelectedPacks(prev => {
+  // Fetch recommendations when moving to step 5 (Discover)
+  useEffect(() => {
+    if (currentStep === 5 && open) {
+      const fetchRecommendations = async () => {
+        setLoadingRecommendations(true);
+        try {
+          const recs = await getOnboardingRecommendations({
+            headline: formData.headline,
+            role: formData.currentRole,
+            interests: formData.interests,
+          });
+          setRecommendations(recs);
+        } catch (error) {
+          console.error("Error fetching recommendations:", error);
+        } finally {
+          setLoadingRecommendations(false);
+        }
+      };
+      fetchRecommendations();
+    }
+  }, [currentStep, open, formData.headline, formData.currentRole, formData.interests]);
+
+  const toggleInterest = (interestId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      interests: prev.interests.includes(interestId)
+        ? prev.interests.filter(i => i !== interestId)
+        : [...prev.interests, interestId]
+    }));
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(packId)) {
-        newSet.delete(packId);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
       } else {
-        newSet.add(packId);
+        newSet.add(userId);
       }
       return newSet;
     });
@@ -156,31 +180,30 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
       setLoading(false);
     }
     
-    if (currentStep === 4 && selectedPacks.size > 0) {
-      // Follow selected starter packs
-      setFollowingPacks(true);
+    if (currentStep === 5 && selectedUsers.size > 0) {
+      // Follow selected users
+      setFollowingUsers(true);
       try {
-        await Promise.all(
-          Array.from(selectedPacks).map(packId => followStarterPack(packId))
-        );
+        await followSelectedUsers(Array.from(selectedUsers));
+        toast.success(`Following ${selectedUsers.size} people!`);
       } catch (error) {
-        console.error("Error following starter packs:", error);
+        console.error("Error following users:", error);
       }
-      setFollowingPacks(false);
+      setFollowingUsers(false);
     }
     
-    if (currentStep < 5) {
+    if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     } else {
       onComplete();
     }
   };
 
-  const progress = (currentStep / 5) * 100;
+  const progress = (currentStep / 6) * 100;
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-lg" hideCloseButton>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" hideCloseButton>
         <Progress value={progress} className="h-1 mb-4" />
         
         <div className="flex justify-center gap-2 mb-6">
@@ -328,69 +351,69 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         {currentStep === 4 && (
           <>
             <DialogHeader>
-              <DialogTitle>Follow Starter Packs</DialogTitle>
+              <DialogTitle>What are you interested in?</DialogTitle>
               <DialogDescription>
-                Get a living feed instantly by following curated packs of professionals in your interests
+                Select up to 5 interests to help us find relevant people for you
               </DialogDescription>
             </DialogHeader>
-            <div className="mt-4">
-              {loadingPacks ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : starterPacks.length > 0 ? (
-                <ScrollArea className="h-[300px] pr-4">
-                  <div className="space-y-3">
-                    {starterPacks.map((pack) => (
-                      <div
-                        key={pack.id}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                          selectedPacks.has(pack.id)
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                        onClick={() => togglePackSelection(pack.id)}
-                      >
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            checked={selectedPacks.has(pack.id)}
-                            onCheckedChange={() => togglePackSelection(pack.id)}
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-medium">{pack.name}</h4>
-                              {pack.category && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {pack.category}
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {pack.description}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              {pack.member_count || 0} members
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No starter packs available yet</p>
-                </div>
-              )}
-              <p className="text-sm text-muted-foreground mt-4">
-                You can skip this step and explore packs later
+            <div className="mt-4 space-y-4">
+              <InterestSelector
+                selectedInterests={formData.interests}
+                onToggle={toggleInterest}
+                maxSelections={5}
+              />
+              <p className="text-sm text-muted-foreground">
+                {formData.interests.length > 0 
+                  ? `${formData.interests.length} selected` 
+                  : "You can skip this step"}
               </p>
             </div>
           </>
         )}
 
         {currentStep === 5 && (
+          <>
+            <DialogHeader>
+              <DialogTitle>Discover People to Follow</DialogTitle>
+              <DialogDescription>
+                Based on your profile and interests, here are professionals you might want to follow
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              {loadingRecommendations ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : recommendations.length > 0 ? (
+                <ScrollArea className="h-[300px] pr-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {recommendations.map((user) => (
+                      <RecommendedUserCard
+                        key={user.user_id}
+                        user={user}
+                        selected={selectedUsers.has(user.user_id)}
+                        onToggle={() => toggleUserSelection(user.user_id)}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>No recommendations available yet</p>
+                  <p className="text-sm mt-1">Continue to start exploring the network</p>
+                </div>
+              )}
+              <p className="text-sm text-muted-foreground mt-4">
+                {selectedUsers.size > 0 
+                  ? `Following ${selectedUsers.size} people` 
+                  : "You can skip this step"}
+              </p>
+            </div>
+          </>
+        )}
+
+        {currentStep === 6 && (
           <>
             <DialogHeader className="text-center">
               <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
@@ -449,11 +472,11 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         )}
 
         <div className="flex justify-between mt-6">
-          {currentStep > 1 && currentStep < 5 ? (
+          {currentStep > 1 && currentStep < 6 ? (
             <Button
               variant="ghost"
               onClick={() => setCurrentStep(currentStep - 1)}
-              disabled={loading || followingPacks}
+              disabled={loading || followingUsers}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
@@ -462,9 +485,12 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
             <div />
           )}
           
-          {currentStep < 5 ? (
-            <Button onClick={handleNext} disabled={loading || followingPacks}>
-              {loading || followingPacks ? "Saving..." : currentStep === 1 ? "Let's Go" : currentStep === 4 ? (selectedPacks.size > 0 ? "Follow & Continue" : "Skip") : "Continue"}
+          {currentStep < 6 ? (
+            <Button onClick={handleNext} disabled={loading || followingUsers}>
+              {loading || followingUsers ? "Saving..." : 
+                currentStep === 1 ? "Let's Go" : 
+                currentStep === 5 ? (selectedUsers.size > 0 ? "Follow & Continue" : "Skip") : 
+                "Continue"}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (

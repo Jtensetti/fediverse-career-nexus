@@ -339,6 +339,19 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
           `and(user_id.eq.${user.id},connected_user_id.eq.${connection.user_id}),and(user_id.eq.${connection.user_id},connected_user_id.eq.${user.id})`
         );
 
+      // Create mutual follows with source 'connection'
+      const followRecords = [
+        { follower_id: user.id, author_id: connection.user_id, source: 'connection' },
+        { follower_id: connection.user_id, author_id: user.id, source: 'connection' }
+      ];
+
+      await supabase
+        .from('author_follows')
+        .upsert(followRecords, { 
+          onConflict: 'follower_id,author_id',
+          ignoreDuplicates: true 
+        });
+
       // Notify the original requester that their request was accepted
       try {
         await notificationService.createNotification({
@@ -390,12 +403,35 @@ export const removeConnection = async (connectionId: string): Promise<boolean> =
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
+    // Get the other user before deleting
+    const { data: connection } = await supabase
+      .from("user_connections")
+      .select("user_id, connected_user_id")
+      .eq("id", connectionId)
+      .single();
+
     const { error } = await supabase
       .from("user_connections")
       .delete()
       .or(`and(user_id.eq.${user.id},id.eq.${connectionId}),and(connected_user_id.eq.${user.id},id.eq.${connectionId})`);
 
     if (error) throw error;
+
+    // Remove mutual follows where source is 'connection' (preserves manual follows)
+    if (connection) {
+      const otherId = connection.user_id === user.id 
+        ? connection.connected_user_id 
+        : connection.user_id;
+
+      await supabase
+        .from('author_follows')
+        .delete()
+        .eq('source', 'connection')
+        .or(
+          `and(follower_id.eq.${user.id},author_id.eq.${otherId}),` +
+          `and(follower_id.eq.${otherId},author_id.eq.${user.id})`
+        );
+    }
 
     toast.success("Connection removed");
     return true;

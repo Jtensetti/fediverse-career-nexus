@@ -26,6 +26,7 @@ import {
   BookText,
   UserPlus,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
 import ProfileViewsWidget from "@/components/ProfileViewsWidget";
 import ProfileBanner from "@/components/profile/ProfileBanner";
@@ -440,13 +441,34 @@ const ProfilePage = () => {
               ) : isAuthenticated ? (
                 <>
                   {connectionRelationship?.status === "accepted" ? (
-                    <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
-                      <Check size={14} /> {t("profile.connected", "Connected")}
-                    </Badge>
+                    <>
+                      <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1.5">
+                        <Check size={14} /> {t("profile.connected", "Connected")}
+                      </Badge>
+                      <Button onClick={() => navigate(`/messages/${profile.id}`)}>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        {t("profile.message", "Message")}
+                      </Button>
+                    </>
                   ) : connectionRelationship?.status === "pending_outgoing" ? (
-                    <Button variant="secondary" disabled>
-                      <Clock className="h-4 w-4 mr-2" /> {t("profile.pending", "Pending")}
-                    </Button>
+                    <>
+                      <Button variant="secondary" disabled>
+                        <Clock className="h-4 w-4 mr-2" /> {t("profile.pending", "Pending")}
+                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" disabled>
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              {t("profile.message", "Message")}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t("profile.connectFirstToMessage", "Connect first to send messages")}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </>
                   ) : connectionRelationship?.status === "pending_incoming" ? (
                     <>
                       <Button
@@ -459,26 +481,40 @@ const ProfilePage = () => {
                       <Button variant="outline" onClick={handleDeclineConnection} disabled={isRespondingToConnection}>
                         {t("profile.decline", "Decline")}
                       </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" disabled>
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              {t("profile.message", "Message")}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t("profile.connectFirstToMessage", "Connect first to send messages")}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </>
                   ) : (
-                    <Button onClick={handleConnect} disabled={isConnecting} loading={isConnecting}>
-                      {t("profile.connect", "Connect")}
-                    </Button>
+                    <>
+                      <Button onClick={handleConnect} disabled={isConnecting} loading={isConnecting}>
+                        {t("profile.connect", "Connect")}
+                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" disabled>
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              {t("profile.message", "Message")}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t("profile.connectFirstToMessage", "Connect first to send messages")}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </>
                   )}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      if (connectionRelationship?.status === "accepted") {
-                        navigate(`/messages/${profile.id}`);
-                      } else {
-                        toast.info(t("profile.connectFirst", "Connect with this person first to send messages"));
-                      }
-                    }}
-                    title={t("profile.message", "Message")}
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                  </Button>
                   <ShareButton
                     url={`${window.location.origin}/profile/${profile.username}`}
                     title={`${profile.displayName} on Nolto`}
