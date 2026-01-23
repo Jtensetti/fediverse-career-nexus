@@ -402,18 +402,21 @@ export type Database = {
           created_at: string
           follower_id: string
           id: string
+          source: string | null
         }
         Insert: {
           author_id: string
           created_at?: string
           follower_id: string
           id?: string
+          source?: string | null
         }
         Update: {
           author_id?: string
           created_at?: string
           follower_id?: string
           id?: string
+          source?: string | null
         }
         Relationships: []
       }
@@ -3060,6 +3063,24 @@ export type Database = {
           pending_batches: number
           processed_batches: number
           total_batches: number
+        }[]
+      }
+      get_onboarding_recommendations: {
+        Args: {
+          p_headline?: string
+          p_interests?: string[]
+          p_limit?: number
+          p_role?: string
+          p_user_id: string
+        }
+        Returns: {
+          avatar_url: string
+          fullname: string
+          headline: string
+          match_reason: string
+          match_score: number
+          user_id: string
+          username: string
         }[]
       }
       get_participant_info: { Args: { participant_id: string }; Returns: Json }
