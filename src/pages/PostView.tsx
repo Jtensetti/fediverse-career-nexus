@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -7,6 +8,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import FederatedPostCard from "@/components/FederatedPostCard";
 import PostReplyThread from "@/components/PostReplyThread";
 import InlineReplyComposer from "@/components/InlineReplyComposer";
+import PostEditDialog from "@/components/PostEditDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { getPostReplies, type PostReply } from "@/services/postReplyService";
 import type { FederatedPost } from "@/services/federationService";
@@ -15,12 +17,29 @@ export default function PostView() {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const highlightReplyId = searchParams.get('highlight');
   
   const [post, setPost] = useState<FederatedPost | null>(null);
   const [replies, setReplies] = useState<PostReply[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingPost, setEditingPost] = useState<FederatedPost | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+
+  const handleEditPost = (postToEdit: FederatedPost) => {
+    setEditingPost(postToEdit);
+    setEditOpen(true);
+  };
+
+  const handleDeletePost = () => {
+    navigate('/feed');
+  };
+
+  const handlePostUpdated = () => {
+    loadPostWithReplies();
+    queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
+  };
 
   useEffect(() => {
     if (postId) {
@@ -216,7 +235,13 @@ export default function PostView() {
         </Link>
 
         {/* Main Post - show full content and hide inline comments (shown below instead) */}
-        <FederatedPostCard post={post} hideComments showFullContent />
+        <FederatedPostCard 
+          post={post} 
+          hideComments 
+          showFullContent 
+          onEdit={handleEditPost}
+          onDelete={handleDeletePost}
+        />
 
         {/* Reply Composer */}
         <div className="mt-4 mb-6">
@@ -255,6 +280,13 @@ export default function PostView() {
           </div>
         )}
       </div>
+
+      <PostEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        post={editingPost}
+        onUpdated={handlePostUpdated}
+      />
     </DashboardLayout>
   );
 }
