@@ -8,28 +8,24 @@ interface PullToRefreshProps {
   children: ReactNode;
   className?: string;
   threshold?: number;
-  maxPull?: number;
 }
 
 export default function PullToRefresh({
   onRefresh,
   children,
   className,
-  threshold = 80,
-  maxPull = 120,
+  threshold = 60,
 }: PullToRefreshProps) {
   const isMobile = useIsMobile();
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   
-  const containerRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
-  const currentY = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    // Only enable pull-to-refresh when scrolled to top
-    if (containerRef.current && containerRef.current.scrollTop === 0) {
+    // Only enable pull-to-refresh when scrolled to top of page
+    if (window.scrollY === 0) {
       startY.current = e.touches[0].clientY;
       setIsPulling(true);
     }
@@ -38,22 +34,19 @@ export default function PullToRefresh({
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isPulling || isRefreshing) return;
     
-    currentY.current = e.touches[0].clientY;
-    const diff = currentY.current - startY.current;
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - startY.current;
     
-    // Only allow pulling down
-    if (diff > 0) {
+    // Only allow pulling down when at top
+    if (diff > 0 && window.scrollY === 0) {
       // Apply resistance to the pull
-      const resistance = 0.5;
-      const pull = Math.min(diff * resistance, maxPull);
+      const resistance = 0.4;
+      const pull = Math.min(diff * resistance, 80);
       setPullDistance(pull);
-      
-      // Prevent default scroll when pulling
-      if (pull > 10) {
-        e.preventDefault();
-      }
+    } else {
+      setPullDistance(0);
     }
-  }, [isPulling, isRefreshing, maxPull]);
+  }, [isPulling, isRefreshing]);
 
   const handleTouchEnd = useCallback(async () => {
     if (!isPulling) return;
@@ -62,7 +55,6 @@ export default function PullToRefresh({
     
     if (pullDistance >= threshold && !isRefreshing) {
       setIsRefreshing(true);
-      setPullDistance(threshold); // Keep indicator visible during refresh
       
       try {
         await onRefresh();
@@ -77,32 +69,30 @@ export default function PullToRefresh({
 
   // Calculate progress for visual feedback
   const progress = Math.min(pullDistance / threshold, 1);
-  const showIndicator = pullDistance > 10 || isRefreshing;
+  const showIndicator = pullDistance > 5 || isRefreshing;
   const isReady = pullDistance >= threshold;
 
-  // Only render pull-to-refresh on mobile
+  // On desktop, render children directly without any wrapper
   if (!isMobile) {
-    return <div className={className}>{children}</div>;
+    return <>{children}</>;
   }
 
   return (
     <div
-      ref={containerRef}
-      className={cn("relative overflow-auto", className)}
+      className={cn("relative", className)}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Pull indicator */}
+      {/* Pull indicator - collapsible div that expands when pulling */}
       <div
         className={cn(
-          "absolute left-0 right-0 flex items-center justify-center transition-opacity duration-200 z-10",
-          showIndicator ? "opacity-100" : "opacity-0"
+          "flex items-center justify-center overflow-hidden transition-all duration-200",
+          !isPulling && !isRefreshing && "duration-200"
         )}
         style={{
-          top: -40,
-          transform: `translateY(${pullDistance}px)`,
-          transition: isPulling ? "none" : "transform 0.2s ease-out",
+          height: isRefreshing ? 48 : pullDistance,
+          transition: isPulling ? "none" : "height 0.2s ease-out",
         }}
       >
         <div
@@ -111,6 +101,10 @@ export default function PullToRefresh({
             isReady && "border-primary",
             isRefreshing && "border-primary"
           )}
+          style={{
+            opacity: showIndicator ? 1 : 0,
+            transition: "opacity 0.15s ease-out",
+          }}
         >
           <RefreshCw
             className={cn(
@@ -120,21 +114,13 @@ export default function PullToRefresh({
             )}
             style={{
               transform: isRefreshing ? undefined : `rotate(${progress * 180}deg)`,
-              transition: isPulling ? "none" : "transform 0.2s ease-out",
             }}
           />
         </div>
       </div>
 
-      {/* Content with pull offset */}
-      <div
-        style={{
-          transform: `translateY(${pullDistance}px)`,
-          transition: isPulling ? "none" : "transform 0.2s ease-out",
-        }}
-      >
-        {children}
-      </div>
+      {/* Content - no transform, stays in normal document flow */}
+      {children}
     </div>
   );
 }

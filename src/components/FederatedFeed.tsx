@@ -132,7 +132,11 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
           setOffset(prev => prev + limit);
         }
       },
-      { threshold: 0.1, rootMargin: '100px' }
+      { 
+        root: null, // Use viewport as root
+        threshold: 0.1, 
+        rootMargin: '300px' // Trigger earlier for smoother loading
+      }
     );
     
     observer.observe(loadMoreRef.current);
