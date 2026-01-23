@@ -1,176 +1,100 @@
 
+## Goal
+Make the app feel “live” so you don’t need manual refreshes:
+1) Browser tab title updates immediately on navigation.
+2) Common “I need to refresh to see updates” cases are removed by improving the client-side data refresh strategy (without making the app slow).
 
-# Fix: Browser Tab Title Not Updating on Page Navigation
+## What’s happening (based on the code)
+### A) Tab title only changes when a page renders `SEOHead`
+- `SEOHead` (react-helmet-async) updates `<title>` when it’s rendered.
+- Many route pages currently **don’t render `SEOHead` at all** (example: `src/pages/FederatedFeed.tsx` in current code).
+- So after visiting a profile (which *does* set a title), navigating to a page that doesn’t set one leaves the old title until a full reload.
 
-## Problem Summary
+### B) Many pages won’t refetch data on navigation/window focus
+In `src/App.tsx`, the React Query client is configured with:
+- `refetchOnMount: false`
+- `refetchOnWindowFocus: false`
+- `staleTime: 30000`
 
-When navigating away from a profile page, the browser tab title remains stuck on the profile name (e.g., "John Doe (@johndoe) | Nolto") instead of updating to reflect the current page. This happens because most pages in the application are **missing the `SEOHead` component** to set their own titles.
+This combination makes the UI feel “sticky” (fast, but stale), which often looks like “I need to refresh”.
 
----
-
-## Root Cause Analysis
-
-### How React Helmet Works
-
-`react-helmet-async` manages the document `<title>` declaratively. When you navigate from Page A (with SEOHead) to Page B (without SEOHead):
-- Page A's `<Helmet>` component is unmounted
-- **But no new `<Helmet>` component replaces it**, so the title persists
-
-### Current State
-
-| Page | Has SEOHead? | Result |
-|------|-------------|--------|
-| Profile.tsx | Yes - sets `"${displayName} (@${username}) \| Nolto"` | Title updates correctly |
-| Index.tsx | Yes - sets `"Nolto - The Federated Professional Network"` | Only for unauthenticated users |
-| **FederatedFeed.tsx** | **No** | Title stays as previous page |
-| Messages.tsx | No | Title stays as previous page |
-| Notifications.tsx | No | Title stays as previous page |
-| Jobs.tsx | No | Title stays as previous page |
-| Articles.tsx | No | Title stays as previous page |
-| ... (40+ more pages) | No | Title stays as previous page |
-
-### The Specific Bug Path
-
-1. User visits `/profile/johndoe` → Title becomes "John Doe (@johndoe) | Nolto"
-2. User navigates to `/feed` (home) → **FederatedFeed.tsx has no SEOHead**
-3. Browser tab still shows "John Doe (@johndoe) | Nolto" ❌
+### C) Some flows explicitly call `window.location.reload()`
+Examples found:
+- Profile sync from fediverse (`src/pages/Profile.tsx`)
+- LinkedIn import completion (`src/pages/ProfileEdit.tsx`)
+Those reloads are a symptom of missing invalidation/refetch wiring.
 
 ---
 
-## Solution
+## Implementation Plan
 
-Add `SEOHead` component to all pages that render visible content. This ensures:
-1. Every page sets its own title
-2. Social sharing from any page has correct meta tags
-3. The title always reflects the current page
+### Phase 1 — Fix tab titles so they update on every navigation (no refresh)
+1. **Add `SEOHead` to key missing pages** (highest-impact first):
+   - `src/pages/FederatedFeed.tsx` → title: `Feed | Nolto`
+   - `src/pages/Messages.tsx` → title: `Messages | Nolto`
+   - `src/pages/Notifications.tsx` → title: `Notifications | Nolto`
+   - `src/pages/Connections.tsx` → title: `Connections | Nolto`
+   - `src/pages/SavedItems.tsx` → title: `Saved Items | Nolto`
+   - Then continue through the remaining route pages that don’t set titles (events, articles list/manage/create/edit, settings, etc.).
 
----
+2. **Make it harder to forget titles in the future**
+   - Enhance `DashboardLayout` so that if a page passes `title`/`description`, the layout automatically renders `<SEOHead title={title} description={description} />`.
+   - Add a small escape hatch like `disableSEO` or `seoTitle` so pages with special/dynamic titles (Profile, ArticleView, JobView) can keep full control without duplicating or conflicting.
 
-## Implementation Details
+3. **Replace direct `Helmet` usage with `SEOHead`**
+   - Pages like `CodeOfConductPage`, `InstanceGuidelines`, `Instances`, etc. currently use `Helmet` directly. Standardize on `SEOHead` so behavior is consistent everywhere.
 
-### Priority 1: Most Frequently Used Pages
-
-These are the pages users navigate to most often and will notice the bug immediately:
-
-| File | Title to Set |
-|------|-------------|
-| `src/pages/FederatedFeed.tsx` | "Feed \| Nolto" |
-| `src/pages/Messages.tsx` | "Messages \| Nolto" |
-| `src/pages/Notifications.tsx` | "Notifications \| Nolto" |
-| `src/pages/Connections.tsx` | "Connections \| Nolto" |
-| `src/pages/SavedItems.tsx` | "Saved Items \| Nolto" |
-| `src/pages/ProfileEdit.tsx` | "Edit Profile \| Nolto" |
-
-### Priority 2: Content Pages
-
-| File | Title to Set |
-|------|-------------|
-| `src/pages/Jobs.tsx` | "Jobs \| Nolto" |
-| `src/pages/JobView.tsx` | Dynamic: "{job.title} \| Nolto" |
-| `src/pages/JobCreate.tsx` | "Create Job Post \| Nolto" |
-| `src/pages/JobEdit.tsx` | "Edit Job Post \| Nolto" |
-| `src/pages/JobManage.tsx` | "Manage Jobs \| Nolto" |
-| `src/pages/Articles.tsx` | "Articles \| Nolto" |
-| `src/pages/ArticleCreate.tsx` | "Write Article \| Nolto" |
-| `src/pages/ArticleEdit.tsx` | "Edit Article \| Nolto" |
-| `src/pages/ArticleManage.tsx` | "Manage Articles \| Nolto" |
-| `src/pages/PostView.tsx` | Dynamic: post preview or "Post \| Nolto" |
-
-### Priority 3: Events & Other Features
-
-| File | Title to Set |
-|------|-------------|
-| `src/pages/Events.tsx` | "Events \| Nolto" |
-| `src/pages/EventCreate.tsx` | "Create Event \| Nolto" |
-| `src/pages/EventEdit.tsx` | "Edit Event \| Nolto" |
-| `src/pages/EventView.tsx` | Dynamic: "{event.title} \| Nolto" |
-| `src/pages/Freelancers.tsx` | "Freelancers \| Nolto" |
-| `src/pages/Search.tsx` | "Search \| Nolto" |
-| `src/pages/FeedSettings.tsx` | "Feed Settings \| Nolto" |
-| `src/pages/StarterPacks.tsx` | "Starter Packs \| Nolto" |
-| `src/pages/StarterPackView.tsx` | Dynamic: "{pack.name} \| Nolto" |
-| `src/pages/StarterPackCreate.tsx` | "Create Starter Pack \| Nolto" |
-
-### Priority 4: Static/Info Pages
-
-| File | Title to Set |
-|------|-------------|
-| `src/pages/Mission.tsx` | "Our Mission \| Nolto" |
-| `src/pages/Documentation.tsx` | "Documentation \| Nolto" |
-| `src/pages/FederationGuide.tsx` | "Federation Guide \| Nolto" |
-| `src/pages/HelpCenter.tsx` | "Help Center \| Nolto" |
-| `src/pages/PrivacyPolicy.tsx` | "Privacy Policy \| Nolto" |
-| `src/pages/TermsOfService.tsx` | "Terms of Service \| Nolto" |
-| `src/pages/Instances.tsx` | "Instances \| Nolto" |
-| `src/pages/NotFound.tsx` | "Page Not Found \| Nolto" |
-
-### Priority 5: Auth & Admin Pages
-
-| File | Title to Set |
-|------|-------------|
-| `src/pages/Auth.tsx` | "Sign In \| Nolto" |
-| `src/pages/AuthRecovery.tsx` | "Reset Password \| Nolto" |
-| `src/pages/ConfirmEmail.tsx` | "Confirm Email \| Nolto" |
-| `src/pages/Moderation.tsx` | "Moderation \| Nolto" |
-| `src/pages/AdminFederationHealth.tsx` | "Federation Health \| Nolto" |
-| `src/pages/AdminFederationMetrics.tsx` | "Federation Metrics \| Nolto" |
-| `src/pages/AdminInstances.tsx` | "Manage Instances \| Nolto" |
-| `src/pages/MessageConversation.tsx` | Dynamic: "Chat with {name} \| Nolto" |
+**Verification (Phase 1)**
+- Visit a profile → then navigate to Feed/Messages/Connections → tab title changes immediately without refresh.
 
 ---
 
-## Code Pattern
+### Phase 2 — Reduce “manual refresh required” by refreshing data at the right times
+This is the “make it feel live” part.
 
-Each page will add the SEOHead component like this:
+4. **Adjust React Query defaults to be less stale**
+   - Update `QueryClient` defaults in `src/App.tsx`:
+     - Change `refetchOnMount` to `true` (or `"always"` for maximum freshness)
+     - Change `refetchOnWindowFocus` to `true`
+   - Keep `staleTime` (30s) as-is initially, then tune if needed.
 
-```tsx
-import { SEOHead } from "@/components/common/SEOHead";
+**Why this helps:** when you navigate back to a screen (or return to the tab), it will automatically refetch and pick up changes—no manual browser refresh.
 
-// In the component return:
-<>
-  <SEOHead title="Page Title" />
-  {/* existing page content */}
-</>
-```
+5. **Replace the most visible `window.location.reload()` calls with proper invalidation**
+   - Profile sync success:
+     - Instead of `window.location.reload()`, invalidate the profile query keys and refetch (ex: `queryClient.invalidateQueries({ queryKey: ["profile", usernameOrId] })` depending on how profile queries are keyed in your app).
+   - LinkedIn import completion:
+     - Replace reload with invalidating profile-related queries and optionally showing a toast “Profile updated”.
 
-For dynamic titles (like job details):
+6. **Replace “Try again” reload buttons with refetch**
+   - Example: Messages error state currently uses a button that calls `window.location.reload()`.
+   - Update to call the query’s `refetch()` (or invalidate the relevant query key) so only the broken data reloads, not the whole SPA.
 
-```tsx
-<SEOHead 
-  title={job?.title || "Job Details"}
-  description={job?.description?.slice(0, 160)}
-/>
-```
-
----
-
-## Files to Modify
-
-A total of **~35 files** need to be updated. The implementation will:
-
-1. Add `import { SEOHead } from "@/components/common/SEOHead";` to each file
-2. Add `<SEOHead title="..." />` at the top of the returned JSX
-3. For pages using `Helmet` directly (like CodeOfConductPage), replace with `SEOHead` for consistency
+**Verification (Phase 2)**
+- Create/edit something, navigate away and back → changes appear automatically.
+- Switch browser tabs and come back → lists refresh (feed, jobs, notifications, etc.) without you doing anything.
 
 ---
 
-## Expected Outcomes
-
-| Scenario | Before | After |
-|----------|--------|-------|
-| Visit profile, then go to feed | Tab shows "John Doe (@johndoe) \| Nolto" | Tab shows "Feed \| Nolto" |
-| Navigate to messages | Title unchanged | Tab shows "Messages \| Nolto" |
-| View a job posting | Title unchanged | Tab shows "Senior Developer at Acme \| Nolto" |
-| Share feed on social media | Inconsistent meta tags | Proper "Feed \| Nolto" with correct OG tags |
+### Phase 3 — Targeted “auto updates” for high-velocity pages (optional, if you want it to feel even more real-time)
+7. Feed freshness options (choose one based on your preference):
+   - Lightweight: `refetchOnWindowFocus + refetchOnMount` is often enough.
+   - More live: add `refetchInterval` (e.g., 60s) for `federatedFeed` queries.
+   - Most live: integrate a realtime subscription approach (only if needed; more complexity).
 
 ---
 
-## Note on Profile Sharing
+## Rollout strategy (fast results)
+1) Implement Phase 1 first (titles). This should immediately fix the “title needs refresh” issue.
+2) Implement Phase 2 next (query defaults + remove reloads). This should noticeably reduce most manual refresh needs across the app.
+3) Only do Phase 3 if you still want the feed to “tick” without interaction.
 
-The profile sharing functionality continues to work correctly because:
-- `Profile.tsx` already sets proper SEO meta tags via `SEOHead`
-- The `ShareProfileCard` component uses `window.location.origin` for dynamic URLs
-- The OG image and description are set per-profile for social previews
+---
 
-This fix ensures that after viewing a shared profile URL, navigating away will properly update the tab title.
-
+## One quick clarification (so we target the biggest pain)
+After Phase 1, if you still feel forced to refresh: which screens/actions most often need it?
+Examples:
+- “After posting, the feed doesn’t show my post”
+- “After editing profile, profile page doesn’t update”
+- “Connections count doesn’t update”
+We’ll prioritize those flows and ensure the right query keys are invalidated/refetched.
