@@ -61,15 +61,21 @@ export default function MessageReactions({
   }, [messageId, queryClient]);
 
   const toggleMutation = useMutation({
-    mutationFn: (reaction: ReactionKey) => toggleMessageReaction(messageId, reaction, {
-      recipientId,
-      senderId,
-    }),
-    onSuccess: () => {
+    mutationFn: async (reaction: ReactionKey) => {
+      console.log('🎯 MessageReactions mutation triggered:', { messageId, reaction, recipientId, senderId });
+      const result = await toggleMessageReaction(messageId, reaction, {
+        recipientId,
+        senderId,
+      });
+      console.log('🎯 MessageReactions mutation result:', result);
+      return result;
+    },
+    onSuccess: (result) => {
+      console.log('✅ MessageReactions mutation success:', result);
       queryClient.invalidateQueries({ queryKey: ['messageReactions', messageId] });
     },
     onError: (error) => {
-      console.error('Failed to toggle message reaction:', error);
+      console.error('❌ Failed to toggle message reaction:', error);
     },
   });
 
@@ -77,6 +83,7 @@ export default function MessageReactions({
   const hasReactions = activeReactions.length > 0;
 
   const handleReact = (reaction: ReactionKey) => {
+    console.log('🎯 handleReact called:', { reaction, messageId, isOwnMessage });
     toggleMutation.mutate(reaction);
     setShowPicker(false);
   };
@@ -92,11 +99,16 @@ export default function MessageReactions({
         {activeReactions.map((reaction) => (
           <motion.button
             key={reaction.reaction}
+            type="button"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => handleReact(reaction.reaction)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleReact(reaction.reaction);
+            }}
             className={cn(
               "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs transition-colors",
               reaction.hasReacted
@@ -115,6 +127,8 @@ export default function MessageReactions({
         <Popover open={showPicker} onOpenChange={setShowPicker}>
           <PopoverTrigger asChild>
             <button
+              type="button"
+              onClick={() => console.log('📌 Reaction trigger button clicked for message:', messageId)}
               className={cn(
                 "p-1.5 rounded-full transition-all",
                 "hover:bg-muted text-muted-foreground hover:text-foreground",
@@ -136,7 +150,13 @@ export default function MessageReactions({
               {REACTIONS.map((reaction) => (
                 <button
                   key={reaction}
-                  onClick={() => handleReact(reaction)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📌 Emoji picker button clicked:', reaction);
+                    handleReact(reaction);
+                  }}
                   className={cn(
                     "p-1.5 rounded hover:bg-muted transition-colors text-lg",
                     reactions.find(r => r.reaction === reaction)?.hasReacted && "bg-primary/20"
