@@ -5,6 +5,7 @@ export type NotificationType =
   | 'connection_accepted' 
   | 'endorsement' 
   | 'message' 
+  | 'message_reaction'
   | 'job_application' 
   | 'mention' 
   | 'follow' 

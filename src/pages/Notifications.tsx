@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Check, Trash2, UserPlus, ThumbsUp, MessageSquare, Briefcase, AtSign, Heart, Repeat, FileText, Loader2 } from "lucide-react";
+import { Bell, Check, Trash2, UserPlus, ThumbsUp, MessageSquare, Briefcase, AtSign, Heart, Repeat, FileText, Loader2, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -77,7 +77,20 @@ export default function Notifications() {
           navigate(`/events/${notification.object_id}`);
           break;
         case 'message':
-          navigate(`/messages/${notification.actor_id}`);
+          // For message reactions, navigate to the conversation
+          if (notification.type === 'message_reaction') {
+            try {
+              const contentData = notification.content ? JSON.parse(notification.content) : {};
+              const conversationWith = contentData.conversationWith || notification.actor_id;
+              navigate(`/messages/${conversationWith}`);
+            } catch {
+              if (notification.actor_id) {
+                navigate(`/messages/${notification.actor_id}`);
+              }
+            }
+          } else if (notification.actor_id) {
+            navigate(`/messages/${notification.actor_id}`);
+          }
           break;
         case 'skill':
           if (actorUsername || notification.actor_id) {
@@ -111,22 +124,24 @@ export default function Notifications() {
       case 'follow':
         return <UserPlus className="h-5 w-5 text-primary" />;
       case 'endorsement':
-        return <ThumbsUp className="h-5 w-5 text-green-500" />;
+        return <ThumbsUp className="h-5 w-5 text-success" />;
       case 'message':
-        return <MessageSquare className="h-5 w-5 text-blue-500" />;
+        return <MessageSquare className="h-5 w-5 text-info" />;
+      case 'message_reaction':
+        return <Smile className="h-5 w-5 text-warning" />;
       case 'job_application':
-        return <Briefcase className="h-5 w-5 text-orange-500" />;
+        return <Briefcase className="h-5 w-5 text-warning" />;
       case 'mention':
-        return <AtSign className="h-5 w-5 text-purple-500" />;
+        return <AtSign className="h-5 w-5 text-primary" />;
       case 'like':
-        return <Heart className="h-5 w-5 text-red-500" />;
+        return <Heart className="h-5 w-5 text-destructive" />;
       case 'boost':
-        return <Repeat className="h-5 w-5 text-green-500" />;
+        return <Repeat className="h-5 w-5 text-success" />;
       case 'reply':
-        return <MessageSquare className="h-5 w-5 text-blue-500" />;
+        return <MessageSquare className="h-5 w-5 text-info" />;
       case 'recommendation_request':
       case 'recommendation_received':
-        return <FileText className="h-5 w-5 text-amber-500" />;
+        return <FileText className="h-5 w-5 text-warning" />;
       default:
         return <Bell className="h-5 w-5" />;
     }
@@ -158,6 +173,16 @@ export default function Notifications() {
         return `${actorName} requested a recommendation`;
       case 'recommendation_received':
         return `${actorName} wrote you a recommendation`;
+      case 'message_reaction': {
+        try {
+          const contentData = notification.content ? JSON.parse(notification.content) : {};
+          const reaction = contentData.reaction || 'like';
+          const reactionEmoji = reaction === 'love' ? '❤️' : reaction === 'celebrate' ? '🎉' : reaction === 'support' ? '👏' : reaction === 'insightful' ? '💡' : reaction === 'empathy' ? '💜' : '👍';
+          return `${actorName} reacted ${reactionEmoji} to your message`;
+        } catch {
+          return `${actorName} reacted to your message`;
+        }
+      }
       default:
         return notification.content || 'New notification';
     }

@@ -390,6 +390,8 @@ export default function MessageConversation() {
                       <MessageReactions 
                         messageId={message.id} 
                         isOwnMessage={isOwnMessage}
+                        recipientId={message.recipient_id}
+                        senderId={message.sender_id}
                         className="mt-1"
                       />
                     </div>

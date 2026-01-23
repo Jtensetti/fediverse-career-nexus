@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { getReactions, toggleReaction, ReactionCount } from '@/services/reactionsService';
+import { getReactions, toggleMessageReaction, ReactionCount } from '@/services/reactionsService';
 import { REACTIONS, REACTION_EMOJIS, ReactionKey } from '@/lib/reactions';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Popover,
   PopoverContent,
@@ -14,10 +15,18 @@ import {
 interface MessageReactionsProps {
   messageId: string;
   isOwnMessage: boolean;
+  recipientId?: string; // The message recipient (for notifications)
+  senderId?: string; // The message sender
   className?: string;
 }
 
-export default function MessageReactions({ messageId, isOwnMessage, className }: MessageReactionsProps) {
+export default function MessageReactions({ 
+  messageId, 
+  isOwnMessage, 
+  recipientId,
+  senderId,
+  className 
+}: MessageReactionsProps) {
   const [showPicker, setShowPicker] = useState(false);
   const queryClient = useQueryClient();
 
@@ -27,8 +36,35 @@ export default function MessageReactions({ messageId, isOwnMessage, className }:
     staleTime: 30000,
   });
 
-const toggleMutation = useMutation({
-    mutationFn: (reaction: ReactionKey) => toggleReaction('message', messageId, reaction),
+  // Subscribe to real-time reaction updates for this message
+  useEffect(() => {
+    const channel = supabase
+      .channel(`message-reactions-${messageId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reactions',
+          filter: `target_id=eq.${messageId}`,
+        },
+        () => {
+          // Invalidate and refetch reactions when any change occurs
+          queryClient.invalidateQueries({ queryKey: ['messageReactions', messageId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [messageId, queryClient]);
+
+  const toggleMutation = useMutation({
+    mutationFn: (reaction: ReactionKey) => toggleMessageReaction(messageId, reaction, {
+      recipientId,
+      senderId,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messageReactions', messageId] });
     },
@@ -74,44 +110,45 @@ const toggleMutation = useMutation({
         ))}
       </AnimatePresence>
 
-      {/* Reaction picker trigger - more visible */}
-      <Popover open={showPicker} onOpenChange={setShowPicker}>
-        <PopoverTrigger asChild>
-          <button
-            className={cn(
-              "p-1.5 rounded-full transition-all",
-              "opacity-0 group-hover:opacity-100",
-              "border border-transparent hover:border-border",
-              "hover:bg-muted text-muted-foreground hover:text-foreground",
-              hasReactions && "opacity-100 text-primary border-primary/30"
-            )}
-            aria-label="Add reaction"
-            title="React to this message"
+      {/* Only show reaction picker for OTHER people's messages, not your own */}
+      {!isOwnMessage && (
+        <Popover open={showPicker} onOpenChange={setShowPicker}>
+          <PopoverTrigger asChild>
+            <button
+              className={cn(
+                "p-1.5 rounded-full transition-all",
+                "hover:bg-muted text-muted-foreground hover:text-foreground",
+                "border border-transparent hover:border-border",
+                hasReactions ? "opacity-100 text-primary border-primary/30" : "opacity-60 hover:opacity-100"
+              )}
+              aria-label="Add reaction"
+              title="React to this message"
+            >
+              <Smile className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent 
+            className="w-auto p-2" 
+            side="top"
+            align="center"
           >
-            <Smile className="h-4 w-4" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-auto p-2" 
-          side={isOwnMessage ? "left" : "right"}
-          align="center"
-        >
-          <div className="flex gap-1">
-            {REACTIONS.map((reaction) => (
-              <button
-                key={reaction}
-                onClick={() => handleReact(reaction)}
-                className={cn(
-                  "p-1.5 rounded hover:bg-muted transition-colors text-lg",
-                  reactions.find(r => r.reaction === reaction)?.hasReacted && "bg-primary/20"
-                )}
-              >
-                {REACTION_EMOJIS[reaction]}
-              </button>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
+            <div className="flex gap-1">
+              {REACTIONS.map((reaction) => (
+                <button
+                  key={reaction}
+                  onClick={() => handleReact(reaction)}
+                  className={cn(
+                    "p-1.5 rounded hover:bg-muted transition-colors text-lg",
+                    reactions.find(r => r.reaction === reaction)?.hasReacted && "bg-primary/20"
+                  )}
+                >
+                  {REACTION_EMOJIS[reaction]}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 }
