@@ -1,175 +1,276 @@
 
-# Message Encryption and Reaction Fixes
 
-## Overview
+# Fix Message Encryption and Reaction Visibility
 
-Two issues to address:
-1. **Message Encryption**: Messages are currently stored as plain text in the database, making them readable by anyone with database access
-2. **Message Reactions**: The reaction system is wired up correctly but may have visibility/UX issues preventing users from discovering and using the feature
+## Summary
+
+Two issues identified:
+
+1. **Message encryption is not working** - The edge function exists but is never being called successfully. All messages are stored as plain text despite encryption code being in place.
+
+2. **Message reactions not visible** - The reaction component is rendered inside the message bubble but may be hard to find for users. No message reactions exist in the database.
 
 ---
 
-## Issue 1: Message Encryption
+## Issue 1: Message Encryption Not Working
 
-### Current State
-- Messages are stored in plain text in the `content` column of the `messages` table
-- Example: `"Hej!"`, `"Nämen hejsan!"` are visible as-is in the database
-- An encryption module already exists for federated session tokens (`supabase/functions/_shared/token-encryption.ts`) using AES-GCM
+### Root Cause Analysis
 
-### Proposed Solution
+The encryption is silently failing because:
 
-Implement end-to-end-style encryption for direct messages using the existing encryption infrastructure, with server-side encryption/decryption for simplicity.
+1. **The edge function is called but fails** - Looking at the `sendMessage` function in `messageService.ts`:
+   ```typescript
+   try {
+     const { data: encryptData, error: encryptError } = await supabase.functions.invoke('encrypt-message', {
+       body: { action: 'encrypt', content }
+     });
+     
+     if (!encryptError && encryptData?.encryptedContent) {
+       encryptedContent = encryptData.encryptedContent;
+       isEncrypted = true;
+     }
+   } catch (encryptErr) {
+     console.warn('Message encryption failed, storing as plain text:', encryptErr);
+   }
+   ```
 
-#### A) Database Changes
+2. **The catch block swallows errors** - When encryption fails, it logs a warning and stores the message as plain text anyway. This is a design choice for resilience but makes debugging hard.
 
-Add an `encrypted_content` column and track encryption status:
+3. **No edge function call logs** - The analytics show zero calls to `encrypt-message`, which means either:
+   - The code path isn't being executed
+   - The Supabase client isn't correctly invoking the function
+   - The changes weren't deployed properly
+
+### Fixes Required
+
+#### A) Add the edge function to config.toml
+
+The function should be explicitly listed to ensure proper deployment:
+
+```toml
+[functions.encrypt-message]
+verify_jwt = false
+```
+
+Setting `verify_jwt = false` because authentication is handled within the function itself.
+
+#### B) Add better error logging in messageService.ts
+
+Replace the silent warning with visible feedback:
+
+```typescript
+} catch (encryptErr) {
+  console.error('Message encryption failed:', encryptErr);
+  // Still store as plain text but warn user
+}
+```
+
+#### C) Verify the edge function is deployed
+
+After adding to config.toml, ensure the function deploys correctly.
+
+---
+
+## Issue 2: Message Reactions Not Visible
+
+### Root Cause Analysis
+
+The `MessageReactions` component is rendered inside each message bubble at line 388-391:
+
+```tsx
+<MessageReactions 
+  messageId={message.id} 
+  isOwnMessage={isOwnMessage}
+/>
+```
+
+However, there are zero message reactions in the database. The component shows:
+- A small smiley icon button (3.5x3.5 size) 
+- Very subtle styling with `text-muted-foreground/40`
+- Only visible when there are reactions to show OR when hovering
+
+### Fixes Required
+
+#### A) Move reactions outside the message bubble
+
+Currently, the `MessageReactions` component is INSIDE the message bubble container. Move it outside so it's clearly separate from the message content:
+
+**Current structure:**
+```tsx
+<div className="group max-w-[70%] p-3 rounded-lg">
+  <p>Message content</p>
+  <p>Timestamp</p>
+  <MessageReactions /> {/* Inside bubble */}
+</div>
+```
+
+**Proposed structure:**
+```tsx
+<div className="flex flex-col">
+  <div className="group max-w-[70%] p-3 rounded-lg">
+    <p>Message content</p>
+    <p>Timestamp</p>
+  </div>
+  <MessageReactions /> {/* Outside bubble, below it */}
+</div>
+```
+
+#### B) Make the reaction button more visible
+
+Update `MessageReactions.tsx`:
+- Increase the icon size from `h-3.5 w-3.5` to `h-4 w-4`
+- Add a tooltip hint "React to message"
+- Make the button more visible with better contrast
+
+#### C) Add hover state on message for reaction access
+
+Show the reaction button when hovering anywhere on the message row, not just the button itself.
+
+---
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `supabase/config.toml` | Add `encrypt-message` function config |
+| `src/services/messageService.ts` | Improve error logging for encryption failures |
+| `src/pages/MessageConversation.tsx` | Move MessageReactions outside the message bubble |
+| `src/components/MessageReactions.tsx` | Make button larger and more visible |
+
+---
+
+## Implementation Details
+
+### 1. supabase/config.toml
+
+Add the encrypt-message function configuration:
+
+```toml
+[functions.encrypt-message]
+verify_jwt = false
+```
+
+### 2. src/services/messageService.ts
+
+Improve encryption error handling (around lines 348-359):
+
+```typescript
+try {
+  const { data: encryptData, error: encryptError } = await supabase.functions.invoke('encrypt-message', {
+    body: { action: 'encrypt', content }
+  });
+  
+  if (encryptError) {
+    console.error('Encryption error:', encryptError);
+  } else if (encryptData?.encryptedContent) {
+    encryptedContent = encryptData.encryptedContent;
+    isEncrypted = true;
+    console.log('Message encrypted successfully');
+  } else {
+    console.error('Encryption returned no data:', encryptData);
+  }
+} catch (encryptErr) {
+  console.error('Message encryption failed:', encryptErr);
+}
+```
+
+### 3. src/pages/MessageConversation.tsx
+
+Restructure the message rendering to move reactions outside the bubble (around lines 357-396):
+
+```tsx
+messages.map((message) => {
+  const isOwnMessage = message.sender_id === currentUserId;
+  return (
+    <div 
+      key={message.id} 
+      className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
+    >
+      <div 
+        className={`group max-w-[70%] p-3 rounded-lg
+          ${isOwnMessage 
+            ? 'bg-primary text-primary-foreground' 
+            : 'bg-muted'
+          }
+        `}
+      >
+        <p 
+          className="break-words whitespace-pre-wrap"
+          dangerouslySetInnerHTML={{ 
+            __html: renderMessageContent(message.content) 
+          }}
+        />
+        <p className="text-xs opacity-70 mt-1">
+          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+        </p>
+      </div>
+      {/* Reactions moved OUTSIDE the bubble */}
+      <MessageReactions 
+        messageId={message.id} 
+        isOwnMessage={isOwnMessage}
+        className="mt-1"
+      />
+    </div>
+  );
+})
+```
+
+### 4. src/components/MessageReactions.tsx
+
+Improve visibility of the reaction button:
+
+```tsx
+{/* Reaction picker trigger - make it larger and more visible */}
+<Popover open={showPicker} onOpenChange={setShowPicker}>
+  <PopoverTrigger asChild>
+    <button
+      className={cn(
+        "p-1.5 rounded-full transition-all",
+        "border border-transparent hover:border-border",
+        isOwnMessage 
+          ? "hover:bg-primary/20 text-muted-foreground hover:text-foreground"
+          : "hover:bg-muted text-muted-foreground hover:text-foreground",
+        hasReactions && "text-primary border-primary/30"
+      )}
+      aria-label="Add reaction"
+      title="React to this message"
+    >
+      <Smile className="h-4 w-4" />
+    </button>
+  </PopoverTrigger>
+  ...
+</Popover>
+```
+
+---
+
+## Testing Plan
+
+### Encryption Testing
+1. Send a new message after deployment
+2. Check the database: `is_encrypted` should be `true` and `encrypted_content` should contain Base64 data
+3. Verify the message displays correctly in the UI (decryption works)
+
+### Reactions Testing
+1. Open a conversation
+2. Verify the smiley button is visible below each message
+3. Click to add a reaction
+4. Verify the reaction appears and is saved to the database
+
+---
+
+## Optional: Migration for Existing Messages
+
+After confirming encryption works for new messages, we can create a migration script to encrypt existing plain-text messages:
 
 ```sql
-ALTER TABLE messages 
-ADD COLUMN encrypted_content text,
-ADD COLUMN is_encrypted boolean DEFAULT false;
+-- This would be done via an edge function, not direct SQL
+-- The edge function would:
+-- 1. Fetch messages where is_encrypted = false
+-- 2. Encrypt each message.content
+-- 3. Update encrypted_content and set is_encrypted = true
+-- 4. Optionally clear the content column
 ```
 
-#### B) Create Message Encryption Edge Function
+This is optional and can be done as a separate task.
 
-Create a new shared utility `supabase/functions/_shared/message-encryption.ts` based on the existing token encryption:
-
-- `encryptMessage(content: string): Promise<string>` - Encrypts message content using AES-GCM
-- `decryptMessage(encryptedContent: string): Promise<string>` - Decrypts message content
-
-Uses the existing `TOKEN_ENCRYPTION_KEY` secret (or a dedicated `MESSAGE_ENCRYPTION_KEY` for separation of concerns).
-
-#### C) Modify Message Service
-
-Update `src/services/messageService.ts`:
-- When sending: Call encryption before storing
-- When fetching: Call decryption before displaying
-
-Two approaches:
-1. **Server-side via Edge Function** (recommended for simplicity):
-   - Create `send-message` and `get-messages` edge functions that handle encryption/decryption
-   - Frontend calls these instead of direct Supabase queries
-
-2. **Client-side encryption** (more complex but true E2E):
-   - Requires key exchange between users
-   - Much more complex to implement
-
-#### D) Migration for Existing Messages
-
-Create a one-time migration to encrypt existing plain-text messages:
-- Read all messages with `is_encrypted = false`
-- Encrypt the `content` and store in `encrypted_content`
-- Set `is_encrypted = true`
-- Optionally clear the `content` column
-
-### Recommended Implementation
-
-Server-side encryption via edge functions:
-
-| File | Change |
-|------|--------|
-| `supabase/functions/_shared/message-encryption.ts` | New file - encryption/decryption utilities |
-| `supabase/functions/send-message/index.ts` | New edge function - encrypt and store messages |
-| `supabase/functions/get-messages/index.ts` | New edge function - fetch and decrypt messages |
-| `src/services/messageService.ts` | Update to use edge functions instead of direct queries |
-| Database migration | Add `encrypted_content` and `is_encrypted` columns |
-
-### Security Considerations
-
-- The encryption key is stored as a Supabase secret, accessible only to edge functions
-- Database administrators can still see encrypted content, but it's not readable
-- This is "encryption at rest" - protects against database breaches
-- For true end-to-end encryption, a client-side key exchange would be needed (much more complex)
-
----
-
-## Issue 2: Message Reactions Not Working
-
-### Current State
-- The `MessageReactions` component is correctly imported and rendered in `MessageConversation.tsx`
-- The `reactions` table has proper RLS policies
-- Reactions work for posts and replies (verified - there are entries in the database)
-- Zero message reactions exist in the database
-
-### Diagnosis
-
-The code appears correct. Possible issues:
-
-1. **Visibility**: The reaction button is hidden until hover (`opacity-0 group-hover:opacity-100`), which may be too subtle on mobile or for users who don't hover
-2. **No visual indicator**: Unlike posts which show reaction counts prominently, message reactions only appear on hover
-3. **Simply not used yet**: Users may not have discovered the feature
-
-### Proposed Fixes
-
-#### A) Improve Reaction Button Visibility
-
-Update `MessageReactions.tsx` to show the reaction button more prominently:
-
-```tsx
-// Current: opacity-0 group-hover:opacity-100
-// Proposed: Always visible but subtle
-className={cn(
-  "p-1 rounded-full transition-colors",
-  isOwnMessage 
-    ? "hover:bg-primary-foreground/20 text-primary-foreground/50 hover:text-primary-foreground/70"
-    : "hover:bg-muted text-muted-foreground/50 hover:text-muted-foreground",
-  hasReactions && "text-primary"
-)}
-```
-
-#### B) Add Touch-Friendly Long-Press for Mobile
-
-For mobile users, implement long-press to show reaction picker (optional enhancement).
-
-#### C) Verify the mutation is working
-
-Add error handling feedback in the mutation:
-
-```tsx
-const toggleMutation = useMutation({
-  mutationFn: (reaction: ReactionKey) => toggleReaction('message', messageId, reaction),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['messageReactions', messageId] });
-  },
-  onError: (error) => {
-    console.error('Failed to toggle reaction:', error);
-    toast.error('Failed to add reaction');
-  },
-});
-```
-
-### Files to Modify
-
-| File | Change |
-|------|--------|
-| `src/components/MessageReactions.tsx` | Improve visibility, add error handling |
-
----
-
-## Implementation Priority
-
-1. **Message Reactions** (quick fix) - Make the reaction button more visible
-2. **Message Encryption** (larger effort) - Implement server-side encryption
-
----
-
-## Technical Notes
-
-### Encryption Approach Comparison
-
-| Approach | Pros | Cons |
-|----------|------|------|
-| Server-side (edge functions) | Simple implementation, works with existing auth | Key on server, not true E2E |
-| Client-side (WebCrypto) | True E2E encryption | Complex key exchange, device sync issues |
-| Hybrid | Balance of security and usability | More complex implementation |
-
-**Recommendation**: Start with server-side encryption using edge functions. This protects against database breaches while keeping the implementation manageable. True E2E can be added later as an enhancement.
-
-### Existing Infrastructure
-
-The project already has:
-- `TOKEN_ENCRYPTION_KEY` secret configured
-- AES-GCM encryption utilities in `token-encryption.ts`
-- Edge function patterns for `send-dm` that can be adapted
-
-This provides a solid foundation for implementing message encryption.
