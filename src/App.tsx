@@ -57,6 +57,7 @@ import StarterPackView from "./pages/StarterPackView";
 import StarterPackCreate from "./pages/StarterPackCreate";
 import FeedSettings from "./pages/FeedSettings";
 import Search from "./pages/Search";
+import Freelancers from "./pages/Freelancers";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -114,6 +115,7 @@ function App() {
                     <Route path="/packs/create" element={<ProtectedRoute><StarterPackCreate /></ProtectedRoute>} />
                     <Route path="/settings/feeds" element={<ProtectedRoute><FeedSettings /></ProtectedRoute>} />
                     <Route path="/search" element={<Search />} />
+                    <Route path="/freelancers" element={<Freelancers />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />

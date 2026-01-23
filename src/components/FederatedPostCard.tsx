@@ -220,9 +220,12 @@ export default function FederatedPostCard({
     
     if (!Array.isArray(attachments)) return [];
     
-    return attachments.filter(att => 
-      att.mediaType && att.mediaType.startsWith('image/') && att.url
-    ).map(att => ({
+    return attachments.filter(att => {
+      // Accept if mediaType starts with image/ OR if type is 'Image'
+      const isImage = (att.mediaType && att.mediaType.startsWith('image/')) || 
+                      att.type === 'Image';
+      return isImage && att.url;
+    }).map(att => ({
       ...att,
       altText: att.name || '' // Use name field as alt text
     }));
@@ -490,7 +493,7 @@ export default function FederatedPostCard({
                 {/* Post text content */}
                 {displayContent && displayContent !== 'No content available' && (
                   <div 
-                    className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all" 
+                    className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all whitespace-pre-line" 
                     dangerouslySetInnerHTML={{ __html: displayContent }} 
                     onClick={(e) => {
                       // Prevent card navigation when clicking links

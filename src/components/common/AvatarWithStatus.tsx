@@ -1,8 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { Check, Globe } from "lucide-react";
+import { Check, Globe, Briefcase } from "lucide-react";
 
-type StatusType = "online" | "verified" | "admin" | "remote" | "none";
+type StatusType = "online" | "verified" | "admin" | "remote" | "freelancer" | "none";
 type SizeType = "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 
 interface AvatarWithStatusProps {
@@ -13,6 +13,7 @@ interface AvatarWithStatusProps {
   size?: SizeType;
   className?: string;
   ringClassName?: string;
+  isFreelancer?: boolean;
 }
 
 const sizeClasses: Record<SizeType, { avatar: string; ring: string; badge: string; icon: string }> = {
@@ -29,6 +30,7 @@ const statusColors: Record<StatusType, string> = {
   verified: "ring-primary",
   admin: "ring-amber-500",
   remote: "ring-purple-500",
+  freelancer: "ring-green-500",
   none: "ring-transparent",
 };
 
@@ -37,6 +39,7 @@ const badgeColors: Record<StatusType, string> = {
   verified: "bg-primary",
   admin: "bg-amber-500",
   remote: "bg-purple-500",
+  freelancer: "bg-green-500",
   none: "",
 };
 
@@ -48,9 +51,13 @@ const AvatarWithStatus = ({
   size = "md",
   className,
   ringClassName,
+  isFreelancer = false,
 }: AvatarWithStatusProps) => {
   const sizes = sizeClasses[size];
   const displayFallback = fallback || alt?.charAt(0).toUpperCase() || "U";
+  
+  // If user is a freelancer and no other status, use freelancer status
+  const effectiveStatus = isFreelancer && status === "none" ? "freelancer" : status;
 
   return (
     <div className={cn("relative inline-block", className)}>
@@ -59,7 +66,7 @@ const AvatarWithStatus = ({
           sizes.avatar,
           sizes.ring,
           "ring-offset-2 ring-offset-background transition-all duration-200",
-          statusColors[status],
+          statusColors[effectiveStatus],
           ringClassName
         )}
       >
@@ -70,17 +77,18 @@ const AvatarWithStatus = ({
       </Avatar>
 
       {/* Status Badge */}
-      {status !== "none" && (
+      {effectiveStatus !== "none" && (
         <div
           className={cn(
             "absolute rounded-full flex items-center justify-center border-2 border-background",
             sizes.badge,
-            badgeColors[status]
+            badgeColors[effectiveStatus]
           )}
         >
-          {status === "verified" && <Check className={cn(sizes.icon, "text-primary-foreground")} />}
-          {status === "remote" && <Globe className={cn(sizes.icon, "text-white")} />}
-          {status === "admin" && <span className={cn(sizes.icon, "text-white font-bold text-[8px]")}>★</span>}
+          {effectiveStatus === "verified" && <Check className={cn(sizes.icon, "text-primary-foreground")} />}
+          {effectiveStatus === "remote" && <Globe className={cn(sizes.icon, "text-white")} />}
+          {effectiveStatus === "admin" && <span className={cn(sizes.icon, "text-white font-bold text-[8px]")}>★</span>}
+          {effectiveStatus === "freelancer" && <Briefcase className={cn(sizes.icon, "text-white")} />}
         </div>
       )}
     </div>
