@@ -27,10 +27,13 @@ export default function MessageReactions({ messageId, isOwnMessage, className }:
     staleTime: 30000,
   });
 
-  const toggleMutation = useMutation({
+const toggleMutation = useMutation({
     mutationFn: (reaction: ReactionKey) => toggleReaction('message', messageId, reaction),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messageReactions', messageId] });
+    },
+    onError: (error) => {
+      console.error('Failed to toggle message reaction:', error);
     },
   });
 
@@ -76,11 +79,11 @@ export default function MessageReactions({ messageId, isOwnMessage, className }:
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "p-1 rounded-full transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100",
+              "p-1 rounded-full transition-colors",
               isOwnMessage 
-                ? "hover:bg-primary-foreground/20 text-primary-foreground/70"
-                : "hover:bg-muted text-muted-foreground",
-              hasReactions && "opacity-100"
+                ? "hover:bg-primary-foreground/20 text-primary-foreground/40 hover:text-primary-foreground/70"
+                : "hover:bg-muted text-muted-foreground/40 hover:text-muted-foreground",
+              hasReactions && "text-primary"
             )}
             aria-label="Add reaction"
           >

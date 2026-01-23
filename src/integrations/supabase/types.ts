@@ -1371,8 +1371,10 @@ export type Database = {
           content: string
           created_at: string
           delivery_status: string | null
+          encrypted_content: string | null
           federated_activity_id: string | null
           id: string
+          is_encrypted: boolean | null
           is_federated: boolean | null
           read_at: string | null
           recipient_id: string
@@ -1384,8 +1386,10 @@ export type Database = {
           content: string
           created_at?: string
           delivery_status?: string | null
+          encrypted_content?: string | null
           federated_activity_id?: string | null
           id?: string
+          is_encrypted?: boolean | null
           is_federated?: boolean | null
           read_at?: string | null
           recipient_id: string
@@ -1397,8 +1401,10 @@ export type Database = {
           content?: string
           created_at?: string
           delivery_status?: string | null
+          encrypted_content?: string | null
           federated_activity_id?: string | null
           id?: string
+          is_encrypted?: boolean | null
           is_federated?: boolean | null
           read_at?: string | null
           recipient_id?: string
