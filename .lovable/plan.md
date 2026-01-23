@@ -1,276 +1,268 @@
 
+# Fix Events Display and Build Comprehensive Moderation System
 
-# Fix Message Encryption and Reaction Visibility
+## Overview
 
-## Summary
-
-Two issues identified:
-
-1. **Message encryption is not working** - The edge function exists but is never being called successfully. All messages are stored as plain text despite encryption code being in place.
-
-2. **Message reactions not visible** - The reaction component is rendered inside the message bubble but may be hard to find for users. No message reactions exist in the database.
+Three issues to resolve:
+1. **Event pages crash/blank** - Field name mismatch between code and database schema
+2. **Events not showing in upcoming list** - Same root cause as above
+3. **Need extensive moderation tools** - Current page is ActivityPub-focused, not content moderation
 
 ---
 
-## Issue 1: Message Encryption Not Working
+## Issue 1 & 2: Events Display Fix
 
-### Root Cause Analysis
+### Root Cause
 
-The encryption is silently failing because:
+The database uses different column names than the code expects:
 
-1. **The edge function is called but fails** - Looking at the `sendMessage` function in `messageService.ts`:
-   ```typescript
-   try {
-     const { data: encryptData, error: encryptError } = await supabase.functions.invoke('encrypt-message', {
-       body: { action: 'encrypt', content }
-     });
-     
-     if (!encryptError && encryptData?.encryptedContent) {
-       encryptedContent = encryptData.encryptedContent;
-       isEncrypted = true;
-     }
-   } catch (encryptErr) {
-     console.warn('Message encryption failed, storing as plain text:', encryptErr);
-   }
-   ```
+| Database Column | Code Expects |
+|-----------------|--------------|
+| `start_date` | `start_time` |
+| `end_date` | `end_time` |
+| `cover_image_url` | `image_url` |
+| `max_attendees` | `capacity` |
+| `is_online` | `is_virtual` |
+| `meeting_url` | `stream_url` |
+| `visibility` | `is_public` |
+| (none) | `stream_type`, `timezone` |
 
-2. **The catch block swallows errors** - When encryption fails, it logs a warning and stores the message as plain text anyway. This is a design choice for resilience but makes debugging hard.
+### Files to Fix
 
-3. **No edge function call logs** - The analytics show zero calls to `encrypt-message`, which means either:
-   - The code path isn't being executed
-   - The Supabase client isn't correctly invoking the function
-   - The changes weren't deployed properly
+| File | Changes |
+|------|---------|
+| `src/services/eventService.ts` | Update `generateICalEvent()` to use correct column names (`start_date` instead of `start_time`, etc.) |
+| `src/pages/EventView.tsx` | Update all field references to match database schema |
+| `src/pages/Events.tsx` | Update `EventCard` component to use correct field names |
 
-### Fixes Required
+### Specific Changes
 
-#### A) Add the edge function to config.toml
+**EventView.tsx**:
+- Change `parseISO(event.start_time)` to `parseISO(event.start_date)`
+- Change `parseISO(event.end_time)` to `parseISO(event.end_date)`
+- Change `event.image_url` to `event.cover_image_url`
+- Change `event.is_virtual` to `event.is_online`
+- Change `event.stream_url` to `event.meeting_url`
+- Change `event.capacity` to `event.max_attendees`
+- Change `event.is_public` to `event.visibility !== 'private'`
+- Remove references to `event.timezone` (use browser timezone or UTC)
+- Remove references to `event.stream_type` (determine from URL or remove embed logic)
 
-The function should be explicitly listed to ensure proper deployment:
+**Events.tsx** (EventCard):
+- Same column name updates
 
-```toml
-[functions.encrypt-message]
-verify_jwt = false
-```
-
-Setting `verify_jwt = false` because authentication is handled within the function itself.
-
-#### B) Add better error logging in messageService.ts
-
-Replace the silent warning with visible feedback:
-
-```typescript
-} catch (encryptErr) {
-  console.error('Message encryption failed:', encryptErr);
-  // Still store as plain text but warn user
-}
-```
-
-#### C) Verify the edge function is deployed
-
-After adding to config.toml, ensure the function deploys correctly.
+**eventService.ts**:
+- Update `generateICalEvent()` function to use `event.start_date` and `event.end_date`
+- Handle `event.is_online` instead of `event.is_virtual`
+- Update `Event` interface to remove legacy field aliases (cleanup)
 
 ---
 
-## Issue 2: Message Reactions Not Visible
+## Issue 3: Comprehensive Moderation Page
 
-### Root Cause Analysis
+### Current State
 
-The `MessageReactions` component is rendered inside each message bubble at line 388-391:
+The existing `/moderation` page focuses on:
+- Moderation action log (warn/silence/block)
+- Domain blocking for federation
+- Actor blocking for federation  
+- ActivityPub actor/object management
+- Code of Conduct acceptance
 
-```tsx
-<MessageReactions 
-  messageId={message.id} 
-  isOwnMessage={isOwnMessage}
-/>
-```
+### Missing Features (needed for fediverse community)
 
-However, there are zero message reactions in the database. The component shows:
-- A small smiley icon button (3.5x3.5 size) 
-- Very subtle styling with `text-muted-foreground/40`
-- Only visible when there are reactions to show OR when hovering
+1. **Flagged Content Review** - View and act on reported posts/articles/users
+2. **User Ban System** - Temporary and permanent bans with expiration
+3. **Moderator Management** - Add/remove moderators (admin only)
+4. **User Search** - Find users by username to take action
+5. **Appeal Management** - Handle ban appeals
+6. **Audit Trail** - Full history of moderation actions
+7. **Bulk Actions** - Handle multiple reports efficiently
 
-### Fixes Required
-
-#### A) Move reactions outside the message bubble
-
-Currently, the `MessageReactions` component is INSIDE the message bubble container. Move it outside so it's clearly separate from the message content:
-
-**Current structure:**
-```tsx
-<div className="group max-w-[70%] p-3 rounded-lg">
-  <p>Message content</p>
-  <p>Timestamp</p>
-  <MessageReactions /> {/* Inside bubble */}
-</div>
-```
-
-**Proposed structure:**
-```tsx
-<div className="flex flex-col">
-  <div className="group max-w-[70%] p-3 rounded-lg">
-    <p>Message content</p>
-    <p>Timestamp</p>
-  </div>
-  <MessageReactions /> {/* Outside bubble, below it */}
-</div>
-```
-
-#### B) Make the reaction button more visible
-
-Update `MessageReactions.tsx`:
-- Increase the icon size from `h-3.5 w-3.5` to `h-4 w-4`
-- Add a tooltip hint "React to message"
-- Make the button more visible with better contrast
-
-#### C) Add hover state on message for reaction access
-
-Show the reaction button when hovering anywhere on the message row, not just the button itself.
-
----
-
-## Files to Modify
-
-| File | Change |
-|------|--------|
-| `supabase/config.toml` | Add `encrypt-message` function config |
-| `src/services/messageService.ts` | Improve error logging for encryption failures |
-| `src/pages/MessageConversation.tsx` | Move MessageReactions outside the message bubble |
-| `src/components/MessageReactions.tsx` | Make button larger and more visible |
-
----
-
-## Implementation Details
-
-### 1. supabase/config.toml
-
-Add the encrypt-message function configuration:
-
-```toml
-[functions.encrypt-message]
-verify_jwt = false
-```
-
-### 2. src/services/messageService.ts
-
-Improve encryption error handling (around lines 348-359):
-
-```typescript
-try {
-  const { data: encryptData, error: encryptError } = await supabase.functions.invoke('encrypt-message', {
-    body: { action: 'encrypt', content }
-  });
-  
-  if (encryptError) {
-    console.error('Encryption error:', encryptError);
-  } else if (encryptData?.encryptedContent) {
-    encryptedContent = encryptData.encryptedContent;
-    isEncrypted = true;
-    console.log('Message encrypted successfully');
-  } else {
-    console.error('Encryption returned no data:', encryptData);
-  }
-} catch (encryptErr) {
-  console.error('Message encryption failed:', encryptErr);
-}
-```
-
-### 3. src/pages/MessageConversation.tsx
-
-Restructure the message rendering to move reactions outside the bubble (around lines 357-396):
-
-```tsx
-messages.map((message) => {
-  const isOwnMessage = message.sender_id === currentUserId;
-  return (
-    <div 
-      key={message.id} 
-      className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
-    >
-      <div 
-        className={`group max-w-[70%] p-3 rounded-lg
-          ${isOwnMessage 
-            ? 'bg-primary text-primary-foreground' 
-            : 'bg-muted'
-          }
-        `}
-      >
-        <p 
-          className="break-words whitespace-pre-wrap"
-          dangerouslySetInnerHTML={{ 
-            __html: renderMessageContent(message.content) 
-          }}
-        />
-        <p className="text-xs opacity-70 mt-1">
-          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-        </p>
-      </div>
-      {/* Reactions moved OUTSIDE the bubble */}
-      <MessageReactions 
-        messageId={message.id} 
-        isOwnMessage={isOwnMessage}
-        className="mt-1"
-      />
-    </div>
-  );
-})
-```
-
-### 4. src/components/MessageReactions.tsx
-
-Improve visibility of the reaction button:
-
-```tsx
-{/* Reaction picker trigger - make it larger and more visible */}
-<Popover open={showPicker} onOpenChange={setShowPicker}>
-  <PopoverTrigger asChild>
-    <button
-      className={cn(
-        "p-1.5 rounded-full transition-all",
-        "border border-transparent hover:border-border",
-        isOwnMessage 
-          ? "hover:bg-primary/20 text-muted-foreground hover:text-foreground"
-          : "hover:bg-muted text-muted-foreground hover:text-foreground",
-        hasReactions && "text-primary border-primary/30"
-      )}
-      aria-label="Add reaction"
-      title="React to this message"
-    >
-      <Smile className="h-4 w-4" />
-    </button>
-  </PopoverTrigger>
-  ...
-</Popover>
-```
-
----
-
-## Testing Plan
-
-### Encryption Testing
-1. Send a new message after deployment
-2. Check the database: `is_encrypted` should be `true` and `encrypted_content` should contain Base64 data
-3. Verify the message displays correctly in the UI (decryption works)
-
-### Reactions Testing
-1. Open a conversation
-2. Verify the smiley button is visible below each message
-3. Click to add a reaction
-4. Verify the reaction appears and is saved to the database
-
----
-
-## Optional: Migration for Existing Messages
-
-After confirming encryption works for new messages, we can create a migration script to encrypt existing plain-text messages:
+### Database Changes Required
 
 ```sql
--- This would be done via an edge function, not direct SQL
--- The edge function would:
--- 1. Fetch messages where is_encrypted = false
--- 2. Encrypt each message.content
--- 3. Update encrypted_content and set is_encrypted = true
--- 4. Optionally clear the content column
+-- User bans table (new)
+CREATE TABLE public.user_bans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  banned_by UUID NOT NULL REFERENCES auth.users(id),
+  reason TEXT NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE, -- NULL for permanent
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  revoked_at TIMESTAMP WITH TIME ZONE,
+  revoked_by UUID REFERENCES auth.users(id),
+  UNIQUE(user_id, created_at)
+);
+
+-- Add to moderation_actions for history
+ALTER TABLE moderation_actions 
+ADD COLUMN expires_at TIMESTAMP WITH TIME ZONE,
+ADD COLUMN target_content_type TEXT,
+ADD COLUMN target_content_id TEXT;
+
+-- RLS policies for bans table
+CREATE POLICY "Moderators can view bans"
+ON public.user_bans FOR SELECT
+USING (is_moderator(auth.uid()));
+
+CREATE POLICY "Moderators can create bans"
+ON public.user_bans FOR INSERT
+WITH CHECK (is_moderator(auth.uid()));
+
+CREATE POLICY "Moderators can update bans"
+ON public.user_bans FOR UPDATE
+USING (is_moderator(auth.uid()));
+
+-- Function to check if user is banned
+CREATE OR REPLACE FUNCTION is_user_banned(check_user_id uuid)
+RETURNS boolean AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM user_bans
+    WHERE user_id = check_user_id
+    AND revoked_at IS NULL
+    AND (expires_at IS NULL OR expires_at > now())
+  );
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
 ```
 
-This is optional and can be done as a separate task.
+### New Components to Create
 
+1. **`src/components/moderation/FlaggedContentList.tsx`**
+   - Displays content_reports with status = 'pending'
+   - Shows preview of flagged content
+   - Actions: Dismiss, Delete Content, Warn User, Ban User
+
+2. **`src/components/moderation/UserBanDialog.tsx`**
+   - Form for banning a user
+   - Duration selector (1 day, 1 week, 1 month, permanent)
+   - Reason field
+   - Confirmation
+
+3. **`src/components/moderation/BannedUsersList.tsx`**
+   - Lists active bans
+   - Shows expiration dates
+   - Revoke ban action
+
+4. **`src/components/moderation/ModeratorManagement.tsx`**
+   - List current moderators (admin only)
+   - Add new moderator by username
+   - Remove moderator
+
+5. **`src/components/moderation/UserLookup.tsx`**
+   - Search for users by username
+   - View user's moderation history
+   - Quick action buttons
+
+### Updated Moderation Page Structure
+
+```tsx
+<Tabs>
+  <TabsTrigger value="reports">Reports ({pendingCount})</TabsTrigger>
+  <TabsTrigger value="bans">User Bans</TabsTrigger>
+  <TabsTrigger value="log">Action Log</TabsTrigger>
+  <TabsTrigger value="moderators">Team</TabsTrigger>  {/* Admin only */}
+  <TabsTrigger value="domains">Domains</TabsTrigger>
+  <TabsTrigger value="actors">Actors</TabsTrigger>
+  <TabsTrigger value="federation">Fediverse</TabsTrigger>
+</Tabs>
+```
+
+### New Service Functions
+
+**`src/services/moderationService.ts`** (new file):
+```typescript
+// Get flagged content with details
+export async function getFlaggedContent(status = 'pending'): Promise<FlaggedItem[]>
+
+// Update report status
+export async function updateReportStatus(reportId: string, status: ReportStatus, action?: string): Promise<boolean>
+
+// Ban a user
+export async function banUser(userId: string, reason: string, durationDays?: number): Promise<boolean>
+
+// Revoke a ban
+export async function revokeBan(banId: string): Promise<boolean>
+
+// Get active bans
+export async function getActiveBans(): Promise<UserBan[]>
+
+// Add moderator role
+export async function addModerator(userId: string): Promise<boolean>
+
+// Remove moderator role
+export async function removeModerator(userId: string): Promise<boolean>
+
+// Get moderators list
+export async function getModerators(): Promise<Profile[]>
+
+// Delete flagged content
+export async function deleteFlaggedContent(contentType: string, contentId: string): Promise<boolean>
+```
+
+---
+
+## Implementation Plan
+
+### Phase 1: Fix Events (Critical - fixes blank page)
+1. Update `src/pages/EventView.tsx` with correct field names
+2. Update `src/pages/Events.tsx` with correct field names  
+3. Update `src/services/eventService.ts` with correct field names and remove legacy aliases
+
+### Phase 2: Database Setup for Moderation
+1. Create migration for `user_bans` table
+2. Add RLS policies
+3. Create `is_user_banned()` function
+4. Extend `moderation_actions` table
+
+### Phase 3: Moderation Service Layer
+1. Create `src/services/moderationService.ts`
+2. Implement all CRUD operations for bans, reports, moderator management
+
+### Phase 4: Moderation UI Components
+1. Create `FlaggedContentList` component
+2. Create `UserBanDialog` component
+3. Create `BannedUsersList` component
+4. Create `ModeratorManagement` component
+5. Create `UserLookup` component
+
+### Phase 5: Integrate into Moderation Page
+1. Reorganize tabs for content-first approach
+2. Add pending reports count badge
+3. Integrate new components
+4. Add user lookup/search functionality
+
+---
+
+## Fediverse-Friendly Features
+
+The moderation system will support ActivityPub concepts:
+
+1. **Federated Bans** - Option to notify other instances of banned actors
+2. **Domain Defederation** - Already exists, integrates with moderation log
+3. **Remote Actor Blocking** - Already exists, integrates with ban system
+4. **Instance-Level Silencing** - Option to silence without full defederation
+5. **Transparent Moderation Log** - Public moderation log option (fediverse best practice)
+6. **Appeal via DM** - Users can appeal bans through direct message
+
+---
+
+## Files Summary
+
+### To Modify
+- `src/pages/EventView.tsx` - Fix column name references
+- `src/pages/Events.tsx` - Fix column name references
+- `src/services/eventService.ts` - Fix column names, clean up interface
+- `src/pages/Moderation.tsx` - Reorganize with new tabs and components
+
+### To Create
+- `src/services/moderationService.ts` - New service for moderation operations
+- `src/components/moderation/FlaggedContentList.tsx` - Flagged content viewer
+- `src/components/moderation/UserBanDialog.tsx` - Ban user dialog
+- `src/components/moderation/BannedUsersList.tsx` - Active bans list
+- `src/components/moderation/ModeratorManagement.tsx` - Team management
+- `src/components/moderation/UserLookup.tsx` - User search
+- Database migration for `user_bans` table
+
+### i18n Updates
+- Add translation keys for new moderation features in `en.json` and `sv.json`
