@@ -283,11 +283,14 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
     
     const { data, error } = await supabase
       .from('event_rsvps')
-      .upsert({
-        event_id: eventId,
-        user_id,
-        status
-      })
+      .upsert(
+        {
+          event_id: eventId,
+          user_id,
+          status
+        },
+        { onConflict: 'event_id,user_id' }
+      )
       .select()
       .single();
     
