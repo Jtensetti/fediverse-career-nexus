@@ -42,6 +42,18 @@ export type EventWithRSVPCount = Event & {
   user_rsvp_status?: 'attending' | 'maybe' | 'declined';
 };
 
+function extractEmbeddedCount(value: unknown): number {
+  // PostgREST can return embedded counts in different shapes depending on the select syntax/version.
+  // We accept: [{ count: number }], { count: number }, undefined/null.
+  if (!value) return 0;
+  if (Array.isArray(value)) {
+    const first = value[0] as any;
+    return typeof first?.count === 'number' ? first.count : 0;
+  }
+  const obj = value as any;
+  return typeof obj?.count === 'number' ? obj.count : 0;
+}
+
 export async function getEvents(options: {
   limit?: number;
   page?: number;
@@ -50,11 +62,12 @@ export async function getEvents(options: {
 } = {}): Promise<EventWithRSVPCount[]> {
   try {
     const { limit = 10, page = 0, upcoming = true, userId } = options;
-    const nowISO = new Date().toISOString();
+    // Avoid milliseconds in OR filters (can be brittle in some PostgREST parsers)
+    const nowISO = new Date().toISOString().split('.')[0] + 'Z';
     
     let query = supabase
       .from('events')
-      .select('*, rsvp_count:event_rsvps(count(*))');
+      .select('*, rsvp_count:event_rsvps(count)');
     
     // Filter by upcoming or past events
     if (upcoming) {
@@ -77,14 +90,13 @@ export async function getEvents(options: {
     if (error) throw error;
     
     // Transform the data to match our expected type
-    const eventsWithCount: EventWithRSVPCount[] = data?.map(item => {
-      // Extract the rsvp_count from the nested object and add it to the main event object
-      const { rsvp_count, ...event } = item as any;
+    const eventsWithCount: EventWithRSVPCount[] = (data || []).map((item: any) => {
+      const { rsvp_count, ...event } = item ?? {};
       return {
         ...event,
-        rsvp_count: rsvp_count[0]?.count || 0
+        rsvp_count: extractEmbeddedCount(rsvp_count),
       };
-    }) || [];
+    });
     
     // Get current user's RSVP status for each event
     const currentUser = (await supabase.auth.getSession()).data.session?.user;
@@ -120,17 +132,17 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
   try {
     const { data, error } = await supabase
       .from('events')
-      .select('*, rsvp_count:event_rsvps(count(*))')
+      .select('*, rsvp_count:event_rsvps(count)')
       .eq('id', id)
       .single();
     
     if (error) throw error;
     
     // Transform the data to match our expected type
-    const { rsvp_count, ...event } = data as any;
+    const { rsvp_count, ...event } = (data as any) ?? {};
     const eventWithCount: EventWithRSVPCount = {
       ...event,
-      rsvp_count: rsvp_count[0]?.count || 0
+      rsvp_count: extractEmbeddedCount(rsvp_count)
     };
     
     // Get current user's RSVP status
