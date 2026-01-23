@@ -24,9 +24,10 @@ import { Switch } from "@/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Briefcase, School, Star, Trash, Plus, Settings, CalendarIcon, Check } from "lucide-react";
+import { Briefcase, School, Star, Trash, Plus, Settings, CalendarIcon, Check, Globe } from "lucide-react";
 import { LinkedInImportButton } from "@/components/LinkedInImport";
 import DMPrivacySettings from "@/components/DMPrivacySettings";
+import FreelancerSettings from "@/components/FreelancerSettings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { MonthYearPicker } from "@/components/MonthYearPicker";
@@ -529,6 +530,7 @@ const ProfileEditPage = () => {
           <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-4">
             <TabsList className="w-max md:w-auto">
               <TabsTrigger value="basic" className="text-xs sm:text-sm whitespace-nowrap">{t("profileEdit.tabs.basicInfo")}</TabsTrigger>
+              <TabsTrigger value="freelance" className="text-xs sm:text-sm whitespace-nowrap">{t("profileEdit.tabs.freelance", "Freelance")}</TabsTrigger>
               <TabsTrigger value="experience" className="text-xs sm:text-sm whitespace-nowrap">{t("profileEdit.tabs.experience")}</TabsTrigger>
               <TabsTrigger value="education" className="text-xs sm:text-sm whitespace-nowrap">{t("profileEdit.tabs.education")}</TabsTrigger>
               <TabsTrigger value="skills" className="text-xs sm:text-sm whitespace-nowrap">{t("profileEdit.tabs.skills")}</TabsTrigger>
@@ -684,6 +686,22 @@ const ProfileEditPage = () => {
                     </Form>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="freelance">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase size={20} className="text-green-500" />
+                  {t("profileEdit.freelance.title", "Freelance Settings")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FreelancerSettings onUpdate={() => {
+                  queryClient.invalidateQueries({ queryKey: ["profile"] });
+                }} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -928,17 +946,8 @@ const ProfileEditPage = () => {
                             <h4 className="font-medium">
                               {edu.institution || `Education #${index + 1}`}
                             </h4>
-                            {edu.verification_status && (
-                              <VerificationBadge status={edu.verification_status} />
-                            )}
                           </div>
                           <div className="flex gap-2">
-                            {edu.id && (
-                              <VerificationRequest 
-                                type="education" 
-                                itemId={edu.id}
-                              />
-                            )}
                             <Button 
                               variant="ghost" 
                               size="sm" 

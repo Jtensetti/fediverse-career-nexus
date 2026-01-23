@@ -204,6 +204,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
         cc: [`${actorUrl}/followers`],
         attachment: imageUrl ? [{
           type: 'Image',
+          mediaType: 'image/jpeg', // Standard media type for compatibility
           url: imageUrl,
           name: postData.imageAltText || '' // Alt text for accessibility
         }] : undefined,

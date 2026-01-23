@@ -61,15 +61,21 @@ export interface UserProfile {
   avatarUrl?: string;
   headerUrl?: string;
   isVerified?: boolean;
-  domain?: string;
   connections?: number;
-  profileViews?: number;
   networkVisibilityEnabled?: boolean;
   connectionDegree?: number;
   // Federated auth fields
   authType?: "local" | "federated";
   homeInstance?: string;
   remoteActorUrl?: string;
+  // Freelancer fields
+  isFreelancer?: boolean;
+  freelancerSkills?: string[];
+  freelancerRate?: string;
+  freelancerAvailability?: string;
+  // Contact fields
+  website?: string;
+  contactEmail?: string;
   contact?: {
     email?: string | null;
     phone?: string;
@@ -458,15 +464,21 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
       avatarUrl: profile.avatar_url,
       headerUrl: profile.header_url,
       isVerified: profile.is_verified || false,
-      domain: profile.domain || "",
       connections: connectionCount || 0,
-      profileViews: profile.profile_views || 0,
       networkVisibilityEnabled,
       connectionDegree,
       // Federated auth fields
       authType: (profile.auth_type as "local" | "federated") || "local",
       homeInstance: profile.home_instance || undefined,
       remoteActorUrl: profile.remote_actor_url || undefined,
+      // Freelancer fields
+      isFreelancer: (profile as any).is_freelancer || false,
+      freelancerSkills: (profile as any).freelancer_skills || [],
+      freelancerRate: (profile as any).freelancer_rate || undefined,
+      freelancerAvailability: (profile as any).freelancer_availability || undefined,
+      // Contact fields
+      website: (profile as any).website || undefined,
+      contactEmail: (profile as any).contact_email || undefined,
       contact: {
         email: isOwnProfile ? user?.email : null,
         phone: phoneNumber,

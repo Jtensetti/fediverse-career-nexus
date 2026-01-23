@@ -1867,20 +1867,27 @@ export type Database = {
           created_at: string
           dm_privacy: string | null
           domain: string | null
+          freelancer_availability: string | null
+          freelancer_rate: string | null
+          freelancer_skills: string[] | null
           fullname: string | null
           header_url: string | null
           headline: string | null
           home_instance: string | null
           id: string
+          is_freelancer: boolean | null
           is_verified: boolean | null
           location: string | null
           phone: string | null
           profile_views: number | null
+          public_email: string | null
           remote_actor_url: string | null
           search_vector: unknown
+          show_email: boolean | null
           trust_level: number | null
           updated_at: string
           username: string | null
+          website: string | null
         }
         Insert: {
           auth_type?: string | null
@@ -1889,20 +1896,27 @@ export type Database = {
           created_at?: string
           dm_privacy?: string | null
           domain?: string | null
+          freelancer_availability?: string | null
+          freelancer_rate?: string | null
+          freelancer_skills?: string[] | null
           fullname?: string | null
           header_url?: string | null
           headline?: string | null
           home_instance?: string | null
           id: string
+          is_freelancer?: boolean | null
           is_verified?: boolean | null
           location?: string | null
           phone?: string | null
           profile_views?: number | null
+          public_email?: string | null
           remote_actor_url?: string | null
           search_vector?: unknown
+          show_email?: boolean | null
           trust_level?: number | null
           updated_at?: string
           username?: string | null
+          website?: string | null
         }
         Update: {
           auth_type?: string | null
@@ -1911,20 +1925,27 @@ export type Database = {
           created_at?: string
           dm_privacy?: string | null
           domain?: string | null
+          freelancer_availability?: string | null
+          freelancer_rate?: string | null
+          freelancer_skills?: string[] | null
           fullname?: string | null
           header_url?: string | null
           headline?: string | null
           home_instance?: string | null
           id?: string
+          is_freelancer?: boolean | null
           is_verified?: boolean | null
           location?: string | null
           phone?: string | null
           profile_views?: number | null
+          public_email?: string | null
           remote_actor_url?: string | null
           search_vector?: unknown
+          show_email?: boolean | null
           trust_level?: number | null
           updated_at?: string
           username?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -2962,61 +2983,64 @@ export type Database = {
           auth_type: string | null
           avatar_url: string | null
           bio: string | null
+          contact_email: string | null
           created_at: string | null
-          dm_privacy: string | null
-          domain: string | null
+          freelancer_availability: string | null
+          freelancer_rate: string | null
+          freelancer_skills: string[] | null
           fullname: string | null
           header_url: string | null
           headline: string | null
           home_instance: string | null
           id: string | null
+          is_freelancer: boolean | null
           is_verified: boolean | null
           location: string | null
-          profile_views: number | null
           remote_actor_url: string | null
-          trust_level: number | null
-          updated_at: string | null
           username: string | null
+          website: string | null
         }
         Insert: {
           auth_type?: string | null
           avatar_url?: string | null
           bio?: string | null
+          contact_email?: never
           created_at?: string | null
-          dm_privacy?: string | null
-          domain?: string | null
+          freelancer_availability?: string | null
+          freelancer_rate?: string | null
+          freelancer_skills?: string[] | null
           fullname?: string | null
           header_url?: string | null
           headline?: string | null
           home_instance?: string | null
           id?: string | null
+          is_freelancer?: boolean | null
           is_verified?: boolean | null
           location?: string | null
-          profile_views?: number | null
           remote_actor_url?: string | null
-          trust_level?: number | null
-          updated_at?: string | null
           username?: string | null
+          website?: string | null
         }
         Update: {
           auth_type?: string | null
           avatar_url?: string | null
           bio?: string | null
+          contact_email?: never
           created_at?: string | null
-          dm_privacy?: string | null
-          domain?: string | null
+          freelancer_availability?: string | null
+          freelancer_rate?: string | null
+          freelancer_skills?: string[] | null
           fullname?: string | null
           header_url?: string | null
           headline?: string | null
           home_instance?: string | null
           id?: string | null
+          is_freelancer?: boolean | null
           is_verified?: boolean | null
           location?: string | null
-          profile_views?: number | null
           remote_actor_url?: string | null
-          trust_level?: number | null
-          updated_at?: string | null
           username?: string | null
+          website?: string | null
         }
         Relationships: []
       }

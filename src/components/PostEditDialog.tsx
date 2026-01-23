@@ -35,8 +35,14 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
         text = post.content.content;
       }
       
-      // Remove HTML tags if present
-      text = text.replace(/<[^>]*>/g, '');
+      // Convert HTML line breaks to newlines before stripping tags
+      text = text
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p>/gi, '\n\n')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      
       setContent(text);
     }
   }, [post]);
