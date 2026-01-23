@@ -61,8 +61,20 @@ async function webfingerLookup(username: string, domain: string): Promise<WebFin
 }
 
 // Register an OAuth client with a Mastodon-compatible instance
+// Mastodon allows multiple redirect URIs, so we can include both domains
 async function registerOAuthClient(domain: string, redirectUri: string): Promise<{ clientId: string; clientSecret: string } | null> {
   const appsUrl = `https://${domain}/api/v1/apps`;
+  
+  // Include both the custom domain and the lovable.app domain as valid redirect URIs
+  // This prevents 422 errors when users access from different domains
+  const redirectUris = [
+    redirectUri,
+    'https://nolto.social/auth/callback',
+    'https://fediverse-career.lovable.app/auth/callback'
+  ];
+  
+  // Deduplicate and join with newlines (Mastodon format for multiple URIs)
+  const uniqueUris = [...new Set(redirectUris)].join('\n');
   
   try {
     const response = await fetch(appsUrl, {
@@ -70,14 +82,15 @@ async function registerOAuthClient(domain: string, redirectUri: string): Promise
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         client_name: 'Nolto - Professional Fediverse Network',
-        redirect_uris: redirectUri,
+        redirect_uris: uniqueUris,
         scopes: 'read:accounts',
-        website: Deno.env.get("SITE_URL") || redirectUri.split('/auth')[0]
+        website: 'https://nolto.social'
       })
     });
     
     if (!response.ok) {
-      console.error(`OAuth registration failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`OAuth registration failed: ${response.status} - ${errorText}`);
       return null;
     }
     
@@ -148,25 +161,32 @@ serve(async (req) => {
 
     let clientId: string;
     let clientSecret: string;
+    
+    // List of known valid redirect domains - use existing client if it matches any
+    const validDomains = ['nolto.social', 'fediverse-career.lovable.app'];
+    const existingDomain = existingClient?.redirect_uri?.match(/https?:\/\/([^/]+)/)?.[1];
+    const requestedDomain = redirectUri.match(/https?:\/\/([^/]+)/)?.[1];
+    
+    // Use existing client if both the existing and requested URIs are from our known domains
+    const canReuseClient = existingClient && 
+      validDomains.some(d => existingDomain?.includes(d)) && 
+      validDomains.some(d => requestedDomain?.includes(d));
 
-    // Check if existing client has matching redirect_uri
-    const needsNewClient = !existingClient || existingClient.redirect_uri !== redirectUri;
-
-    if (existingClient && !needsNewClient) {
-      console.log(`Using existing OAuth client for ${domain}`);
+    if (canReuseClient) {
+      console.log(`Using existing OAuth client for ${domain} (compatible redirect URI)`);
       clientId = existingClient.client_id;
       clientSecret = existingClient.client_secret;
-    } else {
-      if (existingClient) {
-        console.log(`Redirect URI changed for ${domain}, registering new OAuth client`);
-        // Delete the old client since redirect_uri doesn't match
+      
+      // Update our stored redirect_uri to match the current request
+      if (existingClient.redirect_uri !== redirectUri) {
         await supabase
           .from('oauth_clients')
-          .delete()
+          .update({ redirect_uri: redirectUri })
           .eq('instance_domain', domain);
-      } else {
-        console.log(`Registering new OAuth client for ${domain}`);
       }
+    } else {
+      // Need to register a new OAuth client
+      console.log(`Registering new OAuth client for ${domain}`);
       
       const registration = await registerOAuthClient(domain, redirectUri);
       
