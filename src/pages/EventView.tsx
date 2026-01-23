@@ -304,41 +304,30 @@ export default function EventView() {
                   <div className="space-y-3">
                     <Button
                       className="w-full"
-                      disabled={
-                        !session || 
-                        rsvpMutation.isPending || 
-                        event.user_rsvp_status === 'attending'
-                      }
+                      variant={event.user_rsvp_status === 'attending' ? 'default' : 'outline'}
+                      disabled={!session || rsvpMutation.isPending}
                       onClick={() => handleRSVP('attending')}
                     >
                       {event.user_rsvp_status === 'attending'
-                        ? 'You are attending'
+                        ? '✓ Attending'
                         : 'Attend this event'}
                     </Button>
                     <div className="flex gap-3">
                       <Button
-                        variant="outline"
+                        variant={event.user_rsvp_status === 'maybe' ? 'default' : 'outline'}
                         className="flex-1"
-                        disabled={
-                          !session || 
-                          rsvpMutation.isPending || 
-                          event.user_rsvp_status === 'maybe'
-                        }
+                        disabled={!session || rsvpMutation.isPending}
                         onClick={() => handleRSVP('maybe')}
                       >
-                        Maybe
+                        {event.user_rsvp_status === 'maybe' ? '✓ Maybe' : 'Maybe'}
                       </Button>
                       <Button
-                        variant="outline"
+                        variant={event.user_rsvp_status === 'declined' ? 'destructive' : 'outline'}
                         className="flex-1"
-                        disabled={
-                          !session || 
-                          rsvpMutation.isPending || 
-                          event.user_rsvp_status === 'declined'
-                        }
+                        disabled={!session || rsvpMutation.isPending}
                         onClick={() => handleRSVP('declined')}
                       >
-                        Decline
+                        {event.user_rsvp_status === 'declined' ? '✓ Declined' : 'Decline'}
                       </Button>
                     </div>
                   </div>
