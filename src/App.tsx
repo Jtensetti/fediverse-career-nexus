@@ -15,6 +15,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary, SkipToContent } from "@/components/common";
 import SessionExpiryWarning from "@/components/SessionExpiryWarning";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import CookieBanner from "@/components/CookieBanner";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
@@ -253,6 +254,7 @@ function App() {
                   </Routes>
                 </main>
                 <MobileBottomNav />
+                <CookieBanner />
                 </AuthProvider>
               </BrowserRouter>
             </ErrorBoundary>

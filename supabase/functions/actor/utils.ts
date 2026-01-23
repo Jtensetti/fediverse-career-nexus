@@ -370,7 +370,9 @@ export function createActorObject(profile: any, actor: any, domain: string, prot
       "mediaType": "image/jpeg",
       "url": profile.avatar_url
     } : null,
-    "fingerprint": actor.key_fingerprint
+    "fingerprint": actor.key_fingerprint,
+    "alsoKnownAs": actor.also_known_as || [],
+    "movedTo": actor.moved_to || null
   };
 
   // Filter out null values

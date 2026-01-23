@@ -39,6 +39,8 @@ import VerificationBadge from "@/components/VerificationBadge";
 import VerificationRequest from "@/components/VerificationRequest";
 import { toast } from "sonner";
 import DeleteAccountSection from "@/components/DeleteAccountSection";
+import DataExportSection from "@/components/DataExportSection";
+import AccountMigrationSection from "@/components/AccountMigrationSection";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   getUserExperiences, 
@@ -986,6 +988,10 @@ const ProfileEditPage = () => {
                 <DMPrivacySettings />
               </CardContent>
             </Card>
+            
+            <DataExportSection />
+            
+            <AccountMigrationSection />
             
             <DeleteAccountSection />
           </TabsContent>

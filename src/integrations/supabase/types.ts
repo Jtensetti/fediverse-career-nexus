@@ -141,11 +141,13 @@ export type Database = {
       }
       actors: {
         Row: {
+          also_known_as: string[] | null
           created_at: string
           follower_count: number | null
           following_count: number | null
           id: string
           is_remote: boolean | null
+          moved_to: string | null
           preferred_username: string
           private_key: string | null
           public_key: string | null
@@ -157,11 +159,13 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          also_known_as?: string[] | null
           created_at?: string
           follower_count?: number | null
           following_count?: number | null
           id?: string
           is_remote?: boolean | null
+          moved_to?: string | null
           preferred_username: string
           private_key?: string | null
           public_key?: string | null
@@ -173,11 +177,13 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          also_known_as?: string[] | null
           created_at?: string
           follower_count?: number | null
           following_count?: number | null
           id?: string
           is_remote?: boolean | null
+          moved_to?: string | null
           preferred_username?: string
           private_key?: string | null
           public_key?: string | null
@@ -2152,6 +2158,45 @@ export type Database = {
         }
         Relationships: []
       }
+      security_incidents: {
+        Row: {
+          affected_users: number | null
+          description: string
+          id: string
+          incident_type: string
+          metadata: Json | null
+          remediation_steps: string | null
+          reported_at: string
+          reported_by: string | null
+          resolved_at: string | null
+          severity: string
+        }
+        Insert: {
+          affected_users?: number | null
+          description: string
+          id?: string
+          incident_type: string
+          metadata?: Json | null
+          remediation_steps?: string | null
+          reported_at?: string
+          reported_by?: string | null
+          resolved_at?: string | null
+          severity: string
+        }
+        Update: {
+          affected_users?: number | null
+          description?: string
+          id?: string
+          incident_type?: string
+          metadata?: Json | null
+          remediation_steps?: string | null
+          reported_at?: string
+          reported_by?: string | null
+          resolved_at?: string | null
+          severity?: string
+        }
+        Relationships: []
+      }
       server_keys: {
         Row: {
           created_at: string
@@ -2474,6 +2519,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_consents: {
+        Row: {
+          consent_type: string
+          consented_at: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+          version: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          consent_type: string
+          consented_at?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+          version: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          consent_type?: string
+          consented_at?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: []
       }
       user_cw_preferences: {
         Row: {
