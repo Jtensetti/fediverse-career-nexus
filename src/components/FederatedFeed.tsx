@@ -38,23 +38,26 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
      sourceFilter === 'remote' ? 'remote' : 
      sourceFilter === 'following' ? 'following' : 'all');
   
-  // Ref for infinite scroll sentinel
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-  
-  // Use refs to track values for the observer callback to avoid stale closure issues
-  const currentOffset = useRef(0);
-  currentOffset.current = offset;
+  // Refs for infinite scroll
+  const isFetchingRef = useRef(false);
+  const loadMoreLockRef = useRef(false);
   
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['federatedFeed', limit, offset, effectiveFeedType],
     queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType),
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
     enabled: true,
   });
   
-  // Track isFetching in a ref so observer callback always has current value
-  const isFetchingRef = useRef(false);
+  // Keep refs in sync with state
   isFetchingRef.current = isFetching;
+  
+  // Reset lock when fetch completes
+  useEffect(() => {
+    if (!isFetching) {
+      loadMoreLockRef.current = false;
+    }
+  }, [isFetching]);
   
   // Reset when feed type changes
   useEffect(() => {
@@ -63,15 +66,14 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setHasMore(true);
     setBatchData(new Map());
     fetchedPostIds.current.clear();
+    loadMoreLockRef.current = false;
   }, [effectiveFeedType]);
   
-  // Memoized batch data fetcher - only fetches posts we haven't fetched before
+  // Memoized batch data fetcher
   const fetchBatchData = useCallback(async (postIds: string[]) => {
-    // Filter out posts we've already fetched
     const newPostIds = postIds.filter(id => !fetchedPostIds.current.has(id));
     if (newPostIds.length === 0) return;
     
-    // Mark as fetched immediately to prevent duplicate calls
     newPostIds.forEach(id => fetchedPostIds.current.add(id));
     
     setBatchDataLoading(true);
@@ -87,24 +89,21 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     }
   }, [user?.id]);
 
-  // Process new posts and fetch batch data when posts arrive
+  // Process new posts when they arrive
   useEffect(() => {
     if (!posts) return;
     
     if (posts.length === 0) {
       if (offset === 0) {
-        // Empty feed on first page
         setAllPosts([]);
         setHasMore(false);
         setBatchDataLoading(false);
       } else {
-        // No more posts to load
         setHasMore(false);
       }
       return;
     }
     
-    // Update allPosts
     setAllPosts(currentPosts => {
       if (offset === 0) {
         return posts;
@@ -121,33 +120,42 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       setHasMore(false);
     }
     
-    // Fetch batch data for new posts in ONE request
     const postIds = posts.map(p => p.id);
     fetchBatchData(postIds);
   }, [posts, offset, limit, fetchBatchData]);
   
-  // Infinite scroll with IntersectionObserver
-  useEffect(() => {
-    if (!loadMoreRef.current || !hasMore) return;
+  // Load more function - guarded against double calls
+  const loadMore = useCallback(() => {
+    if (loadMoreLockRef.current || isFetchingRef.current || !hasMore) return;
+    loadMoreLockRef.current = true;
+    setOffset(prev => prev + limit);
+  }, [hasMore, limit]);
+  
+  // Callback ref for sentinel - attaches observer when element mounts
+  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node || !hasMore) return;
     
     const observer = new IntersectionObserver(
       (entries) => {
-        // Use ref to get current isFetching value (avoids stale closure)
-        if (entries[0].isIntersecting && hasMore && !isFetchingRef.current) {
-          setOffset(prev => prev + limit);
+        if (entries[0].isIntersecting) {
+          loadMore();
         }
       },
       { 
-        root: null, // Use viewport as root
+        root: null,
         threshold: 0.1, 
-        rootMargin: '300px' // Trigger earlier for smoother loading
+        rootMargin: '300px'
       }
     );
     
-    observer.observe(loadMoreRef.current);
+    observer.observe(node);
+    
+    // Cleanup when node unmounts - store observer on node for cleanup
+    (node as any)._infiniteScrollObserver?.disconnect();
+    (node as any)._infiniteScrollObserver = observer;
     
     return () => observer.disconnect();
-  }, [hasMore, limit]); // Removed isFetching - observer stays active during fetches
+  }, [hasMore, loadMore]);
 
   const handleEditPost = (post: FederatedPost) => {
     setEditingPost(post);
@@ -170,6 +178,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setOffset(0);
     setAllPosts([]);
     fetchedPostIds.current.clear();
+    loadMoreLockRef.current = false;
     await queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
     await refetch();
   }, [queryClient, refetch]);
@@ -185,53 +194,63 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     );
   }
   
-  // Show loading state during initial load OR while fetching first batch data
   const showInitialLoading = (isLoading && offset === 0) || (offset === 0 && batchDataLoading && allPosts.length > 0 && batchData.size === 0);
 
   return (
-    <PullToRefresh onRefresh={handlePullRefresh} className={className}>
-      {showInitialLoading && allPosts.length === 0 ? (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <PostSkeleton key={i} />
-          ))}
-        </div>
-      ) : allPosts.length > 0 ? (
-        <>
-          {allPosts.map((post, index) => (
-            <FederatedPostCard
-              key={`${post.id}-${index}`}
-              post={post}
-              onEdit={handleEditPost}
-              onDelete={handleDeletePost}
-              initialData={batchData.get(post.id)}
+    <PullToRefresh onRefresh={handlePullRefresh}>
+      <div className={className}>
+        {showInitialLoading && allPosts.length === 0 ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <PostSkeleton key={i} />
+            ))}
+          </div>
+        ) : allPosts.length > 0 ? (
+          <>
+            {allPosts.map((post, index) => (
+              <FederatedPostCard
+                key={`${post.id}-${index}`}
+                post={post}
+                onEdit={handleEditPost}
+                onDelete={handleDeletePost}
+                initialData={batchData.get(post.id)}
+              />
+            ))}
+            
+            {hasMore && (
+              <div ref={sentinelRef} className="mt-4 flex flex-col items-center gap-3 py-4">
+                {isFetching ? (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading more posts...</span>
+                  </div>
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={loadMore}
+                    className="text-muted-foreground"
+                  >
+                    Load more
+                  </Button>
+                )}
+              </div>
+            )}
+            <PostEditDialog
+              open={editOpen}
+              onOpenChange={setEditOpen}
+              post={editingPost}
+              onUpdated={handlePostUpdated}
             />
-          ))}
-          
-          {hasMore && (
-            <div ref={loadMoreRef} className="mt-4 flex justify-center py-4">
-              {isFetching && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading more posts...</span>
-                </div>
-              )}
-            </div>
-          )}
-          <PostEditDialog
-            open={editOpen}
-            onOpenChange={setEditOpen}
-            post={editingPost}
-            onUpdated={handlePostUpdated}
+          </>
+        ) : (
+          <EmptyState
+            icon={MessageSquare}
+            title="This feed is still warming up"
+            description="You're early – that's a good thing! Be the first to share something with the network."
           />
-        </>
-      ) : (
-        <EmptyState
-          icon={MessageSquare}
-          title="This feed is still warming up"
-          description="You're early – that's a good thing! Be the first to share something with the network."
-        />
-      )}
+        )}
+      </div>
     </PullToRefresh>
   );
 }
