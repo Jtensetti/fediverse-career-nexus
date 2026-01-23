@@ -1,212 +1,207 @@
 
-# Comprehensive Plan: Freelancer Features, Profile Improvements, and Bug Fixes
 
-## Overview
+# Performance Optimization Plan: Fix Slow Page Loading
 
-This plan addresses 6 tickets covering new freelancer features, profile enhancements, and critical bug fixes. The changes are designed to be additive and non-destructive to existing functionality.
+## Problem Analysis
 
----
+Based on my investigation, the site is loading slowly due to multiple sequential database queries and redundant operations during authentication and feed loading. Here's what's happening:
 
-## Ticket 1: Freelancer Features
+### Key Performance Bottlenecks Identified
 
-### 1.1 Database Changes
+1. **AuthContext Sequential Operations** (Lines 82-115 in `AuthContext.tsx`)
+   - On sign-in, the system runs:
+     - `ensureUserProfile()` - multiple DB queries
+     - Check for existing actor in `public_actors`
+     - Potentially create a new actor via `createUserActor()`
+   - These run **synchronously** and block the loading state
 
-Add new columns to `profiles` table:
-- `is_freelancer` (boolean, default false) - Marks user as available for work
-- `freelancer_skills` (text array) - Skills for freelancer search
-- `freelancer_rate` (text, optional) - Hourly/daily rate display
-- `freelancer_availability` (text, optional) - "Full-time", "Part-time", "Project-based"
+2. **Double Profile Fetch in ensureUserProfile** (Lines 247-259 in `profileService.ts`)
+   - `getCurrentUserProfile()` calls `ensureUserProfile()` first
+   - Then immediately does another full profile fetch
+   - This means **2+ database round trips** for every profile check
 
-### 1.2 Profile Badge (LinkedIn-style frame)
+3. **Redundant supabase.auth.getUser() Calls**
+   - `getFederatedFeed()` calls `supabase.auth.getUser()` on every feed fetch (line 74)
+   - This is already available from the AuthContext
+   - Each `getUser()` call adds network latency
 
-Create `FreelancerBadge` component that wraps the avatar with a green gradient ring when `is_freelancer` is true. Update `AvatarWithStatus` component to accept an `isFreelancer` prop.
+4. **Batch Data Fetching Not Parallelized**
+   - In `getBatchPostData()`, queries run sequentially:
+     1. Reactions query
+     2. Actor ID query
+     3. Boost counts RPC
+     4. Reply counts RPC
+     5. User boosts query
+   - These could be parallelized with `Promise.all()`
 
-### 1.3 Freelancer Toggle in Profile Edit
-
-Add a new section in the Privacy tab or create a dedicated "Freelance" tab:
-- Toggle switch for "Open for work"
-- Multi-select for skills (searchable)
-- Optional rate field
-- Availability dropdown
-- Prompt suggesting to "Open DMs to freelance inquiries" when enabled
-
-### 1.4 Freelancer Discovery Page
-
-Create `/freelancers` page with:
-- Skill/keyword search input
-- Filter by location (optional)
-- Grid of freelancer cards showing: avatar (with badge), name, headline, skills, website preview, bio excerpt
-- Link each card to profile
-- Use existing `advancedSearchService` pattern with new `searchFreelancers` method
-
-### 1.5 DM Suggestion
-
-When user enables freelancer mode, show a toast or inline prompt: "Consider opening your DMs so potential clients can reach you directly" with a link to DM privacy settings.
+5. **Index Page Double Rendering**
+   - `Index.tsx` checks `loading` state and renders spinner
+   - If user exists, renders `Home.tsx`
+   - `Home.tsx` also checks `loading` state and renders another spinner
+   - Then redirects to `/feed` - causing unnecessary renders
 
 ---
 
-## Ticket 2: Contact Information Improvements
+## Solution Overview
 
-### 2.1 Database Changes
+### Phase 1: AuthContext Optimization (Quick Wins)
 
-Add to `profiles` table:
-- `website` (text) - Primary professional website
-- `public_email` (text, optional) - Public contact email (different from auth email)
-- `show_email` (boolean, default false) - Whether to display email publicly
+**Goal**: Make auth setup non-blocking and faster
 
-Add to `user_settings` table:
-- `email_visibility` (text, default 'hidden') - Options: 'hidden', 'auth_email', 'public_email'
+| Change | Impact |
+|--------|--------|
+| Move profile/actor setup to background | Immediate UI response |
+| Use cached session from AuthContext instead of calling `getUser()` | Eliminate redundant API calls |
+| Parallelize profile check and actor check | Reduce wait time by ~50% |
 
-### 2.2 Profile Edit UI Updates
+### Phase 2: Remove Redundant Database Calls
 
-**Contact Information section changes:**
-- Email field: Add clarifying text: "This is your account email and is never shown publicly."
-- New toggle: "Show a contact email on my profile"
-- When enabled, show radio options:
-  - "Use my account email" (shows current email)
-  - "Use a different email" (reveals input for public_email)
-- New Website field with URL validation
-- Consider adding "Additional Links" section for blog/social (optional, lower priority)
+**Goal**: Eliminate double-fetching and sequential bottlenecks
 
-### 2.3 Profile Display
+| Change | Impact |
+|--------|--------|
+| Make `ensureUserProfile` return full profile data | Remove second fetch |
+| Pass user ID to feed service instead of calling getUser() | Remove API call per feed load |
+| Parallelize batch data queries with Promise.all() | Faster feed enrichment |
 
-Update `Profile.tsx` to show:
-- Website link prominently (with external link icon)
-- Contact email (if user opted in) in the contact section
+### Phase 3: Feed Loading Optimization
 
----
+**Goal**: Make feed appear faster
 
-## Ticket 3: Profile Views - Always On
-
-### 3.1 Remove Toggle Option
-
-- Delete `ProfileVisitsToggle` component from ProfileEdit privacy tab
-- Remove `show_network_connections` setting usage for profile views (keep column for other uses if needed)
-- Profile views are now always tracked and always visible to profile owner
-
-### 3.2 UI Update
-
-Replace the toggle with static explanatory text: "Profile view statistics are always visible to you. Other users cannot see who viewed their profile."
+| Change | Impact |
+|--------|--------|
+| Show skeleton immediately, don't wait for batch data | Perceived performance boost |
+| Defer batch data loading after initial render | Content visible faster |
+| Remove blocking getUser() call from getFederatedFeed() | Faster feed queries |
 
 ---
 
-## Ticket 4: Education Verification - Remove Incomplete Feature
+## Detailed Implementation
 
-### 4.1 Remove from Education UI
+### File: `src/contexts/AuthContext.tsx`
 
-In `ProfileEdit.tsx` education tab:
-- Remove `VerificationBadge` display for education entries
-- Remove `VerificationRequest` button for education entries
-- Keep experience verification as-is (it has URL-based verification)
+**Change 1: Non-blocking user setup**
 
-### 4.2 Optional: Database Cleanup
+Move the profile/actor setup to a fire-and-forget background task. The UI doesn't need to wait for this:
 
-Consider removing `verification_token` and `verification_status` columns from `education` table, or leave them for potential future use.
-
----
-
-## Ticket 5: Posts Losing Line Breaks and Images
-
-### 5.1 Fix Line Breaks Display
-
-In `FederatedPostCard.tsx`, update the content rendering div to preserve whitespace:
-
-```tsx
-// Change from:
-<div className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all">
-
-// To:
-<div className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all whitespace-pre-line">
+```typescript
+// After setting user/session, start setup in background without awaiting
+if (event === 'SIGNED_IN' && session?.user) {
+  // Don't block the UI - run in background
+  void setupUserInBackground(session.user.id);
+}
 ```
 
-### 5.2 Fix Image Attachments
+**Change 2: Parallelize profile and actor checks**
 
-**Problem**: Images are stored in `attachment` array but `getMediaAttachments()` filters by `mediaType` which may not be set for local uploads.
-
-**Fix in `FederatedPostCard.tsx`**:
-```tsx
-const getMediaAttachments = () => {
-  const attachments = 
-    post.content.attachment || 
-    post.content.object?.attachment ||
-    [];
+```typescript
+const setupUserInBackground = async (userId: string) => {
+  // Check cache first
+  const cacheKey = `user_setup_${userId}`;
+  const cachedSetup = localStorage.getItem(cacheKey);
+  if (cachedSetup && Date.now() - JSON.parse(cachedSetup).timestamp < 300000) {
+    return;
+  }
   
-  if (!Array.isArray(attachments)) return [];
+  // Run profile and actor checks in parallel
+  const [profile, existingActor] = await Promise.all([
+    ensureUserProfile(userId),
+    supabase.from('public_actors').select('id').eq('user_id', userId).maybeSingle()
+  ]);
   
-  return attachments.filter(att => {
-    // Accept if mediaType starts with image/ OR if type is 'Image'
-    const isImage = (att.mediaType && att.mediaType.startsWith('image/')) || 
-                    att.type === 'Image';
-    return isImage && att.url;
-  }).map(att => ({
-    ...att,
-    altText: att.name || ''
-  }));
+  if (profile && !existingActor.data) {
+    await createUserActor(userId);
+  }
+  
+  localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
 };
 ```
 
-**Fix in `postService.ts`** (line 205-209): Add `mediaType` when creating attachment:
-```tsx
-attachment: imageUrl ? [{
-  type: 'Image',
-  mediaType: 'image/jpeg', // Or detect from file
-  url: imageUrl,
-  name: postData.imageAltText || ''
-}] : undefined,
+### File: `src/services/profileService.ts`
+
+**Change 3: Eliminate double fetch in getCurrentUserProfile**
+
+Instead of calling `ensureUserProfile()` then fetching again, have `ensureUserProfile` return all needed data:
+
+```typescript
+// In ensureUserProfile - when profile exists, return full data
+if (profile) {
+  // Already have the profile, fetch full data in one go
+  const { data: fullProfile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+  return fullProfile;
+}
 ```
 
----
+### File: `src/services/federationService.ts`
 
-## Ticket 6: Post Edit Feature Not Working
+**Change 4: Accept userId as parameter instead of calling getUser()**
 
-### 6.1 Fix Content Extraction
+```typescript
+export const getFederatedFeed = async (
+  limit: number = 20, 
+  offset: number = 0,
+  feedType: FeedType = 'all',
+  userId?: string  // Add optional parameter
+): Promise<FederatedPost[]> => {
+  // Remove: const { data: { user } } = await supabase.auth.getUser();
+  // Use the passed userId instead
+```
 
-In `PostEditDialog.tsx`, improve content extraction to handle more cases and preserve line breaks:
+### File: `src/services/batchDataService.ts`
 
-```tsx
-useEffect(() => {
-  if (post) {
-    let text = "";
-    
-    // Try different content locations
-    if (post.type === 'Create' && post.content.object?.content) {
-      text = post.content.object.content;
-    } else if (post.content.content) {
-      text = post.content.content;
+**Change 5: Parallelize batch queries**
+
+```typescript
+// Run all independent queries in parallel
+const [reactionsResult, boostCountsResult, replyCountsResult, actorResult] = 
+  await Promise.all([
+    supabase.from('reactions').select('target_id, reaction, user_id')
+      .eq('target_type', 'post').in('target_id', postIds),
+    supabase.rpc('get_batch_boost_counts', { post_ids: postIds }),
+    supabase.rpc('get_batch_reply_counts', { post_ids: postIds }),
+    userId ? supabase.from('actors').select('id').eq('user_id', userId).single() 
+           : Promise.resolve({ data: null })
+  ]);
+```
+
+### File: `src/components/FederatedFeed.tsx`
+
+**Change 6: Pass user ID to feed service**
+
+```typescript
+const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
+  queryKey: ['federatedFeed', limit, offset, effectiveFeedType],
+  queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType, user?.id), // Pass user ID
+  staleTime: 30000,
+  enabled: true,
+});
+```
+
+### File: `src/pages/Home.tsx`
+
+**Change 7: Eliminate double loading spinner**
+
+Since `Index.tsx` already handles the loading state and auth check, simplify `Home.tsx`:
+
+```typescript
+const Home = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/feed");
     }
-    
-    // Convert HTML line breaks to newlines before stripping tags
-    text = text
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/<\/p>/gi, '\n\n')
-      .replace(/<[^>]*>/g, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-    
-    setContent(text);
-  }
-}, [post]);
+  }, [user, navigate]);
+
+  // Show nothing - Index.tsx handles unauthenticated state
+  return null;
+};
 ```
-
-### 6.2 Verify Update Service
-
-The `updatePost` function in `postService.ts` looks correct. Add console logging to debug if issues persist. The function handles:
-- Create activity with nested object
-- Question (poll) type
-- Direct Note type
-
----
-
-## Implementation Order
-
-| Priority | Ticket | Effort |
-|----------|--------|--------|
-| 1 | Ticket 5 - Line breaks & images | Small - Quick fixes |
-| 2 | Ticket 6 - Post edit | Small - Quick fix |
-| 3 | Ticket 4 - Remove education verification | Small - Remove code |
-| 4 | Ticket 3 - Profile views always on | Small - Remove toggle |
-| 5 | Ticket 2 - Contact info improvements | Medium - DB + UI |
-| 6 | Ticket 1 - Freelancer features | Large - Full feature |
 
 ---
 
@@ -214,35 +209,31 @@ The `updatePost` function in `postService.ts` looks correct. Add console logging
 
 | File | Changes |
 |------|---------|
-| `src/components/FederatedPostCard.tsx` | Add `whitespace-pre-line`, fix image detection |
-| `src/services/postService.ts` | Add `mediaType` to attachments |
-| `src/components/PostEditDialog.tsx` | Fix content extraction |
-| `src/pages/ProfileEdit.tsx` | Remove education verification, add freelancer/contact fields |
-| `src/pages/Profile.tsx` | Display website, freelancer badge |
-| `src/components/ProfileVisitsToggle.tsx` | Replace with static text |
-| `src/components/common/AvatarWithStatus.tsx` | Add freelancer ring option |
+| `src/contexts/AuthContext.tsx` | Non-blocking setup, parallel checks |
+| `src/services/profileService.ts` | Return full profile from ensureUserProfile |
+| `src/services/federationService.ts` | Accept userId parameter |
+| `src/services/batchDataService.ts` | Parallelize with Promise.all |
+| `src/components/FederatedFeed.tsx` | Pass user ID to feed service |
+| `src/pages/Home.tsx` | Remove redundant loading check |
 
-## New Files to Create
+---
 
-| File | Purpose |
-|------|---------|
-| `src/pages/Freelancers.tsx` | Freelancer discovery page |
-| `src/components/FreelancerBadge.tsx` | Avatar ring indicator |
-| `src/services/freelancerService.ts` | Search and filter freelancers |
+## Expected Improvements
 
-## Database Migration
+| Before | After |
+|--------|-------|
+| 4-5 sequential API calls on auth | 2 parallel calls in background |
+| 2 profile fetches per login | 1 profile fetch |
+| getUser() on every feed load | User ID from context (cached) |
+| 5 sequential batch queries | 4 parallel batch queries |
+| 10+ second timeout possible | Sub-2 second typical load |
 
-```sql
--- Profiles table additions
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_freelancer BOOLEAN DEFAULT false;
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS freelancer_skills TEXT[];
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS freelancer_rate TEXT;
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS freelancer_availability TEXT;
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS website TEXT;
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS public_email TEXT;
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS show_email BOOLEAN DEFAULT false;
+---
 
--- Update public_profiles view to include new fields
--- Index for freelancer search
-CREATE INDEX IF NOT EXISTS idx_profiles_freelancer ON profiles(is_freelancer) WHERE is_freelancer = true;
-```
+## Technical Notes
+
+- All changes are backward-compatible
+- No database migrations required
+- The 10-second timeout safeguard in AuthContext can be reduced to 5 seconds after these optimizations
+- Consider adding performance monitoring (console.time/timeEnd) to measure improvements
+
