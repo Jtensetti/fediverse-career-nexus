@@ -204,28 +204,29 @@ export default function AuthPage() {
         }
       }
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            first_name: trimmedFirstName,
-            last_name: trimmedLastName,
-            fullname: fullname,
-            preferred_username: preferredUsername,
-          },
+      // Use custom auth-signup edge function for email confirmation via Resend
+      const { data, error } = await supabase.functions.invoke('auth-signup', {
+        body: {
+          email,
+          password,
+          firstName: trimmedFirstName,
+          lastName: trimmedLastName,
+          username: preferredUsername,
         },
       });
 
       if (error) {
-        throw error;
+        throw new Error(error.message || 'Failed to create account');
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       // Process referral code if exists
-      if (data.user && refCode) {
+      if (data?.userId && refCode) {
         try {
-          await processReferralCode(refCode, data.user.id);
+          await processReferralCode(refCode, data.userId);
           localStorage.removeItem("referral_code");
         } catch (refError) {
           console.error("Failed to process referral:", refError);
@@ -233,12 +234,13 @@ export default function AuthPage() {
         }
       }
 
-      if (data.user && !data.user.email_confirmed_at) {
-        toast.success("Please check your email to confirm your account");
-      } else {
-        toast.success("Account created successfully!");
-        navigate("/");
-      }
+      toast.success("Please check your email to confirm your account");
+      // Clear the form
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPassword("");
+      setUsername("");
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");
     } finally {
