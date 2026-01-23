@@ -12,6 +12,8 @@ export interface Message {
   created_at: string;
   is_federated?: boolean;
   delivery_status?: string;
+  is_encrypted?: boolean;
+  encrypted_content?: string | null;
   sender?: {
     id: string;
     username?: string;
@@ -494,6 +496,29 @@ export function subscribeToMessages(
     currentUserId = data.session?.user?.id || null;
   });
 
+  // Helper to decrypt a single message via edge function
+  const decryptSingleMessage = async (message: Message): Promise<Message> => {
+    if (!message.is_encrypted || !message.encrypted_content) {
+      return message;
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('encrypt-message', {
+        body: { action: 'decrypt', messageId: message.id }
+      });
+      
+      if (error || !data?.content) {
+        console.error('Failed to decrypt real-time message:', error);
+        return { ...message, content: '[Encrypted message]' };
+      }
+      
+      return { ...message, content: data.content };
+    } catch (err) {
+      console.error('Decryption error for real-time message:', err);
+      return { ...message, content: '[Encrypted message]' };
+    }
+  };
+
   const channel = supabase
     .channel(channelId)
     .on(
@@ -503,7 +528,7 @@ export function subscribeToMessages(
         schema: 'public',
         table: 'messages'
       },
-      (payload) => {
+      async (payload) => {
         const message = payload.new as Message;
         // Only process messages for this conversation
         const isRelevant = 
@@ -511,7 +536,9 @@ export function subscribeToMessages(
           (message.sender_id === currentUserId && message.recipient_id === partnerId);
         
         if (isRelevant) {
-          onMessage(message);
+          // Decrypt encrypted messages before passing to callback
+          const decryptedMessage = await decryptSingleMessage(message);
+          onMessage(decryptedMessage);
         }
       }
     )
