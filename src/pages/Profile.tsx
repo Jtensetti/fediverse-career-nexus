@@ -240,7 +240,8 @@ const ProfilePage = () => {
       }
 
       toast.success(t("profile.syncSuccess", "Profile synced successfully from your Fediverse instance!"));
-      window.location.reload();
+      // Invalidate profile queries to refresh data without full page reload
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (error: any) {
       console.error("Error syncing profile:", error);
       toast.error(error.message || t("profile.syncFailed", "Failed to sync profile"));

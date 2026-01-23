@@ -521,8 +521,9 @@ const ProfileEditPage = () => {
           <h1 className="text-2xl font-bold">{t("profileEdit.title")}</h1>
           <LinkedInImportButton 
             onImportComplete={() => {
-              // Refresh profile data after import
-              window.location.reload();
+              // Invalidate profile cache to refresh data without full page reload
+              queryClient.invalidateQueries({ queryKey: ["profile"] });
+              fetchCVData(); // Re-fetch CV data (experiences, education, skills)
             }}
           />
         </div>

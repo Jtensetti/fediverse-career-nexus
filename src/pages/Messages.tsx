@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Users, MessageSquare, Inbox } from 'lucide-react';
+import { SEOHead } from '@/components/common/SEOHead';
 
 export default function Messages() {
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ export default function Messages() {
   const [activeTab, setActiveTab] = useState('messages');
 
   // Fetch conversations
-  const { data: conversations, isLoading, error } = useQuery({
+  const { data: conversations, isLoading, error, refetch: refetchConversations } = useQuery({
     queryKey: ['conversations'],
     queryFn: getConversations,
     enabled: !!currentUserId
@@ -66,6 +67,7 @@ export default function Messages() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Messages" description="Your conversations on Nolto." />
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-6">
@@ -115,7 +117,7 @@ export default function Messages() {
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => window.location.reload()}
+                  onClick={() => refetchConversations()}
                 >
                   {t("messages.tryAgain")}
                 </Button>

@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
+import { SEOHead } from "@/components/common/SEOHead";
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -169,7 +170,8 @@ export default function Notifications() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <DashboardLayout>
+    <DashboardLayout disableSEO>
+      <SEOHead title="Notifications" description="Your notifications on Nolto." />
       <div className="container max-w-3xl mx-auto py-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
