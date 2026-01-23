@@ -5,12 +5,40 @@ import { v4 as uuidv4 } from 'uuid';
 import { createUserActor } from "./actorService";
 
 export interface ProfileUpdateData {
+  username?: string;
   fullname?: string;
   headline?: string;
   bio?: string;
   phone?: string;
   location?: string;
 }
+
+/**
+ * Checks if a username is available (not already taken)
+ */
+export const checkUsernameAvailability = async (username: string): Promise<boolean> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", username.toLowerCase())
+      .neq("id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error checking username availability:", error);
+      return false;
+    }
+
+    return !data; // Available if no matching profile found
+  } catch (error) {
+    console.error("Error checking username:", error);
+    return false;
+  }
+};
 
 /**
  * Updates a user's profile information in the database
@@ -32,22 +60,43 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
 
     console.log('📝 Updating profile with data:', profileData);
 
+    // Build update object, only including defined fields
+    const updateData: Record<string, any> = {
+      updated_at: new Date().toISOString()
+    };
+    
+    if (profileData.username !== undefined) updateData.username = profileData.username.toLowerCase();
+    if (profileData.fullname !== undefined) updateData.fullname = profileData.fullname;
+    if (profileData.headline !== undefined) updateData.headline = profileData.headline;
+    if (profileData.bio !== undefined) updateData.bio = profileData.bio;
+    if (profileData.phone !== undefined) updateData.phone = profileData.phone;
+    if (profileData.location !== undefined) updateData.location = profileData.location;
+
     const { error } = await supabase
       .from("profiles")
-      .update({
-        fullname: profileData.fullname,
-        headline: profileData.headline,
-        bio: profileData.bio,
-        phone: profileData.phone,
-        location: profileData.location,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq("id", user.id);
 
     if (error) {
       console.error('❌ Profile update error:', error);
       toast.error(`Failed to update profile: ${error.message}`);
       return false;
+    }
+
+    // If username was updated, also update the actor's preferred_username for federation
+    if (profileData.username) {
+      const { error: actorError } = await supabase
+        .from("actors")
+        .update({ 
+          preferred_username: profileData.username.toLowerCase(),
+          updated_at: new Date().toISOString()
+        })
+        .eq("user_id", user.id);
+
+      if (actorError) {
+        console.warn('⚠️ Failed to update actor username:', actorError);
+        // Don't fail the whole operation, just log the warning
+      }
     }
 
     console.log('✅ Profile updated successfully');
