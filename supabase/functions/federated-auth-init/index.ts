@@ -226,6 +226,7 @@ serve(async (req) => {
       domain,
       username,
       actorUrl,
+      redirectUri,
       timestamp: Date.now()
     }));
 
