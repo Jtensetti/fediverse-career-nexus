@@ -65,11 +65,15 @@ export function NotificationBell() {
     setIsOpen(false);
 
     // Navigate based on notification type - with null safety
+    // Always prefer username over actor_id for profile links
+    const actorUsername = notification.actor?.username;
+    const profilePath = actorUsername ? `/profile/${actorUsername}` : `/profile/${notification.actor_id}`;
+    
     if (notification.object_type) {
       switch (notification.object_type) {
         case 'profile':
-          if (notification.object_id) {
-            navigate(`/profile/${notification.object_id}`);
+          if (actorUsername || notification.actor_id) {
+            navigate(profilePath);
           }
           break;
         case 'job':
@@ -93,15 +97,15 @@ export function NotificationBell() {
           }
           break;
         case 'skill':
-          if (notification.actor_id) {
-            navigate(`/profile/${notification.actor_id}`);
+          if (actorUsername || notification.actor_id) {
+            navigate(profilePath);
           }
           break;
         case 'post':
           if (notification.object_id) {
             navigate(`/post/${notification.object_id}`);
-          } else if (notification.actor_id) {
-            navigate(`/profile/${notification.actor_id}`);
+          } else if (actorUsername || notification.actor_id) {
+            navigate(profilePath);
           }
           break;
         case 'reply':
@@ -119,17 +123,17 @@ export function NotificationBell() {
             } catch {
               navigate(`/post/${notification.object_id}`);
             }
-          } else if (notification.actor_id) {
-            navigate(`/profile/${notification.actor_id}`);
+          } else if (actorUsername || notification.actor_id) {
+            navigate(profilePath);
           }
           break;
         default:
-          if (notification.actor_id) {
-            navigate(`/profile/${notification.actor_id}`);
+          if (actorUsername || notification.actor_id) {
+            navigate(profilePath);
           }
       }
-    } else if (notification.actor_id) {
-      navigate(`/profile/${notification.actor_id}`);
+    } else if (actorUsername || notification.actor_id) {
+      navigate(profilePath);
     }
   };
 
