@@ -115,8 +115,8 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">1. Who Controls Your Data</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  Bondy is a federated platform. When you sign up, your data is stored and managed by the 
-                  instance (server) where you created your account.
+                  Bondy is a federated platform developed by <strong>Lovable, a company registered in Sweden (EU)</strong>. 
+                  When you sign up, your data is stored and managed by the instance (server) where you created your account.
                 </p>
                 <p>
                   Each instance is operated by its own administrator, who acts as the data controller under 
@@ -277,20 +277,96 @@ const PrivacyPolicy = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">9. International Data Transfers</h2>
-              <div className="space-y-4 text-gray-700">
-                <p>
-                  Federation may involve sending data to servers in other countries, including outside the EU/EEA.
-                </p>
-                <p>
-                  When this happens, Bondy instances seek to ensure that adequate safeguards are in place, 
-                  but cannot guarantee the practices of remote servers outside their control.
-                </p>
+              <h2 className="text-2xl font-bold text-bondy-primary mb-6">9. Infrastructure & Data Storage</h2>
+              <div className="space-y-6 text-gray-700">
+                
+                <div>
+                  <h3 className="text-xl font-semibold text-bondy-primary mb-3">9.1 Platform Provider</h3>
+                  <p>
+                    Bondy is developed by <strong>Lovable</strong>, a company registered in <strong>Sweden (EU)</strong>.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold text-bondy-primary mb-3">9.2 Data Center Location</h3>
+                  <p className="mb-3">Your data is stored and processed in the European Union:</p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li><strong>Database & Authentication:</strong> Frankfurt, Germany (AWS eu-central-1)</li>
+                    <li><strong>Edge Functions:</strong> EU-preferred routing via Deno Deploy</li>
+                    <li><strong>Content Delivery:</strong> Cloudflare global network with EU nodes</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold text-bondy-primary mb-3">9.3 Sub-processors</h3>
+                  <p className="mb-3">The following service providers process data on behalf of Bondy:</p>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Service</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Provider</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Location</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Safeguards</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="px-4 py-3 text-sm">Database & Auth</td>
+                          <td className="px-4 py-3 text-sm">Supabase (via AWS)</td>
+                          <td className="px-4 py-3 text-sm">Frankfurt, Germany</td>
+                          <td className="px-4 py-3 text-sm">EU-US DPF + SCCs</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="px-4 py-3 text-sm">Edge Functions</td>
+                          <td className="px-4 py-3 text-sm">Deno Deploy</td>
+                          <td className="px-4 py-3 text-sm">Global / EU</td>
+                          <td className="px-4 py-3 text-sm">EU-US DPF</td>
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-3 text-sm">CDN & Security</td>
+                          <td className="px-4 py-3 text-sm">Cloudflare</td>
+                          <td className="px-4 py-3 text-sm">Global</td>
+                          <td className="px-4 py-3 text-sm">EU-US DPF + SCCs</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="mt-3 text-sm">
+                    All sub-processors are certified under the <strong>EU-US Data Privacy Framework</strong> and/or 
+                    have signed <strong>Standard Contractual Clauses (SCCs)</strong> for GDPR compliance.
+                  </p>
+                </div>
+
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">10. Changes to This Policy</h2>
+              <h2 className="text-2xl font-bold text-bondy-primary mb-6">10. International Data Transfers</h2>
+              <div className="space-y-4 text-gray-700">
+                <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+                  <p className="font-semibold text-green-800">Primary data storage: European Union (Frankfurt, Germany)</p>
+                </div>
+                <p>
+                  When data is processed by US-based infrastructure providers (Supabase, Cloudflare), 
+                  transfers are protected by:
+                </p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li><strong>EU-US Data Privacy Framework</strong> certification</li>
+                  <li><strong>Standard Contractual Clauses (SCCs)</strong></li>
+                  <li>Supplementary technical measures (encryption in transit and at rest)</li>
+                </ul>
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+                  <p>
+                    <strong>Note:</strong> Federation transfers to other Fediverse instances may involve servers 
+                    in various countries. Each remote instance is responsible for its own data protection practices.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-bondy-primary mb-6">11. Changes to This Policy</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
                   We may update this Privacy Policy from time to time. Changes will be posted on this page 
@@ -300,7 +376,7 @@ const PrivacyPolicy = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">11. Contact</h2>
+              <h2 className="text-2xl font-bold text-bondy-primary mb-6">12. Contact</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
                   For questions or to exercise your rights, contact the instance administrator or Data Protection 
