@@ -50,14 +50,19 @@ export async function getEvents(options: {
 } = {}): Promise<EventWithRSVPCount[]> {
   try {
     const { limit = 10, page = 0, upcoming = true, userId } = options;
+    const nowISO = new Date().toISOString();
     
     let query = supabase
       .from('events')
       .select('*, rsvp_count:event_rsvps(count(*))');
     
-    // Filter by upcoming events
+    // Filter by upcoming or past events
     if (upcoming) {
-      query = query.gte('end_date', new Date().toISOString());
+      // Upcoming = end_date >= now OR (end_date is null AND start_date >= now)
+      query = query.or(`end_date.gte.${nowISO},and(end_date.is.null,start_date.gte.${nowISO})`);
+    } else {
+      // Past = end_date < now OR (end_date is null AND start_date < now)
+      query = query.or(`end_date.lt.${nowISO},and(end_date.is.null,start_date.lt.${nowISO})`);
     }
     
     // Filter by user_id if provided
@@ -165,12 +170,16 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
       return null;
     }
     
+    // Default end_date to start_date if not provided
+    const finalEventData = {
+      ...eventData,
+      end_date: eventData.end_date || eventData.start_date,
+      user_id
+    };
+    
     const { data, error } = await supabase
       .from('events')
-      .insert({
-        ...eventData,
-        user_id
-      })
+      .insert(finalEventData)
       .select()
       .single();
     
