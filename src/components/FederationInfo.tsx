@@ -21,6 +21,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   const [actor, setActor] = useState<any>(null);
   const [currentUserActor, setCurrentUserActor] = useState<any>(null);
   const [federationEnabled, setFederationEnabled] = useState<boolean>(true);
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -126,7 +127,6 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   const domain = isLocalUser ? getNoltoInstanceDomain() : actor.home_instance;
   const federatedHandle = `@${username}@${domain}`;
   const remoteActorUri = `${window.location.origin}/actor/${username}`;
-  const [copied, setCopied] = useState(false);
   
   const copyHandle = async () => {
     try {
