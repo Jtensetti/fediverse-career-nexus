@@ -92,7 +92,20 @@ export function NotificationBell() {
           }
           break;
         case 'message':
-          if (notification.actor_id) {
+          // For message reactions, navigate to the conversation
+          // For regular messages, navigate to the conversation with the actor
+          if (notification.type === 'message_reaction') {
+            // The content contains conversationWith - the other person in the conversation
+            try {
+              const contentData = notification.content ? JSON.parse(notification.content) : {};
+              const conversationWith = contentData.conversationWith || notification.actor_id;
+              navigate(`/messages/${conversationWith}`);
+            } catch {
+              if (notification.actor_id) {
+                navigate(`/messages/${notification.actor_id}`);
+              }
+            }
+          } else if (notification.actor_id) {
             navigate(`/messages/${notification.actor_id}`);
           }
           break;
@@ -154,22 +167,24 @@ export function NotificationBell() {
       case 'follow':
         return <UserPlus className="h-4 w-4 text-primary" />;
       case 'endorsement':
-        return <ThumbsUp className="h-4 w-4 text-green-500" />;
+        return <ThumbsUp className="h-4 w-4 text-success" />;
       case 'message':
-        return <MessageSquare className="h-4 w-4 text-blue-500" />;
+        return <MessageSquare className="h-4 w-4 text-info" />;
+      case 'message_reaction':
+        return <Heart className="h-4 w-4 text-destructive" />;
       case 'job_application':
-        return <Briefcase className="h-4 w-4 text-orange-500" />;
+        return <Briefcase className="h-4 w-4 text-warning" />;
       case 'mention':
-        return <AtSign className="h-4 w-4 text-purple-500" />;
+        return <AtSign className="h-4 w-4 text-primary" />;
       case 'like':
-        return <Heart className="h-4 w-4 text-red-500" />;
+        return <Heart className="h-4 w-4 text-destructive" />;
       case 'boost':
-        return <Repeat className="h-4 w-4 text-green-500" />;
+        return <Repeat className="h-4 w-4 text-success" />;
       case 'reply':
-        return <MessageSquare className="h-4 w-4 text-blue-500" />;
+        return <MessageSquare className="h-4 w-4 text-info" />;
       case 'recommendation_request':
       case 'recommendation_received':
-        return <FileText className="h-4 w-4 text-amber-500" />;
+        return <FileText className="h-4 w-4 text-warning" />;
       case 'article_published':
         return <FileText className="h-4 w-4 text-primary" />;
       default:
@@ -241,6 +256,17 @@ export function NotificationBell() {
         return `${actorName} ${t("notifications.recommendationReceived", "wrote you a recommendation")}`;
       case 'article_published':
         return `${actorName} ${notification.content || t("notifications.publishedArticle", "published a new article")}`;
+      case 'message_reaction': {
+        // Parse reaction from content
+        try {
+          const contentData = notification.content ? JSON.parse(notification.content) : {};
+          const reaction = contentData.reaction || 'like';
+          const reactionEmoji = reaction === 'love' ? '❤️' : reaction === 'celebrate' ? '🎉' : reaction === 'support' ? '👏' : reaction === 'insightful' ? '💡' : reaction === 'empathy' ? '💜' : '👍';
+          return `${actorName} ${t("notifications.reactedToMessage", "reacted")} ${reactionEmoji} ${t("notifications.toYourMessage", "to your message")}`;
+        } catch {
+          return `${actorName} ${t("notifications.reactedToMessage", "reacted to your message")}`;
+        }
+      }
       default:
         return notification.content || 'New notification';
     }
