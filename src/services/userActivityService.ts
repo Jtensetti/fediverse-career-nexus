@@ -121,12 +121,13 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
       const raw = p.content as any;
       const note = raw?.type === 'Create' ? raw.object : raw;
       
+      const preferredUsername = (p.actors as any)?.preferred_username;
       return [p.id, {
         id: p.id,
         content: note?.content || '',
         author: {
-          username: authorProfile?.username || (p.actors as any)?.preferred_username || 'Unknown',
-          fullname: authorProfile?.fullname,
+          username: authorProfile?.username || preferredUsername || 'user',
+          fullname: authorProfile?.fullname || preferredUsername || 'Nolto User',
           avatar_url: authorProfile?.avatar_url
         }
       }];

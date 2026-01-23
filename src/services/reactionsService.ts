@@ -14,7 +14,7 @@ export interface ToggleReactionResult {
   reaction: ReactionKey;
 }
 
-type TargetType = 'post' | 'reply';
+type TargetType = 'post' | 'reply' | 'message';
 
 // Get reactions for a target (post or reply)
 export async function getReactions(
@@ -220,13 +220,16 @@ export async function toggleReaction(
   }
 }
 
-// Convenience functions for posts and replies
+// Convenience functions for posts, replies, and messages
 export const getPostReactions = (postId: string) => getReactions('post', postId);
 export const getReplyReactions = (replyId: string) => getReactions('reply', replyId);
+export const getMessageReactions = (messageId: string) => getReactions('message', messageId);
 export const togglePostReaction = (postId: string, reaction: ReactionKey) => 
   toggleReaction('post', postId, reaction);
 export const toggleReplyReaction = (replyId: string, reaction: ReactionKey) => 
   toggleReaction('reply', replyId, reaction);
+export const toggleMessageReaction = (messageId: string, reaction: ReactionKey) => 
+  toggleReaction('message', messageId, reaction);
 
 // Batch fetch reactions for multiple replies (avoids N+1)
 export async function getBatchReplyReactions(

@@ -396,6 +396,7 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
         const quotedPost = raw?.object; // The original post being quoted
         const userComment = raw?.content || ''; // User's comment on the repost
 
+        const preferredUsername = (post.actors as any)?.preferred_username;
         return {
           id: post.id,
           content: userComment,
@@ -411,8 +412,8 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
             published: quotedPost.published,
           } : undefined,
           author: {
-            username: (post.actors as any)?.preferred_username || 'Unknown',
-            fullname: profile.fullname || (post.actors as any)?.preferred_username || 'Unknown User',
+            username: preferredUsername || 'user',
+            fullname: profile.fullname || preferredUsername || 'Nolto User',
             avatar_url: profile.avatar_url || undefined,
           },
         } as UserPostWithMeta;
@@ -425,6 +426,7 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
       const contentText = note?.content || '';
       if (!contentText) return null;
 
+      const preferredUsername = (post.actors as any)?.preferred_username;
       const transformedPost: UserPostWithMeta = {
         id: post.id,
         content: contentText,
@@ -433,8 +435,8 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
         type: post.type,
         image_url: note?.image,
         author: {
-          username: (post.actors as any)?.preferred_username || 'Unknown',
-          fullname: profile.fullname || (post.actors as any)?.preferred_username || 'Unknown User',
+          username: preferredUsername || 'user',
+          fullname: profile.fullname || preferredUsername || 'Nolto User',
           avatar_url: profile.avatar_url || undefined,
         },
       };
