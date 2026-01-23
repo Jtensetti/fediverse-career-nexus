@@ -109,9 +109,9 @@ export function ShareButton({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={variant} size={size}>
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
+          <Button variant={variant} size={size} aria-label="Share">
+            <Share2 className={size === "icon" ? "h-4 w-4" : "h-4 w-4 mr-2"} />
+            {size !== "icon" && "Share"}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
