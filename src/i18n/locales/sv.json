@@ -807,5 +807,24 @@
       "placeholder": "Skriv en färdighet...",
       "addButton": "Lägg till"
     }
+  },
+  "privacy": {
+    "cookiesTitle": "Cookies och externa resurser",
+    "essentialCookies": "Nödvändiga cookies (alltid aktiva)",
+    "essentialCookiesDesc": "Dessa cookies är strikt nödvändiga för att plattformen ska fungera och kan inte avaktiveras.",
+    "authCookies": "Autentiserings-cookies: Bibehåller din inloggningssession och håller ditt konto säkert.",
+    "securityCookies": "Säkerhets-cookies (Cloudflare): Skyddar mot botar och skadlig trafik.",
+    "typographyFonts": "Typsnitt (valfritt)",
+    "typographyFontsDesc": "Som standard laddar vi typsnitt från Google Fonts för att ge en konsekvent visuell upplevelse. När typsnitt laddas överförs din IP-adress till Googles servrar.",
+    "useGoogleFonts": "Använd Google Fonts",
+    "googleFontsEnabled": "Typsnitt laddas från Google (din IP delas med Google)",
+    "systemFontsEnabled": "Använder systemtypsnitt (inga externa förfrågningar)",
+    "preferenceStored": "Din preferens lagras lokalt på din enhet och överförs inte till våra servrar.",
+    "whatWeDontUse": "Vad vi inte använder",
+    "noAdvertising": "Reklam- eller marknadsförings-cookies",
+    "noAnalytics": "Analysspårning (Google Analytics, etc.)",
+    "noSocialTracking": "Spårningspixlar för sociala medier",
+    "noCrossSiteTracking": "Spårning mellan webbplatser eller fingeravtryckstagning",
+    "noDataBrokers": "Tredjepartsdatamäklare eller annonsnätverk"
   }
 }

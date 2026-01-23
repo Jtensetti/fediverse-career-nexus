@@ -755,5 +755,24 @@
     "noRequests": "No message requests",
     "noRequestsDesc": "When someone outside your network wants to message you, their request will appear here.",
     "noMessagesYet": "No messages yet"
+  },
+  "privacy": {
+    "cookiesTitle": "Cookies & External Resources",
+    "essentialCookies": "Essential Cookies (Always Active)",
+    "essentialCookiesDesc": "These cookies are strictly necessary for the platform to function and cannot be disabled.",
+    "authCookies": "Authentication cookies: Maintain your login session and keep your account secure.",
+    "securityCookies": "Security cookies (Cloudflare): Protect against bots and malicious traffic.",
+    "typographyFonts": "Typography Fonts (Optional)",
+    "typographyFontsDesc": "By default, we load fonts from Google Fonts to provide a consistent visual experience. When fonts are loaded, your IP address is transmitted to Google's servers.",
+    "useGoogleFonts": "Use Google Fonts",
+    "googleFontsEnabled": "Fonts are loaded from Google (your IP is shared with Google)",
+    "systemFontsEnabled": "Using system fonts (no external requests)",
+    "preferenceStored": "Your preference is stored locally on your device and is not transmitted to our servers.",
+    "whatWeDontUse": "What We Don't Use",
+    "noAdvertising": "Advertising or marketing cookies",
+    "noAnalytics": "Analytics tracking (Google Analytics, etc.)",
+    "noSocialTracking": "Social media tracking pixels",
+    "noCrossSiteTracking": "Cross-site tracking or fingerprinting",
+    "noDataBrokers": "Third-party data brokers or ad networks"
   }
 }
