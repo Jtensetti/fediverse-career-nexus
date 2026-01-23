@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -18,6 +17,7 @@ import {
   Server
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SEOHead } from "@/components/common/SEOHead";
 
 interface RemoteInstance {
   id: string;
@@ -67,13 +67,10 @@ const Instances = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Federated Instances | Nolto</title>
-        <meta 
-          name="description" 
-          content="Explore the network of federated instances connected to Nolto. Join the decentralized professional network." 
-        />
-      </Helmet>
+      <SEOHead 
+        title="Federated Instances" 
+        description="Explore the network of federated instances connected to Nolto. Join the decentralized professional network." 
+      />
 
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />

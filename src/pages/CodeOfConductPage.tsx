@@ -1,17 +1,16 @@
-
-import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import CodeOfConduct from "@/components/CodeOfConduct";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const CodeOfConductPage = () => {
   return (
     <>
-      <Helmet>
-        <title>Code of Conduct - Nolto</title>
-        <meta name="description" content="Community guidelines and standards for respectful interaction on the Nolto professional network." />
-      </Helmet>
+      <SEOHead 
+        title="Code of Conduct" 
+        description="Community guidelines and standards for respectful interaction on the Nolto professional network." 
+      />
       
       <div className="min-h-screen flex flex-col bg-white">
         {/* Header */}

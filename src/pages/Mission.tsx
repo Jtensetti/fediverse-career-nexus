@@ -1,10 +1,15 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const Mission = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title="Our Mission" 
+        description="Nolto is on a mission to reshape how people find jobs, build professional connections, and share opportunities—outside the walled gardens of big tech platforms." 
+      />
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-16">
         <div className="container mx-auto px-4">

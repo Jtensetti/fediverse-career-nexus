@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -34,6 +33,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const ArticleManage = () => {
   const navigate = useNavigate();
@@ -83,6 +83,7 @@ const ArticleManage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Manage My Articles" description="View, edit, and delete your articles and drafts." />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">

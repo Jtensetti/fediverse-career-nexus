@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Save } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { SEOHead } from "@/components/common/SEOHead";
 
 // Validation schema
 const articleSchema = z.object({
@@ -158,6 +159,7 @@ const ArticleCreate = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Create New Article" description="Write and publish a new article on Nolto." />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">

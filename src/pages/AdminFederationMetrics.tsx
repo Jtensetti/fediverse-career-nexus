@@ -1,4 +1,3 @@
-
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FederationMetricsOverview from "@/components/FederationMetricsOverview";
@@ -8,9 +7,9 @@ import { useEffect, useState } from "react";
 import { AlertCircle, ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Helmet } from "react-helmet-async";
 import AdminFixSecurityInvoker from "@/components/AdminFixSecurityInvoker";
 import { toast } from "@/hooks/use-toast";
+import { SEOHead } from "@/components/common/SEOHead";
 
 export default function AdminFederationMetrics() {
   const [loading, setLoading] = useState(true);
@@ -96,12 +95,9 @@ export default function AdminFederationMetrics() {
   if (!isAdmin) {
     return null; // Redirecting in useEffect
   }
-  
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Federation Metrics - Admin</title>
-      </Helmet>
+      <SEOHead title="Federation Metrics - Admin" description="Monitor and manage federation traffic with other instances." />
       
       <Navbar />
       

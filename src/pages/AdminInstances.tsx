@@ -1,6 +1,4 @@
-
 import { useState, useEffect } from "react";
-import { Helmet } from "react-helmet-async";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -12,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const AdminInstances = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -93,9 +92,7 @@ const AdminInstances = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Helmet>
-        <title>Instance Management - Admin</title>
-      </Helmet>
+      <SEOHead title="Instance Management - Admin" description="Manage rate-limited instances and federation queues." />
       
       <Navbar />
       

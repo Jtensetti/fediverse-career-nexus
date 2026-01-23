@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -37,6 +36,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { getEvent, createRSVP, deleteEvent, downloadICalFile } from '@/services/eventService';
 import { toast } from 'sonner';
+import { SEOHead } from '@/components/common/SEOHead';
 
 export default function EventView() {
   const { id } = useParams<{ id: string }>();
@@ -151,6 +151,10 @@ export default function EventView() {
 
   return (
     <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
+      <SEOHead 
+        title={event.title} 
+        description={event.description?.slice(0, 160) || "View event details on Nolto."} 
+      />
       <div className="flex flex-col space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>

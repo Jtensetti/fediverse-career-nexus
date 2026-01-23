@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const HelpCenter = () => {
   const faqSections = [
@@ -78,6 +79,10 @@ const HelpCenter = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead 
+        title="Help Center" 
+        description="Find answers to common questions and get the most out of your federated professional network on Nolto." 
+      />
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-16">
         <div className="container mx-auto px-4">

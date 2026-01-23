@@ -12,6 +12,7 @@ import { ArrowLeft, Package, Loader2 } from "lucide-react";
 import { createStarterPack, getPackCategories } from "@/services/starterPackService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const StarterPackCreate = () => {
   const navigate = useNavigate();
@@ -89,6 +90,7 @@ const StarterPackCreate = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Create Starter Pack" description="Curate a list of people to help others discover great accounts on Nolto." />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8 max-w-2xl">

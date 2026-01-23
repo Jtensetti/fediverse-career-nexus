@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { SEOHead } from "@/components/common/SEOHead";
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -334,6 +335,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEOHead title={t("auth.welcomeTitle")} description={t("auth.welcomeSubtitle")} />
       {/* Header */}
       <div className="p-4">
         <Button variant="ghost" asChild>

@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventWithRSVPCount, getEvents } from '@/services/eventService';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { SEOHead } from '@/components/common/SEOHead';
 
 export default function Events() {
   const { t } = useTranslation();
@@ -29,6 +30,10 @@ export default function Events() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead 
+        title={t("events.title")} 
+        description={t("events.subtitle")} 
+      />
       <Navbar />
       <main className="flex-grow">
         <div className="container max-w-7xl mx-auto py-10 px-4 sm:px-6">
