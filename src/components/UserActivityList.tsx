@@ -1,11 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUserActivity, type ActivityItem } from "@/services/userActivityService";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, Repeat2, Loader2 } from "lucide-react";
+import { Heart, Repeat2, Loader2, Quote } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
-import { ProfileHoverCard } from "@/components/common";
 
 interface UserActivityListProps {
   userId?: string;
@@ -37,63 +34,59 @@ export default function UserActivityList({ userId, className = "" }: UserActivit
   }
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-3 ${className}`}>
       {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} />
+        <ActivityRow key={activity.id} activity={activity} />
       ))}
     </div>
   );
 }
 
-function ActivityCard({ activity }: { activity: ActivityItem }) {
-  const actorName = activity.actor.fullname || activity.actor.username;
-  const actionText = activity.type === 'boost' ? 'boosted this post' : 'liked this post';
-  const Icon = activity.type === 'boost' ? Repeat2 : Heart;
-  const iconColor = activity.type === 'boost' ? 'text-green-500' : 'text-red-500';
+function ActivityRow({ activity }: { activity: ActivityItem }) {
+  const getActionDetails = () => {
+    switch (activity.type) {
+      case 'boost':
+        return {
+          icon: <Repeat2 className="h-4 w-4 text-primary" />,
+          text: 'boosted a post'
+        };
+      case 'quote':
+        return {
+          icon: <Quote className="h-4 w-4 text-accent-foreground" />,
+          text: 'quoted a post'
+        };
+      case 'like':
+      default:
+        return {
+          icon: <Heart className="h-4 w-4 text-destructive" />,
+          text: 'liked a post'
+        };
+    }
+  };
+
+  const { icon, text } = getActionDetails();
+  const timeAgo = formatDistanceToNow(new Date(activity.created_at), { addSuffix: true });
+
+  // Get a preview snippet of the post content (first 60 chars)
+  const contentPreview = activity.originalPost.content
+    ? activity.originalPost.content.replace(/<[^>]*>/g, '').slice(0, 60) + (activity.originalPost.content.length > 60 ? '...' : '')
+    : 'a post';
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
-        {/* Activity header */}
-        <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
-          <Icon className={`h-4 w-4 ${iconColor}`} />
-          <ProfileHoverCard username={activity.actor.username}>
-            <span className="font-medium text-foreground hover:underline cursor-pointer">
-              {actorName}
-            </span>
-          </ProfileHoverCard>
-          <span>{actionText}</span>
-          <span>·</span>
-          <span>{formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}</span>
-        </div>
-
-        {/* Original post */}
-        <Link to={`/post/${activity.originalPost.id}`} className="block">
-          <div className="pl-6 border-l-2 border-muted">
-            <div className="flex items-center gap-2 mb-2">
-              <ProfileHoverCard username={activity.originalPost.author.username}>
-                <Avatar className="h-6 w-6 aspect-square flex-shrink-0 cursor-pointer">
-                  <AvatarImage src={activity.originalPost.author.avatar_url} />
-                  <AvatarFallback className="text-xs">
-                    {(activity.originalPost.author.fullname || activity.originalPost.author.username || '?')[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </ProfileHoverCard>
-              <ProfileHoverCard username={activity.originalPost.author.username}>
-                <span className="font-medium text-sm hover:underline cursor-pointer">
-                  {activity.originalPost.author.fullname || activity.originalPost.author.username}
-                </span>
-              </ProfileHoverCard>
-              <span className="text-muted-foreground text-sm">
-                @{activity.originalPost.author.username}
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground line-clamp-3">
-              {activity.originalPost.content}
-            </p>
-          </div>
-        </Link>
-      </CardContent>
-    </Card>
+    <div className="flex items-start gap-3 py-2 border-b border-border last:border-0">
+      <div className="mt-0.5">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm">
+          <span className="text-muted-foreground">{text}: </span>
+          <Link 
+            to={`/post/${activity.originalPost.id}`}
+            className="text-foreground hover:text-primary hover:underline"
+          >
+            "{contentPreview}"
+          </Link>
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">{timeAgo}</p>
+      </div>
+    </div>
   );
 }
