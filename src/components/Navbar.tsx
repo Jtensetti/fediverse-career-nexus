@@ -57,18 +57,24 @@ const Navbar = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Check if user is admin or moderator
-  const { data: isAdminOrModerator } = useQuery({
-    queryKey: ['isAdminOrModerator', user?.id],
+  // Check if user has moderation access (restricted to specific usernames)
+  const { data: moderationAccess } = useQuery({
+    queryKey: ['moderation-nav-access', user?.id],
     queryFn: async () => {
       if (!user?.id) return false;
-      const { data, error } = await supabase.rpc('is_moderator', { _user_id: user.id });
-      if (error) return false;
-      return data === true;
+      const { data: profile } = await supabase
+        .from('public_profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+      // Only jtensetti_mastodon can access moderation
+      return profile?.username === 'jtensetti_mastodon';
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
+  
+  const isAdminOrModerator = moderationAccess === true;
 
   const handleLogout = async () => {
     try {

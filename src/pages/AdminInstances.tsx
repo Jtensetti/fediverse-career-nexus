@@ -1,88 +1,59 @@
-import { useState, useEffect } from "react";
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, Shield } from "lucide-react";
+import { motion } from "framer-motion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RemoteInstancesTable from "@/components/RemoteInstancesTable";
 import ShardedQueueStats from "@/components/ShardedQueueStats";
 import HealthCheckStatus from "@/components/HealthCheckStatus";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/common/SEOHead";
+import { useModerationAccess } from "@/hooks/useModerationAccess";
 
 const AdminInstances = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  // Check if the current user is an admin
-  useEffect(() => {
-    const checkUserRole = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.user) {
-          setLoading(false);
-          setError("You must be logged in to access this page");
-          return;
-        }
-        
-        const userId = session.user.id;
-        
-        // Check if user is an admin
-        const { data: adminData, error: adminError } = await supabase.rpc('is_admin', {
-          _user_id: userId
-        });
-        
-        if (adminError) {
-          console.error('Error checking admin status:', adminError);
-          setError("Failed to verify admin permissions");
-        } else {
-          setIsAdmin(adminData || false);
-        }
-        
-        setLoading(false);
-      } catch (error) {
-        console.error('Error checking user role:', error);
-        setError("Failed to check user permissions");
-        setLoading(false);
-      }
-    };
-    
-    checkUserRole();
-  }, []);
+  const { hasAccess, loading } = useModerationAccess();
 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-          <div className="animate-pulse">Loading...</div>
+          <div className="text-center space-y-4">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+            <p className="text-muted-foreground">Verifying access...</p>
+          </div>
         </main>
         <Footer />
       </div>
     );
   }
 
-  // If user is not an admin, show access denied message
-  if (!isAdmin) {
+  // If user doesn't have access, show access denied message
+  if (!hasAccess) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <main className="container mx-auto py-10 px-4 sm:px-6 flex-grow">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error || "Access denied. Only administrators can access this page."}
-            </AlertDescription>
-          </Alert>
-          <div className="mt-4">
-            <Button asChild variant="outline">
-              <Link to="/">Return to Home</Link>
-            </Button>
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-4 max-w-md"
+            >
+              <div className="p-4 rounded-full bg-destructive/10 w-fit mx-auto">
+                <Shield className="h-12 w-12 text-destructive" />
+              </div>
+              <h1 className="text-2xl font-bold">Access Restricted</h1>
+              <p className="text-muted-foreground">
+                This area is restricted to authorized moderators only.
+              </p>
+              <Button onClick={() => navigate('/')} variant="outline">
+                Return Home
+              </Button>
+            </motion.div>
           </div>
         </main>
         <Footer />
