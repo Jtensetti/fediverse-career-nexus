@@ -36,7 +36,9 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
 
     // 3. Fetch boosts from ap_objects (only if user has an actor)
     let boosts: any[] = [];
+    let quotes: any[] = [];
     if (actor?.id) {
+      // Fetch Announce (boosts)
       const { data: boostData } = await supabase
         .from('ap_objects')
         .select('id, created_at, content')
@@ -45,6 +47,22 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
         .order('created_at', { ascending: false })
         .limit(50);
       boosts = boostData || [];
+
+      // Fetch Create objects (potential quote reposts - we'll filter for quoteOf)
+      const { data: createData } = await supabase
+        .from('ap_objects')
+        .select('id, created_at, content')
+        .eq('type', 'Create')
+        .eq('attributed_to', actor.id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      
+      // Filter for quote reposts: content.object.quoteOf exists
+      quotes = (createData || []).filter(obj => {
+        const content = obj.content as any;
+        const note = content?.object || content;
+        return note?.quoteOf != null;
+      });
     }
 
     // 4. Extract post IDs from boosts (from content.object.id or content.object)
@@ -57,26 +75,33 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
       return content?.object?.id;
     }).filter(Boolean);
 
-    // 5. Collect all post IDs for content lookup
+    // 5. Extract quoted post IDs from quotes
+    const quotePostIds = quotes.map(q => {
+      const content = q.content as any;
+      const note = content?.object || content;
+      return note?.quoteOf;
+    }).filter(Boolean);
+
+    // 6. Collect all post IDs for content lookup
     const reactionPostIds = reactions?.map(r => r.target_id) || [];
-    const allPostIds = [...new Set([...reactionPostIds, ...boostPostIds])];
+    const allPostIds = [...new Set([...reactionPostIds, ...boostPostIds, ...quotePostIds])];
 
     if (allPostIds.length === 0) return [];
 
-    // 6. Fetch post content for previews
+    // 7. Fetch post content for previews
     const { data: posts } = await supabase
       .from('ap_objects')
       .select('id, content')
       .in('id', allPostIds);
 
-    // 7. Build posts map
+    // 8. Build posts map
     const postsMap = new Map(posts?.map(p => {
       const raw = p.content as any;
       const note = raw?.type === 'Create' ? raw.object : raw;
       return [p.id, { id: p.id, content: note?.content || '' }];
     }) || []);
 
-    // 8. Transform reactions into activity items
+    // 9. Transform reactions into activity items
     const reactionActivities: ActivityItem[] = (reactions || [])
       .filter(r => postsMap.has(r.target_id))
       .map(r => ({
@@ -87,7 +112,7 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
         originalPost: postsMap.get(r.target_id)!
       }));
 
-    // 9. Transform boosts into activity items
+    // 10. Transform boosts into activity items
     const boostActivities: ActivityItem[] = boosts
       .map(b => {
         const content = b.content as any;
@@ -103,8 +128,25 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
       })
       .filter(Boolean) as ActivityItem[];
 
-    // 10. Combine and sort by date
-    return [...reactionActivities, ...boostActivities]
+    // 11. Transform quotes into activity items
+    const quoteActivities: ActivityItem[] = quotes
+      .map(q => {
+        const content = q.content as any;
+        const note = content?.object || content;
+        const quotedPostId = note?.quoteOf;
+        if (!quotedPostId || !postsMap.has(quotedPostId)) return null;
+        return {
+          id: `quote-${q.id}`,
+          type: 'quote' as const,
+          created_at: q.created_at,
+          user_id: targetUserId,
+          originalPost: postsMap.get(quotedPostId)!
+        };
+      })
+      .filter(Boolean) as ActivityItem[];
+
+    // 12. Combine and sort by date
+    return [...reactionActivities, ...boostActivities, ...quoteActivities]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   } catch (error) {
