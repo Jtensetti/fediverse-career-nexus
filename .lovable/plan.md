@@ -1,268 +1,72 @@
 
-# Fix Events Display and Build Comprehensive Moderation System
+<context>
+You have a real event row in the live database (`27e20e0c-eda0-4827-898b-b013d7f077ef`) and the SELECT policy for `public.events` now explicitly allows `visibility = 'public'`, so the backend should be able to return it.
 
-## Overview
+Yet:
+1) Visiting `/events/<id>` is blank.
+2) `/events` shows no upcoming events.
 
-Three issues to resolve:
-1. **Event pages crash/blank** - Field name mismatch between code and database schema
-2. **Events not showing in upcoming list** - Same root cause as above
-3. **Need extensive moderation tools** - Current page is ActivityPub-focused, not content moderation
+From the codebase inspection, the core problem is not the database anymore: it’s the frontend routing and (secondarily) the “upcoming” filter logic.
+</context>
 
----
+<what-is-actually-broken>
+<item>
+<problem>There is no route defined for the event detail page.</problem>
+<evidence>`EventView.tsx` exists, and links are generated as `/events/${event.id}` (feed announcement and Events list cards), but `src/App.tsx` does not include a `<Route path="/events/:id" ... />`.</evidence>
+<impact>Any link to `/events/<uuid>` will not match a route, so React Router falls through to the “not found / fallback” behavior. Depending on your NotFound implementation + ErrorBoundary, this can look like a blank page.</impact>
+</item>
 
-## Issue 1 & 2: Events Display Fix
+<item>
+<problem>`/events` is currently behind `ProtectedRoute`.</problem>
+<evidence>`src/App.tsx` wraps `/events` in `<ProtectedRoute>`.</evidence>
+<impact>If the user is not logged in (common when clicking links from a public feed post, or opening a shared link in a fresh browser), they won’t see the events list at all. This often gets interpreted as “no events”, especially if the redirect UI is subtle or the user lands somewhere unexpected.</impact>
+</item>
 
-### Root Cause
+<item>
+<problem>The “upcoming” filter excludes events with `end_date = null`.</problem>
+<evidence>`getEvents()` uses `gte('end_date', nowISO)` when `upcoming=true`.</evidence>
+<impact>Any event created without an end date will never show as upcoming even if it is in the future. This may not explain the specific FOSDEM event (it has `end_date`), but it will cause “no upcoming events” in many real cases and needs fixing anyway.</impact>
+</item>
+</what-is-actually-broken>
 
-The database uses different column names than the code expects:
+<implementation-plan>
+<phase title="A) Fix routing so event links work (fixes blank page)">
+<step>In `src/App.tsx`, add a public route for the event detail page: `path="/events/:id"` rendering `<EventView />`.</step>
+<step>Also add the missing edit route referenced in `EventView.tsx`: `path="/events/edit/:id"` rendering `<EventEdit />` inside `<ProtectedRoute>`.</step>
+<step>Confirm you still have (or add) a catch-all `path="*"` route to `NotFound` so missing routes don’t appear blank.</step>
+<expected-result>Opening `https://nolto.social/events/27e20e0c-eda0-4827-898b-b013d7f077ef` renders the EventView UI (or “Event not found” if the id is wrong), instead of a blank page.</expected-result>
+</phase>
 
-| Database Column | Code Expects |
-|-----------------|--------------|
-| `start_date` | `start_time` |
-| `end_date` | `end_time` |
-| `cover_image_url` | `image_url` |
-| `max_attendees` | `capacity` |
-| `is_online` | `is_virtual` |
-| `meeting_url` | `stream_url` |
-| `visibility` | `is_public` |
-| (none) | `stream_type`, `timezone` |
+<phase title="B) Make events discoverable to logged-out users (fixes /events confusion)">
+<step>Move `/events` out of `ProtectedRoute` so it’s publicly accessible (since you already allow reading public events via database policy).</step>
+<step>Keep `/events/create` and `/events/edit/:id` protected.</step>
+<step>Update navigation components (Navbar/Mobile nav) so “Events” is visible for everyone (optional if it already is).</step>
+<expected-result>Visiting `/events` while logged out shows upcoming public events. Visiting while logged in continues to work.</expected-result>
+</phase>
 
-### Files to Fix
+<phase title="C) Fix upcoming filtering so it’s correct for all events">
+<step>Update `getEvents({ upcoming: true })` in `src/services/eventService.ts` to treat “upcoming” as:
+- `end_date >= now` (for events with an end date), OR
+- (`end_date IS NULL` AND `start_date >= now`) (for events without end date)</step>
+<step>Implement this using a Supabase `.or(...)` expression so you don’t lose multi-hour/multi-day events that already started but haven’t ended.</step>
+<step>Additionally, in `createEvent()`, if `end_date` is missing, set it to `start_date` before inserting. This prevents future “invisible upcoming events” and makes date logic simpler everywhere.</step>
+<expected-result>Events with or without end dates show up correctly as “upcoming”.</expected-result>
+</phase>
 
-| File | Changes |
-|------|---------|
-| `src/services/eventService.ts` | Update `generateICalEvent()` to use correct column names (`start_date` instead of `start_time`, etc.) |
-| `src/pages/EventView.tsx` | Update all field references to match database schema |
-| `src/pages/Events.tsx` | Update `EventCard` component to use correct field names |
+<phase title="D) Add fast diagnostics so this can’t silently fail again">
+<step>In `Events.tsx`, if the query returns an empty list, optionally show a small debug hint (only in development) or a clearer empty state (“No upcoming public events”).</step>
+<step>In `eventService.getEvents()`, log Supabase errors with enough detail to see whether it’s RLS, query syntax, or network.</step>
+</phase>
 
-### Specific Changes
+<phase title="E) Verification checklist (what we will test)">
+<step>Open the exact link from the feed post: `/events/27e20e0c-eda0-4827-898b-b013d7f077ef` and confirm it renders the event.</step>
+<step>Open `/events` while logged out: confirm the FOSDEM event appears in “Upcoming”.</step>
+<step>Open `/events` while logged in: confirm it still works, RSVP status logic still works.</step>
+<step>Create a new event with no end date: confirm it shows in Upcoming.</step>
+<step>Open a random invalid event id: confirm you get the “Event not found” UI (not blank).</step>
+</phase>
+</implementation-plan>
 
-**EventView.tsx**:
-- Change `parseISO(event.start_time)` to `parseISO(event.start_date)`
-- Change `parseISO(event.end_time)` to `parseISO(event.end_date)`
-- Change `event.image_url` to `event.cover_image_url`
-- Change `event.is_virtual` to `event.is_online`
-- Change `event.stream_url` to `event.meeting_url`
-- Change `event.capacity` to `event.max_attendees`
-- Change `event.is_public` to `event.visibility !== 'private'`
-- Remove references to `event.timezone` (use browser timezone or UTC)
-- Remove references to `event.stream_type` (determine from URL or remove embed logic)
-
-**Events.tsx** (EventCard):
-- Same column name updates
-
-**eventService.ts**:
-- Update `generateICalEvent()` function to use `event.start_date` and `event.end_date`
-- Handle `event.is_online` instead of `event.is_virtual`
-- Update `Event` interface to remove legacy field aliases (cleanup)
-
----
-
-## Issue 3: Comprehensive Moderation Page
-
-### Current State
-
-The existing `/moderation` page focuses on:
-- Moderation action log (warn/silence/block)
-- Domain blocking for federation
-- Actor blocking for federation  
-- ActivityPub actor/object management
-- Code of Conduct acceptance
-
-### Missing Features (needed for fediverse community)
-
-1. **Flagged Content Review** - View and act on reported posts/articles/users
-2. **User Ban System** - Temporary and permanent bans with expiration
-3. **Moderator Management** - Add/remove moderators (admin only)
-4. **User Search** - Find users by username to take action
-5. **Appeal Management** - Handle ban appeals
-6. **Audit Trail** - Full history of moderation actions
-7. **Bulk Actions** - Handle multiple reports efficiently
-
-### Database Changes Required
-
-```sql
--- User bans table (new)
-CREATE TABLE public.user_bans (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  banned_by UUID NOT NULL REFERENCES auth.users(id),
-  reason TEXT NOT NULL,
-  expires_at TIMESTAMP WITH TIME ZONE, -- NULL for permanent
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  revoked_at TIMESTAMP WITH TIME ZONE,
-  revoked_by UUID REFERENCES auth.users(id),
-  UNIQUE(user_id, created_at)
-);
-
--- Add to moderation_actions for history
-ALTER TABLE moderation_actions 
-ADD COLUMN expires_at TIMESTAMP WITH TIME ZONE,
-ADD COLUMN target_content_type TEXT,
-ADD COLUMN target_content_id TEXT;
-
--- RLS policies for bans table
-CREATE POLICY "Moderators can view bans"
-ON public.user_bans FOR SELECT
-USING (is_moderator(auth.uid()));
-
-CREATE POLICY "Moderators can create bans"
-ON public.user_bans FOR INSERT
-WITH CHECK (is_moderator(auth.uid()));
-
-CREATE POLICY "Moderators can update bans"
-ON public.user_bans FOR UPDATE
-USING (is_moderator(auth.uid()));
-
--- Function to check if user is banned
-CREATE OR REPLACE FUNCTION is_user_banned(check_user_id uuid)
-RETURNS boolean AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM user_bans
-    WHERE user_id = check_user_id
-    AND revoked_at IS NULL
-    AND (expires_at IS NULL OR expires_at > now())
-  );
-$$ LANGUAGE sql STABLE SECURITY DEFINER;
-```
-
-### New Components to Create
-
-1. **`src/components/moderation/FlaggedContentList.tsx`**
-   - Displays content_reports with status = 'pending'
-   - Shows preview of flagged content
-   - Actions: Dismiss, Delete Content, Warn User, Ban User
-
-2. **`src/components/moderation/UserBanDialog.tsx`**
-   - Form for banning a user
-   - Duration selector (1 day, 1 week, 1 month, permanent)
-   - Reason field
-   - Confirmation
-
-3. **`src/components/moderation/BannedUsersList.tsx`**
-   - Lists active bans
-   - Shows expiration dates
-   - Revoke ban action
-
-4. **`src/components/moderation/ModeratorManagement.tsx`**
-   - List current moderators (admin only)
-   - Add new moderator by username
-   - Remove moderator
-
-5. **`src/components/moderation/UserLookup.tsx`**
-   - Search for users by username
-   - View user's moderation history
-   - Quick action buttons
-
-### Updated Moderation Page Structure
-
-```tsx
-<Tabs>
-  <TabsTrigger value="reports">Reports ({pendingCount})</TabsTrigger>
-  <TabsTrigger value="bans">User Bans</TabsTrigger>
-  <TabsTrigger value="log">Action Log</TabsTrigger>
-  <TabsTrigger value="moderators">Team</TabsTrigger>  {/* Admin only */}
-  <TabsTrigger value="domains">Domains</TabsTrigger>
-  <TabsTrigger value="actors">Actors</TabsTrigger>
-  <TabsTrigger value="federation">Fediverse</TabsTrigger>
-</Tabs>
-```
-
-### New Service Functions
-
-**`src/services/moderationService.ts`** (new file):
-```typescript
-// Get flagged content with details
-export async function getFlaggedContent(status = 'pending'): Promise<FlaggedItem[]>
-
-// Update report status
-export async function updateReportStatus(reportId: string, status: ReportStatus, action?: string): Promise<boolean>
-
-// Ban a user
-export async function banUser(userId: string, reason: string, durationDays?: number): Promise<boolean>
-
-// Revoke a ban
-export async function revokeBan(banId: string): Promise<boolean>
-
-// Get active bans
-export async function getActiveBans(): Promise<UserBan[]>
-
-// Add moderator role
-export async function addModerator(userId: string): Promise<boolean>
-
-// Remove moderator role
-export async function removeModerator(userId: string): Promise<boolean>
-
-// Get moderators list
-export async function getModerators(): Promise<Profile[]>
-
-// Delete flagged content
-export async function deleteFlaggedContent(contentType: string, contentId: string): Promise<boolean>
-```
-
----
-
-## Implementation Plan
-
-### Phase 1: Fix Events (Critical - fixes blank page)
-1. Update `src/pages/EventView.tsx` with correct field names
-2. Update `src/pages/Events.tsx` with correct field names  
-3. Update `src/services/eventService.ts` with correct field names and remove legacy aliases
-
-### Phase 2: Database Setup for Moderation
-1. Create migration for `user_bans` table
-2. Add RLS policies
-3. Create `is_user_banned()` function
-4. Extend `moderation_actions` table
-
-### Phase 3: Moderation Service Layer
-1. Create `src/services/moderationService.ts`
-2. Implement all CRUD operations for bans, reports, moderator management
-
-### Phase 4: Moderation UI Components
-1. Create `FlaggedContentList` component
-2. Create `UserBanDialog` component
-3. Create `BannedUsersList` component
-4. Create `ModeratorManagement` component
-5. Create `UserLookup` component
-
-### Phase 5: Integrate into Moderation Page
-1. Reorganize tabs for content-first approach
-2. Add pending reports count badge
-3. Integrate new components
-4. Add user lookup/search functionality
-
----
-
-## Fediverse-Friendly Features
-
-The moderation system will support ActivityPub concepts:
-
-1. **Federated Bans** - Option to notify other instances of banned actors
-2. **Domain Defederation** - Already exists, integrates with moderation log
-3. **Remote Actor Blocking** - Already exists, integrates with ban system
-4. **Instance-Level Silencing** - Option to silence without full defederation
-5. **Transparent Moderation Log** - Public moderation log option (fediverse best practice)
-6. **Appeal via DM** - Users can appeal bans through direct message
-
----
-
-## Files Summary
-
-### To Modify
-- `src/pages/EventView.tsx` - Fix column name references
-- `src/pages/Events.tsx` - Fix column name references
-- `src/services/eventService.ts` - Fix column names, clean up interface
-- `src/pages/Moderation.tsx` - Reorganize with new tabs and components
-
-### To Create
-- `src/services/moderationService.ts` - New service for moderation operations
-- `src/components/moderation/FlaggedContentList.tsx` - Flagged content viewer
-- `src/components/moderation/UserBanDialog.tsx` - Ban user dialog
-- `src/components/moderation/BannedUsersList.tsx` - Active bans list
-- `src/components/moderation/ModeratorManagement.tsx` - Team management
-- `src/components/moderation/UserLookup.tsx` - User search
-- Database migration for `user_bans` table
-
-### i18n Updates
-- Add translation keys for new moderation features in `en.json` and `sv.json`
+<notes>
+The RLS migration you shared looks fine for public visibility. The reason nothing changed in the UI is that the frontend currently can’t route to `/events/:id`, and `/events` being protected makes public discovery unreliable. Fixing routing + making the list public will immediately address the “blank page” and “no upcoming events” reports, and the filter fix prevents the next wave of “events don’t show” bugs.
+</notes>
