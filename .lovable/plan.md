@@ -1,61 +1,171 @@
 
-# Fix: Profile Page Crash - React Hooks Violation
+# Minor Fixes: Verification Button, DM Link, and Freelancer Badge
 
-## Problem Confirmed
+## Issues Summary
 
-The console logs show **React error #310** which means "Rendered more hooks than during the previous render." This is caused by calling hooks conditionally or after early returns.
+### Issue 1: Verification Button Not Mobile Optimized
+**Location:** `src/components/VerificationRequest.tsx` (lines 84-88)
 
-## Root Cause
-
-In `src/components/FederationInfo.tsx`:
-
+The "Request Verification" button in the experience section has fixed text that doesn't adapt to mobile screens:
 ```tsx
-// Lines 116-122 - Early returns
-if (loading) {
-  return null;
-}
-
-if (!actor) {
-  return null;
-}
-
-// Line 129 - useState AFTER conditional returns - CAUSES ERROR #310
-const [copied, setCopied] = useState(false);
+<Button variant="outline" size="sm" className="gap-1">
+  <ShieldCheck className="h-4 w-4" />
+  Request Verification
+</Button>
 ```
 
-When the component first renders with `loading=true`, it returns `null` before reaching the `useState`. On the next render when `loading=false`, React sees an extra hook and crashes.
+On mobile, this text gets truncated or causes layout issues when combined with the delete button.
 
-## Solution
+**Solution:** On mobile, show only the icon. On larger screens, show icon + text.
 
-Move `const [copied, setCopied] = useState(false)` to line 26, with the other hooks at the top of the component.
+---
 
-## File to Modify
+### Issue 2: DM Settings Link Goes to Wrong Tab
+**Location:** `src/components/FreelancerSettings.tsx` (lines 221-223)
+
+The "Check DM settings" link currently navigates to `/profile/edit` without specifying the privacy tab:
+```tsx
+<Link to="/profile/edit" className="text-sm text-primary hover:underline">
+  {t("freelancer.checkDmSettings", "Check DM settings →")}
+</Link>
+```
+
+The ProfileEdit page uses Radix Tabs which supports URL hash navigation. Currently the tabs use `defaultValue="basic"` but don't respond to hash changes.
+
+**Solution:** 
+1. Change the link to `/profile/edit?tab=privacy`
+2. Update ProfileEdit to read the `tab` query parameter and set the active tab accordingly
+
+---
+
+### Issue 3: Freelancer Badge Not Shown on Profile Avatar
+**Location:** `src/pages/Profile.tsx` (lines 331-337 and 401-408)
+
+The `AvatarWithStatus` component supports an `isFreelancer` prop that displays a green ring with a briefcase icon, but Profile.tsx doesn't pass this prop:
+```tsx
+<AvatarWithStatus
+  src={profile.avatarUrl}
+  alt={profile.displayName}
+  fallback={profile.displayName?.substring(0, 2)}
+  status={avatarStatus}
+  size="2xl"
+  // Missing: isFreelancer={profile.isFreelancer}
+/>
+```
+
+The profile data already contains `isFreelancer` from the database, but it's not being passed to the avatar component.
+
+**Solution:** Pass `isFreelancer={profile.isFreelancer}` to both `AvatarWithStatus` instances on the Profile page.
+
+---
+
+## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/FederationInfo.tsx` | Move `useState(false)` from line 129 to line 26 |
+| `src/components/VerificationRequest.tsx` | Make button text responsive (icon-only on mobile) |
+| `src/components/FreelancerSettings.tsx` | Update link to include `?tab=privacy` parameter |
+| `src/pages/ProfileEdit.tsx` | Read tab from URL query params and control tab state |
+| `src/pages/Profile.tsx` | Add `isFreelancer={profile.isFreelancer}` to both avatar instances |
 
-## Implementation
+---
 
-**Before (line 129):**
+## Technical Implementation
+
+### Fix 1: Mobile-Optimized Verification Button
+
+**File:** `src/components/VerificationRequest.tsx`
+
+Change the trigger button to hide text on small screens:
+
 ```tsx
-const [copied, setCopied] = useState(false);
+<DialogTrigger asChild>
+  <Button variant="outline" size="sm" className="gap-1">
+    <ShieldCheck className="h-4 w-4" />
+    <span className="hidden sm:inline">Request Verification</span>
+  </Button>
+</DialogTrigger>
 ```
 
-**After (add at line 26, remove from line 129):**
+This uses Tailwind's responsive classes:
+- `hidden`: Hide text by default (mobile)
+- `sm:inline`: Show text on screens >= 640px
+
+### Fix 2: DM Settings Link Navigation
+
+**File:** `src/components/FreelancerSettings.tsx` (line 221)
+
+Change link destination:
 ```tsx
-const [loading, setLoading] = useState<boolean>(true);
-const [updating, setUpdating] = useState<boolean>(false);
-const [actor, setActor] = useState<any>(null);
-const [currentUserActor, setCurrentUserActor] = useState<any>(null);
-const [federationEnabled, setFederationEnabled] = useState<boolean>(true);
-const [copied, setCopied] = useState(false);  // ← ADD HERE
-const { toast } = useToast();
+<Link to="/profile/edit?tab=privacy" className="text-sm text-primary hover:underline">
 ```
 
-## Expected Outcome
+Also update the toast action (line 100):
+```tsx
+onClick: () => window.location.href = "/profile/edit?tab=privacy",
+```
 
-After this one-line fix:
-- The `/profile` page will load without crashing
-- The "Something went wrong" error will be gone
-- React error #310 will no longer appear
+**File:** `src/pages/ProfileEdit.tsx`
+
+Add URL query parameter handling:
+
+1. Import `useSearchParams` from react-router-dom
+2. Read the `tab` parameter
+3. Use controlled `value` instead of `defaultValue` on Tabs
+4. Update URL when tab changes
+
+```tsx
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+const ProfileEditPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'basic';
+  
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
+
+  // In the render:
+  <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
+```
+
+### Fix 3: Freelancer Badge on Profile Avatar
+
+**File:** `src/pages/Profile.tsx`
+
+Add the `isFreelancer` prop to both `AvatarWithStatus` instances:
+
+**Sticky header avatar (around line 331):**
+```tsx
+<AvatarWithStatus
+  src={profile.avatarUrl}
+  alt={profile.displayName}
+  fallback={profile.displayName?.substring(0, 2)}
+  status={avatarStatus}
+  size="sm"
+  isFreelancer={profile.isFreelancer}
+/>
+```
+
+**Main profile avatar (around line 401):**
+```tsx
+<AvatarWithStatus
+  src={profile.avatarUrl}
+  alt={profile.displayName}
+  fallback={profile.displayName?.substring(0, 2)}
+  status={avatarStatus}
+  size="2xl"
+  ringClassName={profile.isVerified ? "ring-primary" : "ring-background"}
+  isFreelancer={profile.isFreelancer}
+/>
+```
+
+---
+
+## Expected Outcomes
+
+| Issue | Before | After |
+|-------|--------|-------|
+| Verification button | Full text on all screens, causes overflow | Icon-only on mobile, full text on desktop |
+| DM settings link | Opens ProfileEdit on Basic Info tab | Opens ProfileEdit directly on Privacy tab |
+| Freelancer badge | No visual indicator on profile avatar | Green ring with briefcase icon when "Open for Work" is enabled |
