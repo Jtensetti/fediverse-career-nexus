@@ -38,7 +38,8 @@ serve(async (req) => {
       );
     }
 
-    const { action, messageId, content } = await req.json();
+    const body = await req.json();
+    const { action, messageId, content, partnerId } = body;
 
     if (action === "encrypt") {
       // Encrypt a message content (used when sending)
@@ -100,8 +101,6 @@ serve(async (req) => {
 
     if (action === "decrypt-batch") {
       // Decrypt multiple messages for a conversation
-      const { partnerId } = await req.json();
-      
       if (!partnerId) {
         return new Response(
           JSON.stringify({ error: "Missing partnerId" }),
