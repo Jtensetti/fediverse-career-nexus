@@ -27,6 +27,12 @@ export default function AuthPage() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [fediHandle, setFediHandle] = useState("");
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    password?: string;
+  }>({});
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -54,20 +60,43 @@ export default function AuthPage() {
     }
   }, [user, navigate]);
 
-  // Name validation helper
+  // Name validation helper - relaxed to support diverse naming conventions
   const validateName = (name: string, field: string): string | null => {
     const trimmed = name.trim();
-    if (trimmed.length < 2) {
-      return `${field} must be at least 2 characters`;
+    // Allow single character names (many cultures have them, also initials like "J.")
+    if (trimmed.length < 1) {
+      return `${field} is required`;
     }
     if (trimmed.length > 50) {
       return `${field} must be less than 50 characters`;
     }
-    // Allow letters (including international), spaces, hyphens, apostrophes
-    if (!/^[a-zA-ZÀ-ÿ\s\-']+$/.test(trimmed)) {
-      return `${field} can only contain letters, spaces, and hyphens`;
+    // Allow letters (including international), spaces, hyphens, apostrophes, and periods (for initials)
+    if (!/^[a-zA-ZÀ-ÿ\s\-'.]+$/.test(trimmed)) {
+      return `${field} can only contain letters, spaces, hyphens, apostrophes, and periods`;
     }
     return null;
+  };
+
+  // Real-time field validation
+  const validateField = (field: 'firstName' | 'lastName' | 'email' | 'password', value: string) => {
+    let error: string | undefined;
+    
+    if (field === 'firstName' || field === 'lastName') {
+      const fieldName = field === 'firstName' ? 'First name' : 'Last name';
+      const validationError = validateName(value, fieldName);
+      error = validationError || undefined;
+    } else if (field === 'email') {
+      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        error = 'Please enter a valid email address';
+      }
+    } else if (field === 'password') {
+      if (value && value.length < 6) {
+        error = 'Password must be at least 6 characters';
+      }
+    }
+    
+    setFieldErrors(prev => ({ ...prev, [field]: error }));
+    return !error;
   };
 
   // Username validation
@@ -108,25 +137,51 @@ export default function AuthPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate all fields
+    // Clear previous errors
+    setFieldErrors({});
+
+    // Validate all fields BEFORE setting loading state (fixes mobile stuck button)
     if (!email || !password || !firstName || !lastName) {
-      toast.error("Please fill in all fields");
+      const errors: typeof fieldErrors = {};
+      if (!firstName) errors.firstName = "First name is required";
+      if (!lastName) errors.lastName = "Last name is required";
+      if (!email) errors.email = "Email is required";
+      if (!password) errors.password = "Password is required";
+      setFieldErrors(errors);
+      toast.error("Please fill in all required fields");
       return;
     }
 
     // Validate names
     const firstNameError = validateName(firstName, "First name");
     if (firstNameError) {
+      setFieldErrors(prev => ({ ...prev, firstName: firstNameError }));
       toast.error(firstNameError);
       return;
     }
 
     const lastNameError = validateName(lastName, "Last name");
     if (lastNameError) {
+      setFieldErrors(prev => ({ ...prev, lastName: lastNameError }));
       toast.error(lastNameError);
       return;
     }
 
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setFieldErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      setFieldErrors(prev => ({ ...prev, password: "Password must be at least 6 characters" }));
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    // Only set loading AFTER all validation passes
     setIsLoading(true);
     try {
       const trimmedFirstName = firstName.trim();
@@ -418,30 +473,48 @@ export default function AuthPage() {
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label htmlFor="signup-firstname">{t("auth.firstName", "First Name")}</Label>
+                        <Label htmlFor="signup-firstname">{t("auth.firstName", "First Name")} *</Label>
                         <Input
                           id="signup-firstname"
                           type="text"
                           value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
+                          onChange={(e) => {
+                            setFirstName(e.target.value);
+                            if (fieldErrors.firstName) {
+                              setFieldErrors(prev => ({ ...prev, firstName: undefined }));
+                            }
+                          }}
+                          onBlur={() => validateField('firstName', firstName)}
                           placeholder="Firstname"
                           required
-                          minLength={2}
                           maxLength={50}
+                          className={fieldErrors.firstName ? "border-destructive" : ""}
                         />
+                        {fieldErrors.firstName && (
+                          <p className="text-xs text-destructive mt-1">{fieldErrors.firstName}</p>
+                        )}
                       </div>
                       <div>
-                        <Label htmlFor="signup-lastname">{t("auth.lastName", "Last Name")}</Label>
+                        <Label htmlFor="signup-lastname">{t("auth.lastName", "Last Name")} *</Label>
                         <Input
                           id="signup-lastname"
                           type="text"
                           value={lastName}
-                          onChange={(e) => setLastName(e.target.value)}
+                          onChange={(e) => {
+                            setLastName(e.target.value);
+                            if (fieldErrors.lastName) {
+                              setFieldErrors(prev => ({ ...prev, lastName: undefined }));
+                            }
+                          }}
+                          onBlur={() => validateField('lastName', lastName)}
                           placeholder="Surname"
                           required
-                          minLength={2}
                           maxLength={50}
+                          className={fieldErrors.lastName ? "border-destructive" : ""}
                         />
+                        {fieldErrors.lastName && (
+                          <p className="text-xs text-destructive mt-1">{fieldErrors.lastName}</p>
+                        )}
                       </div>
                     </div>
                     <div>
@@ -465,7 +538,7 @@ export default function AuthPage() {
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                           {checkingUsername && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                           {!checkingUsername && usernameAvailable === true && (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <CheckCircle className="h-4 w-4 text-primary" />
                           )}
                           {!checkingUsername && usernameAvailable === false && (
                             <XCircle className="h-4 w-4 text-destructive" />
@@ -484,27 +557,47 @@ export default function AuthPage() {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="signup-email">{t("auth.email", "Email")}</Label>
+                      <Label htmlFor="signup-email">{t("auth.email", "Email")} *</Label>
                       <Input
                         id="signup-email"
                         type="email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (fieldErrors.email) {
+                            setFieldErrors(prev => ({ ...prev, email: undefined }));
+                          }
+                        }}
+                        onBlur={() => validateField('email', email)}
                         placeholder={t("auth.enterEmail", "Enter your email")}
                         required
+                        className={fieldErrors.email ? "border-destructive" : ""}
                       />
+                      {fieldErrors.email && (
+                        <p className="text-xs text-destructive mt-1">{fieldErrors.email}</p>
+                      )}
                     </div>
                     <div>
-                      <Label htmlFor="signup-password">{t("auth.password", "Password")}</Label>
+                      <Label htmlFor="signup-password">{t("auth.password", "Password")} *</Label>
                       <Input
                         id="signup-password"
                         type="password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (fieldErrors.password) {
+                            setFieldErrors(prev => ({ ...prev, password: undefined }));
+                          }
+                        }}
+                        onBlur={() => validateField('password', password)}
                         placeholder={t("auth.createPassword", "Create a password (min 6 characters)")}
                         required
                         minLength={6}
+                        className={fieldErrors.password ? "border-destructive" : ""}
                       />
+                      {fieldErrors.password && (
+                        <p className="text-xs text-destructive mt-1">{fieldErrors.password}</p>
+                      )}
                     </div>
                     <Button type="submit" variant="outline" className="w-full" disabled={isLoading}>
                       {isLoading
