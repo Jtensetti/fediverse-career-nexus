@@ -8,7 +8,13 @@ import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
 import { searchService, SearchResult, SearchResults } from "@/services/searchService";
 import { cn } from "@/lib/utils";
 
-export function GlobalSearch() {
+interface GlobalSearchProps {
+  autoFocus?: boolean;
+  onResultClick?: () => void;
+  fullWidth?: boolean;
+}
+
+export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = false }: GlobalSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -76,6 +82,7 @@ export function GlobalSearch() {
     navigate(result.url);
     setIsOpen(false);
     setQuery("");
+    onResultClick?.();
   };
 
   const getIcon = (type: SearchResult['type']) => {
@@ -149,7 +156,7 @@ export function GlobalSearch() {
   };
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-sm">
+    <div ref={containerRef} className={cn("relative", fullWidth ? "w-full" : "w-full max-w-sm")}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -163,6 +170,7 @@ export function GlobalSearch() {
           onKeyDown={handleKeyDown}
           placeholder="Search people, jobs, articles..."
           className="pl-9 pr-9"
+          autoFocus={autoFocus}
         />
         {query && (
           <Button
@@ -207,6 +215,7 @@ export function GlobalSearch() {
               onClick={() => {
                 setIsOpen(false);
                 setQuery("");
+                onResultClick?.();
               }}
             >
               <span>Advanced search</span>

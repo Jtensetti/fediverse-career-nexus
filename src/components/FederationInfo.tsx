@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { ExternalLink, Key, Globe2, UserPlus } from "lucide-react";
+import { ExternalLink, Key, Globe2, UserPlus, Copy, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import FederationFollowButton from "./FederationFollowButton";
+import { getNoltoInstanceDomain } from "@/lib/federation";
 
 interface FederationInfoProps {
   username: string;
@@ -120,10 +121,23 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
     return null; // This user doesn't have a federated profile
   }
   
-  // Use home_instance if available (for federated users), otherwise 'local'
-  const domain = actor?.home_instance || 'local';
+  // Use home_instance if available (for federated users), otherwise use nolto.social
+  const isLocalUser = !actor?.home_instance || actor?.home_instance === 'local';
+  const domain = isLocalUser ? getNoltoInstanceDomain() : actor.home_instance;
   const federatedHandle = `@${username}@${domain}`;
   const remoteActorUri = `${window.location.origin}/actor/${username}`;
+  const [copied, setCopied] = useState(false);
+  
+  const copyHandle = async () => {
+    try {
+      await navigator.clipboard.writeText(federatedHandle);
+      setCopied(true);
+      toast({ title: "Handle copied!", description: federatedHandle });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: "Failed to copy", variant: "destructive" });
+    }
+  };
   
   return (
     <Card>
@@ -154,9 +168,9 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
             <Label className="text-sm text-muted-foreground">Fediverse Handle</Label>
             <div className="flex items-center space-x-2">
               <code className="bg-muted px-2 py-1 rounded text-sm">{federatedHandle}</code>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigator.clipboard.writeText(federatedHandle)}>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyHandle}>
                 <span className="sr-only">Copy handle</span>
-                <ExternalLink size={14} />
+                {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
               </Button>
             </div>
           </div>
