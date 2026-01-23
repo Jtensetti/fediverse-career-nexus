@@ -67,7 +67,8 @@ export async function getEvents(options: {
     
     let query = supabase
       .from('events')
-      .select('*, rsvp_count:event_rsvps(count)');
+      .select('*, rsvp_count:event_rsvps(count)')
+      .neq('visibility', 'archived'); // Exclude archived events
     
     // Filter by upcoming or past events
     if (upcoming) {
