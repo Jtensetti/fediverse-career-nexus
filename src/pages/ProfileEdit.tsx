@@ -96,6 +96,12 @@ const ProfileEditPage = () => {
   // State for recently saved experiences (for showing checkmark confirmation)
   const [recentlySaved, setRecentlySaved] = useState<Record<number, boolean>>({});
   
+  // State for validation errors on education fields
+  const [educationErrors, setEducationErrors] = useState<Record<number, { institution?: boolean; degree?: boolean; start_year?: boolean }>>({});
+  
+  // State for recently saved education (for showing checkmark confirmation)
+  const [recentlySavedEducation, setRecentlySavedEducation] = useState<Record<number, boolean>>({});
+  
   const [isLoading, setIsLoading] = useState({
     profile: true,
     experiences: false,
@@ -389,11 +395,28 @@ const ProfileEditPage = () => {
   const saveEducation = async (index: number) => {
     const edu = education[index];
     
-    if (!edu.institution || !edu.degree || !edu.field || !edu.start_year) {
-      // Show validation error
-      toast.error("Please fill in all required fields (institution, degree, field of study, and start year)");
+    // Validate required fields and track errors
+    const errors: { institution?: boolean; degree?: boolean; start_year?: boolean } = {};
+    if (!edu.institution?.trim()) errors.institution = true;
+    if (!edu.degree?.trim()) errors.degree = true;
+    if (!edu.start_year) errors.start_year = true;
+    
+    if (Object.keys(errors).length > 0) {
+      setEducationErrors(prev => ({ ...prev, [index]: errors }));
+      const missingFields = [];
+      if (errors.institution) missingFields.push("institution");
+      if (errors.degree) missingFields.push("degree");
+      if (errors.start_year) missingFields.push("start year");
+      toast.error(`Please fill in required fields: ${missingFields.join(", ")}`);
       return;
     }
+    
+    // Clear errors on successful validation
+    setEducationErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[index];
+      return newErrors;
+    });
     
     // Ensure user_id is set
     if (!edu.user_id && userId) {
@@ -409,6 +432,15 @@ const ProfileEditPage = () => {
         setEducation(updatedEducation);
         // Invalidate profile cache
         queryClient.invalidateQueries({ queryKey: ["profile"] });
+        // Show saved confirmation
+        setRecentlySavedEducation(prev => ({ ...prev, [index]: true }));
+        setTimeout(() => {
+          setRecentlySavedEducation(prev => {
+            const newState = { ...prev };
+            delete newState[index];
+            return newState;
+          });
+        }, 2000);
       }
     } else {
       const created = await createEducation(edu);
@@ -418,6 +450,15 @@ const ProfileEditPage = () => {
         setEducation(updatedEducation);
         // Invalidate profile cache
         queryClient.invalidateQueries({ queryKey: ["profile"] });
+        // Show saved confirmation
+        setRecentlySavedEducation(prev => ({ ...prev, [index]: true }));
+        setTimeout(() => {
+          setRecentlySavedEducation(prev => {
+            const newState = { ...prev };
+            delete newState[index];
+            return newState;
+          });
+        }, 2000);
       }
     }
   };
@@ -911,25 +952,51 @@ const ProfileEditPage = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="md:col-span-2">
-                            <Label htmlFor={`institution-${index}`}>{t("profileEdit.education.institution")}</Label>
+                            <Label htmlFor={`institution-${index}`}>
+                              {t("profileEdit.education.institution")} <span className="text-destructive">*</span>
+                            </Label>
                             <Input 
                               id={`institution-${index}`}
                               value={edu.institution || ''} 
-                              onChange={(e) => updateEducationField(index, 'institution', e.target.value)}
+                              onChange={(e) => {
+                                updateEducationField(index, 'institution', e.target.value);
+                                if (educationErrors[index]?.institution) {
+                                  setEducationErrors(prev => ({
+                                    ...prev,
+                                    [index]: { ...prev[index], institution: false }
+                                  }));
+                                }
+                              }}
                               placeholder={t("profileEdit.education.institutionPlaceholder")}
-                              className="mt-1"
+                              className={`mt-1 ${educationErrors[index]?.institution ? 'border-destructive' : ''}`}
                             />
+                            {educationErrors[index]?.institution && (
+                              <p className="text-sm text-destructive mt-1">Institution is required</p>
+                            )}
                           </div>
                           
                           <div>
-                            <Label htmlFor={`degree-${index}`}>{t("profileEdit.education.degree")}</Label>
+                            <Label htmlFor={`degree-${index}`}>
+                              {t("profileEdit.education.degree")} <span className="text-destructive">*</span>
+                            </Label>
                             <Input 
                               id={`degree-${index}`}
                               value={edu.degree || ''} 
-                              onChange={(e) => updateEducationField(index, 'degree', e.target.value)}
+                              onChange={(e) => {
+                                updateEducationField(index, 'degree', e.target.value);
+                                if (educationErrors[index]?.degree) {
+                                  setEducationErrors(prev => ({
+                                    ...prev,
+                                    [index]: { ...prev[index], degree: false }
+                                  }));
+                                }
+                              }}
                               placeholder={t("profileEdit.education.degreePlaceholder")}
-                              className="mt-1"
+                              className={`mt-1 ${educationErrors[index]?.degree ? 'border-destructive' : ''}`}
                             />
+                            {educationErrors[index]?.degree && (
+                              <p className="text-sm text-destructive mt-1">Degree is required</p>
+                            )}
                           </div>
                           
                           <div>
@@ -944,7 +1011,9 @@ const ProfileEditPage = () => {
                           </div>
                           
                           <div>
-                            <Label htmlFor={`startYear-${index}`}>{t("profileEdit.education.startYear")}</Label>
+                            <Label htmlFor={`startYear-${index}`}>
+                              {t("profileEdit.education.startYear")} <span className="text-destructive">*</span>
+                            </Label>
                             <Input 
                               id={`startYear-${index}`}
                               type="number"
@@ -952,9 +1021,18 @@ const ProfileEditPage = () => {
                               onChange={(e) => {
                                 const val = e.target.value;
                                 updateEducationField(index, 'start_year', val === '' ? undefined : parseInt(val, 10));
+                                if (educationErrors[index]?.start_year) {
+                                  setEducationErrors(prev => ({
+                                    ...prev,
+                                    [index]: { ...prev[index], start_year: false }
+                                  }));
+                                }
                               }}
-                              className="mt-1"
+                              className={`mt-1 ${educationErrors[index]?.start_year ? 'border-destructive' : ''}`}
                             />
+                            {educationErrors[index]?.start_year && (
+                              <p className="text-sm text-destructive mt-1">Start year is required</p>
+                            )}
                           </div>
                           
                           <div>
@@ -971,7 +1049,12 @@ const ProfileEditPage = () => {
                             />
                           </div>
                           
-                          <div className="md:col-span-2 flex justify-end">
+                          <div className="md:col-span-2 flex justify-end items-center gap-2">
+                            {recentlySavedEducation[index] && (
+                              <span className="text-primary flex items-center gap-1 text-sm">
+                                <Check size={16} /> Saved
+                              </span>
+                            )}
                             <Button
                               onClick={() => saveEducation(index)}
                             >
