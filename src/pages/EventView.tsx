@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
+import DOMPurify from 'dompurify';
 import {
   Calendar,
   Clock,
@@ -12,6 +13,7 @@ import {
   Share,
   Youtube
 } from 'lucide-react';
+import { linkifyText } from '@/lib/linkify';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -193,7 +195,15 @@ export default function EventView() {
           <div className="md:col-span-2 space-y-6">
             <div>
               <h2 className="text-xl font-semibold mb-4">About this event</h2>
-              <div className="whitespace-pre-wrap">{event.description}</div>
+              <div 
+                className="whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(linkifyText(event.description || ''), {
+                    ALLOWED_TAGS: ['a', 'br'],
+                    ALLOWED_ATTR: ['href', 'target', 'rel', 'class']
+                  })
+                }}
+              />
             </div>
 
             {event.is_online && event.meeting_url && (
