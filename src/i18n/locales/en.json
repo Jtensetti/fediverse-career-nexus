@@ -309,6 +309,18 @@
       "followers": "followers"
     }
   },
+  "followers": {
+    "yourFollowers": "People who follow you",
+    "userFollowers": "People who follow {{name}}",
+    "noFollowersYet": "You don't have any followers yet",
+    "noFollowers": "No followers yet"
+  },
+  "following": {
+    "yourFollowing": "People you follow",
+    "userFollowing": "People {{name}} follows",
+    "noFollowingYet": "You're not following anyone yet",
+    "noFollowing": "Not following anyone yet"
+  },
   "connections": {
     "title": "My Network",
     "description": "Manage your professional connections",

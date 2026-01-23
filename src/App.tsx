@@ -62,6 +62,8 @@ import StarterPackCreate from "./pages/StarterPackCreate";
 import FeedSettings from "./pages/FeedSettings";
 import Search from "./pages/Search";
 import Freelancers from "./pages/Freelancers";
+import Followers from "./pages/Followers";
+import Following from "./pages/Following";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -153,8 +155,10 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
-                    {/* Public profile route - anyone can view profiles */}
+                    {/* Public profile routes - anyone can view profiles */}
                     <Route path="/profile/:usernameOrId" element={<Profile />} />
+                    <Route path="/profile/:userId/followers" element={<Followers />} />
+                    <Route path="/profile/:userId/following" element={<Following />} />
                     <Route
                       path="/profile"
                       element={

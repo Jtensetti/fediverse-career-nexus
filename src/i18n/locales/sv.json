@@ -309,6 +309,18 @@
       "followers": "följare"
     }
   },
+  "followers": {
+    "yourFollowers": "Personer som följer dig",
+    "userFollowers": "Personer som följer {{name}}",
+    "noFollowersYet": "Du har inga följare ännu",
+    "noFollowers": "Inga följare ännu"
+  },
+  "following": {
+    "yourFollowing": "Personer du följer",
+    "userFollowing": "Personer {{name}} följer",
+    "noFollowingYet": "Du följer ingen ännu",
+    "noFollowing": "Följer ingen ännu"
+  },
   "connections": {
     "title": "Mitt nätverk",
     "description": "Hantera dina professionella kontakter",
