@@ -250,19 +250,21 @@ const Navbar = () => {
                       {t("common.settings", "Settings")}
                     </RouterLink>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                    <RouterLink to="/moderation" className="flex items-center gap-2">
-                      <Settings className="h-4 w-4" />
-                      {t("nav.moderation", "Moderation")}
-                    </RouterLink>
-                  </DropdownMenuItem>
                   {isAdminOrModerator && (
-                    <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                      <RouterLink to="/admin/instances" className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Instance Management
-                      </RouterLink>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                        <RouterLink to="/moderation" className="flex items-center gap-2">
+                          <Settings className="h-4 w-4" />
+                          {t("nav.moderation", "Moderation")}
+                        </RouterLink>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                        <RouterLink to="/admin/instances" className="flex items-center gap-2">
+                          <Settings className="h-4 w-4" />
+                          Instance Management
+                        </RouterLink>
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 

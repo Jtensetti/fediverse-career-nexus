@@ -24,11 +24,12 @@ import { Switch } from "@/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Briefcase, School, Star, Trash, Plus, Settings, CalendarIcon } from "lucide-react";
+import { Briefcase, School, Star, Trash, Plus, Settings, CalendarIcon, Check } from "lucide-react";
 import { LinkedInImportButton } from "@/components/LinkedInImport";
 import DMPrivacySettings from "@/components/DMPrivacySettings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { MonthYearPicker } from "@/components/MonthYearPicker";
 import { format } from "date-fns";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import { getCurrentUserProfile } from "@/services/profileService";
@@ -88,6 +89,12 @@ const ProfileEditPage = () => {
   const [education, setEducation] = useState<Education[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [newSkill, setNewSkill] = useState("");
+  
+  // State for validation errors on experience fields
+  const [experienceErrors, setExperienceErrors] = useState<Record<number, string[]>>({});
+  
+  // State for recently saved experiences (for showing checkmark confirmation)
+  const [recentlySaved, setRecentlySaved] = useState<Record<number, boolean>>({});
   
   const [isLoading, setIsLoading] = useState({
     profile: true,
@@ -273,11 +280,23 @@ const ProfileEditPage = () => {
   const saveExperience = async (index: number) => {
     const exp = experiences[index];
     
-    if (!exp.title || !exp.company || !exp.start_date) {
-      // Show validation error
-      toast.error("Please fill in all required fields (title, company, and start date)");
+    // Validate required fields - only title and start_date are required (company is optional for freelancers)
+    const errors: string[] = [];
+    if (!exp.title?.trim()) errors.push('title');
+    if (!exp.start_date) errors.push('start_date');
+    
+    if (errors.length > 0) {
+      setExperienceErrors(prev => ({ ...prev, [index]: errors }));
+      toast.error(`Please fill in: ${errors.map(e => e === 'start_date' ? 'start date' : e).join(', ')}`);
       return;
     }
+    
+    // Clear errors for this experience
+    setExperienceErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[index];
+      return newErrors;
+    });
     
     // Ensure user_id is set
     if (!exp.user_id && userId) {
@@ -293,6 +312,15 @@ const ProfileEditPage = () => {
         setExperiences(updatedExperiences);
         // Invalidate profile cache
         queryClient.invalidateQueries({ queryKey: ["profile"] });
+        // Show saved confirmation
+        setRecentlySaved(prev => ({ ...prev, [index]: true }));
+        setTimeout(() => {
+          setRecentlySaved(prev => {
+            const newState = { ...prev };
+            delete newState[index];
+            return newState;
+          });
+        }, 2000);
       }
     } else {
       const created = await createExperience(exp);
@@ -302,6 +330,15 @@ const ProfileEditPage = () => {
         setExperiences(updatedExperiences);
         // Invalidate profile cache
         queryClient.invalidateQueries({ queryKey: ["profile"] });
+        // Show saved confirmation
+        setRecentlySaved(prev => ({ ...prev, [index]: true }));
+        setTimeout(() => {
+          setRecentlySaved(prev => {
+            const newState = { ...prev };
+            delete newState[index];
+            return newState;
+          });
+        }, 2000);
       }
     }
   };
@@ -667,23 +704,41 @@ const ProfileEditPage = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor={`title-${index}`}>{t("profileEdit.experience.jobTitle")}</Label>
+                            <Label htmlFor={`title-${index}`} className="flex items-center gap-1">
+                              {t("profileEdit.experience.jobTitle")}
+                              <span className="text-destructive">*</span>
+                            </Label>
                             <Input 
                               id={`title-${index}`}
                               value={exp.title || ''} 
-                              onChange={(e) => updateExperienceField(index, 'title', e.target.value)}
+                              onChange={(e) => {
+                                updateExperienceField(index, 'title', e.target.value);
+                                // Clear error when user types
+                                if (experienceErrors[index]?.includes('title')) {
+                                  setExperienceErrors(prev => ({
+                                    ...prev,
+                                    [index]: prev[index]?.filter(e => e !== 'title') || []
+                                  }));
+                                }
+                              }}
                               placeholder={t("profileEdit.experience.jobTitlePlaceholder")}
-                              className="mt-1"
+                              className={`mt-1 ${experienceErrors[index]?.includes('title') ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                             />
+                            {experienceErrors[index]?.includes('title') && (
+                              <p className="text-sm text-destructive mt-1">{t("profileEdit.experience.titleRequired", "Job title is required")}</p>
+                            )}
                           </div>
                           
                           <div>
-                            <Label htmlFor={`company-${index}`}>{t("profileEdit.experience.company")}</Label>
+                            <Label htmlFor={`company-${index}`}>
+                              {t("profileEdit.experience.company")}
+                              <span className="text-muted-foreground text-xs ml-1">({t("common.optional", "optional")})</span>
+                            </Label>
                             <Input 
                               id={`company-${index}`}
                               value={exp.company || ''} 
                               onChange={(e) => updateExperienceField(index, 'company', e.target.value)}
-                              placeholder={t("profileEdit.experience.companyPlaceholder")}
+                              placeholder={t("profileEdit.experience.companyPlaceholder", "e.g. Acme Inc, Freelance, Self-employed")}
                               className="mt-1"
                             />
                           </div>
@@ -711,29 +766,29 @@ const ProfileEditPage = () => {
                           </div>
                           
                           <div>
-                            <Label htmlFor={`startDate-${index}`}>{t("profileEdit.experience.startDate")}</Label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className="w-full mt-1 justify-start text-left font-normal"
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {exp.start_date ? format(new Date(exp.start_date), "PPP") : t("profileEdit.experience.pickDate")}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  captionLayout="dropdown-buttons"
-                                  fromYear={1960}
-                                  toYear={new Date().getFullYear()}
-                                  selected={exp.start_date ? new Date(exp.start_date) : undefined}
-                                  onSelect={(date) => updateExperienceField(index, 'start_date', date ? format(date, 'yyyy-MM-dd') : undefined)}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
+                            <Label htmlFor={`startDate-${index}`} className="flex items-center gap-1">
+                              {t("profileEdit.experience.startDate")}
+                              <span className="text-destructive">*</span>
+                            </Label>
+                            <div className="mt-1">
+                              <MonthYearPicker
+                                value={exp.start_date}
+                                onChange={(value) => {
+                                  updateExperienceField(index, 'start_date', value);
+                                  // Clear error when user selects
+                                  if (experienceErrors[index]?.includes('start_date')) {
+                                    setExperienceErrors(prev => ({
+                                      ...prev,
+                                      [index]: prev[index]?.filter(e => e !== 'start_date') || []
+                                    }));
+                                  }
+                                }}
+                                placeholder={t("profileEdit.experience.pickDate")}
+                              />
+                            </div>
+                            {experienceErrors[index]?.includes('start_date') && (
+                              <p className="text-sm text-destructive mt-1">{t("profileEdit.experience.startDateRequired", "Start date is required")}</p>
+                            )}
                           </div>
                           
                           <div className="flex flex-col">
@@ -750,28 +805,13 @@ const ProfileEditPage = () => {
                             {!exp.is_current_role && (
                               <>
                                 <Label htmlFor={`endDate-${index}`}>{t("profileEdit.experience.endDate")}</Label>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      className="w-full mt-1 justify-start text-left font-normal"
-                                    >
-                                      <CalendarIcon className="mr-2 h-4 w-4" />
-                                      {exp.end_date ? format(new Date(exp.end_date), "PPP") : t("profileEdit.experience.pickDate")}
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                      mode="single"
-                                      captionLayout="dropdown-buttons"
-                                      fromYear={1960}
-                                      toYear={new Date().getFullYear()}
-                                      selected={exp.end_date ? new Date(exp.end_date) : undefined}
-                                      onSelect={(date) => updateExperienceField(index, 'end_date', date ? format(date, 'yyyy-MM-dd') : undefined)}
-                                      initialFocus
-                                    />
-                                  </PopoverContent>
-                                </Popover>
+                                <div className="mt-1">
+                                  <MonthYearPicker
+                                    value={exp.end_date}
+                                    onChange={(value) => updateExperienceField(index, 'end_date', value)}
+                                    placeholder={t("profileEdit.experience.pickDate")}
+                                  />
+                                </div>
                               </>
                             )}
                           </div>
@@ -787,7 +827,13 @@ const ProfileEditPage = () => {
                             />
                           </div>
                           
-                          <div className="md:col-span-2 flex justify-end">
+                          <div className="md:col-span-2 flex justify-end items-center gap-2">
+                            {recentlySaved[index] && (
+                              <span className="flex items-center gap-1 text-sm text-primary animate-in fade-in">
+                                <Check size={16} />
+                                {t("common.saved", "Saved")}
+                              </span>
+                            )}
                             <Button
                               onClick={() => saveExperience(index)}
                             >
