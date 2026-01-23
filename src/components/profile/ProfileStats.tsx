@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,20 +63,37 @@ const StatItem = ({
   value, 
   label, 
   isLoading,
+  to,
 }: { 
   value: number; 
   label: string;
   isLoading: boolean;
-}) => (
-  <div className="text-center">
-    {isLoading ? (
-      <Skeleton className="h-7 w-12 mx-auto" />
-    ) : (
-      <span className="text-2xl font-bold">{value.toLocaleString()}</span>
-    )}
-    <p className="text-sm text-muted-foreground">{label}</p>
-  </div>
-);
+  to?: string;
+}) => {
+  const content = (
+    <div className="text-center">
+      {isLoading ? (
+        <Skeleton className="h-7 w-12 mx-auto" />
+      ) : (
+        <span className="text-2xl font-bold">{value.toLocaleString()}</span>
+      )}
+      <p className="text-sm text-muted-foreground">{label}</p>
+    </div>
+  );
+
+  if (to) {
+    return (
+      <Link 
+        to={to} 
+        className="hover:bg-muted/50 rounded-lg px-3 py-2 -mx-3 -my-2 transition-colors"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
+};
 
 export const ProfileStats = ({ userId }: ProfileStatsProps) => {
   const { t } = useTranslation();
@@ -97,11 +115,13 @@ export const ProfileStats = ({ userId }: ProfileStatsProps) => {
         value={stats?.following || 0}
         label={t("profile.stats.following", "following")}
         isLoading={isLoading}
+        to={`/profile/${userId}/following`}
       />
       <StatItem
         value={stats?.followers || 0}
         label={t("profile.stats.followers", "followers")}
         isLoading={isLoading}
+        to={`/profile/${userId}/followers`}
       />
     </div>
   );
