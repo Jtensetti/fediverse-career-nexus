@@ -264,11 +264,13 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
 
     console.log("📋 Profile data:", profile);
 
-    // Get experience
+    // Get experience - ordered by current role first, then by start date descending
     const { data: experience, error: experienceError } = await supabase
       .from("experiences")
       .select("*")
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .order("is_current_role", { ascending: false })
+      .order("start_date", { ascending: false, nullsFirst: false });
 
     if (experienceError) throw experienceError;
 
@@ -396,11 +398,13 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
       phoneNumber = ownProfile?.phone || "";
     }
 
-    // Get experience
+    // Get experience - ordered by current role first, then by start date descending
     const { data: experience, error: experienceError } = await supabase
       .from("experiences")
       .select("*")
-      .eq("user_id", profile.id);
+      .eq("user_id", profile.id)
+      .order("is_current_role", { ascending: false })
+      .order("start_date", { ascending: false, nullsFirst: false });
 
     if (experienceError) throw experienceError;
 

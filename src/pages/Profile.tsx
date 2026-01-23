@@ -591,7 +591,7 @@ const ProfilePage = () => {
               {/* <ProfileStats userId={profile.id} username={profile.username} /> */}
             </div>
 
-            {profile.bio && <p className="text-muted-foreground leading-relaxed">{profile.bio}</p>}
+            {profile.bio && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{profile.bio}</p>}
           </div>
         </div>
       </div>

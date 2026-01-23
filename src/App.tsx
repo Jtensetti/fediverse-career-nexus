@@ -49,6 +49,7 @@ import CodeOfConductPage from "./pages/CodeOfConductPage";
 import InstanceGuidelinesPage from "./pages/InstanceGuidelines";
 import Instances from "./pages/Instances";
 import AdminFederationHealth from "./pages/AdminFederationHealth";
+import Moderation from "./pages/Moderation";
 import PostView from "./pages/PostView";
 import SavedItemsPage from "./pages/SavedItems";
 import StarterPacks from "./pages/StarterPacks";
@@ -248,6 +249,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <AdminFederationHealth />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/moderation"
+                      element={
+                        <ProtectedRoute>
+                          <Moderation />
                         </ProtectedRoute>
                       }
                     />

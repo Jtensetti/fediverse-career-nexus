@@ -50,9 +50,9 @@ function Calendar({
         day_range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         day_hidden: "invisible",
-        dropdown: "appearance-none bg-background border border-input rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring",
+        dropdown: "appearance-none bg-background border border-input rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring max-h-[200px] overflow-y-auto",
         dropdown_month: "mr-1",
-        dropdown_year: "",
+        dropdown_year: "max-h-[200px]",
         dropdown_icon: "hidden",
         vhidden: "sr-only",
         ...classNames,
