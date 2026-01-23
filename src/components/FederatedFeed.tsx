@@ -9,6 +9,7 @@ import { Loader2, MessageSquare } from "lucide-react";
 import { PostSkeleton } from "./common/skeletons";
 import EmptyState from "./common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
+import PullToRefresh from "./common/PullToRefresh";
 
 interface FederatedFeedProps {
   limit?: number;
@@ -155,6 +156,14 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
     refetch();
   };
+
+  const handlePullRefresh = useCallback(async () => {
+    setOffset(0);
+    setAllPosts([]);
+    fetchedPostIds.current.clear();
+    await queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
+    await refetch();
+  }, [queryClient, refetch]);
   
   if (error) {
     return (
@@ -171,7 +180,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const showInitialLoading = (isLoading && offset === 0) || (offset === 0 && batchDataLoading && allPosts.length > 0 && batchData.size === 0);
 
   return (
-    <div className={`${className}`}>
+    <PullToRefresh onRefresh={handlePullRefresh} className={className}>
       {showInitialLoading && allPosts.length === 0 ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
@@ -214,6 +223,6 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
           description="You're early – that's a good thing! Be the first to share something with the network."
         />
       )}
-    </div>
+    </PullToRefresh>
   );
 }
