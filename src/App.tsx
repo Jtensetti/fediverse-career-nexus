@@ -30,6 +30,9 @@ import AuthRecovery from "./pages/AuthRecovery";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import Events from "./pages/Events";
 import EventCreate from "./pages/EventCreate";
+import EventView from "./pages/EventView";
+import EventEdit from "./pages/EventEdit";
+import NotFound from "./pages/NotFound";
 import Articles from "./pages/Articles";
 import ArticleView from "./pages/ArticleView";
 import ArticleCreate from "./pages/ArticleCreate";
@@ -167,19 +170,22 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
-                    <Route
-                      path="/events"
-                      element={
-                        <ProtectedRoute>
-                          <Events />
-                        </ProtectedRoute>
-                      }
-                    />
+                    {/* Events - list and detail are public, create/edit are protected */}
+                    <Route path="/events" element={<Events />} />
+                    <Route path="/events/:id" element={<EventView />} />
                     <Route
                       path="/events/create"
                       element={
                         <ProtectedRoute>
                           <EventCreate />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/events/edit/:id"
+                      element={
+                        <ProtectedRoute>
+                          <EventEdit />
                         </ProtectedRoute>
                       }
                     />
@@ -263,6 +269,8 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
+                    {/* Catch-all for 404 */}
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
                 <MobileBottomNav />
