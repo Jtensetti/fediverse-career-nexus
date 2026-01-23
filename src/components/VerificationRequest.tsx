@@ -84,7 +84,7 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1">
           <ShieldCheck className="h-4 w-4" />
-          Request Verification
+          <span className="hidden sm:inline">Request Verification</span>
         </Button>
       </DialogTrigger>
       <DialogContent>

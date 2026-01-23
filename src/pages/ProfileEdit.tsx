@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import Navbar from "../components/Navbar";
@@ -79,6 +79,7 @@ const profileSchema = z.object({
 const ProfileEditPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [profile, setProfile] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
@@ -526,7 +527,7 @@ const ProfileEditPage = () => {
           />
         </div>
         
-        <Tabs defaultValue="basic" className="mb-6">
+        <Tabs value={searchParams.get('tab') || 'basic'} onValueChange={(value) => setSearchParams({ tab: value })} className="mb-6">
           <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-4">
             <TabsList className="w-max md:w-auto">
               <TabsTrigger value="basic" className="text-xs sm:text-sm whitespace-nowrap">{t("profileEdit.tabs.basicInfo")}</TabsTrigger>

@@ -334,6 +334,7 @@ const ProfilePage = () => {
               fallback={profile.displayName?.substring(0, 2)}
               status={avatarStatus}
               size="sm"
+              isFreelancer={profile.isFreelancer}
             />
             <div>
               <p className="font-semibold text-sm">{profile.displayName}</p>
@@ -405,6 +406,7 @@ const ProfilePage = () => {
                   status={avatarStatus}
                   size="2xl"
                   ringClassName={profile.isVerified ? "ring-primary" : "ring-background"}
+                  isFreelancer={profile.isFreelancer}
                 />
               </motion.div>
 

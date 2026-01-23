@@ -97,7 +97,7 @@ const FreelancerSettings = ({ initialData, onUpdate }: FreelancerSettingsProps) 
             {
               action: {
                 label: t("freelancer.openSettings", "Settings"),
-                onClick: () => window.location.href = "/profile/edit#privacy",
+                onClick: () => window.location.href = "/profile/edit?tab=privacy",
               },
               duration: 8000,
             }
@@ -218,7 +218,7 @@ const FreelancerSettings = ({ initialData, onUpdate }: FreelancerSettingsProps) 
               <p className="text-sm text-muted-foreground">
                 {t("freelancer.dmReminderDesc", "Make sure your DM settings allow messages from non-connections.")}
               </p>
-              <Link to="/profile/edit" className="text-sm text-primary hover:underline">
+              <Link to="/profile/edit?tab=privacy" className="text-sm text-primary hover:underline">
                 {t("freelancer.checkDmSettings", "Check DM settings →")}
               </Link>
             </div>
