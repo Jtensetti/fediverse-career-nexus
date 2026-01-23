@@ -61,7 +61,7 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
         <CardContent className="p-4">
           <div className="flex gap-3">
             {/* Sender avatar */}
-            <Link to={`/profile/${sender?.id}`}>
+            <Link to={`/profile/${sender?.username || sender?.id}`}>
               <Avatar className="h-12 w-12 cursor-pointer hover:ring-2 ring-primary/50 transition-all">
                 <AvatarImage src={sender?.avatar_url || undefined} />
                 <AvatarFallback className="bg-primary/10 text-primary">
@@ -75,7 +75,7 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
               <div className="flex items-start justify-between gap-2 mb-1">
                 <div className="min-w-0">
                   <Link 
-                    to={`/profile/${sender?.id}`} 
+                    to={`/profile/${sender?.username || sender?.id}`} 
                     className="font-semibold hover:underline text-foreground"
                   >
                     {sender?.fullname || sender?.username || 'Unknown'}

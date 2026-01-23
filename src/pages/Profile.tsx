@@ -132,6 +132,17 @@ const ProfilePage = () => {
     enabled: !!profile?.id && !!currentUserId && !viewingOwnProfile,
   });
 
+  // Canonical URL redirect: if accessed via UUID but username exists, redirect to username URL
+  useEffect(() => {
+    if (profile?.username && usernameOrId) {
+      // Check if usernameOrId looks like a UUID (simple pattern check)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(usernameOrId);
+      if (isUUID && profile.username !== usernameOrId) {
+        navigate(`/profile/${profile.username}`, { replace: true });
+      }
+    }
+  }, [profile?.username, usernameOrId, navigate]);
+
   // Record profile view when visiting another user's profile
   useEffect(() => {
     if (!viewingOwnProfile && profile?.id && isAuthenticated) {

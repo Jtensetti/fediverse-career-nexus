@@ -54,11 +54,17 @@ export default function Notifications() {
       );
     }
 
+    // Always prefer username over actor_id for profile links
+    const actorUsername = notification.actor?.username;
+    const profilePath = actorUsername ? `/profile/${actorUsername}` : `/profile/${notification.actor_id}`;
+
     // Navigate based on notification type
     if (notification.object_type && notification.object_id) {
       switch (notification.object_type) {
         case 'profile':
-          navigate(`/profile/${notification.object_id}`);
+          if (actorUsername || notification.actor_id) {
+            navigate(profilePath);
+          }
           break;
         case 'job':
           navigate(`/jobs/${notification.object_id}`);
@@ -73,8 +79,8 @@ export default function Notifications() {
           navigate(`/messages/${notification.actor_id}`);
           break;
         case 'skill':
-          if (notification.actor_id) {
-            navigate(`/profile/${notification.actor_id}`);
+          if (actorUsername || notification.actor_id) {
+            navigate(profilePath);
           }
           break;
         case 'post':
@@ -82,12 +88,12 @@ export default function Notifications() {
           navigate(`/post/${notification.object_id}`);
           break;
         default:
-          if (notification.actor_id) {
-            navigate(`/profile/${notification.actor_id}`);
+          if (actorUsername || notification.actor_id) {
+            navigate(profilePath);
           }
       }
-    } else if (notification.actor_id) {
-      navigate(`/profile/${notification.actor_id}`);
+    } else if (actorUsername || notification.actor_id) {
+      navigate(profilePath);
     }
   };
 
