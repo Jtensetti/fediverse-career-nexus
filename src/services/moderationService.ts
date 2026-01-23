@@ -146,7 +146,7 @@ export async function getFlaggedContent(
       })
     );
 
-    return reportsWithPreviews;
+    return reportsWithDetails;
   } catch (error) {
     console.error("Error fetching flagged content:", error);
     return [];
