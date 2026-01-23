@@ -3087,6 +3087,10 @@ export type Database = {
         Args: { p_actor_id: string; p_batch_size?: number; p_followers: Json }
         Returns: number
       }
+      create_mutual_connection_follows: {
+        Args: { user_a: string; user_b: string }
+        Returns: boolean
+      }
       ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
       generate_referral_code: { Args: never; Returns: string }
       get_actor_private_key: { Args: { actor_uuid: string }; Returns: string }

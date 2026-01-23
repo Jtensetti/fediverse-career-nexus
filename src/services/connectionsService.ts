@@ -339,18 +339,15 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
           `and(user_id.eq.${user.id},connected_user_id.eq.${connection.user_id}),and(user_id.eq.${connection.user_id},connected_user_id.eq.${user.id})`
         );
 
-      // Create mutual follows with source 'connection'
-      const followRecords = [
-        { follower_id: user.id, author_id: connection.user_id, source: 'connection' },
-        { follower_id: connection.user_id, author_id: user.id, source: 'connection' }
-      ];
-
-      await supabase
-        .from('author_follows')
-        .upsert(followRecords, { 
-          onConflict: 'follower_id,author_id',
-          ignoreDuplicates: true 
-        });
+      // Create mutual follows using secure database function
+      const { error: followError } = await supabase.rpc(
+        'create_mutual_connection_follows',
+        { user_a: user.id, user_b: connection.user_id }
+      );
+      
+      if (followError) {
+        console.warn('Failed to create mutual follows:', followError);
+      }
 
       // Notify the original requester that their request was accepted
       try {
