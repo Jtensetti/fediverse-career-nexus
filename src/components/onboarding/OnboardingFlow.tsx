@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureUserProfile } from "@/services/profileService";
 import {
   Dialog,
   DialogContent,
@@ -142,6 +143,9 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
       // Save profile data
       setLoading(true);
       try {
+        // First ensure profile exists (in case of race condition during signup)
+        await ensureUserProfile(user!.id);
+        
         const { error } = await supabase
           .from("profiles")
           .update({
@@ -153,7 +157,8 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         
         if (error) throw error;
       } catch (error) {
-        toast.error("Failed to save profile");
+        console.error("Failed to save profile:", error);
+        toast.error("Failed to save profile. Please try again.");
         setLoading(false);
         return;
       }

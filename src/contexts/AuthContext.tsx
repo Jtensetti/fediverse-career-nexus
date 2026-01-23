@@ -20,15 +20,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let loadingTimeoutId: NodeJS.Timeout;
+    
     // Timeout to prevent indefinite loading state
-    const loadingTimeout = setTimeout(() => {
-      if (loading) {
-        console.warn('AuthProvider: Loading timeout reached, forcing completion');
-        setLoading(false);
-      }
+    loadingTimeoutId = setTimeout(() => {
+      setLoading(prev => {
+        if (prev) {
+          console.warn('AuthProvider: Loading timeout reached, forcing completion');
+          return false;
+        }
+        return prev;
+      });
     }, 10000);
     
-    // Set up auth state listener FIRST
+    // Get initial session first
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('AuthProvider: Error getting initial session:', error);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error('AuthProvider: Unexpected error getting session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+    
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
@@ -55,42 +79,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
           
-          // Use setTimeout to avoid blocking the auth state change
-          setTimeout(async () => {
-            try {
-              // Ensure profile exists first
-              const profile = await ensureUserProfile(session.user.id);
-              if (!profile) {
-                console.error('AuthProvider: Failed to create/ensure profile');
-                return;
-              }
-              
-              // Check if user has an actor using the public_actors view
-              const { data: existingActor, error: actorError } = await supabase
-                .from('public_actors')
-                .select('id')
-                .eq('user_id', session.user.id)
-                .single();
-              
-              if (actorError && actorError.code !== 'PGRST116') {
-                console.error('AuthProvider: Error checking for actor:', actorError);
-                return;
-              }
-              
-              if (!existingActor) {
-                try {
-                  await createUserActor(session.user.id);
-                } catch (error) {
-                  console.error('AuthProvider: Error creating actor:', error);
-                }
-              }
-              
-              // Update cache
-              localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
-            } catch (error) {
-              console.error('AuthProvider: Error in user setup:', error);
+          // Run profile/actor setup synchronously (no setTimeout to avoid race conditions)
+          try {
+            // Ensure profile exists first
+            const profile = await ensureUserProfile(session.user.id);
+            if (!profile) {
+              console.error('AuthProvider: Failed to create/ensure profile');
+              return;
             }
-          }, 100);
+            
+            // Check if user has an actor using the public_actors view
+            const { data: existingActor, error: actorError } = await supabase
+              .from('public_actors')
+              .select('id')
+              .eq('user_id', session.user.id)
+              .single();
+            
+            if (actorError && actorError.code !== 'PGRST116') {
+              console.error('AuthProvider: Error checking for actor:', actorError);
+              return;
+            }
+            
+            if (!existingActor) {
+              try {
+                await createUserActor(session.user.id);
+              } catch (error) {
+                console.error('AuthProvider: Error creating actor:', error);
+              }
+            }
+            
+            // Update cache
+            localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
+          } catch (error) {
+            console.error('AuthProvider: Error in user setup:', error);
+          }
         }
         
         // Clear cache on sign out
@@ -107,31 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Clear timeout on cleanup
     return () => {
-      clearTimeout(loadingTimeout);
-      subscription.unsubscribe();
-    };
-
-    // THEN check for existing session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('AuthProvider: Error getting initial session:', error);
-        } else {
-          // Initial session loaded
-          setSession(session);
-          setUser(session?.user ?? null);
-        }
-      } catch (error) {
-        console.error('AuthProvider: Unexpected error getting session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    return () => {
+      clearTimeout(loadingTimeoutId);
       subscription.unsubscribe();
     };
   }, []);
