@@ -774,5 +774,18 @@
     "noSocialTracking": "Social media tracking pixels",
     "noCrossSiteTracking": "Cross-site tracking or fingerprinting",
     "noDataBrokers": "Third-party data brokers or ad networks"
+  },
+  "cookies": {
+    "title": "Cookie Preferences",
+    "description": "We use essential cookies for authentication and security. You can customize optional preferences below.",
+    "learnMore": "Privacy Policy",
+    "customize": "Customize preferences",
+    "essential": "Essential Cookies",
+    "essentialDesc": "Required for authentication, security (Cloudflare), and basic functionality. Cannot be disabled.",
+    "typography": "Typography (Google Fonts)",
+    "typographyDesc": "Loads custom fonts from Google for better readability. Your IP is shared with Google when enabled.",
+    "rejectOptional": "Essential Only",
+    "savePreferences": "Save Preferences",
+    "acceptAll": "Accept All"
   }
 }

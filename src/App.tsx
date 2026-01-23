@@ -16,7 +16,7 @@ import { ErrorBoundary, SkipToContent } from "@/components/common";
 import { FontLoader } from "@/components/FontLoader";
 import SessionExpiryWarning from "@/components/SessionExpiryWarning";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import CookieBanner from "@/components/CookieBanner";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
@@ -267,7 +267,7 @@ function App() {
                   </Routes>
                 </main>
                 <MobileBottomNav />
-                <CookieBanner />
+                <CookieConsentBanner />
                 </AuthProvider>
               </BrowserRouter>
             </ErrorBoundary>
