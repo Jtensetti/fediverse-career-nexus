@@ -1,7 +1,47 @@
-
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Shield, Database, Users, Lock } from "lucide-react";
+import { ArrowLeft, Shield, Database, Users, Lock, Type } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { getFontPreference, setFontPreference } from "@/components/FontLoader";
+
+// Font preference toggle component
+function FontPreferenceToggle() {
+  const [useGoogleFonts, setUseGoogleFonts] = useState(() => getFontPreference() === 'google');
+
+  const handleToggle = (checked: boolean) => {
+    const newPreference = checked ? 'google' : 'system';
+    setFontPreference(newPreference);
+    setUseGoogleFonts(checked);
+    // Reload to apply font change
+    window.location.reload();
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <Type className="h-5 w-5 text-muted-foreground" />
+        <div>
+          <Label htmlFor="font-preference" className="text-base font-medium">
+            Use Google Fonts
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            {useGoogleFonts 
+              ? "Fonts are loaded from Google (your IP is shared with Google)"
+              : "Using system fonts (no external requests)"}
+          </p>
+        </div>
+      </div>
+      <Switch
+        id="font-preference"
+        checked={useGoogleFonts}
+        onCheckedChange={handleToggle}
+        aria-label="Toggle Google Fonts"
+      />
+    </div>
+  );
+}
 
 const PrivacyPolicy = () => {
   const keyPoints = [
@@ -192,12 +232,47 @@ const PrivacyPolicy = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">8. Cookies & Tracking</h2>
-              <div className="space-y-4 text-gray-700">
-                <p>
-                  Bondy uses only essential cookies required for authentication and security. No third-party 
-                  advertising or tracking cookies are used.
-                </p>
+              <h2 className="text-2xl font-bold text-bondy-primary mb-6">8. Cookies & External Resources</h2>
+              <div className="space-y-6 text-gray-700">
+                
+                <div>
+                  <h3 className="text-xl font-semibold text-bondy-primary mb-3">8.1 Essential Cookies (Always Active)</h3>
+                  <p className="mb-3">
+                    These cookies are strictly necessary for the platform to function and cannot be disabled:
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li><strong>Authentication cookies:</strong> Maintain your login session and keep your account secure.</li>
+                    <li><strong>Security cookies (Cloudflare __cf_bm):</strong> Protect against bots and malicious traffic. These are set by our infrastructure provider and expire after 30 minutes of inactivity.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold text-bondy-primary mb-3">8.2 Typography Fonts (Optional)</h3>
+                  <p className="mb-3">
+                    By default, Bondy loads fonts (Inter and Montserrat) from Google Fonts to provide a 
+                    consistent visual experience across devices. When fonts are loaded, your IP address 
+                    is transmitted to Google's servers.
+                  </p>
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <FontPreferenceToggle />
+                  </div>
+                  <p className="text-sm text-gray-600 mt-3">
+                    Your preference is stored locally on your device and is not transmitted to our servers.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold text-bondy-primary mb-3">8.3 What We Don't Use</h3>
+                  <p>Bondy does not use:</p>
+                  <ul className="list-disc pl-6 space-y-2 mt-2">
+                    <li>Advertising or marketing cookies</li>
+                    <li>Analytics tracking (Google Analytics, etc.)</li>
+                    <li>Social media tracking pixels</li>
+                    <li>Cross-site tracking or fingerprinting</li>
+                    <li>Third-party data brokers or ad networks</li>
+                  </ul>
+                </div>
+
               </div>
             </section>
 
