@@ -42,17 +42,41 @@ serve(async (req) => {
     }
 
     // Check if user exists in auth.users (only local users can reset password)
-    const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
+    // Use pagination to search through all users - listUsers returns max 50 by default
+    let user = null;
+    let page = 1;
+    const perPage = 100;
     
-    if (userError) {
-      console.error("Error listing users:", userError);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    while (!user) {
+      const { data: userData, error: userError } = await supabase.auth.admin.listUsers({
+        page,
+        perPage,
       });
+      
+      if (userError) {
+        console.error("Error listing users:", userError);
+        return new Response(JSON.stringify({ error: "Internal server error" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      // Search for user in this page
+      user = userData.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      
+      // If we found the user or there are no more users, stop
+      if (user || userData.users.length < perPage) {
+        break;
+      }
+      
+      page++;
+      
+      // Safety limit - don't loop forever
+      if (page > 100) {
+        console.error("Too many pages when searching for user");
+        break;
+      }
     }
-
-    const user = userData.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
     
     if (!user) {
       // Don't reveal if user exists - always return success
