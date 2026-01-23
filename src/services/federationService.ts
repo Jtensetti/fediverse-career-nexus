@@ -14,6 +14,7 @@ export interface FederatedPost {
     fullname?: string;
     avatar_url?: string;
     home_instance?: string;
+    is_freelancer?: boolean;
   };
   actor?: {
     name?: string;
@@ -139,19 +140,19 @@ export const getFederatedFeed = async (
 
     console.log('👥 User IDs found:', userIds);
 
-    let profilesMap: Record<string, { username: string | null; fullname: string | null; avatar_url: string | null; home_instance: string | null }> = {};
+    let profilesMap: Record<string, { username: string | null; fullname: string | null; avatar_url: string | null; home_instance: string | null; is_freelancer: boolean }> = {};
 
     if (userIds.length > 0) {
       const { data: profiles, error: profileError } = await supabase
         .from('public_profiles')
-        .select('id, username, fullname, avatar_url, home_instance')
+        .select('id, username, fullname, avatar_url, home_instance, is_freelancer')
         .in('id', userIds);
 
       console.log('📝 Profiles fetched:', profiles?.length, 'error:', profileError);
 
       if (profiles) {
         profilesMap = Object.fromEntries(
-          profiles.map(p => [p.id, { username: p.username, fullname: p.fullname, avatar_url: p.avatar_url, home_instance: p.home_instance }])
+          profiles.map(p => [p.id, { username: p.username, fullname: p.fullname, avatar_url: p.avatar_url, home_instance: p.home_instance, is_freelancer: p.is_freelancer || false }])
         );
       }
     }
@@ -176,7 +177,7 @@ export const getFederatedFeed = async (
         actor_name: displayName,
         actor_avatar: profile?.avatar_url || null,
         user_id: actor?.user_id || null,
-        profile: profile ? { username: profile.username || undefined, fullname: profile.fullname || undefined, avatar_url: profile.avatar_url || undefined, home_instance: profile.home_instance || undefined } : undefined,
+        profile: profile ? { username: profile.username || undefined, fullname: profile.fullname || undefined, avatar_url: profile.avatar_url || undefined, home_instance: profile.home_instance || undefined, is_freelancer: profile.is_freelancer || false } : undefined,
         source: (obj as any).source === 'local' ? 'local' : 'remote',
         type: note?.type || 'Note',
         content_warning: contentWarning,
