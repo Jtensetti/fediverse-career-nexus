@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import ConsentCheckbox from "@/components/ConsentCheckbox";
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -27,6 +28,7 @@ export default function AuthPage() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [fediHandle, setFediHandle] = useState("");
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -107,6 +109,12 @@ export default function AuthPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate consent
+    if (!consentAccepted) {
+      toast.error("Please accept the Terms of Service and Privacy Policy");
+      return;
+    }
     
     // Validate all fields
     if (!email || !password || !firstName || !lastName) {
@@ -506,11 +514,15 @@ export default function AuthPage() {
                         minLength={6}
                       />
                     </div>
+                    <ConsentCheckbox 
+                      checked={consentAccepted} 
+                      onCheckedChange={setConsentAccepted} 
+                    />
                     <Button
                       type="submit"
                       variant="outline"
                       className="w-full"
-                      disabled={isLoading}
+                      disabled={isLoading || !consentAccepted}
                     >
                       {isLoading ? t("auth.creatingAccount", "Creating account...") : t("auth.createAccountWithEmail", "Create Account with Email")}
                     </Button>

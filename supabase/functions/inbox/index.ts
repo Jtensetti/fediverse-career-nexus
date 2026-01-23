@@ -400,6 +400,9 @@ serve(async (req) => {
       case "Update":
         await handleUpdateActivity(activity, actor.id, sender);
         break;
+      case "Move":
+        await handleMoveActivity(activity, actor.id, sender);
+        break;
       default:
         console.log(`Unsupported activity type: ${activity.type}`);
         // Store unsupported activities for future reference
@@ -1217,6 +1220,119 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
     }
   } catch (error) {
     console.error("Error handling Update activity:", error);
+    throw error;
+  }
+}
+
+// Handle Move activity (account migration)
+async function handleMoveActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Move activity from ${sender}`);
+    
+    const oldAccount = activity.object;
+    const newAccount = activity.target;
+    
+    if (!oldAccount || !newAccount) {
+      throw new Error("Move activity missing object or target");
+    }
+    
+    // Verify that sender matches the object being moved
+    const oldAccountUrl = typeof oldAccount === 'string' ? oldAccount : oldAccount.id;
+    if (oldAccountUrl !== sender) {
+      console.log(`Move activity sender ${sender} doesn't match object ${oldAccountUrl}`);
+      throw new Error("Move activity sender must match the account being moved");
+    }
+    
+    // Store the Move activity
+    const { data, error } = await supabaseClient
+      .from("inbox_items")
+      .insert({
+        recipient_id: recipientId,
+        sender: sender,
+        activity_type: "Move",
+        object_type: "Person",
+        content: activity
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    console.log(`Stored Move activity: ${data.id}`);
+    
+    // Fetch new account to verify alsoKnownAs
+    const newAccountUrl = typeof newAccount === 'string' ? newAccount : newAccount.id;
+    
+    try {
+      const response = await fetch(newAccountUrl, {
+        headers: { "Accept": "application/activity+json" }
+      });
+      
+      if (response.ok) {
+        const newAccountData = await response.json();
+        const alsoKnownAs = newAccountData.alsoKnownAs || [];
+        
+        // Verify the new account lists the old account in alsoKnownAs
+        if (!alsoKnownAs.includes(oldAccountUrl)) {
+          console.log(`Move verification failed: new account doesn't list old account in alsoKnownAs`);
+          return; // Don't process unverified moves
+        }
+        
+        // Cache the new account data
+        await supabaseClient
+          .from("remote_actors_cache")
+          .upsert({
+            actor_url: newAccountUrl,
+            actor_data: newAccountData,
+            fetched_at: new Date().toISOString()
+          });
+        
+        // Update any local follows to point to new account
+        // First, find any author_follows pointing to the old account
+        const { data: localActors } = await supabaseClient
+          .from("actors")
+          .select("id, user_id")
+          .eq("user_id", recipientId);
+        
+        if (localActors && localActors.length > 0) {
+          // Create notification for the user about the migration
+          await supabaseClient
+            .from("notifications")
+            .insert({
+              type: "account_moved",
+              recipient_id: recipientId,
+              actor_id: null,
+              object_id: oldAccountUrl,
+              object_type: "actor",
+              content: `${oldAccountUrl} has moved to ${newAccountUrl}`,
+              read: false
+            });
+          
+          console.log(`Created notification for user about account migration`);
+        }
+        
+        // Update the old account cache to show it's moved
+        await supabaseClient
+          .from("remote_actors_cache")
+          .update({ 
+            actor_data: {
+              ...((await supabaseClient
+                .from("remote_actors_cache")
+                .select("actor_data")
+                .eq("actor_url", oldAccountUrl)
+                .single()).data?.actor_data || {}),
+              movedTo: newAccountUrl
+            }
+          })
+          .eq("actor_url", oldAccountUrl);
+        
+        console.log(`Successfully processed Move from ${oldAccountUrl} to ${newAccountUrl}`);
+      }
+    } catch (fetchError) {
+      console.error("Error fetching new account for Move verification:", fetchError);
+    }
+  } catch (error) {
+    console.error("Error handling Move activity:", error);
     throw error;
   }
 }
