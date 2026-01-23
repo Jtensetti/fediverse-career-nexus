@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AvatarWithStatus from "@/components/common/AvatarWithStatus";
 import { formatDistanceToNow } from "date-fns";
 import { Globe, MessageSquare, Repeat, MoreHorizontal, Edit, Trash2, Flag, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -357,25 +357,14 @@ export default function FederatedPostCard({
                 className={post.source === 'local' ? 'cursor-pointer' : 'cursor-default'}
                 onClick={(e) => post.source !== 'local' && e.preventDefault()}
               >
-                <div className="relative">
-                  <Avatar className="h-11 w-11 aspect-square flex-shrink-0 ring-2 ring-offset-2 ring-offset-background ring-transparent group-hover:ring-primary/20 transition-all">
-                    {getAvatarUrl() && !imageError ? (
-                      <AvatarImage 
-                        src={getAvatarUrl() as string} 
-                        onError={() => setImageError(true)} 
-                        className="object-cover"
-                      />
-                    ) : null}
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {getActorName().charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  {post.source === 'remote' && (
-                    <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-purple-500 flex items-center justify-center ring-2 ring-background">
-                      <Globe className="h-2.5 w-2.5 text-white" />
-                    </div>
-                  )}
-                </div>
+                <AvatarWithStatus
+                  src={getAvatarUrl() || undefined}
+                  alt={getActorName()}
+                  fallback={getActorName().charAt(0).toUpperCase()}
+                  size="md"
+                  status={post.source === 'remote' ? 'remote' : 'none'}
+                  isFreelancer={post.source === 'local' && post.profile?.is_freelancer}
+                />
               </Link>
             </ProfileHoverCard>
             
