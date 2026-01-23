@@ -302,7 +302,12 @@
     "accept": "Accept",
     "decline": "Decline",
     "message": "Message",
-    "sync": "Sync"
+    "sync": "Sync",
+    "stats": {
+      "posts": "posts",
+      "following": "following",
+      "followers": "followers"
+    }
   },
   "connections": {
     "title": "My Network",

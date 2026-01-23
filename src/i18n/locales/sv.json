@@ -302,7 +302,12 @@
     "accept": "Acceptera",
     "decline": "Avböj",
     "message": "Meddelande",
-    "sync": "Synka"
+    "sync": "Synka",
+    "stats": {
+      "posts": "inlägg",
+      "following": "följer",
+      "followers": "följare"
+    }
   },
   "connections": {
     "title": "Mitt nätverk",

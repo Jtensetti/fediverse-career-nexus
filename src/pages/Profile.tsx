@@ -391,9 +391,9 @@ const ProfilePage = () => {
 
         {/* Profile Info - overlapping the banner */}
         <div className="relative px-4 md:px-6 pb-6">
-          {/* Avatar */}
+          {/* Avatar and Stats row */}
           <div className="flex flex-col md:flex-row md:items-end gap-4 -mt-16 md:-mt-20">
-            <div className="flex items-end gap-4">
+            <div className="flex items-end gap-6">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -411,10 +411,15 @@ const ProfilePage = () => {
                 />
               </motion.div>
 
-              {/* Stats next to avatar - HIDDEN */}
-              <div className="hidden md:block pb-2">
-                {/* <ProfileStats userId={profile.id} username={profile.username} compact /> */}
+              {/* Stats next to avatar - desktop */}
+              <div className="hidden md:flex items-end pb-2">
+                <ProfileStats userId={profile.id} />
               </div>
+            </div>
+
+            {/* Mobile stats - below avatar */}
+            <div className="flex md:hidden justify-center">
+              <ProfileStats userId={profile.id} />
             </div>
 
             {/* Action buttons - positioned on the right on desktop */}
