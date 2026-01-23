@@ -1,87 +1,130 @@
 
 
-# Fixes: OG Image Mismatch and Freelancer Badge Not Showing
+# Fixes: Feed Freelancer Badge, Favicon, and OG Image
 
-## Issue 1: OG Image Preview Looking Weird
+## Problem Summary
+
+Three issues need to be resolved:
+1. **Feed avatars don't show green "open to work" ring** - The avatar in posts doesn't display the freelancer badge
+2. **Favicon uses Lovable heart** - The favicon points to an external URL instead of the project's icon
+3. **OG image is plain teal** - The social share image is just "Nolto" on teal, not the actual homepage design
+
+---
+
+## Issue 1: Feed Avatars Missing Freelancer Badge
 
 ### Root Cause Analysis
 
-The `index.html` has **inconsistent OG image references**:
+The `FederatedPostCard` component uses a plain `Avatar` instead of `AvatarWithStatus`:
 
-```html
-<!-- Line 16: OpenGraph uses external Lovable default image -->
-<meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-<!-- Line 21: Twitter uses local image (correct one) -->
-<meta name="twitter:image" content="/og-image.png" />
+**Current code (lines 360-372):**
+```tsx
+<Avatar className="h-11 w-11 aspect-square flex-shrink-0 ring-2...">
+  <AvatarImage src={...} />
+  <AvatarFallback>...</AvatarFallback>
+</Avatar>
 ```
 
-The **problem**: 
-1. `og:image` points to `https://lovable.dev/opengraph-image-p98pqg.png` - a generic Lovable placeholder
-2. `twitter:image` uses `/og-image.png` - the correct Nolto branded image (the nice blue gradient with "Nolto" text)
-3. The relative path `/og-image.png` for Twitter may not resolve correctly on all platforms
+Additionally, the feed data doesn't include freelancer status because:
+
+1. The `FederatedPost.profile` interface only includes `username`, `fullname`, `avatar_url`, `home_instance`
+2. The `getFederatedFeed` function in `federationService.ts` only fetches those 4 fields from `public_profiles`
+3. The `public_profiles` view DOES have `is_freelancer` column - it just isn't being fetched
 
 ### Solution
 
-1. Update both `og:image` and `twitter:image` to use the **full absolute URL** to the local Nolto OG image
-2. The local `/public/og-image.png` already exists and has the proper 1200x630 aspect ratio (standard for social cards)
+**Step 1: Update FederatedPost interface** to include freelancer status:
+```tsx
+profile?: {
+  username?: string;
+  fullname?: string;
+  avatar_url?: string;
+  home_instance?: string;
+  is_freelancer?: boolean;  // ADD THIS
+};
+```
 
+**Step 2: Update getFederatedFeed query** to fetch `is_freelancer`:
+```tsx
+const { data: profiles } = await supabase
+  .from('public_profiles')
+  .select('id, username, fullname, avatar_url, home_instance, is_freelancer')  // ADD is_freelancer
+  .in('id', userIds);
+```
+
+**Step 3: Include is_freelancer in profilesMap transformation**
+
+**Step 4: Replace Avatar with AvatarWithStatus in FederatedPostCard:**
+```tsx
+import AvatarWithStatus from "@/components/common/AvatarWithStatus";
+
+// In the render:
+<AvatarWithStatus
+  src={getAvatarUrl()}
+  alt={getActorName()}
+  fallback={getActorName().charAt(0).toUpperCase()}
+  size="md"
+  status={post.source === 'remote' ? 'remote' : 'none'}
+  isFreelancer={post.profile?.is_freelancer}
+/>
+```
+
+This removes the need for the separate "remote" globe badge div since `AvatarWithStatus` handles it automatically.
+
+---
+
+## Issue 2: Favicon Uses Lovable Heart
+
+### Root Cause
+
+The favicon in `index.html` (lines 23-27) points to an external Google Storage URL:
 ```html
-<meta property="og:image" content="https://fediverse-career.lovable.app/og-image.png" />
-<meta name="twitter:image" content="https://fediverse-career.lovable.app/og-image.png" />
+<link
+  rel="icon"
+  type="image/png"
+  href="https://storage.googleapis.com/gpt-engineer-file-uploads/hXPrdOqSYOSEXsgA2jxePGGKRT93/uploads/1767868098985-082a3beb-46f5-4b8a-9569-2da582063f92-removebg-preview.png"
+/>
+```
+
+This is likely a placeholder that didn't get updated. The project has `public/favicon.ico` which should be used instead.
+
+### Solution
+
+Update the favicon link to use the local file:
+```html
+<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 ```
 
 ---
 
-## Issue 2: Freelancer Badge Not Showing
+## Issue 3: OG Image is Plain Teal
 
-### Root Cause Analysis
+### Root Cause
 
-**The Bug Location**: `src/pages/Profile.tsx` line 311 combined with `src/components/common/AvatarWithStatus.tsx` line 60
+The current `public/og-image.png` is a simple graphic with just "Nolto" text on a teal background. This doesn't showcase the product effectively.
 
-**Profile.tsx (line 311)**:
-```tsx
-const avatarStatus = profile.isVerified ? "verified" : profile.authType === "federated" ? "remote" : "none";
-```
+### Solution Options
 
-**AvatarWithStatus.tsx (line 60)**:
-```tsx
-const effectiveStatus = isFreelancer && status === "none" ? "freelancer" : status;
-```
+**Option A: Create a professional OG image programmatically**
+- Design a new image with the hero section content: "The Professional Network That Respects Your Freedom"
+- Include the app screenshot mockup shown on the homepage
+- Use the teal/green gradient background
+- Standard size: 1200x630 pixels
 
-**The Problem**:
-- The user `jtensetti_mastodon` has `authType === "federated"`, so `avatarStatus = "remote"`
-- The freelancer badge logic only triggers when `status === "none"`
-- This means **federated users** and **verified users** can NEVER see the freelancer badge, even if `is_freelancer = true`
+**Option B: Use an existing asset**
+- Check if the project has a marketing image in `public/lovable-uploads/`
+- The file `8dbd04e2-165c-4205-ba34-e66173afac69.png` might be a logo or marketing asset
 
-### Database Confirmation
+For a quick fix, I recommend creating a simple but effective OG image that includes:
+- The tagline "The Professional Network That Respects Your Freedom"
+- The Nolto logo
+- A clean gradient background
 
-```sql
-SELECT is_freelancer, auth_type FROM profiles WHERE username = 'jtensetti_mastodon';
--- Result: is_freelancer: true, auth_type: federated
-```
+This would require either:
+1. User providing a new OG image file
+2. Creating one programmatically with canvas/image generation
 
-The data is correct - the issue is purely in the UI logic.
-
-### Solution
-
-Modify `AvatarWithStatus.tsx` to **prioritize the freelancer badge** when the user is marked as open for work. The freelancer status should override "none" and potentially coexist with or take precedence over other statuses.
-
-**New Logic**:
-```tsx
-// Priority: freelancer > verified > remote > admin > online > none
-const effectiveStatus = isFreelancer ? "freelancer" : status;
-```
-
-This change means:
-- If a user is "open for work", they ALWAYS get the green freelancer badge with the briefcase icon
-- This takes priority over "remote" (purple globe) and "none"
-- Verified status could optionally still be shown, but the freelancer badge provides clearer professional intent
-
-**Alternative approach** (show both indicators):
-Keep the ring color based on status (verified/remote) but always show the freelancer badge icon when applicable. This requires more UI changes but preserves both indicators.
-
-For simplicity, I recommend **prioritizing the freelancer badge** since "open for work" is a deliberate professional choice by the user and is more actionable information for viewers.
+**Recommendation**: Ask the user if they have a marketing image to use, or if they want me to describe what the ideal OG image should look like so they can create it externally.
 
 ---
 
@@ -89,47 +132,98 @@ For simplicity, I recommend **prioritizing the freelancer badge** since "open fo
 
 | File | Change |
 |------|--------|
-| `index.html` | Update `og:image` and `twitter:image` to use absolute URL to local OG image |
-| `src/components/common/AvatarWithStatus.tsx` | Change effectiveStatus logic to prioritize freelancer status |
+| `src/services/federationService.ts` | Add `is_freelancer` to FederatedPost interface and query |
+| `src/components/FederatedPostCard.tsx` | Replace Avatar with AvatarWithStatus component |
+| `index.html` | Fix favicon to use local `/favicon.ico` |
+| `public/og-image.png` | Needs new image (requires user input) |
 
 ---
 
 ## Implementation Details
 
-### Fix 1: OG Image (index.html)
+### Fix 1A: federationService.ts - Update Interface
 
-**Lines 16 and 21** - Update to:
+**Lines 12-18** - Add is_freelancer to profile type:
+```tsx
+profile?: {
+  username?: string;
+  fullname?: string;
+  avatar_url?: string;
+  home_instance?: string;
+  is_freelancer?: boolean;
+};
+```
 
+### Fix 1B: federationService.ts - Update Query
+
+**Line 147** - Add is_freelancer to select:
+```tsx
+.select('id, username, fullname, avatar_url, home_instance, is_freelancer')
+```
+
+**Lines 153-155** - Include in profilesMap:
+```tsx
+profilesMap = Object.fromEntries(
+  profiles.map(p => [p.id, { 
+    username: p.username, 
+    fullname: p.fullname, 
+    avatar_url: p.avatar_url, 
+    home_instance: p.home_instance,
+    is_freelancer: p.is_freelancer 
+  }])
+);
+```
+
+**Line 179** - Add to profile object:
+```tsx
+profile: profile ? { 
+  username: profile.username || undefined, 
+  fullname: profile.fullname || undefined, 
+  avatar_url: profile.avatar_url || undefined, 
+  home_instance: profile.home_instance || undefined,
+  is_freelancer: profile.is_freelancer || false
+} : undefined,
+```
+
+### Fix 1C: FederatedPostCard.tsx - Replace Avatar
+
+**Line 4** - Add import:
+```tsx
+import AvatarWithStatus from "@/components/common/AvatarWithStatus";
+```
+
+**Lines 360-378** - Replace Avatar with AvatarWithStatus:
+```tsx
+<AvatarWithStatus
+  src={getAvatarUrl()}
+  alt={getActorName()}
+  fallback={getActorName().charAt(0).toUpperCase()}
+  size="md"
+  status={post.source === 'remote' ? 'remote' : 'none'}
+  isFreelancer={post.source === 'local' && post.profile?.is_freelancer}
+/>
+```
+
+This automatically handles:
+- Green ring + briefcase icon for freelancers
+- Purple ring + globe icon for remote/federated users
+- Proper sizing and styling
+
+### Fix 2: index.html - Favicon
+
+**Lines 23-27** - Replace with:
 ```html
-<meta property="og:image" content="https://fediverse-career.lovable.app/og-image.png" />
-<!-- ... -->
-<meta name="twitter:image" content="https://fediverse-career.lovable.app/og-image.png" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 ```
 
-This ensures:
-- All social platforms (LinkedIn, Facebook, Twitter, Mastodon, Slack, Discord) see the same professional Nolto branded image
-- The absolute URL works regardless of how the link is shared
-- The existing `og-image.png` has the correct 1200x630 dimensions for optimal display
+### Fix 3: OG Image
 
-### Fix 2: Freelancer Badge (AvatarWithStatus.tsx)
+The current OG image is a simple teal graphic. For a professional social preview, the ideal image would be 1200x630 pixels and show:
+- The main headline text
+- A preview of the app interface
+- The Nolto branding
 
-**Line 60** - Change from:
-
-```tsx
-const effectiveStatus = isFreelancer && status === "none" ? "freelancer" : status;
-```
-
-To:
-
-```tsx
-// Freelancer status takes priority to clearly show "open for work"
-const effectiveStatus = isFreelancer ? "freelancer" : status;
-```
-
-This ensures:
-- Users who toggle "Open for Work" will ALWAYS see the green ring with briefcase icon
-- This works for local users, federated users, and verified users alike
-- The professional signal is consistently visible
+This requires either a new image file to be uploaded, or we could create a simple text-based image with the key messaging.
 
 ---
 
@@ -137,19 +231,13 @@ This ensures:
 
 | Issue | Before | After |
 |-------|--------|-------|
-| OG Image on LinkedIn/Facebook | Shows generic Lovable placeholder or broken image | Shows professional Nolto branded image |
-| OG Image on Twitter/X | May show correct image (relative path) | Consistently shows correct absolute URL |
-| Freelancer badge (local user) | Shows green badge when no other status | Shows green badge always |
-| Freelancer badge (federated user) | Never shows (purple "remote" badge wins) | Shows green freelancer badge |
-| Freelancer badge (verified user) | Never shows (blue "verified" badge wins) | Shows green freelancer badge |
+| Feed avatars | Plain avatar, no freelancer indicator | Green ring + briefcase for "open to work" users |
+| Favicon | Lovable heart icon | Nolto's custom favicon |
+| OG image | Plain "Nolto" on teal | Needs new image |
 
 ---
 
-## Testing Checklist
+## Question for User
 
-After implementation:
-1. Share the homepage link on LinkedIn, Facebook, Twitter - verify the Nolto branded image appears
-2. Toggle "Open for Work" on a federated user's profile - verify green badge appears
-3. Toggle "Open for Work" on a verified user's profile - verify green badge appears
-4. Disable "Open for Work" - verify badge reverts to previous status (verified/remote/none)
+For the OG image: Would you like to provide a new marketing image to use as the social share preview? The ideal size is 1200x630 pixels. Alternatively, I can create a simple image using the headline text and logo, though this would be basic. What would you prefer?
 
