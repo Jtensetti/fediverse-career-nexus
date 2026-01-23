@@ -1,22 +1,29 @@
 import { ReactNode } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { SEOHead } from "@/components/common/SEOHead";
 
 interface DashboardLayoutProps {
   children: ReactNode;
   title?: string;
   description?: string;
   showHeader?: boolean;
+  /** Set to true if the page handles its own SEOHead (e.g., dynamic titles) */
+  disableSEO?: boolean;
 }
 
 const DashboardLayout = ({ 
   children, 
   title, 
   description,
-  showHeader = true 
+  showHeader = true,
+  disableSEO = false,
 }: DashboardLayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Auto-set SEO if title is provided and not disabled */}
+      {!disableSEO && title && <SEOHead title={title} description={description} />}
+      
       <Navbar />
       
       <main className="flex-grow">

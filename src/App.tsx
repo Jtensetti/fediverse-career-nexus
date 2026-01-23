@@ -66,8 +66,8 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 30000, // 30 seconds before data is considered stale
       gcTime: 300000, // 5 minutes cache time (formerly cacheTime)
-      refetchOnMount: false, // Don't refetch if data exists
-      refetchOnWindowFocus: false, // Don't refetch on tab focus
+      refetchOnMount: true, // Refetch when component mounts for fresh data
+      refetchOnWindowFocus: true, // Refetch when user returns to tab
       retry: 1, // Only retry once on failure
     },
   },

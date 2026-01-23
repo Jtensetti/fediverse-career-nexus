@@ -15,6 +15,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { getFeedPreferences } from "@/services/feedPreferencesService";
 import { useQuery } from "@tanstack/react-query";
 import type { FeedType } from "@/services/federationService";
+import { SEOHead } from "@/components/common/SEOHead";
 
 const FederatedFeedPage = () => {
   const [activeFeed, setActiveFeed] = useState<FeedType>("all");
@@ -40,6 +41,7 @@ const FederatedFeedPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title="Feed" description="Your personalized feed on Nolto - the federated professional network." />
       <Navbar />
       
       {/* Onboarding Flow */}

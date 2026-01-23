@@ -20,6 +20,7 @@ import { getSavedItems, unsaveItem, type SavedItem, type SavedItemType } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { SEOHead } from "@/components/common/SEOHead";
 
 export default function SavedItemsPage() {
   const { user } = useAuth();
@@ -128,7 +129,8 @@ export default function SavedItemsPage() {
   const counts = getCounts();
 
   return (
-    <DashboardLayout>
+    <DashboardLayout disableSEO>
+      <SEOHead title="Saved Items" description="Your saved jobs, articles, events, posts, and comments on Nolto." />
       <div className="container max-w-4xl mx-auto py-6 px-4">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
