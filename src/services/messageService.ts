@@ -227,6 +227,7 @@ export async function getConversation(partnerId: string): Promise<Conversation |
 
 /**
  * Get messages with a specific user
+ * Uses edge function for decryption of encrypted messages
  */
 export async function getMessages(partnerId: string): Promise<Message[]> {
   try {
@@ -238,6 +239,7 @@ export async function getMessages(partnerId: string): Promise<Message[]> {
 
     const userId = sessionData.session.user.id;
 
+    // Fetch messages first
     const { data: messages, error } = await supabase
       .from('messages')
       .select('*')
@@ -250,7 +252,36 @@ export async function getMessages(partnerId: string): Promise<Message[]> {
       return [];
     }
 
-    return (messages || []) as Message[];
+    // Check if any messages need decryption
+    const hasEncrypted = messages?.some(m => m.is_encrypted && m.encrypted_content);
+    
+    if (!hasEncrypted) {
+      return (messages || []) as Message[];
+    }
+
+    // Use edge function to decrypt messages
+    try {
+      const { data: decryptedData, error: decryptError } = await supabase.functions.invoke('encrypt-message', {
+        body: { action: 'decrypt-batch', partnerId }
+      });
+
+      if (decryptError) {
+        console.error('Error decrypting messages:', decryptError);
+        // Fall back to returning messages as-is (with encrypted content masked)
+        return (messages || []).map(m => ({
+          ...m,
+          content: m.is_encrypted ? '[Encrypted message]' : m.content
+        })) as Message[];
+      }
+
+      return (decryptedData?.messages || messages || []) as Message[];
+    } catch (decryptErr) {
+      console.error('Decryption failed:', decryptErr);
+      return (messages || []).map(m => ({
+        ...m,
+        content: m.is_encrypted ? '[Encrypted message]' : m.content
+      })) as Message[];
+    }
   } catch (error) {
     console.error('Error in getMessages:', error);
     toast.error('Failed to load messages');
@@ -310,13 +341,32 @@ export async function sendMessage(recipientId: string, content: string): Promise
       return await sendFederatedMessage(recipientId, content, canMessageResult.remote_actor_url);
     }
 
-    // Local message - insert directly
+    // Encrypt the message content before storing
+    let encryptedContent: string | null = null;
+    let isEncrypted = false;
+    
+    try {
+      const { data: encryptData, error: encryptError } = await supabase.functions.invoke('encrypt-message', {
+        body: { action: 'encrypt', content }
+      });
+      
+      if (!encryptError && encryptData?.encryptedContent) {
+        encryptedContent = encryptData.encryptedContent;
+        isEncrypted = true;
+      }
+    } catch (encryptErr) {
+      console.warn('Message encryption failed, storing as plain text:', encryptErr);
+    }
+
+    // Local message - insert with encryption
     const { data, error } = await supabase
       .from('messages')
       .insert({
         sender_id: senderId,
         recipient_id: recipientId,
-        content,
+        content: isEncrypted ? '' : content, // Store empty content if encrypted
+        encrypted_content: encryptedContent,
+        is_encrypted: isEncrypted,
         is_federated: false,
         delivery_status: 'local'
       })
@@ -333,6 +383,9 @@ export async function sendMessage(recipientId: string, content: string): Promise
       }
       return null;
     }
+    
+    // Return with decrypted content for immediate display
+    const returnData = { ...data, content } as Message;
 
     // Create notification for the recipient
     try {
@@ -348,7 +401,7 @@ export async function sendMessage(recipientId: string, content: string): Promise
       console.error('Failed to create message notification:', notifError);
     }
 
-    return data as Message;
+    return returnData;
   } catch (error) {
     console.error('Error in sendMessage:', error);
     toast.error('Failed to send message');
