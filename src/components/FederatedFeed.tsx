@@ -37,20 +37,18 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
      sourceFilter === 'remote' ? 'remote' : 
      sourceFilter === 'following' ? 'following' : 'all');
   
-  // Track which offset the current query is for
-  const [queryOffset, setQueryOffset] = useState(0);
-  
   // Ref for infinite scroll sentinel
   const loadMoreRef = useRef<HTMLDivElement>(null);
   
+  // Use a ref to track offset for the query to avoid stale closure issues
+  const currentOffset = useRef(0);
+  currentOffset.current = offset;
+  
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['federatedFeed', limit, offset, effectiveFeedType],
-    queryFn: () => {
-      // Capture offset at query time
-      setQueryOffset(offset);
-      return getFederatedFeed(limit, offset, effectiveFeedType);
-    },
+    queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType),
     staleTime: 30000, // 30 seconds
+    enabled: true,
   });
   
   // Reset when feed type changes
@@ -58,7 +56,6 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setOffset(0);
     setAllPosts([]);
     setHasMore(true);
-    setQueryOffset(0);
     setBatchData(new Map());
     fetchedPostIds.current.clear();
   }, [effectiveFeedType]);
@@ -87,19 +84,24 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
 
   // Process new posts and fetch batch data when posts arrive
   useEffect(() => {
-    if (!posts || posts.length === 0) {
-      if (posts && posts.length === 0 && queryOffset === 0) {
+    if (!posts) return;
+    
+    if (posts.length === 0) {
+      if (offset === 0) {
         // Empty feed on first page
         setAllPosts([]);
         setHasMore(false);
         setBatchDataLoading(false);
+      } else {
+        // No more posts to load
+        setHasMore(false);
       }
       return;
     }
     
     // Update allPosts
     setAllPosts(currentPosts => {
-      if (queryOffset === 0) {
+      if (offset === 0) {
         return posts;
       }
       
@@ -117,7 +119,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     // Fetch batch data for new posts in ONE request
     const postIds = posts.map(p => p.id);
     fetchBatchData(postIds);
-  }, [posts, queryOffset, limit, fetchBatchData]);
+  }, [posts, offset, limit, fetchBatchData]);
   
   // Infinite scroll with IntersectionObserver
   useEffect(() => {
