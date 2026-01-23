@@ -13,7 +13,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
-import ConsentCheckbox from "@/components/ConsentCheckbox";
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -28,23 +27,22 @@ export default function AuthPage() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [fediHandle, setFediHandle] = useState("");
   const [refCode, setRefCode] = useState<string | null>(null);
-  const [consentAccepted, setConsentAccepted] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  
+
   // Determine default tab based on URL path
   const defaultTab = location.pathname === "/auth/signup" ? "signup" : "signin";
 
   // Capture referral code from URL or localStorage
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const ref = params.get('ref');
+    const ref = params.get("ref");
     if (ref) {
       setRefCode(ref.toUpperCase());
-      localStorage.setItem('referral_code', ref.toUpperCase());
+      localStorage.setItem("referral_code", ref.toUpperCase());
     } else {
-      const stored = localStorage.getItem('referral_code');
+      const stored = localStorage.getItem("referral_code");
       if (stored) setRefCode(stored);
     }
   }, [location.search]);
@@ -91,11 +89,11 @@ export default function AuthPage() {
       setCheckingUsername(true);
       try {
         const { data } = await supabase
-          .from('public_profiles')
-          .select('id')
-          .eq('username', username.toLowerCase())
+          .from("public_profiles")
+          .select("id")
+          .eq("username", username.toLowerCase())
           .maybeSingle();
-        
+
         setUsernameAvailable(!data);
       } catch {
         setUsernameAvailable(null);
@@ -109,13 +107,7 @@ export default function AuthPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate consent
-    if (!consentAccepted) {
-      toast.error("Please accept the Terms of Service and Privacy Policy");
-      return;
-    }
-    
+
     // Validate all fields
     if (!email || !password || !firstName || !lastName) {
       toast.error("Please fill in all fields");
@@ -166,9 +158,9 @@ export default function AuthPage() {
             first_name: trimmedFirstName,
             last_name: trimmedLastName,
             fullname: fullname,
-            preferred_username: preferredUsername
-          }
-        }
+            preferred_username: preferredUsername,
+          },
+        },
       });
 
       if (error) {
@@ -179,9 +171,9 @@ export default function AuthPage() {
       if (data.user && refCode) {
         try {
           await processReferralCode(refCode, data.user.id);
-          localStorage.removeItem('referral_code');
+          localStorage.removeItem("referral_code");
         } catch (refError) {
-          console.error('Failed to process referral:', refError);
+          console.error("Failed to process referral:", refError);
           // Don't block signup for referral errors
         }
       }
@@ -230,7 +222,7 @@ export default function AuthPage() {
 
   const handleFederatedLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!fediHandle) {
       toast.error("Please enter your Fediverse handle");
       return;
@@ -246,27 +238,27 @@ export default function AuthPage() {
     setIsFederatedLoading(true);
     try {
       const redirectUri = `${window.location.origin}/auth/callback`;
-      
-      const response = await supabase.functions.invoke('federated-auth-init', {
-        body: { 
+
+      const response = await supabase.functions.invoke("federated-auth-init", {
+        body: {
           handle: fediHandle,
-          redirectUri 
-        }
+          redirectUri,
+        },
       });
 
       if (response.error) {
-        throw new Error(response.error.message || 'Failed to initiate federated login');
+        throw new Error(response.error.message || "Failed to initiate federated login");
       }
 
       const { authorizationUrl, error } = response.data;
-      
+
       if (error) {
         throw new Error(error);
       }
 
       if (authorizationUrl) {
         // Store state in session storage for callback verification
-        sessionStorage.setItem('federated_auth_redirect', redirectUri);
+        sessionStorage.setItem("federated_auth_redirect", redirectUri);
         // Redirect to the remote instance for authorization
         window.location.href = authorizationUrl;
       }
@@ -300,24 +292,22 @@ export default function AuthPage() {
           {/* Logo and Branding */}
           <div className="text-center">
             <div className="flex justify-center mb-4">
-              <img 
-                src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                alt="Nolto" 
-                className="w-16 h-16" 
-              />
+              <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Nolto" className="w-16 h-16" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground font-display">{t("auth.welcomeTitle", "Welcome to Nolto")}</h1>
+            <h1 className="text-3xl font-bold text-foreground font-display">
+              {t("auth.welcomeTitle", "Welcome to Nolto")}
+            </h1>
             <p className="mt-2 text-muted-foreground">
               {t("auth.welcomeSubtitle", "The federated professional network that puts you in control")}
             </p>
-            
+
             {/* Referral badge */}
             {refCode && (
               <Badge variant="secondary" className="mt-2">
                 {t("auth.invitedWithCode", "Invited with code")}: {refCode}
               </Badge>
             )}
-            
+
             {/* Trust Badges */}
             <div className="flex flex-wrap justify-center gap-2 mt-4">
               {trustFeatures.map((feature, index) => (
@@ -350,11 +340,7 @@ export default function AuthPage() {
                     placeholder="@username@mastodon.social"
                   />
                 </div>
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isFederatedLoading}
-                >
+                <Button type="submit" className="w-full" disabled={isFederatedLoading}>
                   {isFederatedLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -375,14 +361,12 @@ export default function AuthPage() {
                 <Separator className="w-full" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  {t("auth.orUseEmail", "Or use email")}
-                </span>
+                <span className="bg-card px-2 text-muted-foreground">{t("auth.orUseEmail", "Or use email")}</span>
               </div>
             </div>
 
             <Tabs defaultValue={defaultTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mx-6 mt-4" style={{ width: 'calc(100% - 48px)' }}>
+              <TabsList className="grid w-full grid-cols-2 mx-6 mt-4" style={{ width: "calc(100% - 48px)" }}>
                 <TabsTrigger value="signin">{t("auth.signIn", "Sign In")}</TabsTrigger>
                 <TabsTrigger value="signup">{t("auth.signUp", "Sign Up")}</TabsTrigger>
               </TabsList>
@@ -412,21 +396,18 @@ export default function AuthPage() {
                         required
                       />
                       <div className="flex justify-end mt-1">
-                        <Link 
-                          to="/auth/recovery" 
+                        <Link
+                          to="/auth/recovery"
                           className="text-sm text-muted-foreground hover:text-primary underline"
                         >
                           {t("auth.forgotPassword", "Forgot password?")}
                         </Link>
                       </div>
                     </div>
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      className="w-full"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? t("auth.signingIn", "Signing in...") : t("auth.signInWithEmail", "Sign In with Email")}
+                    <Button type="submit" variant="outline" className="w-full" disabled={isLoading}>
+                      {isLoading
+                        ? t("auth.signingIn", "Signing in...")
+                        : t("auth.signInWithEmail", "Sign In with Email")}
                     </Button>
                   </form>
                 </CardContent>
@@ -443,7 +424,7 @@ export default function AuthPage() {
                           type="text"
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
-                          placeholder="Erik"
+                          placeholder="Firstname"
                           required
                           minLength={2}
                           maxLength={50}
@@ -456,7 +437,7 @@ export default function AuthPage() {
                           type="text"
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
-                          placeholder="Hjärtberg"
+                          placeholder="Surname"
                           required
                           minLength={2}
                           maxLength={50}
@@ -464,14 +445,17 @@ export default function AuthPage() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="signup-username">{t("auth.username", "Username")} <span className="text-muted-foreground text-xs">({t("auth.optional", "optional")})</span></Label>
+                      <Label htmlFor="signup-username">
+                        {t("auth.username", "Username")}{" "}
+                        <span className="text-muted-foreground text-xs">({t("auth.optional", "optional")})</span>
+                      </Label>
                       <div className="relative">
                         <Input
                           id="signup-username"
                           type="text"
                           value={username}
                           onChange={(e) => {
-                            const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                            const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
                             setUsername(val);
                           }}
                           placeholder="your_username"
@@ -480,15 +464,23 @@ export default function AuthPage() {
                         />
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                           {checkingUsername && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                          {!checkingUsername && usernameAvailable === true && <CheckCircle className="h-4 w-4 text-green-500" />}
-                          {!checkingUsername && usernameAvailable === false && <XCircle className="h-4 w-4 text-destructive" />}
+                          {!checkingUsername && usernameAvailable === true && (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          )}
+                          {!checkingUsername && usernameAvailable === false && (
+                            <XCircle className="h-4 w-4 text-destructive" />
+                          )}
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {username ? `@${username}@nolto.social` : t("auth.usernameHint", "Your @username@nolto.social handle")}
+                        {username
+                          ? `@${username}@nolto.social`
+                          : t("auth.usernameHint", "Your @username@nolto.social handle")}
                       </p>
                       {usernameAvailable === false && (
-                        <p className="text-xs text-destructive mt-1">{t("auth.usernameTaken", "This username is taken")}</p>
+                        <p className="text-xs text-destructive mt-1">
+                          {t("auth.usernameTaken", "This username is taken")}
+                        </p>
                       )}
                     </div>
                     <div>
@@ -514,17 +506,10 @@ export default function AuthPage() {
                         minLength={6}
                       />
                     </div>
-                    <ConsentCheckbox 
-                      checked={consentAccepted} 
-                      onCheckedChange={setConsentAccepted} 
-                    />
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      className="w-full"
-                      disabled={isLoading || !consentAccepted}
-                    >
-                      {isLoading ? t("auth.creatingAccount", "Creating account...") : t("auth.createAccountWithEmail", "Create Account with Email")}
+                    <Button type="submit" variant="outline" className="w-full" disabled={isLoading}>
+                      {isLoading
+                        ? t("auth.creatingAccount", "Creating account...")
+                        : t("auth.createAccountWithEmail", "Create Account with Email")}
                     </Button>
                   </form>
                 </CardContent>
@@ -535,9 +520,13 @@ export default function AuthPage() {
           {/* Footer note */}
           <p className="text-center text-xs text-muted-foreground">
             {t("auth.termsAgreement", "By signing up, you agree to our")}{" "}
-            <Link to="/terms" className="underline hover:text-foreground">{t("auth.termsOfService", "Terms of Service")}</Link>
-            {" "}{t("auth.and", "and")}{" "}
-            <Link to="/privacy" className="underline hover:text-foreground">{t("auth.privacyPolicy", "Privacy Policy")}</Link>
+            <Link to="/terms" className="underline hover:text-foreground">
+              {t("auth.termsOfService", "Terms of Service")}
+            </Link>{" "}
+            {t("auth.and", "and")}{" "}
+            <Link to="/privacy" className="underline hover:text-foreground">
+              {t("auth.privacyPolicy", "Privacy Policy")}
+            </Link>
           </p>
         </div>
       </div>
