@@ -177,22 +177,14 @@ export default function PostView() {
     }
   };
 
-  // Build reply tree structure
-  const { topLevelReplies, getChildReplies } = useMemo(() => {
-    // Create a map for quick lookup
-    const replyMap = new Map(replies.map(r => [r.id, r]));
-    
+  // Build reply tree structure - pass allReplies to enable recursive child lookup
+  const { topLevelReplies, allReplies } = useMemo(() => {
     // Find top-level replies (direct replies to the main post)
     const topLevel = replies.filter(r => !r.parent_reply_id);
     
-    // Function to get child replies for a given parent
-    const getChildren = (parentId: string): PostReply[] => {
-      return replies.filter(r => r.parent_reply_id === parentId);
-    };
-    
     return {
       topLevelReplies: topLevel,
-      getChildReplies: getChildren
+      allReplies: replies
     };
   }, [replies]);
 
@@ -271,9 +263,9 @@ export default function PostView() {
                   key={reply.id} 
                   reply={reply} 
                   postId={post.id}
-                  childReplies={getChildReplies(reply.id)}
+                  allReplies={allReplies}
                   onReplyCreated={handleReplyToReply}
-                  isHighlighted={reply.id === highlightReplyId}
+                  highlightedReplyId={highlightReplyId}
                 />
               ))}
             </div>

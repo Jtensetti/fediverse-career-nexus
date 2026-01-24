@@ -24,21 +24,24 @@ interface PostReplyThreadProps {
   reply: PostReply;
   postId: string;
   depth?: number;
-  childReplies?: PostReply[];
+  allReplies: PostReply[];
   onReplyCreated: (replyId: string) => void;
-  isHighlighted?: boolean;
+  highlightedReplyId?: string | null;
 }
 
-const MAX_DEPTH = 3;
+const MAX_DEPTH = 5;
 
 export default function PostReplyThread({ 
   reply, 
   postId,
   depth = 0, 
-  childReplies = [],
+  allReplies,
   onReplyCreated,
-  isHighlighted = false
+  highlightedReplyId
 }: PostReplyThreadProps) {
+  // Compute child replies for this reply
+  const childReplies = allReplies.filter(r => r.parent_reply_id === reply.id);
+  const isHighlighted = reply.id === highlightedReplyId;
   const { t } = useTranslation();
   const [showReplyComposer, setShowReplyComposer] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -280,7 +283,7 @@ export default function PostReplyThread({
       </Card>
 
       {/* Render child replies recursively */}
-      {childReplies.length > 0 && (
+      {childReplies.length > 0 && depth < MAX_DEPTH && (
         <div className="mt-2 space-y-2">
           {childReplies.map(childReply => (
             <PostReplyThread
@@ -288,8 +291,9 @@ export default function PostReplyThread({
               reply={childReply}
               postId={postId}
               depth={depth + 1}
-              childReplies={[]}
+              allReplies={allReplies}
               onReplyCreated={onReplyCreated}
+              highlightedReplyId={highlightedReplyId}
             />
           ))}
         </div>
