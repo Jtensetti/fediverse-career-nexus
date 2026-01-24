@@ -115,22 +115,40 @@ async function fetchHomeTimeline(
   accessToken: string, 
   limit: number = 20,
   maxId?: string
-): Promise<MastodonStatus[]> {
+): Promise<{ statuses: MastodonStatus[]; error?: string; tokenExpired?: boolean }> {
   let url = `https://${instance}/api/v1/timelines/home?limit=${limit}`;
   if (maxId) {
     url += `&max_id=${maxId}`;
   }
+
+  console.log(`Fetching home timeline from ${instance}`);
 
   const response = await fetch(url, {
     headers: { 'Authorization': `Bearer ${accessToken}` },
   });
 
   if (!response.ok) {
-    console.error(`Failed to fetch home timeline: ${response.status} ${response.statusText}`);
-    throw new Error(`Failed to fetch home timeline: ${response.status}`);
+    const errorText = await response.text();
+    console.error(`Failed to fetch home timeline: ${response.status} ${response.statusText}`, errorText);
+    
+    // 401/403 typically means token expired or revoked
+    if (response.status === 401 || response.status === 403) {
+      return { 
+        statuses: [], 
+        error: `Token expired or revoked. Please re-authenticate with ${instance}.`,
+        tokenExpired: true 
+      };
+    }
+    
+    return { 
+      statuses: [], 
+      error: `Failed to fetch from ${instance}: ${response.status}` 
+    };
   }
 
-  return await response.json();
+  const statuses = await response.json();
+  console.log(`Fetched ${statuses.length} statuses from ${instance}`);
+  return { statuses };
 }
 
 Deno.serve(async (req) => {
@@ -194,21 +212,43 @@ Deno.serve(async (req) => {
     const accessToken = await decryptToken(session.access_token_encrypted);
 
     // Fetch the home timeline from the user's instance
-    const statuses = await fetchHomeTimeline(
+    const result = await fetchHomeTimeline(
       session.remote_instance, 
       accessToken, 
       limit,
       maxId
     );
 
+    // Handle token expiration gracefully
+    if (result.tokenExpired) {
+      return new Response(JSON.stringify({ 
+        posts: [],
+        error: result.error,
+        token_expired: true,
+        instance: session.remote_instance,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (result.error) {
+      return new Response(JSON.stringify({ 
+        posts: [],
+        error: result.error,
+        instance: session.remote_instance,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Filter out replies (we only want top-level posts)
-    const topLevelStatuses = statuses.filter(s => !s.in_reply_to_id);
+    const topLevelStatuses = result.statuses.filter(s => !s.in_reply_to_id);
 
     // Transform to our format
     const posts = topLevelStatuses.map(s => transformMastodonStatus(s, session.remote_instance));
 
     // Get the last ID for pagination
-    const lastId = statuses.length > 0 ? statuses[statuses.length - 1].id : null;
+    const lastId = result.statuses.length > 0 ? result.statuses[result.statuses.length - 1].id : null;
 
     return new Response(JSON.stringify({ 
       posts,
@@ -222,7 +262,8 @@ Deno.serve(async (req) => {
     console.error('Error fetching home timeline:', error);
     return new Response(JSON.stringify({ 
       error: error.message || 'Failed to fetch home timeline',
-      posts: [] 
+      posts: [],
+      instance: null,
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

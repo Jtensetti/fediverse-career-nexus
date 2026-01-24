@@ -38,7 +38,7 @@ export type FeedType = 'following' | 'local' | 'federated';
 export const fetchRemoteHomeTimeline = async (
   limit: number = 20,
   maxId?: string
-): Promise<{ posts: FederatedPost[]; nextMaxId: string | null; instance: string | null }> => {
+): Promise<{ posts: FederatedPost[]; nextMaxId: string | null; instance: string | null; error?: string; tokenExpired?: boolean }> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -60,7 +60,7 @@ export const fetchRemoteHomeTimeline = async (
 
     if (!response.ok) {
       console.error('Failed to fetch remote timeline:', response.status);
-      return { posts: [], nextMaxId: null, instance: null };
+      return { posts: [], nextMaxId: null, instance: null, error: `HTTP ${response.status}` };
     }
 
     const data = await response.json();
@@ -68,10 +68,12 @@ export const fetchRemoteHomeTimeline = async (
       posts: data.posts || [],
       nextMaxId: data.next_max_id || null,
       instance: data.instance || null,
+      error: data.error,
+      tokenExpired: data.token_expired,
     };
   } catch (error) {
     console.error('Error fetching remote home timeline:', error);
-    return { posts: [], nextMaxId: null, instance: null };
+    return { posts: [], nextMaxId: null, instance: null, error: String(error) };
   }
 };
 
@@ -144,8 +146,8 @@ export const getFederatedFeed = async (
       }
     }
 
-    // Fetch posts from the federated_feed view and join actor information
-    const { data: apObjects, error: apError } = await supabase
+    // Build the query based on feed type - we need to filter at the database level!
+    let query = supabase
       .from('federated_feed')
       .select(
         `
@@ -160,12 +162,34 @@ export const getFederatedFeed = async (
           preferred_username
         )
       `
-      )
+      );
+
+    // Apply feed-specific filters at the database level
+    if (feedType === 'local') {
+      // Local feed: all local posts, exclude Announce to avoid duplication
+      query = query
+        .eq('source', 'local')
+        .neq('type', 'Announce');
+      console.log('📊 Local feed - filtering at DB level');
+    } else if (feedType === 'federated') {
+      // Federated feed: all local posts (remote posts merged separately)
+      query = query.eq('source', 'local');
+      console.log('📊 Federated feed - filtering at DB level');
+    }
+    // Note: 'following' feed can't easily filter at DB level without RPC, 
+    // so we need to fetch more and filter client-side
+
+    // For 'following' feed, fetch more to have enough after filtering
+    const fetchLimit = feedType === 'following' ? limit * 3 : limit;
+
+    query = query
       .order('published_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + fetchLimit - 1);
+
+    const { data: apObjects, error: apError } = await query;
 
     if (apError) {
-      console.error('Error fetching from ap_objects:', apError);
+      console.error('Error fetching from federated_feed:', apError);
       return [];
     }
 
@@ -174,35 +198,24 @@ export const getFederatedFeed = async (
       return [];
     }
 
-    console.log('📊 Raw federated objects:', apObjects.length);
-    console.log('📊 Feed type:', feedType, 'User ID:', userId);
-    console.log('📊 Sample raw object sources:', apObjects.slice(0, 3).map((o: any) => ({ id: o.id?.slice(0, 8), source: o.source, type: o.type })));
+    console.log('📊 Raw federated objects:', apObjects.length, 'feedType:', feedType);
 
-    // Filter posts based on feed type
+    // For 'following' feed, filter client-side (need to do this after fetch)
     let filteredObjects = apObjects;
     
     if (feedType === 'following' && userId) {
-      // Following feed: posts AND boosts from followed users
-      console.log('👥 Following feed - checking against', followedUserIds.length, 'followed user IDs');
+      console.log('👥 Following feed - filtering against', followedUserIds.length, 'user IDs');
       filteredObjects = apObjects.filter((obj: any) => {
         const actorUserId = obj.actors?.user_id;
         const isIncluded = actorUserId && followedUserIds.includes(actorUserId);
         return isIncluded;
       });
-      console.log('📊 Filtered to following:', filteredObjects.length, 'from', apObjects.length);
-    } else if (feedType === 'local') {
-      // Local feed: all local posts, exclude Announce to avoid duplication
-      filteredObjects = apObjects.filter((obj: any) => 
-        obj.source === 'local' && obj.type !== 'Announce'
-      );
-      console.log('📊 Filtered to local:', filteredObjects.length, 'from', apObjects.length);
-    } else if (feedType === 'federated') {
-      // Federated feed: all local posts + live remote posts from user's instance
-      // Local posts are already in filteredObjects, remote posts will be fetched separately
-      // For now, just include all local posts - remote posts are merged at the component level
-      filteredObjects = apObjects.filter((obj: any) => obj.source === 'local');
-      console.log('📊 Filtered to federated (local only, remote fetched separately):', filteredObjects.length, 'from', apObjects.length);
+      // Limit to requested amount after filtering
+      filteredObjects = filteredObjects.slice(0, limit);
+      console.log('📊 After following filter:', filteredObjects.length, 'posts');
     }
+    
+    console.log('📊 Final filtered objects:', filteredObjects.length);
 
     const userIds = filteredObjects
       .map((obj: any) => obj.actors?.user_id)
