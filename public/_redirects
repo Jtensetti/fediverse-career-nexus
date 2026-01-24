@@ -1,0 +1,8 @@
+# Federation discovery rewrites - proxy .well-known paths to backend functions
+/.well-known/webfinger  https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger  200
+/.well-known/nodeinfo   https://anknmcmqljejabxbeohv.supabase.co/functions/v1/nodeinfo   200
+/.well-known/host-meta  https://anknmcmqljejabxbeohv.supabase.co/functions/v1/host-meta  200
+/nodeinfo/*             https://anknmcmqljejabxbeohv.supabase.co/functions/v1/nodeinfo/:splat  200
+
+# Proxy all edge function calls
+/functions/v1/*         https://anknmcmqljejabxbeohv.supabase.co/functions/v1/:splat  200
