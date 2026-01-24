@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { ExternalLink, Key, Globe2, UserPlus, Copy, Check } from "lucide-react";
+import { ExternalLink, Key, Globe2, Copy, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import FederationFollowButton from "./FederationFollowButton";
@@ -22,6 +23,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   const [currentUserActor, setCurrentUserActor] = useState<any>(null);
   const [federationEnabled, setFederationEnabled] = useState<boolean>(true);
   const [copied, setCopied] = useState(false);
+  const [lookupInstance, setLookupInstance] = useState("mastodon.social");
   const { toast } = useToast();
   
   useEffect(() => {
@@ -127,6 +129,14 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   const domain = isLocalUser ? getNoltoInstanceDomain() : actor.home_instance;
   const federatedHandle = `@${username}@${domain}`;
   const remoteActorUri = `${window.location.origin}/actor/${username}`;
+  const normalizedLookupInstance = lookupInstance
+    .trim()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "")
+    .toLowerCase();
+  const remoteProfileUrl = normalizedLookupInstance
+    ? `https://${normalizedLookupInstance}/@${username}@${domain}`
+    : "";
   
   const copyHandle = async () => {
     try {
@@ -137,6 +147,19 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
     } catch {
       toast({ title: "Failed to copy", variant: "destructive" });
     }
+  };
+
+  const openRemoteProfile = () => {
+    if (!normalizedLookupInstance) {
+      toast({
+        title: "Enter an instance domain",
+        description: "Add a domain like mastodon.social to open your profile.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    window.open(remoteProfileUrl, "_blank", "noopener,noreferrer");
   };
   
   return (
@@ -173,6 +196,28 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
                 {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
               </Button>
             </div>
+          </div>
+
+          <div className="flex flex-col space-y-2">
+            <Label className="text-sm text-muted-foreground">Find your profile on another instance</Label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Input
+                value={lookupInstance}
+                onChange={(event) => setLookupInstance(event.target.value)}
+                placeholder="mastodon.social"
+                className="sm:max-w-xs"
+              />
+              <Button type="button" onClick={openRemoteProfile} className="sm:w-auto">
+                <ExternalLink size={16} />
+                <span className="ml-2">Open on instance</span>
+              </Button>
+            </div>
+            {remoteProfileUrl && (
+              <p className="text-xs text-muted-foreground">
+                This opens{" "}
+                <span className="font-mono text-foreground">{remoteProfileUrl}</span>
+              </p>
+            )}
           </div>
           
           {actor.key_fingerprint && (
