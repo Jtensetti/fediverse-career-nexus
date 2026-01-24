@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getFederatedFeed, type FederatedPost, type FeedType } from "@/services/federationService";
+import { getFederatedFeed, fetchRemoteHomeTimeline, type FederatedPost, type FeedType } from "@/services/federationService";
 import { getBatchPostData, BatchPostData } from "@/services/batchDataService";
 import FederatedPostCard from "./FederatedPostCard";
 import PostEditDialog from "./PostEditDialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, MessageSquare } from "lucide-react";
+import { Loader2, MessageSquare, Globe } from "lucide-react";
 import { PostSkeleton } from "./common/skeletons";
 import EmptyState from "./common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +26,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const [editOpen, setEditOpen] = useState(false);
   const [batchData, setBatchData] = useState<Map<string, BatchPostData>>(new Map());
   const [batchDataLoading, setBatchDataLoading] = useState(false);
+  const [remoteInstance, setRemoteInstance] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   
@@ -41,11 +42,26 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const isFetchingRef = useRef(false);
   const loadMoreLockRef = useRef(false);
   
+  // Fetch local posts
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['federatedFeed', limit, offset, effectiveFeedType, user?.id],
     queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType, user?.id),
     staleTime: 30000,
     enabled: true,
+  });
+
+  // Fetch remote posts for federated feed
+  const { data: remotePosts, isLoading: remoteLoading } = useQuery({
+    queryKey: ['remoteHomeTimeline', limit],
+    queryFn: async () => {
+      const result = await fetchRemoteHomeTimeline(limit);
+      if (result.instance) {
+        setRemoteInstance(result.instance);
+      }
+      return result.posts;
+    },
+    staleTime: 60000, // Cache for 1 minute
+    enabled: effectiveFeedType === 'federated' && !!user,
   });
   
   // Keep refs in sync with state
@@ -88,14 +104,29 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     }
   }, [user?.id]);
 
-  // Process new posts when they arrive
+  // Process new posts when they arrive (merge local and remote for federated feed)
   useEffect(() => {
-    if (!posts) return;
+    // Combine local posts with remote posts for federated feed
+    let combinedPosts: FederatedPost[] = [];
     
-    if (posts.length === 0) {
+    if (effectiveFeedType === 'federated') {
+      // Merge local and remote posts, sort by date
+      const localPosts = posts || [];
+      const remotePostsList = remotePosts || [];
+      
+      combinedPosts = [...localPosts, ...remotePostsList].sort((a, b) => {
+        const dateA = new Date(a.published_at || a.created_at).getTime();
+        const dateB = new Date(b.published_at || b.created_at).getTime();
+        return dateB - dateA;
+      });
+    } else {
+      combinedPosts = posts || [];
+    }
+    
+    if (combinedPosts.length === 0) {
       if (offset === 0) {
         setAllPosts([]);
-        setHasMore(false);
+        setHasMore(effectiveFeedType !== 'federated'); // Don't show "load more" for federated if empty
         setBatchDataLoading(false);
       } else {
         setHasMore(false);
@@ -105,23 +136,26 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     
     setAllPosts(currentPosts => {
       if (offset === 0) {
-        return posts;
+        return combinedPosts;
       }
       
       const existingIds = new Set(currentPosts.map(p => p.id));
-      const newPosts = posts.filter(p => !existingIds.has(p.id));
+      const newPosts = combinedPosts.filter(p => !existingIds.has(p.id));
       
       if (newPosts.length === 0) return currentPosts;
       return [...currentPosts, ...newPosts];
     });
     
-    if (posts.length < limit) {
+    if ((posts?.length || 0) < limit) {
       setHasMore(false);
     }
     
-    const postIds = posts.map(p => p.id);
-    fetchBatchData(postIds);
-  }, [posts, offset, limit, fetchBatchData]);
+    // Only fetch batch data for local posts (remote posts don't have local IDs)
+    const localPostIds = (posts || []).map(p => p.id);
+    if (localPostIds.length > 0) {
+      fetchBatchData(localPostIds);
+    }
+  }, [posts, remotePosts, offset, limit, fetchBatchData, effectiveFeedType]);
   
   // Load more function - guarded against double calls
   const loadMore = useCallback(() => {
@@ -179,6 +213,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     fetchedPostIds.current.clear();
     loadMoreLockRef.current = false;
     await queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
+    await queryClient.invalidateQueries({ queryKey: ['remoteHomeTimeline'] });
     await refetch();
   }, [queryClient, refetch]);
   
@@ -193,13 +228,27 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     );
   }
   
-  const showInitialLoading = (isLoading && offset === 0) || (offset === 0 && batchDataLoading && allPosts.length > 0 && batchData.size === 0);
+  const showInitialLoading = ((isLoading || (effectiveFeedType === 'federated' && remoteLoading)) && offset === 0) || (offset === 0 && batchDataLoading && allPosts.length > 0 && batchData.size === 0);
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh}>
       <div className={className}>
+        {/* Show remote instance indicator for federated feed */}
+        {effectiveFeedType === 'federated' && remoteInstance && (
+          <div className="mb-4 p-3 bg-muted/50 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
+            <Globe className="h-4 w-4" />
+            <span>Including posts from your {remoteInstance} timeline</span>
+          </div>
+        )}
+        
         {showInitialLoading && allPosts.length === 0 ? (
           <div className="space-y-4">
+            {effectiveFeedType === 'federated' && remoteLoading && (
+              <div className="p-3 bg-muted/30 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Fetching posts from your Fediverse instance...</span>
+              </div>
+            )}
             {[...Array(3)].map((_, i) => (
               <PostSkeleton key={i} />
             ))}

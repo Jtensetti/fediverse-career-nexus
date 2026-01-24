@@ -28,9 +28,52 @@ export interface FederatedPost {
   instance?: string;
   moderation_status?: 'normal' | 'probation' | 'blocked';
   content_warning?: string;
+  remote_url?: string;
+  is_boost?: boolean;
 }
 
 export type FeedType = 'following' | 'local' | 'federated';
+
+// Fetch remote home timeline from user's federated instance (not stored in DB)
+export const fetchRemoteHomeTimeline = async (
+  limit: number = 20,
+  maxId?: string
+): Promise<{ posts: FederatedPost[]; nextMaxId: string | null; instance: string | null }> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return { posts: [], nextMaxId: null, instance: null };
+    }
+
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    let url = `${supabaseUrl}/functions/v1/fetch-home-timeline?limit=${limit}`;
+    if (maxId) {
+      url += `&max_id=${maxId}`;
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch remote timeline:', response.status);
+      return { posts: [], nextMaxId: null, instance: null };
+    }
+
+    const data = await response.json();
+    return {
+      posts: data.posts || [],
+      nextMaxId: data.next_max_id || null,
+      instance: data.instance || null,
+    };
+  } catch (error) {
+    console.error('Error fetching remote home timeline:', error);
+    return { posts: [], nextMaxId: null, instance: null };
+  }
+};
 
 // Get IDs of users the current user follows (connections + author follows)
 const getFollowedUserIds = async (userId: string): Promise<string[]> => {
@@ -154,20 +197,11 @@ export const getFederatedFeed = async (
       );
       console.log('📊 Filtered to local:', filteredObjects.length, 'from', apObjects.length);
     } else if (feedType === 'federated') {
-      // Federated feed: local posts + remote posts from followed users
-      if (userId) {
-        const remoteFollowedIds = await getRemoteFollowedUserIds(userId);
-        console.log('🌐 Remote followed IDs:', remoteFollowedIds.length);
-        filteredObjects = apObjects.filter((obj: any) => {
-          // Include all local posts
-          if (obj.source === 'local') return true;
-          // Include remote posts from users we follow
-          const actorUserId = obj.actors?.user_id;
-          return actorUserId && remoteFollowedIds.includes(actorUserId);
-        });
-      }
-      // If no user logged in, show all posts
-      console.log('📊 Filtered to federated:', filteredObjects.length, 'from', apObjects.length);
+      // Federated feed: all local posts + live remote posts from user's instance
+      // Local posts are already in filteredObjects, remote posts will be fetched separately
+      // For now, just include all local posts - remote posts are merged at the component level
+      filteredObjects = apObjects.filter((obj: any) => obj.source === 'local');
+      console.log('📊 Filtered to federated (local only, remote fetched separately):', filteredObjects.length, 'from', apObjects.length);
     }
 
     const userIds = filteredObjects
