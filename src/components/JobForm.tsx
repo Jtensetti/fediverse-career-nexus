@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { FormErrorSummary } from "./FormErrorSummary";
 import {
   Form,
   FormControl,
@@ -69,6 +72,10 @@ const JobForm = ({
   isSubmitting,
   submitButtonText = "Create Job Post"
 }: JobFormProps) => {
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [submitPhase, setSubmitPhase] = useState<"idle" | "validating" | "submitting">("idle");
+  const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Map database fields to form fields
   const formattedDefaultValues = {
     title: defaultValues.title || "",
@@ -94,35 +101,104 @@ const JobForm = ({
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: formattedDefaultValues as any,
+    mode: "onBlur", // Validate on blur for better UX
   });
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+      }
+    };
+  }, []);
   
-  const handleSubmit = (values: JobFormValues) => {
-    console.log('JobForm submitting values:', values);
-    onSubmit(values);
+  const handleSubmit = async (values: JobFormValues) => {
+    console.log('[JobForm] handleSubmit called with validated values:', values);
+    setSubmitPhase("submitting");
+    
+    // Set a timeout watchdog
+    submitTimeoutRef.current = setTimeout(() => {
+      console.error('[JobForm] Submit timeout - operation took too long');
+      toast.error("Submission is taking too long. Please try again.");
+      setSubmitPhase("idle");
+    }, 15000);
+    
+    try {
+      await onSubmit(values);
+      console.log('[JobForm] onSubmit completed');
+    } catch (error) {
+      console.error('[JobForm] onSubmit threw error:', error);
+    } finally {
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+        submitTimeoutRef.current = null;
+      }
+      setSubmitPhase("idle");
+    }
   };
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submit triggered');
+    console.log('[JobForm] Form submit triggered');
+    setSubmitAttempted(true);
+    setSubmitPhase("validating");
     
     form.handleSubmit(
       (values) => {
-        console.log('Validation passed, submitting:', values);
+        console.log('[JobForm] Validation passed, submitting:', values);
         handleSubmit(values);
       },
       (errors) => {
-        console.log('Form validation errors:', errors);
+        console.error('[JobForm] Form validation errors:', errors);
+        setSubmitPhase("idle");
+        
         const errorMessages = Object.entries(errors)
           .map(([field, error]) => `${field}: ${error?.message}`)
           .join(', ');
-        toast.error(`Please fix validation errors: ${errorMessages}`);
+        
+        toast.error('Please fix the validation errors', {
+          description: errorMessages.substring(0, 200),
+          duration: 5000,
+        });
       }
     )();
   };
 
+  // Get current validation errors
+  const formErrors = form.formState.errors;
+  const hasErrors = Object.keys(formErrors).length > 0;
+
+  // Determine button state
+  const isButtonDisabled = isSubmitting || submitPhase !== "idle";
+  const buttonText = submitPhase === "validating" 
+    ? "Validating..." 
+    : submitPhase === "submitting" || isSubmitting 
+      ? "Submitting..." 
+      : submitButtonText;
+
   return (
     <Form {...form}>
-      <form onSubmit={onFormSubmit} className="space-y-6">
+      <form 
+        onSubmit={onFormSubmit} 
+        className="space-y-6"
+        onClickCapture={() => console.log('[JobForm] Click captured on form')}
+      >
+        {/* Error Summary Banner - Always visible when there are errors */}
+        {submitAttempted && hasErrors && (
+          <FormErrorSummary errors={formErrors as Record<string, { message?: string }>} />
+        )}
+        
+        {/* Submit Phase Indicator */}
+        {submitPhase !== "idle" && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 flex items-center gap-3">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            <span className="text-sm text-primary">
+              {submitPhase === "validating" ? "Checking form data..." : "Creating your job post..."}
+            </span>
+          </div>
+        )}
+
         <div className="grid gap-6 md:grid-cols-2">
           {/* Job title */}
           <FormField
@@ -130,7 +206,7 @@ const JobForm = ({
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Job Title</FormLabel>
+                <FormLabel>Job Title *</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g. Senior Frontend Developer" {...field} />
                 </FormControl>
@@ -145,7 +221,7 @@ const JobForm = ({
             name="company"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Name</FormLabel>
+                <FormLabel>Company Name *</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g. Acme Inc." {...field} />
                 </FormControl>
@@ -162,7 +238,7 @@ const JobForm = ({
             name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Location</FormLabel>
+                <FormLabel>Location *</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g. New York, NY" {...field} />
                 </FormControl>
@@ -329,7 +405,7 @@ const JobForm = ({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Job Description</FormLabel>
+              <FormLabel>Job Description *</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Describe the responsibilities, requirements, and benefits of the position..." 
@@ -490,8 +566,16 @@ const JobForm = ({
           <Button type="button" variant="outline" onClick={() => window.history.back()}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : submitButtonText}
+          <Button 
+            type="submit" 
+            disabled={isButtonDisabled}
+            className="min-w-[140px]"
+            onClick={() => console.log('[JobForm] Submit button clicked, disabled:', isButtonDisabled)}
+          >
+            {(submitPhase !== "idle" || isSubmitting) && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {buttonText}
           </Button>
         </div>
       </form>

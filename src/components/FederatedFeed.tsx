@@ -109,7 +109,23 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   }, [user?.id]);
 
   // Process new posts when they arrive (merge local and remote for federated feed)
+  // Use a ref to track previous posts to prevent unnecessary re-renders
+  const prevPostsRef = useRef<string>("");
+  const prevRemotePostsRef = useRef<string>("");
+  
   useEffect(() => {
+    // Create a stable key to compare posts
+    const postsKey = posts ? posts.map(p => p.id).join(',') : '';
+    const remotePostsKey = remotePosts ? remotePosts.map(p => p.id).join(',') : '';
+    
+    // Skip if nothing changed
+    if (postsKey === prevPostsRef.current && remotePostsKey === prevRemotePostsRef.current) {
+      return;
+    }
+    
+    prevPostsRef.current = postsKey;
+    prevRemotePostsRef.current = remotePostsKey;
+    
     // Combine local posts with remote posts for federated feed
     let combinedPosts: FederatedPost[] = [];
     
