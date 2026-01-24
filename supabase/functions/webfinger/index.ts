@@ -10,9 +10,8 @@ const cacheHeaders = {
   "Cache-Control": "public, max-age=300",
 };
 
-// Initialize the Deno KV store for caching
-const kv = await Deno.openKv();
-const CACHE_NAMESPACE = "webfinger";
+// Simple in-memory cache (resets on cold starts but that's fine for short-term caching)
+const memoryCache = new Map<string, { data: any; expiresAt: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
 // Initialize the Supabase client
@@ -21,15 +20,16 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
+// Use nolto.social domain for federation discoverability
+const NOLTO_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "nolto.social";
+
 function getRequestHost(req: Request, url: URL) {
-  const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0].trim();
-  const hostHeader = req.headers.get("host")?.split(",")[0].trim();
-  return forwardedHost || hostHeader || url.hostname;
+  // Always return nolto.social for federation to work correctly
+  return NOLTO_DOMAIN;
 }
 
 function getRequestProtocol(req: Request, url: URL) {
-  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0].trim();
-  return forwardedProto || url.protocol.replace(":", "");
+  return "https";
 }
 
 // Log federation request metrics
@@ -61,9 +61,11 @@ async function logRequestMetrics(
   }
 }
 
-// Create local actor object on-demand
+// Create local actor object on-demand - always use nolto.social domain
 async function createLocalActorObject(profile: any, baseUrl: string) {
-  const actorUrl = `${baseUrl}/functions/v1/actor/${profile.username}`;
+  // Ensure we always use the production domain for actor URLs
+  const productionBaseUrl = `https://${NOLTO_DOMAIN}`;
+  const actorUrl = `${productionBaseUrl}/functions/v1/actor/${profile.username}`;
   
   // Try to get the actual public key from the actors table
   let publicKeyPem = "";
@@ -87,10 +89,10 @@ async function createLocalActorObject(profile: any, baseUrl: string) {
     preferredUsername: profile.username,
     name: profile.fullname || profile.username,
     summary: profile.bio || "",
-    inbox: `${baseUrl}/functions/v1/inbox/${profile.username}`,
-    outbox: `${baseUrl}/functions/v1/outbox/${profile.username}`,
-    followers: `${baseUrl}/functions/v1/followers/${profile.username}`,
-    following: `${baseUrl}/functions/v1/following/${profile.username}`,
+    inbox: `${productionBaseUrl}/functions/v1/inbox/${profile.username}`,
+    outbox: `${productionBaseUrl}/functions/v1/outbox/${profile.username}`,
+    followers: `${productionBaseUrl}/functions/v1/followers/${profile.username}`,
+    following: `${productionBaseUrl}/functions/v1/following/${profile.username}`,
     publicKey: {
       id: `${actorUrl}#main-key`,
       owner: actorUrl,
@@ -156,15 +158,15 @@ serve(async (req) => {
       );
     }
 
-    // Try to get from cache first
-    const cacheKey = [CACHE_NAMESPACE, resource];
-    const cachedResponse = await kv.get(cacheKey);
+    // Try to get from memory cache first
+    const cacheKey = `webfinger:${resource}`;
+    const cached = memoryCache.get(cacheKey);
     
-    if (cachedResponse.value) {
+    if (cached && cached.expiresAt > Date.now()) {
       console.log(`Cache hit for ${resource}`);
       await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
       return new Response(
-        JSON.stringify(cachedResponse.value),
+        JSON.stringify(cached.data),
         {
           headers: { ...corsHeaders, ...cacheHeaders, "Content-Type": "application/jrd+json" }
         }
@@ -310,8 +312,8 @@ serve(async (req) => {
       ]
     };
 
-    // Store in KV cache
-    await kv.set(cacheKey, webfingerResponse, { expireIn: CACHE_TTL });
+    // Store in memory cache
+    memoryCache.set(cacheKey, { data: webfingerResponse, expiresAt: Date.now() + CACHE_TTL });
 
     await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
     return new Response(

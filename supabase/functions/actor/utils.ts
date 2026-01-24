@@ -2,8 +2,8 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-// Initialize the Deno KV store for caching
-export const kv = await Deno.openKv();
+// Simple in-memory cache (resets on cold starts but that's fine for short-term caching)
+const memoryCache = new Map<string, { data: any; expiresAt: number }>();
 export const CACHE_NAMESPACE = "actor";
 export const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
@@ -49,12 +49,12 @@ export async function logRequestMetrics(
 
 // Get actor from cache
 export async function getActorFromCache(username: string) {
-  const cacheKey = [CACHE_NAMESPACE, username];
-  const cachedResponse = await kv.get(cacheKey);
+  const cacheKey = `${CACHE_NAMESPACE}:${username}`;
+  const cached = memoryCache.get(cacheKey);
   
-  if (cachedResponse.value) {
+  if (cached && cached.expiresAt > Date.now()) {
     console.log(`Cache hit for actor ${username}`);
-    return cachedResponse.value;
+    return cached.data;
   }
   
   return null;
@@ -278,11 +278,13 @@ export async function storeRemoteActorData(actorUri: string, actorData: any) {
   }
 }
 
-// Create actor object
+// Create actor object - use nolto.social domain for federation discoverability
 export function createActorObject(profile: any, actor: any, domain: string, protocol: string) {
-  const baseUrl = `${protocol}//${domain}`;
+  // Use the production domain for actor URLs to ensure proper federation
+  const NOLTO_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "nolto.social";
+  const baseUrl = `https://${NOLTO_DOMAIN}`;
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? baseUrl;
-  const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
+  const actorUrl = `${baseUrl}/functions/v1/actor/${profile.username}`;
 
   // Create a ActivityPub actor object following the Mastodon schema
   const actorObject = {
@@ -343,10 +345,10 @@ export function createActorObject(profile: any, actor: any, domain: string, prot
     ],
     "id": actorUrl,
     "type": "Person",
-    "following": `${supabaseUrl}/functions/v1/following/${profile.username}`,
-    "followers": `${supabaseUrl}/functions/v1/followers/${profile.username}`,
-    "inbox": actor.inbox_url || `${supabaseUrl}/functions/v1/inbox/${profile.username}`,
-    "outbox": actor.outbox_url || `${supabaseUrl}/functions/v1/outbox/${profile.username}`,
+    "following": `${baseUrl}/functions/v1/following/${profile.username}`,
+    "followers": `${baseUrl}/functions/v1/followers/${profile.username}`,
+    "inbox": actor.inbox_url || `${baseUrl}/functions/v1/inbox/${profile.username}`,
+    "outbox": actor.outbox_url || `${baseUrl}/functions/v1/outbox/${profile.username}`,
     "featured": `${actorUrl}/collections/featured`,
     "featuredTags": `${actorUrl}/collections/tags`,
     "preferredUsername": actor.preferred_username || profile.username,
@@ -365,7 +367,7 @@ export function createActorObject(profile: any, actor: any, domain: string, prot
     "tag": [],
     "attachment": [],
     "endpoints": {
-      "sharedInbox": `${supabaseUrl}/functions/v1/inbox`
+      "sharedInbox": `${baseUrl}/functions/v1/inbox`
     },
     "icon": profile.avatar_url ? {
       "type": "Image",
@@ -387,8 +389,8 @@ export function createActorObject(profile: any, actor: any, domain: string, prot
 
 // Cache actor
 export async function cacheActor(username: string, actorObject: any) {
-  const cacheKey = [CACHE_NAMESPACE, username];
-  await kv.set(cacheKey, actorObject, { expireIn: CACHE_TTL });
+  const cacheKey = `${CACHE_NAMESPACE}:${username}`;
+  memoryCache.set(cacheKey, { data: actorObject, expiresAt: Date.now() + CACHE_TTL });
   
   // Store in the database cache too for cross-function availability
   try {

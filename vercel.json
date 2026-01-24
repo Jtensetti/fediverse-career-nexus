@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/.well-known/webfinger",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger"
+    },
+    {
+      "source": "/.well-known/nodeinfo",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/nodeinfo"
+    },
+    {
+      "source": "/.well-known/host-meta",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/host-meta"
+    },
+    {
+      "source": "/nodeinfo/:path*",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/nodeinfo/:path*"
+    },
+    {
+      "source": "/functions/v1/:path*",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/:path*"
+    }
+  ]
+}
