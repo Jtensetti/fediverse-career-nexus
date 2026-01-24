@@ -15,7 +15,8 @@ const supabaseClient = createClient(
 
 // Create local actor object
 function createLocalActorObject(profile: any, domain: string) {
-  const actorUrl = `https://${domain}/actor/${profile.username}`;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? `https://${domain}`;
+  const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
   
   return {
     "@context": [
@@ -27,10 +28,10 @@ function createLocalActorObject(profile: any, domain: string) {
     preferredUsername: profile.username,
     name: profile.fullname || profile.username,
     summary: profile.bio || "",
-    inbox: `${actorUrl}/inbox`,
-    outbox: `${actorUrl}/outbox`,
-    followers: `${actorUrl}/followers`,
-    following: `${actorUrl}/following`,
+    inbox: `${supabaseUrl}/functions/v1/inbox/${profile.username}`,
+    outbox: `${supabaseUrl}/functions/v1/outbox/${profile.username}`,
+    followers: `${supabaseUrl}/functions/v1/followers/${profile.username}`,
+    following: `${supabaseUrl}/functions/v1/following/${profile.username}`,
     publicKey: {
       id: `${actorUrl}#main-key`,
       owner: actorUrl,

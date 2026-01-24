@@ -49,7 +49,8 @@ async function logRequestMetrics(
 
 // Create local actor object on-demand
 async function createLocalActorObject(profile: any, domain: string) {
-  const actorUrl = `https://${domain}/actor/${profile.username}`;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? `https://${domain}`;
+  const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
   
   // Try to get the actual public key from the actors table
   let publicKeyPem = "";
@@ -73,10 +74,10 @@ async function createLocalActorObject(profile: any, domain: string) {
     preferredUsername: profile.username,
     name: profile.fullname || profile.username,
     summary: profile.bio || "",
-    inbox: `${actorUrl}/inbox`,
-    outbox: `${actorUrl}/outbox`,
-    followers: `${actorUrl}/followers`,
-    following: `${actorUrl}/following`,
+    inbox: `${supabaseUrl}/functions/v1/inbox/${profile.username}`,
+    outbox: `${supabaseUrl}/functions/v1/outbox/${profile.username}`,
+    followers: `${supabaseUrl}/functions/v1/followers/${profile.username}`,
+    following: `${supabaseUrl}/functions/v1/following/${profile.username}`,
     publicKey: {
       id: `${actorUrl}#main-key`,
       owner: actorUrl,
@@ -305,7 +306,8 @@ serve(async (req) => {
       );
     }
 
-    const actorId = `https://${currentDomain}/actor/${profile.username}`;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? `https://${currentDomain}`;
+    const actorId = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
     
     // Try to get actor from cache first
     let { data: cachedActor, error: cacheError } = await supabaseClient

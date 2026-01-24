@@ -281,6 +281,8 @@ export async function storeRemoteActorData(actorUri: string, actorData: any) {
 // Create actor object
 export function createActorObject(profile: any, actor: any, domain: string, protocol: string) {
   const baseUrl = `${protocol}//${domain}`;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? baseUrl;
+  const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
 
   // Create a ActivityPub actor object following the Mastodon schema
   const actorObject = {
@@ -339,14 +341,14 @@ export function createActorObject(profile: any, actor: any, domain: string, prot
         "suspended": "toot:suspended"
       }
     ],
-    "id": `${baseUrl}/${profile.username}`,
+    "id": actorUrl,
     "type": "Person",
-    "following": `${baseUrl}/functions/v1/following/${profile.username}`,
-    "followers": `${baseUrl}/functions/v1/followers/${profile.username}`,
-    "inbox": actor.inbox_url || `${baseUrl}/${profile.username}/inbox`,
-    "outbox": actor.outbox_url || `${baseUrl}/${profile.username}/outbox`,
-    "featured": `${baseUrl}/${profile.username}/collections/featured`,
-    "featuredTags": `${baseUrl}/${profile.username}/collections/tags`,
+    "following": `${supabaseUrl}/functions/v1/following/${profile.username}`,
+    "followers": `${supabaseUrl}/functions/v1/followers/${profile.username}`,
+    "inbox": actor.inbox_url || `${supabaseUrl}/functions/v1/inbox/${profile.username}`,
+    "outbox": actor.outbox_url || `${supabaseUrl}/functions/v1/outbox/${profile.username}`,
+    "featured": `${actorUrl}/collections/featured`,
+    "featuredTags": `${actorUrl}/collections/tags`,
     "preferredUsername": actor.preferred_username || profile.username,
     "name": profile.fullname || profile.username,
     "summary": "",
@@ -354,16 +356,16 @@ export function createActorObject(profile: any, actor: any, domain: string, prot
     "manuallyApprovesFollowers": false,
     "discoverable": true,
     "published": new Date(actor.created_at).toISOString(),
-    "devices": `${baseUrl}/users/${profile.username}/collections/devices`,
+    "devices": `${actorUrl}/collections/devices`,
     "publicKey": {
-      "id": `${baseUrl}/${profile.username}#main-key`,
-      "owner": `${baseUrl}/${profile.username}`,
+      "id": `${actorUrl}#main-key`,
+      "owner": actorUrl,
       "publicKeyPem": actor.public_key || ""
     },
     "tag": [],
     "attachment": [],
     "endpoints": {
-      "sharedInbox": `${baseUrl}/inbox`
+      "sharedInbox": `${supabaseUrl}/functions/v1/inbox`
     },
     "icon": profile.avatar_url ? {
       "type": "Image",
@@ -384,17 +386,16 @@ export function createActorObject(profile: any, actor: any, domain: string, prot
 }
 
 // Cache actor
-export async function cacheActor(username: string, actorObject: any, baseUrl: string) {
+export async function cacheActor(username: string, actorObject: any) {
   const cacheKey = [CACHE_NAMESPACE, username];
   await kv.set(cacheKey, actorObject, { expireIn: CACHE_TTL });
   
   // Store in the database cache too for cross-function availability
   try {
-    const cacheUrl = `${baseUrl}/${username}`;
     await supabaseClient
       .from("remote_actors_cache")
       .upsert({
-        actor_url: cacheUrl,
+        actor_url: actorObject.id,
         actor_data: actorObject,
         fetched_at: new Date().toISOString()
       });

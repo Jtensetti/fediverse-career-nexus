@@ -62,7 +62,8 @@ export const generateRsaKeyPair = async (): Promise<{
 
 // Create a local actor object for ActivityPub
 export const createLocalActorObject = (profile: any, domain: string): LocalActor => {
-  const actorUrl = `https://${domain}/actor/${profile.username}`;
+  const supabaseUrl = `https://${domain}`;
+  const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
   
   return {
     "@context": [
@@ -74,10 +75,10 @@ export const createLocalActorObject = (profile: any, domain: string): LocalActor
     preferredUsername: profile.username,
     name: profile.fullname || profile.username,
     summary: profile.bio || "",
-    inbox: `${actorUrl}/inbox`,
-    outbox: `${actorUrl}/outbox`,
-    followers: `${actorUrl}/followers`,
-    following: `${actorUrl}/following`,
+    inbox: `${supabaseUrl}/functions/v1/inbox/${profile.username}`,
+    outbox: `${supabaseUrl}/functions/v1/outbox/${profile.username}`,
+    followers: `${supabaseUrl}/functions/v1/followers/${profile.username}`,
+    following: `${supabaseUrl}/functions/v1/following/${profile.username}`,
     publicKey: {
       id: `${actorUrl}#main-key`,
       owner: actorUrl,
