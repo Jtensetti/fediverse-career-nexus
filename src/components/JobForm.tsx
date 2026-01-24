@@ -101,9 +101,13 @@ const JobForm = ({
     onSubmit(values);
   };
 
+  const onFormSubmit = form.handleSubmit(handleSubmit, (errors) => {
+    console.log('Form validation errors:', errors);
+  });
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={onFormSubmit} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           {/* Job title */}
           <FormField
