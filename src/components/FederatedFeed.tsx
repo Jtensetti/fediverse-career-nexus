@@ -51,18 +51,22 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   });
 
   // Fetch remote posts for federated feed
-  const { data: remotePosts, isLoading: remoteLoading } = useQuery({
+  const { data: remoteData, isLoading: remoteLoading } = useQuery({
     queryKey: ['remoteHomeTimeline', limit],
     queryFn: async () => {
       const result = await fetchRemoteHomeTimeline(limit);
       if (result.instance) {
         setRemoteInstance(result.instance);
       }
-      return result.posts;
+      return result;
     },
     staleTime: 60000, // Cache for 1 minute
     enabled: effectiveFeedType === 'federated' && !!user,
   });
+  
+  const remotePosts = remoteData?.posts || [];
+  const remoteError = remoteData?.error;
+  const tokenExpired = remoteData?.tokenExpired;
   
   // Keep refs in sync with state
   isFetchingRef.current = isFetching;
@@ -233,11 +237,27 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   return (
     <PullToRefresh onRefresh={handlePullRefresh}>
       <div className={className}>
+        {/* Show token expired warning for federated feed */}
+        {effectiveFeedType === 'federated' && tokenExpired && (
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-sm text-destructive">
+            <Globe className="h-4 w-4" />
+            <span>Your {remoteInstance} session has expired. Please re-authenticate to see remote posts.</span>
+          </div>
+        )}
+        
         {/* Show remote instance indicator for federated feed */}
-        {effectiveFeedType === 'federated' && remoteInstance && (
+        {effectiveFeedType === 'federated' && remoteInstance && !tokenExpired && remotePosts.length > 0 && (
           <div className="mb-4 p-3 bg-muted/50 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
             <Globe className="h-4 w-4" />
-            <span>Including posts from your {remoteInstance} timeline</span>
+            <span>Including {remotePosts.length} posts from your {remoteInstance} timeline</span>
+          </div>
+        )}
+        
+        {/* Show remote error if any (not token expired) */}
+        {effectiveFeedType === 'federated' && remoteError && !tokenExpired && (
+          <div className="mb-4 p-3 bg-muted/30 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
+            <Globe className="h-4 w-4" />
+            <span>Could not fetch from {remoteInstance}: {remoteError}</span>
           </div>
         )}
         
