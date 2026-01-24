@@ -1,192 +1,60 @@
 
-# User Discovery Fix Plan
+## Goal
+Make `https://nolto.social/.well-known/webfinger?...` (and the published `*.lovable.app` domain) stop returning a plain `Not found` and reliably reach the backend WebFinger handler so Fediverse discovery works.
 
-## Problem Summary
+## What I found (root cause)
+- The backend **WebFinger function works** (calling `/webfinger` on the backend returns the expected `"Resource parameter is required"` error, which proves the function exists and is reachable).
+- But requests to `/.well-known/webfinger` on both:
+  - `nolto.social`
+  - `fediverse-career.lovable.app`
+  currently return a **plain `Not found`**, and there are **no backend logs for `webfinger`** during those calls.
+- That means the request is **not being routed/proxied** from the website domain to the backend function.  
+- We already have a `vercel.json` rewrite configured, but it is **not being applied** in the current hosting setup.
 
-When other Fediverse instances search for `@jrossstocholm@nolto.social`, the discovery fails. I tested the WebFinger endpoint and found the root cause:
+## Implementation approach (what we’ll change)
+### 1) Add a hosting-compatible rewrite/redirect configuration
+Because `vercel.json` rewrites are not taking effect, we’ll add a second routing mechanism that works on Lovable-hosted deployments.
 
-**The `/.well-known/webfinger` path returns 404** because there's no routing configured to forward requests from `nolto.social/.well-known/webfinger` to the Supabase edge function.
+I will:
+- Create `public/_redirects` (Netlify/Pages-style) to rewrite:
+  - `/.well-known/webfinger` → `/functions/v1/webfinger` (preferred: same host)
+  - `/.well-known/nodeinfo` → `/functions/v1/nodeinfo`
+  - `/.well-known/host-meta` → `/functions/v1/host-meta`
+  - `/nodeinfo/*` → `/functions/v1/nodeinfo/*`
+  - (Optional safety) `/functions/v1/*` → backend function gateway if the platform requires it
 
-## Current Architecture Issues
+Why this works:
+- Many static hosts that don’t support `vercel.json` will still honor `_redirects` rules.
+- Query strings like `?resource=acct:...` are preserved by rewrite rules, which is required for WebFinger.
 
-### Issue 1: Missing Well-Known Path Routing
-The edge functions are deployed at:
-- `https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger`
+### 2) Ensure `/.well-known/host-meta` works even if rewrites are restricted
+As a fallback enhancement, I will also add a **static** `public/.well-known/host-meta` file (XML) that points to the WebFinger template:
+`https://nolto.social/.well-known/webfinger?resource={uri}`
 
-But Fediverse instances look for:
-- `https://nolto.social/.well-known/webfinger?resource=acct:user@nolto.social`
+This does not replace WebFinger, but it increases compatibility with clients that consult host-meta first.
 
-There's **no proxy/redirect configuration** to route these paths.
+### 3) Verify routing with 3 quick checks (post-change)
+After publishing, we’ll verify:
+1. `https://fediverse-career.lovable.app/.well-known/webfinger?resource=acct:jrossstocholm@nolto.social` returns JSON with `"subject": "acct:jrossstocholm@nolto.social"`.
+2. `https://nolto.social/.well-known/webfinger?resource=acct:jrossstocholm@nolto.social` returns the same.
+3. Backend logs show the `webfinger` function receiving the requests (confirming the rewrite is active).
 
-### Issue 2: Most Actors Missing Public Keys
-Database check shows **160 active actors but only 16 have public keys**. Without public keys, other instances can't verify HTTP signatures for federation activities.
+### 4) Fix NodeInfo (currently errors)
+My earlier test to the backend `nodeinfo` endpoint returned a 500. Once routing is fixed (so we can hit it via `.well-known/nodeinfo`), we’ll:
+- Inspect backend logs for `nodeinfo`
+- Patch whatever runtime error it’s throwing (usually a missing env var, an unexpected DB query result, or an unhandled exception)
+This is important because some instances rely on NodeInfo during discovery/verification.
 
-### Issue 3: Build Error (Unrelated but blocking)
-The `auth-signup` function has a Deno compatibility error with `npm:resend@2.0.0` that needs fixing.
+## Key risks / gotchas
+- If `nolto.social` is not currently pointing to the same deployed site as `fediverse-career.lovable.app`, `nolto.social` will keep returning 404 even after we fix the published domain. In that case, we’ll confirm custom-domain mapping and DNS.
+- If the host blocks `/.well-known/*` from rewrites, the static `public/.well-known/host-meta` fallback will still help, but we’ll need a different platform routing mechanism for dynamic WebFinger (I’ll adapt based on what the host supports).
 
-### Issue 4: Actor URL Uses Supabase Domain
-The actor URLs are generated as:
-```
-https://anknmcmqljejabxbeohv.supabase.co/functions/v1/actor/jrossstocholm
-```
+## Deliverables (files we’ll add/update)
+- Add: `public/_redirects`
+- Add: `public/.well-known/host-meta` (static fallback)
+- Keep: `vercel.json` (harmless; useful if export-to-Vercel is ever used)
 
-But they should be:
-```
-https://nolto.social/functions/v1/actor/jrossstocholm
-```
-or ideally:
-```
-https://nolto.social/@jrossstocholm
-```
+## After this is done
+- WebFinger discovery for `@jrossstocholm@nolto.social` should work from Mastodon search.
+- We can then proceed to the “feed works” timeline work with confidence (because federation discovery is foundational).
 
-## Solution
-
-### Phase 1: Fix Build Error First
-
-**File: `supabase/functions/auth-signup/index.ts`**
-Change the Resend import from npm specifier to esm.sh:
-```typescript
-// From:
-import { Resend } from "npm:resend@2.0.0";
-
-// To:
-import { Resend } from "https://esm.sh/resend@2.0.0";
-```
-
-### Phase 2: Add Well-Known Routing Config
-
-Since this is a Lovable-hosted project, we need to add a `public/_redirects` file (Netlify-style) or handle it via the Supabase config.
-
-**Option A: Add Supabase config for JWT-less access**
-Update `supabase/config.toml` to allow public access to federation endpoints:
-```toml
-[functions.webfinger]
-verify_jwt = false
-
-[functions.actor]
-verify_jwt = false
-
-[functions.nodeinfo]
-verify_jwt = false
-
-[functions.inbox]
-verify_jwt = false
-
-[functions.outbox]
-verify_jwt = false
-
-[functions.followers]
-verify_jwt = false
-
-[functions.following]
-verify_jwt = false
-```
-
-**Option B: Create a client-side redirect handler**
-Since the frontend runs at `nolto.social`, we can add API routes that proxy to edge functions. However, well-known paths require server-side handling which Vite can't provide in production.
-
-**Recommended Solution**: The WebFinger endpoint needs to be accessible at the standard path. Since Lovable uses Cloudflare/Vercel for hosting, we need to:
-
-1. Add a `vercel.json` or `_redirects` file with rewrites
-2. Or use a custom domain on the Supabase project that matches
-
-### Phase 3: Fix Actor URL Generation
-
-**File: `supabase/functions/actor/utils.ts`**
-Update `createActorObject` to use `nolto.social` as the domain:
-```typescript
-// Instead of using Supabase URL, use the production domain
-const NOLTO_DOMAIN = "nolto.social";
-const baseUrl = `https://${NOLTO_DOMAIN}`;
-const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-
-// Actor URL should be on the public domain
-const actorUrl = `${baseUrl}/functions/v1/actor/${profile.username}`;
-```
-
-**File: `supabase/functions/webfinger/index.ts`**
-Same fix - ensure the actor URL in WebFinger response uses `nolto.social`:
-```typescript
-const actorId = `https://nolto.social/functions/v1/actor/${profile.username}`;
-const profileUrl = `https://nolto.social/profile/${profile.username}`;
-```
-
-### Phase 4: Generate Missing Public Keys
-
-Create a batch job to generate RSA key pairs for actors missing public keys:
-
-**File: `supabase/functions/generate-actor-keys/index.ts`** (new)
-```typescript
-// Iterate through actors with NULL public_key
-// Generate RSA key pairs using crypto.subtle
-// Update actors table with the keys
-```
-
-### Phase 5: Add Host-Meta Endpoint
-
-Create `supabase/functions/host-meta/index.ts` to serve `/.well-known/host-meta`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
-  <Link rel="lrdd" type="application/jrd+json" 
-        template="https://nolto.social/.well-known/webfinger?resource={uri}"/>
-</XRD>
-```
-
-## Implementation Order
-
-1. **Fix auth-signup build error** - Change Resend import
-2. **Update supabase/config.toml** - Disable JWT verification for federation endpoints
-3. **Fix actor URL generation** - Use `nolto.social` domain consistently
-4. **Add redirect configuration** - Create rewrites for well-known paths
-5. **Generate missing keys** - Create and run key generation for existing actors
-6. **Add host-meta endpoint** - For full discovery compliance
-
-## Technical Details
-
-### Routing Configuration File
-For Lovable/Vercel hosting, add `vercel.json`:
-```json
-{
-  "rewrites": [
-    {
-      "source": "/.well-known/webfinger",
-      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger"
-    },
-    {
-      "source": "/.well-known/nodeinfo",
-      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/nodeinfo"
-    },
-    {
-      "source": "/.well-known/host-meta",
-      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/host-meta"
-    },
-    {
-      "source": "/functions/v1/:path*",
-      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/:path*"
-    }
-  ]
-}
-```
-
-### Key Generation Algorithm
-```typescript
-const keyPair = await crypto.subtle.generateKey(
-  {
-    name: "RSASSA-PKCS1-v1_5",
-    modulusLength: 2048,
-    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-    hash: "SHA-256",
-  },
-  true,
-  ["sign", "verify"]
-);
-```
-
-## Expected Outcome
-
-After implementation:
-1. `https://nolto.social/.well-known/webfinger?resource=acct:jrossstocholm@nolto.social` returns valid JRD+JSON
-2. Mastodon/other instances can discover Nolto users by searching `@username@nolto.social`
-3. All actors have valid RSA key pairs for HTTP signature verification
-4. Federation activities can be properly signed and verified
