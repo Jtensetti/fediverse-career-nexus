@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getJobPostById, type JobPost } from "@/services/jobPostsService";
@@ -11,10 +10,14 @@ import { format } from "date-fns";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
 import { toast } from "sonner";
 import TransparencyScore from "@/components/TransparencyScore";
+import { JobInquiryButton } from "@/components/JobInquiryButton";
+import { useAuth } from "@/contexts/AuthContext";
 
 const JobTypeLabels: Record<string, string> = {
-  full_time: "Full-time",
-  part_time: "Part-time",
+  "full-time": "Full-time",
+  "part-time": "Part-time",
+  "full_time": "Full-time",
+  "part_time": "Part-time",
   contract: "Contract",
   internship: "Internship",
   temporary: "Temporary"
@@ -41,8 +44,10 @@ const formatSalary = (min: number | null, max: number | null, currency: string |
 const JobView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [job, setJob] = useState<JobPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
   
   useEffect(() => {
     const fetchJob = async () => {
@@ -61,6 +66,26 @@ const JobView = () => {
     
     fetchJob();
   }, [id, navigate]);
+
+  const handleSaveJob = () => {
+    setIsSaved(!isSaved);
+    toast.success(isSaved ? "Job removed from saved" : "Job saved!");
+  };
+  
+  // Helper to get company name (handles both field names)
+  const getCompanyName = (job: JobPost) => job.company_name || job.company;
+  
+  // Helper to check if remote work is allowed
+  const isRemoteAllowed = (job: JobPost) => {
+    if (job.remote_allowed !== undefined) return job.remote_allowed;
+    return job.remote_policy === 'remote' || job.remote_policy === 'hybrid';
+  };
+  
+  // Helper to get employment type label
+  const getEmploymentType = (job: JobPost) => {
+    const type = job.job_type || job.employment_type || 'full-time';
+    return JobTypeLabels[type] || type;
+  };
   
   if (isLoading) {
     return (
@@ -94,18 +119,15 @@ const JobView = () => {
     );
   }
   
-  const [isSaved, setIsSaved] = useState(false);
-
-  const handleSaveJob = () => {
-    setIsSaved(!isSaved);
-    toast.success(isSaved ? "Job removed from saved" : "Job saved!");
-  };
+  const companyName = getCompanyName(job);
+  const isRemote = isRemoteAllowed(job);
+  const employmentType = getEmploymentType(job);
   
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title={`${job.title} at ${job.company_name}`}
-        description={job.description?.substring(0, 160) || `${job.title} position at ${job.company_name}`}
+        title={`${job.title} at ${companyName}`}
+        description={job.description?.substring(0, 160) || `${job.title} position at ${companyName}`}
         type="website"
       />
       <Navbar />
@@ -126,17 +148,17 @@ const JobView = () => {
               </div>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">{job.title}</h1>
-                <h2 className="text-xl font-medium text-muted-foreground">{job.company_name}</h2>
+                <h2 className="text-xl font-medium text-muted-foreground">{companyName}</h2>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={job.job_type === "full_time" ? "default" : "outline"} className="text-sm">
-                {JobTypeLabels[job.job_type] || job.job_type}
+              <Badge variant={employmentType === "Full-time" ? "default" : "outline"} className="text-sm">
+                {employmentType}
               </Badge>
-              {job.remote_allowed && (
+              {isRemote && (
                 <Badge variant="secondary" className="text-sm">
                   <Globe className="h-3 w-3 mr-1" />
-                  Remote
+                  {job.remote_policy === 'hybrid' ? 'Hybrid' : 'Remote'}
                 </Badge>
               )}
             </div>
@@ -146,12 +168,12 @@ const JobView = () => {
           <div className="flex flex-wrap gap-4 text-muted-foreground mb-4">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              <span>{job.location}</span>
+              <span>{job.location || 'Location not specified'}</span>
             </div>
             
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>Posted {job.published_at ? format(new Date(job.published_at), "PPP") : "recently"}</span>
+              <span>Posted {job.created_at ? format(new Date(job.created_at), "PPP") : "recently"}</span>
             </div>
           </div>
           
@@ -186,7 +208,13 @@ const JobView = () => {
           
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
-            <ShareButton title={`${job.title} at ${job.company_name}`} description={job.description?.substring(0, 100)} />
+            <JobInquiryButton 
+              jobId={job.id}
+              jobTitle={job.title}
+              posterId={job.user_id}
+              companyName={companyName}
+            />
+            <ShareButton title={`${job.title} at ${companyName}`} description={job.description?.substring(0, 100)} />
             <Button variant="outline" size="sm" onClick={handleSaveJob}>
               <Bookmark className={`h-4 w-4 mr-2 ${isSaved ? 'fill-current' : ''}`} />
               {isSaved ? 'Saved' : 'Save Job'}
@@ -199,9 +227,9 @@ const JobView = () => {
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">Job Description</h3>
           <div className="prose prose-slate max-w-none">
-            {job.description.split('\n').map((paragraph, index) => (
+            {job.description?.split('\n').map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
-            ))}
+            )) || <p className="text-muted-foreground">No description provided</p>}
           </div>
         </div>
         
@@ -209,7 +237,7 @@ const JobView = () => {
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">Required Skills</h3>
           <div className="flex flex-wrap gap-2">
-            {job.skills.length > 0 ? (
+            {job.skills && job.skills.length > 0 ? (
               job.skills.map((skill, index) => (
                 <Badge key={index} variant="outline">{skill}</Badge>
               ))
@@ -278,24 +306,33 @@ const JobView = () => {
         {/* Apply section */}
         <div className="border rounded-lg p-6 bg-card">
           <h3 className="text-xl font-semibold mb-4">How to Apply</h3>
-          {job.application_url ? (
-            <div className="mb-4">
+          <div className="flex flex-wrap gap-4">
+            {/* Message hiring manager button */}
+            <JobInquiryButton 
+              jobId={job.id}
+              jobTitle={job.title}
+              posterId={job.user_id}
+              companyName={companyName}
+            />
+            
+            {job.application_url ? (
               <Button asChild size="lg">
                 <a href={job.application_url} target="_blank" rel="noopener noreferrer" className="flex items-center">
                   Apply Now <LinkIcon className="ml-2 h-4 w-4" />
                 </a>
               </Button>
-            </div>
-          ) : job.contact_email ? (
-            <div>
-              <p className="mb-2">Send your application to:</p>
-              <a href={`mailto:${job.contact_email}`} className="text-primary hover:underline">
-                {job.contact_email}
-              </a>
-            </div>
-          ) : (
-            <p className="text-muted-foreground">
-              Contact the company directly for application details.
+            ) : job.contact_email ? (
+              <Button asChild size="lg" variant="outline">
+                <a href={`mailto:${job.contact_email}`} className="flex items-center">
+                  Email Application <LinkIcon className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+            ) : null}
+          </div>
+          
+          {!job.application_url && !job.contact_email && (
+            <p className="text-muted-foreground mt-4">
+              Use the "Message Hiring Manager" button above to inquire about this position.
             </p>
           )}
         </div>
