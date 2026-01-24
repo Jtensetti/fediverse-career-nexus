@@ -132,37 +132,42 @@ export const getFederatedFeed = async (
     }
 
     console.log('📊 Raw federated objects:', apObjects.length);
+    console.log('📊 Feed type:', feedType, 'User ID:', userId);
+    console.log('📊 Sample raw object sources:', apObjects.slice(0, 3).map((o: any) => ({ id: o.id?.slice(0, 8), source: o.source, type: o.type })));
 
     // Filter posts based on feed type
     let filteredObjects = apObjects;
     
     if (feedType === 'following' && userId) {
       // Following feed: posts AND boosts from followed users
+      console.log('👥 Following feed - checking against', followedUserIds.length, 'followed user IDs');
       filteredObjects = apObjects.filter((obj: any) => {
         const actorUserId = obj.actors?.user_id;
-        return actorUserId && followedUserIds.includes(actorUserId);
+        const isIncluded = actorUserId && followedUserIds.includes(actorUserId);
+        return isIncluded;
       });
-      console.log('📊 Filtered to following:', filteredObjects.length);
+      console.log('📊 Filtered to following:', filteredObjects.length, 'from', apObjects.length);
     } else if (feedType === 'local') {
       // Local feed: all local posts, exclude Announce to avoid duplication
       filteredObjects = apObjects.filter((obj: any) => 
-        (obj as any).source === 'local' && obj.type !== 'Announce'
+        obj.source === 'local' && obj.type !== 'Announce'
       );
-      console.log('📊 Filtered to local:', filteredObjects.length);
+      console.log('📊 Filtered to local:', filteredObjects.length, 'from', apObjects.length);
     } else if (feedType === 'federated') {
       // Federated feed: local posts + remote posts from followed users
       if (userId) {
         const remoteFollowedIds = await getRemoteFollowedUserIds(userId);
+        console.log('🌐 Remote followed IDs:', remoteFollowedIds.length);
         filteredObjects = apObjects.filter((obj: any) => {
           // Include all local posts
-          if ((obj as any).source === 'local') return true;
+          if (obj.source === 'local') return true;
           // Include remote posts from users we follow
           const actorUserId = obj.actors?.user_id;
           return actorUserId && remoteFollowedIds.includes(actorUserId);
         });
       }
       // If no user logged in, show all posts
-      console.log('📊 Filtered to federated:', filteredObjects.length);
+      console.log('📊 Filtered to federated:', filteredObjects.length, 'from', apObjects.length);
     }
 
     const userIds = filteredObjects
