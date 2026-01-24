@@ -135,6 +135,10 @@ function App() {
                     <Route path="/jobs/create" element={<ProtectedRoute><JobCreate /></ProtectedRoute>} />
                     <Route path="/jobs/manage" element={<ProtectedRoute><JobManage /></ProtectedRoute>} />
                     <Route path="/jobs/edit/:id" element={<ProtectedRoute><JobEdit /></ProtectedRoute>} />
+                    {/* Route aliases for common typos - singular /job → /jobs */}
+                    <Route path="/job/create" element={<Navigate to="/jobs/create" replace />} />
+                    <Route path="/job/:id" element={<Navigate to="/jobs/:id" replace />} />
+                    <Route path="/job" element={<Navigate to="/jobs" replace />} />
                     <Route path="/articles/:slug" element={<ArticleView />} />
                     <Route path="/post/:postId" element={<PostView />} />
 

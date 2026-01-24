@@ -46,6 +46,53 @@ export interface JobPostFilter {
   skills?: string[];
 }
 
+// Structured result types
+export interface JobPostCreateSuccess {
+  ok: true;
+  id: string;
+}
+
+export interface JobPostCreateError {
+  ok: false;
+  message: string;
+  code: string;
+  details?: string;
+}
+
+export type JobPostCreateResult = JobPostCreateSuccess | JobPostCreateError;
+
+// Normalize empty strings to null for nullable fields
+function normalizeJobPostData(data: Record<string, unknown>): Record<string, unknown> {
+  const nullableStringFields = [
+    'description', 'location', 'remote_policy', 'experience_level',
+    'salary_currency', 'interview_process', 'response_time', 
+    'team_size', 'growth_path', 'application_url', 'contact_email'
+  ];
+  
+  const normalized: Record<string, unknown> = { ...data };
+  
+  for (const field of nullableStringFields) {
+    if (normalized[field] === '' || normalized[field] === undefined) {
+      normalized[field] = null;
+    }
+  }
+  
+  // Normalize skills: empty array becomes null
+  if (Array.isArray(normalized.skills) && normalized.skills.length === 0) {
+    normalized.skills = null;
+  }
+  
+  // Ensure salary_min and salary_max are numbers or null
+  if (normalized.salary_min === '' || normalized.salary_min === undefined) {
+    normalized.salary_min = null;
+  }
+  if (normalized.salary_max === '' || normalized.salary_max === undefined) {
+    normalized.salary_max = null;
+  }
+  
+  return normalized;
+}
+
 // Get all published job posts
 export const getPublishedJobPosts = async (filters?: JobPostFilter): Promise<JobPost[]> => {
   try {
@@ -142,53 +189,109 @@ export const getUserJobPosts = async (): Promise<JobPost[]> => {
   }
 };
 
-// Create a new job post
-export const createJobPost = async (jobPost: Omit<JobPost, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'published_at'>): Promise<string | null> => {
+// Create a new job post - returns structured result
+export const createJobPost = async (
+  jobPost: Omit<JobPost, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'published_at'>
+): Promise<JobPostCreateResult> => {
+  console.log('[createJobPost] Starting with data:', jobPost);
+  
   try {
     const { data: session } = await supabase.auth.getSession();
+    console.log('[createJobPost] Session check:', !!session.session);
     
     if (!session.session) {
-      toast.error('You must be logged in to create a job post');
-      return null;
+      console.error('[createJobPost] No session found');
+      return {
+        ok: false,
+        message: 'You must be logged in to create a job post',
+        code: 'AUTH_REQUIRED',
+        details: 'Please sign in and try again.'
+      };
     }
+    
+    // Normalize the data
+    const normalizedData = normalizeJobPostData(jobPost as Record<string, unknown>);
+    console.log('[createJobPost] Normalized data:', normalizedData);
+    
+    const insertData = {
+      ...normalizedData,
+      user_id: session.session.user.id
+    };
     
     const { data, error } = await supabase
       .from('job_posts')
-      .insert({
-        ...jobPost,
-        user_id: session.session.user.id
-      })
+      .insert(insertData as any)
       .select('*')
       .single();
     
     if (error) {
-      console.error('Error creating job post:', error);
+      console.error('[createJobPost] Database error:', error);
+      
+      // Parse specific error types
       if (error.message.includes('violates row-level security')) {
-        toast.error('Only verified companies can post jobs');
-      } else {
-        toast.error('Failed to create job post');
+        return {
+          ok: false,
+          message: 'Permission denied',
+          code: 'RLS_VIOLATION',
+          details: 'You do not have permission to create job posts. Please contact support if you believe this is an error.'
+        };
       }
-      return null;
+      
+      if (error.message.includes('violates check constraint')) {
+        return {
+          ok: false,
+          message: 'Invalid data',
+          code: 'CONSTRAINT_VIOLATION',
+          details: error.message
+        };
+      }
+      
+      if (error.message.includes('violates foreign key constraint')) {
+        return {
+          ok: false,
+          message: 'Invalid reference',
+          code: 'FK_VIOLATION',
+          details: 'One of the provided values references data that does not exist.'
+        };
+      }
+      
+      return {
+        ok: false,
+        message: 'Failed to create job post',
+        code: 'DATABASE_ERROR',
+        details: error.message
+      };
     }
     
+    console.log('[createJobPost] Job created successfully:', data.id);
     toast.success('Job post created successfully');
     
     // If the job post is active, federate it
     if (data.is_active) {
-      console.log('Job post is active, federating...');
-      const federationSuccess = await federateJobPost(data);
-      if (federationSuccess) {
-        toast.success('Job post federated to the network');
-      } else {
-        toast.error('Job post created but federation failed');
+      console.log('[createJobPost] Job post is active, federating...');
+      try {
+        const federationSuccess = await federateJobPost(data);
+        if (federationSuccess) {
+          toast.success('Job post federated to the network');
+        }
+      } catch (fedError) {
+        console.error('[createJobPost] Federation error (non-fatal):', fedError);
+        // Federation failure is non-fatal, job was still created
       }
     }
     
-    return data.id;
+    return {
+      ok: true,
+      id: data.id
+    };
   } catch (error) {
-    console.error('Error in createJobPost:', error);
-    toast.error('An unexpected error occurred');
-    return null;
+    console.error('[createJobPost] Unexpected error:', error);
+    return {
+      ok: false,
+      message: 'An unexpected error occurred',
+      code: 'UNEXPECTED_ERROR',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    };
   }
 };
 
@@ -202,12 +305,13 @@ export const updateJobPost = async (id: string, jobPost: Partial<JobPost>): Prom
       return false;
     }
     
-    // Remove fields that should not be updated
+    // Remove fields that should not be updated and normalize
     const { id: _, user_id: __, created_at: ___, ...updateData } = jobPost as any;
+    const normalizedData = normalizeJobPostData(updateData);
     
     const { data, error } = await supabase
       .from('job_posts')
-      .update(updateData)
+      .update(normalizedData)
       .eq('id', id)
       .eq('user_id', session.session.user.id)
       .select('*')
