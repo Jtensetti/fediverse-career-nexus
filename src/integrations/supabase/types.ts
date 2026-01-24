@@ -1223,6 +1223,41 @@ export type Database = {
           },
         ]
       }
+      job_conversations: {
+        Row: {
+          applicant_id: string
+          created_at: string
+          id: string
+          job_post_id: string
+          poster_id: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          created_at?: string
+          id?: string
+          job_post_id: string
+          poster_id: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          created_at?: string
+          id?: string
+          job_post_id?: string
+          poster_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_conversations_job_post_id_fkey"
+            columns: ["job_post_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_posts: {
         Row: {
           company: string
@@ -1376,6 +1411,7 @@ export type Database = {
           id: string
           is_encrypted: boolean | null
           is_federated: boolean | null
+          job_conversation_id: string | null
           read_at: string | null
           recipient_id: string
           remote_recipient_url: string | null
@@ -1391,6 +1427,7 @@ export type Database = {
           id?: string
           is_encrypted?: boolean | null
           is_federated?: boolean | null
+          job_conversation_id?: string | null
           read_at?: string | null
           recipient_id: string
           remote_recipient_url?: string | null
@@ -1406,13 +1443,22 @@ export type Database = {
           id?: string
           is_encrypted?: boolean | null
           is_federated?: boolean | null
+          job_conversation_id?: string | null
           read_at?: string | null
           recipient_id?: string
           remote_recipient_url?: string | null
           remote_sender_url?: string | null
           sender_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_job_conversation_id_fkey"
+            columns: ["job_conversation_id"]
+            isOneToOne: false
+            referencedRelation: "job_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       moderation_actions: {
         Row: {
@@ -3111,10 +3157,16 @@ export type Database = {
         Args: { user1: string; user2: string }
         Returns: boolean
       }
-      can_message_user: {
-        Args: { recipient_id: string; sender_id: string }
-        Returns: Json
-      }
+      can_message_user:
+        | { Args: { recipient_id: string; sender_id: string }; Returns: Json }
+        | {
+            Args: {
+              job_post_id?: string
+              recipient_id: string
+              sender_id: string
+            }
+            Returns: Json
+          }
       can_view_own_profile_phone: {
         Args: { profile_id: string }
         Returns: boolean
