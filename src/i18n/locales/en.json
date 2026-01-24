@@ -158,9 +158,9 @@
     "following": "Following",
     "followingDesc": "Posts from people you follow",
     "local": "Local",
-    "localDesc": "Posts from this instance",
+    "localDesc": "All posts on Nolto",
     "federated": "Federated",
-    "federatedDesc": "All posts including remote",
+    "federatedDesc": "Local + remote follows",
     "feeds": "Feeds",
     "createCustomFeed": "Create custom feed",
     "manageFeeds": "Manage feeds"

@@ -18,7 +18,7 @@ import type { FeedType } from "@/services/federationService";
 import { SEOHead } from "@/components/common/SEOHead";
 
 const FederatedFeedPage = () => {
-  const [activeFeed, setActiveFeed] = useState<FeedType>("all");
+  const [activeFeed, setActiveFeed] = useState<FeedType>("following");
   const queryClient = useQueryClient();
   const { showOnboarding, completeOnboarding, hasChecked } = useOnboarding();
 

@@ -18,7 +18,7 @@ interface FederatedFeedProps {
   feedType?: FeedType;
 }
 
-export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "all", feedType = "all" }: FederatedFeedProps) {
+export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "following", feedType = "following" }: FederatedFeedProps) {
   const [allPosts, setAllPosts] = useState<FederatedPost[]>([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -33,10 +33,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const fetchedPostIds = useRef<Set<string>>(new Set());
   
   // Determine the effective feed type from either prop
-  const effectiveFeedType: FeedType = feedType !== 'all' ? feedType : 
+  const effectiveFeedType: FeedType = feedType !== 'following' ? feedType : 
     (sourceFilter === 'local' ? 'local' : 
-     sourceFilter === 'remote' ? 'remote' : 
-     sourceFilter === 'following' ? 'following' : 'all');
+     sourceFilter === 'federated' ? 'federated' : 'following');
   
   // Refs for infinite scroll
   const isFetchingRef = useRef(false);
