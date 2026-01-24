@@ -7,9 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Initialize the Deno KV store for caching
-const kv = await Deno.openKv();
-const CACHE_NAMESPACE = "nodeinfo";
+// In-memory cache (replaces unsupported Deno.openKv)
+const memoryCache = new Map<string, { data: unknown; expiresAt: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
 // Initialize the Supabase client
@@ -17,6 +16,19 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
+
+function getCached(key: string): unknown | null {
+  const entry = memoryCache.get(key);
+  if (entry && entry.expiresAt > Date.now()) {
+    return entry.data;
+  }
+  memoryCache.delete(key);
+  return null;
+}
+
+function setCache(key: string, data: unknown): void {
+  memoryCache.set(key, { data, expiresAt: Date.now() + CACHE_TTL });
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -28,16 +40,17 @@ serve(async (req) => {
     const url = new URL(req.url);
     const path = url.pathname;
 
-    // Handle different nodeinfo related endpoints
-    if (path === "/.well-known/nodeinfo") {
-      // This is the discovery endpoint that points to the actual nodeinfo document
-      const baseUrl = `${url.protocol}//${url.host}`;
+    // Handle discovery endpoint - returns links to nodeinfo schemas
+    // This handles both /.well-known/nodeinfo (if proxied) and /nodeinfo (direct call)
+    if (path === "/.well-known/nodeinfo" || path === "/nodeinfo" || path === "/") {
+      const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
+      const baseUrl = siteUrl.replace(/\/$/, "");
       
       const discoveryDocument = {
         links: [
           {
             rel: "http://nodeinfo.diaspora.software/ns/schema/2.0",
-            href: `${baseUrl}/nodeinfo/2.0`
+            href: `${baseUrl}/functions/v1/nodeinfo/2.0`
           }
         ]
       };
@@ -49,15 +62,16 @@ serve(async (req) => {
         }
       );
     } 
-    else if (path === "/nodeinfo/2.0") {
+    // Handle the actual NodeInfo 2.0 document
+    else if (path === "/nodeinfo/2.0" || path === "/2.0") {
       // Try to get from cache first
-      const cacheKey = [CACHE_NAMESPACE, "2.0"];
-      const cachedResponse = await kv.get(cacheKey);
+      const cacheKey = "nodeinfo_2.0";
+      const cachedData = getCached(cacheKey);
       
-      if (cachedResponse.value) {
+      if (cachedData) {
         console.log(`Cache hit for NodeInfo 2.0`);
         return new Response(
-          JSON.stringify(cachedResponse.value),
+          JSON.stringify(cachedData),
           {
             headers: { ...corsHeaders, "Content-Type": "application/json; profile=http://nodeinfo.diaspora.software/ns/schema/2.0#" }
           }
@@ -66,25 +80,7 @@ serve(async (req) => {
 
       console.log(`Cache miss for NodeInfo 2.0, fetching from database`);
 
-      // Get the nodeinfo data from the database
-      const { data: nodeInfo, error } = await supabaseClient
-        .from("ap_objects")
-        .select("content")
-        .eq("type", "NodeInfo")
-        .single();
-
-      if (error || !nodeInfo) {
-        console.error("NodeInfo not found:", error);
-        return new Response(
-          JSON.stringify({ error: "NodeInfo not found" }),
-          {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" }
-          }
-        );
-      }
-
-      // Update usage statistics in the NodeInfo object
+      // Get usage statistics
       const { count: userCount } = await supabaseClient
         .from("profiles")
         .select("id", { count: 'exact', head: true });
@@ -94,24 +90,34 @@ serve(async (req) => {
         .select("id", { count: 'exact', head: true })
         .eq("type", "Note");
 
-      // Update the nodeinfo object with current stats
-      const updatedNodeInfo = {
-        ...nodeInfo.content,
+      // Build the NodeInfo 2.0 response
+      const nodeInfo = {
+        version: "2.0",
+        software: {
+          name: "nolto",
+          version: "1.0.0"
+        },
+        protocols: ["activitypub"],
         usage: {
-          ...nodeInfo.content.usage,
           users: {
-            ...nodeInfo.content.usage.users,
-            total: userCount || 0
+            total: userCount || 0,
+            activeMonth: userCount || 0,
+            activeHalfyear: userCount || 0
           },
           localPosts: postCount || 0
+        },
+        openRegistrations: true,
+        metadata: {
+          nodeName: "Nolto Social",
+          nodeDescription: "A federated professional networking platform"
         }
       };
 
-      // Store updated nodeinfo in cache
-      await kv.set(cacheKey, updatedNodeInfo, { expireIn: CACHE_TTL });
+      // Store in cache
+      setCache(cacheKey, nodeInfo);
 
       return new Response(
-        JSON.stringify(updatedNodeInfo),
+        JSON.stringify(nodeInfo),
         {
           headers: { 
             ...corsHeaders, 
