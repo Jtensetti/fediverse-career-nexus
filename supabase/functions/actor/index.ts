@@ -86,13 +86,12 @@ serve(async (req) => {
     const { profile, actor } = result;
     const domain = url.hostname;
     const protocol = url.protocol;
-    const baseUrl = `${protocol}//${domain}`;
 
     // Create the actor object
     const actorObject = createActorObject(profile, actor, domain, protocol);
 
     // Cache the actor
-    await cacheActor(username, actorObject, baseUrl);
+    await cacheActor(username, actorObject);
     
     await logRequestMetrics(remoteHost, url.pathname, startTime, true, 200);
     return new Response(

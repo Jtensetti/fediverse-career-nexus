@@ -128,7 +128,8 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   const isLocalUser = !actor?.home_instance || actor?.home_instance === 'local';
   const domain = isLocalUser ? getNoltoInstanceDomain() : actor.home_instance;
   const federatedHandle = `@${username}@${domain}`;
-  const remoteActorUri = `${window.location.origin}/actor/${username}`;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? window.location.origin;
+  const remoteActorUri = `${supabaseUrl}/functions/v1/actor/${username}`;
   const normalizedLookupInstance = lookupInstance
     .trim()
     .replace(/^https?:\/\//, "")

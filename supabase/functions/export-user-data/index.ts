@@ -13,21 +13,21 @@ const supabaseClient = createClient(
 
 // Create ActivityPub Actor object for export
 function createActorObject(profile: any, actor: any, supabaseUrl: string) {
-  const domain = new URL(supabaseUrl).hostname;
   const baseUrl = supabaseUrl.replace('/functions/v1', '');
+  const actorUrl = `${baseUrl}/functions/v1/actor/${profile.username}`;
   
   return {
     "@context": [
       "https://www.w3.org/ns/activitystreams",
       "https://w3id.org/security/v1"
     ],
-    "id": `${baseUrl}/${profile.username}`,
+    "id": actorUrl,
     "type": "Person",
     "preferredUsername": actor.preferred_username || profile.username,
     "name": profile.fullname || profile.username,
     "summary": profile.bio || "",
-    "inbox": `${baseUrl}/${profile.username}/inbox`,
-    "outbox": `${baseUrl}/${profile.username}/outbox`,
+    "inbox": `${baseUrl}/functions/v1/inbox/${profile.username}`,
+    "outbox": `${baseUrl}/functions/v1/outbox/${profile.username}`,
     "followers": `${baseUrl}/functions/v1/followers/${profile.username}`,
     "following": `${baseUrl}/functions/v1/following/${profile.username}`,
     "url": `${baseUrl}/@${profile.username}`,
@@ -35,8 +35,8 @@ function createActorObject(profile: any, actor: any, supabaseUrl: string) {
     "discoverable": true,
     "published": actor.created_at,
     "publicKey": {
-      "id": `${baseUrl}/${profile.username}#main-key`,
-      "owner": `${baseUrl}/${profile.username}`,
+      "id": `${actorUrl}#main-key`,
+      "owner": actorUrl,
       "publicKeyPem": actor.public_key || ""
     },
     "icon": profile.avatar_url ? {
@@ -51,18 +51,19 @@ function createActorObject(profile: any, actor: any, supabaseUrl: string) {
 
 // Create ActivityStreams OrderedCollection for outbox
 function createOutboxCollection(posts: any[], baseUrl: string, username: string) {
+  const actorUrl = `${baseUrl}/functions/v1/actor/${username}`;
   const items = posts.map(post => ({
     "@context": "https://www.w3.org/ns/activitystreams",
     "type": "Create",
     "id": `${baseUrl}/activities/${post.id}`,
-    "actor": `${baseUrl}/${username}`,
+    "actor": actorUrl,
     "published": post.created_at,
     "object": {
       "type": "Note",
       "id": `${baseUrl}/posts/${post.id}`,
       "content": post.content?.content || "",
       "published": post.created_at,
-      "attributedTo": `${baseUrl}/${username}`,
+      "attributedTo": actorUrl,
       "to": ["https://www.w3.org/ns/activitystreams#Public"],
       "cc": [`${baseUrl}/functions/v1/followers/${username}`]
     }
@@ -71,7 +72,7 @@ function createOutboxCollection(posts: any[], baseUrl: string, username: string)
   return {
     "@context": "https://www.w3.org/ns/activitystreams",
     "type": "OrderedCollection",
-    "id": `${baseUrl}/${username}/outbox`,
+    "id": `${baseUrl}/functions/v1/outbox/${username}`,
     "totalItems": items.length,
     "orderedItems": items
   };
