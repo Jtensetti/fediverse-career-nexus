@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebFinger Redirect</title>
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var resource = params.get('resource');
+      if (resource) {
+        window.location.href = 
+          'https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger?resource=' 
+          + encodeURIComponent(resource);
+      } else {
+        document.body.textContent = 'WebFinger: resource parameter required';
+      }
+    })();
+  </script>
+</head>
+<body>Redirecting to WebFinger service...</body>
+</html>
