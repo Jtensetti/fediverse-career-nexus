@@ -77,18 +77,9 @@ export default function Notifications() {
           navigate(`/events/${notification.object_id}`);
           break;
         case 'message':
-          // For message reactions, navigate to the conversation
-          if (notification.type === 'message_reaction') {
-            try {
-              const contentData = notification.content ? JSON.parse(notification.content) : {};
-              const conversationWith = contentData.conversationWith || notification.actor_id;
-              navigate(`/messages/${conversationWith}`);
-            } catch {
-              if (notification.actor_id) {
-                navigate(`/messages/${notification.actor_id}`);
-              }
-            }
-          } else if (notification.actor_id) {
+          // For message reactions, navigate to the conversation with the person who reacted
+          // For regular messages, navigate to the conversation with the actor (sender)
+          if (notification.actor_id) {
             navigate(`/messages/${notification.actor_id}`);
           }
           break;
