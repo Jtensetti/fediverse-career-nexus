@@ -1,145 +1,154 @@
 
-
 ## Goal
-Fix Fediverse discovery for `@user@nolto.social` by resolving three critical issues:
-1. Deploy missing edge functions
-2. Fix broken edge functions (NodeInfo, Instance)
-3. Solve the routing problem for `/.well-known/` paths
+Fix job post creation so that:
+1) Clicking “Create Job Post” always produces an observable result (success navigation OR a visible error message).
+2) The submission reliably reaches the backend (network request is fired) when valid.
+3) Users get actionable feedback when invalid or blocked by permissions.
+4) The job post page exists and remains compatible with the “DM through job post even without connection” requirement (already implemented, but we’ll verify it after creation works).
 
-## Root Causes Found
+---
 
-### Issue 1: WebFinger function was not deployed
-The `webfinger` edge function existed in the codebase but was **not deployed** to Supabase. When I deployed it and tested directly, it works correctly:
+## What can cause “nothing happens” (ranked by likelihood)
 
-```text
-Request:  /webfinger?resource=acct:jrossstocholm@nolto.social
-Response: 200 OK
-{
-  "subject": "acct:jrossstocholm@nolto.social",
-  "links": [{
-    "rel": "self",
-    "type": "application/activity+json",
-    "href": "https://nolto.social/functions/v1/actor/jrossstocholm"
-  }]
-}
-```
+### A) You’re on the wrong route: `/job/create` vs `/jobs/create`
+- The app only defines `/jobs/create`.
+- If you’re truly at `/job/create`, you’re on a route that doesn’t exist. Depending on hosting rewrites, this can look like “a page exists” but nothing works as expected (or you’re actually seeing some cached layout).
+**Fix:** Add a redirect/alias route so `/job/create` always redirects to `/jobs/create`, and update any UI link that might point to the wrong path.
 
-**Status: DEPLOYED AND WORKING**
+### B) Toast system isn’t actually mounted (so every “error toast” is invisible)
+Even if backend rejects insert, your UI depends heavily on toast feedback:
+- `createJobPost()` shows error via toast.
+- `JobForm` shows validation errors via toast.
+If the Toaster isn’t mounted (or is being hidden/clipped), the user sees “nothing happened.”
+**Fix:** Make toast delivery verifiable and add a non-toast fallback (inline banner) so errors are never silent.
 
-### Issue 2: NodeInfo and Instance functions crash on startup
-Both functions use `Deno.openKv()` which is a **Deno Deploy feature, not available in Supabase Edge Functions**:
+### C) The submit handler is never firing (click doesn’t reach the `<form onSubmit>`)
+This can happen when:
+- A transparent overlay captures clicks.
+- The submit button is disabled due to `isSubmitting` being stuck.
+- A component is rendering but the form event handler is not wired due to a runtime exception during render.
+**Fix:** Add deterministic, visual “submit attempt” feedback (and capture-phase logging) so we can prove the click reached the handler.
 
-```typescript
-// Line 11 in nodeinfo/index.ts
-const kv = await Deno.openKv();  // TypeError: Deno.openKv is not a function
-```
+### D) Form validation fails but the user can’t see errors
+You do render `<FormMessage />`, but users can still miss it if:
+- Errors are below the fold.
+- Field errors don’t render due to schema/field mismatch.
+- Schema transforms cause unexpected types (e.g., `skills` transform) and RHF doesn’t show a visible error.
+**Fix:** Add an error summary at the top + auto-scroll to first invalid field.
 
-Error from logs:
-```text
-TypeError: Deno.openKv is not a function
-    at file:///var/tmp/sb-compile-edge-runtime/nodeinfo/index.ts:8:23
-```
+### E) Backend insert is failing (RLS, constraints, FK, type mismatch), but user gets no feedback
+RLS looks correct now, but insert can still fail because:
+- Payload shape doesn’t match DB (e.g., sending `""` where null expected, unexpected types).
+- There’s a foreign key to the auth users table (present in schema). It should be OK when logged in, but if session retrieval is flaky, you’ll hit a FK or auth issue.
+- The service returns `null` and the page does not show any inline message.
+**Fix:** Return structured errors from the service and surface them in the page (not only toast).
 
-**Fix needed:** Replace Deno KV with in-memory caching (like webfinger uses) or database-based caching.
+### F) The app is unstable due to a React infinite update loop elsewhere
+Your console logs show a “Maximum update depth exceeded” in `FederatedFeed`. Even if unrelated, app instability can cause weird behavior like unresponsive UI or interrupted state updates.
+**Fix:** After job creation is fixed, we should also patch that loop to stabilize the whole app.
 
-### Issue 3: Lovable hosting cannot proxy .well-known paths
-This is the **critical routing blocker**:
-- Lovable hosting is static-only (Vite/React CSR)
-- Neither `_redirects` nor `vercel.json` rewrites are supported
-- Requests to `nolto.social/.well-known/webfinger` return "Not found" because the static host has no file there and cannot proxy to the backend
-- The static `public/.well-known/host-meta` file DOES work (proof that static files are served)
+---
 
-## Implementation Plan
+## Implementation strategy (high confidence, “no silent failures”)
+We’ll implement a layered approach: even if one feedback mechanism fails (toast), another still works (inline banner), and we’ll add instrumentation that proves which layer is failing.
 
-### Step 1: Fix NodeInfo function (remove Deno KV)
-Replace the unsupported `Deno.openKv()` with simple in-memory caching:
+---
 
-```typescript
-// Before (broken):
-const kv = await Deno.openKv();
+## Step-by-step plan (what I will implement once you approve)
 
-// After (working):
-const memoryCache = new Map<string, { data: any; expiresAt: number }>();
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
-```
+### 1) Route hardening: support both `/job/create` and `/jobs/create`
+- Add a route alias:
+  - `/job/create` → `<Navigate to="/jobs/create" replace />`
+- Also consider alias `/job/:id` → `/jobs/:id` if users might share singular links.
+**Outcome:** Users can’t end up on a dead route anymore.
 
-Also fix the path handling since the function is called at `/nodeinfo`, not `/.well-known/nodeinfo`.
+### 2) Make toast verifiably working (and never required)
+- Add a lightweight “toast smoke test” triggered when the Job Create page mounts (only in dev / preview), e.g.:
+  - A subtle inline “Notifications enabled” indicator, or a one-time toast.
+- If the toast does not appear:
+  - Move `<Toaster />` higher in the tree (e.g., directly under `<ThemeProvider>` and outside `<AuthProvider>` and outside anything that might remount or crash).
+  - Use a single toast export consistently (`import { toast } from "@/components/ui/sonner"`) so all toasts go through the same configured system.
+- Add a top-of-form inline error banner that shows **even if toast fails**.
+**Outcome:** You always see feedback.
 
-### Step 2: Fix Instance function (same Deno KV issue)
-Apply the same in-memory caching fix.
+### 3) Prove whether the click reaches the form (instrumentation that users can see)
+In `JobForm`:
+- Add `onSubmitCapture` and `onClickCapture` instrumentation (temporary) to confirm events fire.
+- Add a visible state change on click:
+  - When user clicks submit, show a small inline “Submitting…” indicator immediately (not waiting for validation/backend).
+- Add a timeout watchdog:
+  - If “submitting” lasts > 8–10 seconds, show “Something blocked submission” with a “Retry” and a debug code.
+**Outcome:** “Nothing happens” becomes impossible; we’ll always know which stage failed.
 
-### Step 3: Add static WebFinger redirect
-Since we cannot dynamically proxy WebFinger, create a static HTML file that performs a client-side redirect. While this won't work for Mastodon's server-side lookups, it provides a fallback for browser-based discovery:
+### 4) Fix validation UX so it’s impossible to miss
+- Add an error summary at the top of the form listing invalid fields in plain language.
+- Auto-scroll and focus the first invalid field on submit.
+- Ensure required fields are clearly marked and the button is disabled until minimum required inputs are present (optional but recommended).
+**Outcome:** If validation is the issue, you’ll immediately see exactly what to fix.
 
-```html
-<!-- public/.well-known/webfinger/index.html -->
-<!DOCTYPE html>
-<html>
-<head>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const resource = params.get('resource');
-    if (resource) {
-      window.location.href = 
-        'https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger?resource=' 
-        + encodeURIComponent(resource);
-    }
-  </script>
-</head>
-<body>Redirecting to WebFinger...</body>
-</html>
-```
+### 5) Make the service return structured results (stop relying on toast-only errors)
+Refactor `createJobPost` to return:
+- `{ ok: true, id }` on success
+- `{ ok: false, message, code, details }` on failure
+Then in `JobCreate`:
+- Always show an inline error banner if `ok: false`
+- Also show a toast (bonus), but not required.
+**Outcome:** Backend failures become visible and debuggable.
 
-**Important limitation:** This does NOT solve the Mastodon discovery problem because Mastodon makes server-side HTTP requests, not browser requests.
+### 6) Validate and normalize payload before insert (client-side safety + backend compatibility)
+Before calling insert:
+- Convert empty strings to `null` for nullable text fields (not just application_url/contact_email—also any optional fields like experience_level, interview_process, response_time, team_size, growth_path).
+- Normalize `skills`:
+  - If empty array, store `null` (or keep `[]`, but pick one consistently).
+- Ensure `salary_currency` is only set when salary values are provided (or always set; both are fine, but be consistent).
+**Outcome:** Prevent type/constraint mismatches and reduce backend rejections.
 
-### Step 4: The real solution - Cloudflare Workers or DNS-level routing
-For full federation to work, you need one of these approaches:
+### 7) Backend-side validation (server-side safety)
+Because you want strong security and reliable behavior:
+- Add server-side validation via a backend function (preferred when you want robust enforcement):
+  - Validate lengths, required fields, and types server-side as well.
+  - Return explicit error messages.
+- This also gives a clean place to enforce “Only verified companies can post” (if that rule exists) with clear errors.
+**Outcome:** No corrupt data, clearer errors, more reliable inserts.
 
-**Option A: Cloudflare Worker (recommended)**
-Put Cloudflare in front of `nolto.social` and add a Worker rule:
-```javascript
-// Cloudflare Worker
-addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  if (url.pathname.startsWith('/.well-known/webfinger')) {
-    const target = 'https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger' 
-                   + url.search;
-    event.respondWith(fetch(target));
-  } else {
-    event.respondWith(fetch(event.request));
-  }
-});
-```
+### 8) Confirm job post page exists and is reachable after create
+- Ensure that after successful create, navigation to `/jobs/:id` works and renders the job properly.
+- Make sure field mapping (company/title/etc) matches the actual DB columns (it currently looks aligned: `company`, `employment_type`, etc.).
+**Outcome:** Creation leads to a working job page.
 
-**Option B: Separate subdomain for federation**
-Configure `ap.nolto.social` to point directly to Supabase functions, then update all actor URLs to use that subdomain. This requires changing the WebFinger template in `host-meta`.
+### 9) Verify DM-through-job behavior (must-have requirement)
+After creation works:
+- Confirm that the job inquiry conversation is created/used properly from the job page.
+- Confirm non-connected users can message via job inquiry.
+- Confirm deletion of the job post cascades and the special conversation is no longer usable when users aren’t connected.
+**Outcome:** Your “temporary DM channel tied to job existence” works end-to-end.
 
-**Option C: Use a different hosting platform**
-Deploy to Vercel or Cloudflare Pages which support rewrites for `/.well-known/` paths.
+### 10) Stabilize the app (fix the FederatedFeed update loop)
+- Patch the “Maximum update depth exceeded” in `FederatedFeed.tsx`.
+This is not directly job creation, but it’s a risk factor for “random UI not responding.”
+**Outcome:** Fewer weird issues across the whole product.
 
-## Files to Modify
+---
 
-| File | Change |
-|------|--------|
-| `supabase/functions/nodeinfo/index.ts` | Replace Deno KV with in-memory cache, fix path handling |
-| `supabase/functions/instance/index.ts` | Replace Deno KV with in-memory cache |
-| `public/.well-known/webfinger/index.html` | Add static redirect fallback (limited use) |
+## Testing checklist (what we’ll verify in preview)
+1) Navigate to `/job/create` → automatically lands on `/jobs/create`.
+2) Click submit with empty fields → you get:
+   - error summary at top
+   - auto-scroll to first invalid field
+   - (optional) toast
+3) Fill minimal valid inputs → click submit:
+   - immediate “Submitting…” feedback
+   - a network request to create the job post
+   - navigation to `/jobs/:id` on success
+4) Simulate backend failure (e.g., logged out / permission blocked) → inline error banner displays.
+5) From job page: non-connected user can send inquiry DM.
+6) Delete job: inquiry channel no longer usable unless connected.
 
-## What Won't Be Fixed (Platform Limitation)
+---
 
-The core issue is that **Lovable's static hosting cannot proxy HTTP requests to external services**. The files `_redirects` and `vercel.json` are ignored. To achieve full federation where Mastodon can discover `@user@nolto.social`, you need either:
+## One critical clarification (needed to prioritize the fastest fix)
+In your next message (new request), tell me which of these is true when you click “Create Job Post” on the form:
+1) The button text changes to “Submitting…” (even briefly)
+2) Nothing changes visually at all (no spinner, no banner, no navigation)
 
-1. A CDN/proxy layer (Cloudflare) that can intercept and route `/.well-known/` requests
-2. DNS-level routing to send `/.well-known/*` traffic to a different server
-3. A hosting platform that supports server-side rewrites
-
-## Summary
-
-| Component | Status | Fix |
-|-----------|--------|-----|
-| WebFinger function | Now deployed | Already working |
-| NodeInfo function | Broken (Deno KV) | Remove Deno KV, use memory cache |
-| Instance function | Broken (Deno KV) | Remove Deno KV, use memory cache |
-| Host-meta | Working | Static file serves correctly |
-| Routing to functions | Blocked | Requires external proxy (Cloudflare) |
-
+That single detail tells us whether the click is reaching the handler or being blocked before the form logic runs.
