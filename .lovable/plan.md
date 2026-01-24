@@ -1,60 +1,145 @@
 
+
 ## Goal
-Make `https://nolto.social/.well-known/webfinger?...` (and the published `*.lovable.app` domain) stop returning a plain `Not found` and reliably reach the backend WebFinger handler so Fediverse discovery works.
+Fix Fediverse discovery for `@user@nolto.social` by resolving three critical issues:
+1. Deploy missing edge functions
+2. Fix broken edge functions (NodeInfo, Instance)
+3. Solve the routing problem for `/.well-known/` paths
 
-## What I found (root cause)
-- The backend **WebFinger function works** (calling `/webfinger` on the backend returns the expected `"Resource parameter is required"` error, which proves the function exists and is reachable).
-- But requests to `/.well-known/webfinger` on both:
-  - `nolto.social`
-  - `fediverse-career.lovable.app`
-  currently return a **plain `Not found`**, and there are **no backend logs for `webfinger`** during those calls.
-- That means the request is **not being routed/proxied** from the website domain to the backend function.  
-- We already have a `vercel.json` rewrite configured, but it is **not being applied** in the current hosting setup.
+## Root Causes Found
 
-## Implementation approach (what we’ll change)
-### 1) Add a hosting-compatible rewrite/redirect configuration
-Because `vercel.json` rewrites are not taking effect, we’ll add a second routing mechanism that works on Lovable-hosted deployments.
+### Issue 1: WebFinger function was not deployed
+The `webfinger` edge function existed in the codebase but was **not deployed** to Supabase. When I deployed it and tested directly, it works correctly:
 
-I will:
-- Create `public/_redirects` (Netlify/Pages-style) to rewrite:
-  - `/.well-known/webfinger` → `/functions/v1/webfinger` (preferred: same host)
-  - `/.well-known/nodeinfo` → `/functions/v1/nodeinfo`
-  - `/.well-known/host-meta` → `/functions/v1/host-meta`
-  - `/nodeinfo/*` → `/functions/v1/nodeinfo/*`
-  - (Optional safety) `/functions/v1/*` → backend function gateway if the platform requires it
+```text
+Request:  /webfinger?resource=acct:jrossstocholm@nolto.social
+Response: 200 OK
+{
+  "subject": "acct:jrossstocholm@nolto.social",
+  "links": [{
+    "rel": "self",
+    "type": "application/activity+json",
+    "href": "https://nolto.social/functions/v1/actor/jrossstocholm"
+  }]
+}
+```
 
-Why this works:
-- Many static hosts that don’t support `vercel.json` will still honor `_redirects` rules.
-- Query strings like `?resource=acct:...` are preserved by rewrite rules, which is required for WebFinger.
+**Status: DEPLOYED AND WORKING**
 
-### 2) Ensure `/.well-known/host-meta` works even if rewrites are restricted
-As a fallback enhancement, I will also add a **static** `public/.well-known/host-meta` file (XML) that points to the WebFinger template:
-`https://nolto.social/.well-known/webfinger?resource={uri}`
+### Issue 2: NodeInfo and Instance functions crash on startup
+Both functions use `Deno.openKv()` which is a **Deno Deploy feature, not available in Supabase Edge Functions**:
 
-This does not replace WebFinger, but it increases compatibility with clients that consult host-meta first.
+```typescript
+// Line 11 in nodeinfo/index.ts
+const kv = await Deno.openKv();  // TypeError: Deno.openKv is not a function
+```
 
-### 3) Verify routing with 3 quick checks (post-change)
-After publishing, we’ll verify:
-1. `https://fediverse-career.lovable.app/.well-known/webfinger?resource=acct:jrossstocholm@nolto.social` returns JSON with `"subject": "acct:jrossstocholm@nolto.social"`.
-2. `https://nolto.social/.well-known/webfinger?resource=acct:jrossstocholm@nolto.social` returns the same.
-3. Backend logs show the `webfinger` function receiving the requests (confirming the rewrite is active).
+Error from logs:
+```text
+TypeError: Deno.openKv is not a function
+    at file:///var/tmp/sb-compile-edge-runtime/nodeinfo/index.ts:8:23
+```
 
-### 4) Fix NodeInfo (currently errors)
-My earlier test to the backend `nodeinfo` endpoint returned a 500. Once routing is fixed (so we can hit it via `.well-known/nodeinfo`), we’ll:
-- Inspect backend logs for `nodeinfo`
-- Patch whatever runtime error it’s throwing (usually a missing env var, an unexpected DB query result, or an unhandled exception)
-This is important because some instances rely on NodeInfo during discovery/verification.
+**Fix needed:** Replace Deno KV with in-memory caching (like webfinger uses) or database-based caching.
 
-## Key risks / gotchas
-- If `nolto.social` is not currently pointing to the same deployed site as `fediverse-career.lovable.app`, `nolto.social` will keep returning 404 even after we fix the published domain. In that case, we’ll confirm custom-domain mapping and DNS.
-- If the host blocks `/.well-known/*` from rewrites, the static `public/.well-known/host-meta` fallback will still help, but we’ll need a different platform routing mechanism for dynamic WebFinger (I’ll adapt based on what the host supports).
+### Issue 3: Lovable hosting cannot proxy .well-known paths
+This is the **critical routing blocker**:
+- Lovable hosting is static-only (Vite/React CSR)
+- Neither `_redirects` nor `vercel.json` rewrites are supported
+- Requests to `nolto.social/.well-known/webfinger` return "Not found" because the static host has no file there and cannot proxy to the backend
+- The static `public/.well-known/host-meta` file DOES work (proof that static files are served)
 
-## Deliverables (files we’ll add/update)
-- Add: `public/_redirects`
-- Add: `public/.well-known/host-meta` (static fallback)
-- Keep: `vercel.json` (harmless; useful if export-to-Vercel is ever used)
+## Implementation Plan
 
-## After this is done
-- WebFinger discovery for `@jrossstocholm@nolto.social` should work from Mastodon search.
-- We can then proceed to the “feed works” timeline work with confidence (because federation discovery is foundational).
+### Step 1: Fix NodeInfo function (remove Deno KV)
+Replace the unsupported `Deno.openKv()` with simple in-memory caching:
+
+```typescript
+// Before (broken):
+const kv = await Deno.openKv();
+
+// After (working):
+const memoryCache = new Map<string, { data: any; expiresAt: number }>();
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+```
+
+Also fix the path handling since the function is called at `/nodeinfo`, not `/.well-known/nodeinfo`.
+
+### Step 2: Fix Instance function (same Deno KV issue)
+Apply the same in-memory caching fix.
+
+### Step 3: Add static WebFinger redirect
+Since we cannot dynamically proxy WebFinger, create a static HTML file that performs a client-side redirect. While this won't work for Mastodon's server-side lookups, it provides a fallback for browser-based discovery:
+
+```html
+<!-- public/.well-known/webfinger/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const resource = params.get('resource');
+    if (resource) {
+      window.location.href = 
+        'https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger?resource=' 
+        + encodeURIComponent(resource);
+    }
+  </script>
+</head>
+<body>Redirecting to WebFinger...</body>
+</html>
+```
+
+**Important limitation:** This does NOT solve the Mastodon discovery problem because Mastodon makes server-side HTTP requests, not browser requests.
+
+### Step 4: The real solution - Cloudflare Workers or DNS-level routing
+For full federation to work, you need one of these approaches:
+
+**Option A: Cloudflare Worker (recommended)**
+Put Cloudflare in front of `nolto.social` and add a Worker rule:
+```javascript
+// Cloudflare Worker
+addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (url.pathname.startsWith('/.well-known/webfinger')) {
+    const target = 'https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger' 
+                   + url.search;
+    event.respondWith(fetch(target));
+  } else {
+    event.respondWith(fetch(event.request));
+  }
+});
+```
+
+**Option B: Separate subdomain for federation**
+Configure `ap.nolto.social` to point directly to Supabase functions, then update all actor URLs to use that subdomain. This requires changing the WebFinger template in `host-meta`.
+
+**Option C: Use a different hosting platform**
+Deploy to Vercel or Cloudflare Pages which support rewrites for `/.well-known/` paths.
+
+## Files to Modify
+
+| File | Change |
+|------|--------|
+| `supabase/functions/nodeinfo/index.ts` | Replace Deno KV with in-memory cache, fix path handling |
+| `supabase/functions/instance/index.ts` | Replace Deno KV with in-memory cache |
+| `public/.well-known/webfinger/index.html` | Add static redirect fallback (limited use) |
+
+## What Won't Be Fixed (Platform Limitation)
+
+The core issue is that **Lovable's static hosting cannot proxy HTTP requests to external services**. The files `_redirects` and `vercel.json` are ignored. To achieve full federation where Mastodon can discover `@user@nolto.social`, you need either:
+
+1. A CDN/proxy layer (Cloudflare) that can intercept and route `/.well-known/` requests
+2. DNS-level routing to send `/.well-known/*` traffic to a different server
+3. A hosting platform that supports server-side rewrites
+
+## Summary
+
+| Component | Status | Fix |
+|-----------|--------|-----|
+| WebFinger function | Now deployed | Already working |
+| NodeInfo function | Broken (Deno KV) | Remove Deno KV, use memory cache |
+| Instance function | Broken (Deno KV) | Remove Deno KV, use memory cache |
+| Host-meta | Working | Static file serves correctly |
+| Routing to functions | Blocked | Requires external proxy (Cloudflare) |
 
