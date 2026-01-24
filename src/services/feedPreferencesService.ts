@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export type FeedType = 'following' | 'local' | 'federated' | 'all';
+export type FeedType = 'following' | 'local' | 'federated';
 
 export interface FeedPreferences {
   id: string;
@@ -39,7 +39,7 @@ export interface FeedRules {
 }
 
 const DEFAULT_PREFERENCES: Omit<FeedPreferences, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
-  default_feed: 'all',
+  default_feed: 'following',
   show_reposts: true,
   show_replies: false,
   language_filter: null,

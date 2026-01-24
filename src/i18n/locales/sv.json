@@ -158,9 +158,9 @@
     "following": "Följer",
     "followingDesc": "Inlägg från personer du följer",
     "local": "Lokal",
-    "localDesc": "Inlägg från denna instans",
+    "localDesc": "Alla inlägg på Nolto",
     "federated": "Federerat",
-    "federatedDesc": "Alla inlägg inklusive fjärr",
+    "federatedDesc": "Lokalt + fjärrföljda",
     "feeds": "Flöden",
     "createCustomFeed": "Skapa anpassat flöde",
     "manageFeeds": "Hantera flöden"

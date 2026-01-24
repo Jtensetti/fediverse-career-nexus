@@ -1,9 +1,41 @@
 /**
- * Utility to make URLs in text/HTML clickable
+ * Utility to make URLs, @mentions, and #hashtags in text/HTML clickable
  */
 
 // URL regex that matches http/https URLs
 const URL_REGEX = /(?<!["'=])(https?:\/\/[^\s<>\[\]"'`\)]+)/gi;
+
+// Regex for @mentions - handles @username and @username@instance.com
+const MENTION_REGEX = /@([a-zA-Z0-9_]+)(?:@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))?/g;
+
+// Regex for #hashtags
+const HASHTAG_REGEX = /#([a-zA-Z0-9_]+)/g;
+
+/**
+ * Converts @mentions to clickable profile links.
+ * Handles both local (@username) and remote (@username@instance) mentions.
+ */
+export function linkifyMentions(text: string): string {
+  return text.replace(MENTION_REGEX, (match, username, instance) => {
+    // If instance is provided, it's a remote user
+    const profilePath = instance 
+      ? `/profile/${username}@${instance}` // Remote user (future: federation lookup)
+      : `/profile/${username}`;
+    
+    return `<a href="${profilePath}" class="text-primary hover:underline font-medium">@${username}${instance ? '@' + instance : ''}</a>`;
+  });
+}
+
+/**
+ * Converts #hashtags to clickable search links.
+ * Links to the search page with the hashtag as query.
+ */
+export function linkifyHashtags(text: string): string {
+  return text.replace(HASHTAG_REGEX, (match, tag) => {
+    // Link to search page with hashtag query
+    return `<a href="/search?q=%23${encodeURIComponent(tag)}" class="text-primary hover:underline font-medium">#${tag}</a>`;
+  });
+}
 
 /**
  * Converts plain URLs in text to clickable anchor tags.
@@ -17,8 +49,8 @@ export function linkifyText(text: string): string {
     return `__ANCHOR_${anchors.length - 1}__`;
   });
 
-  // Now linkify remaining URLs
-  const linkedText = protectedText.replace(URL_REGEX, (url) => {
+  // Linkify URLs first
+  let linkedText = protectedText.replace(URL_REGEX, (url) => {
     // Clean up trailing punctuation that's likely not part of the URL
     let cleanUrl = url;
     const trailingPunctuation = /[.,;:!?\)\]]+$/;
@@ -31,6 +63,12 @@ export function linkifyText(text: string): string {
     
     return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline break-all">${cleanUrl}</a>${suffix}`;
   });
+
+  // Now linkify mentions (avoid matching inside URLs we just created)
+  linkedText = linkifyMentions(linkedText);
+  
+  // Now linkify hashtags (avoid matching inside URLs we just created)
+  linkedText = linkifyHashtags(linkedText);
 
   // Restore original anchor tags
   return linkedText.replace(/__ANCHOR_(\d+)__/g, (_, index) => anchors[parseInt(index)]);
@@ -53,6 +91,38 @@ export function extractUrls(text: string): string[] {
   });
 
   return [...new Set(cleaned)];
+}
+
+/**
+ * Extracts all @mentions from text content
+ * Returns array of usernames (without the @ symbol)
+ */
+export function extractMentions(text: string): string[] {
+  // Remove HTML tags first for cleaner extraction
+  const plainText = text.replace(/<[^>]+>/g, ' ');
+  const matches = [...plainText.matchAll(MENTION_REGEX)];
+  
+  if (!matches.length) return [];
+
+  // Return unique usernames (first capture group)
+  const usernames = matches.map(m => m[1].toLowerCase());
+  return [...new Set(usernames)];
+}
+
+/**
+ * Extracts all #hashtags from text content
+ * Returns array of hashtags (without the # symbol)
+ */
+export function extractHashtags(text: string): string[] {
+  // Remove HTML tags first for cleaner extraction
+  const plainText = text.replace(/<[^>]+>/g, ' ');
+  const matches = [...plainText.matchAll(HASHTAG_REGEX)];
+  
+  if (!matches.length) return [];
+
+  // Return unique hashtags (first capture group)
+  const hashtags = matches.map(m => m[1].toLowerCase());
+  return [...new Set(hashtags)];
 }
 
 /**

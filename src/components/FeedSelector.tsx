@@ -33,8 +33,8 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
 
   const feedTabs = [
     { id: 'following', label: t("feed.following", "Following"), icon: Home, description: t("feed.followingDesc", "Posts from people you follow") },
-    { id: 'local', label: t("feed.local", "Local"), icon: Users, description: t("feed.localDesc", "Posts from this instance") },
-    { id: 'federated', label: t("feed.federated", "Federated"), icon: Globe, description: t("feed.federatedDesc", "All posts including remote") },
+    { id: 'local', label: t("feed.local", "Local"), icon: Users, description: t("feed.localDesc", "All posts on Nolto") },
+    { id: 'federated', label: t("feed.federated", "Federated"), icon: Globe, description: t("feed.federatedDesc", "Local + remote follows") },
   ] as const;
 
   useEffect(() => {

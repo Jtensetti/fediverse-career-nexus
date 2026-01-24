@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { extractMentions } from "@/lib/linkify";
 
 export interface Post {
   id: string;
@@ -255,6 +256,37 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
     console.log('✅ Post created successfully:', post.id);
 
+    // Handle @mentions - create notifications for mentioned users
+    const mentions = extractMentions(postData.content);
+    if (mentions.length > 0) {
+      console.log('📣 Processing mentions:', mentions);
+      for (const username of mentions) {
+        try {
+          // Look up user by username
+          const { data: mentionedUser } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('username', username)
+            .single();
+          
+          if (mentionedUser && mentionedUser.id !== user.id) {
+            // Create mention notification
+            await supabase.from('notifications').insert({
+              type: 'mention',
+              recipient_id: mentionedUser.id,
+              actor_id: user.id,
+              object_id: post.id,
+              object_type: 'post',
+              content: JSON.stringify({ preview: postData.content.substring(0, 100) })
+            });
+            console.log('✅ Mention notification created for:', username);
+          }
+        } catch (mentionError) {
+          console.warn('⚠️ Could not create mention notification for:', username, mentionError);
+        }
+      }
+    }
+
     // Queue the activity for federation delivery
     console.log('📤 Queueing post for federation...');
     
@@ -273,7 +305,6 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
         }
       } catch (fedError) {
         console.warn('⚠️ Could not queue post for federation:', fedError);
-        // Don't fail the post creation if federation fails
       }
     }
 

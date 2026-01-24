@@ -30,7 +30,7 @@ export interface FederatedPost {
   content_warning?: string;
 }
 
-export type FeedType = 'all' | 'following' | 'local' | 'remote';
+export type FeedType = 'following' | 'local' | 'federated';
 
 // Get IDs of users the current user follows (connections + author follows)
 const getFollowedUserIds = async (userId: string): Promise<string[]> => {
@@ -63,11 +63,27 @@ const getFollowedUserIds = async (userId: string): Promise<string[]> => {
   return Array.from(followedIds);
 };
 
+// Get IDs of remote users the current user follows (users with home_instance set)
+const getRemoteFollowedUserIds = async (userId: string): Promise<string[]> => {
+  const followedIds = await getFollowedUserIds(userId);
+  
+  if (followedIds.length === 0) return [];
+
+  // Check which of these users are remote (have home_instance set)
+  const { data: remoteProfiles } = await supabase
+    .from('public_profiles')
+    .select('id')
+    .in('id', followedIds)
+    .not('home_instance', 'is', null);
+
+  return remoteProfiles?.map(p => p.id) || [];
+};
+
 export const getFederatedFeed = async (
   limit: number = 20, 
   offset: number = 0,
-  feedType: FeedType = 'all',
-  userId?: string  // Accept userId from context instead of calling getUser()
+  feedType: FeedType = 'following',
+  userId?: string
 ): Promise<FederatedPost[]> => {
   try {
     console.log('🌐 Fetching federated feed with limit:', limit, 'offset:', offset, 'feedType:', feedType);
@@ -80,7 +96,6 @@ export const getFederatedFeed = async (
       followedUserIds.push(userId);
       console.log('👥 Following feed - followed user IDs:', followedUserIds.length);
       
-      // If user follows no one, return empty (they'll only see their own posts)
       if (followedUserIds.length === 1) {
         console.log('📭 User follows no one, returning own posts only');
       }
@@ -108,7 +123,6 @@ export const getFederatedFeed = async (
 
     if (apError) {
       console.error('Error fetching from ap_objects:', apError);
-      // Fallback to an empty array instead of throwing
       return [];
     }
 
@@ -123,15 +137,32 @@ export const getFederatedFeed = async (
     let filteredObjects = apObjects;
     
     if (feedType === 'following' && userId) {
+      // Following feed: posts AND boosts from followed users
       filteredObjects = apObjects.filter((obj: any) => {
         const actorUserId = obj.actors?.user_id;
         return actorUserId && followedUserIds.includes(actorUserId);
       });
       console.log('📊 Filtered to following:', filteredObjects.length);
     } else if (feedType === 'local') {
-      filteredObjects = apObjects.filter((obj: any) => (obj as any).source === 'local');
-    } else if (feedType === 'remote') {
-      filteredObjects = apObjects.filter((obj: any) => (obj as any).source === 'remote');
+      // Local feed: all local posts, exclude Announce to avoid duplication
+      filteredObjects = apObjects.filter((obj: any) => 
+        (obj as any).source === 'local' && obj.type !== 'Announce'
+      );
+      console.log('📊 Filtered to local:', filteredObjects.length);
+    } else if (feedType === 'federated') {
+      // Federated feed: local posts + remote posts from followed users
+      if (userId) {
+        const remoteFollowedIds = await getRemoteFollowedUserIds(userId);
+        filteredObjects = apObjects.filter((obj: any) => {
+          // Include all local posts
+          if ((obj as any).source === 'local') return true;
+          // Include remote posts from users we follow
+          const actorUserId = obj.actors?.user_id;
+          return actorUserId && remoteFollowedIds.includes(actorUserId);
+        });
+      }
+      // If no user logged in, show all posts
+      console.log('📊 Filtered to federated:', filteredObjects.length);
     }
 
     const userIds = filteredObjects
@@ -189,7 +220,6 @@ export const getFederatedFeed = async (
     return federatedPosts;
   } catch (error) {
     console.error('Error fetching federated feed:', error);
-    // Return empty array instead of throwing to prevent breaking the UI
     return [];
   }
 };
@@ -198,10 +228,8 @@ export const federateActivity = async (activity: any) => {
   try {
     console.log('🌐 Federating activity:', activity.type);
     
-    // For now, just log the activity - federation will be implemented later
     console.log('Activity to federate:', activity);
     
-    // Store locally in ap_objects table
     const { data, error } = await supabase
       .from('ap_objects')
       .insert({
@@ -354,21 +382,17 @@ export const getRateLimitedHosts = async (requestThreshold: number, timeWindow: 
 };
 
 export const getProxiedMediaUrl = (originalUrl: string): string => {
-  // Don't proxy empty URLs or local URLs
   if (!originalUrl) return originalUrl;
   
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   
-  // Don't proxy our own URLs
   if (originalUrl.startsWith(supabaseUrl)) {
     return originalUrl;
   }
   
-  // Don't proxy data URLs
   if (originalUrl.startsWith('data:')) {
     return originalUrl;
   }
   
-  // Proxy remote media through our edge function for privacy
   return `${supabaseUrl}/functions/v1/proxy-media?url=${encodeURIComponent(originalUrl)}`;
 };
