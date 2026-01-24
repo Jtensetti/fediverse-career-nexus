@@ -1,284 +1,192 @@
 
-# Feed System Overhaul Plan
+# User Discovery Fix Plan
 
-## Overview
-This plan restructures the three feed types with clear, distinct purposes and adds support for @mentions and #hashtags.
+## Problem Summary
 
-## Current Issues
-1. **Following feed** - Currently includes connections and author follows, but doesn't show boosts/quote reposts from followed users
-2. **Local feed** - Correctly filters by `source='local'`, but excludes `Announce` type activities (boosts)
-3. **Federated feed** - Currently named "All" and shows everything, but should specifically show local + remote posts from people you follow on other instances
-4. **Mentions/Hashtags** - Not parsed or made clickable in post content
+When other Fediverse instances search for `@jrossstocholm@nolto.social`, the discovery fails. I tested the WebFinger endpoint and found the root cause:
 
-## Feed Definitions
+**The `/.well-known/webfinger` path returns 404** because there's no routing configured to forward requests from `nolto.social/.well-known/webfinger` to the Supabase edge function.
 
-### 1. Following Feed
-**Purpose**: Posts from people you follow or are connected with, including their boosts and quote reposts
+## Current Architecture Issues
 
-**Content includes**:
-- Original posts (Note, Create, Article) from:
-  - Users you follow via `author_follows`
-  - Users you're connected with via `user_connections` (status: accepted)
-  - Your own posts
-- Boosts/Quote reposts (Announce) made BY people you follow/are connected with
+### Issue 1: Missing Well-Known Path Routing
+The edge functions are deployed at:
+- `https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger`
 
-### 2. Local Feed
-**Purpose**: All posts made on Nolto by anyone (not just followed users)
+But Fediverse instances look for:
+- `https://nolto.social/.well-known/webfinger?resource=acct:user@nolto.social`
 
-**Content includes**:
-- All original posts where `source = 'local'`
-- No boosts/reposts (to avoid duplication - the original post is already shown)
-- With replies (not only top-level posts)
+There's **no proxy/redirect configuration** to route these paths.
 
-### 3. Federated Feed
-**Purpose**: Combined view of local posts + remote posts from people you follow on external instances
+### Issue 2: Most Actors Missing Public Keys
+Database check shows **160 active actors but only 16 have public keys**. Without public keys, other instances can't verify HTTP signatures for federation activities.
 
-**Content includes**:
-- All local posts (same as Local feed)
-- Remote posts from users you follow who are on other instances (identified by `home_instance` or `is_remote`)
-- Boosts from remote followed users
-- This is the "full Fediverse view" for users who signed up via Fediverse OAuth
+### Issue 3: Build Error (Unrelated but blocking)
+The `auth-signup` function has a Deno compatibility error with `npm:resend@2.0.0` that needs fixing.
 
-## Technical Implementation
-
-### Phase 1: Database Changes
-
-**Update the `federated_feed` view** to include `Announce` type:
-
-```sql
-CREATE OR REPLACE VIEW public.federated_feed 
-WITH (security_invoker = true)
-AS
-SELECT 
-  ap.id,
-  ap.type,
-  ap.content,
-  ap.attributed_to,
-  ap.published_at,
-  'local' AS source
-FROM public.ap_objects ap
-WHERE ap.type IN ('Note', 'Article', 'Create', 'Announce')
-  AND (
-    -- For non-Announce posts, exclude replies
-    (ap.type != 'Announce' AND ap.content->>'inReplyTo' IS NULL AND ap.content->'object'->>'inReplyTo' IS NULL)
-    -- For Announce posts, include all
-    OR ap.type = 'Announce'
-  )
-  AND (ap.content->>'type' IS NULL OR ap.content->>'type' NOT IN ('Like'))
-ORDER BY ap.published_at DESC;
+### Issue 4: Actor URL Uses Supabase Domain
+The actor URLs are generated as:
+```
+https://anknmcmqljejabxbeohv.supabase.co/functions/v1/actor/jrossstocholm
 ```
 
-### Phase 2: Service Layer Changes
+But they should be:
+```
+https://nolto.social/functions/v1/actor/jrossstocholm
+```
+or ideally:
+```
+https://nolto.social/@jrossstocholm
+```
 
-**File: `src/services/federationService.ts`**
+## Solution
 
-1. Update `FeedType` to match new naming: `'following' | 'local' | 'federated'`
+### Phase 1: Fix Build Error First
 
-2. Update `getFederatedFeed` function:
-   - **Following feed**: Filter to posts where actor is in followed users list, INCLUDING Announce types
-   - **Local feed**: Filter to `source='local'` and exclude Announce types (to avoid duplication)
-   - **Federated feed**: Include all local posts PLUS remote posts from followed users with `home_instance` or `is_remote=true`
-
+**File: `supabase/functions/auth-signup/index.ts`**
+Change the Resend import from npm specifier to esm.sh:
 ```typescript
-// For 'following' feed:
-// Include posts AND boosts from followed users
-if (feedType === 'following') {
-  filteredObjects = apObjects.filter((obj: any) => {
-    const actorUserId = obj.actors?.user_id;
-    return actorUserId && followedUserIds.includes(actorUserId);
-  });
-}
+// From:
+import { Resend } from "npm:resend@2.0.0";
 
-// For 'local' feed:
-// All local posts except Announce to avoid duplication
-if (feedType === 'local') {
-  filteredObjects = apObjects.filter((obj: any) => 
-    obj.source === 'local' && obj.type !== 'Announce'
-  );
-}
-
-// For 'federated' feed:
-// Local posts + remote posts from followed users
-if (feedType === 'federated') {
-  const remoteFollowedIds = await getRemoteFollowedUserIds(userId);
-  filteredObjects = apObjects.filter((obj: any) => {
-    if (obj.source === 'local') return true;
-    const actorUserId = obj.actors?.user_id;
-    return actorUserId && remoteFollowedIds.includes(actorUserId);
-  });
-}
+// To:
+import { Resend } from "https://esm.sh/resend@2.0.0";
 ```
 
-3. Add helper function `getRemoteFollowedUserIds` to get users you follow who have `home_instance` set (federated users)
+### Phase 2: Add Well-Known Routing Config
 
-### Phase 3: UI Updates
+Since this is a Lovable-hosted project, we need to add a `public/_redirects` file (Netlify-style) or handle it via the Supabase config.
 
-**File: `src/services/feedPreferencesService.ts`**
-- Remove 'all' from FeedType, keep `'following' | 'local' | 'federated'`
+**Option A: Add Supabase config for JWT-less access**
+Update `supabase/config.toml` to allow public access to federation endpoints:
+```toml
+[functions.webfinger]
+verify_jwt = false
 
-**File: `src/components/FeedSelector.tsx`**
-- Already has correct tabs: Following, Local, Federated
-- Update descriptions:
-  - Following: "Posts from people you follow"
-  - Local: "All posts on Nolto"
-  - Federated: "Local + remote follows"
+[functions.actor]
+verify_jwt = false
 
-**File: `src/components/FederatedFeed.tsx`**
-- Remove 'all' feed type handling
-- Default to 'following' instead of 'all'
+[functions.nodeinfo]
+verify_jwt = false
 
-**File: `src/pages/FederatedFeed.tsx`**
-- Update default feed from 'all' to 'following'
+[functions.inbox]
+verify_jwt = false
 
-### Phase 4: @Mentions Support
+[functions.outbox]
+verify_jwt = false
 
-**File: `src/lib/linkify.ts`**
-Add mention parsing:
+[functions.followers]
+verify_jwt = false
 
+[functions.following]
+verify_jwt = false
+```
+
+**Option B: Create a client-side redirect handler**
+Since the frontend runs at `nolto.social`, we can add API routes that proxy to edge functions. However, well-known paths require server-side handling which Vite can't provide in production.
+
+**Recommended Solution**: The WebFinger endpoint needs to be accessible at the standard path. Since Lovable uses Cloudflare/Vercel for hosting, we need to:
+
+1. Add a `vercel.json` or `_redirects` file with rewrites
+2. Or use a custom domain on the Supabase project that matches
+
+### Phase 3: Fix Actor URL Generation
+
+**File: `supabase/functions/actor/utils.ts`**
+Update `createActorObject` to use `nolto.social` as the domain:
 ```typescript
-// Regex for @mentions - handles @username and @username@instance.com
-const MENTION_REGEX = /@([a-zA-Z0-9_]+)(?:@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))?/g;
+// Instead of using Supabase URL, use the production domain
+const NOLTO_DOMAIN = "nolto.social";
+const baseUrl = `https://${NOLTO_DOMAIN}`;
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 
-export function linkifyMentions(text: string): string {
-  return text.replace(MENTION_REGEX, (match, username, instance) => {
-    // If no instance, assume local user
-    const profilePath = instance 
-      ? `/profile/${username}@${instance}` // Remote user (future: federation lookup)
-      : `/profile/${username}`;
-    
-    return `<a href="${profilePath}" class="text-primary hover:underline font-medium">@${username}${instance ? '@' + instance : ''}</a>`;
-  });
-}
-
-// Update linkifyText to also handle mentions
-export function linkifyText(text: string): string {
-  // ... existing URL linkification
-  // Add mention linkification after URLs
-  const withMentions = linkifyMentions(linkedText);
-  return withMentions;
-}
+// Actor URL should be on the public domain
+const actorUrl = `${baseUrl}/functions/v1/actor/${profile.username}`;
 ```
 
-**File: `src/services/postService.ts`**
-Add mention extraction and notification:
-
+**File: `supabase/functions/webfinger/index.ts`**
+Same fix - ensure the actor URL in WebFinger response uses `nolto.social`:
 ```typescript
-// Extract mentions when creating a post
-function extractMentions(content: string): string[] {
-  const MENTION_REGEX = /@([a-zA-Z0-9_]+)/g;
-  const matches = [...content.matchAll(MENTION_REGEX)];
-  return matches.map(m => m[1]); // Return just usernames
-}
-
-// In createPost function, after post creation:
-const mentions = extractMentions(postData.content);
-for (const username of mentions) {
-  // Look up user by username
-  const { data: mentionedUser } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('username', username)
-    .single();
-  
-  if (mentionedUser && mentionedUser.id !== user.id) {
-    // Create mention notification
-    await supabase.from('notifications').insert({
-      type: 'mention',
-      recipient_id: mentionedUser.id,
-      actor_id: user.id,
-      object_id: newPostId,
-      object_type: 'post',
-      content: JSON.stringify({ preview: postData.content.substring(0, 100) })
-    });
-  }
-}
+const actorId = `https://nolto.social/functions/v1/actor/${profile.username}`;
+const profileUrl = `https://nolto.social/profile/${profile.username}`;
 ```
 
-### Phase 5: #Hashtag Support (Display Only)
+### Phase 4: Generate Missing Public Keys
 
-**File: `src/lib/linkify.ts`**
-Add hashtag parsing (display only for now):
+Create a batch job to generate RSA key pairs for actors missing public keys:
 
+**File: `supabase/functions/generate-actor-keys/index.ts`** (new)
 ```typescript
-// Regex for #hashtags
-const HASHTAG_REGEX = /#([a-zA-Z0-9_]+)/g;
+// Iterate through actors with NULL public_key
+// Generate RSA key pairs using crypto.subtle
+// Update actors table with the keys
+```
 
-export function linkifyHashtags(text: string): string {
-  return text.replace(HASHTAG_REGEX, (match, tag) => {
-    // Link to search page with hashtag query (future: dedicated hashtag page)
-    return `<a href="/search?q=%23${encodeURIComponent(tag)}" class="text-primary hover:underline font-medium">#${tag}</a>`;
-  });
+### Phase 5: Add Host-Meta Endpoint
+
+Create `supabase/functions/host-meta/index.ts` to serve `/.well-known/host-meta`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
+  <Link rel="lrdd" type="application/jrd+json" 
+        template="https://nolto.social/.well-known/webfinger?resource={uri}"/>
+</XRD>
+```
+
+## Implementation Order
+
+1. **Fix auth-signup build error** - Change Resend import
+2. **Update supabase/config.toml** - Disable JWT verification for federation endpoints
+3. **Fix actor URL generation** - Use `nolto.social` domain consistently
+4. **Add redirect configuration** - Create rewrites for well-known paths
+5. **Generate missing keys** - Create and run key generation for existing actors
+6. **Add host-meta endpoint** - For full discovery compliance
+
+## Technical Details
+
+### Routing Configuration File
+For Lovable/Vercel hosting, add `vercel.json`:
+```json
+{
+  "rewrites": [
+    {
+      "source": "/.well-known/webfinger",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger"
+    },
+    {
+      "source": "/.well-known/nodeinfo",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/nodeinfo"
+    },
+    {
+      "source": "/.well-known/host-meta",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/host-meta"
+    },
+    {
+      "source": "/functions/v1/:path*",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/:path*"
+    }
+  ]
 }
 ```
 
-Update `linkifyText` to include hashtags:
-
+### Key Generation Algorithm
 ```typescript
-export function linkifyText(text: string): string {
-  // Protect existing anchors
-  // ... existing code
-  
-  // Linkify URLs
-  // ... existing code
-  
-  // Linkify mentions
-  const withMentions = linkifyMentions(linkedText);
-  
-  // Linkify hashtags
-  const withHashtags = linkifyHashtags(withMentions);
-  
-  // Restore original anchors
-  return restoreAnchors(withHashtags);
-}
+const keyPair = await crypto.subtle.generateKey(
+  {
+    name: "RSASSA-PKCS1-v1_5",
+    modulusLength: 2048,
+    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+    hash: "SHA-256",
+  },
+  true,
+  ["sign", "verify"]
+);
 ```
 
-## Files to Modify
+## Expected Outcome
 
-1. **Database Migration** (new file)
-   - Update `federated_feed` view to include Announce type
-
-2. **`src/services/federationService.ts`**
-   - Update FeedType definition
-   - Rewrite feed filtering logic for each feed type
-   - Add `getRemoteFollowedUserIds` helper
-
-3. **`src/services/feedPreferencesService.ts`**
-   - Update FeedType (remove 'all')
-
-4. **`src/components/FeedSelector.tsx`**
-   - Update tab descriptions
-
-5. **`src/components/FederatedFeed.tsx`**
-   - Update default feed type
-   - Remove 'all' handling
-
-6. **`src/pages/FederatedFeed.tsx`**
-   - Update default state from 'all' to 'following'
-
-7. **`src/lib/linkify.ts`**
-   - Add `linkifyMentions` function
-   - Add `linkifyHashtags` function
-   - Update `linkifyText` to use both
-
-8. **`src/services/postService.ts`**
-   - Add `extractMentions` function
-   - Add notification creation for mentions in `createPost`
-
-9. **`src/i18n/locales/en.json`** & **`sv.json`**
-   - Update feed descriptions
-
-## Order of Implementation
-
-1. Database migration (view update)
-2. Service layer updates (federationService, feedPreferencesService)
-3. UI component updates (FeedSelector, FederatedFeed)
-4. Page updates (FederatedFeed.tsx)
-5. Linkify updates (mentions + hashtags)
-6. Post service updates (mention notifications)
-7. i18n updates
-
-## Notes
-
-- Hashtags currently link to search page since there's no dedicated hashtag infrastructure
-- Remote user mentions (@user@instance) will display as links but won't create notifications (future federation feature)
-- The Federated feed is specifically designed for users who signed up via Fediverse OAuth and follow people on other instances
+After implementation:
+1. `https://nolto.social/.well-known/webfinger?resource=acct:jrossstocholm@nolto.social` returns valid JRD+JSON
+2. Mastodon/other instances can discover Nolto users by searching `@username@nolto.social`
+3. All actors have valid RSA key pairs for HTTP signature verification
+4. Federation activities can be properly signed and verified
