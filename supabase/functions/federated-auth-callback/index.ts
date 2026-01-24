@@ -46,7 +46,7 @@ async function exchangeCodeForToken(
         client_id: clientId,
         client_secret: clientSecret,
         redirect_uri: redirectUri,
-        scope: 'read:accounts read:statuses'
+        scope: 'read:accounts read:follows'
       })
     });
     
