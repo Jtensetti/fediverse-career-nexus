@@ -92,20 +92,9 @@ export function NotificationBell() {
           }
           break;
         case 'message':
-          // For message reactions, navigate to the conversation
-          // For regular messages, navigate to the conversation with the actor
-          if (notification.type === 'message_reaction') {
-            // The content contains conversationWith - the other person in the conversation
-            try {
-              const contentData = notification.content ? JSON.parse(notification.content) : {};
-              const conversationWith = contentData.conversationWith || notification.actor_id;
-              navigate(`/messages/${conversationWith}`);
-            } catch {
-              if (notification.actor_id) {
-                navigate(`/messages/${notification.actor_id}`);
-              }
-            }
-          } else if (notification.actor_id) {
+          // For message reactions, navigate to the conversation with the person who reacted
+          // For regular messages, navigate to the conversation with the actor (sender)
+          if (notification.actor_id) {
             navigate(`/messages/${notification.actor_id}`);
           }
           break;
