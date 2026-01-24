@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import {
   Form,
   FormControl,
@@ -101,9 +101,24 @@ const JobForm = ({
     onSubmit(values);
   };
 
-  const onFormSubmit = form.handleSubmit(handleSubmit, (errors) => {
-    console.log('Form validation errors:', errors);
-  });
+  const onFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Form submit triggered');
+    
+    form.handleSubmit(
+      (values) => {
+        console.log('Validation passed, submitting:', values);
+        handleSubmit(values);
+      },
+      (errors) => {
+        console.log('Form validation errors:', errors);
+        const errorMessages = Object.entries(errors)
+          .map(([field, error]) => `${field}: ${error?.message}`)
+          .join(', ');
+        toast.error(`Please fix validation errors: ${errorMessages}`);
+      }
+    )();
+  };
 
   return (
     <Form {...form}>
