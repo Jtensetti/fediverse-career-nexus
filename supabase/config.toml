@@ -17,3 +17,30 @@ verify_jwt = false
 
 [functions.encrypt-message]
 verify_jwt = false
+
+[functions.webfinger]
+verify_jwt = false
+
+[functions.actor]
+verify_jwt = false
+
+[functions.nodeinfo]
+verify_jwt = false
+
+[functions.inbox]
+verify_jwt = false
+
+[functions.outbox]
+verify_jwt = false
+
+[functions.followers]
+verify_jwt = false
+
+[functions.following]
+verify_jwt = false
+
+[functions.host-meta]
+verify_jwt = false
+
+[functions.generate-actor-keys]
+verify_jwt = false

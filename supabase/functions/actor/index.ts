@@ -24,8 +24,19 @@ serve(async (req) => {
     const pathParts = url.pathname.split("/").filter(Boolean);
     const remoteHost = url.hostname;
     
-    // Check if this is an actor request (path should be /:username)
-    if (pathParts.length !== 1) {
+    // The path structure is /functions/v1/actor/:username or /actor/:username
+    // Find the username - it's the last part after 'actor'
+    const actorIndex = pathParts.indexOf('actor');
+    let username: string | undefined;
+    
+    if (actorIndex !== -1 && actorIndex < pathParts.length - 1) {
+      username = pathParts[actorIndex + 1];
+    } else if (pathParts.length === 1) {
+      // Direct call with just username
+      username = pathParts[0];
+    }
+    
+    if (!username) {
       await logRequestMetrics(remoteHost, url.pathname, startTime, false, 404);
       return new Response(
         JSON.stringify({ error: "Not found" }),
@@ -35,8 +46,6 @@ serve(async (req) => {
         }
       );
     }
-
-    const username = pathParts[0];
     
     // Try to get from cache first
     const cachedActor = await getActorFromCache(username);
