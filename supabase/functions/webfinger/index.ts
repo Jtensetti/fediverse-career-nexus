@@ -6,6 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+const cacheHeaders = {
+  "Cache-Control": "public, max-age=300",
+};
 
 // Initialize the Deno KV store for caching
 const kv = await Deno.openKv();
@@ -17,6 +20,17 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
+
+function getRequestHost(req: Request, url: URL) {
+  const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0].trim();
+  const hostHeader = req.headers.get("host")?.split(",")[0].trim();
+  return forwardedHost || hostHeader || url.hostname;
+}
+
+function getRequestProtocol(req: Request, url: URL) {
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0].trim();
+  return forwardedProto || url.protocol.replace(":", "");
+}
 
 // Log federation request metrics
 async function logRequestMetrics(
@@ -48,9 +62,8 @@ async function logRequestMetrics(
 }
 
 // Create local actor object on-demand
-async function createLocalActorObject(profile: any, domain: string) {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? `https://${domain}`;
-  const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
+async function createLocalActorObject(profile: any, baseUrl: string) {
+  const actorUrl = `${baseUrl}/functions/v1/actor/${profile.username}`;
   
   // Try to get the actual public key from the actors table
   let publicKeyPem = "";
@@ -74,91 +87,16 @@ async function createLocalActorObject(profile: any, domain: string) {
     preferredUsername: profile.username,
     name: profile.fullname || profile.username,
     summary: profile.bio || "",
-    inbox: `${supabaseUrl}/functions/v1/inbox/${profile.username}`,
-    outbox: `${supabaseUrl}/functions/v1/outbox/${profile.username}`,
-    followers: `${supabaseUrl}/functions/v1/followers/${profile.username}`,
-    following: `${supabaseUrl}/functions/v1/following/${profile.username}`,
+    inbox: `${baseUrl}/functions/v1/inbox/${profile.username}`,
+    outbox: `${baseUrl}/functions/v1/outbox/${profile.username}`,
+    followers: `${baseUrl}/functions/v1/followers/${profile.username}`,
+    following: `${baseUrl}/functions/v1/following/${profile.username}`,
     publicKey: {
       id: `${actorUrl}#main-key`,
       owner: actorUrl,
       publicKeyPem: publicKeyPem
     }
   };
-}
-
-// Fetch remote WebFinger
-async function fetchRemoteWebFinger(domain: string, username: string) {
-  const webfingerUrl = `https://${domain}/.well-known/webfinger?resource=acct:${username}@${domain}`;
-  
-  console.log(`Fetching remote WebFinger: ${webfingerUrl}`);
-  
-  const response = await fetch(webfingerUrl, {
-    headers: {
-      'Accept': 'application/jrd+json, application/json',
-      'User-Agent': 'Supabase-ActivityPub/1.0'
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`WebFinger request failed: ${response.status} ${response.statusText}`);
-  }
-  
-  const webfingerData = await response.json();
-  
-  // Find the self link with ActivityPub profile
-  const selfLink = webfingerData.links?.find((link: any) => 
-    link.rel === "self" && link.type === "application/activity+json"
-  );
-  
-  if (!selfLink) {
-    throw new Error("No ActivityPub self link found in WebFinger response");
-  }
-  
-  return {
-    webfingerData,
-    actorUrl: selfLink.href
-  };
-}
-
-// Fetch and cache remote actor
-async function fetchAndCacheRemoteActor(actorUrl: string) {
-  console.log(`Fetching remote actor: ${actorUrl}`);
-  
-  const response = await fetch(actorUrl, {
-    headers: {
-      'Accept': 'application/activity+json, application/ld+json',
-      'User-Agent': 'Supabase-ActivityPub/1.0'
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Actor request failed: ${response.status} ${response.statusText}`);
-  }
-  
-  const actorData = await response.json();
-  
-  // Validate required ActivityPub fields
-  if (!actorData.id || !actorData.inbox) {
-    throw new Error("Invalid actor data: missing required fields (id, inbox)");
-  }
-  
-  // Cache the actor data in our database
-  try {
-    await supabaseClient
-      .from("remote_actors_cache")
-      .upsert({
-        actor_url: actorData.id,
-        actor_data: actorData,
-        fetched_at: new Date().toISOString()
-      });
-      
-    console.log(`Successfully cached remote actor: ${actorData.id}`);
-  } catch (error) {
-    console.error("Error caching remote actor:", error);
-    // Non-fatal, continue even if caching fails
-  }
-  
-  return actorData;
 }
 
 serve(async (req) => {
@@ -173,6 +111,9 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
+    const requestHost = getRequestHost(req, url);
+    const requestProtocol = getRequestProtocol(req, url);
+    const baseUrl = `${requestProtocol}://${requestHost}`;
     // WebFinger requires a resource parameter
     const resource = url.searchParams.get("resource");
 
@@ -182,27 +123,38 @@ serve(async (req) => {
         JSON.stringify({ error: "Resource parameter is required" }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
+          headers: { ...corsHeaders, ...cacheHeaders, "Content-Type": "application/json" }
         }
       );
     }
 
     // WebFinger typically uses acct:username@domain.com format
-    const acctMatch = resource.match(/^acct:(.+)@(.+)$/);
+    const acctMatch = resource.match(/^acct:([^@]+)@(.+)$/i);
     if (!acctMatch) {
       await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 400, "Invalid resource format");
       return new Response(
         JSON.stringify({ error: "Invalid resource format. Expected acct:username@domain.com" }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
+          headers: { ...corsHeaders, ...cacheHeaders, "Content-Type": "application/json" }
         }
       );
     }
 
     const username = acctMatch[1];
-    const domain = acctMatch[2];
-    const currentDomain = url.hostname;
+    const domain = acctMatch[2].toLowerCase();
+    const currentDomain = requestHost.toLowerCase();
+
+    if (domain !== currentDomain) {
+      await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 400, "Resource domain mismatch");
+      return new Response(
+        JSON.stringify({ error: "Resource domain does not match this instance" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, ...cacheHeaders, "Content-Type": "application/json" }
+        }
+      );
+    }
 
     // Try to get from cache first
     const cacheKey = [CACHE_NAMESPACE, resource];
@@ -214,77 +166,12 @@ serve(async (req) => {
       return new Response(
         JSON.stringify(cachedResponse.value),
         {
-          headers: { ...corsHeaders, "Content-Type": "application/jrd+json" }
+          headers: { ...corsHeaders, ...cacheHeaders, "Content-Type": "application/jrd+json" }
         }
       );
     }
 
     console.log(`Cache miss for ${resource}, processing request`);
-
-    // Handle remote domains
-    if (domain !== currentDomain) {
-      try {
-        // First check if we have the remote actor cached in our database
-        const { data: cachedRemoteActor, error } = await supabaseClient
-          .from("remote_actors_cache")
-          .select("actor_data")
-          .eq("actor_url", `https://${domain}/${username}`)
-          .single();
-          
-        let actorUrl;
-        
-        if (!error && cachedRemoteActor) {
-          // We have this remote actor cached, use it
-          actorUrl = cachedRemoteActor.actor_data.id;
-          console.log(`Found cached remote actor: ${actorUrl}`);
-        } else {
-          // Need to fetch from remote
-          console.log(`Fetching remote WebFinger and actor for ${username}@${domain}`);
-          
-          const { webfingerData, actorUrl: fetchedActorUrl } = await fetchRemoteWebFinger(domain, username);
-          actorUrl = fetchedActorUrl;
-          
-          // Fetch and cache the actor
-          await fetchAndCacheRemoteActor(actorUrl);
-        }
-        
-        // Create WebFinger response for the remote actor
-        const webfingerResponse = {
-          subject: resource,
-          links: [
-            {
-              rel: "self",
-              type: "application/activity+json",
-              href: actorUrl
-            }
-          ]
-        };
-        
-        // Store in KV cache
-        await kv.set(cacheKey, webfingerResponse, { expireIn: CACHE_TTL });
-        
-        await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, true, 200);
-        return new Response(
-          JSON.stringify(webfingerResponse),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/jrd+json" }
-          }
-        );
-        
-      } catch (error) {
-        console.error(`Error fetching remote actor ${username}@${domain}:`, error);
-        await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 404, error.message);
-        return new Response(
-          JSON.stringify({ error: "Remote actor not found or unreachable" }),
-          {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" }
-          }
-        );
-      }
-    }
-
-    // Handle local domain
     console.log(`Processing local user ${username} on domain ${currentDomain}`);
 
     // Look up the user in the database
@@ -301,13 +188,13 @@ serve(async (req) => {
         JSON.stringify({ error: "User not found" }),
         {
           status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
+          headers: { ...corsHeaders, ...cacheHeaders, "Content-Type": "application/json" }
         }
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? `https://${currentDomain}`;
-    const actorId = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
+    const actorId = `${baseUrl}/functions/v1/actor/${profile.username}`;
+    const profileUrl = `${baseUrl}/profile/${profile.username}`;
     
     // Try to get actor from cache first
     let { data: cachedActor, error: cacheError } = await supabaseClient
@@ -350,7 +237,7 @@ serve(async (req) => {
       } else {
         // Create actor on-demand
         console.log(`Creating actor on-demand for ${username}`);
-        actorObject = await createLocalActorObject(profile, currentDomain);
+        actorObject = await createLocalActorObject(profile, baseUrl);
         
         // Try to find or create actor record
         let { data: actorRecord } = await supabaseClient
@@ -414,6 +301,11 @@ serve(async (req) => {
           rel: "self",
           type: "application/activity+json",
           href: actorId
+        },
+        {
+          rel: "http://webfinger.net/rel/profile-page",
+          type: "text/html",
+          href: profileUrl
         }
       ]
     };
@@ -425,7 +317,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify(webfingerResponse),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/jrd+json" }
+        headers: { ...corsHeaders, ...cacheHeaders, "Content-Type": "application/jrd+json" }
       }
     );
   } catch (error) {
@@ -435,7 +327,7 @@ serve(async (req) => {
       JSON.stringify({ error: "Internal Server Error" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { ...corsHeaders, ...cacheHeaders, "Content-Type": "application/json" }
       }
     );
   }

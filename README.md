@@ -167,6 +167,12 @@ Nolto implements the ActivityPub protocol for federation with other Fediverse in
 - `/actor/:username/followers` — Followers collection
 - `/actor/:username/following` — Following collection
 
+### WebFinger test calls
+- ✅ `/.well-known/webfinger?resource=acct:alice@nolto.social`
+- ❌ `/.well-known/webfinger?resource=acct:not-a-user@nolto.social` (should return 404)
+- ❌ `/.well-known/webfinger?resource=mailto:alice@nolto.social` (should return 400)
+- ❌ `/.well-known/webfinger?resource=acct:alice@otherdomain.tld` (should return 400)
+
 ### Supported Activities
 - **Create** — Posts, articles
 - **Follow** / **Accept** / **Reject** — Follow relationships
