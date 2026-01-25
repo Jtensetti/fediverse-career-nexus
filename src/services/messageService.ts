@@ -100,8 +100,8 @@ export async function canMessageUser(recipientId: string): Promise<CanMessageRes
     const senderId = sessionData.session.user.id;
 
     const { data, error } = await supabase.rpc('can_message_user', {
-      sender_id: senderId,
-      recipient_id: recipientId
+      p_sender_id: senderId,
+      p_recipient_id: recipientId
     });
 
     if (error) {
