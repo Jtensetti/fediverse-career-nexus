@@ -3163,16 +3163,14 @@ export type Database = {
         Args: { user1: string; user2: string }
         Returns: boolean
       }
-      can_message_user:
-        | { Args: { recipient_id: string; sender_id: string }; Returns: Json }
-        | {
-            Args: {
-              job_post_id?: string
-              recipient_id: string
-              sender_id: string
-            }
-            Returns: Json
-          }
+      can_message_user: {
+        Args: {
+          p_job_post_id?: string
+          p_recipient_id: string
+          p_sender_id: string
+        }
+        Returns: Json
+      }
       can_view_own_profile_phone: {
         Args: { profile_id: string }
         Returns: boolean
