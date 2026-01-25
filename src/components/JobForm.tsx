@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,9 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { FormErrorSummary } from "./FormErrorSummary";
 import {
   Form,
   FormControl,
@@ -40,14 +37,12 @@ const jobFormSchema = z.object({
   experience_level: z.string().optional(),
   skills: z.string().transform(val => val ? val.split(",").map(s => s.trim()).filter(Boolean) : []),
   is_active: z.boolean().default(false),
-  // New transparency fields
   interview_process: z.string().optional(),
   response_time: z.string().optional(),
   team_size: z.string().optional(),
   growth_path: z.string().optional(),
   visa_sponsorship: z.boolean().default(false),
 }).refine(data => {
-  // Validate that salary_min is less than or equal to salary_max if both are provided
   if (data.salary_min && data.salary_max) {
     return Number(data.salary_min) <= Number(data.salary_max);
   }
@@ -57,7 +52,7 @@ const jobFormSchema = z.object({
   path: ["salary_min"],
 });
 
-type JobFormValues = z.infer<typeof jobFormSchema>;
+export type JobFormValues = z.infer<typeof jobFormSchema>;
 
 interface JobFormProps {
   defaultValues?: Partial<JobPost>;
@@ -72,11 +67,8 @@ const JobForm = ({
   isSubmitting,
   submitButtonText = "Create Job Post"
 }: JobFormProps) => {
-  const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [submitPhase, setSubmitPhase] = useState<"idle" | "validating" | "submitting">("idle");
-  const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isOnline] = useState(false);
   
-  // Map database fields to form fields
   const formattedDefaultValues = {
     title: defaultValues.title || "",
     company: defaultValues.company || "",
@@ -90,7 +82,6 @@ const JobForm = ({
     experience_level: defaultValues.experience_level || "",
     skills: defaultValues.skills?.join(", ") || "",
     is_active: defaultValues.is_active ?? false,
-    // Transparency fields
     interview_process: defaultValues.interview_process || "",
     response_time: defaultValues.response_time || "",
     team_size: defaultValues.team_size || "",
@@ -101,106 +92,17 @@ const JobForm = ({
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: formattedDefaultValues as any,
-    mode: "onBlur", // Validate on blur for better UX
   });
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-      }
-    };
-  }, []);
-  
-  const handleSubmit = async (values: JobFormValues) => {
-    console.log('[JobForm] handleSubmit called with validated values:', values);
-    setSubmitPhase("submitting");
-    
-    // Set a timeout watchdog
-    submitTimeoutRef.current = setTimeout(() => {
-      console.error('[JobForm] Submit timeout - operation took too long');
-      toast.error("Submission is taking too long. Please try again.");
-      setSubmitPhase("idle");
-    }, 15000);
-    
-    try {
-      await onSubmit(values);
-      console.log('[JobForm] onSubmit completed');
-    } catch (error) {
-      console.error('[JobForm] onSubmit threw error:', error);
-    } finally {
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-        submitTimeoutRef.current = null;
-      }
-      setSubmitPhase("idle");
-    }
+  // Simple handleSubmit - mirrors EventForm pattern exactly
+  const handleSubmit = (values: JobFormValues) => {
+    onSubmit(values);
   };
-
-  const onFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('[JobForm] Form submit triggered');
-    setSubmitAttempted(true);
-    setSubmitPhase("validating");
-    
-    form.handleSubmit(
-      (values) => {
-        console.log('[JobForm] Validation passed, submitting:', values);
-        handleSubmit(values);
-      },
-      (errors) => {
-        console.error('[JobForm] Form validation errors:', errors);
-        setSubmitPhase("idle");
-        
-        const errorMessages = Object.entries(errors)
-          .map(([field, error]) => `${field}: ${error?.message}`)
-          .join(', ');
-        
-        toast.error('Please fix the validation errors', {
-          description: errorMessages.substring(0, 200),
-          duration: 5000,
-        });
-      }
-    )();
-  };
-
-  // Get current validation errors
-  const formErrors = form.formState.errors;
-  const hasErrors = Object.keys(formErrors).length > 0;
-
-  // Determine button state
-  const isButtonDisabled = isSubmitting || submitPhase !== "idle";
-  const buttonText = submitPhase === "validating" 
-    ? "Validating..." 
-    : submitPhase === "submitting" || isSubmitting 
-      ? "Submitting..." 
-      : submitButtonText;
 
   return (
     <Form {...form}>
-      <form 
-        onSubmit={onFormSubmit} 
-        className="space-y-6"
-        onClickCapture={() => console.log('[JobForm] Click captured on form')}
-      >
-        {/* Error Summary Banner - Always visible when there are errors */}
-        {submitAttempted && hasErrors && (
-          <FormErrorSummary errors={formErrors as Record<string, { message?: string }>} />
-        )}
-        
-        {/* Submit Phase Indicator */}
-        {submitPhase !== "idle" && (
-          <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 flex items-center gap-3">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            <span className="text-sm text-primary">
-              {submitPhase === "validating" ? "Checking form data..." : "Creating your job post..."}
-            </span>
-          </div>
-        )}
-
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Job title */}
           <FormField
             control={form.control}
             name="title"
@@ -215,7 +117,6 @@ const JobForm = ({
             )}
           />
           
-          {/* Company name */}
           <FormField
             control={form.control}
             name="company"
@@ -232,7 +133,6 @@ const JobForm = ({
         </div>
         
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Location */}
           <FormField
             control={form.control}
             name="location"
@@ -247,7 +147,6 @@ const JobForm = ({
             )}
           />
           
-          {/* Employment type */}
           <FormField
             control={form.control}
             name="employment_type"
@@ -274,7 +173,6 @@ const JobForm = ({
           />
         </div>
         
-        {/* Remote policy */}
         <FormField
           control={form.control}
           name="remote_policy"
@@ -298,7 +196,6 @@ const JobForm = ({
           )}
         />
         
-        {/* Experience level */}
         <FormField
           control={form.control}
           name="experience_level"
@@ -324,7 +221,6 @@ const JobForm = ({
           )}
         />
         
-        {/* Salary range */}
         <div className="border rounded-lg p-4 space-y-4">
           <h3 className="text-lg font-semibold">Compensation</h3>
           <div className="grid gap-4 md:grid-cols-3">
@@ -399,7 +295,6 @@ const JobForm = ({
           </div>
         </div>
         
-        {/* Job description */}
         <FormField
           control={form.control}
           name="description"
@@ -418,7 +313,6 @@ const JobForm = ({
           )}
         />
         
-        {/* Skills */}
         <FormField
           control={form.control}
           name="skills"
@@ -439,7 +333,6 @@ const JobForm = ({
           )}
         />
 
-        {/* Transparency Section */}
         <div className="border rounded-lg p-4 space-y-4 bg-primary/5">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Transparency Details</h3>
@@ -508,7 +401,7 @@ const JobForm = ({
                   <FormLabel>Growth Path</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="e.g. Path to senior in 18-24 months"
+                      placeholder="e.g. Senior → Lead → Manager track available"
                       {...field}
                     />
                   </FormControl>
@@ -522,15 +415,15 @@ const JobForm = ({
             control={form.control}
             name="visa_sponsorship"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 bg-background">
-                <div className="space-y-0.5">
-                  <FormLabel className="text-sm">Visa Sponsorship</FormLabel>
-                  <FormDescription className="text-xs">
-                    Available for candidates requiring visa sponsorship
+              <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
+                <div>
+                  <FormLabel>Visa Sponsorship</FormLabel>
+                  <FormDescription>
+                    Can you sponsor work visas for this position?
                   </FormDescription>
                 </div>
                 <FormControl>
-                  <Switch
+                  <Switch 
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
@@ -539,21 +432,20 @@ const JobForm = ({
             )}
           />
         </div>
-        
-        {/* Published status */}
+
         <FormField
           control={form.control}
           name="is_active"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Publish Job Post</FormLabel>
+            <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
+              <div>
+                <FormLabel>Publish Immediately</FormLabel>
                 <FormDescription>
-                  Make this job post visible to everyone
+                  Make this job post visible to candidates right away
                 </FormDescription>
               </div>
               <FormControl>
-                <Switch
+                <Switch 
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
@@ -561,21 +453,13 @@ const JobForm = ({
             </FormItem>
           )}
         />
-        
+
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={() => window.history.back()}>
             Cancel
           </Button>
-          <Button 
-            type="submit" 
-            disabled={isButtonDisabled}
-            className="min-w-[140px]"
-            onClick={() => console.log('[JobForm] Submit button clicked, disabled:', isButtonDisabled)}
-          >
-            {(submitPhase !== "idle" || isSubmitting) && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            {buttonText}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : submitButtonText}
           </Button>
         </div>
       </form>
