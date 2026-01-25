@@ -330,7 +330,7 @@ const JobView = () => {
             ) : null}
           </div>
           
-          {!job.application_url && !job.contact_email && (
+          {!job.application_url && !job.contact_email && user?.id !== job.user_id && (
             <p className="text-muted-foreground mt-4">
               Use the "Message Hiring Manager" button above to inquire about this position.
             </p>
