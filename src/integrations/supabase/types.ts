@@ -1260,7 +1260,9 @@ export type Database = {
       }
       job_posts: {
         Row: {
+          application_url: string | null
           company: string
+          contact_email: string | null
           created_at: string
           description: string | null
           employment_type: string | null
@@ -1286,7 +1288,9 @@ export type Database = {
           visa_sponsorship: boolean | null
         }
         Insert: {
+          application_url?: string | null
           company: string
+          contact_email?: string | null
           created_at?: string
           description?: string | null
           employment_type?: string | null
@@ -1312,7 +1316,9 @@ export type Database = {
           visa_sponsorship?: boolean | null
         }
         Update: {
+          application_url?: string | null
           company?: string
+          contact_email?: string | null
           created_at?: string
           description?: string | null
           employment_type?: string | null
