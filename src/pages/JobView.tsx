@@ -141,22 +141,22 @@ const JobView = () => {
         
         {/* Job header */}
         <div className="mb-8">
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
             <div className="flex items-start gap-4">
-              <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center">
+              <div className="h-16 w-16 shrink-0 rounded-lg bg-muted flex items-center justify-center">
                 <Building2 className="h-8 w-8 text-muted-foreground" />
               </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">{job.title}</h1>
-                <h2 className="text-xl font-medium text-muted-foreground">{companyName}</h2>
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">{job.title}</h1>
+                <h2 className="text-lg sm:text-xl font-medium text-muted-foreground">{companyName}</h2>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={employmentType === "Full-time" ? "default" : "outline"} className="text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={employmentType === "Full-time" ? "default" : "outline"} className="text-sm whitespace-nowrap">
                 {employmentType}
               </Badge>
               {isRemote && (
-                <Badge variant="secondary" className="text-sm">
+                <Badge variant="secondary" className="text-sm whitespace-nowrap">
                   <Globe className="h-3 w-3 mr-1" />
                   {job.remote_policy === 'hybrid' ? 'Hybrid' : 'Remote'}
                 </Badge>
