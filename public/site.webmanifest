@@ -1,0 +1,28 @@
+{
+  "name": "Nolto - Professional Social Network",
+  "short_name": "Nolto",
+  "description": "A professional social network that runs on the ActivityPub federation protocol",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d3b3c",
+  "theme_color": "#0d3b3c",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
