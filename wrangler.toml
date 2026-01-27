@@ -1,3 +1,3 @@
-name = "webfinger-proxy-worker" # You can choose a different name if you like
+name = "webfinger-proxy-worker" 
 main = "supabase/functions/cloudflare/cloudflare-worker.ts"
-compatibility_date = "2024-01-01" # This date ensures consistent behavior
+compatibility_date = "2024-01-01"
