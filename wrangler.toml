@@ -1,0 +1,3 @@
+name = "webfinger-proxy-worker" 
+main = "supabase/functions/cloudflare/cloudflare-worker.ts"
+compatibility_date = "2024-01-01"
