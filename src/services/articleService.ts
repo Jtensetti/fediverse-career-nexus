@@ -201,7 +201,8 @@ export const getPublishedArticles = async (): Promise<Article[]> => {
       .from('articles')
       .select('*')
       .eq('published', true)
-      .order('published_at', { ascending: false });
+      .order('published_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false });
     
     if (error) {
       console.error('Error fetching published articles:', error);
