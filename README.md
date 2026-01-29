@@ -101,7 +101,7 @@ cp .env.example .env
 # Edit `.env` with your Supabase URL and anon key
 
 # 3. Start Supabase + React app
-supabase start
+npx supabase start
 npm run dev
 
 # 4. Deploy Edge Functions (prod)
