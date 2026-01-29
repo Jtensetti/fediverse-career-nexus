@@ -15,7 +15,9 @@ const supabase = createClient(
 );
 
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
-const siteUrl = Deno.env.get("SITE_URL") ?? "https://fediverse-career.lovable.app";
+const rawSiteUrl = Deno.env.get("SITE_URL") ?? "https://fediverse-career.lovable.app";
+// Ensure URL has https:// prefix
+const siteUrl = rawSiteUrl.startsWith("http") ? rawSiteUrl : `https://${rawSiteUrl}`;
 
 const signupSchema = z.object({
   email: z.string().email(),
@@ -91,7 +93,8 @@ serve(async (req) => {
     // Send confirmation email via Resend
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
-      const confirmUrl = `${siteUrl}/confirm-email?token=${token}`;
+      // Build URL parts separately to avoid quoted-printable encoding issues
+      const confirmPath = `${siteUrl}/confirm-email`;
       const fromEmail = "Nolto <noreply@nolto.social>";
       
       try {
@@ -99,37 +102,45 @@ serve(async (req) => {
           from: fromEmail,
           to: email,
           subject: 'Confirm your Nolto account',
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #1a1a1a; margin-bottom: 10px;">Welcome to Nolto!</h1>
-              </div>
-              
-              <p>Hi${firstName ? ` ${firstName}` : ''},</p>
-              
-              <p>Thanks for signing up for Nolto, the federated professional network. Please confirm your email address to get started.</p>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${confirmUrl}" style="background-color: #0066cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">Confirm Email Address</a>
-              </div>
-              
-              <p style="font-size: 14px; color: #666;">This link will expire in 24 hours. If you didn't create an account on Nolto, you can safely ignore this email.</p>
-              
-              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-              
-              <p style="font-size: 12px; color: #999; text-align: center;">
-                Nolto - The federated professional network<br>
-                <a href="${siteUrl}" style="color: #0066cc;">nolto.social</a>
-              </p>
-            </body>
-            </html>
-          `
+          text: `Hi${firstName ? ` ${firstName}` : ''},
+
+Thanks for signing up for Nolto, the federated professional network. Please confirm your email address to get started.
+
+Confirm your email: ${confirmPath}?token=${token}
+
+This link will expire in 24 hours. If you didn't create an account on Nolto, you can safely ignore this email.
+
+Nolto - The federated professional network
+${siteUrl}`,
+          html: `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+<div style="text-align: center; margin-bottom: 30px;">
+<h1 style="color: #1a1a1a; margin-bottom: 10px;">Welcome to Nolto!</h1>
+</div>
+
+<p>Hi${firstName ? ` ${firstName}` : ''},</p>
+
+<p>Thanks for signing up for Nolto, the federated professional network. Please confirm your email address to get started.</p>
+
+<div style="text-align: center; margin: 30px 0;">
+<a href="${confirmPath}?token=${token}" style="background-color: #0066cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">Confirm Email Address</a>
+</div>
+
+<p style="font-size: 14px; color: #666;">This link will expire in 24 hours. If you didn't create an account on Nolto, you can safely ignore this email.</p>
+
+<hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+<p style="font-size: 12px; color: #999; text-align: center;">
+Nolto - The federated professional network<br>
+<a href="${siteUrl}" style="color: #0066cc;">nolto.social</a>
+</p>
+</body>
+</html>`
         });
         console.log("Confirmation email sent to:", email);
       } catch (emailError) {
