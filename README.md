@@ -90,13 +90,10 @@ React (Vite) ──supabase-js──► Edge Functions (Deno)
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone & install (choose one)
-git clone https://codeberg.org/Tensetti/Nolto.git
-# or
+# 1. Clone & install
 git clone https://github.com/Jtensetti/fediverse-career-nexus.git
 
-cd nolto
-npm install
+cd fediverse-career-nexus
 npm install
 
 # 2. Configure environment variables
