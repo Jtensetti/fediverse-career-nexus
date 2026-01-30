@@ -3001,11 +3001,13 @@ export type Database = {
       }
       public_actors: {
         Row: {
+          also_known_as: string[] | null
           created_at: string | null
           follower_count: number | null
           following_count: number | null
           id: string | null
           is_remote: boolean | null
+          moved_to: string | null
           preferred_username: string | null
           public_key: string | null
           remote_actor_url: string | null
@@ -3016,11 +3018,13 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          also_known_as?: string[] | null
           created_at?: string | null
           follower_count?: number | null
           following_count?: number | null
           id?: string | null
           is_remote?: boolean | null
+          moved_to?: string | null
           preferred_username?: string | null
           public_key?: string | null
           remote_actor_url?: string | null
@@ -3031,11 +3035,13 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          also_known_as?: string[] | null
           created_at?: string | null
           follower_count?: number | null
           following_count?: number | null
           id?: string | null
           is_remote?: boolean | null
+          moved_to?: string | null
           preferred_username?: string | null
           public_key?: string | null
           remote_actor_url?: string | null
