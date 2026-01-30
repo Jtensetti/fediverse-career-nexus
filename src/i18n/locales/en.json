@@ -793,7 +793,7 @@
     "noDataBrokers": "Third-party data brokers or ad networks",
     "infrastructureTitle": "Infrastructure & Data Storage",
     "platformProvider": "Platform Provider",
-    "platformProviderDesc": "Bondy is developed by Lovable, a company registered in Sweden (EU).",
+    "platformProviderDesc": "Nolto is developed using Lovable, a vibe coding tool registered in Sweden (EU).",
     "dataCenterLocation": "Data Center Location",
     "dataCenterDesc": "Your data is stored and processed in the European Union:",
     "databaseLocation": "Database & Authentication: Frankfurt, Germany (AWS eu-central-1)",
