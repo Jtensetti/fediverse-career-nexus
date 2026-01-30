@@ -1952,6 +1952,7 @@ export type Database = {
           auth_type: string | null
           avatar_url: string | null
           bio: string | null
+          contact_email: string | null
           created_at: string
           dm_privacy: string | null
           domain: string | null
@@ -1981,6 +1982,7 @@ export type Database = {
           auth_type?: string | null
           avatar_url?: string | null
           bio?: string | null
+          contact_email?: string | null
           created_at?: string
           dm_privacy?: string | null
           domain?: string | null
@@ -2010,6 +2012,7 @@ export type Database = {
           auth_type?: string | null
           avatar_url?: string | null
           bio?: string | null
+          contact_email?: string | null
           created_at?: string
           dm_privacy?: string | null
           domain?: string | null

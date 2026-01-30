@@ -158,11 +158,35 @@ serve(async (req) => {
           }
         }
 
-        // Get user's email from auth
-        const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
+        // Get user's email - first check profiles.contact_email, then fall back to auth email
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('contact_email')
+          .eq('id', userId)
+          .single();
         
-        if (userError || !user?.email) {
-          logger.debug({ userId, traceId }, "Skipping - no email found");
+        const contactEmail = userProfile?.contact_email;
+        
+        // If user has a contact_email set, use that; otherwise try auth email
+        let userEmail: string | null = null;
+        
+        if (contactEmail) {
+          userEmail = contactEmail;
+        } else {
+          // Fall back to auth email
+          const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
+          if (!userError && user?.email) {
+            // Validate it looks like a real email domain (not a Fediverse handle)
+            const emailDomain = user.email.split('@')[1];
+            // Check if domain has MX-like structure (contains at least one dot after @)
+            if (emailDomain && emailDomain.includes('.')) {
+              userEmail = user.email;
+            }
+          }
+        }
+        
+        if (!userEmail) {
+          logger.debug({ userId, traceId }, "Skipping - no valid email found");
           continue;
         }
 
@@ -313,7 +337,7 @@ serve(async (req) => {
         // Send the email
         const { error: emailError } = await resend.emails.send({
           from: fromEmail,
-          to: [user.email],
+          to: [userEmail],
           subject: `You have ${totalUnread} unread notification${totalUnread > 1 ? 's' : ''} on Nolto`,
           html: emailHtml,
         });

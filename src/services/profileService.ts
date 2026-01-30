@@ -335,7 +335,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       freelancerRate: profile.freelancer_rate || undefined,
       freelancerAvailability: profile.freelancer_availability || undefined,
       website: profile.website || undefined,
-      contactEmail: profile.public_email || undefined,
+      contactEmail: profile.contact_email || undefined,
       contact: {
         email: user.email,
         phone: profile.phone || "",

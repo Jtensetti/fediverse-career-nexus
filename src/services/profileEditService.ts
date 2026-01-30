@@ -11,6 +11,7 @@ export interface ProfileUpdateData {
   bio?: string;
   phone?: string;
   location?: string;
+  contact_email?: string;
 }
 
 /**
@@ -71,6 +72,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     if (profileData.bio !== undefined) updateData.bio = profileData.bio;
     if (profileData.phone !== undefined) updateData.phone = profileData.phone;
     if (profileData.location !== undefined) updateData.location = profileData.location;
+    if (profileData.contact_email !== undefined) updateData.contact_email = profileData.contact_email;
 
     const { error } = await supabase
       .from("profiles")
