@@ -69,15 +69,15 @@ export default function HealthCheckStatus() {
     switch (status) {
       case 'healthy':
       case 'pass':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-success/10 text-success border-success/20';
       case 'degraded':
       case 'warn':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-warning/10 text-warning border-warning/20';
       case 'unhealthy':
       case 'fail':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-destructive/10 text-destructive border-destructive/20';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
   
@@ -85,22 +85,23 @@ export default function HealthCheckStatus() {
     switch (status) {
       case 'healthy':
       case 'pass':
-        return <CircleCheck className="h-4 w-4 text-green-600" />;
+        return <CircleCheck className="h-4 w-4 text-success" />;
       case 'degraded':
       case 'warn':
+        return <CircleAlert className="h-4 w-4 text-warning" />;
       case 'unhealthy':
       case 'fail':
-        return <CircleAlert className="h-4 w-4 text-red-600" />;
+        return <CircleAlert className="h-4 w-4 text-destructive" />;
       default:
         return null;
     }
   };
 
   return (
-    <Card className="shadow-sm border-gray-200">
+    <Card className="shadow-sm border-border">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-display text-bondy-primary">System Health</CardTitle>
+          <CardTitle className="text-xl font-display text-primary">System Health</CardTitle>
           {data && (
             <Badge variant="outline" className={`${getStatusColor(data.status)}`}>
               <span className="flex items-center gap-1">
@@ -122,48 +123,48 @@ export default function HealthCheckStatus() {
             <Skeleton className="h-6 w-full" />
           </div>
         ) : error ? (
-          <div className="p-4 border border-red-200 bg-red-50 text-red-700 rounded-md">
+          <div className="p-4 border border-destructive/20 bg-destructive/10 text-destructive rounded-md">
             Failed to load health status. Please try again.
           </div>
         ) : data ? (
           <div className="space-y-4">
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-gray-500">Database</span>
+                <span className="text-sm font-medium text-muted-foreground">Database</span>
                 <Badge variant="outline" className={getStatusColor(data.checks.database.status)}>
                   {data.checks.database.status === 'pass' ? 'Connected' : 
                    data.checks.database.status === 'warn' ? 'Slow' : 'Error'}
                 </Badge>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 Latency: {data.checks.database.latency_ms}ms
                 {data.checks.database.message && (
-                  <div className="text-xs mt-1 text-gray-500">{data.checks.database.message}</div>
+                  <div className="text-xs mt-1 text-muted-foreground/70">{data.checks.database.message}</div>
                 )}
               </div>
             </div>
             
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-gray-500">Queue Depth</span>
+                <span className="text-sm font-medium text-muted-foreground">Queue Depth</span>
                 <Badge variant="outline" className={getStatusColor(data.checks.queue.status)}>
                   {data.checks.queue.status === 'pass' ? 'Normal' : 
                    data.checks.queue.status === 'warn' ? 'High' : 'Critical'}
                 </Badge>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 {data.checks.queue.pending_count} / {data.checks.queue.max_allowed} messages
                 {data.checks.queue.message && (
-                  <div className="text-xs mt-1 text-gray-500">{data.checks.queue.message}</div>
+                  <div className="text-xs mt-1 text-muted-foreground/70">{data.checks.queue.message}</div>
                 )}
               </div>
             </div>
             
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               Last checked: {new Date(data.timestamp).toLocaleString()}
             </div>
             
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               Trace ID: {data.traceId}
             </div>
           </div>
@@ -175,7 +176,7 @@ export default function HealthCheckStatus() {
           size="sm" 
           onClick={handleRefresh} 
           disabled={isLoading || isFetching}
-          className="w-full text-bondy-accent hover:text-bondy-accent border-bondy-accent/30"
+          className="w-full text-primary hover:text-primary/80 border-primary/30"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
           {isFetching ? 'Refreshing...' : 'Refresh'}
