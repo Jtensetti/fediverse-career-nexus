@@ -154,6 +154,8 @@ export const getFederatedFeed = async (
     }
 
     // Build the query based on feed type - we need to filter at the database level!
+    // Note: We no longer join to actors via FK since actors table has restrictive RLS
+    // Instead, we fetch attributed_to (actor ID) and resolve user data via public views
     let query = supabase.from("federated_feed").select(
       `
         id,
@@ -161,11 +163,7 @@ export const getFederatedFeed = async (
         published_at,
         source,
         type,
-        attributed_to,
-        actors!ap_objects_attributed_to_fkey (
-          user_id,
-          preferred_username
-        )
+        attributed_to
       `
     );
 
@@ -201,12 +199,37 @@ export const getFederatedFeed = async (
 
     console.log("📊 Raw federated objects:", apObjects.length, "feedType:", feedType);
 
+    // Get actor data from public_actors view (bypasses RLS)
+    const actorIds = [...new Set(apObjects.map((obj: any) => obj.attributed_to).filter(Boolean))];
+    let actorsMap: Record<string, { user_id: string | null; preferred_username: string }> = {};
+
+    if (actorIds.length > 0) {
+      const { data: actors, error: actorError } = await supabase
+        .from("public_actors")
+        .select("id, user_id, preferred_username")
+        .in("id", actorIds);
+
+      if (actorError) {
+        console.error("Error fetching actors:", actorError);
+      } else if (actors) {
+        actorsMap = Object.fromEntries(
+          actors.map((a) => [a.id, { user_id: a.user_id, preferred_username: a.preferred_username }])
+        );
+      }
+    }
+
+    // Enrich objects with actor data for filtering
+    const enrichedObjects = apObjects.map((obj: any) => ({
+      ...obj,
+      actors: actorsMap[obj.attributed_to] || null,
+    }));
+
     // For 'following' feed, filter client-side (need to do this after fetch)
-    let filteredObjects = apObjects;
+    let filteredObjects = enrichedObjects;
 
     if (feedType === "following" && userId) {
       console.log("👥 Following feed - filtering against", followedUserIds.length, "user IDs");
-      filteredObjects = apObjects.filter((obj: any) => {
+      filteredObjects = enrichedObjects.filter((obj: any) => {
         const actorUserId = obj.actors?.user_id;
         const isIncluded = actorUserId && followedUserIds.includes(actorUserId);
         return isIncluded;
