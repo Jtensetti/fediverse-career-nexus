@@ -15,9 +15,9 @@ const ActorProfile = () => {
       }
 
       try {
-        // Check if this actor exists and is active
+        // Check if this actor exists and is active using public view
         const { data: actor, error } = await supabase
-          .from("actors")
+          .from("public_actors")
           .select("status")
           .eq("preferred_username", username)
           .single();

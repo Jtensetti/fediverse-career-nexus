@@ -28,9 +28,9 @@ const fetchFollowers = async (userId: string): Promise<FollowerUser[]> => {
 
   const followerIds = follows.map(f => f.follower_id);
 
-  // Fetch profile data for followers
+  // Fetch profile data for followers from public_profiles view (bypasses RLS)
   const { data: profiles } = await supabase
-    .from('profiles')
+    .from('public_profiles')
     .select('id, username, fullname, avatar_url, headline')
     .in('id', followerIds);
 
@@ -45,7 +45,7 @@ const fetchFollowers = async (userId: string): Promise<FollowerUser[]> => {
 
 const fetchProfileName = async (userId: string): Promise<string> => {
   const { data } = await supabase
-    .from('profiles')
+    .from('public_profiles')
     .select('fullname, username')
     .eq('id', userId)
     .single();

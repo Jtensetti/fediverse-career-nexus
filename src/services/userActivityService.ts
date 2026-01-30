@@ -18,9 +18,9 @@ export const getUserActivity = async (userId?: string): Promise<ActivityItem[]> 
     
     if (!targetUserId) return [];
 
-    // 1. Get user's actor (needed for boosts which use actor_id)
+    // 1. Get user's actor (needed for boosts which use actor_id) - use public_actors view
     const { data: actor } = await supabase
-      .from('actors')
+      .from('public_actors')
       .select('id')
       .eq('user_id', targetUserId)
       .maybeSingle();

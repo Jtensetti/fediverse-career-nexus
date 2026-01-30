@@ -19,11 +19,10 @@ const LiveStats = () => {
       // Only count Note types (actual posts, not all AP objects)
       supabase.from("ap_objects").select("id", { count: "exact", head: true }).eq("type", "Note"),
       supabase.from("job_posts").select("id", { count: "exact", head: true }).eq("is_active", true),
-      // Get unique home_instance from federated users
-      supabase.from("profiles")
+      // Get unique home_instance from federated users - use public_profiles view
+      supabase.from("public_profiles")
         .select("home_instance")
-        .not("home_instance", "is", null)
-        .eq("auth_type", "federated"),
+        .not("home_instance", "is", null),
     ]);
 
     // Calculate unique instances from federated users
