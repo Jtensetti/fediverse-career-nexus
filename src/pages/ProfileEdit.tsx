@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import DeleteAccountSection from "@/components/DeleteAccountSection";
 import DataExportSection from "@/components/DataExportSection";
 import AccountMigrationSection from "@/components/AccountMigrationSection";
+import EmailNotificationPreferences from "@/components/EmailNotificationPreferences";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   getUserExperiences, 
@@ -1169,6 +1170,10 @@ const ProfileEditPage = () => {
                 <Separator />
                 
                 <DMPrivacySettings />
+                
+                <Separator />
+                
+                <EmailNotificationPreferences />
               </CardContent>
             </Card>
             

@@ -1956,6 +1956,7 @@ export type Database = {
           created_at: string
           dm_privacy: string | null
           domain: string | null
+          email_digest_enabled: boolean | null
           freelancer_availability: string | null
           freelancer_rate: string | null
           freelancer_skills: string[] | null
@@ -1986,6 +1987,7 @@ export type Database = {
           created_at?: string
           dm_privacy?: string | null
           domain?: string | null
+          email_digest_enabled?: boolean | null
           freelancer_availability?: string | null
           freelancer_rate?: string | null
           freelancer_skills?: string[] | null
@@ -2016,6 +2018,7 @@ export type Database = {
           created_at?: string
           dm_privacy?: string | null
           domain?: string | null
+          email_digest_enabled?: boolean | null
           freelancer_availability?: string | null
           freelancer_rate?: string | null
           freelancer_skills?: string[] | null
