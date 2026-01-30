@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,13 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
+
+// Zod schema for input validation
+const resetVerifySchema = z.object({
+  email: z.string().email("Invalid email address").max(255, "Email too long"),
+  code: z.string().regex(/^\d{6}$/, "Code must be exactly 6 digits"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters").max(128, "Password too long")
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -24,21 +32,24 @@ serve(async (req) => {
   }
 
   try {
-    const { email, code, newPassword } = await req.json();
-
-    if (!email || !code || !newPassword) {
-      return new Response(JSON.stringify({ error: "Email, code, and new password are required" }), {
-        status: 400,
+    // Parse and validate input with Zod
+    const body = await req.json();
+    const validationResult = resetVerifySchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ 
+        error: "Validation error", 
+        details: validationResult.error.errors.map(e => ({
+          path: e.path.join('.'),
+          message: e.message
+        }))
+      }), {
+        status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (newPassword.length < 6) {
-      return new Response(JSON.stringify({ error: "Password must be at least 6 characters" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { email, code, newPassword } = validationResult.data;
 
     // Find the reset code
     const { data: resetCode, error: codeError } = await supabase
