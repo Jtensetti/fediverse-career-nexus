@@ -113,10 +113,11 @@ const ProfilePage = () => {
   });
 
   // Fetch user connections for the connections tab (for the profile being viewed)
+  // Only skip if networkVisibilityEnabled is explicitly false (default/undefined = visible)
   const { data: userConnections, isLoading: connectionsLoading } = useQuery({
     queryKey: ["profileConnections", profile?.id],
     queryFn: () => getUserConnections(profile?.id),
-    enabled: !!profile?.id && profile.networkVisibilityEnabled === true,
+    enabled: !!profile?.id && profile.networkVisibilityEnabled !== false,
   });
 
   // Determine if viewing own profile
