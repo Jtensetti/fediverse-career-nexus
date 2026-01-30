@@ -29,7 +29,6 @@ const Footer = () => {
               <h3 className="text-sm font-semibold text-primary mb-4">{t("footer.about", "About")}</h3>
               <ul className="space-y-3">
                 <li><Link to="/mission" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.ourMission", "Our Mission")}</Link></li>
-                <li><a href="#" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.team", "Team")}</a></li>
               </ul>
             </div>
 

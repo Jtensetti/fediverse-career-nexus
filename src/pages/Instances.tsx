@@ -19,30 +19,47 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEOHead } from "@/components/common/SEOHead";
 
-interface RemoteInstance {
-  id: string;
+interface FederatedInstance {
   host: string;
-  status: string;
-  first_seen_at: string;
-  last_seen_at: string | null;
+  actor_count: number;
 }
 
 const Instances = () => {
-  const [instances, setInstances] = useState<RemoteInstance[]>([]);
+  const [instances, setInstances] = useState<FederatedInstance[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchInstances = async () => {
       try {
+        // Get unique hosts from remote actors
         const { data, error } = await supabase
-          .from("remote_instances")
-          .select("*")
-          .eq("status", "active")
-          .order("last_seen_at", { ascending: false });
+          .from("actors")
+          .select("remote_actor_url")
+          .not("remote_actor_url", "is", null);
 
         if (error) throw error;
-        setInstances(data || []);
+
+        // Extract unique hosts and count actors per host
+        const hostCounts = new Map<string, number>();
+        data?.forEach(actor => {
+          if (actor.remote_actor_url) {
+            try {
+              const url = new URL(actor.remote_actor_url);
+              const host = url.host;
+              hostCounts.set(host, (hostCounts.get(host) || 0) + 1);
+            } catch {
+              // Skip invalid URLs
+            }
+          }
+        });
+
+        // Convert to array and sort by actor count
+        const instanceList: FederatedInstance[] = Array.from(hostCounts.entries())
+          .map(([host, actor_count]) => ({ host, actor_count }))
+          .sort((a, b) => b.actor_count - a.actor_count);
+
+        setInstances(instanceList);
       } catch (error) {
         console.error("Error fetching instances:", error);
       } finally {
@@ -156,9 +173,9 @@ const Instances = () => {
                 </div>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-                  {filteredInstances.map((instance) => (
+                {filteredInstances.map((instance, index) => (
                     <Card 
-                      key={instance.id} 
+                      key={instance.host}
                       className="border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                     >
                       <CardHeader className="pb-3">
@@ -187,17 +204,12 @@ const Instances = () => {
                         <div className="space-y-3">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Users className="h-4 w-4" />
-                            <span>Connected to Nolto network</span>
+                            <span>{instance.actor_count} {instance.actor_count === 1 ? 'user' : 'users'} connected</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Shield className="h-4 w-4" />
                             <span>ActivityPub compatible</span>
                           </div>
-                          {instance.last_seen_at && (
-                            <p className="text-xs text-muted-foreground">
-                              Last activity: {new Date(instance.last_seen_at).toLocaleDateString()}
-                            </p>
-                          )}
                         </div>
                         <Button 
                           variant="outline" 
