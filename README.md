@@ -55,13 +55,12 @@ Built with ❤️ on [Lovable.dev](https://lovable.dev), **Nolto** combines the 
 ### Platform
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Authentication | ✅ Complete | Email + OAuth (Google/GitHub) |
+| Authentication | ✅ Complete | Email + OAuth (Fediverse instances) |
 | Notifications | ✅ Complete | Real-time notification system |
 | Global search | ✅ Complete | Search across content types |
 
 | Referral system | ✅ Complete | Invite friends |
 | Dark/light mode | ✅ Complete | Theme switcher |
-| Internationalization | ✅ Complete | English & Swedish |
 | Mobile responsive | ✅ Complete | Bottom nav on mobile |
 
 ---
