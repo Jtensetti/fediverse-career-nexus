@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "npm:resend@2.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -13,6 +14,11 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
+
+// Zod schema for input validation
+const resetRequestSchema = z.object({
+  email: z.string().email("Invalid email address").max(255, "Email too long")
+});
 
 // Generate a 6-digit code
 function generateCode(): string {
@@ -32,14 +38,24 @@ serve(async (req) => {
   }
 
   try {
-    const { email } = await req.json();
-
-    if (!email) {
-      return new Response(JSON.stringify({ error: "Email is required" }), {
-        status: 400,
+    // Parse and validate input with Zod
+    const body = await req.json();
+    const validationResult = resetRequestSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ 
+        error: "Validation error", 
+        details: validationResult.error.errors.map(e => ({
+          path: e.path.join('.'),
+          message: e.message
+        }))
+      }), {
+        status: 422,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const { email } = validationResult.data;
 
     // Check if user exists in auth.users (only local users can reset password)
     // Use pagination to search through all users - listUsers returns max 50 by default
