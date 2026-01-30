@@ -69,9 +69,10 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">1. Who Controls Your Data</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Nolto is a federated platform developed by{" "}
-                  <strong className="text-foreground">Lovable, a vibecoding tool registered in Sweden (EU)</strong>. When you sign up, your data is
-                  stored and managed by the instance (server) where you created your account.
+                  Nolto is a federated platform developed using{" "}
+                  <strong className="text-foreground">Lovable, a vibecoding tool registered in Sweden (EU)</strong>.
+                  When you sign up, your data is stored and managed by the instance (server) where you created your
+                  account.
                 </p>
                 <p>
                   Each instance is operated by its own administrator, who acts as the data controller under the GDPR and
@@ -102,23 +103,24 @@ const PrivacyPolicy = () => {
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>
-                    <strong className="text-foreground">Account information:</strong> Name, email address, chosen username, profile details,
-                    password (stored as a secure hash).
+                    <strong className="text-foreground">Account information:</strong> Name, email address, chosen
+                    username, profile details, password (stored as a secure hash).
                   </li>
                   <li>
-                    <strong className="text-foreground">Professional data:</strong> Job history, skills, education, uploaded CV or portfolio.
+                    <strong className="text-foreground">Professional data:</strong> Job history, skills, education,
+                    uploaded CV or portfolio.
                   </li>
                   <li>
-                    <strong className="text-foreground">Content:</strong> Posts, messages, comments, job applications, and other user-generated
-                    content.
+                    <strong className="text-foreground">Content:</strong> Posts, messages, comments, job applications,
+                    and other user-generated content.
                   </li>
                   <li>
-                    <strong className="text-foreground">Technical data:</strong> IP address, device information, access logs (for security, abuse
-                    prevention, and debugging).
+                    <strong className="text-foreground">Technical data:</strong> IP address, device information, access
+                    logs (for security, abuse prevention, and debugging).
                   </li>
                   <li>
-                    <strong className="text-foreground">Federation data:</strong> Information shared with other Nolto or Fediverse instances as part
-                    of normal federation (see section 4).
+                    <strong className="text-foreground">Federation data:</strong> Information shared with other Nolto or
+                    Fediverse instances as part of normal federation (see section 4).
                   </li>
                 </ul>
                 <p>
@@ -134,20 +136,21 @@ const PrivacyPolicy = () => {
                 <p>Your data is processed for the following purposes and legal bases:</p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>
-                    <strong className="text-foreground">To provide the service:</strong> Necessary for the performance of our contract with you
-                    (GDPR Art. 6(1)(b)).
+                    <strong className="text-foreground">To provide the service:</strong> Necessary for the performance
+                    of our contract with you (GDPR Art. 6(1)(b)).
                   </li>
                   <li>
-                    <strong className="text-foreground">To comply with legal obligations:</strong> For example, security and moderation duties (GDPR
-                    Art. 6(1)(c)).
+                    <strong className="text-foreground">To comply with legal obligations:</strong> For example, security
+                    and moderation duties (GDPR Art. 6(1)(c)).
                   </li>
                   <li>
-                    <strong className="text-foreground">With your consent:</strong> Where required (e.g., for optional communications, or if you
-                    explicitly choose to make your profile public) (GDPR Art. 6(1)(a)).
+                    <strong className="text-foreground">With your consent:</strong> Where required (e.g., for optional
+                    communications, or if you explicitly choose to make your profile public) (GDPR Art. 6(1)(a)).
                   </li>
                   <li>
-                    <strong className="text-foreground">Legitimate interests:</strong> Such as security, abuse prevention, or improving the service,
-                    provided these do not override your rights (GDPR Art. 6(1)(f)).
+                    <strong className="text-foreground">Legitimate interests:</strong> Such as security, abuse
+                    prevention, or improving the service, provided these do not override your rights (GDPR Art.
+                    6(1)(f)).
                   </li>
                 </ul>
               </div>
@@ -170,8 +173,9 @@ const PrivacyPolicy = () => {
                 </p>
                 <div className="bg-accent/20 border-l-4 border-accent p-4">
                   <p>
-                    <strong className="text-foreground">Note:</strong> Federated data is outside the sole control of your instance once delivered to
-                    another server. Each remote instance is responsible for its own data protection practices.
+                    <strong className="text-foreground">Note:</strong> Federated data is outside the sole control of
+                    your instance once delivered to another server. Each remote instance is responsible for its own data
+                    protection practices.
                   </p>
                 </div>
               </div>
@@ -228,19 +232,19 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">8. Cookies & External Resources</h2>
               <div className="space-y-6 text-muted-foreground">
                 <div>
-                  <h3 className="text-xl font-semibold text-primary mb-3">
-                    8.1 Essential Cookies (Always Active)
-                  </h3>
+                  <h3 className="text-xl font-semibold text-primary mb-3">8.1 Essential Cookies (Always Active)</h3>
                   <p className="mb-3">
                     These cookies are strictly necessary for the platform to function and cannot be disabled:
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>
-                      <strong className="text-foreground">Authentication cookies:</strong> Maintain your login session and keep your account secure.
+                      <strong className="text-foreground">Authentication cookies:</strong> Maintain your login session
+                      and keep your account secure.
                     </li>
                     <li>
-                      <strong className="text-foreground">Security cookies (Cloudflare __cf_bm):</strong> Protect against bots and malicious
-                      traffic. These are set by our infrastructure provider and expire after 30 minutes of inactivity.
+                      <strong className="text-foreground">Security cookies (Cloudflare __cf_bm):</strong> Protect
+                      against bots and malicious traffic. These are set by our infrastructure provider and expire after
+                      30 minutes of inactivity.
                     </li>
                   </ul>
                 </div>
@@ -277,8 +281,8 @@ const PrivacyPolicy = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-primary mb-3">9.1 Platform Provider</h3>
                   <p>
-                    Nolto is developed by <strong className="text-foreground">Lovable</strong>, a company registered in{" "}
-                    <strong className="text-foreground">Sweden (EU)</strong>.
+                    Nolto is developed using <strong className="text-foreground">Lovable</strong>, a company registered
+                    in <strong className="text-foreground">Sweden (EU)</strong>.
                   </p>
                 </div>
 
@@ -287,13 +291,15 @@ const PrivacyPolicy = () => {
                   <p className="mb-3">Your data is stored and processed in the European Union:</p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>
-                      <strong className="text-foreground">Database & Authentication:</strong> Frankfurt, Germany (AWS eu-central-1)
+                      <strong className="text-foreground">Database & Authentication:</strong> Frankfurt, Germany (AWS
+                      eu-central-1)
                     </li>
                     <li>
                       <strong className="text-foreground">Edge Functions:</strong> EU-preferred routing via Deno Deploy
                     </li>
                     <li>
-                      <strong className="text-foreground">Content Delivery:</strong> Cloudflare global network with EU nodes
+                      <strong className="text-foreground">Content Delivery:</strong> Cloudflare global network with EU
+                      nodes
                     </li>
                   </ul>
                 </div>
@@ -305,9 +311,15 @@ const PrivacyPolicy = () => {
                     <table className="min-w-full bg-card border border-border rounded-lg">
                       <thead className="bg-muted">
                         <tr>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">Service</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">Provider</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">Location</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">
+                            Service
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">
+                            Provider
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">
+                            Location
+                          </th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">
                             Safeguards
                           </th>
@@ -336,8 +348,10 @@ const PrivacyPolicy = () => {
                     </table>
                   </div>
                   <p className="mt-3 text-sm">
-                    All sub-processors are certified under the <strong className="text-foreground">EU-US Data Privacy Framework</strong> and/or have
-                    signed <strong className="text-foreground">Standard Contractual Clauses (SCCs)</strong> for GDPR compliance.
+                    All sub-processors are certified under the{" "}
+                    <strong className="text-foreground">EU-US Data Privacy Framework</strong> and/or have signed{" "}
+                    <strong className="text-foreground">Standard Contractual Clauses (SCCs)</strong> for GDPR
+                    compliance.
                   </p>
                 </div>
               </div>
@@ -366,8 +380,9 @@ const PrivacyPolicy = () => {
                 </ul>
                 <div className="bg-accent/20 border-l-4 border-accent p-4 mt-4">
                   <p>
-                    <strong className="text-foreground">Note:</strong> Federation transfers to other Fediverse instances may involve servers in
-                    various countries. Each remote instance is responsible for its own data protection practices.
+                    <strong className="text-foreground">Note:</strong> Federation transfers to other Fediverse instances
+                    may involve servers in various countries. Each remote instance is responsible for its own data
+                    protection practices.
                   </p>
                 </div>
               </div>
