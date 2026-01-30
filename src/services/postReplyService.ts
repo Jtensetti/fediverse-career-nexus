@@ -337,8 +337,9 @@ export async function createPostReply(
       return false;
     }
 
-    // Create notification for the post author
+    // Create notifications for relevant parties
     try {
+      // 1. Always notify the original post author (unless it's you)
       const { data: postData } = await supabase
         .from('ap_objects')
         .select('attributed_to')
@@ -362,6 +363,41 @@ export async function createPostReply(
             object_type: 'post',
             content: content.substring(0, 100)
           });
+        }
+      }
+
+      // 2. If replying to a comment (nested reply), also notify the comment author
+      if (parentReplyId) {
+        const { data: parentComment } = await supabase
+          .from('ap_objects')
+          .select('attributed_to')
+          .eq('id', parentReplyId)
+          .single();
+
+        if (parentComment?.attributed_to) {
+          const { data: commentActor } = await supabase
+            .from('public_actors')
+            .select('user_id')
+            .eq('id', parentComment.attributed_to)
+            .maybeSingle();
+
+          // Don't notify yourself, and don't double-notify if same as post author
+          const postAuthorId = postData?.attributed_to ? 
+            (await supabase.from('public_actors').select('user_id').eq('id', postData.attributed_to).maybeSingle())?.data?.user_id 
+            : null;
+            
+          if (commentActor?.user_id && 
+              commentActor.user_id !== user.id && 
+              commentActor.user_id !== postAuthorId) {
+            await supabase.from('notifications').insert({
+              type: 'reply',
+              recipient_id: commentActor.user_id,
+              actor_id: user.id,
+              object_id: postId,
+              object_type: 'reply',
+              content: content.substring(0, 100)
+            });
+          }
         }
       }
     } catch (notifError) {
