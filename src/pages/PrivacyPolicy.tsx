@@ -69,7 +69,7 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">1. Who Controls Your Data</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  Nolto is a federated platform developed by{" "}
+                  Nolto is a federated platform developed using{" "}
                   <strong>Lovable, a vibecoding tool registered in Sweden (EU)</strong>. When you sign up, your data is
                   stored and managed by the instance (server) where you created your account.
                 </p>
@@ -277,8 +277,8 @@ const PrivacyPolicy = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-bondy-primary mb-3">9.1 Platform Provider</h3>
                   <p>
-                    Nolto is developed by <strong>Lovable</strong>, a company registered in <strong>Sweden (EU)</strong>
-                    .
+                    Nolto is developed using <strong>Lovable</strong>, a company registered in{" "}
+                    <strong>Sweden (EU)</strong>.
                   </p>
                 </div>
 
