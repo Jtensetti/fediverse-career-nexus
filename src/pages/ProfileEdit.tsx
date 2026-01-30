@@ -71,7 +71,7 @@ const profileSchema = z.object({
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
   headline: z.string().min(5, "Headline must be at least 5 characters"),
   bio: z.string().optional(),
-  email: z.string().email("Please enter a valid email").optional(),
+  contactEmail: z.string().email("Please enter a valid email").optional().or(z.literal("")),
   phone: z.string().optional(),
   location: z.string().optional()
 });
@@ -120,7 +120,7 @@ const ProfileEditPage = () => {
       displayName: "",
       headline: "",
       bio: "",
-      email: "",
+      contactEmail: "",
       phone: "",
       location: ""
     }
@@ -149,7 +149,7 @@ const ProfileEditPage = () => {
               displayName: userProfile.displayName || "",
               headline: userProfile.headline || "",
               bio: userProfile.bio || "",
-              email: userProfile.contact?.email || "",
+              contactEmail: userProfile.contactEmail || "",
               phone: userProfile.contact?.phone || "",
               location: userProfile.contact?.location || ""
             });
@@ -212,6 +212,7 @@ const ProfileEditPage = () => {
         fullname: data.displayName, // Map displayName to fullname for database
         headline: data.headline,
         bio: data.bio,
+        contact_email: data.contactEmail,
         phone: data.phone,
         location: data.location
       };
@@ -635,14 +636,14 @@ const ProfileEditPage = () => {
                           <div className="grid md:grid-cols-2 gap-4">
                             <FormField
                               control={form.control}
-                              name="email"
+                              name="contactEmail"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>{t("profileEdit.email")}</FormLabel>
+                                  <FormLabel>{t("profileEdit.contactEmail", "Contact Email")}</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="your.email@example.com" {...field} disabled />
+                                    <Input placeholder="your.email@example.com" {...field} />
                                   </FormControl>
-                                  <FormDescription>{t("profileEdit.emailDesc")}</FormDescription>
+                                  <FormDescription>{t("profileEdit.contactEmailDesc", "Used for notifications. Leave empty if you prefer not to receive emails.")}</FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
