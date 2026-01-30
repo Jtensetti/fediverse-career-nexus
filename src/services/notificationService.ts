@@ -34,6 +34,35 @@ export interface Notification {
   };
 }
 
+// Helper function to enrich notifications with actor data from public_profiles view
+async function enrichWithActorData(notifications: any[]): Promise<Notification[]> {
+  if (notifications.length === 0) return [];
+
+  // Get unique actor IDs
+  const actorIds = [...new Set(notifications.map(n => n.actor_id).filter(Boolean))];
+  
+  if (actorIds.length === 0) {
+    return notifications as Notification[];
+  }
+
+  // Fetch actor profiles from the public_profiles view (bypasses RLS, excludes sensitive fields)
+  const { data: profiles } = await supabase
+    .from('public_profiles')
+    .select('id, fullname, username, avatar_url')
+    .in('id', actorIds);
+
+  // Create a map for quick lookup
+  const profileMap = new Map(
+    (profiles || []).map(p => [p.id, p])
+  );
+
+  // Enrich notifications with actor data
+  return notifications.map(notification => ({
+    ...notification,
+    actor: notification.actor_id ? profileMap.get(notification.actor_id) || null : null
+  })) as Notification[];
+}
+
 export const notificationService = {
   async getNotifications(limit = 50): Promise<Notification[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -41,10 +70,7 @@ export const notificationService = {
 
     const { data, error } = await supabase
       .from('notifications')
-      .select(`
-        *,
-        actor:profiles!notifications_actor_id_fkey(id, fullname, username, avatar_url)
-      `)
+      .select('*')
       .eq('recipient_id', user.id)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -54,7 +80,7 @@ export const notificationService = {
       return [];
     }
 
-    return (data || []) as Notification[];
+    return enrichWithActorData(data || []);
   },
 
   async getUnreadCount(): Promise<number> {
@@ -128,18 +154,18 @@ export const notificationService = {
           filter: `recipient_id=eq.${userId}`,
         },
         async (payload) => {
-          // Fetch the full notification with actor data
+          // Fetch the full notification and enrich with actor data
           const { data } = await supabase
             .from('notifications')
-            .select(`
-              *,
-              actor:profiles!notifications_actor_id_fkey(id, fullname, username, avatar_url)
-            `)
+            .select('*')
             .eq('id', payload.new.id)
             .single();
           
           if (data) {
-            callback(data as Notification);
+            const enriched = await enrichWithActorData([data]);
+            if (enriched.length > 0) {
+              callback(enriched[0]);
+            }
           }
         }
       )

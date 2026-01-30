@@ -29,14 +29,34 @@ export interface Recommendation {
   };
 }
 
+// Helper to enrich recommendations with profile data from public_profiles view
+async function enrichWithProfiles(recommendations: any[], profileField: 'recommender_id' | 'recipient_id', targetField: 'recommender' | 'recipient'): Promise<Recommendation[]> {
+  if (recommendations.length === 0) return [];
+
+  const userIds = [...new Set(recommendations.map(r => r[profileField]).filter(Boolean))];
+  
+  if (userIds.length === 0) {
+    return recommendations as Recommendation[];
+  }
+
+  const { data: profiles } = await supabase
+    .from('public_profiles')
+    .select('id, fullname, username, avatar_url, headline')
+    .in('id', userIds);
+
+  const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+  return recommendations.map(rec => ({
+    ...rec,
+    [targetField]: rec[profileField] ? profileMap.get(rec[profileField]) || null : null
+  })) as Recommendation[];
+}
+
 export const recommendationService = {
   async getReceivedRecommendations(userId: string): Promise<Recommendation[]> {
     const { data, error } = await supabase
       .from('recommendations')
-      .select(`
-        *,
-        recommender:profiles!recommendations_recommender_id_fkey(id, fullname, username, avatar_url, headline)
-      `)
+      .select('*')
       .eq('recipient_id', userId)
       .eq('status', 'approved')
       .order('created_at', { ascending: false });
@@ -46,7 +66,7 @@ export const recommendationService = {
       return [];
     }
 
-    return (data || []) as Recommendation[];
+    return enrichWithProfiles(data || [], 'recommender_id', 'recommender');
   },
 
   async getPendingRecommendations(): Promise<Recommendation[]> {
@@ -55,16 +75,13 @@ export const recommendationService = {
 
     const { data, error } = await supabase
       .from('recommendations')
-      .select(`
-        *,
-        recommender:profiles!recommendations_recommender_id_fkey(id, fullname, username, avatar_url, headline)
-      `)
+      .select('*')
       .eq('recipient_id', user.id)
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
     if (error) return [];
-    return (data || []) as Recommendation[];
+    return enrichWithProfiles(data || [], 'recommender_id', 'recommender');
   },
 
   async getGivenRecommendations(): Promise<Recommendation[]> {
@@ -73,15 +90,12 @@ export const recommendationService = {
 
     const { data, error } = await supabase
       .from('recommendations')
-      .select(`
-        *,
-        recipient:profiles!recommendations_recipient_id_fkey(id, fullname, username, avatar_url)
-      `)
+      .select('*')
       .eq('recommender_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) return [];
-    return (data || []) as Recommendation[];
+    return enrichWithProfiles(data || [], 'recipient_id', 'recipient');
   },
 
   async writeRecommendation(params: {

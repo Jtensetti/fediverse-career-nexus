@@ -270,42 +270,60 @@ export async function revokeBan(banId: string): Promise<boolean> {
   }
 }
 
-// Get active bans
 export async function getActiveBans(): Promise<UserBan[]> {
   try {
     const { data, error } = await supabase
       .from("user_bans")
-      .select(`
-        *,
-        user:profiles!user_bans_user_id_fkey(username, fullname, avatar_url)
-      `)
+      .select("*")
       .is("revoked_at", null)
       .or("expires_at.is.null,expires_at.gt.now()")
       .order("created_at", { ascending: false });
 
     if (error) throw error;
+    if (!data || data.length === 0) return [];
 
-    return (data as unknown as UserBan[]) || [];
+    // Fetch user profiles from public_profiles view
+    const userIds = [...new Set(data.map(b => b.user_id))];
+    const { data: profiles } = await supabase
+      .from("public_profiles")
+      .select("id, username, fullname, avatar_url")
+      .in("id", userIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+    return data.map(ban => ({
+      ...ban,
+      user: profileMap.get(ban.user_id) || null
+    })) as unknown as UserBan[];
   } catch (error) {
     console.error("Error fetching active bans:", error);
     return [];
   }
 }
 
-// Get all bans (including expired/revoked)
 export async function getAllBans(): Promise<UserBan[]> {
   try {
     const { data, error } = await supabase
       .from("user_bans")
-      .select(`
-        *,
-        user:profiles!user_bans_user_id_fkey(username, fullname, avatar_url)
-      `)
+      .select("*")
       .order("created_at", { ascending: false });
 
     if (error) throw error;
+    if (!data || data.length === 0) return [];
 
-    return (data as unknown as UserBan[]) || [];
+    // Fetch user profiles from public_profiles view
+    const userIds = [...new Set(data.map(b => b.user_id))];
+    const { data: profiles } = await supabase
+      .from("public_profiles")
+      .select("id, username, fullname, avatar_url")
+      .in("id", userIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+    return data.map(ban => ({
+      ...ban,
+      user: profileMap.get(ban.user_id) || null
+    })) as unknown as UserBan[];
   } catch (error) {
     console.error("Error fetching all bans:", error);
     return [];
@@ -360,16 +378,26 @@ export async function getModerators(): Promise<Moderator[]> {
   try {
     const { data, error } = await supabase
       .from("user_roles")
-      .select(`
-        *,
-        user:profiles!user_roles_user_id_fkey(username, fullname, avatar_url)
-      `)
+      .select("*")
       .in("role", ["admin", "moderator"])
       .order("role", { ascending: true });
 
     if (error) throw error;
+    if (!data || data.length === 0) return [];
 
-    return (data as unknown as Moderator[]) || [];
+    // Fetch user profiles from public_profiles view
+    const userIds = [...new Set(data.map(r => r.user_id))];
+    const { data: profiles } = await supabase
+      .from("public_profiles")
+      .select("id, username, fullname, avatar_url")
+      .in("id", userIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+    return data.map(role => ({
+      ...role,
+      user: profileMap.get(role.user_id) || null
+    })) as unknown as Moderator[];
   } catch (error) {
     console.error("Error fetching moderators:", error);
     return [];

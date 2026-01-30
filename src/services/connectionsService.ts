@@ -459,12 +459,7 @@ export const getPendingConnectionRequests = async (): Promise<PendingConnectionR
     // Get pending requests where the current user is the recipient
     const { data: requests, error } = await supabase
       .from("user_connections")
-      .select(`
-        id,
-        created_at,
-        user_id,
-        requester_profile:profiles!user_id(id, username, fullname, headline, avatar_url)
-      `)
+      .select("id, created_at, user_id")
       .eq("connected_user_id", user.id)
       .eq("status", "pending");
 
@@ -473,15 +468,19 @@ export const getPendingConnectionRequests = async (): Promise<PendingConnectionR
       return [];
     }
 
-    return (requests || []).map(request => {
-      let profile;
-      if (request.requester_profile !== null) {
-        if (Array.isArray(request.requester_profile)) {
-          profile = request.requester_profile.length > 0 ? request.requester_profile[0] : null;
-        } else {
-          profile = request.requester_profile;
-        }
-      }
+    if (!requests || requests.length === 0) return [];
+
+    // Fetch requester profiles from public_profiles view (separate query)
+    const requesterIds = requests.map(r => r.user_id);
+    const { data: profiles } = await supabase
+      .from("public_profiles")
+      .select("id, username, fullname, headline, avatar_url")
+      .in("id", requesterIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+    return requests.map(request => {
+      const profile = profileMap.get(request.user_id);
       
       if (!profile) return null;
       
