@@ -86,6 +86,20 @@ React (Vite) ──supabase-js──► Edge Functions (Deno)
 - **Animations**: Framer Motion
 
 ---
+## 🤖 About AI-assisted development
+
+Nolto is built with the help of AI.
+
+Much of the codebase is generated using an AI-assisted coding tool (Lovable.dev), based on explicit descriptions of system behavior, constraints, and architecture.
+
+AI reduces the cost of producing code. Code itself is no longer the differentiator.  
+Product thinking, values, trust, federation design, and solving real problems are.
+
+Those decisions are deliberate and manual.
+
+If AI-assisted development isn’t your thing, that’s fine — feel free to move on.
+
+---
 
 ## 🚀 Quick Start
 
@@ -196,6 +210,7 @@ Nolto implements the ActivityPub protocol for federation with other Fediverse in
 ## 🤝 Contributing
 
 We welcome contributions! Check out our issues for good first tasks.
+Given how this project is built, the most valuable contributions right now are often bug reports, federation edge cases, security review, and documentation.
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
