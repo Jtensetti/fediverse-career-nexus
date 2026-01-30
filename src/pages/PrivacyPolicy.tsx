@@ -33,12 +33,12 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Privacy Policy</h1>
-            <p className="text-xl text-bondy-highlight">How Bondy Handles Your Personal Data</p>
+            <p className="text-xl text-bondy-highlight">How Nolto Handles Your Personal Data</p>
             <p className="text-lg text-white/90 mt-4">
               <strong>Effective Date:</strong> June 16, 2025
             </p>
             <p className="text-lg text-white/90 mt-2">
-              This Privacy Policy explains how Bondy handles your personal data, both on the Bondy platform and across
+              This Privacy Policy explains how Nolto handles your personal data, both on the Nolto platform and across
               federated instances. We are committed to protecting your privacy and ensuring transparency about what
               happens with your data.
             </p>
@@ -69,7 +69,7 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">1. Who Controls Your Data</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  Nolto is a federated platform developed using{" "}
+                  Nolto is a federated platform developed by{" "}
                   <strong>Lovable, a vibecoding tool registered in Sweden (EU)</strong>. When you sign up, your data is
                   stored and managed by the instance (server) where you created your account.
                 </p>
@@ -98,7 +98,7 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">2. What Data is Collected</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  Depending on how you use Bondy, the following data may be collected and processed by your instance:
+                  Depending on how you use Nolto, the following data may be collected and processed by your instance:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>
@@ -117,12 +117,12 @@ const PrivacyPolicy = () => {
                     prevention, and debugging).
                   </li>
                   <li>
-                    <strong>Federation data:</strong> Information shared with other Bondy or Fediverse instances as part
+                    <strong>Federation data:</strong> Information shared with other Nolto or Fediverse instances as part
                     of normal federation (see section 4).
                   </li>
                 </ul>
                 <p>
-                  Bondy does not require sensitive personal data (e.g., government ID numbers, health data) unless you
+                  Nolto does not require sensitive personal data (e.g., government ID numbers, health data) unless you
                   voluntarily provide it in your profile or posts.
                 </p>
               </div>
@@ -164,7 +164,7 @@ const PrivacyPolicy = () => {
 
                 <h3 className="text-xl font-semibold text-bondy-primary">Across the Fediverse</h3>
                 <p>
-                  When you interact with users or job posts on other Bondy or compatible Fediverse instances, relevant
+                  When you interact with users or job posts on other Nolto or compatible Fediverse instances, relevant
                   information (such as your profile, public posts, and job applications) may be federated and shared
                   with those remote servers, according to the ActivityPub protocol.
                 </p>
@@ -200,7 +200,7 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-bondy-primary mb-6">6. Data Security</h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  Bondy instances use appropriate technical and organizational measures to protect your data from
+                  Nolto instances use appropriate technical and organizational measures to protect your data from
                   unauthorized access, alteration, or loss.
                 </p>
                 <p>
@@ -259,7 +259,7 @@ const PrivacyPolicy = () => {
 
                 <div>
                   <h3 className="text-xl font-semibold text-bondy-primary mb-3">8.3 What We Don't Use</h3>
-                  <p>Bondy does not use:</p>
+                  <p>Nolto does not use:</p>
                   <ul className="list-disc pl-6 space-y-2 mt-2">
                     <li>Advertising or marketing cookies</li>
                     <li>Analytics tracking (Google Analytics, etc.)</li>
@@ -277,7 +277,7 @@ const PrivacyPolicy = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-bondy-primary mb-3">9.1 Platform Provider</h3>
                   <p>
-                    Bondy is developed by <strong>Lovable</strong>, a company registered in <strong>Sweden (EU)</strong>
+                    Nolto is developed by <strong>Lovable</strong>, a company registered in <strong>Sweden (EU)</strong>
                     .
                   </p>
                 </div>
@@ -300,7 +300,7 @@ const PrivacyPolicy = () => {
 
                 <div>
                   <h3 className="text-xl font-semibold text-bondy-primary mb-3">9.3 Sub-processors</h3>
-                  <p className="mb-3">The following service providers process data on behalf of Bondy:</p>
+                  <p className="mb-3">The following service providers process data on behalf of Nolto:</p>
                   <div className="overflow-x-auto">
                     <table className="min-w-full bg-white border border-gray-200 rounded-lg">
                       <thead className="bg-gray-50">
@@ -395,12 +395,12 @@ const PrivacyPolicy = () => {
                     <strong>Email:</strong> jtensetti@protonmail.com
                   </p>
                   <p>
-                    <strong>Bondy Account:</strong> JTensetti (@user_f33be7a8)
+                    <strong>Nolto Account:</strong> JTensetti (@user_f33be7a8)
                   </p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg mt-4">
                   <p>
-                    This policy applies to all Bondy instances and is intended to comply with the GDPR and other
+                    This policy applies to all Nolto instances and is intended to comply with the GDPR and other
                     relevant privacy laws. For local variations or additional requirements, see your instance's own
                     policy page.
                   </p>
