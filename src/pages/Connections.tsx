@@ -42,7 +42,7 @@ const ConnectionsPage = () => {
     refetch: refetchConnections
   } = useQuery({
     queryKey: ["userConnections"],
-    queryFn: getUserConnections
+    queryFn: () => getUserConnections()
   });
   
   // Fetch suggestions data
