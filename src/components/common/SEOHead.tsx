@@ -27,8 +27,28 @@ export function SEOHead({
 }: SEOHeadProps) {
   const siteUrl = window.location.origin;
   const fullUrl = url || window.location.href;
-  const fullImage = image.startsWith("http") ? image : `${siteUrl}${image}`;
   const fullTitle = title.includes("Nolto") ? title : `${title} | Nolto`;
+
+  // Proxy external images to avoid hotlink protection issues when shared on other platforms
+  const getProxiedImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return `${siteUrl}/og-image.png`;
+    
+    // Relative URLs - use directly with siteUrl
+    if (!imageUrl.startsWith("http")) {
+      return `${siteUrl}${imageUrl}`;
+    }
+    
+    // Already our domain - use directly
+    if (imageUrl.startsWith(siteUrl)) {
+      return imageUrl;
+    }
+    
+    // External image - proxy through our edge function to avoid hotlink blocks
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    return `${supabaseUrl}/functions/v1/proxy-media?url=${encodeURIComponent(imageUrl)}`;
+  };
+
+  const fullImage = getProxiedImageUrl(image);
 
   return (
     <Helmet>
