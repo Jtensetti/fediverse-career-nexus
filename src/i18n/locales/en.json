@@ -800,7 +800,7 @@
     "edgeFunctionsLocation": "Edge Functions: EU-preferred routing via Deno Deploy",
     "cdnLocation": "Content Delivery: Cloudflare global network with EU nodes",
     "subProcessors": "Sub-processors",
-    "subProcessorsDesc": "The following service providers process data on behalf of Bondy:",
+    "subProcessorsDesc": "The following service providers process data on behalf of Nolto:",
     "subProcessorSupabase": "Supabase (Database & Auth) - Frankfurt, Germany - EU-US DPF + SCCs",
     "subProcessorDeno": "Deno Deploy (Edge Functions) - Global/EU - EU-US DPF",
     "subProcessorCloudflare": "Cloudflare (CDN & Security) - Global - EU-US DPF + SCCs",
