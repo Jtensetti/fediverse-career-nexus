@@ -164,10 +164,10 @@ export async function toggleReaction(
 
           if (postData?.attributed_to) {
             const { data: actor } = await supabase
-              .from('actors')
+              .from('public_actors')
               .select('user_id')
               .eq('id', postData.attributed_to)
-              .single();
+              .maybeSingle();
             ownerId = actor?.user_id || null;
           }
         } else if (targetType === 'reply') {
@@ -179,10 +179,10 @@ export async function toggleReaction(
 
           if (replyData?.attributed_to) {
             const { data: actor } = await supabase
-              .from('actors')
+              .from('public_actors')
               .select('user_id')
               .eq('id', replyData.attributed_to)
-              .single();
+              .maybeSingle();
             ownerId = actor?.user_id || null;
             
             // Extract rootPost or inReplyTo for navigation

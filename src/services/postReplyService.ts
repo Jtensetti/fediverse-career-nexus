@@ -152,12 +152,12 @@ async function getCommentOwner(commentId: string): Promise<string | null> {
   
   if (!data?.attributed_to) return null;
   
-  // Get the user_id from the actor
+  // Get the user_id from the actor via safe public view (actors table is RLS-restricted)
   const { data: actor } = await supabase
-    .from('actors')
+    .from('public_actors')
     .select('user_id')
     .eq('id', data.attributed_to)
-    .single();
+    .maybeSingle();
   
   return actor?.user_id || null;
 }
@@ -347,10 +347,10 @@ export async function createPostReply(
 
       if (postData?.attributed_to) {
         const { data: postActor } = await supabase
-          .from('actors')
+          .from('public_actors')
           .select('user_id')
           .eq('id', postData.attributed_to)
-          .single();
+          .maybeSingle();
 
         // Don't notify yourself
         if (postActor?.user_id && postActor.user_id !== user.id) {

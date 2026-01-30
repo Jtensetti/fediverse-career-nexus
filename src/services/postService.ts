@@ -30,13 +30,7 @@ const getPostOwner = async (postId: string) => {
   
   const { data, error } = await supabase
     .from('ap_objects')
-    .select(`
-      id, 
-      attributed_to,
-      actors!ap_objects_attributed_to_fkey (
-        user_id
-      )
-    `)
+    .select('id, attributed_to')
     .eq('id', postId)
     .single();
 
@@ -47,7 +41,24 @@ const getPostOwner = async (postId: string) => {
     throw new Error('Post not found');
   }
 
-  const ownerId = (data as any).actors?.user_id;
+  const actorId = (data as any).attributed_to as string | null;
+  if (!actorId) {
+    console.log('👤 Post has no attributed_to actor');
+    return null;
+  }
+
+  // Resolve owner via safe public view (actors table is RLS-restricted)
+  const { data: actorData, error: actorError } = await supabase
+    .from('public_actors')
+    .select('user_id')
+    .eq('id', actorId)
+    .maybeSingle();
+
+  if (actorError) {
+    console.error('❌ Error resolving post owner actor:', actorError);
+  }
+
+  const ownerId = (actorData as any)?.user_id || null;
   console.log('👤 Post owner ID:', ownerId);
   return ownerId as string | null;
 };
@@ -264,7 +275,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
         try {
           // Look up user by username
           const { data: mentionedUser } = await supabase
-            .from('profiles')
+            .from('public_profiles')
             .select('id')
             .eq('username', username)
             .single();
@@ -354,21 +365,32 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
     // Include Create, Note, AND Announce (reposts/boosts)
     // Exclude replies (posts with inReplyTo)
     console.log('📊 Fetching posts for user:', targetUserId);
+
+    // Resolve the user's actor id(s) via safe public view (FK joins to actors are blocked by RLS)
+    const { data: userActors, error: userActorsError } = await supabase
+      .from('public_actors')
+      .select('id, preferred_username')
+      .eq('user_id', targetUserId);
+
+    if (userActorsError) {
+      console.error('Error fetching user actors:', userActorsError);
+      return [];
+    }
+
+    const actorIds = (userActors || []).map(a => a.id).filter(Boolean) as string[];
+    const actorsMap: Record<string, string> = Object.fromEntries(
+      (userActors || []).map(a => [a.id, a.preferred_username])
+    );
+
+    if (actorIds.length === 0) {
+      console.log('📭 No actor found for user:', targetUserId);
+      return [];
+    }
     
     const { data: posts, error } = await supabase
       .from('ap_objects')
-      .select(
-        `id, content, created_at, published_at, type, actors!ap_objects_attributed_to_fkey (
-          user_id,
-          preferred_username,
-          profiles (
-            fullname,
-            username,
-            avatar_url
-          )
-        )`
-      )
-      .eq('actors.user_id', targetUserId)
+      .select('id, content, created_at, published_at, type, attributed_to')
+      .in('attributed_to', actorIds)
       .in('type', ['Create', 'Note', 'Announce']) // Include Announce for reposts
       .order('published_at', { ascending: false });
 
@@ -388,7 +410,7 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
       return [];
     }
 
-    const authorIds = posts?.map(p => (p.actors as any)?.user_id).filter(Boolean) || [];
+    const authorIds = [targetUserId];
     console.log('👥 Author IDs from posts:', authorIds);
 
     let profilesMap: Record<string, { fullname: string | null; avatar_url: string | null }> = {};
@@ -420,15 +442,15 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
     }).map((post) => {
       const raw = post.content as any;
       const isAnnounce = post.type === 'Announce';
-      const authorUserId = (post.actors as any)?.user_id as string | undefined;
-      const profile = (authorUserId && profilesMap[authorUserId]) || { fullname: null, avatar_url: null };
+      const attributedTo = (post as any).attributed_to as string | undefined;
+      const preferredUsername = (attributedTo && actorsMap[attributedTo]) || undefined;
+      const profile = profilesMap[targetUserId] || { fullname: null, avatar_url: null };
 
       // For Announce (repost), extract quoted post and user's comment
       if (isAnnounce) {
         const quotedPost = raw?.object; // The original post being quoted
         const userComment = raw?.content || ''; // User's comment on the repost
 
-        const preferredUsername = (post.actors as any)?.preferred_username;
         return {
           id: post.id,
           content: userComment,
@@ -458,7 +480,6 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
       const contentText = note?.content || '';
       if (!contentText) return null;
 
-      const preferredUsername = (post.actors as any)?.preferred_username;
       const transformedPost: UserPostWithMeta = {
         id: post.id,
         content: contentText,

@@ -68,14 +68,7 @@ export default function PostView() {
           content,
           created_at,
           published_at,
-          attributed_to,
-          actors!ap_objects_attributed_to_fkey (
-            id,
-            user_id,
-            preferred_username,
-            is_remote,
-            remote_actor_url
-          )
+          attributed_to
         `)
         .eq('id', postId)
         .maybeSingle();
@@ -107,17 +100,27 @@ export default function PostView() {
         return;
       }
 
-      // Fetch profile data if it's a local post
-      const actor = postData.actors as any;
-      let profile = null;
-      
+      // Resolve actor + profile via safe public views (base actors table is RLS-restricted)
+      const actorId = postData.attributed_to as string | null;
+      let actor: { user_id: string | null; preferred_username: string; is_remote: boolean | null } | null = null;
+      let profile: { username: string | null; fullname: string | null; avatar_url: string | null } | null = null;
+
+      if (actorId) {
+        const { data: actorData } = await supabase
+          .from('public_actors')
+          .select('user_id, preferred_username, is_remote')
+          .eq('id', actorId)
+          .maybeSingle();
+        actor = (actorData as typeof actor) || null;
+      }
+
       if (actor?.user_id) {
         const { data: profileData } = await supabase
           .from('public_profiles')
           .select('username, fullname, avatar_url')
           .eq('id', actor.user_id)
           .single();
-        profile = profileData;
+        profile = (profileData as typeof profile) || null;
       }
 
       // Transform to FederatedPost format
