@@ -412,10 +412,6 @@ const ProfilePage = () => {
               </motion.div>
             </div>
 
-            {/* Stats - below avatar, above buttons */}
-            <div className="flex justify-start mt-4">
-              <ProfileStats userId={profile.id} />
-            </div>
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-2 mt-4">
