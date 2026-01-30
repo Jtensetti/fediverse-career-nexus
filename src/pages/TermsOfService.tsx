@@ -84,8 +84,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">2. Eligibility</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">2. Eligibility</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   You must be at least 16 years of age, or the minimum age of digital consent in your country, 
                   to use this Service. By using the Service, you warrant that you meet this age requirement and 
@@ -95,8 +95,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">3. Account Registration and Security</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">3. Account Registration and Security</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>You may be required to create an account to access certain features. You are responsible for maintaining the confidentiality of your account credentials.</li>
                   <li>You agree to provide accurate, current, and complete information and to update it as necessary.</li>
@@ -107,8 +107,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">4. User Conduct</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">4. User Conduct</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <p>By using the Service, you agree to:</p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>Use the Service only for lawful purposes and in accordance with these Terms and applicable laws.</li>
@@ -131,8 +131,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">5. Content Ownership and License</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">5. Content Ownership and License</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>You retain ownership of any Content you submit, post, or display on the Service.</li>
                   <li>By submitting Content, you grant us and other federated instances a worldwide, non-exclusive, royalty-free license to use, display, reproduce, adapt, and distribute your Content as required for the operation of the Service, including federation.</li>
@@ -143,8 +143,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">6. Moderation and Enforcement</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">6. Moderation and Enforcement</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>We and other instance administrators reserve the right to remove Content, suspend, or terminate accounts at our discretion for violations of these Terms or applicable laws.</li>
                   <li>Content or accounts may be removed, blocked, or limited as required by law, or to protect the Service, users, or third parties.</li>
@@ -154,8 +154,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">7. Federation and Data Sharing</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">7. Federation and Data Sharing</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>By using a federated Service, you understand that certain Content (including your profile, posts, and messages) may be shared with and stored by other instances as part of the federation process.</li>
                   <li>Once Content is federated to other instances, it is governed by their policies and may not be fully subject to removal or modification by us.</li>
@@ -165,18 +165,18 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">8. Privacy</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">8. Privacy</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Your privacy is important to us. Please refer to our <Link to="/privacy" className="text-bondy-accent hover:text-bondy-primary transition-colors underline">Privacy Policy</Link> for information on how your personal data is collected, processed, and shared.</li>
+                  <li>Your privacy is important to us. Please refer to our <Link to="/privacy" className="text-secondary hover:text-primary transition-colors underline">Privacy Policy</Link> for information on how your personal data is collected, processed, and shared.</li>
                   <li>By using the Service, you consent to the collection, use, and sharing of your information as described in the Privacy Policy.</li>
                 </ul>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">9. Termination</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">9. Termination</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>You may terminate your account at any time by following the instructions provided by your instance.</li>
                   <li>We reserve the right to suspend or terminate your access to the Service, with or without notice, for any violation of these Terms or applicable laws, or for security reasons.</li>
@@ -186,8 +186,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">10. Disclaimers</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">10. Disclaimers</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
                   <li>The Service is provided "as is" and "as available" without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, or availability.</li>
                   <li>We do not warrant that the Service will be uninterrupted, error-free, or secure.</li>
@@ -198,8 +198,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">11. Limitation of Liability</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">11. Limitation of Liability</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <p>To the maximum extent permitted by law:</p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>We, our affiliates, and our administrators shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use or inability to use the Service.</li>
@@ -210,8 +210,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">12. Changes to the Terms</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">12. Changes to the Terms</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   We may update these Terms from time to time. Changes will be posted on this page with a new 
                   effective date. Your continued use of the Service after changes are posted constitutes your 
@@ -221,8 +221,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">13. Governing Law and Jurisdiction</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">13. Governing Law and Jurisdiction</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   These Terms shall be governed by and construed in accordance with the laws of Sweden, 
                   without regard to conflict of law principles. Any disputes arising out of these Terms or the Service 
@@ -232,8 +232,8 @@ const TermsOfService = () => {
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-bondy-primary mb-6">14. Severability</h2>
-              <div className="space-y-4 text-gray-700">
+              <h2 className="text-2xl font-bold text-primary mb-6">14. Severability</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   If any provision of these Terms is found to be unlawful, void, or unenforceable, that provision 
                   shall be deemed severable from these Terms and shall not affect the validity and enforceability 
