@@ -15,7 +15,7 @@ export const hasUserBoostedPost = async (postId: string): Promise<boolean> => {
     if (!user) return false;
 
     const { data: actor } = await supabase
-      .from('actors')
+      .from('public_actors')
       .select('id')
       .eq('user_id', user.id)
       .single();
@@ -74,9 +74,9 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
       return false;
     }
 
-    // Get user's actor
+    // Get user's actor from public_actors view
     let { data: actor } = await supabase
-      .from('actors')
+      .from('public_actors')
       .select('id, preferred_username')
       .eq('user_id', user.id)
       .single();

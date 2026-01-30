@@ -33,9 +33,9 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
         
         const { data: session } = await supabase.auth.getSession();
         
-        // Fetch actor information for this user
+        // Fetch actor information for this user from public_actors view
         const { data, error } = await supabase
-          .from("actors")
+          .from("public_actors")
           .select("*")
           .eq("preferred_username", username)
           .single();
@@ -58,7 +58,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
             
           if (currentUserProfile) {
             const { data: currentUserActorData } = await supabase
-              .from("actors")
+              .from("public_actors")
               .select("*")
               .eq("preferred_username", currentUserProfile.username)
               .single();

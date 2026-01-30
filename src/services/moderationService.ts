@@ -87,7 +87,7 @@ export async function getFlaggedContent(
         // Get reporter info
         try {
           const { data: reporterData } = await supabase
-            .from("profiles")
+            .from("public_profiles")
             .select("username, fullname, avatar_url")
             .eq("id", report.reporter_id)
             .single();
@@ -114,7 +114,7 @@ export async function getFlaggedContent(
             content_preview = article?.title || "Article not found";
           } else if (report.content_type === "user") {
             const { data: profile } = await supabase
-              .from("profiles")
+              .from("public_profiles")
               .select("username, fullname")
               .eq("id", report.content_id)
               .single();
@@ -493,7 +493,7 @@ export async function searchUsers(query: string): Promise<{
     if (!query || query.length < 2) return [];
 
     const { data, error } = await supabase
-      .from("profiles")
+      .from("public_profiles")
       .select("id, username, fullname, avatar_url")
       .or(`username.ilike.%${query}%,fullname.ilike.%${query}%`)
       .limit(10);

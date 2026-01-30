@@ -32,7 +32,7 @@ const fetchProfileStats = async (userId: string): Promise<StatsData> => {
     // Get posts count - need to get actor first, then count posts
     (async () => {
       const { data: actor } = await supabase
-        .from('actors')
+        .from('public_actors')
         .select('id')
         .eq('user_id', userId)
         .single();

@@ -32,9 +32,9 @@ const Instances = () => {
   useEffect(() => {
     const fetchInstances = async () => {
       try {
-        // Get unique hosts from remote actors
+        // Get unique hosts from remote actors using public view
         const { data, error } = await supabase
-          .from("actors")
+          .from("public_actors")
           .select("remote_actor_url")
           .not("remote_actor_url", "is", null);
 

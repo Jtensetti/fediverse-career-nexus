@@ -60,9 +60,9 @@ export function UserLookup() {
     queryFn: async () => {
       if (!selectedUserId) return null;
 
-      // Get profile
+      // Get profile from public view (for display info)
       const { data: profile } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("*")
         .eq("id", selectedUserId)
         .single();

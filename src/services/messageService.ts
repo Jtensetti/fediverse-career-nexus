@@ -685,28 +685,10 @@ export async function getOtherParticipant(conversation: Conversation, currentUse
  */
 async function getParticipantFallback(partnerId: string): Promise<ParticipantInfo | null> {
   try {
-    // Try local profile first
-    const { data: localProfile } = await supabase
+    // Use public_profiles view for all lookups (bypasses RLS restrictions)
+    const { data: profile } = await supabase
       .from('public_profiles')
       .select('id, username, fullname, avatar_url')
-      .eq('id', partnerId)
-      .maybeSingle();
-
-    if (localProfile) {
-      return {
-        id: localProfile.id,
-        username: localProfile.username || undefined,
-        fullname: localProfile.fullname || undefined,
-        avatar_url: localProfile.avatar_url || undefined,
-        isFederated: false,
-        found: true
-      };
-    }
-
-    // Try to find as remote actor via profiles table (federated users)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, username, fullname, avatar_url, auth_type, home_instance')
       .eq('id', partnerId)
       .maybeSingle();
 
@@ -716,8 +698,32 @@ async function getParticipantFallback(partnerId: string): Promise<ParticipantInf
         username: profile.username || undefined,
         fullname: profile.fullname || undefined,
         avatar_url: profile.avatar_url || undefined,
-        isFederated: profile.auth_type === 'federated',
-        homeInstance: profile.home_instance || undefined,
+        isFederated: false,
+        found: true
+      };
+    }
+
+    // Check if this might be a federated user via the actors table
+    const { data: actor } = await supabase
+      .from('public_actors')
+      .select('id, preferred_username, remote_actor_url, is_remote')
+      .eq('user_id', partnerId)
+      .maybeSingle();
+
+    if (actor && actor.is_remote) {
+      // Extract home instance from remote_actor_url
+      let homeInstance: string | undefined;
+      try {
+        if (actor.remote_actor_url) {
+          homeInstance = new URL(actor.remote_actor_url).host;
+        }
+      } catch {}
+
+      return {
+        id: partnerId,
+        username: actor.preferred_username || undefined,
+        isFederated: true,
+        homeInstance,
         found: true
       };
     }

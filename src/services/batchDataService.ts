@@ -46,9 +46,9 @@ export async function getBatchPostData(
       supabase.rpc('get_batch_boost_counts', { post_ids: postIds }),
       // Reply counts RPC
       supabase.rpc('get_batch_reply_counts', { post_ids: postIds }),
-      // User's actor ID (only if logged in)
+      // User's actor ID (only if logged in) - use public_actors view
       userId 
-        ? supabase.from('actors').select('id').eq('user_id', userId).maybeSingle()
+        ? supabase.from('public_actors').select('id').eq('user_id', userId).maybeSingle()
         : Promise.resolve({ data: null, error: null })
     ]);
 
