@@ -112,10 +112,10 @@ const ProfilePage = () => {
     retry: 1,
   });
 
-  // Fetch user connections for the connections tab
+  // Fetch user connections for the connections tab (for the profile being viewed)
   const { data: userConnections, isLoading: connectionsLoading } = useQuery({
-    queryKey: ["connections", profile?.id],
-    queryFn: () => getUserConnections(),
+    queryKey: ["profileConnections", profile?.id],
+    queryFn: () => getUserConnections(profile?.id),
     enabled: !!profile?.id && profile.networkVisibilityEnabled === true,
   });
 

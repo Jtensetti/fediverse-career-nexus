@@ -27,15 +27,18 @@ export interface NetworkSuggestion {
   suggestionReason?: string;
 }
 
-export const getUserConnections = async (): Promise<NetworkConnection[]> => {
+export const getUserConnections = async (targetUserId?: string): Promise<NetworkConnection[]> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
+    
+    // Use provided targetUserId or fall back to current user
+    const userId = targetUserId || user?.id;
+    if (!userId) return [];
 
     const { data: connections, error } = await supabase
       .from("user_connections")
       .select("id, user_id, connected_user_id, status")
-      .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
+      .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
       .eq("status", "accepted");
 
     if (error) {
@@ -46,7 +49,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
     const otherUserIds = Array.from(
       new Set(
         (connections || []).map((c: any) =>
-          c.user_id === user.id ? c.connected_user_id : c.user_id
+          c.user_id === userId ? c.connected_user_id : c.user_id
         )
       )
     );
@@ -67,7 +70,7 @@ export const getUserConnections = async (): Promise<NetworkConnection[]> => {
 
     return (connections || [])
       .map((c: any) => {
-        const otherId = c.user_id === user.id ? c.connected_user_id : c.user_id;
+        const otherId = c.user_id === userId ? c.connected_user_id : c.user_id;
         const profile = profileById.get(otherId);
         if (!profile) return null;
 

@@ -46,7 +46,7 @@ export default function Messages() {
   // Fetch connections to check if user has any
   const { data: connections } = useQuery({
     queryKey: ['connections', currentUserId],
-    queryFn: getUserConnections,
+    queryFn: () => getUserConnections(),
     enabled: !!currentUserId
   });
 
