@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.generate-actor-keys]
 verify_jwt = false
+
+[functions.send-notification-digest]
+verify_jwt = false

@@ -1532,6 +1532,27 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_digest_tracking: {
+        Row: {
+          created_at: string
+          last_digest_sent_at: string | null
+          last_notification_check_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_digest_sent_at?: string | null
+          last_notification_check_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_digest_sent_at?: string | null
+          last_notification_check_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           actor_id: string | null
