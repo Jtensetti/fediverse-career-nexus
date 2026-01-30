@@ -158,12 +158,18 @@ serve(async (req) => {
           }
         }
 
-        // Get user's email - first check profiles.contact_email, then fall back to auth email
+        // Get user's email and preferences - first check profiles.contact_email, then fall back to auth email
         const { data: userProfile } = await supabase
           .from('profiles')
-          .select('contact_email')
+          .select('contact_email, email_digest_enabled')
           .eq('id', userId)
           .single();
+        
+        // Check if user has opted out of digest emails (default to true/enabled)
+        if (userProfile?.email_digest_enabled === false) {
+          logger.debug({ userId, traceId }, "Skipping - user opted out of digest emails");
+          continue;
+        }
         
         const contactEmail = userProfile?.contact_email;
         
@@ -171,11 +177,21 @@ serve(async (req) => {
         let userEmail: string | null = null;
         
         if (contactEmail) {
+          // Skip federated local emails
+          if (contactEmail.endsWith('.federated.local')) {
+            logger.debug({ userId, traceId }, "Skipping - federated.local email");
+            continue;
+          }
           userEmail = contactEmail;
         } else {
           // Fall back to auth email
           const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
           if (!userError && user?.email) {
+            // Skip federated local emails
+            if (user.email.endsWith('.federated.local')) {
+              logger.debug({ userId, traceId }, "Skipping - federated.local email");
+              continue;
+            }
             // Validate it looks like a real email domain (not a Fediverse handle)
             const emailDomain = user.email.split('@')[1];
             // Check if domain has MX-like structure (contains at least one dot after @)
