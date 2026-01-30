@@ -308,7 +308,7 @@ const ProfilePage = () => {
 
   const displayUsername = usernameOrId || profile.username;
   const connectionDegreeValue =
-    profile.connectionDegree !== undefined ? (profile.connectionDegree as ConnectionDegree) : null;
+    profile.connectionDegree && profile.connectionDegree >= 1 && profile.connectionDegree <= 3 ? (profile.connectionDegree as ConnectionDegree) : null;
   const avatarStatus = profile.isVerified ? "verified" : profile.authType === "federated" ? "remote" : "none";
 
   return (
