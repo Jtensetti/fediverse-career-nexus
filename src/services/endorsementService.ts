@@ -38,22 +38,30 @@ export const endorsementService = {
 
     // Get all endorsements for these skills
     const skillIds = skills.map(s => s.id);
-    const { data: endorsements } = await supabase
+    const { data: endorsementsData } = await supabase
       .from('skill_endorsements')
-      .select(`
-        id,
-        skill_id,
-        endorser_id,
-        created_at,
-        endorser:profiles!skill_endorsements_endorser_id_fkey(id, fullname, username, avatar_url)
-      `)
+      .select('id, skill_id, endorser_id, created_at')
       .in('skill_id', skillIds);
+
+    // Get unique endorser IDs and fetch their profiles from public_profiles view
+    const endorserIds = [...new Set((endorsementsData || []).map(e => e.endorser_id))];
+    const { data: profiles } = endorserIds.length > 0 
+      ? await supabase.from('public_profiles').select('id, fullname, username, avatar_url').in('id', endorserIds)
+      : { data: [] };
+    
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+    // Enrich endorsements with profile data
+    const enrichedEndorsements = (endorsementsData || []).map(e => ({
+      ...e,
+      endorser: profileMap.get(e.endorser_id) || null
+    }));
 
     // Map endorsements to skills
     return skills.map(skill => ({
       ...skill,
       endorsements: skill.endorsements || 0,
-      endorsement_list: (endorsements || [])
+      endorsement_list: enrichedEndorsements
         .filter(e => e.skill_id === skill.id)
         .map(e => ({
           id: e.id,
@@ -63,7 +71,7 @@ export const endorsementService = {
           endorser: e.endorser as Endorsement['endorser'],
         })),
       user_has_endorsed: currentUser 
-        ? (endorsements || []).some(e => e.skill_id === skill.id && e.endorser_id === currentUser.id)
+        ? enrichedEndorsements.some(e => e.skill_id === skill.id && e.endorser_id === currentUser.id)
         : false,
     }));
   },
