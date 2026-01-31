@@ -9,6 +9,7 @@ import { Loader2, MessageSquare, Globe } from "lucide-react";
 import { PostSkeleton } from "./common/skeletons";
 import EmptyState from "./common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
+import { RefreshCw } from "lucide-react";
 import PullToRefresh from "./common/PullToRefresh";
 
 interface FederatedFeedProps {
@@ -28,7 +29,10 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const [batchDataLoading, setBatchDataLoading] = useState(false);
   const [remoteInstance, setRemoteInstance] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  
+  // Track retry attempt for empty results
+  const [hasRetried, setHasRetried] = useState(false);
   
   // Track which post IDs we've already fetched batch data for to prevent redundant calls
   const fetchedPostIds = useRef<Set<string>>(new Set());
@@ -47,7 +51,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     queryKey: ['federatedFeed', limit, offset, effectiveFeedType, user?.id],
     queryFn: () => getFederatedFeed(limit, offset, effectiveFeedType, user?.id),
     staleTime: 30000,
-    enabled: true,
+    enabled: !authLoading, // Wait for auth to resolve before querying
   });
 
   // Fetch remote posts for federated feed
@@ -86,7 +90,20 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setBatchData(new Map());
     fetchedPostIds.current.clear();
     loadMoreLockRef.current = false;
+    setHasRetried(false); // Reset retry flag on feed type change
   }, [effectiveFeedType]);
+  
+  // Automatic retry on unexpected empty results
+  useEffect(() => {
+    // Only retry if: query completed, returned empty, first page, and haven't retried yet
+    if (!isLoading && !isFetching && posts?.length === 0 && !hasRetried && offset === 0 && !authLoading) {
+      setHasRetried(true);
+      const timer = setTimeout(() => {
+        refetch();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, isFetching, posts, hasRetried, offset, refetch, authLoading]);
   
   // Memoized batch data fetcher
   const fetchBatchData = useCallback(async (postIds: string[]) => {
@@ -332,6 +349,13 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
             icon={MessageSquare}
             title="This feed is still warming up"
             description="You're early – that's a good thing! Be the first to share something with the network."
+            action={{
+              label: "Refresh",
+              onClick: () => {
+                setHasRetried(false);
+                refetch();
+              }
+            }}
           />
         )}
       </div>
