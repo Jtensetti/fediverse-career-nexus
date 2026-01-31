@@ -12,9 +12,11 @@ interface GlobalSearchProps {
   autoFocus?: boolean;
   onResultClick?: () => void;
   fullWidth?: boolean;
+  inlineResults?: boolean; // For mobile layout - renders results inline instead of absolute dropdown
+  hideInputClear?: boolean; // Hide the X button in input (when sheet already has close button)
 }
 
-export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = false }: GlobalSearchProps) {
+export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = false, inlineResults = false, hideInputClear = false }: GlobalSearchProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -172,7 +174,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
           className="pl-9 pr-9"
           autoFocus={autoFocus}
         />
-        {query && (
+        {query && !hideInputClear && (
           <Button
             variant="ghost"
             size="sm"
@@ -189,7 +191,12 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
       </div>
 
       {isOpen && query.length >= 1 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-popover border rounded-lg shadow-lg z-50 max-h-[400px] overflow-auto">
+        <div className={cn(
+          "bg-popover border rounded-lg shadow-lg z-50 overflow-auto",
+          inlineResults 
+            ? "mt-2 max-h-[60vh]" // Inline: flows naturally, more height for mobile
+            : "absolute top-full left-0 right-0 mt-2 max-h-[400px]" // Dropdown: absolute positioned
+        )}>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

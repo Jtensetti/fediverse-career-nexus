@@ -20,7 +20,7 @@ export function MobileSearch() {
       </Button>
       
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="top" className="h-auto max-h-[85vh] overflow-auto">
+        <SheetContent side="top" className="h-auto max-h-[90vh] overflow-auto [&>button]:hidden">
           <SheetHeader className="sr-only">
             <SheetTitle>Search</SheetTitle>
             <SheetDescription>Search for people, jobs, articles, and events</SheetDescription>
@@ -30,6 +30,7 @@ export function MobileSearch() {
               autoFocus 
               onResultClick={() => setOpen(false)} 
               fullWidth
+              inlineResults
             />
           </div>
         </SheetContent>
