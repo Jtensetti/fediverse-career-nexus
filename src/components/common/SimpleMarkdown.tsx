@@ -47,10 +47,21 @@ export function parseSimpleMarkdown(text: string): string {
   result = result.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   result = result.replace(/__([^_]+)__/g, "<strong>$1</strong>");
 
-  // Parse italic: *text* or _text_ (single markers, not inside words)
-  // Use negative lookbehind/lookahead to avoid matching inside words or URLs
-  result = result.replace(/(?<![*\w])\*([^*]+)\*(?![*\w])/g, "<em>$1</em>");
-  result = result.replace(/(?<![_\w])_([^_]+)_(?![_\w])/g, "<em>$1</em>");
+  // Parse italic: *text* or _text_ (using simpler patterns without lookbehind)
+  // Match *text* that's not part of **text** (already handled above)
+  result = result.replace(/(?:^|[^*])\*([^*]+)\*(?:[^*]|$)/g, (match, content) => {
+    // Preserve the surrounding characters
+    const before = match.startsWith('*') ? '' : match[0];
+    const after = match.endsWith('*') ? '' : match[match.length - 1];
+    return `${before}<em>${content}</em>${after}`;
+  });
+  
+  // Match _text_ that's not part of __text__ and not in URLs
+  result = result.replace(/(?:^|[^_\w])_([^_]+)_(?:[^_\w]|$)/g, (match, content) => {
+    const before = match.startsWith('_') ? '' : match[0];
+    const after = match.endsWith('_') ? '' : match[match.length - 1];
+    return `${before}<em>${content}</em>${after}`;
+  });
 
   // Restore protected anchor tags
   result = result.replace(/__ANCHOR_(\d+)__/g, (_, index) => anchors[parseInt(index)]);
