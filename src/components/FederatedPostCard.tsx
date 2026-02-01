@@ -22,7 +22,7 @@ import QuoteRepostDialog from "./QuoteRepostDialog";
 import { QuotedPostPreview, RepostIndicator } from "./QuotedPostPreview";
 import ContentWarningDisplay from "./ContentWarningDisplay";
 import { LinkPreview, extractUrls } from "./LinkPreview";
-import { linkifyText, smartTruncate, stripHtml } from "@/lib/linkify";
+import { linkifyWithMarkdown, smartTruncate, stripHtml } from "@/lib/linkify";
 import { PollDisplay } from "./PollDisplay";
 import { isPoll } from "@/services/pollService";
 import DOMPurify from "dompurify";
@@ -127,8 +127,8 @@ export default function FederatedPostCard({
     const raw = getRawContent();
     const urls = extractUrls(raw);
 
-    // Make URLs clickable
-    const linkedContent = linkifyText(raw);
+    // Make URLs clickable and parse inline markdown
+    const linkedContent = linkifyWithMarkdown(raw);
 
     // If showing full content (PostView), don't truncate
     if (showFullContent) {
@@ -142,8 +142,8 @@ export default function FederatedPostCard({
 
     // If truncated, use plain text version; otherwise use linkified HTML
     if (wasTruncated) {
-      // Re-linkify the truncated plain text
-      const linkedTruncated = linkifyText(truncated);
+      // Re-linkify the truncated plain text with markdown
+      const linkedTruncated = linkifyWithMarkdown(truncated);
       return { displayContent: linkedTruncated, contentUrls: urls, isTruncated: true };
     }
 

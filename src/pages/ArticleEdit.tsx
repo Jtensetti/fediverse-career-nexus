@@ -17,7 +17,7 @@ import {
   removeCoAuthor,
   searchUsers 
 } from "@/services/articleService";
-import MarkdownEditor from "@/components/MarkdownEditor";
+import ArticleEditor from "@/components/ArticleEditor";
 import { toast } from "sonner";
 import { ArrowLeft, Save, UserPlus, X, Users, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -416,7 +416,7 @@ const ArticleEdit = () => {
                   </p>
                 </div>
                 
-                <MarkdownEditor
+                <ArticleEditor
                   value={article.content}
                   onChange={handleContentChange}
                   placeholder="Write your article content here..."
