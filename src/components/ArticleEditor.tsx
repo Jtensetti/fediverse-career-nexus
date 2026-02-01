@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useCallback } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
-import { EditorToolbar, ToolbarAction } from "@/components/editor/EditorToolbar";
+import { RichTextToolbar, ToolbarAction } from "@/components/editor/RichTextToolbar";
+import { TipTapEditor } from "@/components/editor/TipTapEditor";
 import { LinkInsertSheet } from "@/components/editor/LinkInsertSheet";
 import { cn } from "@/lib/utils";
 
@@ -13,12 +13,6 @@ interface ArticleEditorProps {
   className?: string;
 }
 
-// Simple undo stack
-interface UndoState {
-  value: string;
-  cursorPos: number;
-}
-
 export function ArticleEditor({
   value,
   onChange,
@@ -27,310 +21,123 @@ export function ArticleEditor({
 }: ArticleEditorProps) {
   const [hasSelection, setHasSelection] = useState(false);
   const [showLinkSheet, setShowLinkSheet] = useState(false);
-  const [selectedText, setSelectedText] = useState("");
-  const [undoStack, setUndoStack] = useState<UndoState[]>([]);
   const [isFocused, setIsFocused] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
   const { keyboardHeight, isKeyboardOpen } = useKeyboardHeight();
 
-  // Save state for undo
-  const saveUndoState = useCallback(() => {
-    if (textareaRef.current) {
-      setUndoStack(prev => [...prev.slice(-20), { 
-        value, 
-        cursorPos: textareaRef.current?.selectionStart || 0 
-      }]);
-    }
-  }, [value]);
-
-  // Track selection state
-  const checkSelection = useCallback(() => {
-    if (textareaRef.current) {
-      const { selectionStart, selectionEnd } = textareaRef.current;
-      const hasText = selectionStart !== selectionEnd;
-      setHasSelection(hasText);
-      if (hasText) {
-        setSelectedText(value.substring(selectionStart, selectionEnd));
-      }
-    }
-  }, [value]);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const handleSelectionChange = () => {
-      if (document.activeElement === textarea) {
-        checkSelection();
-      }
-    };
-
-    document.addEventListener("selectionchange", handleSelectionChange);
-    textarea.addEventListener("mouseup", checkSelection);
-    textarea.addEventListener("keyup", checkSelection);
-
-    return () => {
-      document.removeEventListener("selectionchange", handleSelectionChange);
-      textarea.removeEventListener("mouseup", checkSelection);
-      textarea.removeEventListener("keyup", checkSelection);
-    };
-  }, [checkSelection]);
-
-  // Insert markdown at cursor or wrap selection
-  const insertMarkdown = useCallback(
-    (before: string, after: string = "", placeholderText: string = "") => {
-      saveUndoState();
-      const textarea = textareaRef.current;
-      if (!textarea) return;
-
-      const { selectionStart, selectionEnd } = textarea;
-      const selected = value.substring(selectionStart, selectionEnd);
-      const textToInsert = selected || placeholderText;
-      
-      const newText =
-        value.substring(0, selectionStart) +
-        before +
-        textToInsert +
-        after +
-        value.substring(selectionEnd);
-
-      onChange(newText);
-
-      setTimeout(() => {
-        textarea.focus();
-        const newCursorPos = selectionStart + before.length + textToInsert.length + after.length;
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
-        setHasSelection(false);
-      }, 0);
-    },
-    [value, onChange, saveUndoState]
-  );
-
-  // Wrap selection with markdown
-  const wrapSelection = useCallback(
-    (before: string, after: string = before) => {
-      saveUndoState();
-      const textarea = textareaRef.current;
-      if (!textarea) return;
-
-      const { selectionStart, selectionEnd } = textarea;
-      const selected = value.substring(selectionStart, selectionEnd);
-
-      const newText =
-        value.substring(0, selectionStart) +
-        before +
-        selected +
-        after +
-        value.substring(selectionEnd);
-
-      onChange(newText);
-
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(
-          selectionStart + before.length,
-          selectionStart + before.length + selected.length
-        );
-      }, 0);
-    },
-    [value, onChange, saveUndoState]
-  );
-
-  // Insert block markdown at line start
-  const insertBlockMarkdown = useCallback(
-    (prefix: string) => {
-      saveUndoState();
-      const textarea = textareaRef.current;
-      if (!textarea) return;
-
-      const { selectionStart } = textarea;
-      const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
-      
-      const newText =
-        value.substring(0, lineStart) + prefix + value.substring(lineStart);
-
-      onChange(newText);
-
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(
-          selectionStart + prefix.length,
-          selectionStart + prefix.length
-        );
-      }, 0);
-    },
-    [value, onChange, saveUndoState]
-  );
-
-  // Undo
-  const handleUndo = useCallback(() => {
-    if (undoStack.length === 0) return;
-    
-    const prevState = undoStack[undoStack.length - 1];
-    setUndoStack(prev => prev.slice(0, -1));
-    onChange(prevState.value);
-    
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(prevState.cursorPos, prevState.cursorPos);
-      }
-    }, 0);
-  }, [undoStack, onChange]);
-
-  // Hide keyboard
-  const handleHideKeyboard = useCallback(() => {
-    if (textareaRef.current) {
-      textareaRef.current.blur();
-    }
+  // Get editor commands from window
+  const getEditor = useCallback(() => {
+    return (window as any).__tiptapEditor;
   }, []);
 
   // Handle toolbar actions
   const handleAction = useCallback(
     (action: ToolbarAction) => {
+      const editor = getEditor();
+      if (!editor) return;
+
       switch (action) {
         case "bold":
-          wrapSelection("**");
+          editor.toggleBold();
           break;
         case "italic":
-          wrapSelection("*");
+          editor.toggleItalic();
           break;
         case "strikethrough":
-          wrapSelection("~~");
+          editor.toggleStrike();
           break;
         case "normal":
-          if (textareaRef.current) {
-            saveUndoState();
-            const { selectionStart } = textareaRef.current;
-            const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
-            const lineEnd = value.indexOf("\n", selectionStart);
-            const line = value.substring(lineStart, lineEnd === -1 ? undefined : lineEnd);
-            const cleanedLine = line.replace(/^#{1,6}\s*/, "");
-            const newText = value.substring(0, lineStart) + cleanedLine + value.substring(lineEnd === -1 ? value.length : lineEnd);
-            onChange(newText);
-          }
-          break;
-        case "heading":
-        case "heading-2":
-          insertBlockMarkdown("## ");
+          editor.clearHeading();
           break;
         case "heading-1":
-          insertBlockMarkdown("# ");
+          editor.setHeading(1);
+          break;
+        case "heading-2":
+          editor.setHeading(2);
           break;
         case "heading-3":
-          insertBlockMarkdown("### ");
+          editor.setHeading(3);
           break;
         case "heading-4":
-          insertBlockMarkdown("#### ");
+          editor.setHeading(4);
           break;
         case "heading-5":
-          insertBlockMarkdown("##### ");
+          editor.setHeading(5);
           break;
         case "link":
           setShowLinkSheet(true);
           break;
-        case "code":
-          wrapSelection("`");
-          break;
         case "quote":
-          insertBlockMarkdown("> ");
+          editor.toggleBlockquote();
           break;
         case "bullet-list":
-          insertBlockMarkdown("- ");
+          editor.toggleBulletList();
           break;
         case "numbered-list":
-          insertBlockMarkdown("1. ");
+          editor.toggleOrderedList();
           break;
         case "code-block":
-          insertMarkdown("\n```\n", "\n```\n", "code here");
+          editor.toggleCodeBlock();
           break;
         case "divider":
-          insertMarkdown("\n---\n");
+          editor.insertHorizontalRule();
           break;
         case "image":
-          insertMarkdown("![", "](url)", "alt text");
+          // For now, prompt for URL - could be enhanced with file upload
+          const url = prompt("Enter image URL:");
+          if (url) {
+            editor.insertImage(url);
+          }
           break;
         case "undo":
-          handleUndo();
+          editor.undo();
           break;
         case "hide-keyboard":
-          handleHideKeyboard();
+          editor.hideKeyboard();
           break;
       }
     },
-    [wrapSelection, insertBlockMarkdown, insertMarkdown, value, onChange, handleUndo, handleHideKeyboard, saveUndoState]
+    [getEditor]
   );
 
   // Handle link insertion
   const handleLinkInsert = useCallback(
-    (url: string, text?: string) => {
-      saveUndoState();
-      const displayText = text || selectedText || url;
-      const textarea = textareaRef.current;
-      
-      if (textarea && hasSelection) {
-        const { selectionStart, selectionEnd } = textarea;
-        const newText =
-          value.substring(0, selectionStart) +
-          `[${displayText}](${url})` +
-          value.substring(selectionEnd);
-        onChange(newText);
-      } else {
-        insertMarkdown(`[${displayText}](`, ")", "");
+    (url: string, _text?: string) => {
+      const editor = getEditor();
+      if (editor) {
+        editor.setLink(url);
       }
-      
       setShowLinkSheet(false);
     },
-    [selectedText, hasSelection, value, onChange, insertMarkdown, saveUndoState]
+    [getEditor]
   );
-
-  // Keyboard shortcuts
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.metaKey || e.ctrlKey) {
-        switch (e.key.toLowerCase()) {
-          case "b":
-            e.preventDefault();
-            handleAction("bold");
-            break;
-          case "i":
-            e.preventDefault();
-            handleAction("italic");
-            break;
-          case "k":
-            e.preventDefault();
-            handleAction("link");
-            break;
-          case "z":
-            e.preventDefault();
-            handleAction("undo");
-            break;
-        }
-      }
-    },
-    [handleAction]
-  );
-
-  // Save undo state on significant changes
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    if (newValue.endsWith(" ") || newValue.endsWith("\n")) {
-      saveUndoState();
-    }
-    onChange(newValue);
-  }, [onChange, saveUndoState]);
 
   const handleFocus = useCallback(() => {
     setIsFocused(true);
   }, []);
 
   const handleBlur = useCallback(() => {
-    // Small delay to allow toolbar clicks to register
     setTimeout(() => {
       setIsFocused(false);
     }, 150);
   }, []);
+
+  const handleSelectionChange = useCallback((selected: boolean) => {
+    setHasSelection(selected);
+  }, []);
+
+  const handleHideKeyboard = useCallback(() => {
+    const editor = getEditor();
+    if (editor) {
+      editor.hideKeyboard();
+    }
+  }, [getEditor]);
+
+  // Get selected text for link dialog
+  const getSelectedText = useCallback(() => {
+    const editor = getEditor();
+    return editor?.getSelectedText?.() || "";
+  }, [getEditor]);
 
   // Show toolbar when keyboard is open on mobile, or always on desktop
   const showToolbar = isMobile ? (isFocused || isKeyboardOpen) : true;
@@ -340,19 +147,15 @@ export function ArticleEditor({
       "flex flex-col border rounded-md overflow-hidden bg-background relative",
       className
     )}>
-      {/* Editor textarea */}
-      <Textarea
-        ref={textareaRef}
+      {/* TipTap Rich Text Editor */}
+      <TipTapEditor
         value={value}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
+        onChange={onChange}
+        placeholder={placeholder}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        placeholder={placeholder}
+        onSelectionChange={handleSelectionChange}
         className={cn(
-          "flex-1 border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-base leading-relaxed",
-          isMobile ? "min-h-[300px] p-4 text-[16px]" : "min-h-[400px]",
-          // Add padding at bottom for mobile toolbar
           isMobile && showToolbar && "pb-16"
         )}
       />
@@ -366,7 +169,7 @@ export function ArticleEditor({
             transition: 'bottom 0.1s ease-out',
           }}
         >
-          <EditorToolbar
+          <RichTextToolbar
             hasSelection={hasSelection}
             onAction={handleAction}
             isMobile={isMobile}
@@ -377,7 +180,7 @@ export function ArticleEditor({
 
       {/* Desktop toolbar - static at bottom */}
       {!isMobile && (
-        <EditorToolbar
+        <RichTextToolbar
           hasSelection={hasSelection}
           onAction={handleAction}
           isMobile={false}
@@ -390,7 +193,7 @@ export function ArticleEditor({
         open={showLinkSheet}
         onOpenChange={setShowLinkSheet}
         onInsert={handleLinkInsert}
-        selectedText={selectedText}
+        selectedText={getSelectedText()}
       />
     </div>
   );
