@@ -73,6 +73,11 @@ const SelectionToolbar = ({
     { label: "H5", action: "heading-5" as const },
   ];
 
+  // Prevent focus loss when clicking toolbar buttons
+  const preventBlur = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="flex items-center justify-center gap-0.5">
       {/* Bold */}
@@ -80,6 +85,8 @@ const SelectionToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("bold")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Bold"
@@ -92,6 +99,8 @@ const SelectionToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("italic")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Italic"
@@ -104,6 +113,8 @@ const SelectionToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("strikethrough")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Strikethrough"
@@ -121,6 +132,8 @@ const SelectionToolbar = ({
             type="button"
             variant="ghost"
             size="sm"
+            onMouseDown={preventBlur}
+            onTouchStart={preventBlur}
             className={cn(buttonSize, "p-0 shrink-0")}
             aria-label="Text style"
           >
@@ -161,6 +174,8 @@ const SelectionToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("link")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Insert link"
@@ -176,6 +191,8 @@ const SelectionToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("quote")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Block quote"
@@ -188,6 +205,8 @@ const SelectionToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("code-block")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Code block"
@@ -213,6 +232,11 @@ const DefaultToolbar = ({
   const iconSize = isMobile ? "h-5 w-5" : "h-4 w-4";
   const buttonSize = isMobile ? "h-11 w-11" : "h-9 w-9";
 
+  // Prevent focus loss when clicking toolbar buttons
+  const preventBlur = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="flex items-center justify-center gap-0.5">
       {/* Insert (+ icon) */}
@@ -222,6 +246,8 @@ const DefaultToolbar = ({
             type="button"
             variant="ghost"
             size="sm"
+            onMouseDown={preventBlur}
+            onTouchStart={preventBlur}
             className={cn(buttonSize, "p-0 shrink-0")}
             aria-label="Insert"
           >
@@ -239,6 +265,8 @@ const DefaultToolbar = ({
               type="button"
               variant="ghost"
               size="sm"
+              onMouseDown={preventBlur}
+              onTouchStart={preventBlur}
               onClick={() => {
                 onAction("image");
                 setInsertOpen(false);
@@ -251,6 +279,8 @@ const DefaultToolbar = ({
               type="button"
               variant="ghost"
               size="sm"
+              onMouseDown={preventBlur}
+              onTouchStart={preventBlur}
               onClick={() => {
                 onAction("divider");
                 setInsertOpen(false);
@@ -268,6 +298,8 @@ const DefaultToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("link")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Insert link"
@@ -282,6 +314,8 @@ const DefaultToolbar = ({
             type="button"
             variant="ghost"
             size="sm"
+            onMouseDown={preventBlur}
+            onTouchStart={preventBlur}
             className={cn(buttonSize, "p-0 shrink-0")}
             aria-label="Lists"
           >
@@ -299,6 +333,8 @@ const DefaultToolbar = ({
               type="button"
               variant="ghost"
               size="sm"
+              onMouseDown={preventBlur}
+              onTouchStart={preventBlur}
               onClick={() => {
                 onAction("bullet-list");
                 setListOpen(false);
@@ -312,6 +348,8 @@ const DefaultToolbar = ({
               type="button"
               variant="ghost"
               size="sm"
+              onMouseDown={preventBlur}
+              onTouchStart={preventBlur}
               onClick={() => {
                 onAction("numbered-list");
                 setListOpen(false);
@@ -330,6 +368,8 @@ const DefaultToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("quote")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Block quote"
@@ -342,6 +382,8 @@ const DefaultToolbar = ({
         type="button"
         variant="ghost"
         size="sm"
+        onMouseDown={preventBlur}
+        onTouchStart={preventBlur}
         onClick={() => onAction("undo")}
         className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Undo"
