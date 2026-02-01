@@ -921,9 +921,11 @@ const ProfilePage = () => {
             </Card>
           )}
 
+          {/* Fediverse profile card hidden for now
           {profile.authType === "federated" && profile.username && (
             <FederationInfo username={profile.username} isOwnProfile={viewingOwnProfile} />
           )}
+          */}
         </div>
       </div>
     </DashboardLayout>
