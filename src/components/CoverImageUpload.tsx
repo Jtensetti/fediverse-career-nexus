@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, X, Loader2, Crop } from "lucide-react";
+import { ImagePlus, X, Loader2, Crop, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>("");
+  const [isRecropping, setIsRecropping] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,6 +38,7 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
 
     // Store the filename for later
     setSelectedFileName(file.name);
+    setIsRecropping(false);
 
     // Create object URL for cropping
     const imageUrl = URL.createObjectURL(file);
@@ -49,6 +51,15 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
     }
   };
 
+  // Re-crop existing image
+  const handleRecrop = () => {
+    if (!value) return;
+    setIsRecropping(true);
+    setSelectedImageSrc(value);
+    setSelectedFileName("cover.jpg"); // Default name for re-cropped images
+    setShowCropDialog(true);
+  };
+
   const handleCropComplete = async (croppedBlob: Blob) => {
     setIsUploading(true);
 
@@ -59,14 +70,13 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
         return;
       }
 
-      // Get file extension from original filename or default to jpg
-      const fileExt = selectedFileName.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `${user.id}/cover-${Date.now()}.${fileExt === 'png' ? 'png' : 'jpg'}`;
+      // Always save as jpg for cropped images
+      const fileName = `${user.id}/cover-${Date.now()}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('articles')
         .upload(fileName, croppedBlob, {
-          contentType: fileExt === 'png' ? 'image/png' : 'image/jpeg',
+          contentType: 'image/jpeg',
         });
 
       if (uploadError) {
@@ -80,26 +90,29 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
         .getPublicUrl(fileName);
 
       onChange(publicUrl);
-      toast.success("Cover image uploaded");
+      toast.success(isRecropping ? "Cover image updated" : "Cover image uploaded");
     } catch (error) {
       console.error('Error uploading cover image:', error);
       toast.error("Failed to upload image");
     } finally {
       setIsUploading(false);
-      // Clean up object URL
-      if (selectedImageSrc) {
+      setIsRecropping(false);
+      // Clean up object URL only if it was a blob URL (not an existing image URL)
+      if (selectedImageSrc && selectedImageSrc.startsWith('blob:')) {
         URL.revokeObjectURL(selectedImageSrc);
-        setSelectedImageSrc(null);
       }
+      setSelectedImageSrc(null);
     }
   };
 
   const handleCloseCropDialog = () => {
     setShowCropDialog(false);
-    if (selectedImageSrc) {
+    // Clean up object URL only if it was a blob URL
+    if (selectedImageSrc && selectedImageSrc.startsWith('blob:')) {
       URL.revokeObjectURL(selectedImageSrc);
-      setSelectedImageSrc(null);
     }
+    setSelectedImageSrc(null);
+    setIsRecropping(false);
   };
 
   const handleRemove = () => {
@@ -129,10 +142,22 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
               variant="secondary"
               size="icon"
               className="h-8 w-8"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleRecrop}
               disabled={isUploading}
+              title="Re-crop image"
             >
               <Crop className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              title="Replace image"
+            >
+              <RefreshCw className="h-4 w-4" />
             </Button>
             <Button
               type="button"
