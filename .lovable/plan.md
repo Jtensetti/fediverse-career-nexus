@@ -1,94 +1,216 @@
 
-# Fix Intermittent "Warming Up" Feed Issue
+# Markdown Enhancement Plan (Revised)
 
-## Problem Summary
-The local feed sometimes displays a "warming up" empty state message randomly, despite content existing in the database. This creates a confusing user experience.
+## Overview
+Implement enhanced markdown support with a **context-aware fixed toolbar** that dynamically changes based on text selection:
+1. **Articles** - Sleek fixed toolbar (top on desktop, bottom on mobile) that changes buttons when text is selected
+2. **Bio** - Basic markdown rendering (bold, italic, links)
+3. **Posts** - Basic markdown rendering matching bio
 
-## Root Cause
-Based on code analysis, there are two contributing factors:
+---
 
-1. **Query timing with authentication**: The feed query runs with `enabled: true` immediately, even before the user's auth state is fully resolved. When `user?.id` is undefined during the first render, the "following" feed logic behaves differently.
+## Part 1: Context-Aware Article Editor
 
-2. **No loading distinction**: The UI shows the "warming up" message whenever `allPosts` is empty after loading completes, without distinguishing between "actually no posts exist" vs "query returned unexpectedly empty."
+### Design Concept
+A single fixed toolbar that **transforms based on context**:
 
-## Solution Approach
+```text
+DEFAULT STATE (no selection):
+┌──────────────────────────────────────────────────────────┐
+│  [Aa] [+] [Link] [•] [1.] [Quote] [Code] [—] [Image]     │
+│   ↳ Heading, Add block, Insert link, Bullets, Numbers,   │
+│     Blockquote, Code block, Divider, Media               │
+└──────────────────────────────────────────────────────────┘
 
-### 1. Add query enabled condition based on auth state
-Wait for auth loading to complete before running the feed query to ensure consistent results.
+SELECTION STATE (text highlighted):
+┌──────────────────────────────────────────────────────────┐
+│  [B] [I] [S] [Aa] [Link] [Code] [Clear]                  │
+│   ↳ Bold, Italic, Strikethrough, Heading, Link,          │
+│     Inline code, Clear formatting                        │
+└──────────────────────────────────────────────────────────┘
+```
 
-### 2. Add retry logic with better empty state handling
-Distinguish between "no posts to show" (genuine) vs "unexpected empty result" (retry-worthy).
+### Mobile Behavior
+- Toolbar fixed at bottom, above keyboard
+- Same dynamic behavior: buttons change when text is selected
+- Compact icons only (no labels)
+- Smooth transition when toggling between states
 
-### 3. Add a brief retry on empty results
-If the query returns empty when posts should exist, automatically retry once before showing the empty state.
+### Key Implementation Details
+- Track selection state via `selectionchange` event listener
+- Check if textarea has selected text (`selectionStart !== selectionEnd`)
+- Animate toolbar button transitions with framer-motion
+- Remove Write/Preview tabs - clean writing experience only
+- No explanatory text or help buttons
+
+---
+
+## Part 2 & 3: Bio and Posts - Simple Markdown Rendering
+
+### Approach
+Create a lightweight component that parses and renders:
+- **Bold**: `**text**` or `__text__` → `<strong>`
+- **Italic**: `*text*` or `_text_` → `<em>`
+- **Links**: Already handled by linkify, but also support `[text](url)` syntax
+
+### Integration
+- Bio: Wrap `profile.bio` in `SimpleMarkdown` component (Profile.tsx line 598)
+- Posts: Apply in `FederatedPostCard.tsx` after content sanitization, before linkify
 
 ---
 
 ## Technical Implementation
 
-### File: `src/components/FederatedFeed.tsx`
+### New Files to Create
 
-**Change 1: Import `useAuth` loading state**
-- Already imports `useAuth`, just need to use the `loading` property
+#### 1. `src/components/ArticleEditor.tsx`
+Main editor component with:
+- Ref to textarea for selection tracking
+- `hasSelection` state boolean
+- `useEffect` to listen for `selectionchange` events
+- Mobile detection via `useIsMobile` hook
+- Conditional toolbar rendering based on `hasSelection`
+- Clean, border-less textarea with large font
 
-**Change 2: Modify query enabled condition**
+#### 2. `src/components/editor/EditorToolbar.tsx`
+Reusable toolbar component:
+- Props: `hasSelection`, `onAction`, `isMobile`
+- Two sets of buttons: default actions vs selection actions
+- Smooth animated transitions between states
+- Icon-only on mobile, optional labels on desktop
+
+#### 3. `src/components/editor/LinkInsertSheet.tsx`
+Mobile-friendly link insertion:
+- Sheet on mobile, Popover on desktop
+- URL input field
+- Optional display text field
+- Insert button
+
+#### 4. `src/components/common/SimpleMarkdown.tsx`
+Lightweight markdown renderer:
 ```typescript
+// Parse **bold**, *italic*, [link](url)
+// Return sanitized HTML string or React elements
+// Integrate with existing linkifyText
+```
+
+### Files to Modify
+
+#### `src/pages/ArticleCreate.tsx`
+- Replace `MarkdownEditor` import with `ArticleEditor`
+- Remove label prop (editor is self-contained)
+
+#### `src/pages/ArticleEdit.tsx`
+- Same replacement as ArticleCreate
+
+#### `src/pages/Profile.tsx` (line 598)
+- Wrap bio display with SimpleMarkdown:
+```tsx
 // Before
-enabled: true,
+{profile.bio && <p className="...">{profile.bio}</p>}
 
 // After
-enabled: !loading, // Wait for auth to resolve
+{profile.bio && <SimpleMarkdown content={profile.bio} className="..." />}
 ```
 
-**Change 3: Add retry logic for unexpected empty results**
-- Track if this is the first query attempt
-- If the query returns 0 results and we haven't retried yet, trigger one automatic refetch
-- Only show "warming up" after retry also returns empty
+#### `src/components/FederatedPostCard.tsx`
+- Update content rendering to apply simple markdown parsing
+- Integrate with existing linkifyText flow
 
-**Change 4: Improve empty state messaging**
-- Add a "Refresh" button to the empty state
-- Change message to be clearer about the situation
-
-### Pseudocode for retry logic:
-```typescript
-const [hasRetried, setHasRetried] = useState(false);
-
-useEffect(() => {
-  // If query completed, returned empty, and we haven't retried yet
-  if (!isLoading && !isFetching && posts?.length === 0 && !hasRetried && offset === 0) {
-    setHasRetried(true);
-    // Wait a brief moment then refetch
-    const timer = setTimeout(() => refetch(), 500);
-    return () => clearTimeout(timer);
-  }
-}, [isLoading, isFetching, posts, hasRetried, offset, refetch]);
-
-// Reset retry flag when feed type changes
-useEffect(() => {
-  setHasRetried(false);
-}, [effectiveFeedType]);
-```
-
-### File: EmptyState Enhancement
-Add a refresh action to the "warming up" empty state so users can manually retry.
+#### `src/lib/linkify.ts`
+- Add function to parse `**bold**` and `*italic*` patterns
+- Ensure it doesn't conflict with URL matching
+- Export new `parseInlineMarkdown` function
 
 ---
 
-## Changes Summary
+## Selection Tracking Implementation
 
-| File | Change |
-|------|--------|
-| `src/components/FederatedFeed.tsx` | Add auth loading check to query enabled, add automatic retry on empty, add refresh button to empty state |
+```typescript
+// In ArticleEditor.tsx
+const [hasSelection, setHasSelection] = useState(false);
+const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+useEffect(() => {
+  const checkSelection = () => {
+    if (textareaRef.current) {
+      const { selectionStart, selectionEnd } = textareaRef.current;
+      setHasSelection(selectionStart !== selectionEnd);
+    }
+  };
+
+  // Listen for selection changes
+  document.addEventListener('selectionchange', checkSelection);
+  
+  // Also check on mouse up and key up for reliability
+  const textarea = textareaRef.current;
+  textarea?.addEventListener('mouseup', checkSelection);
+  textarea?.addEventListener('keyup', checkSelection);
+
+  return () => {
+    document.removeEventListener('selectionchange', checkSelection);
+    textarea?.removeEventListener('mouseup', checkSelection);
+    textarea?.removeEventListener('keyup', checkSelection);
+  };
+}, []);
+```
+
+---
+
+## Toolbar Actions
+
+### Default State Actions
+| Icon | Action | Markdown |
+|------|--------|----------|
+| Aa | Heading dropdown | `## `, `### `, etc. |
+| + | Add block menu | Various |
+| Link | Insert link | `[text](url)` |
+| • | Bullet list | `- item` |
+| 1. | Numbered list | `1. item` |
+| Quote | Blockquote | `> text` |
+| Code | Code block | ` ``` ` |
+| — | Horizontal rule | `---` |
+| Image | Image insert | `![alt](url)` |
+
+### Selection State Actions
+| Icon | Action | Markdown |
+|------|--------|----------|
+| B | Bold | `**text**` |
+| I | Italic | `*text*` |
+| S | Strikethrough | `~~text~~` |
+| Aa | Make heading | Wraps line |
+| Link | Wrap in link | `[selected](url)` |
+| `</>` | Inline code | `` `text` `` |
+
+---
+
+## Summary of Changes
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/ArticleEditor.tsx` | Create | New sleek editor with dynamic toolbar |
+| `src/components/editor/EditorToolbar.tsx` | Create | Context-aware toolbar component |
+| `src/components/editor/LinkInsertSheet.tsx` | Create | Mobile-friendly link insertion |
+| `src/components/common/SimpleMarkdown.tsx` | Create | Lightweight inline markdown renderer |
+| `src/pages/ArticleCreate.tsx` | Modify | Use new ArticleEditor |
+| `src/pages/ArticleEdit.tsx` | Modify | Use new ArticleEditor |
+| `src/pages/Profile.tsx` | Modify | Render bio with SimpleMarkdown |
+| `src/components/FederatedPostCard.tsx` | Modify | Apply inline markdown to post content |
+| `src/lib/linkify.ts` | Modify | Add inline markdown parsing |
+
+---
+
+## Mobile UX Details
+- Toolbar height: ~44px (comfortable touch targets)
+- Uses `position: fixed` at bottom when keyboard is open
+- Icons are 20x20px with 44x44px touch targets
+- Subtle animation when switching between toolbar states
+- No visual clutter - icons only, no labels or explanations
+
+---
 
 ## Risk Assessment
-- **Low risk**: Changes only affect loading/retry behavior
-- **No breaking changes**: Existing functionality preserved
-- **Non-invasive**: No schema changes, no edge function changes
-- **Graceful fallback**: If retry doesn't help, user sees the existing empty state with a refresh option
-
-## Testing Recommendations
-1. Test feed loading when logged out
-2. Test feed loading on fresh login
-3. Test with different feed types (following, local, federated)
-4. Test the refresh button works correctly
-5. Verify no infinite retry loops occur
+- **Low risk**: New editor is drop-in replacement
+- **Backwards compatible**: Existing markdown content unchanged
+- **No database changes**: Pure frontend enhancement
+- **Graceful mobile handling**: Uses existing useIsMobile hook
