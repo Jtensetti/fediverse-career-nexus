@@ -67,22 +67,35 @@ export function ImageCropDialog({
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
+    // Get the actual displayed size of the image
+    const displayedWidth = image.width;
+    const displayedHeight = image.height;
+    
+    // Calculate scale factors from displayed size to natural size
+    const scaleX = image.naturalWidth / displayedWidth;
+    const scaleY = image.naturalHeight / displayedHeight;
 
-    canvas.width = completedCrop.width * scaleX;
-    canvas.height = completedCrop.height * scaleY;
+    // The completedCrop values are in displayed pixels, so we scale them
+    const cropX = completedCrop.x * scaleX;
+    const cropY = completedCrop.y * scaleY;
+    const cropWidth = completedCrop.width * scaleX;
+    const cropHeight = completedCrop.height * scaleY;
 
+    // Set canvas to the final crop size
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+
+    // Draw the cropped portion
     ctx.drawImage(
       image,
-      completedCrop.x * scaleX,
-      completedCrop.y * scaleY,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
+      cropX,
+      cropY,
+      cropWidth,
+      cropHeight,
       0,
       0,
-      canvas.width,
-      canvas.height
+      cropWidth,
+      cropHeight
     );
 
     return new Promise((resolve) => {
