@@ -14,6 +14,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/common/SEOHead";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Validation schema
 const articleSchema = z.object({
@@ -41,8 +42,10 @@ type ValidationErrors = Partial<Record<keyof ArticleFormData, string>>;
 
 const ArticleCreate = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isEditing, setIsEditing] = useState(false);
   const [article, setArticle] = useState<ArticleFormData>({
     title: "",
     content: "",
@@ -120,7 +123,7 @@ const ArticleCreate = () => {
       return;
     }
 
-    // Validate slug uniqueness (prevents silent failures / confusing redirects)
+    // Validate slug uniqueness
     try {
       const { data: existing, error: existingError } = await supabase
         .from('articles')
@@ -157,13 +160,82 @@ const ArticleCreate = () => {
     }
   };
 
+  // Mobile full-screen editor view
+  if (isMobile && isEditing) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        <SEOHead title="Create New Article" description="Write and publish a new article on Nolto." />
+        
+        {/* Mobile editor header */}
+        <div className="flex items-center justify-between p-3 border-b border-border bg-background/95 backdrop-blur-sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsEditing(false)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Exit article mode
+          </Button>
+        </div>
+
+        {/* Title input */}
+        <div className="px-4 pt-4">
+          <Input
+            value={article.title}
+            onChange={handleTitleChange}
+            placeholder="Add a title"
+            className="border-0 text-2xl font-bold placeholder:text-muted-foreground/60 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          />
+        </div>
+
+        {/* Full-screen editor */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ArticleEditor
+            value={article.content}
+            onChange={handleContentChange}
+            placeholder="Start writing an article..."
+            className="flex-1"
+          />
+        </div>
+
+        {/* Bottom actions for mobile */}
+        <div className="absolute bottom-16 left-0 right-0 px-4 pb-2">
+          {errors.content && (
+            <p className="text-sm text-destructive text-center mb-2">{errors.content}</p>
+          )}
+          <div className="flex items-center justify-between bg-muted/80 backdrop-blur-sm rounded-full px-4 py-2">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="published-mobile"
+                checked={article.published}
+                onCheckedChange={handlePublishedChange}
+                className="scale-90"
+              />
+              <Label htmlFor="published-mobile" className="text-sm">Publish immediately</Label>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {isSubmitting ? "..." : "Save"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop / Mobile form view
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead title="Create New Article" description="Write and publish a new article on Nolto." />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
+        <div className={isMobile ? "w-full" : "max-w-3xl mx-auto"}>
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold">Create New Article</h1>
             <Button
@@ -241,16 +313,40 @@ const ArticleCreate = () => {
                   </p>
                 </div>
                 
-                <div className="space-y-2">
-                  <ArticleEditor
-                    value={article.content}
-                    onChange={handleContentChange}
-                    placeholder="Write your article content here..."
-                  />
-                  {errors.content && (
-                    <p className="text-sm text-destructive">{errors.content}</p>
-                  )}
-                </div>
+                {/* On mobile, show button to enter full-screen editor */}
+                {isMobile ? (
+                  <div className="space-y-2">
+                    <Label>Content</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-32 border-dashed"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      {article.content ? (
+                        <span className="text-left line-clamp-3 text-muted-foreground">
+                          {article.content.substring(0, 150)}...
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">Tap to write your article...</span>
+                      )}
+                    </Button>
+                    {errors.content && (
+                      <p className="text-sm text-destructive">{errors.content}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <ArticleEditor
+                      value={article.content}
+                      onChange={handleContentChange}
+                      placeholder="Write your article content here..."
+                    />
+                    {errors.content && (
+                      <p className="text-sm text-destructive">{errors.content}</p>
+                    )}
+                  </div>
+                )}
                 
                 <div className="flex items-center space-x-2">
                   <Switch
