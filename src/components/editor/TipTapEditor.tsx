@@ -81,7 +81,7 @@ export function TipTapEditor({
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
       isUpdatingRef.current = true;
-      editor.commands.setContent(value, { emitUpdate: false });
+      editor.commands.setContent(value);
       isUpdatingRef.current = false;
     }
   }, [value, editor]);
