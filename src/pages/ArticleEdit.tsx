@@ -18,11 +18,13 @@ import {
   searchUsers 
 } from "@/services/articleService";
 import ArticleEditor from "@/components/ArticleEditor";
+import CoverImageUpload from "@/components/CoverImageUpload";
 import { toast } from "sonner";
 import { ArrowLeft, Save, UserPlus, X, Users, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +48,7 @@ const ArticleEdit = () => {
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [article, setArticle] = useState<ArticleFormData>({
     title: "",
     content: "",
@@ -82,6 +85,7 @@ const ArticleEdit = () => {
         slug: originalArticle.slug,
         published: originalArticle.published,
       });
+      setCoverImageUrl(originalArticle.cover_image_url || null);
     }
   }, [originalArticle]);
 
@@ -142,6 +146,13 @@ const ArticleEdit = () => {
     try {
       const result = await updateArticle(id, article);
       if (result) {
+        // Update cover image if changed
+        if (coverImageUrl !== originalArticle?.cover_image_url) {
+          await supabase
+            .from('articles')
+            .update({ cover_image_url: coverImageUrl })
+            .eq('id', id);
+        }
         toast.success("Article updated successfully!");
         queryClient.invalidateQueries({ queryKey: ['article', id] });
         queryClient.invalidateQueries({ queryKey: ['user-articles'] });
@@ -413,6 +424,18 @@ const ArticleEdit = () => {
                   />
                   <p className="text-xs text-gray-500">
                     A short summary that appears in article listings. If not provided, the beginning of the content will be used.
+                  </p>
+                </div>
+
+                {/* Cover Image */}
+                <div className="space-y-2">
+                  <Label>Cover Image (Optional)</Label>
+                  <CoverImageUpload
+                    value={coverImageUrl}
+                    onChange={setCoverImageUrl}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This image will appear at the top of your article and in previews.
                   </p>
                 </div>
                 

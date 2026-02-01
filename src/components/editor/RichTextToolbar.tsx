@@ -39,6 +39,7 @@ export type ToolbarAction =
   | "quote"
   | "divider"
   | "image"
+  | "image-url"
   | "undo"
   | "hide-keyboard";
 
@@ -264,7 +265,21 @@ const DefaultToolbar = ({
               }}
               className="justify-start h-8 text-sm"
             >
-              Image
+              Upload from device
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onMouseDown={preventBlur}
+              onTouchStart={preventBlur}
+              onClick={() => {
+                onAction("image-url");
+                setInsertOpen(false);
+              }}
+              className="justify-start h-8 text-sm"
+            >
+              Image from URL
             </Button>
             <Button
               type="button"
