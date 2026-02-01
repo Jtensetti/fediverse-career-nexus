@@ -162,12 +162,38 @@ Deno.serve(async (req) => {
       /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i,
     ]);
 
-    const imageRaw = extractMetaContent(html, [
-      /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
-      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i,
-      /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i,
-      /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i,
+    // Try multiple image sources in order of preference
+    let imageRaw = extractMetaContent(html, [
+      // OpenGraph image (primary)
+      /<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i,
+      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image(?::secure_url)?["']/i,
+      // Twitter card image
+      /<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i,
+      /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image(?::src)?["']/i,
+      // Schema.org image
+      /<meta[^>]+itemprop=["']image["'][^>]+content=["']([^"']+)["']/i,
+      // Link rel image_src (legacy but still used)
+      /<link[^>]+rel=["']image_src["'][^>]+href=["']([^"']+)["']/i,
     ]);
+
+    // Fallback: Try to find apple-touch-icon or large favicon
+    if (!imageRaw) {
+      imageRaw = extractMetaContent(html, [
+        /<link[^>]+rel=["']apple-touch-icon(?:-precomposed)?["'][^>]+href=["']([^"']+)["']/i,
+        /<link[^>]+href=["']([^"']+)["'][^>]+rel=["']apple-touch-icon(?:-precomposed)?["']/i,
+        // Try to find a large icon
+        /<link[^>]+rel=["']icon["'][^>]+sizes=["'](?:192|180|152|144|128|120|114|96)[^"']*["'][^>]+href=["']([^"']+)["']/i,
+      ]);
+    }
+
+    // Last resort: Try to find the first reasonably-sized image in the page
+    if (!imageRaw) {
+      // Look for hero images or featured images with common class names
+      const heroMatch = html.match(/<img[^>]+class=["'][^"']*(?:hero|featured|banner|cover|thumbnail|og-image|post-image|article-image)[^"']*["'][^>]+src=["']([^"']+)["']/i);
+      if (heroMatch?.[1]) {
+        imageRaw = heroMatch[1];
+      }
+    }
 
     const siteName = extractMetaContent(html, [
       /<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i,

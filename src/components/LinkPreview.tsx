@@ -163,6 +163,9 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
   const displayTitle = preview.title || preview.siteName || preview.domain;
   const displayDescription = preview.description;
 
+  // For compact mode without image, show a minimal text-only preview
+  const showImageSection = hasImage || !compact;
+
   return (
     <div
       className={cn(
@@ -194,7 +197,7 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
         className={cn("flex h-full", hasImage && !compact ? "flex-col sm:flex-row" : "flex-row")}
         onClick={handleClick}
       >
-        {/* Huvudbilden (icke-kompakt läge) */}
+        {/* Main image (non-compact mode) */}
         {hasImage && !compact && (
           <div className="w-full sm:w-40 md:w-48 aspect-video sm:aspect-square md:aspect-auto shrink-0 bg-muted relative overflow-hidden border-b sm:border-b-0 sm:border-r">
             <img
@@ -207,7 +210,7 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
           </div>
         )}
 
-        {/* Thumbnail för kompakt läge */}
+        {/* Thumbnail for compact mode */}
         {hasImage && compact && (
           <div className="w-16 h-16 shrink-0 bg-muted relative overflow-hidden rounded-l-lg">
             <img
@@ -220,10 +223,10 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
           </div>
         )}
 
-        {/* Fallback om bild saknas */}
+        {/* Icon placeholder when no image (non-compact only) - cleaner look */}
         {!hasImage && !compact && (
-          <div className="w-full sm:w-32 h-24 sm:h-auto shrink-0 bg-muted/50 flex items-center justify-center border-b sm:border-b-0 sm:border-r">
-            <ImageOff className="h-8 w-8 text-muted-foreground/50" />
+          <div className="w-16 sm:w-20 shrink-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center border-r">
+            <Globe className="h-6 w-6 text-muted-foreground/40" />
           </div>
         )}
 
