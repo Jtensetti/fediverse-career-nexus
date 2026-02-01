@@ -19,6 +19,18 @@ interface FederatedFeedProps {
   feedType?: FeedType;
 }
 
+const findScrollableParent = (el: HTMLElement | null): HTMLElement | null => {
+  let current: HTMLElement | null = el?.parentElement ?? null;
+  while (current) {
+    const style = window.getComputedStyle(current);
+    const overflowY = style.overflowY;
+    const isScrollable = (overflowY === "auto" || overflowY === "scroll") && current.scrollHeight > current.clientHeight;
+    if (isScrollable) return current;
+    current = current.parentElement;
+  }
+  return null;
+};
+
 export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "following", feedType = "following" }: FederatedFeedProps) {
   const [allPosts, setAllPosts] = useState<FederatedPost[]>([]);
   const [offset, setOffset] = useState(0);
@@ -41,6 +53,11 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const effectiveFeedType: FeedType = feedType !== 'following' ? feedType : 
     (sourceFilter === 'local' ? 'local' : 
      sourceFilter === 'federated' ? 'federated' : 'following');
+
+  // IMPORTANT: the backend over-fetches 3x for the "following" feed to compensate for filtering.
+  // That means our *offset step* must also be 3x, otherwise we will repeatedly re-fetch overlapping
+  // ranges (creating duplicates and prematurely disabling pagination).
+  const offsetStep = effectiveFeedType === 'following' ? limit * 3 : limit;
   
   // Refs for infinite scroll
   const isFetchingRef = useRef(false);
@@ -190,20 +207,14 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       }
       return [...currentPosts, ...newPosts];
     });
-    
-    // Determine if there are more posts to load
-    // The service fetches limit*3 for 'following' feed to account for filtering
-    // So we check if we got a full page of results from the API
-    const rawPostCount = posts?.length || 0;
-    // For 'following' feed, service fetches 3x limit, so check against that
-    const expectedFetchSize = effectiveFeedType === 'following' ? limit * 3 : limit;
-    
-    // If we got fewer posts than expected, we've likely reached the end
-    // But be conservative - only set hasMore to false if we got significantly fewer
-    if (rawPostCount < expectedFetchSize && rawPostCount > 0) {
-      // We got some posts but fewer than expected - might be end of feed
-      // But only disable if offset > 0 (not first page) to avoid premature cutoff
-      if (offset > 0) {
+
+    // Determine if there are more posts to load.
+    // Note: for "following", the backend filters server-side and can return fewer than `limit`
+    // even when more matching posts exist further down, so we must NOT infer end-of-feed from
+    // a short page. We only stop once a paginated request returns no new posts (handled above).
+    if (effectiveFeedType !== 'following') {
+      const receivedCount = posts?.length || 0;
+      if (receivedCount < limit) {
         setHasMore(false);
       }
     }
@@ -219,8 +230,8 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const loadMore = useCallback(() => {
     if (loadMoreLockRef.current || isFetchingRef.current || !hasMore) return;
     loadMoreLockRef.current = true;
-    setOffset(prev => prev + limit);
-  }, [hasMore, limit]);
+    setOffset(prev => prev + offsetStep);
+  }, [hasMore, offsetStep]);
   
   // Set up IntersectionObserver for infinite scroll
   useEffect(() => {
@@ -234,6 +245,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     if (!hasMore) return;
     
     // Create new observer
+    const scrollRoot = findScrollableParent(sentinelRef.current);
     observerRef.current = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !isFetchingRef.current && !loadMoreLockRef.current) {
@@ -241,7 +253,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
         }
       },
       { 
-        root: null,
+        // If the feed is rendered inside an overflow container (e.g. homepage preview),
+        // observe relative to that container; otherwise fall back to viewport.
+        root: scrollRoot,
         threshold: 0,
         rootMargin: '400px' // Start loading before reaching the end
       }
