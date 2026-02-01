@@ -1,77 +1,383 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Bold,
   Italic,
   Strikethrough,
-  Heading2,
   Link,
+  Quote,
   Code,
-  RemoveFormatting,
+  Plus,
   List,
   ListOrdered,
-  Quote,
-  Minus,
-  Image,
+  Undo2,
+  Keyboard,
+  Type,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export type ToolbarAction =
   | "bold"
   | "italic"
   | "strikethrough"
   | "heading"
+  | "heading-1"
+  | "heading-2"
+  | "heading-3"
+  | "heading-4"
+  | "heading-5"
+  | "normal"
   | "link"
   | "code"
-  | "clear"
   | "bullet-list"
   | "numbered-list"
   | "quote"
   | "code-block"
   | "divider"
-  | "image";
+  | "image"
+  | "undo"
+  | "hide-keyboard";
 
 interface EditorToolbarProps {
   hasSelection: boolean;
   onAction: (action: ToolbarAction) => void;
   isMobile: boolean;
   className?: string;
+  onHideKeyboard?: () => void;
 }
 
-const selectionActions = [
-  { action: "bold" as const, icon: Bold, label: "Bold" },
-  { action: "italic" as const, icon: Italic, label: "Italic" },
-  { action: "strikethrough" as const, icon: Strikethrough, label: "Strikethrough" },
-  { action: "heading" as const, icon: Heading2, label: "Heading" },
-  { action: "link" as const, icon: Link, label: "Link" },
-  { action: "code" as const, icon: Code, label: "Inline code" },
-  { action: "clear" as const, icon: RemoveFormatting, label: "Clear formatting" },
-];
+// Selection mode: B, I, S | aA | Link | Quote | Code
+const SelectionToolbar = ({ 
+  onAction, 
+  isMobile 
+}: { 
+  onAction: (action: ToolbarAction) => void;
+  isMobile: boolean;
+}) => {
+  const [headingOpen, setHeadingOpen] = useState(false);
+  const iconSize = isMobile ? "h-5 w-5" : "h-4 w-4";
+  const buttonSize = isMobile ? "h-11 w-11" : "h-9 w-9";
 
-const defaultActions = [
-  { action: "heading" as const, icon: Heading2, label: "Heading" },
-  { action: "link" as const, icon: Link, label: "Link" },
-  { action: "bullet-list" as const, icon: List, label: "Bullet list" },
-  { action: "numbered-list" as const, icon: ListOrdered, label: "Numbered list" },
-  { action: "quote" as const, icon: Quote, label: "Quote" },
-  { action: "code-block" as const, icon: Code, label: "Code block" },
-  { action: "divider" as const, icon: Minus, label: "Divider" },
-  { action: "image" as const, icon: Image, label: "Image" },
-];
+  const headingOptions = [
+    { label: "Normal", action: "normal" as const },
+    { label: "H1", action: "heading-1" as const },
+    { label: "H2", action: "heading-2" as const },
+    { label: "H3", action: "heading-3" as const },
+    { label: "H4", action: "heading-4" as const },
+    { label: "H5", action: "heading-5" as const },
+  ];
+
+  return (
+    <div className="flex items-center justify-center gap-1">
+      {/* Bold */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("bold")}
+        className={cn(buttonSize, "p-0 shrink-0 font-bold")}
+        aria-label="Bold"
+      >
+        <Bold className={iconSize} strokeWidth={3} />
+      </Button>
+
+      {/* Italic */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("italic")}
+        className={cn(buttonSize, "p-0 shrink-0")}
+        aria-label="Italic"
+      >
+        <Italic className={iconSize} />
+      </Button>
+
+      {/* Strikethrough */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("strikethrough")}
+        className={cn(buttonSize, "p-0 shrink-0")}
+        aria-label="Strikethrough"
+      >
+        <Strikethrough className={iconSize} />
+      </Button>
+
+      {/* Separator */}
+      <div className="w-px h-6 bg-border mx-1" />
+
+      {/* Heading selector (aA) */}
+      <Popover open={headingOpen} onOpenChange={setHeadingOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(buttonSize, "p-0 shrink-0 font-semibold text-sm")}
+            aria-label="Text style"
+          >
+            <Type className={iconSize} />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-32 p-1" 
+          align="center" 
+          side="top"
+          sideOffset={8}
+        >
+          <div className="flex flex-col">
+            {headingOptions.map(({ label, action }) => (
+              <Button
+                key={action}
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onAction(action);
+                  setHeadingOpen(false);
+                }}
+                className="justify-start h-8 text-sm"
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Separator */}
+      <div className="w-px h-6 bg-border mx-1" />
+
+      {/* Link */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("link")}
+        className={cn(buttonSize, "p-0 shrink-0")}
+        aria-label="Insert link"
+      >
+        <Link className={iconSize} />
+      </Button>
+
+      {/* Separator */}
+      <div className="w-px h-6 bg-border mx-1" />
+
+      {/* Block Quote */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("quote")}
+        className={cn(buttonSize, "p-0 shrink-0")}
+        aria-label="Block quote"
+      >
+        <Quote className={iconSize} />
+      </Button>
+
+      {/* Code Block */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("code-block")}
+        className={cn(buttonSize, "p-0 shrink-0")}
+        aria-label="Code block"
+      >
+        <Code className={iconSize} />
+      </Button>
+    </div>
+  );
+};
+
+// Default mode: + | Link | Lists | Quote | Undo | Keyboard
+const DefaultToolbar = ({ 
+  onAction,
+  onHideKeyboard,
+  isMobile 
+}: { 
+  onAction: (action: ToolbarAction) => void;
+  onHideKeyboard?: () => void;
+  isMobile: boolean;
+}) => {
+  const [insertOpen, setInsertOpen] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
+  const iconSize = isMobile ? "h-5 w-5" : "h-4 w-4";
+  const buttonSize = isMobile ? "h-11 w-11" : "h-9 w-9";
+
+  return (
+    <div className="flex items-center justify-center gap-1">
+      {/* Insert (+ icon) */}
+      <Popover open={insertOpen} onOpenChange={setInsertOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(buttonSize, "p-0 shrink-0")}
+            aria-label="Insert"
+          >
+            <Plus className={iconSize} />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-40 p-1" 
+          align="start" 
+          side="top"
+          sideOffset={8}
+        >
+          <div className="flex flex-col">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onAction("image");
+                setInsertOpen(false);
+              }}
+              className="justify-start h-8 text-sm"
+            >
+              Image
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onAction("divider");
+                setInsertOpen(false);
+              }}
+              className="justify-start h-8 text-sm"
+            >
+              Divider
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Link */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("link")}
+        className={cn(buttonSize, "p-0 shrink-0")}
+        aria-label="Insert link"
+      >
+        <Link className={iconSize} />
+      </Button>
+
+      {/* Lists popover */}
+      <Popover open={listOpen} onOpenChange={setListOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(buttonSize, "p-0 shrink-0")}
+            aria-label="Lists"
+          >
+            <List className={iconSize} />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-40 p-1" 
+          align="center" 
+          side="top"
+          sideOffset={8}
+        >
+          <div className="flex flex-col">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onAction("bullet-list");
+                setListOpen(false);
+              }}
+              className="justify-start h-8 text-sm gap-2"
+            >
+              <List className="h-4 w-4" />
+              Bullet list
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onAction("numbered-list");
+                setListOpen(false);
+              }}
+              className="justify-start h-8 text-sm gap-2"
+            >
+              <ListOrdered className="h-4 w-4" />
+              Numbered list
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Block Quote */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("quote")}
+        className={cn(buttonSize, "p-0 shrink-0")}
+        aria-label="Block quote"
+      >
+        <Quote className={iconSize} />
+      </Button>
+
+      {/* Undo */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAction("undo")}
+        className={cn(buttonSize, "p-0 shrink-0")}
+        aria-label="Undo"
+      >
+        <Undo2 className={iconSize} />
+      </Button>
+
+      {/* Hide Keyboard (mobile only) */}
+      {isMobile && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onHideKeyboard}
+          className={cn(buttonSize, "p-0 shrink-0")}
+          aria-label="Hide keyboard"
+        >
+          <Keyboard className={iconSize} />
+        </Button>
+      )}
+    </div>
+  );
+};
 
 export function EditorToolbar({
   hasSelection,
   onAction,
   isMobile,
   className,
+  onHideKeyboard,
 }: EditorToolbarProps) {
-  const actions = hasSelection ? selectionActions : defaultActions;
-
   return (
     <div
       className={cn(
-        "flex items-center gap-0.5 p-1.5 bg-muted/50 border-b border-border overflow-x-auto",
-        isMobile && "sticky bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-b-0 shadow-lg",
+        "flex items-center justify-center py-2 px-3 bg-background/95 backdrop-blur-sm border-t border-border",
+        isMobile && "sticky bottom-0 left-0 right-0 z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]",
         className
       )}
       style={isMobile ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
@@ -79,29 +385,20 @@ export function EditorToolbar({
       <AnimatePresence mode="wait">
         <motion.div
           key={hasSelection ? "selection" : "default"}
-          initial={{ opacity: 0, y: hasSelection ? -8 : 8 }}
+          initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: hasSelection ? 8 : -8 }}
-          transition={{ duration: 0.15 }}
-          className="flex items-center gap-0.5"
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.12 }}
         >
-          {actions.map(({ action, icon: Icon, label }) => (
-            <Button
-              key={action}
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onAction(action)}
-              className={cn(
-                "h-8 w-8 p-0 shrink-0",
-                isMobile && "h-10 w-10"
-              )}
-              aria-label={label}
-              title={label}
-            >
-              <Icon className={cn("h-4 w-4", isMobile && "h-5 w-5")} />
-            </Button>
-          ))}
+          {hasSelection ? (
+            <SelectionToolbar onAction={onAction} isMobile={isMobile} />
+          ) : (
+            <DefaultToolbar 
+              onAction={onAction} 
+              onHideKeyboard={onHideKeyboard}
+              isMobile={isMobile} 
+            />
+          )}
         </motion.div>
       </AnimatePresence>
     </div>
