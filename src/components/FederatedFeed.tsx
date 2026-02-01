@@ -150,6 +150,11 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const prevRemotePostsRef = useRef<string>("");
   
   useEffect(() => {
+    // During pagination, react-query can temporarily set `posts` to `undefined` while loading
+    // the next page. We must NOT treat that as an empty result, otherwise we incorrectly
+    // disable pagination and hide the sentinel.
+    if (posts === undefined) return;
+
     // Create a stable key to compare posts
     const postsKey = posts ? posts.map(p => p.id).join(',') : '';
     const remotePostsKey = remotePosts ? remotePosts.map(p => p.id).join(',') : '';
