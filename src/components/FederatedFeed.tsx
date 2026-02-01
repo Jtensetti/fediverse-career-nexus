@@ -45,6 +45,8 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   // Refs for infinite scroll
   const isFetchingRef = useRef(false);
   const loadMoreLockRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   
   // Fetch local posts
   const { data: posts, isLoading, isFetching, error, refetch } = useQuery({
@@ -201,31 +203,42 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setOffset(prev => prev + limit);
   }, [hasMore, limit]);
   
-  // Callback ref for sentinel - attaches observer when element mounts
-  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node || !hasMore) return;
+  // Set up IntersectionObserver for infinite scroll
+  useEffect(() => {
+    // Disconnect previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
     
-    const observer = new IntersectionObserver(
+    // Don't observe if no more posts to load
+    if (!hasMore) return;
+    
+    // Create new observer
+    observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && !isFetchingRef.current && !loadMoreLockRef.current) {
           loadMore();
         }
       },
       { 
         root: null,
-        threshold: 0.1, 
-        rootMargin: '300px'
+        threshold: 0,
+        rootMargin: '400px' // Start loading before reaching the end
       }
     );
     
-    observer.observe(node);
+    // Observe the sentinel element if it exists
+    if (sentinelRef.current) {
+      observerRef.current.observe(sentinelRef.current);
+    }
     
-    // Cleanup when node unmounts - store observer on node for cleanup
-    (node as any)._infiniteScrollObserver?.disconnect();
-    (node as any)._infiniteScrollObserver = observer;
-    
-    return () => observer.disconnect();
-  }, [hasMore, loadMore]);
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loadMore, allPosts.length]); // Re-attach when posts change
 
   const handleEditPost = (post: FederatedPost) => {
     setEditingPost(post);
