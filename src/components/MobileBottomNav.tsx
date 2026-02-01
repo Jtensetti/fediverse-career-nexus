@@ -18,8 +18,10 @@ export default function MobileBottomNav() {
   // Only show for authenticated users
   if (!user) return null;
 
-  // Don't show on auth pages
+  // Don't show on auth pages or article editing pages
   if (location.pathname.startsWith("/auth")) return null;
+  if (location.pathname.startsWith("/articles/create")) return null;
+  if (location.pathname.startsWith("/articles/edit")) return null;
 
   return (
     <nav
