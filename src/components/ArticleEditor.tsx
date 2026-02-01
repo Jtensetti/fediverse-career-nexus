@@ -257,14 +257,13 @@ export function ArticleEditor({
 
   return (
     <div className={cn("flex flex-col border rounded-md overflow-hidden", className)}>
-      {/* Desktop toolbar at top */}
-      {!isMobile && (
-        <EditorToolbar
-          hasSelection={hasSelection}
-          onAction={handleAction}
-          isMobile={false}
-        />
-      )}
+      {/* Toolbar - top on desktop, bottom on mobile (inside the container) */}
+      <EditorToolbar
+        hasSelection={hasSelection}
+        onAction={handleAction}
+        isMobile={isMobile}
+        className={isMobile ? "order-2" : "order-1"}
+      />
 
       {/* Editor textarea */}
       <Textarea
@@ -275,18 +274,9 @@ export function ArticleEditor({
         placeholder={placeholder}
         className={cn(
           "min-h-[400px] border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-base leading-relaxed",
-          isMobile && "pb-16" // Space for mobile toolbar
+          isMobile ? "order-1" : "order-2"
         )}
       />
-
-      {/* Mobile toolbar at bottom */}
-      {isMobile && (
-        <EditorToolbar
-          hasSelection={hasSelection}
-          onAction={handleAction}
-          isMobile={true}
-        />
-      )}
 
       {/* Link insertion sheet/popover */}
       <LinkInsertSheet

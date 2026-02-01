@@ -71,9 +71,10 @@ export function EditorToolbar({
     <div
       className={cn(
         "flex items-center gap-0.5 p-1.5 bg-muted/50 border-b border-border overflow-x-auto",
-        isMobile && "fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-b-0 pb-safe",
+        isMobile && "sticky bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-b-0 shadow-lg",
         className
       )}
+      style={isMobile ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
     >
       <AnimatePresence mode="wait">
         <motion.div
