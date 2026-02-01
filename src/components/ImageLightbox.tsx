@@ -59,7 +59,7 @@ export default function ImageLightbox({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-[95vw] max-h-[95vh] w-auto h-auto p-0 bg-black/95 border-none overflow-hidden"
+        className="fixed inset-4 max-w-none w-auto h-auto p-0 bg-black/95 border-none translate-x-0 translate-y-0 left-4 right-4 top-4 bottom-4"
         hideCloseButton
       >
         <VisuallyHidden>
@@ -115,8 +115,8 @@ export default function ImageLightbox({
         {/* Image container */}
         <div 
           className={cn(
-            "flex items-center justify-center w-full h-full min-h-[50vh]",
-            isZoomed ? "cursor-zoom-out overflow-auto" : "cursor-zoom-in"
+            "absolute inset-0 flex items-center justify-center",
+            isZoomed ? "cursor-zoom-out overflow-auto" : "cursor-zoom-in overflow-hidden"
           )}
           onClick={() => setIsZoomed(!isZoomed)}
         >
@@ -124,11 +124,12 @@ export default function ImageLightbox({
             src={currentImage.url}
             alt={currentImage.altText || "Image"}
             className={cn(
-              "transition-transform duration-200",
+              "select-none",
               isZoomed 
-                ? "max-w-none w-auto h-auto" 
-                : "max-w-[90vw] max-h-[85vh] object-contain"
+                ? "max-w-none" 
+                : "max-w-full max-h-full object-contain"
             )}
+            style={isZoomed ? undefined : { maxHeight: 'calc(100vh - 120px)', maxWidth: 'calc(100vw - 32px)' }}
           />
         </div>
 
