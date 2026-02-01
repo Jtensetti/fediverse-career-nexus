@@ -208,16 +208,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       return [...currentPosts, ...newPosts];
     });
 
-    // Determine if there are more posts to load.
-    // Note: for "following", the backend filters server-side and can return fewer than `limit`
-    // even when more matching posts exist further down, so we must NOT infer end-of-feed from
-    // a short page. We only stop once a paginated request returns no new posts (handled above).
-    if (effectiveFeedType !== 'following') {
-      const receivedCount = posts?.length || 0;
-      if (receivedCount < limit) {
-        setHasMore(false);
-      }
-    }
+    // We rely solely on the "no new unique posts" check above to disable hasMore.
+    // This ensures pagination continues until we genuinely run out of posts,
+    // regardless of feed type (following, local, or federated).
     
     // Only fetch batch data for local posts (remote posts don't have local IDs)
     const localPostIds = (posts || []).map(p => p.id);
