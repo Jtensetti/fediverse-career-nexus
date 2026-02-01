@@ -1,14 +1,13 @@
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Lock } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Repeat2, Share } from "lucide-react";
 import { format } from "date-fns";
 import { Article } from "@/services/articleService";
 import FollowAuthorButton from "./FollowAuthorButton";
 import ArticleCardReactions from "./ArticleCardReactions";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface ArticlePreviewCardProps {
   article: Article;
@@ -32,113 +31,138 @@ const ArticlePreviewCard = ({
     ? format(new Date(article.published_at), 'MMM d, yyyy')
     : format(new Date(article.created_at), 'MMM d, yyyy');
 
-  const excerpt = article.excerpt || article.content.substring(0, 150);
   const initials = authorInfo?.fullname
     ? authorInfo.fullname.split(' ').map(n => n[0]).join('').toUpperCase()
     : authorInfo?.username?.[0]?.toUpperCase() || '?';
+
+  const displayName = authorInfo?.fullname || authorInfo?.username || 'Unknown Author';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      className="space-y-2"
     >
-      <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col border-0 shadow-sm">
-        {/* Header image - small aspect ratio */}
-        {article.cover_image_url && (
-          <Link to={`/articles/${article.slug}`}>
-            <div className="relative aspect-[2.5/1] overflow-hidden">
+      {/* Author header - above card like Substack */}
+      {authorInfo && (
+        <div className="flex items-center justify-between px-1">
+          <Link 
+            to={`/profile/${authorInfo.username || authorInfo.id}`}
+            className="flex items-center gap-2 group"
+          >
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={authorInfo.avatar_url || undefined} />
+              <AvatarFallback className="bg-primary/10 text-sm">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-semibold text-sm group-hover:text-primary transition-colors">
+                {displayName}
+              </p>
+              <p className="text-xs text-muted-foreground">{publishDate}</p>
+            </div>
+          </Link>
+          
+          {!hasFullAccess && (
+            <FollowAuthorButton
+              authorId={authorInfo.id}
+              authorName={displayName}
+              size="sm"
+              onFollowChange={onFollowChange}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Main card with image and overlay title */}
+      <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow">
+        <Link to={`/articles/${article.slug}`} className="block">
+          <div className="relative aspect-[16/10] overflow-hidden">
+            {/* Image or fallback */}
+            {article.cover_image_url ? (
               <img
                 src={article.cover_image_url}
                 alt={article.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              {!hasFullAccess && (
-                <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-              )}
-            </div>
-          </Link>
-        )}
-        
-        <CardHeader className="pb-2 pt-4">
-          {/* Title */}
-          <Link to={`/articles/${article.slug}`}>
-            <h3 className="text-lg font-semibold leading-tight group-hover:text-primary transition-colors line-clamp-2">
-              {article.title}
-            </h3>
-          </Link>
-        </CardHeader>
-
-        <CardContent className="flex-1 flex flex-col pt-0">
-          {/* Excerpt with muted styling */}
-          <div className="relative flex-1 mb-4">
-            <p className="text-muted-foreground text-sm line-clamp-3 leading-relaxed">
-              {excerpt}...
-            </p>
-            {!hasFullAccess && (
-              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-card to-transparent" />
-            )}
-          </div>
-
-          {/* Tags */}
-          {article.tags && article.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
-              {article.tags.slice(0, 2).map(tag => (
-                <Badge key={tag} variant="secondary" className="text-xs font-normal">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          {/* Author info and reactions footer */}
-          <div className="flex items-center justify-between pt-3 border-t">
-            {authorInfo && (
-              <Link 
-                to={`/profile/${authorInfo.username || authorInfo.id}`}
-                className="flex items-center gap-2 group/author min-w-0 flex-1"
-              >
-                <Avatar className="h-7 w-7 flex-shrink-0">
-                  <AvatarImage src={authorInfo.avatar_url || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-xs">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium group-hover/author:text-primary transition-colors truncate">
-                    {authorInfo.fullname || authorInfo.username}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3 flex-shrink-0" />
-                    <span>{publishDate}</span>
-                  </div>
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <div className="text-muted-foreground/30">
+                  <svg 
+                    className="w-16 h-16" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={1} 
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                    />
+                  </svg>
                 </div>
-              </Link>
+              </div>
             )}
-
-            {/* Reactions */}
-            <ArticleCardReactions articleId={article.id} className="flex-shrink-0" />
-          </div>
-
-          {/* Locked content action */}
-          {!hasFullAccess && (
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-              <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-xs text-muted-foreground flex-1">
-                Follow to read
-              </span>
-              {authorInfo && (
-                <FollowAuthorButton
-                  authorId={authorInfo.id}
-                  authorName={authorInfo.fullname || authorInfo.username || undefined}
-                  size="sm"
-                  onFollowChange={onFollowChange}
-                />
+            
+            {/* Gradient overlay for text readability */}
+            <div className={cn(
+              "absolute inset-0 flex flex-col justify-end p-4",
+              article.cover_image_url 
+                ? "bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+                : "bg-gradient-to-t from-foreground/10 to-transparent"
+            )}>
+              {/* Author badge overlay (small, on image) */}
+              {authorInfo && article.cover_image_url && (
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Avatar className="h-5 w-5 border border-white/20">
+                    <AvatarImage src={authorInfo.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary/20 text-[10px]">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className={cn(
+                    "text-xs font-medium",
+                    article.cover_image_url ? "text-white/90" : "text-foreground/70"
+                  )}>
+                    {displayName.toUpperCase()}
+                  </span>
+                </div>
               )}
+              
+              {/* Title on image */}
+              <h3 className={cn(
+                "text-lg font-bold leading-tight line-clamp-2 pr-8",
+                article.cover_image_url ? "text-white" : "text-foreground"
+              )}>
+                {article.title}
+              </h3>
+              
+              {/* Bookmark icon */}
+              <Bookmark className={cn(
+                "absolute top-4 right-4 h-5 w-5 opacity-70 hover:opacity-100 transition-opacity",
+                article.cover_image_url ? "text-white" : "text-muted-foreground"
+              )} />
             </div>
-          )}
-        </CardContent>
+          </div>
+        </Link>
       </Card>
+
+      {/* Reactions row below card */}
+      <div className="flex items-center gap-4 px-1 text-muted-foreground">
+        <ArticleCardReactions articleId={article.id} />
+        <button className="flex items-center gap-1 hover:text-foreground transition-colors">
+          <MessageCircle className="h-4 w-4" />
+        </button>
+        <button className="flex items-center gap-1 hover:text-foreground transition-colors">
+          <Repeat2 className="h-4 w-4" />
+        </button>
+        <button className="flex items-center gap-1 hover:text-foreground transition-colors">
+          <Share className="h-4 w-4" />
+        </button>
+      </div>
     </motion.div>
   );
 };
