@@ -145,6 +145,8 @@ const SelectionToolbar = ({
           align="center" 
           side="top"
           sideOffset={8}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <div className="flex flex-col">
             {headingOptions.map(({ label, action }) => (
@@ -259,6 +261,8 @@ const DefaultToolbar = ({
           align="start" 
           side="top"
           sideOffset={8}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <div className="flex flex-col">
             <Button
@@ -327,6 +331,8 @@ const DefaultToolbar = ({
           align="center" 
           side="top"
           sideOffset={8}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <div className="flex flex-col">
             <Button
