@@ -30,6 +30,7 @@ import type { FederatedPost } from "@/services/federationService";
 import type { BatchPostData } from "@/services/batchDataService";
 import type { CommentPreviewHandle } from "./CommentPreview";
 import { getNoltoInstanceDomain } from "@/lib/federation";
+import ImageLightbox from "./ImageLightbox";
 
 // Lazy load CommentPreview for performance
 const CommentPreview = lazy(() => import("./CommentPreview"));
@@ -62,6 +63,8 @@ export default function FederatedPostCard({
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [shouldOpenComposer, setShouldOpenComposer] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const commentPreviewRef = useRef<CommentPreviewHandle>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -520,16 +523,30 @@ export default function FederatedPostCard({
             {attachments.length > 0 && (
               <div className="mt-3 grid gap-2 rounded-xl overflow-hidden">
                 {attachments.map((att, idx) => (
-                  <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                  <div 
+                    key={idx} 
+                    className="relative aspect-video overflow-hidden rounded-lg bg-muted cursor-pointer group/image"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIndex(idx);
+                      setLightboxOpen(true);
+                    }}
+                  >
                     <img
                       src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url}
                       alt={att.altText || att.name || 'Media attachment'}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
                       }}
                     />
+                    {/* Hover overlay with click hint */}
+                    <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors flex items-center justify-center">
+                      <span className="opacity-0 group-hover/image:opacity-100 transition-opacity text-white text-sm bg-black/50 px-2 py-1 rounded">
+                        Click to enlarge
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -646,6 +663,17 @@ export default function FederatedPostCard({
           isRemote: post.source === 'remote'
         }}
         onSuccess={handleRepostSuccess}
+      />
+
+      {/* Image Lightbox for viewing attachments */}
+      <ImageLightbox
+        images={attachments.map(att => ({
+          url: post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url,
+          altText: att.altText || att.name
+        }))}
+        initialIndex={lightboxIndex}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
       />
     </>
   );

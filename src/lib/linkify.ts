@@ -83,11 +83,12 @@ export function parseInlineMarkdown(text: string): string {
 
   let result = text;
 
-  // Protect existing HTML elements
+  // Protect existing HTML elements with a unique placeholder that won't be matched by markdown patterns
   const elements: string[] = [];
   result = result.replace(/<[^>]+>.*?<\/[^>]+>|<[^>]+\/>/gi, (match) => {
     elements.push(match);
-    return `__ELEM_${elements.length - 1}__`;
+    // Use a placeholder pattern that won't be matched by bold/italic regex
+    return `\x00ELEM${elements.length - 1}\x00`;
   });
 
   // Parse markdown links: [text](url)
@@ -105,7 +106,7 @@ export function parseInlineMarkdown(text: string): string {
   result = result.replace(/(?<![_\w])_([^_]+)_(?![_\w])/g, "<em>$1</em>");
 
   // Restore protected elements
-  result = result.replace(/__ELEM_(\d+)__/g, (_, index) => elements[parseInt(index)]);
+  result = result.replace(/\x00ELEM(\d+)\x00/g, (_, index) => elements[parseInt(index)]);
 
   return result;
 }
