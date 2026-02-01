@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, X, Loader2 } from "lucide-react";
+import { ImagePlus, X, Loader2, Crop } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ImageCropDialog } from "./ImageCropDialog";
 
 interface CoverImageUploadProps {
   value?: string | null;
@@ -13,9 +14,12 @@ interface CoverImageUploadProps {
 
 const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -25,12 +29,27 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
       return;
     }
 
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be smaller than 5MB");
+    // Validate file size (10MB max for source image before cropping)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be smaller than 10MB");
       return;
     }
 
+    // Store the filename for later
+    setSelectedFileName(file.name);
+
+    // Create object URL for cropping
+    const imageUrl = URL.createObjectURL(file);
+    setSelectedImageSrc(imageUrl);
+    setShowCropDialog(true);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
     setIsUploading(true);
 
     try {
@@ -40,12 +59,15 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
         return;
       }
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      // Get file extension from original filename or default to jpg
+      const fileExt = selectedFileName.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${user.id}/cover-${Date.now()}.${fileExt === 'png' ? 'png' : 'jpg'}`;
 
       const { error: uploadError } = await supabase.storage
         .from('articles')
-        .upload(fileName, file);
+        .upload(fileName, croppedBlob, {
+          contentType: fileExt === 'png' ? 'image/png' : 'image/jpeg',
+        });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
@@ -64,9 +86,19 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
       toast.error("Failed to upload image");
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      // Clean up object URL
+      if (selectedImageSrc) {
+        URL.revokeObjectURL(selectedImageSrc);
+        setSelectedImageSrc(null);
       }
+    }
+  };
+
+  const handleCloseCropDialog = () => {
+    setShowCropDialog(false);
+    if (selectedImageSrc) {
+      URL.revokeObjectURL(selectedImageSrc);
+      setSelectedImageSrc(null);
     }
   };
 
@@ -91,15 +123,27 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
             alt="Cover"
             className="w-full h-full object-cover"
           />
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            className="absolute top-2 right-2 h-8 w-8"
-            onClick={handleRemove}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="absolute top-2 right-2 flex gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              <Crop className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleRemove}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       ) : (
         <Button
@@ -121,6 +165,17 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
             </>
           )}
         </Button>
+      )}
+
+      {/* Crop Dialog */}
+      {selectedImageSrc && (
+        <ImageCropDialog
+          open={showCropDialog}
+          onClose={handleCloseCropDialog}
+          imageSrc={selectedImageSrc}
+          onCropComplete={handleCropComplete}
+          aspectRatio={2 / 1}
+        />
       )}
     </div>
   );
