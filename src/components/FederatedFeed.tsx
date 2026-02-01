@@ -165,9 +165,11 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     if (combinedPosts.length === 0) {
       if (offset === 0) {
         setAllPosts([]);
-        setHasMore(effectiveFeedType !== 'federated'); // Don't show "load more" for federated if empty
+        // Keep hasMore true on initial load to allow retry/refresh
+        // Only disable hasMore if we're paginating and got nothing
         setBatchDataLoading(false);
       } else {
+        // Got no posts on a paginated request - no more to load
         setHasMore(false);
       }
       return;
@@ -181,12 +183,29 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
       const existingIds = new Set(currentPosts.map(p => p.id));
       const newPosts = combinedPosts.filter(p => !existingIds.has(p.id));
       
-      if (newPosts.length === 0) return currentPosts;
+      if (newPosts.length === 0) {
+        // No new unique posts - we've exhausted the feed
+        setHasMore(false);
+        return currentPosts;
+      }
       return [...currentPosts, ...newPosts];
     });
     
-    if ((posts?.length || 0) < limit) {
-      setHasMore(false);
+    // Determine if there are more posts to load
+    // The service fetches limit*3 for 'following' feed to account for filtering
+    // So we check if we got a full page of results from the API
+    const rawPostCount = posts?.length || 0;
+    // For 'following' feed, service fetches 3x limit, so check against that
+    const expectedFetchSize = effectiveFeedType === 'following' ? limit * 3 : limit;
+    
+    // If we got fewer posts than expected, we've likely reached the end
+    // But be conservative - only set hasMore to false if we got significantly fewer
+    if (rawPostCount < expectedFetchSize && rawPostCount > 0) {
+      // We got some posts but fewer than expected - might be end of feed
+      // But only disable if offset > 0 (not first page) to avoid premature cutoff
+      if (offset > 0) {
+        setHasMore(false);
+      }
     }
     
     // Only fetch batch data for local posts (remote posts don't have local IDs)
