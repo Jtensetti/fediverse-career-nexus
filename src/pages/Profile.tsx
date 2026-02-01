@@ -58,6 +58,7 @@ import { cn } from "@/lib/utils";
 import { SEOHead } from "@/components/common/SEOHead";
 import { ShareButton } from "@/components/common/ShareButton";
 import { ShareProfileCard } from "@/components/profile/ShareProfileCard";
+import SimpleMarkdown from "@/components/common/SimpleMarkdown";
 
 const ProfilePage = () => {
   const { usernameOrId } = useParams();
@@ -595,7 +596,12 @@ const ProfilePage = () => {
               {/* <ProfileStats userId={profile.id} username={profile.username} /> */}
             </div>
 
-            {profile.bio && <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{profile.bio}</p>}
+            {profile.bio && (
+              <SimpleMarkdown 
+                content={profile.bio} 
+                className="text-muted-foreground leading-relaxed whitespace-pre-line block" 
+              />
+            )}
           </div>
         </div>
       </div>

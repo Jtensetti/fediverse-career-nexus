@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArticleFormData, createArticle, generateSlug } from "@/services/articleService";
-import MarkdownEditor from "@/components/MarkdownEditor";
+import ArticleEditor from "@/components/ArticleEditor";
 import { toast } from "sonner";
 import { ArrowLeft, Save } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -242,7 +242,7 @@ const ArticleCreate = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <MarkdownEditor
+                  <ArticleEditor
                     value={article.content}
                     onChange={handleContentChange}
                     placeholder="Write your article content here..."
@@ -250,9 +250,6 @@ const ArticleCreate = () => {
                   {errors.content && (
                     <p className="text-sm text-destructive">{errors.content}</p>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    Minimum 50 characters required
-                  </p>
                 </div>
                 
                 <div className="flex items-center space-x-2">

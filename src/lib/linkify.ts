@@ -75,6 +75,54 @@ export function linkifyText(text: string): string {
 }
 
 /**
+ * Parse simple inline markdown (bold, italic) within text.
+ * Should be called after linkifyText to avoid interfering with URLs.
+ */
+export function parseInlineMarkdown(text: string): string {
+  if (!text) return "";
+
+  let result = text;
+
+  // Protect existing HTML elements
+  const elements: string[] = [];
+  result = result.replace(/<[^>]+>.*?<\/[^>]+>|<[^>]+\/>/gi, (match) => {
+    elements.push(match);
+    return `__ELEM_${elements.length - 1}__`;
+  });
+
+  // Parse markdown links: [text](url)
+  result = result.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>'
+  );
+
+  // Parse bold: **text** or __text__
+  result = result.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  result = result.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+
+  // Parse italic: *text* or _text_ (not inside words)
+  result = result.replace(/(?<![*\w])\*([^*]+)\*(?![*\w])/g, "<em>$1</em>");
+  result = result.replace(/(?<![_\w])_([^_]+)_(?![_\w])/g, "<em>$1</em>");
+
+  // Restore protected elements
+  result = result.replace(/__ELEM_(\d+)__/g, (_, index) => elements[parseInt(index)]);
+
+  return result;
+}
+
+/**
+ * Full linkify with inline markdown support.
+ * Combines URL linking, mentions, hashtags, and basic markdown.
+ */
+export function linkifyWithMarkdown(text: string): string {
+  // First linkify URLs, mentions, hashtags
+  let result = linkifyText(text);
+  // Then parse inline markdown
+  result = parseInlineMarkdown(result);
+  return result;
+}
+
+/**
  * Extracts all URLs from text content
  */
 export function extractUrls(text: string): string[] {
