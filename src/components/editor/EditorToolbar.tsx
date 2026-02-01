@@ -12,7 +12,7 @@ import {
   List,
   ListOrdered,
   Undo2,
-  Keyboard,
+  ChevronDown,
   Type,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -74,17 +74,17 @@ const SelectionToolbar = ({
   ];
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-0.5">
       {/* Bold */}
       <Button
         type="button"
         variant="ghost"
         size="sm"
         onClick={() => onAction("bold")}
-        className={cn(buttonSize, "p-0 shrink-0 font-bold")}
+        className={cn(buttonSize, "p-0 shrink-0")}
         aria-label="Bold"
       >
-        <Bold className={iconSize} strokeWidth={3} />
+        <Bold className={iconSize} strokeWidth={2.5} />
       </Button>
 
       {/* Italic */}
@@ -112,7 +112,7 @@ const SelectionToolbar = ({
       </Button>
 
       {/* Separator */}
-      <div className="w-px h-6 bg-border mx-1" />
+      <div className="w-px h-5 bg-border/60 mx-1.5" />
 
       {/* Heading selector (aA) */}
       <Popover open={headingOpen} onOpenChange={setHeadingOpen}>
@@ -121,14 +121,14 @@ const SelectionToolbar = ({
             type="button"
             variant="ghost"
             size="sm"
-            className={cn(buttonSize, "p-0 shrink-0 font-semibold text-sm")}
+            className={cn(buttonSize, "p-0 shrink-0")}
             aria-label="Text style"
           >
             <Type className={iconSize} />
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-32 p-1" 
+          className="w-28 p-1" 
           align="center" 
           side="top"
           sideOffset={8}
@@ -154,7 +154,7 @@ const SelectionToolbar = ({
       </Popover>
 
       {/* Separator */}
-      <div className="w-px h-6 bg-border mx-1" />
+      <div className="w-px h-5 bg-border/60 mx-1.5" />
 
       {/* Link */}
       <Button
@@ -169,7 +169,7 @@ const SelectionToolbar = ({
       </Button>
 
       {/* Separator */}
-      <div className="w-px h-6 bg-border mx-1" />
+      <div className="w-px h-5 bg-border/60 mx-1.5" />
 
       {/* Block Quote */}
       <Button
@@ -214,7 +214,7 @@ const DefaultToolbar = ({
   const buttonSize = isMobile ? "h-11 w-11" : "h-9 w-9";
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-0.5">
       {/* Insert (+ icon) */}
       <Popover open={insertOpen} onOpenChange={setInsertOpen}>
         <PopoverTrigger asChild>
@@ -229,7 +229,7 @@ const DefaultToolbar = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-40 p-1" 
+          className="w-36 p-1" 
           align="start" 
           side="top"
           sideOffset={8}
@@ -289,7 +289,7 @@ const DefaultToolbar = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-40 p-1" 
+          className="w-36 p-1" 
           align="center" 
           side="top"
           sideOffset={8}
@@ -349,7 +349,7 @@ const DefaultToolbar = ({
         <Undo2 className={iconSize} />
       </Button>
 
-      {/* Hide Keyboard (mobile only) */}
+      {/* Hide Keyboard (mobile only) - use chevron down icon like iOS */}
       {isMobile && (
         <Button
           type="button"
@@ -359,7 +359,7 @@ const DefaultToolbar = ({
           className={cn(buttonSize, "p-0 shrink-0")}
           aria-label="Hide keyboard"
         >
-          <Keyboard className={iconSize} />
+          <ChevronDown className={iconSize} />
         </Button>
       )}
     </div>
@@ -376,11 +376,10 @@ export function EditorToolbar({
   return (
     <div
       className={cn(
-        "flex items-center justify-center py-2 px-3 bg-background/95 backdrop-blur-sm border-t border-border",
-        isMobile && "sticky bottom-0 left-0 right-0 z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]",
+        "flex items-center justify-center py-2 px-3",
+        !isMobile && "bg-muted/50 border-t border-border",
         className
       )}
-      style={isMobile ? { paddingBottom: 'env(safe-area-inset-bottom, 8px)' } : undefined}
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -388,7 +387,7 @@ export function EditorToolbar({
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.12 }}
+          transition={{ duration: 0.1 }}
         >
           {hasSelection ? (
             <SelectionToolbar onAction={onAction} isMobile={isMobile} />

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 import { EditorToolbar, ToolbarAction } from "@/components/editor/EditorToolbar";
 import { LinkInsertSheet } from "@/components/editor/LinkInsertSheet";
 import { cn } from "@/lib/utils";
@@ -28,8 +29,10 @@ export function ArticleEditor({
   const [showLinkSheet, setShowLinkSheet] = useState(false);
   const [selectedText, setSelectedText] = useState("");
   const [undoStack, setUndoStack] = useState<UndoState[]>([]);
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+  const { keyboardHeight, isKeyboardOpen } = useKeyboardHeight();
 
   // Save state for undo
   const saveUndoState = useCallback(() => {
@@ -197,7 +200,6 @@ export function ArticleEditor({
           wrapSelection("~~");
           break;
         case "normal":
-          // Remove heading prefix from current line
           if (textareaRef.current) {
             saveUndoState();
             const { selectionStart } = textareaRef.current;
@@ -313,17 +315,29 @@ export function ArticleEditor({
   // Save undo state on significant changes
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
-    // Save undo state periodically (when space or newline is typed)
     if (newValue.endsWith(" ") || newValue.endsWith("\n")) {
       saveUndoState();
     }
     onChange(newValue);
   }, [onChange, saveUndoState]);
 
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    // Small delay to allow toolbar clicks to register
+    setTimeout(() => {
+      setIsFocused(false);
+    }, 150);
+  }, []);
+
+  // Show toolbar when keyboard is open on mobile, or always on desktop
+  const showToolbar = isMobile ? (isFocused || isKeyboardOpen) : true;
+
   return (
     <div className={cn(
-      "flex flex-col border rounded-md overflow-hidden bg-background",
-      isMobile && "fixed inset-0 z-50 rounded-none border-0",
+      "flex flex-col border rounded-md overflow-hidden bg-background relative",
       className
     )}>
       {/* Editor textarea */}
@@ -332,20 +346,44 @@ export function ArticleEditor({
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         placeholder={placeholder}
         className={cn(
           "flex-1 border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-base leading-relaxed",
-          isMobile ? "min-h-[calc(100vh-60px)] p-4 text-[16px]" : "min-h-[400px]"
+          isMobile ? "min-h-[300px] p-4 text-[16px]" : "min-h-[400px]",
+          // Add padding at bottom for mobile toolbar
+          isMobile && showToolbar && "pb-16"
         )}
       />
 
-      {/* Toolbar - always at bottom */}
-      <EditorToolbar
-        hasSelection={hasSelection}
-        onAction={handleAction}
-        isMobile={isMobile}
-        onHideKeyboard={handleHideKeyboard}
-      />
+      {/* Keyboard-attached toolbar for mobile */}
+      {isMobile && showToolbar && (
+        <div
+          className="fixed left-0 right-0 z-50 bg-background/98 backdrop-blur-md border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.15)]"
+          style={{
+            bottom: isKeyboardOpen ? keyboardHeight : 0,
+            transition: 'bottom 0.1s ease-out',
+          }}
+        >
+          <EditorToolbar
+            hasSelection={hasSelection}
+            onAction={handleAction}
+            isMobile={isMobile}
+            onHideKeyboard={handleHideKeyboard}
+          />
+        </div>
+      )}
+
+      {/* Desktop toolbar - static at bottom */}
+      {!isMobile && (
+        <EditorToolbar
+          hasSelection={hasSelection}
+          onAction={handleAction}
+          isMobile={false}
+          onHideKeyboard={handleHideKeyboard}
+        />
+      )}
 
       {/* Link insertion sheet/popover */}
       <LinkInsertSheet
