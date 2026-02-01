@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ArticleFormData, createArticle, generateSlug } from "@/services/articleService";
+import { ArticleFormData, createArticle, generateSlug, updateArticle } from "@/services/articleService";
 import ArticleEditor from "@/components/ArticleEditor";
 import { toast } from "sonner";
 import { ArrowLeft, Save } from "lucide-react";
@@ -15,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { SEOHead } from "@/components/common/SEOHead";
 import { useIsMobile } from "@/hooks/use-mobile";
+import CoverImageUpload from "@/components/CoverImageUpload";
 
 // Validation schema
 const articleSchema = z.object({
@@ -46,6 +47,7 @@ const ArticleCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [article, setArticle] = useState<ArticleFormData>({
     title: "",
     content: "",
@@ -152,6 +154,13 @@ const ArticleCreate = () => {
     try {
       const articleResult = await createArticle(article);
       if (articleResult) {
+        // Update with cover image if set
+        if (coverImageUrl) {
+          await supabase
+            .from('articles')
+            .update({ cover_image_url: coverImageUrl })
+            .eq('id', articleResult.id);
+        }
         toast.success("Article created successfully!");
         navigate("/articles/manage");
       }
@@ -310,6 +319,18 @@ const ArticleCreate = () => {
                   )}
                   <p className="text-xs text-muted-foreground">
                     {(article.excerpt || "").length}/300 characters. A short summary that appears in article listings.
+                  </p>
+                </div>
+
+                {/* Cover Image */}
+                <div className="space-y-2">
+                  <Label>Cover Image (Optional)</Label>
+                  <CoverImageUpload
+                    value={coverImageUrl}
+                    onChange={setCoverImageUrl}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This image will appear at the top of your article and in previews.
                   </p>
                 </div>
                 

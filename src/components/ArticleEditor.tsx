@@ -1,10 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 import { RichTextToolbar, ToolbarAction } from "@/components/editor/RichTextToolbar";
 import { TipTapEditor } from "@/components/editor/TipTapEditor";
 import { LinkInsertSheet } from "@/components/editor/LinkInsertSheet";
 import { cn } from "@/lib/utils";
+import { useArticleImageUpload } from "@/hooks/useArticleImageUpload";
+import { toast } from "sonner";
 
 interface ArticleEditorProps {
   value: string;
@@ -24,6 +26,8 @@ export function ArticleEditor({
   const [isFocused, setIsFocused] = useState(false);
   const isMobile = useIsMobile();
   const { keyboardHeight, isKeyboardOpen } = useKeyboardHeight();
+  const { uploadImage, isUploading } = useArticleImageUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get editor commands from window
   const getEditor = useCallback(() => {
@@ -83,7 +87,11 @@ export function ArticleEditor({
           editor.insertHorizontalRule();
           break;
         case "image":
-          // For now, prompt for URL - could be enhanced with file upload
+          // Open file picker for device upload
+          fileInputRef.current?.click();
+          break;
+        case "image-url":
+          // Prompt for URL as fallback
           const url = prompt("Enter image URL:");
           if (url) {
             editor.insertImage(url);
@@ -139,6 +147,29 @@ export function ArticleEditor({
     return editor?.getSelectedText?.() || "";
   }, [getEditor]);
 
+  // Handle file selection for image upload
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const editor = getEditor();
+    if (!editor) {
+      toast.error("Editor not ready");
+      return;
+    }
+
+    const url = await uploadImage(file);
+    if (url) {
+      editor.insertImage(url);
+      toast.success("Image inserted");
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [getEditor, uploadImage]);
+
   // Show toolbar when keyboard is open on mobile, or always on desktop
   const showToolbar = isMobile ? (isFocused || isKeyboardOpen) : true;
 
@@ -158,6 +189,15 @@ export function ArticleEditor({
         className={cn(
           isMobile && showToolbar && "pb-16"
         )}
+      />
+
+      {/* Hidden file input for image upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        accept="image/*"
+        className="hidden"
       />
 
       {/* Keyboard-attached toolbar for mobile */}
