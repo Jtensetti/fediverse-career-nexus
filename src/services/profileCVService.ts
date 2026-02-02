@@ -10,6 +10,14 @@ const normalizeText = (value: string | undefined | null): string | null => {
   return trimmed === '' ? null : trimmed;
 };
 
+// Normalize multiline text: preserve internal line breaks, only trim leading/trailing whitespace
+const normalizeMultilineText = (value: string | undefined | null): string | null => {
+  if (value === undefined || value === null) return null;
+  // Normalize line endings (CRLF -> LF) and trim only the very start/end
+  const normalized = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+  return normalized === '' ? null : normalized;
+};
+
 // Normalize date: ensure YYYY-MM-DD format or null
 const normalizeDate = (value: string | undefined | null): string | null => {
   if (value === undefined || value === null) return null;
@@ -145,7 +153,7 @@ export const createExperience = async (experience: Experience) => {
       start_date: normalizedStartDate,
       end_date: experience.is_current_role ? null : normalizeDate(experience.end_date),
       is_current_role: experience.is_current_role || false,
-      description: normalizeText(experience.description),
+      description: normalizeMultilineText(experience.description),
     };
     
     console.log('Creating experience with payload:', JSON.stringify(payload, null, 2));
@@ -192,7 +200,7 @@ export const updateExperience = async (id: string, experience: Partial<Experienc
     if (experience.end_date !== undefined || experience.is_current_role) {
       payload.end_date = experience.is_current_role ? null : normalizeDate(experience.end_date);
     }
-    if (experience.description !== undefined) payload.description = normalizeText(experience.description);
+    if (experience.description !== undefined) payload.description = normalizeMultilineText(experience.description);
     
     const { data, error } = await supabase
       .from('experiences')
