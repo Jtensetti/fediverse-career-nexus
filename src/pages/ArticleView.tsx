@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getArticleBySlug } from "@/services/articleService";
 import { canAccessFullArticle } from "@/services/authorFollowService";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import DOMPurify from "dompurify";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -166,16 +165,28 @@ const ArticleView = () => {
             </div>
             
             {showFullContent ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {article.content}
-              </ReactMarkdown>
+              <div 
+                className="article-content"
+                dangerouslySetInnerHTML={{ 
+                  __html: DOMPurify.sanitize(article.content, {
+                    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code', 'img', 'hr'],
+                    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'class'],
+                  })
+                }} 
+              />
             ) : (
               <>
                 {/* Preview content */}
                 <div className="relative">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {previewContent + '...'}
-                  </ReactMarkdown>
+                  <div 
+                    className="article-content"
+                    dangerouslySetInnerHTML={{ 
+                      __html: DOMPurify.sanitize(previewContent + '...', {
+                        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code', 'img', 'hr'],
+                        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'class'],
+                      })
+                    }} 
+                  />
                   
                   {/* Fade overlay */}
                   <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
