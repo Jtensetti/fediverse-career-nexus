@@ -695,7 +695,7 @@ const ProfilePage = () => {
                               : ` ${new Date(exp.endDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })}`}
                           </p>
                           {exp.location && <p className="text-sm text-muted-foreground">{exp.location}</p>}
-                          {exp.description && <p className="mt-2 text-muted-foreground">{exp.description}</p>}
+                          {exp.description && <p className="mt-2 text-muted-foreground whitespace-pre-line">{exp.description}</p>}
                           <Separator className="mt-6" />
                         </motion.div>
                       ))}
