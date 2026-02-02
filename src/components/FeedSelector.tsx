@@ -18,6 +18,8 @@ import {
   type CustomFeed 
 } from "@/services/feedPreferencesService";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface FeedSelectorProps {
   value: FeedType | string;
@@ -31,11 +33,30 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
   const [customFeeds, setCustomFeeds] = useState<CustomFeed[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Check if user is federated (signed in via Fediverse)
+  const { data: profile } = useQuery({
+    queryKey: ['userAuthType', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('auth_type')
+        .eq('id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: Infinity,
+  });
+
+  const isFederatedUser = profile?.auth_type === 'federated';
+
+  // Build feed tabs - only show federated tab to federated users
   const feedTabs = [
     { id: 'following', label: t("feed.following", "Following"), icon: Home, description: t("feed.followingDesc", "Posts from people you follow") },
     { id: 'local', label: t("feed.local", "Local"), icon: Users, description: t("feed.localDesc", "All posts on Nolto") },
-    { id: 'federated', label: t("feed.federated", "Federated"), icon: Globe, description: t("feed.federatedDesc", "Local + remote follows") },
-  ] as const;
+    ...(isFederatedUser ? [{ id: 'federated' as const, label: t("feed.federated", "Federated"), icon: Globe, description: t("feed.federatedDesc", "Local + remote follows") }] : []),
+  ];
 
   useEffect(() => {
     if (user) {
