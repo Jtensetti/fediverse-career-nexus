@@ -134,27 +134,23 @@ const ArticleView = () => {
             Back to Articles
           </Link>
           
-          <article className="prose max-w-none dark:prose-invert">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">{article.title}</h1>
+          <article className="prose prose-sm sm:prose max-w-none dark:prose-invert overflow-x-hidden">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 break-words">{article.title}</h1>
             
-            <div className="flex items-center justify-between gap-3 text-muted-foreground mb-6 not-prose">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-muted-foreground mb-6 not-prose">
               <Link 
                 to={`/profile/${authorProfile?.username || article.user_id}`}
-                className="flex items-center gap-3 group"
+                className="flex items-center gap-2 group flex-wrap"
               >
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={authorProfile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary/10">{authorInitials}</AvatarFallback>
-                  </Avatar>
-                  <span className="group-hover:text-primary transition-colors">{authorName}</span>
-                </div>
-                
-                <span>•</span>
-                
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarImage src={authorProfile?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-primary/10">{authorInitials}</AvatarFallback>
+                </Avatar>
+                <span className="group-hover:text-primary transition-colors">{authorName}</span>
+                <span className="hidden sm:inline">•</span>
                 <div className="flex items-center gap-1">
                   <Calendar size={16} />
-                  <span>{publishDate}</span>
+                  <span className="text-sm">{publishDate}</span>
                 </div>
               </Link>
               
