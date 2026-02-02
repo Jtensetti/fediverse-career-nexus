@@ -153,6 +153,8 @@ export default function Notifications() {
       case 'recommendation_request':
       case 'recommendation_received':
         return <FileText className="h-5 w-5 text-warning" />;
+      case 'article_published':
+        return <FileText className="h-5 w-5 text-primary" />;
       default:
         return <Bell className="h-5 w-5" />;
     }
@@ -210,6 +212,8 @@ export default function Notifications() {
         const emoji = getReactionEmoji(contentData.reaction || 'love');
         return `${actorName} reacted ${emoji} to your message`;
       }
+      case 'article_published':
+        return `${actorName} published a new article`;
       default:
         return notification.content || 'New notification';
     }

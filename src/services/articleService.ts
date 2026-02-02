@@ -173,13 +173,30 @@ export const getArticleById = async (id: string): Promise<Article | null> => {
   }
 };
 
-// Get an article by slug
-export const getArticleBySlug = async (slug: string): Promise<Article | null> => {
+// Get an article by slug or ID (for notification links that use IDs)
+export const getArticleBySlug = async (slugOrId: string): Promise<Article | null> => {
   try {
+    // Check if the input looks like a UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
+    
+    if (isUuid) {
+      // Try fetching by ID first
+      const { data: byId, error: idError } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('id', slugOrId)
+        .single();
+      
+      if (!idError && byId) {
+        return byId;
+      }
+    }
+    
+    // Fall back to slug lookup
     const { data, error } = await supabase
       .from('articles')
       .select('*')
-      .eq('slug', slug)
+      .eq('slug', slugOrId)
       .single();
     
     if (error) {
