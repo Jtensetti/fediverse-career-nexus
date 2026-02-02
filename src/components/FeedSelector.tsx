@@ -84,7 +84,7 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
               <TooltipTrigger asChild>
                 <TabsTrigger 
                   value={tab.id}
-                  className="gap-1.5 px-3 data-[state=active]:bg-background"
+                  className="gap-1.5 px-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                 >
                   <tab.icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
