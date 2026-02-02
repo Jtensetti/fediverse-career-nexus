@@ -391,8 +391,12 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
         ) : (
           <EmptyState
             icon={MessageSquare}
-            title="This feed is still warming up"
-            description="You're early – that's a good thing! Be the first to share something with the network."
+            title={effectiveFeedType === 'following' 
+              ? "Connect to see something here" 
+              : "This feed is still warming up"}
+            description={effectiveFeedType === 'following'
+              ? "Follow people or connect with others to see their posts in this feed."
+              : "You're early – that's a good thing! Be the first to share something with the network."}
             action={{
               label: "Refresh",
               onClick: () => {
