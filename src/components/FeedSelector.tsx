@@ -54,8 +54,8 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
   // Build feed tabs - only show federated tab to federated users
   const feedTabs = [
     { id: 'following', label: t("feed.following", "Following"), icon: Home, description: t("feed.followingDesc", "Posts from people you follow") },
-    { id: 'local', label: t("feed.local", "Local"), icon: Users, description: t("feed.localDesc", "All posts on Nolto") },
-    ...(isFederatedUser ? [{ id: 'federated' as const, label: t("feed.federated", "Federated"), icon: Globe, description: t("feed.federatedDesc", "Local + remote follows") }] : []),
+    { id: 'local', label: t("feed.nolto", "Nolto"), icon: Users, description: t("feed.noltoDesc", "All posts on Nolto") },
+    ...(isFederatedUser ? [{ id: 'federated' as const, label: t("feed.fediverse", "Fediverse"), icon: Globe, description: t("feed.fediverseDesc", "Local + remote follows") }] : []),
   ];
 
   useEffect(() => {
