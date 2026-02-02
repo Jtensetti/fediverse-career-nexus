@@ -513,3 +513,82 @@
     content: " (" attr(href) ")";
   }
 }
+
+/* TipTap Editor and Article Content Styles */
+.ProseMirror,
+.article-content {
+  /* Blockquotes - left border style like the screenshot */
+  blockquote {
+    @apply border-l-4 border-muted-foreground/50 pl-4 py-2 my-4 text-muted-foreground italic;
+  }
+  
+  /* Unordered lists with bullet points */
+  ul {
+    @apply list-disc pl-8 my-4 space-y-2;
+  }
+  
+  /* Ordered lists with numbers */
+  ol {
+    @apply list-decimal pl-8 my-4 space-y-2;
+  }
+  
+  li {
+    @apply pl-1;
+  }
+  
+  li p {
+    @apply m-0;
+  }
+  
+  /* Code blocks with dark background */
+  pre {
+    @apply bg-muted/80 dark:bg-muted rounded-lg p-4 my-4 overflow-x-auto;
+  }
+  
+  pre code {
+    @apply bg-transparent p-0 font-mono text-sm;
+  }
+  
+  /* Inline code */
+  code {
+    @apply bg-muted/60 dark:bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+  
+  /* Headings */
+  h1 { @apply text-3xl font-bold mt-8 mb-4; }
+  h2 { @apply text-2xl font-semibold mt-6 mb-3; }
+  h3 { @apply text-xl font-semibold mt-5 mb-2; }
+  h4 { @apply text-lg font-medium mt-4 mb-2; }
+  h5 { @apply text-base font-medium mt-3 mb-1; }
+  
+  /* Paragraphs */
+  p {
+    @apply my-3 leading-relaxed;
+  }
+  
+  /* Links */
+  a {
+    @apply text-primary underline hover:no-underline;
+  }
+  
+  /* Horizontal rule */
+  hr {
+    @apply my-8 border-border;
+  }
+  
+  /* Images */
+  img {
+    @apply rounded-lg my-4 max-w-full h-auto;
+  }
+}
+
+/* Dark mode enhancements for code blocks */
+.dark .ProseMirror pre,
+.dark .article-content pre {
+  @apply bg-[hsl(222,47%,8%)] border border-border;
+}
+
+.dark .ProseMirror code,
+.dark .article-content code {
+  @apply bg-[hsl(222,47%,15%)];
+}
