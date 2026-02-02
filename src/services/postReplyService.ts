@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
+import { extractMentions } from "@/lib/linkify";
 export interface PostReply {
   id: string;
   content: string;
@@ -328,14 +328,18 @@ export async function createPostReply(
       attributed_to: actor.id
     };
 
-    const { error } = await supabase
+    const { data: replyData, error } = await supabase
       .from('ap_objects')
-      .insert(replyObject);
+      .insert(replyObject)
+      .select('id')
+      .single();
 
-    if (error) {
-      toast.error(`Failed to create reply: ${error.message}`);
+    if (error || !replyData) {
+      toast.error(`Failed to create reply: ${error?.message || 'Unknown error'}`);
       return false;
     }
+
+    const replyId = replyData.id;
 
     // Create notifications for relevant parties
     try {
@@ -397,6 +401,40 @@ export async function createPostReply(
               object_type: 'reply',
               content: content.substring(0, 100)
             });
+          }
+        }
+      }
+
+      // 3. Handle @mentions - create notifications for mentioned users
+      const mentions = extractMentions(content);
+      if (mentions.length > 0) {
+        console.log('📣 Processing mentions in reply:', mentions);
+        for (const username of mentions) {
+          try {
+            // Look up user by username
+            const { data: mentionedUser } = await supabase
+              .from('public_profiles')
+              .select('id')
+              .eq('username', username)
+              .single();
+            
+            if (mentionedUser && mentionedUser.id !== user.id) {
+              // Create mention notification - link to the post with the reply highlighted
+              await supabase.from('notifications').insert({
+                type: 'mention',
+                recipient_id: mentionedUser.id,
+                actor_id: user.id,
+                object_id: postId, // Navigate to the parent post
+                object_type: 'post',
+                content: JSON.stringify({ 
+                  preview: content.substring(0, 100),
+                  highlightReply: replyId // Include the reply ID for scrolling
+                })
+              });
+              console.log('✅ Mention notification created for:', username);
+            }
+          } catch (mentionError) {
+            console.warn('⚠️ Could not create mention notification for:', username, mentionError);
           }
         }
       }
