@@ -1,216 +1,212 @@
 
-# Markdown Enhancement Plan (Revised)
+# LinkedIn Import Enhancement Plan
 
-## Overview
-Implement enhanced markdown support with a **context-aware fixed toolbar** that dynamically changes based on text selection:
-1. **Articles** - Sleek fixed toolbar (top on desktop, bottom on mobile) that changes buttons when text is selected
-2. **Bio** - Basic markdown rendering (bold, italic, links)
-3. **Posts** - Basic markdown rendering matching bio
+## Summary
+Based on extensive analysis of the LinkedIn export format and comparison with open-source parsers like `@knohime/linkedin-import`, the current implementation has the correct file and column mappings for the standard LinkedIn GDPR export. However, there are several robustness improvements needed to handle edge cases, variations in LinkedIn's export format, and to provide better debugging when imports fail.
 
----
+## Identified Issues
 
-## Part 1: Context-Aware Article Editor
+### 1. Date Parsing Fragility
+The current date parser handles:
+- "Mon YYYY" format (e.g., "Jan 2020")
+- "YYYY" format (e.g., "2020")
+- ISO dates ("2020-01-15")
 
-### Design Concept
-A single fixed toolbar that **transforms based on context**:
+Missing formats that LinkedIn sometimes uses:
+- Full month names ("January 2020")
+- Different date separators
+- Empty strings returning undefined instead of null
 
-```text
-DEFAULT STATE (no selection):
-┌──────────────────────────────────────────────────────────┐
-│  [Aa] [+] [Link] [•] [1.] [Quote] [Code] [—] [Image]     │
-│   ↳ Heading, Add block, Insert link, Bullets, Numbers,   │
-│     Blockquote, Code block, Divider, Media               │
-└──────────────────────────────────────────────────────────┘
+### 2. Silent Failures
+When CSV parsing fails or column names don't match:
+- No user feedback about which files were found/missing
+- No indication of why data wasn't imported
+- The Preview step shows "0 found" without explaining why
 
-SELECTION STATE (text highlighted):
-┌──────────────────────────────────────────────────────────┐
-│  [B] [I] [S] [Aa] [Link] [Code] [Clear]                  │
-│   ↳ Bold, Italic, Strikethrough, Heading, Link,          │
-│     Inline code, Clear formatting                        │
-└──────────────────────────────────────────────────────────┘
-```
+### 3. Column Name Matching
+LinkedIn's export format can vary:
+- Different capitalizations ("Company name" vs "Company Name")
+- Extra whitespace around column names
+- Slight variations between export versions
 
-### Mobile Behavior
-- Toolbar fixed at bottom, above keyboard
-- Same dynamic behavior: buttons change when text is selected
-- Compact icons only (no labels)
-- Smooth transition when toggling between states
+### 4. Missing Data Types
+LinkedIn exports additional valuable data:
+- `Certifications.csv` - Professional certifications
+- `Languages.csv` - Language proficiencies
+- (Not currently supported in Nolto's schema)
 
-### Key Implementation Details
-- Track selection state via `selectionchange` event listener
-- Check if textarea has selected text (`selectionStart !== selectionEnd`)
-- Animate toolbar button transitions with framer-motion
-- Remove Write/Preview tabs - clean writing experience only
-- No explanatory text or help buttons
+### 5. Articles/Posts Confusion
+LinkedIn exports:
+- `Shares.csv` - Short-form posts
+- `Articles/` folder - Long-form articles (HTML files, not CSV)
 
----
+The current implementation looks for `Articles.csv` and `Posts.csv` which may not exist.
 
-## Part 2 & 3: Bio and Posts - Simple Markdown Rendering
+## Implementation Plan
 
-### Approach
-Create a lightweight component that parses and renders:
-- **Bold**: `**text**` or `__text__` → `<strong>`
-- **Italic**: `*text*` or `_text_` → `<em>`
-- **Links**: Already handled by linkify, but also support `[text](url)` syntax
+### Phase 1: Robust Column Name Matching
+Add flexible column name matching that:
+- Normalizes column headers (trim, lowercase)
+- Matches columns case-insensitively
+- Handles common variations
+- Uses fuzzy matching for near-matches
 
-### Integration
-- Bio: Wrap `profile.bio` in `SimpleMarkdown` component (Profile.tsx line 598)
-- Posts: Apply in `FederatedPostCard.tsx` after content sanitization, before linkify
+### Phase 2: Improved Date Parsing
+Enhance date parsing to handle:
+- Full month names ("January", "February", etc.)
+- Various separators and formats
+- More lenient year extraction for education
 
----
+### Phase 3: User Debugging Feedback
+Add visible debugging in the Preview step:
+- Show which CSV files were found in the ZIP
+- Display column headers found vs expected
+- Provide actionable feedback when data is missing
 
-## Technical Implementation
+### Phase 4: Enhanced File Discovery
+Improve file finding to:
+- Search recursively in all folders
+- Handle case-insensitive file names
+- Look for multiple file name variations
 
-### New Files to Create
-
-#### 1. `src/components/ArticleEditor.tsx`
-Main editor component with:
-- Ref to textarea for selection tracking
-- `hasSelection` state boolean
-- `useEffect` to listen for `selectionchange` events
-- Mobile detection via `useIsMobile` hook
-- Conditional toolbar rendering based on `hasSelection`
-- Clean, border-less textarea with large font
-
-#### 2. `src/components/editor/EditorToolbar.tsx`
-Reusable toolbar component:
-- Props: `hasSelection`, `onAction`, `isMobile`
-- Two sets of buttons: default actions vs selection actions
-- Smooth animated transitions between states
-- Icon-only on mobile, optional labels on desktop
-
-#### 3. `src/components/editor/LinkInsertSheet.tsx`
-Mobile-friendly link insertion:
-- Sheet on mobile, Popover on desktop
-- URL input field
-- Optional display text field
-- Insert button
-
-#### 4. `src/components/common/SimpleMarkdown.tsx`
-Lightweight markdown renderer:
-```typescript
-// Parse **bold**, *italic*, [link](url)
-// Return sanitized HTML string or React elements
-// Integrate with existing linkifyText
-```
-
-### Files to Modify
-
-#### `src/pages/ArticleCreate.tsx`
-- Replace `MarkdownEditor` import with `ArticleEditor`
-- Remove label prop (editor is self-contained)
-
-#### `src/pages/ArticleEdit.tsx`
-- Same replacement as ArticleCreate
-
-#### `src/pages/Profile.tsx` (line 598)
-- Wrap bio display with SimpleMarkdown:
-```tsx
-// Before
-{profile.bio && <p className="...">{profile.bio}</p>}
-
-// After
-{profile.bio && <SimpleMarkdown content={profile.bio} className="..." />}
-```
-
-#### `src/components/FederatedPostCard.tsx`
-- Update content rendering to apply simple markdown parsing
-- Integrate with existing linkifyText flow
-
-#### `src/lib/linkify.ts`
-- Add function to parse `**bold**` and `*italic*` patterns
-- Ensure it doesn't conflict with URL matching
-- Export new `parseInlineMarkdown` function
+### Phase 5: Support Shares.csv for Posts
+Add support for importing LinkedIn posts from `Shares.csv`:
+- Parse `Shares.csv` for short-form content
+- Import as draft articles or posts (if posts table exists)
 
 ---
 
-## Selection Tracking Implementation
+## Technical Details
+
+### File: `src/lib/csvParser.ts`
+
+**Changes:**
+1. Add `normalizeColumnHeader` function for case-insensitive matching
+2. Enhance `parseLinkedInDate` with full month name support
+3. Add a month name mapping for all variations
 
 ```typescript
-// In ArticleEditor.tsx
-const [hasSelection, setHasSelection] = useState(false);
-const textareaRef = useRef<HTMLTextAreaElement>(null);
+// New: Normalize column headers for flexible matching
+export function normalizeColumnHeader(header: string): string {
+  return header.trim().toLowerCase().replace(/\s+/g, ' ');
+}
 
-useEffect(() => {
-  const checkSelection = () => {
-    if (textareaRef.current) {
-      const { selectionStart, selectionEnd } = textareaRef.current;
-      setHasSelection(selectionStart !== selectionEnd);
+// Enhanced: Full month name support
+const MONTH_MAP: Record<string, string> = {
+  january: '01', jan: '01',
+  february: '02', feb: '02',
+  march: '03', mar: '03',
+  // ... all months
+};
+```
+
+### File: `src/services/linkedinImportService.ts`
+
+**Changes:**
+1. Add flexible column accessor function
+2. Improve file finding with case-insensitive search
+3. Add `Shares.csv` parsing for posts
+4. Add debugging data to `LinkedInImportData`
+5. Handle empty/whitespace-only values consistently
+
+```typescript
+// New: Flexible column accessor
+function getColumn<T>(row: T, possibleNames: string[]): string | undefined {
+  for (const name of possibleNames) {
+    const normalized = normalizeColumnHeader(name);
+    for (const key of Object.keys(row)) {
+      if (normalizeColumnHeader(key) === normalized) {
+        return row[key as keyof T] as string;
+      }
     }
-  };
+  }
+  return undefined;
+}
 
-  // Listen for selection changes
-  document.addEventListener('selectionchange', checkSelection);
-  
-  // Also check on mouse up and key up for reliability
-  const textarea = textareaRef.current;
-  textarea?.addEventListener('mouseup', checkSelection);
-  textarea?.addEventListener('keyup', checkSelection);
+// Updated interfaces
+interface LinkedInPosition {
+  'Company Name'?: string;
+  'company name'?: string;
+  'Title'?: string;
+  'title'?: string;
+  // ... flexible matching
+}
 
-  return () => {
-    document.removeEventListener('selectionchange', checkSelection);
-    textarea?.removeEventListener('mouseup', checkSelection);
-    textarea?.removeEventListener('keyup', checkSelection);
+// New: Debug info in result
+export interface LinkedInImportData {
+  // ... existing fields
+  debug: {
+    filesFound: string[];
+    profileColumnsFound: string[];
+    positionsColumnsFound: string[];
+    educationColumnsFound: string[];
+    skillsColumnsFound: string[];
   };
-}, []);
+}
 ```
 
----
+### File: `src/components/LinkedInImport/ImportSteps/PreviewStep.tsx`
 
-## Toolbar Actions
+**Changes:**
+1. Add debug section showing files found
+2. Show helpful messages when data is missing
+3. Add collapsible "Troubleshooting" section
 
-### Default State Actions
-| Icon | Action | Markdown |
-|------|--------|----------|
-| Aa | Heading dropdown | `## `, `### `, etc. |
-| + | Add block menu | Various |
-| Link | Insert link | `[text](url)` |
-| • | Bullet list | `- item` |
-| 1. | Numbered list | `1. item` |
-| Quote | Blockquote | `> text` |
-| Code | Code block | ` ``` ` |
-| — | Horizontal rule | `---` |
-| Image | Image insert | `![alt](url)` |
+```typescript
+// New: Debug information display
+{data.rawFiles.length > 0 && (
+  <Collapsible>
+    <CollapsibleTrigger>
+      <span>Files found in ZIP ({data.rawFiles.length})</span>
+    </CollapsibleTrigger>
+    <CollapsibleContent>
+      <ul className="text-xs text-muted-foreground">
+        {data.rawFiles.map(file => <li key={file}>{file}</li>)}
+      </ul>
+    </CollapsibleContent>
+  </Collapsible>
+)}
+```
 
-### Selection State Actions
-| Icon | Action | Markdown |
-|------|--------|----------|
-| B | Bold | `**text**` |
-| I | Italic | `*text*` |
-| S | Strikethrough | `~~text~~` |
-| Aa | Make heading | Wraps line |
-| Link | Wrap in link | `[selected](url)` |
-| `</>` | Inline code | `` `text` `` |
+### File: `src/components/LinkedInImport/ImportSteps/UploadStep.tsx`
 
----
-
-## Summary of Changes
-
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/ArticleEditor.tsx` | Create | New sleek editor with dynamic toolbar |
-| `src/components/editor/EditorToolbar.tsx` | Create | Context-aware toolbar component |
-| `src/components/editor/LinkInsertSheet.tsx` | Create | Mobile-friendly link insertion |
-| `src/components/common/SimpleMarkdown.tsx` | Create | Lightweight inline markdown renderer |
-| `src/pages/ArticleCreate.tsx` | Modify | Use new ArticleEditor |
-| `src/pages/ArticleEdit.tsx` | Modify | Use new ArticleEditor |
-| `src/pages/Profile.tsx` | Modify | Render bio with SimpleMarkdown |
-| `src/components/FederatedPostCard.tsx` | Modify | Apply inline markdown to post content |
-| `src/lib/linkify.ts` | Modify | Add inline markdown parsing |
+**Changes:**
+1. Update expected files list to match actual LinkedIn export
+2. Add note about data archive types
 
 ---
 
-## Mobile UX Details
-- Toolbar height: ~44px (comfortable touch targets)
-- Uses `position: fixed` at bottom when keyboard is open
-- Icons are 20x20px with 44x44px touch targets
-- Subtle animation when switching between toolbar states
-- No visual clutter - icons only, no labels or explanations
+## Files to Modify
+
+1. `src/lib/csvParser.ts`
+   - Add `normalizeColumnHeader` function
+   - Enhance date parsing with full month names
+   - Add logging for debugging
+
+2. `src/services/linkedinImportService.ts`
+   - Add flexible column matching
+   - Improve file finding with case-insensitivity
+   - Add `Shares.csv` support for posts
+   - Add debug information to output
+   - Better error handling and logging
+
+3. `src/components/LinkedInImport/ImportSteps/PreviewStep.tsx`
+   - Add debug section showing detected files
+   - Improve empty state messaging
+   - Add troubleshooting guidance
+
+4. `src/components/LinkedInImport/ImportSteps/UploadStep.tsx`
+   - Update file expectations
+   - Add note about "larger archive" option
 
 ---
 
-## Risk Assessment
-- **Low risk**: New editor is drop-in replacement
-- **Backwards compatible**: Existing markdown content unchanged
-- **No database changes**: Pure frontend enhancement
-- **Graceful mobile handling**: Uses existing useIsMobile hook
+## Testing Recommendations
+
+After implementation:
+1. Test with a real LinkedIn "Basic" export ZIP
+2. Test with a real LinkedIn "Complete" export ZIP
+3. Test with an empty/invalid ZIP file
+4. Test with manually created CSV files with various column capitalizations
+5. Verify all date formats are parsed correctly
+6. Confirm duplicate detection works properly
