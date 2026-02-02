@@ -79,22 +79,30 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
       {/* Main feed tabs */}
       <Tabs value={selectedFeed ? value : 'custom'} onValueChange={(v) => v !== 'custom' && onChange(v as FeedType)}>
         <TabsList className="h-9 p-1 bg-muted/50">
-          {feedTabs.map((tab) => (
-            <Tooltip key={tab.id}>
-              <TooltipTrigger asChild>
-                <TabsTrigger 
-                  value={tab.id}
-                  className="gap-1.5 px-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
-                >
-                  <tab.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {tab.description}
-              </TooltipContent>
-            </Tooltip>
-          ))}
+          {feedTabs.map((tab) => {
+            const isActive = value === tab.id;
+            return (
+              <Tooltip key={tab.id}>
+                <TooltipTrigger asChild>
+                  <TabsTrigger 
+                    value={tab.id}
+                    className="gap-1.5 px-3 transition-colors"
+                    style={isActive ? {
+                      backgroundColor: 'hsl(var(--primary))',
+                      color: 'hsl(var(--primary-foreground))',
+                      boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
+                    } : undefined}
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  {tab.description}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
         </TabsList>
       </Tabs>
 
