@@ -5,6 +5,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
   ArrowLeft,
   Loader2,
   AlertCircle,
@@ -14,11 +19,14 @@ import {
   Sparkles,
   FileText,
   Check,
+  ChevronDown,
+  Info,
 } from 'lucide-react';
 import {
   LinkedInImportData,
   ImportOptions,
 } from '@/services/linkedinImportService';
+import { useState } from 'react';
 
 interface PreviewStepProps {
   data: LinkedInImportData;
@@ -39,6 +47,8 @@ export default function PreviewStep({
   isProcessing,
   error,
 }: PreviewStepProps) {
+  const [showDebug, setShowDebug] = useState(false);
+
   const toggleOption = (key: keyof ImportOptions) => {
     onOptionsChange({
       ...options,
@@ -56,8 +66,95 @@ export default function PreviewStep({
     return count;
   };
 
+  const hasNoData = !data.profile && 
+    data.experiences.length === 0 && 
+    data.education.length === 0 && 
+    data.skills.length === 0 && 
+    data.articles.length === 0;
+
   return (
     <div className="space-y-6">
+      {/* Debug/Troubleshooting Section */}
+      {hasNoData && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            No data was found in your export. This could mean the ZIP file structure is different than expected. 
+            Click "Show details" below to see which files were detected.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Collapsible open={showDebug} onOpenChange={setShowDebug}>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="w-full justify-between text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              {showDebug ? 'Hide details' : 'Show details'}
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${showDebug ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">
+          <div className="rounded-lg border bg-muted/30 p-4 text-sm space-y-3">
+            <div>
+              <p className="font-medium text-foreground mb-1">CSV files found ({data.debug?.filesFound?.length || 0}):</p>
+              {data.debug?.filesFound?.length > 0 ? (
+                <ul className="text-muted-foreground space-y-0.5">
+                  {data.debug.filesFound.map((file, i) => (
+                    <li key={i} className="font-mono text-xs">{file}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted-foreground italic">No CSV files detected</p>
+              )}
+            </div>
+            
+            {data.debug?.profileColumns?.length > 0 && (
+              <div>
+                <p className="font-medium text-foreground mb-1">Profile columns:</p>
+                <p className="text-xs text-muted-foreground font-mono">{data.debug.profileColumns.join(', ')}</p>
+              </div>
+            )}
+            
+            {data.debug?.positionsColumns?.length > 0 && (
+              <div>
+                <p className="font-medium text-foreground mb-1">Positions columns:</p>
+                <p className="text-xs text-muted-foreground font-mono">{data.debug.positionsColumns.join(', ')}</p>
+              </div>
+            )}
+
+            {data.debug?.educationColumns?.length > 0 && (
+              <div>
+                <p className="font-medium text-foreground mb-1">Education columns:</p>
+                <p className="text-xs text-muted-foreground font-mono">{data.debug.educationColumns.join(', ')}</p>
+              </div>
+            )}
+
+            {data.debug?.skillsColumns?.length > 0 && (
+              <div>
+                <p className="font-medium text-foreground mb-1">Skills columns:</p>
+                <p className="text-xs text-muted-foreground font-mono">{data.debug.skillsColumns.join(', ')}</p>
+              </div>
+            )}
+
+            {data.debug?.sharesColumns?.length > 0 && (
+              <div>
+                <p className="font-medium text-foreground mb-1">Shares/Posts columns:</p>
+                <p className="text-xs text-muted-foreground font-mono">{data.debug.sharesColumns.join(', ')}</p>
+              </div>
+            )}
+
+            <div className="pt-2 border-t">
+              <p className="text-xs text-muted-foreground">
+                <strong>Tip:</strong> Make sure you're using the "Get a copy of your data" export from LinkedIn Settings. 
+                Select "The larger data archive" for more complete data.
+              </p>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="w-full grid grid-cols-5 h-auto p-1">
           <TabsTrigger value="profile" className="text-xs py-2 px-1 flex flex-col gap-1">
@@ -122,9 +219,10 @@ export default function PreviewStep({
               </div>
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-6">
-              No profile data found in the export
-            </p>
+            <div className="text-center py-6 text-muted-foreground">
+              <p>No profile data found in the export</p>
+              <p className="text-xs mt-1">Expected file: Profile.csv</p>
+            </div>
           )}
         </TabsContent>
 
@@ -153,9 +251,10 @@ export default function PreviewStep({
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground text-center py-6">
-                No work experience found
-              </p>
+              <div className="text-center py-6 text-muted-foreground">
+                <p>No work experience found</p>
+                <p className="text-xs mt-1">Expected file: Positions.csv</p>
+              </div>
             )}
           </div>
         </TabsContent>
@@ -187,9 +286,10 @@ export default function PreviewStep({
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground text-center py-6">
-                No education found
-              </p>
+              <div className="text-center py-6 text-muted-foreground">
+                <p>No education found</p>
+                <p className="text-xs mt-1">Expected file: Education.csv</p>
+              </div>
             )}
           </div>
         </TabsContent>
@@ -215,9 +315,10 @@ export default function PreviewStep({
                 </Badge>
               ))
             ) : (
-              <p className="text-muted-foreground text-center py-6 w-full">
-                No skills found
-              </p>
+              <div className="text-center py-6 text-muted-foreground w-full">
+                <p>No skills found</p>
+                <p className="text-xs mt-1">Expected file: Skills.csv</p>
+              </div>
             )}
           </div>
         </TabsContent>
@@ -246,9 +347,10 @@ export default function PreviewStep({
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground text-center py-6">
-                No articles found
-              </p>
+              <div className="text-center py-6 text-muted-foreground">
+                <p>No posts or articles found</p>
+                <p className="text-xs mt-1">Expected file: Shares.csv</p>
+              </div>
             )}
           </div>
         </TabsContent>

@@ -1,46 +1,6 @@
 import JSZip from 'jszip';
-import { parseCSV, parseLinkedInDate, parseLinkedInYear, cleanText } from '@/lib/csvParser';
+import { parseCSV, parseLinkedInDate, parseLinkedInYear, cleanText, getFlexibleColumn } from '@/lib/csvParser';
 import { supabase } from '@/integrations/supabase/client';
-
-// LinkedIn export CSV types
-interface LinkedInProfile {
-  'First Name'?: string;
-  'Last Name'?: string;
-  'Headline'?: string;
-  'Summary'?: string;
-  'Industry'?: string;
-  'Geo Location'?: string;
-  'Address'?: string;
-  'Zip Code'?: string;
-}
-
-interface LinkedInPosition {
-  'Company Name'?: string;
-  'Title'?: string;
-  'Description'?: string;
-  'Location'?: string;
-  'Started On'?: string;
-  'Finished On'?: string;
-}
-
-interface LinkedInEducation {
-  'School Name'?: string;
-  'Degree Name'?: string;
-  'Notes'?: string;
-  'Start Date'?: string;
-  'End Date'?: string;
-}
-
-interface LinkedInSkill {
-  'Name'?: string;
-}
-
-interface LinkedInArticle {
-  'Title'?: string;
-  'Content'?: string;
-  'Published Date'?: string;
-  'URL'?: string;
-}
 
 // Nolto data types for import
 export interface NoltoProfile {
@@ -80,6 +40,15 @@ export interface NoltoArticle {
   published: boolean;
 }
 
+export interface ImportDebugInfo {
+  filesFound: string[];
+  profileColumns: string[];
+  positionsColumns: string[];
+  educationColumns: string[];
+  skillsColumns: string[];
+  sharesColumns: string[];
+}
+
 export interface LinkedInImportData {
   profile: NoltoProfile | null;
   experiences: NoltoExperience[];
@@ -87,6 +56,7 @@ export interface LinkedInImportData {
   skills: NoltoSkill[];
   articles: NoltoArticle[];
   rawFiles: string[];
+  debug: ImportDebugInfo;
 }
 
 export interface ImportOptions {
@@ -109,6 +79,44 @@ export interface ImportResult {
   errors: string[];
 }
 
+// Flexible column name mappings for LinkedIn export variations
+const PROFILE_COLUMNS = {
+  firstName: ['First Name', 'FirstName', 'first name', 'first_name'],
+  lastName: ['Last Name', 'LastName', 'last name', 'last_name'],
+  headline: ['Headline', 'headline', 'Professional Headline'],
+  summary: ['Summary', 'summary', 'About', 'Bio'],
+  industry: ['Industry', 'industry'],
+  geoLocation: ['Geo Location', 'GeoLocation', 'geo location', 'Location', 'location'],
+  address: ['Address', 'address'],
+};
+
+const POSITION_COLUMNS = {
+  companyName: ['Company Name', 'CompanyName', 'company name', 'Company', 'company'],
+  title: ['Title', 'title', 'Position', 'position', 'Job Title'],
+  description: ['Description', 'description'],
+  location: ['Location', 'location'],
+  startedOn: ['Started On', 'StartedOn', 'started on', 'Start Date', 'start date'],
+  finishedOn: ['Finished On', 'FinishedOn', 'finished on', 'End Date', 'end date'],
+};
+
+const EDUCATION_COLUMNS = {
+  schoolName: ['School Name', 'SchoolName', 'school name', 'School', 'school', 'Institution'],
+  degreeName: ['Degree Name', 'DegreeName', 'degree name', 'Degree', 'degree'],
+  notes: ['Notes', 'notes', 'Field of Study', 'Activities and Societies'],
+  startDate: ['Start Date', 'StartDate', 'start date', 'Started'],
+  endDate: ['End Date', 'EndDate', 'end date', 'Ended'],
+};
+
+const SKILL_COLUMNS = {
+  name: ['Name', 'name', 'Skill', 'skill'],
+};
+
+const SHARE_COLUMNS = {
+  shareCommentary: ['ShareCommentary', 'Share Commentary', 'share commentary', 'Commentary', 'Text', 'Content'],
+  shareDate: ['Date', 'date', 'SharedDate', 'Shared Date', 'CreatedAt', 'Created At'],
+  shareLink: ['ShareLink', 'Share Link', 'Link', 'URL', 'url'],
+};
+
 /**
  * Extract and parse a LinkedIn export ZIP file
  */
@@ -116,55 +124,84 @@ export async function parseLinkedInExport(file: File): Promise<LinkedInImportDat
   const zip = new JSZip();
   const contents = await zip.loadAsync(file);
   
+  const debug: ImportDebugInfo = {
+    filesFound: [],
+    profileColumns: [],
+    positionsColumns: [],
+    educationColumns: [],
+    skillsColumns: [],
+    sharesColumns: [],
+  };
+  
   const result: LinkedInImportData = {
     profile: null,
     experiences: [],
     education: [],
     skills: [],
     articles: [],
-    rawFiles: Object.keys(contents.files),
+    rawFiles: Object.keys(contents.files).filter(f => !contents.files[f].dir),
+    debug,
   };
   
+  // Store all CSV files found for debugging
+  debug.filesFound = result.rawFiles.filter(f => f.toLowerCase().endsWith('.csv'));
+  
   // Parse Profile.csv
-  const profileFile = findFile(contents, ['Profile.csv', 'profile.csv']);
+  const profileFile = findFile(contents, ['Profile.csv', 'profile.csv', 'Basic_Profile.csv']);
   if (profileFile) {
     const profileContent = await profileFile.async('string');
-    const parsed = await parseCSV<LinkedInProfile>(profileContent);
+    const parsed = await parseCSV<Record<string, string>>(profileContent);
     if (parsed.data.length > 0) {
+      debug.profileColumns = parsed.meta.fields || [];
       const p = parsed.data[0];
+      
+      const firstName = getFlexibleColumn(p, PROFILE_COLUMNS.firstName) || '';
+      const lastName = getFlexibleColumn(p, PROFILE_COLUMNS.lastName) || '';
+      
       result.profile = {
-        fullname: cleanText(`${p['First Name'] || ''} ${p['Last Name'] || ''}`).trim(),
-        headline: cleanText(p['Headline'] || ''),
-        bio: cleanText(p['Summary'] || ''),
-        location: cleanText(p['Geo Location'] || p['Address'] || ''),
+        fullname: cleanText(`${firstName} ${lastName}`).trim(),
+        headline: cleanText(getFlexibleColumn(p, PROFILE_COLUMNS.headline) || ''),
+        bio: cleanText(getFlexibleColumn(p, PROFILE_COLUMNS.summary) || ''),
+        location: cleanText(
+          getFlexibleColumn(p, PROFILE_COLUMNS.geoLocation) || 
+          getFlexibleColumn(p, PROFILE_COLUMNS.address) || ''
+        ),
       };
     }
   }
   
   // Parse Positions.csv (work experience)
-  const positionsFile = findFile(contents, ['Positions.csv', 'positions.csv']);
+  const positionsFile = findFile(contents, ['Positions.csv', 'positions.csv', 'Work_Experience.csv']);
   if (positionsFile) {
     const positionsContent = await positionsFile.async('string');
-    const parsed = await parseCSV<LinkedInPosition>(positionsContent);
-    result.experiences = parsed.data.map((pos) => ({
-      title: cleanText(pos['Title'] || ''),
-      company: cleanText(pos['Company Name'] || ''),
-      description: cleanText(pos['Description'] || ''),
-      location: cleanText(pos['Location'] || ''),
-      start_date: parseLinkedInDate(pos['Started On']),
-      end_date: parseLinkedInDate(pos['Finished On']),
-      is_current_role: !pos['Finished On'] || pos['Finished On'].trim() === '',
-    })).filter(exp => exp.title && exp.company);
+    const parsed = await parseCSV<Record<string, string>>(positionsContent);
+    debug.positionsColumns = parsed.meta.fields || [];
+    
+    result.experiences = parsed.data.map((pos) => {
+      const finishedOn = getFlexibleColumn(pos, POSITION_COLUMNS.finishedOn);
+      return {
+        title: cleanText(getFlexibleColumn(pos, POSITION_COLUMNS.title) || ''),
+        company: cleanText(getFlexibleColumn(pos, POSITION_COLUMNS.companyName) || ''),
+        description: cleanText(getFlexibleColumn(pos, POSITION_COLUMNS.description) || ''),
+        location: cleanText(getFlexibleColumn(pos, POSITION_COLUMNS.location) || ''),
+        start_date: parseLinkedInDate(getFlexibleColumn(pos, POSITION_COLUMNS.startedOn)),
+        end_date: parseLinkedInDate(finishedOn),
+        is_current_role: !finishedOn || finishedOn.trim() === '',
+      };
+    }).filter(exp => exp.title && exp.company);
   }
   
   // Parse Education.csv
   const educationFile = findFile(contents, ['Education.csv', 'education.csv']);
   if (educationFile) {
     const educationContent = await educationFile.async('string');
-    const parsed = await parseCSV<LinkedInEducation>(educationContent);
+    const parsed = await parseCSV<Record<string, string>>(educationContent);
+    debug.educationColumns = parsed.meta.fields || [];
+    
     result.education = parsed.data.map((edu) => {
-      const degree = cleanText(edu['Degree Name'] || '');
-      const notes = cleanText(edu['Notes'] || '');
+      const degree = cleanText(getFlexibleColumn(edu, EDUCATION_COLUMNS.degreeName) || '');
+      const notes = cleanText(getFlexibleColumn(edu, EDUCATION_COLUMNS.notes) || '');
+      
       // Try to extract field of study from notes or degree
       let field = '';
       if (notes) {
@@ -174,11 +211,11 @@ export async function parseLinkedInExport(file: File): Promise<LinkedInImportDat
       }
       
       return {
-        institution: cleanText(edu['School Name'] || ''),
+        institution: cleanText(getFlexibleColumn(edu, EDUCATION_COLUMNS.schoolName) || ''),
         degree: degree.includes(' in ') ? degree.split(' in ')[0] : degree,
         field: field,
-        start_year: parseLinkedInYear(edu['Start Date']),
-        end_year: parseLinkedInYear(edu['End Date']),
+        start_year: parseLinkedInYear(getFlexibleColumn(edu, EDUCATION_COLUMNS.startDate)),
+        end_year: parseLinkedInYear(getFlexibleColumn(edu, EDUCATION_COLUMNS.endDate)),
       };
     }).filter(edu => edu.institution && edu.degree);
   }
@@ -187,46 +224,64 @@ export async function parseLinkedInExport(file: File): Promise<LinkedInImportDat
   const skillsFile = findFile(contents, ['Skills.csv', 'skills.csv']);
   if (skillsFile) {
     const skillsContent = await skillsFile.async('string');
-    const parsed = await parseCSV<LinkedInSkill>(skillsContent);
+    const parsed = await parseCSV<Record<string, string>>(skillsContent);
+    debug.skillsColumns = parsed.meta.fields || [];
+    
     result.skills = parsed.data
-      .map((skill) => ({ name: cleanText(skill['Name'] || '') }))
+      .map((skill) => ({ 
+        name: cleanText(getFlexibleColumn(skill, SKILL_COLUMNS.name) || '') 
+      }))
       .filter(skill => skill.name);
   }
   
-  // Parse Articles.csv (if exists)
-  const articlesFile = findFile(contents, ['Articles.csv', 'articles.csv', 'Posts.csv', 'posts.csv']);
-  if (articlesFile) {
-    const articlesContent = await articlesFile.async('string');
-    const parsed = await parseCSV<LinkedInArticle>(articlesContent);
-    result.articles = parsed.data.map((article) => ({
-      title: cleanText(article['Title'] || 'Untitled Import'),
-      content: cleanText(article['Content'] || ''),
-      excerpt: cleanText(article['Content'] || '').slice(0, 200),
-      tags: ['imported-from-linkedin'],
-      published: false, // Import as drafts
-    })).filter(article => article.content);
+  // Parse Shares.csv for posts/articles (LinkedIn's actual export format)
+  const sharesFile = findFile(contents, ['Shares.csv', 'shares.csv', 'Posts.csv', 'posts.csv', 'Articles.csv', 'articles.csv']);
+  if (sharesFile) {
+    const sharesContent = await sharesFile.async('string');
+    const parsed = await parseCSV<Record<string, string>>(sharesContent);
+    debug.sharesColumns = parsed.meta.fields || [];
+    
+    result.articles = parsed.data
+      .map((share) => {
+        const content = cleanText(getFlexibleColumn(share, SHARE_COLUMNS.shareCommentary) || '');
+        const link = getFlexibleColumn(share, SHARE_COLUMNS.shareLink) || '';
+        
+        // Create a meaningful title from content
+        const title = content.slice(0, 60).trim() + (content.length > 60 ? '...' : '') || 'Imported Post';
+        
+        // Append link to content if exists
+        const fullContent = link ? `${content}\n\n[Original Link](${link})` : content;
+        
+        return {
+          title: title,
+          content: fullContent,
+          excerpt: content.slice(0, 200),
+          tags: ['imported-from-linkedin'],
+          published: false, // Import as drafts
+        };
+      })
+      .filter(article => article.content && article.content.length > 10); // Filter out empty or very short posts
   }
   
   return result;
 }
 
 /**
- * Find a file in the ZIP by possible names
+ * Find a file in the ZIP by possible names (case-insensitive, recursive)
  */
 function findFile(zip: JSZip, possibleNames: string[]): JSZip.JSZipObject | null {
-  for (const name of possibleNames) {
-    // Check root level
-    if (zip.files[name]) {
-      return zip.files[name];
-    }
+  const normalizedNames = possibleNames.map(n => n.toLowerCase());
+  
+  for (const path of Object.keys(zip.files)) {
+    if (zip.files[path].dir) continue;
     
-    // Check in subdirectories
-    for (const path of Object.keys(zip.files)) {
-      if (path.endsWith(`/${name}`) || path.endsWith(`\\${name}`)) {
-        return zip.files[path];
-      }
+    const fileName = path.split('/').pop()?.toLowerCase() || '';
+    
+    if (normalizedNames.includes(fileName)) {
+      return zip.files[path];
     }
   }
+  
   return null;
 }
 
@@ -282,11 +337,11 @@ export async function submitLinkedInImport(
         .eq('user_id', user.id);
       
       const existingSet = new Set(
-        (existingExp || []).map(e => `${e.company}|${e.title}|${e.start_date}`)
+        (existingExp || []).map(e => `${e.company?.toLowerCase()}|${e.title?.toLowerCase()}|${e.start_date}`)
       );
       
       const newExperiences = data.experiences
-        .filter(exp => !existingSet.has(`${exp.company}|${exp.title}|${exp.start_date}`))
+        .filter(exp => !existingSet.has(`${exp.company.toLowerCase()}|${exp.title.toLowerCase()}|${exp.start_date}`))
         .map(exp => ({
           ...exp,
           user_id: user.id,
@@ -315,11 +370,11 @@ export async function submitLinkedInImport(
         .eq('user_id', user.id);
       
       const existingSet = new Set(
-        (existingEdu || []).map(e => `${e.institution}|${e.degree}`)
+        (existingEdu || []).map(e => `${e.institution?.toLowerCase()}|${e.degree?.toLowerCase()}`)
       );
       
       const newEducation = data.education
-        .filter(edu => !existingSet.has(`${edu.institution}|${edu.degree}`))
+        .filter(edu => !existingSet.has(`${edu.institution.toLowerCase()}|${edu.degree.toLowerCase()}`))
         .map(edu => ({
           ...edu,
           user_id: user.id,
@@ -348,7 +403,7 @@ export async function submitLinkedInImport(
         .eq('user_id', user.id);
       
       const existingSet = new Set(
-        (existingSkills || []).map(s => s.name.toLowerCase())
+        (existingSkills || []).map(s => s.name?.toLowerCase())
       );
       
       const newSkills = data.skills

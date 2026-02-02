@@ -139,13 +139,17 @@ export default function UploadStep({
       </div>
 
       <div className="p-3 rounded-lg bg-muted/50 text-sm">
-        <p className="font-medium text-foreground mb-2">Expected files:</p>
+        <p className="font-medium text-foreground mb-2">Expected files in your export:</p>
         <ul className="space-y-1 text-muted-foreground">
           <li>• Profile.csv – Basic profile info</li>
           <li>• Positions.csv – Work experience</li>
           <li>• Education.csv – Education history</li>
           <li>• Skills.csv – Skills and endorsements</li>
+          <li>• Shares.csv – Posts and articles (optional)</li>
         </ul>
+        <p className="text-xs text-muted-foreground mt-3 pt-2 border-t border-muted">
+          <strong>Tip:</strong> When exporting from LinkedIn, select "The larger data archive" for more complete data.
+        </p>
       </div>
     </div>
   );
