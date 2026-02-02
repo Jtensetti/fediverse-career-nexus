@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Check, Trash2, UserPlus, ThumbsUp, MessageSquare, Briefcase, AtSign, Heart, Repeat, FileText, Loader2, Smile } from "lucide-react";
+import { Bell, Check, Trash2, UserPlus, ThumbsUp, MessageSquare, Briefcase, AtSign, Heart, Repeat, FileText, Loader2, Smile, PartyPopper, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { SEOHead } from "@/components/common/SEOHead";
+import { REACTION_EMOJIS, ReactionKey } from "@/lib/reactions";
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -59,6 +60,16 @@ export default function Notifications() {
     const actorUsername = notification.actor?.username;
     const profilePath = actorUsername ? `/profile/${actorUsername}` : `/profile/${notification.actor_id}`;
 
+    // Parse content for additional navigation data
+    let contentData: { parentId?: string; reaction?: string } = {};
+    if (notification.content) {
+      try {
+        contentData = JSON.parse(notification.content);
+      } catch {
+        // Not JSON, that's fine
+      }
+    }
+
     // Navigate based on notification type
     if (notification.object_type && notification.object_id) {
       switch (notification.object_type) {
@@ -71,7 +82,8 @@ export default function Notifications() {
           navigate(`/jobs/${notification.object_id}`);
           break;
         case 'article':
-          navigate(`/articles/${notification.object_id}`);
+          // Article view is at /article/{id}, not /articles/{id}
+          navigate(`/article/${notification.object_id}`);
           break;
         case 'event':
           navigate(`/events/${notification.object_id}`);
@@ -89,8 +101,16 @@ export default function Notifications() {
           }
           break;
         case 'post':
-        case 'reply':
           navigate(`/post/${notification.object_id}`);
+          break;
+        case 'reply':
+          // For reactions to replies, navigate to the parent post with the reply highlighted
+          if (contentData.parentId) {
+            navigate(`/post/${contentData.parentId}?highlight=${notification.object_id}`);
+          } else {
+            // Fallback: the object_id might be the post ID for reply notifications
+            navigate(`/post/${notification.object_id}`);
+          }
           break;
         default:
           if (actorUsername || notification.actor_id) {
@@ -141,6 +161,21 @@ export default function Notifications() {
   const getNotificationText = (notification: Notification) => {
     const actorName = notification.actor?.fullname || notification.actor?.username || 'Someone';
     
+    // Helper to get reaction emoji from the canonical key
+    const getReactionEmoji = (reactionKey: string): string => {
+      return REACTION_EMOJIS[reactionKey as ReactionKey] || '👍';
+    };
+
+    // Parse content for additional context
+    let contentData: { reaction?: string; parentId?: string; preview?: string } = {};
+    if (notification.content) {
+      try {
+        contentData = JSON.parse(notification.content);
+      } catch {
+        // Not JSON, use as-is for preview text
+      }
+    }
+    
     switch (notification.type) {
       case 'connection_request':
         return `${actorName} sent you a connection request`;
@@ -152,12 +187,19 @@ export default function Notifications() {
         return `${actorName} sent you a message`;
       case 'follow':
         return `${actorName} started following you`;
-      case 'like':
-        return `${actorName} liked your post`;
+      case 'like': {
+        // Distinguish between post and comment reactions
+        const emoji = getReactionEmoji(contentData.reaction || 'love');
+        const targetType = notification.object_type === 'reply' ? 'comment' : 'post';
+        return `${actorName} reacted ${emoji} to your ${targetType}`;
+      }
       case 'boost':
         return `${actorName} boosted your post`;
-      case 'reply':
-        return `${actorName} replied to your post`;
+      case 'reply': {
+        // Distinguish between reply to post vs reply to comment
+        const targetType = notification.object_type === 'reply' ? 'comment' : 'post';
+        return `${actorName} replied to your ${targetType}`;
+      }
       case 'mention':
         return `${actorName} mentioned you`;
       case 'recommendation_request':
@@ -165,14 +207,8 @@ export default function Notifications() {
       case 'recommendation_received':
         return `${actorName} wrote you a recommendation`;
       case 'message_reaction': {
-        try {
-          const contentData = notification.content ? JSON.parse(notification.content) : {};
-          const reaction = contentData.reaction || 'like';
-          const reactionEmoji = reaction === 'love' ? '❤️' : reaction === 'celebrate' ? '🎉' : reaction === 'support' ? '👏' : reaction === 'insightful' ? '💡' : reaction === 'empathy' ? '💜' : '👍';
-          return `${actorName} reacted ${reactionEmoji} to your message`;
-        } catch {
-          return `${actorName} reacted to your message`;
-        }
+        const emoji = getReactionEmoji(contentData.reaction || 'love');
+        return `${actorName} reacted ${emoji} to your message`;
       }
       default:
         return notification.content || 'New notification';

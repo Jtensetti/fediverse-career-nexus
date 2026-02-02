@@ -185,7 +185,7 @@ export async function toggleReaction(
               .maybeSingle();
             ownerId = actor?.user_id || null;
             
-            // Extract rootPost or inReplyTo for navigation
+            // Extract rootPost for navigation to parent post
             const content = replyData.content as any;
             parentId = content?.rootPost || content?.content?.rootPost || 
                        content?.inReplyTo || content?.content?.inReplyTo || null;
@@ -198,10 +198,10 @@ export async function toggleReaction(
             type: 'like',
             recipient_id: ownerId,
             actor_id: user.id,
-            object_id: targetId,
+            object_id: targetType === 'reply' && parentId ? targetId : targetId,
             object_type: targetType,
             content: JSON.stringify({ 
-              parentId: parentId || undefined,
+              parentId: parentId || undefined, // Used for navigating to parent post
               reaction: reaction 
             }),
           });
