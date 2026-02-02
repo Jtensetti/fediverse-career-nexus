@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.send-notification-digest]
 verify_jwt = false
+
+[functions.migrate-legacy-messages]
+verify_jwt = false

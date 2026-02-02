@@ -4,7 +4,7 @@ import { encryptMessage } from "../_shared/message-encryption.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-migration-secret',
 };
 
 serve(async (req: Request) => {
@@ -13,42 +13,53 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Only allow service role or admin to run this migration
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Verify the caller is an admin
+    // Check for migration secret (uses first 16 chars of TOKEN_ENCRYPTION_KEY)
+    const migrationSecret = req.headers.get("x-migration-secret");
+    const expectedSecret = Deno.env.get("TOKEN_ENCRYPTION_KEY")?.substring(0, 16);
+    const hasMigrationSecret = migrationSecret && migrationSecret === expectedSecret;
+    
+    // Check for service role key or admin user
     const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
-      const supabaseClient = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-        { global: { headers: { Authorization: authHeader } } }
-      );
-      
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const isServiceRole = authHeader?.includes(serviceRoleKey);
+    
+    console.log("Migration request - hasSecret:", !!hasMigrationSecret, "isServiceRole:", !!isServiceRole);
+
+    // If neither service role nor migration secret, check for admin user
+    if (!isServiceRole && !hasMigrationSecret) {
+      if (authHeader) {
+        const supabaseClient = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+          { global: { headers: { Authorization: authHeader } } }
+        );
+        
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+
+        const { data: isAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: user.id });
+        if (!isAdmin) {
+          return new Response(JSON.stringify({ error: "Admin access required" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+      } else {
+        return new Response(JSON.stringify({ error: "Authorization required" }), {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-
-      // Check if admin
-      const { data: isAdmin } = await supabaseAdmin.rpc('is_admin', { _user_id: user.id });
-      if (!isAdmin) {
-        return new Response(JSON.stringify({ error: "Admin access required" }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        });
-      }
-    } else {
-      return new Response(JSON.stringify({ error: "Authorization required" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
     }
 
     // Find legacy messages with plain content but no encrypted content
@@ -57,6 +68,7 @@ serve(async (req: Request) => {
       .select('id, content')
       .not('content', 'is', null)
       .neq('content', '')
+      .neq('content', '[encrypted]')
       .or('encrypted_content.is.null,encrypted_content.eq.');
 
     if (fetchError) {
@@ -80,16 +92,14 @@ serve(async (req: Request) => {
 
     for (const msg of legacyMessages) {
       try {
-        // Encrypt the plain content
         const encryptedContent = await encryptMessage(msg.content);
-
-        // Update the message with encrypted content and clear plain content
+        
         const { error: updateError } = await supabaseAdmin
           .from('messages')
           .update({
             encrypted_content: encryptedContent,
             is_encrypted: true,
-            content: '[encrypted]' // Keep a placeholder for backwards compatibility
+            content: '[encrypted]'
           })
           .eq('id', msg.id);
 
