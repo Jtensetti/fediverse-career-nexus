@@ -75,7 +75,6 @@ export function ReactionUsersPopover({
           {data.users.map((user) => {
             const config = REACTION_CONFIG[user.reaction];
             const Icon = config.icon;
-            const usernameLabel = user.username && user.username !== "unknown" ? user.username : user.displayName;
             return (
               <Link
                 key={`${user.userId}-${user.reaction}`}
@@ -92,7 +91,7 @@ export function ReactionUsersPopover({
                   <Icon className="h-3 w-3 text-white" />
                 </div>
                 <span className="text-sm font-medium truncate">
-                  {usernameLabel}
+                  {user.displayName}
                 </span>
               </Link>
             );
