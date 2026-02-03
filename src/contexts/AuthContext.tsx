@@ -4,12 +4,16 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { createUserActor } from '@/services/actorService';
 import { ensureUserProfile } from '@/services/profileService';
+import { needsMFAVerification } from '@/services/mfaService';
+import MFAVerifyDialog from '@/components/MFAVerifyDialog';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  /** True if user is authenticated but needs MFA verification */
+  mfaPending: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,6 +67,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mfaPending, setMfaPending] = useState(false);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaDialogOpen, setMfaDialogOpen] = useState(false);
+
+  // Check MFA requirement whenever session changes
+  const checkMFARequirement = async () => {
+    if (!session?.user) {
+      setMfaPending(false);
+      setMfaFactorId(null);
+      return;
+    }
+    
+    try {
+      const mfaCheck = await needsMFAVerification();
+      console.log('AuthProvider: MFA check result:', mfaCheck);
+      
+      if (mfaCheck.needed && mfaCheck.factorId) {
+        setMfaPending(true);
+        setMfaFactorId(mfaCheck.factorId);
+        setMfaDialogOpen(true);
+      } else {
+        setMfaPending(false);
+        setMfaFactorId(null);
+        setMfaDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('AuthProvider: Error checking MFA:', error);
+      setMfaPending(false);
+    }
+  };
 
   useEffect(() => {
     let loadingTimeoutId: NodeJS.Timeout;
@@ -112,6 +146,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Clear cache on sign out
         if (event === 'SIGNED_OUT') {
+          setMfaPending(false);
+          setMfaFactorId(null);
+          setMfaDialogOpen(false);
           // Clear all user setup caches
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('user_setup_')) {
@@ -128,6 +165,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Check MFA whenever session changes
+  useEffect(() => {
+    if (session?.user && !loading) {
+      checkMFARequirement();
+    }
+  }, [session?.user?.id, loading]);
+
+  const handleMFASuccess = () => {
+    setMfaPending(false);
+    setMfaFactorId(null);
+    setMfaDialogOpen(false);
+  };
+
+  const handleMFACancel = async () => {
+    // Sign out since they cancelled MFA verification
+    await supabase.auth.signOut();
+    setMfaPending(false);
+    setMfaFactorId(null);
+    setMfaDialogOpen(false);
+  };
 
   const signOut = async () => {
     try {
@@ -147,9 +205,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     loading,
     signOut,
+    mfaPending,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {/* Global MFA verification dialog */}
+      {mfaFactorId && (
+        <MFAVerifyDialog
+          open={mfaDialogOpen}
+          onOpenChange={setMfaDialogOpen}
+          factorId={mfaFactorId}
+          onSuccess={handleMFASuccess}
+          onCancel={handleMFACancel}
+        />
+      )}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
