@@ -20,6 +20,8 @@ interface StackedReactionDisplayProps {
   onOpenReactionPicker?: () => void;
   /** Whether clicking is enabled (opens user list) */
   interactive?: boolean;
+  /** The current user's reaction (if any) */
+  userReaction?: ReactionKey | null;
 }
 
 const StackedReactionDisplay = ({
@@ -33,6 +35,7 @@ const StackedReactionDisplay = ({
   targetType,
   onOpenReactionPicker,
   interactive = true,
+  userReaction,
 }: StackedReactionDisplayProps) => {
   const [showUsersDialog, setShowUsersDialog] = useState(false);
 
@@ -72,6 +75,10 @@ const StackedReactionDisplay = ({
 
   const isClickable = interactive && targetId && targetType && total > 0;
 
+  // Get user's reaction icon for the indicator
+  const UserReactionIcon = userReaction ? REACTION_CONFIG[userReaction].icon : null;
+  const userReactionColor = userReaction ? REACTION_CONFIG[userReaction].activeColor : '';
+
   return (
     <>
       <div 
@@ -80,7 +87,14 @@ const StackedReactionDisplay = ({
           isClickable && "cursor-pointer",
           className
         )}
-        {...(isClickable || onOpenReactionPicker ? longPressHandlers : {})}
+        {...(isClickable || onOpenReactionPicker ? {
+          onMouseDown: longPressHandlers.onMouseDown,
+          onMouseUp: longPressHandlers.onMouseUp,
+          onMouseLeave: longPressHandlers.onMouseLeave,
+          onTouchStart: longPressHandlers.onTouchStart,
+          onTouchEnd: longPressHandlers.onTouchEnd,
+          onDoubleClick: longPressHandlers.onDoubleClick,
+        } : {})}
         role={isClickable ? "button" : undefined}
         tabIndex={isClickable ? 0 : undefined}
         onKeyDown={(e) => {
@@ -94,14 +108,16 @@ const StackedReactionDisplay = ({
           {activeReactions.map((reaction, index) => {
             const config = REACTION_CONFIG[reaction.reaction];
             const Icon = config.icon;
+            const isUserReaction = userReaction === reaction.reaction;
             
             return (
               <div
                 key={reaction.reaction}
                 className={cn(
-                  "rounded-full flex items-center justify-center ring-2 ring-background",
+                  "rounded-full flex items-center justify-center ring-2",
                   containerSize,
-                  bgColors[reaction.reaction]
+                  bgColors[reaction.reaction],
+                  isUserReaction ? "ring-primary ring-[3px]" : "ring-background"
                 )}
                 style={{ zIndex: maxIcons - index }}
               >
@@ -111,9 +127,18 @@ const StackedReactionDisplay = ({
           })}
         </div>
         {showCount && total > 0 && (
-          <span className="text-xs text-muted-foreground font-medium">
+          <span className={cn(
+            "text-xs font-medium",
+            userReaction ? userReactionColor : "text-muted-foreground"
+          )}>
             {total}
           </span>
+        )}
+        {/* Show small indicator of user's reaction if not visible in stack */}
+        {userReaction && UserReactionIcon && !activeReactions.some(r => r.reaction === userReaction) && (
+          <div className={cn("ml-0.5", userReactionColor)}>
+            <UserReactionIcon className="h-3 w-3" />
+          </div>
         )}
       </div>
 

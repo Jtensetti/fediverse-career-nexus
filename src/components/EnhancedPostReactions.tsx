@@ -110,6 +110,7 @@ const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, init
             targetType="post"
             onOpenReactionPicker={() => setShowPicker(true)}
             interactive={true}
+            userReaction={userReaction?.reaction}
           />
           <Popover open={showPicker} onOpenChange={setShowPicker}>
             <PopoverTrigger asChild>
