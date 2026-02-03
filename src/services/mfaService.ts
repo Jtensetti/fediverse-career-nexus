@@ -51,10 +51,13 @@ export const getVerifiedFactor = async (): Promise<MFAFactor | null> => {
 
 /**
  * Start TOTP enrollment - returns QR code and secret
+ * @param issuer - The app name shown in authenticator (e.g., "Nolto")
+ * @param friendlyName - Optional name for this factor
  */
-export const enrollTOTP = async (friendlyName?: string): Promise<EnrollmentResult | null> => {
+export const enrollTOTP = async (issuer: string = 'Nolto', friendlyName?: string): Promise<EnrollmentResult | null> => {
   const { data, error } = await supabase.auth.mfa.enroll({
     factorType: 'totp',
+    issuer: issuer,
     friendlyName: friendlyName || 'Authenticator App',
   });
   
