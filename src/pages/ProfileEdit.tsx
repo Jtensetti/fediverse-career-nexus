@@ -1159,6 +1159,10 @@ const ProfileEditPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                <MFASettings isFederatedUser={profile?.auth_type === 'federated'} />
+                
+                <Separator />
+                
                 <NetworkVisibilityToggle 
                   initialValue={profile.networkVisibilityEnabled} 
                   onChange={(value) => setProfile({...profile, networkVisibilityEnabled: value})}

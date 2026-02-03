@@ -656,6 +656,17 @@ export default function AuthPage() {
           </p>
         </div>
       </div>
+
+      {/* MFA Verification Dialog */}
+      {mfaFactorId && (
+        <MFAVerifyDialog
+          open={mfaRequired}
+          onOpenChange={setMfaRequired}
+          factorId={mfaFactorId}
+          onSuccess={handleMFASuccess}
+          onCancel={handleMFACancel}
+        />
+      )}
     </div>
   );
 }
