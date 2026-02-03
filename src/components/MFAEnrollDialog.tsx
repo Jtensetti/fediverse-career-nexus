@@ -15,8 +15,9 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { toast } from "sonner";
-import { Loader2, Copy, CheckCircle, ShieldCheck } from "lucide-react";
+import { Loader2, Copy, CheckCircle, ShieldCheck, Smartphone, QrCode } from "lucide-react";
 import { enrollTOTP, verifyEnrollment, EnrollmentResult } from "@/services/mfaService";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MFAEnrollDialogProps {
   open: boolean;
@@ -26,12 +27,14 @@ interface MFAEnrollDialogProps {
 
 export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEnrollDialogProps) {
   const { t } = useTranslation();
-  const [step, setStep] = useState<'qr' | 'verify' | 'success'>('qr');
+  const isMobile = useIsMobile();
+  const [step, setStep] = useState<'setup' | 'verify' | 'success'>('setup');
   const [enrollment, setEnrollment] = useState<EnrollmentResult | null>(null);
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [secretCopied, setSecretCopied] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(!isMobile);
 
   // Start enrollment when dialog opens
   useEffect(() => {
@@ -40,12 +43,13 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
     }
     if (!open) {
       // Reset state when dialog closes
-      setStep('qr');
+      setStep('setup');
       setEnrollment(null);
       setCode("");
       setSecretCopied(false);
+      setShowQRCode(!isMobile);
     }
-  }, [open]);
+  }, [open, isMobile]);
 
   const startEnrollment = async () => {
     setIsLoading(true);
@@ -82,6 +86,13 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
     }
   };
 
+  const openAuthenticatorApp = () => {
+    if (enrollment?.totp.uri) {
+      // Open the otpauth:// URI which will trigger the authenticator app
+      window.location.href = enrollment.totp.uri;
+    }
+  };
+
   const copySecret = () => {
     if (enrollment?.totp.secret) {
       navigator.clipboard.writeText(enrollment.totp.secret);
@@ -93,7 +104,7 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
 
   // Auto-submit when code is complete
   useEffect(() => {
-    if (code.length === 6 && step === 'qr') {
+    if (code.length === 6 && step === 'setup') {
       handleVerify();
     }
   }, [code]);
@@ -109,7 +120,9 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
           <DialogDescription>
             {step === 'success' 
               ? t("mfa.enrollSuccessDesc", "Your account is now protected with 2FA.")
-              : t("mfa.enrollDesc", "Scan the QR code with your authenticator app.")}
+              : isMobile 
+                ? t("mfa.enrollDescMobile", "Add your account to an authenticator app.")
+                : t("mfa.enrollDesc", "Scan the QR code with your authenticator app.")}
           </DialogDescription>
         </DialogHeader>
 
@@ -117,7 +130,7 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
           <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="mt-2 text-sm text-muted-foreground">
-              {t("mfa.generating", "Generating QR code...")}
+              {t("mfa.generating", "Generating setup...")}
             </p>
           </div>
         ) : step === 'success' ? (
@@ -130,9 +143,40 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* QR Code */}
-            {enrollment?.totp.qr_code && (
+          <div className="space-y-5">
+            {/* Mobile: Primary action is to open authenticator app */}
+            {isMobile && enrollment?.totp.uri && (
+              <div className="space-y-3">
+                <Button 
+                  onClick={openAuthenticatorApp}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Smartphone className="mr-2 h-5 w-5" />
+                  {t("mfa.openAuthenticator", "Open Authenticator App")}
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  {t("mfa.openAuthenticatorHint", "This will add Nolto to your authenticator app automatically")}
+                </p>
+              </div>
+            )}
+
+            {/* Toggle to show QR code on mobile */}
+            {isMobile && (
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setShowQRCode(!showQRCode)}
+              >
+                <QrCode className="mr-2 h-4 w-4" />
+                {showQRCode 
+                  ? t("mfa.hideQR", "Hide QR Code") 
+                  : t("mfa.showQR", "Show QR Code Instead")}
+              </Button>
+            )}
+
+            {/* QR Code - always shown on desktop, toggleable on mobile */}
+            {showQRCode && enrollment?.totp.qr_code && (
               <div className="flex flex-col items-center">
                 <div 
                   className="rounded-lg border bg-white p-4"
@@ -144,7 +188,9 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
             {/* Manual entry secret */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">
-                {t("mfa.cantScan", "Can't scan? Enter this code manually:")}
+                {isMobile 
+                  ? t("mfa.manualEntry", "Or enter this code manually:")
+                  : t("mfa.cantScan", "Can't scan? Enter this code manually:")}
               </Label>
               <div className="flex items-center gap-2">
                 <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono break-all">
