@@ -6,48 +6,57 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Heart, ThumbsUp, PartyPopper, Smile, Lightbulb, LucideIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useLongPress } from "@/hooks/useLongPress";
+import ReactionUsersDialog from "./ReactionUsersDialog";
+import { REACTION_EMOJIS, ReactionKey } from "@/lib/reactions";
 
 interface ArticleReactionsProps {
   articleId: string;
 }
 
 // Map emoji identifiers to Lucide icons with proper theming
-const REACTION_CONFIG: Record<string, { icon: LucideIcon; label: string; activeColor: string; hoverBg: string }> = {
+const REACTION_CONFIG: Record<string, { icon: LucideIcon; label: string; activeColor: string; hoverBg: string; reactionKey: ReactionKey }> = {
   '❤️': { 
     icon: Heart, 
     label: 'Love', 
     activeColor: 'text-red-500 fill-red-500',
-    hoverBg: 'hover:bg-red-50 dark:hover:bg-red-950'
+    hoverBg: 'hover:bg-red-50 dark:hover:bg-red-950',
+    reactionKey: 'love'
   },
   '🎉': { 
     icon: PartyPopper, 
     label: 'Celebrate', 
     activeColor: 'text-yellow-500',
-    hoverBg: 'hover:bg-yellow-50 dark:hover:bg-yellow-950'
+    hoverBg: 'hover:bg-yellow-50 dark:hover:bg-yellow-950',
+    reactionKey: 'celebrate'
   },
   '✌️': { 
     icon: ThumbsUp, 
     label: 'Support', 
     activeColor: 'text-blue-500',
-    hoverBg: 'hover:bg-blue-50 dark:hover:bg-blue-950'
+    hoverBg: 'hover:bg-blue-50 dark:hover:bg-blue-950',
+    reactionKey: 'support'
   },
   '🤗': { 
     icon: Smile, 
     label: 'Empathy', 
     activeColor: 'text-green-500',
-    hoverBg: 'hover:bg-green-50 dark:hover:bg-green-950'
+    hoverBg: 'hover:bg-green-50 dark:hover:bg-green-950',
+    reactionKey: 'empathy'
   },
   '😮': { 
     icon: Lightbulb, 
     label: 'Insightful', 
     activeColor: 'text-purple-500',
-    hoverBg: 'hover:bg-purple-50 dark:hover:bg-purple-950'
+    hoverBg: 'hover:bg-purple-50 dark:hover:bg-purple-950',
+    reactionKey: 'insightful'
   },
 };
 
 const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
   const [reactions, setReactions] = useState<ReactionCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showUsersDialog, setShowUsersDialog] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -91,6 +100,8 @@ const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
       setReactions(reactionData);
     }
   };
+
+  const totalReactions = reactions.reduce((sum, r) => sum + r.count, 0);
   
   if (isLoading) {
     return (
@@ -107,6 +118,18 @@ const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
   return (
     <TooltipProvider>
       <div className="flex items-center gap-2 my-4 flex-wrap">
+        {/* Show total reactions count that opens users dialog */}
+        {totalReactions > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-muted-foreground"
+            onClick={() => setShowUsersDialog(true)}
+          >
+            <span className="text-sm font-medium">{totalReactions} reactions</span>
+          </Button>
+        )}
+        
         {reactions.map((reaction) => {
           const config = REACTION_CONFIG[reaction.emoji];
           if (!config) return null;
@@ -144,6 +167,13 @@ const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
           );
         })}
       </div>
+
+      <ReactionUsersDialog
+        open={showUsersDialog}
+        onOpenChange={setShowUsersDialog}
+        targetType="article"
+        targetId={articleId}
+      />
     </TooltipProvider>
   );
 };

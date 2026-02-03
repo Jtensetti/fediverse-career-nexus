@@ -77,6 +77,57 @@ export function EnhancedCommentReactions({ replyId, className, initialReactions 
   const primaryReaction = userReaction?.reaction || 'love';
   const PrimaryIcon = REACTION_CONFIG[primaryReaction].icon;
 
+  // When there are reactions, show the stacked display that opens users list on click
+  if (totalReactions > 0) {
+    return (
+      <div className={cn("flex items-center", className)}>
+        <StackedReactionDisplay 
+          reactions={reactions} 
+          showCount={true}
+          totalCount={totalReactions}
+          size="sm"
+          targetId={replyId}
+          targetType="reply"
+          onOpenReactionPicker={() => setIsOpen(true)}
+          interactive={true}
+        />
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverTrigger asChild>
+            <span className="sr-only">Open reaction picker</span>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-2" side="top" align="start">
+            <div className="flex gap-1">
+              {REACTIONS.map((reaction) => {
+                const config = REACTION_CONFIG[reaction];
+                const Icon = config.icon;
+                const reactionData = reactions.find(r => r.reaction === reaction);
+                const isActive = reactionData?.hasReacted;
+
+                return (
+                  <Button
+                    key={reaction}
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "h-8 w-8 p-0 rounded-full transition-all",
+                      config.hoverBg,
+                      isActive && config.activeColor
+                    )}
+                    onClick={() => handleReaction(reaction)}
+                    title={config.label}
+                  >
+                    <Icon className={cn("h-4 w-4", isActive && "fill-current")} />
+                  </Button>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  }
+
+  // No reactions - show button that opens picker
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -89,19 +140,8 @@ export function EnhancedCommentReactions({ replyId, className, initialReactions 
             className
           )}
         >
-          {totalReactions > 0 ? (
-            <StackedReactionDisplay 
-              reactions={reactions} 
-              showCount={true}
-              totalCount={totalReactions}
-              size="sm"
-            />
-          ) : (
-            <>
-              <PrimaryIcon className="h-3.5 w-3.5" />
-              <span>{t("reactions.react", "React")}</span>
-            </>
-          )}
+          <PrimaryIcon className="h-3.5 w-3.5" />
+          <span>{t("reactions.react", "React")}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2" side="top" align="start">

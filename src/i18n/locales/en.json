@@ -152,7 +152,10 @@
     "celebrate": "Celebrate",
     "support": "Support",
     "insightful": "Insightful",
-    "empathy": "Empathy"
+    "empathy": "Empathy",
+    "title": "Reactions",
+    "all": "All",
+    "noReactions": "No reactions yet"
   },
   "feed": {
     "following": "Following",

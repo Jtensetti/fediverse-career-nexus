@@ -97,6 +97,64 @@ const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, init
   }
 
   if (compact) {
+    // When there are reactions, show the stacked display that opens users list on click
+    // Long-press/double-click opens the picker
+    if (totalReactions > 0) {
+      return (
+        <div className="flex items-center">
+          <StackedReactionDisplay 
+            reactions={reactions} 
+            showCount={true}
+            totalCount={totalReactions}
+            targetId={postId}
+            targetType="post"
+            onOpenReactionPicker={() => setShowPicker(true)}
+            interactive={true}
+          />
+          <Popover open={showPicker} onOpenChange={setShowPicker}>
+            <PopoverTrigger asChild>
+              <span className="sr-only">Open reaction picker</span>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2" side="top" align="start">
+              <div className="flex gap-1">
+                {REACTIONS.map((reaction) => {
+                  const config = REACTION_CONFIG[reaction];
+                  const Icon = config.icon;
+                  const reactionData = reactions.find(r => r.reaction === reaction);
+                  const isActive = reactionData?.hasReacted;
+
+                  return (
+                    <TooltipProvider key={reaction}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "h-9 w-9 p-0 rounded-full transition-all",
+                              config.hoverBg,
+                              isActive && config.activeColor
+                            )}
+                            onClick={() => handleReaction(reaction)}
+                          >
+                            <Icon className={cn("h-5 w-5", isActive && "fill-current")} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t(`reactions.${reaction}`, config.label)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      );
+    }
+
+    // No reactions yet - show the button that opens picker directly
     return (
       <Popover open={showPicker} onOpenChange={setShowPicker}>
         <PopoverTrigger asChild>
@@ -108,18 +166,8 @@ const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, init
               userReaction && REACTION_CONFIG[userReaction.reaction].activeColor
             )}
           >
-            {totalReactions > 0 ? (
-              <StackedReactionDisplay 
-                reactions={reactions} 
-                showCount={true}
-                totalCount={totalReactions}
-              />
-            ) : (
-              <>
-                <PrimaryIcon className="h-4 w-4" />
-                <span className="text-xs">{t("reactions.react", "React")}</span>
-              </>
-            )}
+            <PrimaryIcon className="h-4 w-4" />
+            <span className="text-xs">{t("reactions.react", "React")}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-2" side="top" align="start">
