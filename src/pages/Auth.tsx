@@ -30,6 +30,8 @@ export default function AuthPage() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [fediHandle, setFediHandle] = useState("");
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{
     firstName?: string;
     lastName?: string;
