@@ -3095,6 +3095,93 @@ export type Database = {
           },
         ]
       }
+      public_education: {
+        Row: {
+          created_at: string | null
+          degree: string | null
+          end_year: number | null
+          field: string | null
+          id: string | null
+          institution: string | null
+          start_year: number | null
+          updated_at: string | null
+          user_id: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          degree?: string | null
+          end_year?: number | null
+          field?: string | null
+          id?: string | null
+          institution?: string | null
+          start_year?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          degree?: string | null
+          end_year?: number | null
+          field?: string | null
+          id?: string | null
+          institution?: string | null
+          start_year?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?: string | null
+        }
+        Relationships: []
+      }
+      public_experiences: {
+        Row: {
+          company: string | null
+          company_domain: string | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string | null
+          is_current_role: boolean | null
+          location: string | null
+          start_date: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          company?: string | null
+          company_domain?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_current_role?: boolean | null
+          location?: string | null
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          company?: string | null
+          company_domain?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_current_role?: boolean | null
+          location?: string | null
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?: string | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           auth_type: string | null
