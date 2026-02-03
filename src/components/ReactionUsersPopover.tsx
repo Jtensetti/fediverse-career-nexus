@@ -5,8 +5,8 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { REACTIONS, REACTION_CONFIG, ReactionKey } from "@/lib/reactions";
-import { getReactionUsers, ReactionUser, ReactionUsersResult } from "@/services/reactionUsersService";
+import { REACTION_CONFIG, ReactionKey } from "@/lib/reactions";
+import { getReactionUsers, ReactionUsersResult } from "@/services/reactionUsersService";
 
 interface ReactionUsersPopoverProps {
   children: React.ReactNode;
@@ -44,12 +44,17 @@ export function ReactionUsersPopover({
     setLoading(false);
   };
 
+  // If the target changes, reset cached data (prevents showing stale users)
+  useEffect(() => {
+    setData(null);
+  }, [targetType, targetId]);
+
   // Load on hover (desktop) or open (mobile)
   useEffect(() => {
     if (open && !data) {
       loadData();
     }
-  }, [open]);
+  }, [open, data, targetType, targetId]);
 
   if (disabled) {
     return <>{children}</>;
@@ -70,6 +75,7 @@ export function ReactionUsersPopover({
           {data.users.map((user) => {
             const config = REACTION_CONFIG[user.reaction];
             const Icon = config.icon;
+            const usernameLabel = user.username && user.username !== "unknown" ? user.username : user.displayName;
             return (
               <Link
                 key={`${user.userId}-${user.reaction}`}
@@ -86,7 +92,7 @@ export function ReactionUsersPopover({
                   <Icon className="h-3 w-3 text-white" />
                 </div>
                 <span className="text-sm font-medium truncate">
-                  {user.displayName}
+                  {usernameLabel}
                 </span>
               </Link>
             );
