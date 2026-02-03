@@ -1,212 +1,142 @@
 
-# LinkedIn Import Enhancement Plan
+# Multi-Factor Authentication (MFA) with TOTP Implementation Plan
 
-## Summary
-Based on extensive analysis of the LinkedIn export format and comparison with open-source parsers like `@knohime/linkedin-import`, the current implementation has the correct file and column mappings for the standard LinkedIn GDPR export. However, there are several robustness improvements needed to handle edge cases, variations in LinkedIn's export format, and to provide better debugging when imports fail.
+## Overview
+This plan implements Time-based One-Time Password (TOTP) multi-factor authentication for Nolto users. MFA will be available for **local users** (email/password accounts) and will enhance account security by requiring a second factor during login.
 
-## Identified Issues
-
-### 1. Date Parsing Fragility
-The current date parser handles:
-- "Mon YYYY" format (e.g., "Jan 2020")
-- "YYYY" format (e.g., "2020")
-- ISO dates ("2020-01-15")
-
-Missing formats that LinkedIn sometimes uses:
-- Full month names ("January 2020")
-- Different date separators
-- Empty strings returning undefined instead of null
-
-### 2. Silent Failures
-When CSV parsing fails or column names don't match:
-- No user feedback about which files were found/missing
-- No indication of why data wasn't imported
-- The Preview step shows "0 found" without explaining why
-
-### 3. Column Name Matching
-LinkedIn's export format can vary:
-- Different capitalizations ("Company name" vs "Company Name")
-- Extra whitespace around column names
-- Slight variations between export versions
-
-### 4. Missing Data Types
-LinkedIn exports additional valuable data:
-- `Certifications.csv` - Professional certifications
-- `Languages.csv` - Language proficiencies
-- (Not currently supported in Nolto's schema)
-
-### 5. Articles/Posts Confusion
-LinkedIn exports:
-- `Shares.csv` - Short-form posts
-- `Articles/` folder - Long-form articles (HTML files, not CSV)
-
-The current implementation looks for `Articles.csv` and `Posts.csv` which may not exist.
-
-## Implementation Plan
-
-### Phase 1: Robust Column Name Matching
-Add flexible column name matching that:
-- Normalizes column headers (trim, lowercase)
-- Matches columns case-insensitively
-- Handles common variations
-- Uses fuzzy matching for near-matches
-
-### Phase 2: Improved Date Parsing
-Enhance date parsing to handle:
-- Full month names ("January", "February", etc.)
-- Various separators and formats
-- More lenient year extraction for education
-
-### Phase 3: User Debugging Feedback
-Add visible debugging in the Preview step:
-- Show which CSV files were found in the ZIP
-- Display column headers found vs expected
-- Provide actionable feedback when data is missing
-
-### Phase 4: Enhanced File Discovery
-Improve file finding to:
-- Search recursively in all folders
-- Handle case-insensitive file names
-- Look for multiple file name variations
-
-### Phase 5: Support Shares.csv for Posts
-Add support for importing LinkedIn posts from `Shares.csv`:
-- Parse `Shares.csv` for short-form content
-- Import as draft articles or posts (if posts table exists)
+**Note on Federated Users**: Federated users authenticate via their home Mastodon/Fediverse instance. MFA for these users is handled by their home instance (e.g., Mastodon's built-in 2FA). Nolto cannot enforce MFA on federated logins since the authentication happens externally.
 
 ---
 
-## Technical Details
+## User Experience
 
-### File: `src/lib/csvParser.ts`
+### Enabling MFA (Settings)
+1. User navigates to **Profile Edit > Privacy** tab
+2. Under a new "Security" section, user clicks "Enable Two-Factor Authentication"
+3. A QR code is displayed that they scan with an authenticator app (Google Authenticator, Authy, 1Password, etc.)
+4. User enters the 6-digit code from their app to verify setup
+5. Success message shown, MFA is now active
 
-**Changes:**
-1. Add `normalizeColumnHeader` function for case-insensitive matching
-2. Enhance `parseLinkedInDate` with full month name support
-3. Add a month name mapping for all variations
+### Logging In with MFA
+1. User enters email and password as normal
+2. If MFA is enabled, a second screen appears asking for the 6-digit TOTP code
+3. User enters code from their authenticator app
+4. Login completes on successful verification
 
-```typescript
-// New: Normalize column headers for flexible matching
-export function normalizeColumnHeader(header: string): string {
-  return header.trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-// Enhanced: Full month name support
-const MONTH_MAP: Record<string, string> = {
-  january: '01', jan: '01',
-  february: '02', feb: '02',
-  march: '03', mar: '03',
-  // ... all months
-};
-```
-
-### File: `src/services/linkedinImportService.ts`
-
-**Changes:**
-1. Add flexible column accessor function
-2. Improve file finding with case-insensitive search
-3. Add `Shares.csv` parsing for posts
-4. Add debugging data to `LinkedInImportData`
-5. Handle empty/whitespace-only values consistently
-
-```typescript
-// New: Flexible column accessor
-function getColumn<T>(row: T, possibleNames: string[]): string | undefined {
-  for (const name of possibleNames) {
-    const normalized = normalizeColumnHeader(name);
-    for (const key of Object.keys(row)) {
-      if (normalizeColumnHeader(key) === normalized) {
-        return row[key as keyof T] as string;
-      }
-    }
-  }
-  return undefined;
-}
-
-// Updated interfaces
-interface LinkedInPosition {
-  'Company Name'?: string;
-  'company name'?: string;
-  'Title'?: string;
-  'title'?: string;
-  // ... flexible matching
-}
-
-// New: Debug info in result
-export interface LinkedInImportData {
-  // ... existing fields
-  debug: {
-    filesFound: string[];
-    profileColumnsFound: string[];
-    positionsColumnsFound: string[];
-    educationColumnsFound: string[];
-    skillsColumnsFound: string[];
-  };
-}
-```
-
-### File: `src/components/LinkedInImport/ImportSteps/PreviewStep.tsx`
-
-**Changes:**
-1. Add debug section showing files found
-2. Show helpful messages when data is missing
-3. Add collapsible "Troubleshooting" section
-
-```typescript
-// New: Debug information display
-{data.rawFiles.length > 0 && (
-  <Collapsible>
-    <CollapsibleTrigger>
-      <span>Files found in ZIP ({data.rawFiles.length})</span>
-    </CollapsibleTrigger>
-    <CollapsibleContent>
-      <ul className="text-xs text-muted-foreground">
-        {data.rawFiles.map(file => <li key={file}>{file}</li>)}
-      </ul>
-    </CollapsibleContent>
-  </Collapsible>
-)}
-```
-
-### File: `src/components/LinkedInImport/ImportSteps/UploadStep.tsx`
-
-**Changes:**
-1. Update expected files list to match actual LinkedIn export
-2. Add note about data archive types
+### Disabling MFA
+1. In settings, user clicks "Disable Two-Factor Authentication"
+2. User must enter a valid TOTP code to confirm they still have access
+3. MFA is disabled after verification
 
 ---
+
+## Technical Implementation
+
+### 1. New Component: MFASettings.tsx
+A settings section component for the Privacy tab that handles:
+- Displaying current MFA status (enabled/disabled)
+- Enrollment flow with QR code display
+- Verification of enrollment
+- Unenrollment with code verification
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│  🔐 Two-Factor Authentication                           │
+├─────────────────────────────────────────────────────────┤
+│  Status: Not enabled                                    │
+│                                                         │
+│  Add an extra layer of security to your account by      │
+│  requiring a verification code when you sign in.        │
+│                                                         │
+│  [Enable Two-Factor Authentication]                     │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 2. New Component: MFAEnrollDialog.tsx
+A dialog/modal for the enrollment process:
+- Calls `supabase.auth.mfa.enroll({ factorType: 'totp' })`
+- Displays the QR code SVG returned by the API
+- Shows the TOTP secret for manual entry
+- Provides an OTP input (using existing InputOTP component)
+- Verifies using `supabase.auth.mfa.challenge()` and `supabase.auth.mfa.verify()`
+
+### 3. New Component: MFAVerifyDialog.tsx
+A dialog shown during login when MFA is required:
+- Displayed after successful password authentication
+- Shows OTP input for the 6-digit code
+- Calls `challenge()` and `verify()` to complete authentication
+- Handles the AAL (Authenticator Assurance Level) upgrade from aal1 to aal2
+
+### 4. Updated Auth Flow in Auth.tsx
+Modify the `handleSignIn` function to:
+1. After successful password auth, check if user has MFA factors
+2. If MFA is enabled, show the MFA verification dialog instead of redirecting
+3. Only redirect to home after MFA verification is complete
+
+```text
+Password Auth → Check AAL → MFA Required? → Show Verify Dialog → Complete Login
+                    ↓
+               No MFA → Redirect Home
+```
+
+### 5. New Service: mfaService.ts
+Utility functions for MFA operations:
+- `getMFAFactors()` - List user's enrolled factors
+- `isMFAEnabled()` - Check if user has verified TOTP factor
+- `enrollTOTP()` - Start enrollment process
+- `verifyEnrollment()` - Complete enrollment with code
+- `challengeAndVerify()` - Verify during login
+- `unenrollFactor()` - Remove MFA
+
+### 6. ProfileEdit.tsx Updates
+Add the MFASettings component to the Privacy tab, placed appropriately in the security-related section.
+
+---
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/components/MFASettings.tsx` | Main settings UI for MFA management |
+| `src/components/MFAEnrollDialog.tsx` | Enrollment flow with QR code |
+| `src/components/MFAVerifyDialog.tsx` | Login verification dialog |
+| `src/services/mfaService.ts` | MFA utility functions |
 
 ## Files to Modify
 
-1. `src/lib/csvParser.ts`
-   - Add `normalizeColumnHeader` function
-   - Enhance date parsing with full month names
-   - Add logging for debugging
-
-2. `src/services/linkedinImportService.ts`
-   - Add flexible column matching
-   - Improve file finding with case-insensitivity
-   - Add `Shares.csv` support for posts
-   - Add debug information to output
-   - Better error handling and logging
-
-3. `src/components/LinkedInImport/ImportSteps/PreviewStep.tsx`
-   - Add debug section showing detected files
-   - Improve empty state messaging
-   - Add troubleshooting guidance
-
-4. `src/components/LinkedInImport/ImportSteps/UploadStep.tsx`
-   - Update file expectations
-   - Add note about "larger archive" option
+| File | Changes |
+|------|---------|
+| `src/pages/Auth.tsx` | Add MFA verification step after password login |
+| `src/pages/ProfileEdit.tsx` | Add MFASettings to Privacy tab |
+| `src/i18n/locales/en.json` | Add MFA-related translation strings |
 
 ---
 
-## Testing Recommendations
+## Security Considerations
 
-After implementation:
-1. Test with a real LinkedIn "Basic" export ZIP
-2. Test with a real LinkedIn "Complete" export ZIP
-3. Test with an empty/invalid ZIP file
-4. Test with manually created CSV files with various column capitalizations
-5. Verify all date formats are parsed correctly
-6. Confirm duplicate detection works properly
+1. **Recovery Codes**: Consider adding recovery codes in a future iteration for account recovery if the authenticator is lost. For now, users who lose their authenticator must contact support.
+
+2. **Session AAL**: After MFA verification, the session is upgraded to AAL2 (Authenticator Assurance Level 2), providing stronger authentication guarantees.
+
+3. **Federated Users Excluded**: Federated users are identified by `auth_type: 'federated'` in their profile. The MFA settings will be hidden for these users with an explanation that their home instance handles security.
+
+4. **Rate Limiting**: Supabase Auth has built-in rate limiting for MFA verification attempts to prevent brute-force attacks.
+
+---
+
+## Implementation Order
+
+1. Create `mfaService.ts` with core MFA functions
+2. Create `MFAEnrollDialog.tsx` for the enrollment flow
+3. Create `MFAVerifyDialog.tsx` for login verification
+4. Create `MFASettings.tsx` combining enrollment/disable controls
+5. Update `ProfileEdit.tsx` to include MFA settings
+6. Update `Auth.tsx` to handle MFA during login
+7. Add translation strings
+8. Test end-to-end flow
+
+---
+
+## No Database Changes Required
+
+Supabase Auth manages MFA factors internally in the `auth.mfa_factors` table. No custom database migrations are needed for this feature.
