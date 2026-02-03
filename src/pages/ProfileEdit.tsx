@@ -44,6 +44,7 @@ import DeleteAccountSection from "@/components/DeleteAccountSection";
 import DataExportSection from "@/components/DataExportSection";
 import AccountMigrationSection from "@/components/AccountMigrationSection";
 import EmailNotificationPreferences from "@/components/EmailNotificationPreferences";
+import MFASettings from "@/components/MFASettings";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   getUserExperiences, 
@@ -1158,6 +1159,10 @@ const ProfileEditPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                <MFASettings isFederatedUser={profile?.auth_type === 'federated'} />
+                
+                <Separator />
+                
                 <NetworkVisibilityToggle 
                   initialValue={profile.networkVisibilityEnabled} 
                   onChange={(value) => setProfile({...profile, networkVisibilityEnabled: value})}

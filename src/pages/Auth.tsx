@@ -14,6 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import { SEOHead } from "@/components/common/SEOHead";
+import MFAVerifyDialog from "@/components/MFAVerifyDialog";
+import { needsMFAVerification } from "@/services/mfaService";
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -28,6 +30,8 @@ export default function AuthPage() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [fediHandle, setFediHandle] = useState("");
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{
     firstName?: string;
     lastName?: string;
@@ -268,6 +272,17 @@ export default function AuthPage() {
       }
 
       if (data.user) {
+        // Check if MFA verification is needed
+        const mfaCheck = await needsMFAVerification();
+        
+        if (mfaCheck.needed && mfaCheck.factorId) {
+          // Show MFA verification dialog
+          setMfaFactorId(mfaCheck.factorId);
+          setMfaRequired(true);
+          setIsLoading(false);
+          return;
+        }
+        
         toast.success("Signed in successfully!");
         navigate("/");
       }
@@ -276,6 +291,20 @@ export default function AuthPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleMFASuccess = () => {
+    setMfaRequired(false);
+    setMfaFactorId(null);
+    toast.success("Signed in successfully!");
+    navigate("/");
+  };
+
+  const handleMFACancel = async () => {
+    // Sign out since they cancelled MFA
+    await supabase.auth.signOut();
+    setMfaRequired(false);
+    setMfaFactorId(null);
   };
 
   const handleFederatedLogin = async (e: React.FormEvent) => {
@@ -627,6 +656,17 @@ export default function AuthPage() {
           </p>
         </div>
       </div>
+
+      {/* MFA Verification Dialog */}
+      {mfaFactorId && (
+        <MFAVerifyDialog
+          open={mfaRequired}
+          onOpenChange={setMfaRequired}
+          factorId={mfaFactorId}
+          onSuccess={handleMFASuccess}
+          onCancel={handleMFACancel}
+        />
+      )}
     </div>
   );
 }
