@@ -97,24 +97,33 @@ const EnhancedPostReactions = ({ postId, compact = false, onReactionChange, init
   }
 
   if (compact) {
-    // When there are reactions, show the stacked display that opens users list on click
-    // Long-press/double-click opens the picker
+    // When there are reactions, show the stacked display (hover shows who reacted)
+    // Clicking the react button opens picker
     if (totalReactions > 0) {
       return (
-        <div className="flex items-center">
+        <div className="flex items-center gap-1">
+          {/* Stacked display - hover shows who reacted */}
           <StackedReactionDisplay 
             reactions={reactions} 
             showCount={true}
             totalCount={totalReactions}
             targetId={postId}
             targetType="post"
-            onOpenReactionPicker={() => setShowPicker(true)}
-            interactive={true}
             userReaction={userReaction?.reaction}
           />
+          {/* Click to react */}
           <Popover open={showPicker} onOpenChange={setShowPicker}>
             <PopoverTrigger asChild>
-              <span className="sr-only">Open reaction picker</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "h-7 w-7 p-0 rounded-full",
+                  userReaction && REACTION_CONFIG[userReaction.reaction].activeColor
+                )}
+              >
+                <PrimaryIcon className={cn("h-4 w-4", userReaction && "fill-current")} />
+              </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-2" side="top" align="start">
               <div className="flex gap-1">
