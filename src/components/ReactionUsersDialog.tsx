@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { REACTIONS, REACTION_CONFIG, REACTION_EMOJIS, ReactionKey } from "@/lib/reactions";
+import { REACTIONS, REACTION_CONFIG, ReactionKey } from "@/lib/reactions";
 import { getReactionUsers, ReactionUser, ReactionUsersResult } from "@/services/reactionUsersService";
 
 interface ReactionUsersDialogProps {
@@ -17,6 +17,15 @@ interface ReactionUsersDialogProps {
   targetType: 'post' | 'reply' | 'article';
   targetId: string;
 }
+
+// Background colors for reaction icons in the list
+const reactionBgColors: Record<ReactionKey, string> = {
+  love: 'bg-red-500',
+  celebrate: 'bg-amber-500',
+  support: 'bg-blue-500',
+  empathy: 'bg-green-500',
+  insightful: 'bg-purple-500',
+};
 
 export function ReactionUsersDialog({ 
   open, 
@@ -46,7 +55,7 @@ export function ReactionUsersDialog({
 
   const content = (
     <div className="flex flex-col h-full max-h-[60vh]">
-      {/* Filter tabs */}
+      {/* Filter tabs with icons */}
       <div className="flex items-center gap-2 pb-4 overflow-x-auto scrollbar-hide">
         <Button
           variant={filter === 'all' ? 'secondary' : 'ghost'}
@@ -59,22 +68,27 @@ export function ReactionUsersDialog({
         {REACTIONS.map(reaction => {
           const count = data?.counts[reaction] || 0;
           if (count === 0) return null;
+          const config = REACTION_CONFIG[reaction];
+          const Icon = config.icon;
           return (
             <Button
               key={reaction}
               variant={filter === reaction ? 'secondary' : 'ghost'}
               size="sm"
-              className="rounded-full shrink-0 gap-1"
+              className={cn(
+                "rounded-full shrink-0 gap-1.5",
+                filter === reaction && config.activeColor
+              )}
               onClick={() => setFilter(reaction)}
             >
-              <span className="text-base">{REACTION_EMOJIS[reaction]}</span>
+              <Icon className={cn("h-4 w-4", filter === reaction && "fill-current")} />
               <span>{count}</span>
             </Button>
           );
         })}
       </div>
 
-      {/* User list */}
+      {/* User list with reaction icons */}
       <div className="flex-1 overflow-y-auto space-y-1">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
@@ -88,25 +102,44 @@ export function ReactionUsersDialog({
             {t("reactions.noReactions", "No reactions yet")}
           </p>
         ) : (
-          filteredUsers.map((user) => (
-            <Link
-              key={`${user.userId}-${user.reaction}`}
-              to={`/profile/${user.username}`}
-              onClick={() => onOpenChange(false)}
-              className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={user.avatarUrl || undefined} />
-                  <AvatarFallback className="bg-primary/10">
-                    {user.displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-medium">{user.displayName}</span>
-              </div>
-              <span className="text-xl">{REACTION_EMOJIS[user.reaction]}</span>
-            </Link>
-          ))
+          filteredUsers.map((user) => {
+            const config = REACTION_CONFIG[user.reaction];
+            const Icon = config.icon;
+            return (
+              <Link
+                key={`${user.userId}-${user.reaction}`}
+                to={`/profile/${user.username}`}
+                onClick={() => onOpenChange(false)}
+                className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.avatarUrl || undefined} />
+                      <AvatarFallback className="bg-primary/10">
+                        {user.displayName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Reaction badge on avatar */}
+                    <div 
+                      className={cn(
+                        "absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full flex items-center justify-center ring-2 ring-background",
+                        reactionBgColors[user.reaction]
+                      )}
+                    >
+                      <Icon className="h-3 w-3 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{user.displayName}</span>
+                    <span className={cn("text-xs", config.activeColor)}>
+                      {t(`reactions.${user.reaction}`, config.label)}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })
         )}
       </div>
     </div>
@@ -118,6 +151,9 @@ export function ReactionUsersDialog({
         <SheetContent side="bottom" className="h-auto max-h-[70vh] rounded-t-2xl">
           <SheetHeader className="pb-2">
             <SheetTitle>{t("reactions.title", "Reactions")}</SheetTitle>
+            <SheetDescription className="sr-only">
+              {t("reactions.description", "People who reacted to this content")}
+            </SheetDescription>
           </SheetHeader>
           {content}
         </SheetContent>
@@ -130,6 +166,9 @@ export function ReactionUsersDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("reactions.title", "Reactions")}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {t("reactions.description", "People who reacted to this content")}
+          </DialogDescription>
         </DialogHeader>
         {content}
       </DialogContent>
