@@ -37,24 +37,18 @@ export function ReactionUsersPopover({
   const [open, setOpen] = useState(false);
 
   const loadData = async () => {
-    if (data) return; // Already loaded
     setLoading(true);
     const result = await getReactionUsers(targetType, targetId);
     setData(result);
     setLoading(false);
   };
 
-  // If the target changes, reset cached data (prevents showing stale users)
+  // Refetch every time the popover opens (ensures fresh data after reacting)
   useEffect(() => {
-    setData(null);
-  }, [targetType, targetId]);
-
-  // Load on hover (desktop) or open (mobile)
-  useEffect(() => {
-    if (open && !data) {
+    if (open) {
       loadData();
     }
-  }, [open, data, targetType, targetId]);
+  }, [open, targetType, targetId]);
 
   if (disabled) {
     return <>{children}</>;
