@@ -44,12 +44,17 @@ export function ReactionUsersPopover({
     setLoading(false);
   };
 
+  // If the target changes, reset cached data (prevents showing stale users)
+  useEffect(() => {
+    setData(null);
+  }, [targetType, targetId]);
+
   // Load on hover (desktop) or open (mobile)
   useEffect(() => {
     if (open && !data) {
       loadData();
     }
-  }, [open]);
+  }, [open, data, targetType, targetId]);
 
   if (disabled) {
     return <>{children}</>;
