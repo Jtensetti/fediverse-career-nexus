@@ -6,9 +6,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Heart, ThumbsUp, PartyPopper, Smile, Lightbulb, LucideIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useLongPress } from "@/hooks/useLongPress";
-import ReactionUsersDialog from "./ReactionUsersDialog";
-import { REACTION_EMOJIS, ReactionKey } from "@/lib/reactions";
+import { ReactionKey } from "@/lib/reactions";
+import ReactionUsersPopover from "./ReactionUsersPopover";
 
 interface ArticleReactionsProps {
   articleId: string;
@@ -56,7 +55,6 @@ const REACTION_CONFIG: Record<string, { icon: LucideIcon; label: string; activeC
 const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
   const [reactions, setReactions] = useState<ReactionCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showUsersDialog, setShowUsersDialog] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -118,16 +116,17 @@ const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
   return (
     <TooltipProvider>
       <div className="flex items-center gap-2 my-4 flex-wrap">
-        {/* Show total reactions count that opens users dialog */}
+        {/* Show total reactions count with hover popover */}
         {totalReactions > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-muted-foreground"
-            onClick={() => setShowUsersDialog(true)}
-          >
-            <span className="text-sm font-medium">{totalReactions} reactions</span>
-          </Button>
+          <ReactionUsersPopover targetType="article" targetId={articleId}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-muted-foreground"
+            >
+              <span className="text-sm font-medium">{totalReactions} reactions</span>
+            </Button>
+          </ReactionUsersPopover>
         )}
         
         {reactions.map((reaction) => {
@@ -167,13 +166,6 @@ const ArticleReactions = ({ articleId }: ArticleReactionsProps) => {
           );
         })}
       </div>
-
-      <ReactionUsersDialog
-        open={showUsersDialog}
-        onOpenChange={setShowUsersDialog}
-        targetType="article"
-        targetId={articleId}
-      />
     </TooltipProvider>
   );
 };
