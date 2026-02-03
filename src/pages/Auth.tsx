@@ -14,6 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import { SEOHead } from "@/components/common/SEOHead";
+import MFAVerifyDialog from "@/components/MFAVerifyDialog";
+import { needsMFAVerification } from "@/services/mfaService";
 
 export default function AuthPage() {
   const { t } = useTranslation();
