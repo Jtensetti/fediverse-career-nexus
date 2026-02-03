@@ -101,24 +101,37 @@ export async function getReactionUsers(
  */
 async function getArticleReactionUsers(articleId: string): Promise<ReactionUsersResult> {
   try {
-    const { data: reactions, error } = await supabase
+    // Fetch article reactions first
+    const { data: reactions, error: reactionsError } = await supabase
       .from('article_reactions')
-      .select(`
-        emoji,
-        user_id,
-        profiles:user_id (
-          id,
-          username,
-          full_name,
-          avatar_url
-        )
-      `)
+      .select('emoji, user_id')
       .eq('article_id', articleId);
 
-    if (error) {
-      console.error('Error fetching article reaction users:', error);
+    if (reactionsError) {
+      console.error('Error fetching article reactions:', reactionsError);
       return { users: [], counts: {} as Record<ReactionKey, number>, total: 0 };
     }
+
+    if (!reactions || reactions.length === 0) {
+      const emptyCounts: Record<ReactionKey, number> = {} as Record<ReactionKey, number>;
+      REACTIONS.forEach(r => { emptyCounts[r] = 0; });
+      return { users: [], counts: emptyCounts, total: 0 };
+    }
+
+    // Get unique user IDs and fetch profiles separately
+    const userIds = [...new Set(reactions.map(r => r.user_id))];
+    
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username, fullname, avatar_url')
+      .in('id', userIds);
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+    }
+
+    // Create a map of user profiles
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
     // Map emojis to reaction keys
     const emojiToReaction: Record<string, ReactionKey> = {
@@ -135,19 +148,20 @@ async function getArticleReactionUsers(articleId: string): Promise<ReactionUsers
     const counts: Record<ReactionKey, number> = {} as Record<ReactionKey, number>;
     REACTIONS.forEach(r => { counts[r] = 0; });
 
-    reactions?.forEach(r => {
-      const profile = r.profiles as any;
+    reactions.forEach(r => {
+      const profile = profileMap.get(r.user_id);
       const reactionKey = emojiToReaction[r.emoji] || 'love';
+      
+      counts[reactionKey]++;
       
       if (profile) {
         users.push({
           userId: profile.id,
           username: profile.username || 'unknown',
-          displayName: profile.full_name || profile.username || 'Unknown User',
+          displayName: profile.fullname || profile.username || 'Unknown User',
           avatarUrl: profile.avatar_url,
           reaction: reactionKey,
         });
-        counts[reactionKey]++;
       }
     });
 
