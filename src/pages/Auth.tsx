@@ -272,6 +272,17 @@ export default function AuthPage() {
       }
 
       if (data.user) {
+        // Check if MFA verification is needed
+        const mfaCheck = await needsMFAVerification();
+        
+        if (mfaCheck.needed && mfaCheck.factorId) {
+          // Show MFA verification dialog
+          setMfaFactorId(mfaCheck.factorId);
+          setMfaRequired(true);
+          setIsLoading(false);
+          return;
+        }
+        
         toast.success("Signed in successfully!");
         navigate("/");
       }
@@ -280,6 +291,20 @@ export default function AuthPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleMFASuccess = () => {
+    setMfaRequired(false);
+    setMfaFactorId(null);
+    toast.success("Signed in successfully!");
+    navigate("/");
+  };
+
+  const handleMFACancel = async () => {
+    // Sign out since they cancelled MFA
+    await supabase.auth.signOut();
+    setMfaRequired(false);
+    setMfaFactorId(null);
   };
 
   const handleFederatedLogin = async (e: React.FormEvent) => {
