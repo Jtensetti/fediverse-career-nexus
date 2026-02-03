@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { REACTION_CONFIG, ReactionKey, REACTIONS } from "@/lib/reactions";
 import { ReactionCount } from "@/services/reactionsService";
+import { useLongPress } from "@/hooks/useLongPress";
+import ReactionUsersDialog from "./ReactionUsersDialog";
 
 interface StackedReactionDisplayProps {
   reactions: ReactionCount[];
@@ -9,6 +12,14 @@ interface StackedReactionDisplayProps {
   maxIcons?: number;
   size?: 'sm' | 'md';
   className?: string;
+  /** Target ID for fetching who reacted */
+  targetId?: string;
+  /** Target type for fetching who reacted */
+  targetType?: 'post' | 'reply' | 'article';
+  /** Callback when long-press/double-click to open reaction picker */
+  onOpenReactionPicker?: () => void;
+  /** Whether clicking is enabled (opens user list) */
+  interactive?: boolean;
 }
 
 const StackedReactionDisplay = ({
@@ -18,16 +29,18 @@ const StackedReactionDisplay = ({
   maxIcons = 3,
   size = 'md',
   className,
+  targetId,
+  targetType,
+  onOpenReactionPicker,
+  interactive = true,
 }: StackedReactionDisplayProps) => {
+  const [showUsersDialog, setShowUsersDialog] = useState(false);
+
   // Filter to only reactions with count > 0 and sort by count descending
   const activeReactions = reactions
     .filter(r => r.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, maxIcons);
-
-  if (activeReactions.length === 0) {
-    return null;
-  }
 
   const total = totalCount ?? reactions.reduce((sum, r) => sum + r.count, 0);
   const iconSize = size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5';
@@ -42,34 +55,77 @@ const StackedReactionDisplay = ({
     insightful: 'bg-purple-500',
   };
 
+  const longPressHandlers = useLongPress({
+    onLongPress: () => {
+      onOpenReactionPicker?.();
+    },
+    onClick: () => {
+      if (interactive && targetId && targetType && total > 0) {
+        setShowUsersDialog(true);
+      }
+    },
+  });
+
+  if (activeReactions.length === 0) {
+    return null;
+  }
+
+  const isClickable = interactive && targetId && targetType && total > 0;
+
   return (
-    <div className={cn("flex items-center gap-1", className)}>
-      <div className="flex items-center -space-x-1.5">
-        {activeReactions.map((reaction, index) => {
-          const config = REACTION_CONFIG[reaction.reaction];
-          const Icon = config.icon;
-          
-          return (
-            <div
-              key={reaction.reaction}
-              className={cn(
-                "rounded-full flex items-center justify-center ring-2 ring-background",
-                containerSize,
-                bgColors[reaction.reaction]
-              )}
-              style={{ zIndex: maxIcons - index }}
-            >
-              <Icon className={cn(iconSize, "text-white")} />
-            </div>
-          );
-        })}
+    <>
+      <div 
+        className={cn(
+          "flex items-center gap-1",
+          isClickable && "cursor-pointer",
+          className
+        )}
+        {...(isClickable || onOpenReactionPicker ? longPressHandlers : {})}
+        role={isClickable ? "button" : undefined}
+        tabIndex={isClickable ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setShowUsersDialog(true);
+          }
+        }}
+      >
+        <div className="flex items-center -space-x-1.5">
+          {activeReactions.map((reaction, index) => {
+            const config = REACTION_CONFIG[reaction.reaction];
+            const Icon = config.icon;
+            
+            return (
+              <div
+                key={reaction.reaction}
+                className={cn(
+                  "rounded-full flex items-center justify-center ring-2 ring-background",
+                  containerSize,
+                  bgColors[reaction.reaction]
+                )}
+                style={{ zIndex: maxIcons - index }}
+              >
+                <Icon className={cn(iconSize, "text-white")} />
+              </div>
+            );
+          })}
+        </div>
+        {showCount && total > 0 && (
+          <span className="text-xs text-muted-foreground font-medium">
+            {total}
+          </span>
+        )}
       </div>
-      {showCount && total > 0 && (
-        <span className="text-xs text-muted-foreground font-medium">
-          {total}
-        </span>
+
+      {targetId && targetType && (
+        <ReactionUsersDialog
+          open={showUsersDialog}
+          onOpenChange={setShowUsersDialog}
+          targetType={targetType}
+          targetId={targetId}
+        />
       )}
-    </div>
+    </>
   );
 };
 

@@ -152,7 +152,10 @@
     "celebrate": "Fira",
     "support": "Stötta",
     "insightful": "Insiktsfull",
-    "empathy": "Medkänsla"
+    "empathy": "Medkänsla",
+    "title": "Reaktioner",
+    "all": "Alla",
+    "noReactions": "Inga reaktioner ännu"
   },
   "feed": {
     "following": "Följer",
