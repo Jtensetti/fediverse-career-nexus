@@ -209,19 +209,32 @@ export const needsMFAVerification = async (): Promise<{ needed: boolean; factorI
   const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   
   if (error) {
-    console.error('Error checking MFA status:', error);
+    console.error('MFA Check: Error getting AAL:', error);
     return { needed: false };
   }
+  
+  console.log('MFA Check: AAL data:', {
+    currentLevel: data.currentLevel,
+    nextLevel: data.nextLevel,
+  });
   
   // If current level is aal1 but next level should be aal2, MFA is needed
   if (data.currentLevel === 'aal1' && data.nextLevel === 'aal2') {
     const factors = await getMFAFactors();
+    console.log('MFA Check: Found factors:', factors.map(f => ({ id: f.id, status: f.status })));
     const verifiedFactor = factors.find(f => f.status === 'verified');
-    return { 
-      needed: true, 
-      factorId: verifiedFactor?.id 
-    };
+    
+    if (verifiedFactor) {
+      console.log('MFA Check: Verification NEEDED, factor:', verifiedFactor.id);
+      return { 
+        needed: true, 
+        factorId: verifiedFactor.id 
+      };
+    } else {
+      console.log('MFA Check: No verified factor found despite aal2 requirement');
+    }
   }
   
+  console.log('MFA Check: Verification NOT needed');
   return { needed: false };
 };
