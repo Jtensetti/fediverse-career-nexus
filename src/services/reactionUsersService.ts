@@ -50,8 +50,10 @@ export async function getReactionUsers(
     // Get unique user IDs and fetch profiles separately
     const userIds = [...new Set(reactions.map(r => r.user_id))];
     
+    // Use public-safe profile view so we can show usernames for *all* reactors
+    // (the private profiles table only allows users to read their own row)
     const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('id, username, fullname, avatar_url')
       .in('id', userIds);
 
@@ -121,8 +123,9 @@ async function getArticleReactionUsers(articleId: string): Promise<ReactionUsers
     // Get unique user IDs and fetch profiles separately
     const userIds = [...new Set(reactions.map(r => r.user_id))];
     
+    // Use public-safe profile view so we can show usernames for *all* reactors
     const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('id, username, fullname, avatar_url')
       .in('id', userIds);
 
