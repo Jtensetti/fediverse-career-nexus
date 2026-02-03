@@ -77,10 +77,10 @@ export function EnhancedCommentReactions({ replyId, className, initialReactions 
   const primaryReaction = userReaction?.reaction || 'love';
   const PrimaryIcon = REACTION_CONFIG[primaryReaction].icon;
 
-  // When there are reactions, show the stacked display that opens users list on click
+  // When there are reactions, show the stacked display (hover shows who reacted)
   if (totalReactions > 0) {
     return (
-      <div className={cn("flex items-center", className)}>
+      <div className={cn("flex items-center gap-1", className)}>
         <StackedReactionDisplay 
           reactions={reactions} 
           showCount={true}
@@ -88,12 +88,20 @@ export function EnhancedCommentReactions({ replyId, className, initialReactions 
           size="sm"
           targetId={replyId}
           targetType="reply"
-          onOpenReactionPicker={() => setIsOpen(true)}
-          interactive={true}
+          userReaction={userReaction?.reaction}
         />
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
-            <span className="sr-only">Open reaction picker</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-6 w-6 p-0 rounded-full",
+                userReaction && REACTION_CONFIG[userReaction.reaction].activeColor
+              )}
+            >
+              <PrimaryIcon className={cn("h-3.5 w-3.5", userReaction && "fill-current")} />
+            </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-2" side="top" align="start">
             <div className="flex gap-1">
