@@ -51,10 +51,23 @@ export const getVerifiedFactor = async (): Promise<MFAFactor | null> => {
 
 /**
  * Start TOTP enrollment - returns QR code and secret
+ * Cleans up any existing unverified factors first to prevent conflicts
  * @param issuer - The app name shown in authenticator (e.g., "Nolto")
  * @param friendlyName - Optional name for this factor
  */
 export const enrollTOTP = async (issuer: string = 'Nolto', friendlyName?: string): Promise<EnrollmentResult | null> => {
+  // Clean up any existing unverified factors first
+  const existingFactors = await getMFAFactors();
+  for (const factor of existingFactors) {
+    if (factor.status === 'unverified') {
+      try {
+        await unenrollFactor(factor.id);
+      } catch (e) {
+        console.warn('Could not clean up unverified factor:', e);
+      }
+    }
+  }
+
   const { data, error } = await supabase.auth.mfa.enroll({
     factorType: 'totp',
     issuer: issuer,
