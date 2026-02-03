@@ -214,6 +214,7 @@ export type Database = {
       ap_objects: {
         Row: {
           attributed_to: string | null
+          company_id: string | null
           content: Json | null
           content_warning: string | null
           created_at: string
@@ -224,6 +225,7 @@ export type Database = {
         }
         Insert: {
           attributed_to?: string | null
+          company_id?: string | null
           content?: Json | null
           content_warning?: string | null
           created_at?: string
@@ -234,6 +236,7 @@ export type Database = {
         }
         Update: {
           attributed_to?: string | null
+          company_id?: string | null
           content?: Json | null
           content_warning?: string | null
           created_at?: string
@@ -262,6 +265,13 @@ export type Database = {
             columns: ["attributed_to"]
             isOneToOne: false
             referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -335,6 +345,7 @@ export type Database = {
       }
       articles: {
         Row: {
+          company_id: string | null
           content: string
           cover_image_url: string | null
           created_at: string
@@ -350,6 +361,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          company_id?: string | null
           content: string
           cover_image_url?: string | null
           created_at?: string
@@ -365,6 +377,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          company_id?: string | null
           content?: string
           cover_image_url?: string | null
           created_at?: string
@@ -379,7 +392,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "articles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       auth_request_logs: {
         Row: {
@@ -485,6 +506,271 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      companies: {
+        Row: {
+          banner_url: string | null
+          claim_status: Database["public"]["Enums"]["company_claim_status"]
+          created_at: string
+          description: string | null
+          employee_count: number
+          follower_count: number
+          founded_year: number | null
+          id: string
+          industry: string | null
+          is_active: boolean
+          last_post_at: string | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          search_vector: unknown
+          size: Database["public"]["Enums"]["company_size"] | null
+          slug: string
+          tagline: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_method: string | null
+          website: string | null
+        }
+        Insert: {
+          banner_url?: string | null
+          claim_status?: Database["public"]["Enums"]["company_claim_status"]
+          created_at?: string
+          description?: string | null
+          employee_count?: number
+          follower_count?: number
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean
+          last_post_at?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          search_vector?: unknown
+          size?: Database["public"]["Enums"]["company_size"] | null
+          slug: string
+          tagline?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_method?: string | null
+          website?: string | null
+        }
+        Update: {
+          banner_url?: string | null
+          claim_status?: Database["public"]["Enums"]["company_claim_status"]
+          created_at?: string
+          description?: string | null
+          employee_count?: number
+          follower_count?: number
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean
+          last_post_at?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          search_vector?: unknown
+          size?: Database["public"]["Enums"]["company_size"] | null
+          slug?: string
+          tagline?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_method?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      company_audit_log: {
+        Row: {
+          action: string
+          actor_user_id: string
+          company_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          company_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_audit_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_claim_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          evidence: Json | null
+          id: string
+          requester_user_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["claim_request_status"]
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          requester_user_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["claim_request_status"]
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          requester_user_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["claim_request_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_claim_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_employees: {
+        Row: {
+          company_id: string
+          created_at: string
+          employment_type: Database["public"]["Enums"]["employment_type"]
+          end_date: string | null
+          id: string
+          is_verified: boolean
+          start_date: string
+          title: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          end_date?: string | null
+          id?: string
+          is_verified?: boolean
+          start_date: string
+          title: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          end_date?: string | null
+          id?: string
+          is_verified?: boolean
+          start_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_followers: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_followers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_roles: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["company_role"]
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["company_role"]
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["company_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       content_reports: {
         Row: {
@@ -1262,6 +1548,7 @@ export type Database = {
         Row: {
           application_url: string | null
           company: string
+          company_id: string | null
           contact_email: string | null
           created_at: string
           description: string | null
@@ -1290,6 +1577,7 @@ export type Database = {
         Insert: {
           application_url?: string | null
           company: string
+          company_id?: string | null
           contact_email?: string | null
           created_at?: string
           description?: string | null
@@ -1318,6 +1606,7 @@ export type Database = {
         Update: {
           application_url?: string | null
           company?: string
+          company_id?: string | null
           contact_email?: string | null
           created_at?: string
           description?: string | null
@@ -1343,7 +1632,15 @@ export type Database = {
           user_id?: string
           visa_sponsorship?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "job_posts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_requests: {
         Row: {
@@ -2246,6 +2543,24 @@ export type Database = {
           request_count_24h?: number | null
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      reserved_company_slugs: {
+        Row: {
+          created_at: string
+          reason: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          reason?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          reason?: string | null
+          slug?: string
         }
         Relationships: []
       }
@@ -3436,6 +3751,14 @@ export type Database = {
           username: string
         }[]
       }
+      has_company_role: {
+        Args: {
+          _company_id: string
+          _roles: Database["public"]["Enums"]["company_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3451,6 +3774,7 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_moderator: { Args: { _user_id: string }; Returns: boolean }
+      is_slug_reserved: { Args: { _slug: string }; Returns: boolean }
       is_user_banned: { Args: { check_user_id: string }; Returns: boolean }
       is_user_blocked: {
         Args: { checker_id: string; target_id: string }
@@ -3460,6 +3784,11 @@ export type Database = {
         Args: { p_event_id: string; p_user_id: string }
         Returns: boolean
       }
+      recalc_company_counts: {
+        Args: { _company_id: string }
+        Returns: undefined
+      }
+      safe_uuid: { Args: { _text: string }; Returns: string }
       update_instance_health: {
         Args: { p_host: string; p_success: boolean }
         Returns: undefined
@@ -3467,6 +3796,24 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      claim_request_status: "pending" | "approved" | "rejected"
+      company_claim_status: "unclaimed" | "claimed" | "disputed" | "verified"
+      company_role: "owner" | "admin" | "editor"
+      company_size:
+        | "1-10"
+        | "11-50"
+        | "51-200"
+        | "201-500"
+        | "501-1000"
+        | "1001-5000"
+        | "5001-10000"
+        | "10000+"
+      employment_type:
+        | "full_time"
+        | "part_time"
+        | "contract"
+        | "intern"
+        | "freelance"
       verification_status: "unverified" | "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
@@ -3596,6 +3943,26 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      claim_request_status: ["pending", "approved", "rejected"],
+      company_claim_status: ["unclaimed", "claimed", "disputed", "verified"],
+      company_role: ["owner", "admin", "editor"],
+      company_size: [
+        "1-10",
+        "11-50",
+        "51-200",
+        "201-500",
+        "501-1000",
+        "1001-5000",
+        "5001-10000",
+        "10000+",
+      ],
+      employment_type: [
+        "full_time",
+        "part_time",
+        "contract",
+        "intern",
+        "freelance",
+      ],
       verification_status: ["unverified", "pending", "verified", "rejected"],
     },
   },
