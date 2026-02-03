@@ -50,6 +50,29 @@ export const getVerifiedFactor = async (): Promise<MFAFactor | null> => {
 };
 
 /**
+ * Clean up all unverified factors for the current user
+ * This ensures fresh enrollment attempts don't fail due to stale factors
+ */
+export const cleanupUnverifiedFactors = async (): Promise<void> => {
+  const factors = await getMFAFactors();
+  const unverifiedFactors = factors.filter(f => f.status === 'unverified');
+  
+  for (const factor of unverifiedFactors) {
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+      if (error) {
+        console.warn(`Failed to cleanup factor ${factor.id}:`, error.message);
+      }
+    } catch (e) {
+      console.warn('Could not clean up unverified factor:', e);
+    }
+  }
+  
+  // Small delay to ensure cleanup is complete before next operation
+  await new Promise(resolve => setTimeout(resolve, 100));
+};
+
+/**
  * Start TOTP enrollment - returns QR code and secret
  * Cleans up any existing unverified factors first to prevent conflicts
  * @param issuer - The app name shown in authenticator (e.g., "Nolto")
@@ -57,24 +80,33 @@ export const getVerifiedFactor = async (): Promise<MFAFactor | null> => {
  */
 export const enrollTOTP = async (issuer: string = 'Nolto', friendlyName?: string): Promise<EnrollmentResult | null> => {
   // Clean up any existing unverified factors first
-  const existingFactors = await getMFAFactors();
-  for (const factor of existingFactors) {
-    if (factor.status === 'unverified') {
-      try {
-        await unenrollFactor(factor.id);
-      } catch (e) {
-        console.warn('Could not clean up unverified factor:', e);
-      }
-    }
-  }
+  await cleanupUnverifiedFactors();
+
+  // Generate a unique friendly name to avoid conflicts
+  const uniqueName = friendlyName || `Authenticator-${Date.now()}`;
 
   const { data, error } = await supabase.auth.mfa.enroll({
     factorType: 'totp',
     issuer: issuer,
-    friendlyName: friendlyName || 'Authenticator App',
+    friendlyName: uniqueName,
   });
   
   if (error) {
+    // If still getting duplicate error, try one more cleanup and retry
+    if (error.message.includes('already exists')) {
+      await cleanupUnverifiedFactors();
+      const retryResult = await supabase.auth.mfa.enroll({
+        factorType: 'totp',
+        issuer: issuer,
+        friendlyName: `Authenticator-${Date.now()}-retry`,
+      });
+      if (retryResult.error) {
+        console.error('Error enrolling TOTP after retry:', retryResult.error);
+        throw new Error(retryResult.error.message);
+      }
+      return retryResult.data as EnrollmentResult;
+    }
+    
     console.error('Error enrolling TOTP:', error);
     throw new Error(error.message);
   }
