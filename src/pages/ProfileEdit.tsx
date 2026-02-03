@@ -44,6 +44,7 @@ import DeleteAccountSection from "@/components/DeleteAccountSection";
 import DataExportSection from "@/components/DataExportSection";
 import AccountMigrationSection from "@/components/AccountMigrationSection";
 import EmailNotificationPreferences from "@/components/EmailNotificationPreferences";
+import MFASettings from "@/components/MFASettings";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   getUserExperiences, 
