@@ -75,7 +75,6 @@ export function ReactionUsersPopover({
           {data.users.map((user) => {
             const config = REACTION_CONFIG[user.reaction];
             const Icon = config.icon;
-            const usernameLabel = user.username && user.username !== "unknown" ? user.username : user.displayName;
             return (
               <Link
                 key={`${user.userId}-${user.reaction}`}
