@@ -50,7 +50,8 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
   const startEnrollment = async () => {
     setIsLoading(true);
     try {
-      const result = await enrollTOTP();
+      // Use "Nolto" as the issuer - this appears in authenticator apps
+      const result = await enrollTOTP('Nolto');
       setEnrollment(result);
     } catch (error: any) {
       toast.error(error.message || t("mfa.enrollError", "Failed to start enrollment"));
