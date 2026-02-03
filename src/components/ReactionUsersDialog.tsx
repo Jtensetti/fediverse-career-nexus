@@ -110,33 +110,26 @@ export function ReactionUsersDialog({
                 key={`${user.userId}-${user.reaction}`}
                 to={`/profile/${user.username}`}
                 onClick={() => onOpenChange(false)}
-                className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors"
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.avatarUrl || undefined} />
-                      <AvatarFallback className="bg-primary/10">
-                        {user.displayName.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    {/* Reaction badge on avatar */}
-                    <div 
-                      className={cn(
-                        "absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full flex items-center justify-center ring-2 ring-background",
-                        reactionBgColors[user.reaction]
-                      )}
-                    >
-                      <Icon className="h-3 w-3 text-white" />
-                    </div>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{user.displayName}</span>
-                    <span className={cn("text-xs", config.activeColor)}>
-                      {t(`reactions.${user.reaction}`, config.label)}
-                    </span>
-                  </div>
+                {/* Reaction icon */}
+                <div 
+                  className={cn(
+                    "h-6 w-6 rounded-full flex items-center justify-center shrink-0",
+                    reactionBgColors[user.reaction]
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5 text-white" />
                 </div>
+                {/* Avatar */}
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarImage src={user.avatarUrl || undefined} />
+                  <AvatarFallback className="bg-primary/10 text-xs">
+                    {user.displayName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Username */}
+                <span className="font-medium truncate">{user.displayName}</span>
               </Link>
             );
           })
