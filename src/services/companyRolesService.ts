@@ -27,10 +27,20 @@ export async function getUserCompanyRole(companyId: string): Promise<CompanyRole
   return data?.role || null;
 }
 
-// Check if current user can manage company (owner or admin)
+// Check if current user can manage company (owner or admin) - async version
 export async function canManageCompany(companyId: string): Promise<boolean> {
   const role = await getUserCompanyRole(companyId);
   return role === 'owner' || role === 'admin';
+}
+
+// Check if a role can manage company (owner or admin) - sync version for use with already-fetched role
+export function canManageWithRole(role: CompanyRoleEnum | null): boolean {
+  return role === 'owner' || role === 'admin';
+}
+
+// Check if a role can edit content (owner, admin, or editor) - sync version
+export function canEditWithRole(role: CompanyRoleEnum | null): boolean {
+  return role === 'owner' || role === 'admin' || role === 'editor';
 }
 
 // Check if current user can edit company content (owner, admin, or editor)
