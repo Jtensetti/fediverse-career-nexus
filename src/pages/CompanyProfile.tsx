@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Building2 } from "lucide-react";
+import { Building2, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +12,8 @@ import { CompanyHeader, CompanyPostComposer, CompanyPostCard } from "@/component
 import { getCompanyBySlug } from "@/services/companyService";
 import { getUserCompanyRole, canManageWithRole } from "@/services/companyRolesService";
 import { getCompanyPosts } from "@/services/companyPostService";
+import { getJobsByCompanyId } from "@/services/jobPostsService";
+import JobCard from "@/components/JobCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function CompanyProfile() {
@@ -34,6 +36,12 @@ export default function CompanyProfile() {
   const { data: posts = [], isLoading: postsLoading } = useQuery({
     queryKey: ['companyPosts', company?.id],
     queryFn: () => getCompanyPosts(company!.id),
+    enabled: !!company?.id,
+  });
+
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery({
+    queryKey: ['companyJobs', company?.id],
+    queryFn: () => getJobsByCompanyId(company!.id),
     enabled: !!company?.id,
   });
 
@@ -168,11 +176,25 @@ export default function CompanyProfile() {
             </TabsContent>
 
             <TabsContent value="jobs" className="mt-6">
-              <EmptyState
-                icon={Building2}
-                title={t("companies.noJobs", "No job openings")}
-                description={t("companies.noJobsDescription", "This company doesn't have any open positions right now")}
-              />
+              {jobsLoading ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {[...Array(2)].map((_, i) => (
+                    <Skeleton key={i} className="h-64 w-full rounded-lg" />
+                  ))}
+                </div>
+              ) : jobs.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {jobs.map((job) => (
+                    <JobCard key={job.id} job={job} />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={Briefcase}
+                  title={t("companies.noJobs", "No job openings")}
+                  description={t("companies.noJobsDescription", "This company doesn't have any open positions right now")}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="people" className="mt-6">
