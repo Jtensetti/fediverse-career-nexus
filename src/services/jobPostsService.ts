@@ -305,6 +305,24 @@ export const deleteJobPost = async (id: string): Promise<boolean> => {
   }
 };
 
+// Get jobs by company ID
+export const getJobsByCompanyId = async (companyId: string): Promise<JobPost[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('job_posts')
+      .select('*')
+      .eq('company_id', companyId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(enrichJobPost);
+  } catch (error) {
+    console.error('Error fetching company jobs:', error);
+    return [];
+  }
+};
+
 export const searchJobPosts = async (query: string): Promise<JobPost[]> => {
   try {
     const { data, error } = await supabase
