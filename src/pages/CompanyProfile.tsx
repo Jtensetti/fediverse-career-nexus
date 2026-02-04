@@ -1,17 +1,17 @@
-import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Building2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SEOHead, EmptyState } from "@/components/common";
-import { CompanyHeader } from "@/components/company";
+import { CompanyHeader, CompanyPostComposer, CompanyPostCard } from "@/components/company";
 import { getCompanyBySlug } from "@/services/companyService";
-import { getUserCompanyRole } from "@/services/companyRolesService";
+import { getUserCompanyRole, canManageWithRole } from "@/services/companyRolesService";
+import { getCompanyPosts } from "@/services/companyPostService";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function CompanyProfile() {
@@ -30,6 +30,19 @@ export default function CompanyProfile() {
     queryFn: () => getUserCompanyRole(company!.id),
     enabled: !!company?.id && !!user,
   });
+
+  const { data: posts = [], isLoading: postsLoading } = useQuery({
+    queryKey: ['companyPosts', company?.id],
+    queryFn: () => getCompanyPosts(company!.id),
+    enabled: !!company?.id,
+  });
+
+  const queryClient = useQueryClient();
+  const canPost = canManageWithRole(userRole || null);
+
+  const handlePostDelete = (postId: string) => {
+    queryClient.invalidateQueries({ queryKey: ['companyPosts', company?.id] });
+  };
 
   if (isLoading) {
     return (
@@ -125,12 +138,33 @@ export default function CompanyProfile() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="posts" className="mt-6">
-              <EmptyState
-                icon={Building2}
-                title={t("companies.noPosts", "No posts yet")}
-                description={t("companies.noPostsDescription", "This company hasn't shared any posts yet")}
-              />
+            <TabsContent value="posts" className="mt-6 space-y-4">
+              {canPost && <CompanyPostComposer company={company} />}
+              
+              {postsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Skeleton key={i} className="h-40 w-full rounded-lg" />
+                  ))}
+                </div>
+              ) : posts.length > 0 ? (
+                <div className="space-y-4">
+                  {posts.map((post) => (
+                    <CompanyPostCard 
+                      key={post.id} 
+                      post={post} 
+                      canDelete={canPost}
+                      onDelete={handlePostDelete}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={Building2}
+                  title={t("companies.noPosts", "No posts yet")}
+                  description={t("companies.noPostsDescription", "This company hasn't shared any posts yet")}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="jobs" className="mt-6">

@@ -3,3 +3,5 @@ export { default as CompanyHeader } from './CompanyHeader';
 export { default as CompanyFollowButton } from './CompanyFollowButton';
 export { default as CompanyForm } from './CompanyForm';
 export { default as CompanySearchFilter } from './CompanySearchFilter';
+export { default as CompanyPostComposer } from './CompanyPostComposer';
+export { default as CompanyPostCard } from './CompanyPostCard';
