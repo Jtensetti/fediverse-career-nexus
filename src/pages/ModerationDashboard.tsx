@@ -17,7 +17,8 @@ import {
   Eye,
   Gavel,
   Globe,
-  Server
+  Server,
+  Bell
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -41,6 +42,7 @@ const UserLookup = lazy(() => import('@/components/moderation/UserLookup').then(
 const ModerationLog = lazy(() => import('@/components/ModerationLog'));
 const DomainModeration = lazy(() => import('@/components/DomainModeration'));
 const ActorModeration = lazy(() => import('@/components/ActorModeration'));
+const AlertManager = lazy(() => import('@/components/AlertManager').then(m => ({ default: m.AlertManager })));
 
 function StatCard({ 
   label, 
@@ -300,6 +302,10 @@ export default function ModerationDashboard() {
                   <Eye className="h-4 w-4" />
                   Logs
                 </TabsTrigger>
+                <TabsTrigger value="alerts" className="gap-2">
+                  <Bell className="h-4 w-4" />
+                  Alerts
+                </TabsTrigger>
               </TabsList>
 
               <div className="relative w-full md:w-64">
@@ -515,6 +521,13 @@ export default function ModerationDashboard() {
                   </Suspense>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Alerts Tab */}
+            <TabsContent value="alerts">
+              <Suspense fallback={<LoadingFallback />}>
+                <AlertManager />
+              </Suspense>
             </TabsContent>
           </Tabs>
         </div>
