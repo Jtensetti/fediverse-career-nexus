@@ -27,12 +27,12 @@
      queryKey: ["siteAlerts"],
      queryFn: async () => {
        const { data, error } = await supabase
-         .from("site_alerts")
+         .from("site_alerts" as any)
          .select("*")
          .eq("is_active", true)
          .order("created_at", { ascending: false });
        if (error) throw error;
-       return data as SiteAlert[];
+       return (data || []) as SiteAlert[];
      },
      refetchInterval: 60000, // Refresh every minute
    });
@@ -57,7 +57,7 @@
              "flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium",
              alert.type === "error"
                ? "bg-destructive text-destructive-foreground"
-               : "bg-green-600 text-white dark:bg-green-700"
+               : "bg-accent text-accent-foreground"
            )}
          >
            {alert.type === "error" ? (
@@ -68,7 +68,7 @@
            <span className="text-center">{alert.message}</span>
            <button
              onClick={() => handleDismiss(alert.id)}
-             className="ml-2 rounded-full p-1 hover:bg-black/10 transition-colors"
+             className="ml-2 rounded-full p-1 hover:bg-foreground/10 transition-colors"
              aria-label="Dismiss alert"
            >
              <X className="h-4 w-4" />

@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { SEOHead } from "@/components/common/SEOHead";
+ import { AlertBanner } from "@/components/AlertBanner";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -25,6 +26,7 @@ const DashboardLayout = ({
       {!disableSEO && title && <SEOHead title={title} description={description} />}
       
       <Navbar />
+       <AlertBanner />
       
       <main className="flex-grow">
         {showHeader && (title || description) && (

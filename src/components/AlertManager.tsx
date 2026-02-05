@@ -45,17 +45,17 @@
      queryKey: ["allSiteAlerts"],
      queryFn: async () => {
        const { data, error } = await supabase
-         .from("site_alerts")
+         .from("site_alerts" as any)
          .select("*")
          .order("created_at", { ascending: false });
        if (error) throw error;
-       return data as SiteAlert[];
+       return (data || []) as SiteAlert[];
      },
    });
  
    const createMutation = useMutation({
      mutationFn: async (newAlert: { message: string; type: "error" | "success" }) => {
-       const { error } = await supabase.from("site_alerts").insert(newAlert);
+       const { error } = await supabase.from("site_alerts" as any).insert(newAlert);
        if (error) throw error;
      },
      onSuccess: () => {
@@ -70,7 +70,7 @@
    const updateMutation = useMutation({
      mutationFn: async (update: { id: string; message?: string; type?: string; is_active?: boolean }) => {
        const { id, ...fields } = update;
-       const { error } = await supabase.from("site_alerts").update(fields).eq("id", id);
+       const { error } = await supabase.from("site_alerts" as any).update(fields).eq("id", id);
        if (error) throw error;
      },
      onSuccess: () => {
@@ -84,7 +84,7 @@
  
    const deleteMutation = useMutation({
      mutationFn: async (id: string) => {
-       const { error } = await supabase.from("site_alerts").delete().eq("id", id);
+       const { error } = await supabase.from("site_alerts" as any).delete().eq("id", id);
        if (error) throw error;
      },
      onSuccess: () => {
@@ -159,12 +159,10 @@
                    {alert.type === "error" ? (
                      <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
                    ) : (
-                     <CheckCircle className="h-5 w-5 text-green-600 shrink-0" />
+                     <CheckCircle className="h-5 w-5 text-primary shrink-0" />
                    )}
                    <span className="truncate">{alert.message}</span>
-                   <Badge variant={alert.type === "error" ? "destructive" : "default"} className={cn(
-                     alert.type === "success" && "bg-green-600 hover:bg-green-700"
-                   )}>
+                   <Badge variant={alert.type === "error" ? "destructive" : "secondary"}>
                      {alert.type}
                    </Badge>
                  </div>
@@ -215,7 +213,7 @@
                    <SelectContent>
                      <SelectItem value="success">
                        <span className="flex items-center gap-2">
-                         <CheckCircle className="h-4 w-4 text-green-600" />
+                         <CheckCircle className="h-4 w-4 text-primary" />
                          Success (Green)
                        </span>
                      </SelectItem>

@@ -8,6 +8,7 @@ import ModerationHeader from "@/components/ModerationHeader";
 import DomainModeration from "@/components/DomainModeration";
 import ActorModeration from "@/components/ActorModeration";
 import CodeOfConduct from "@/components/CodeOfConduct";
+ import { AlertManager } from "@/components/AlertManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { SEOHead } from "@/components/common/SEOHead";
@@ -184,6 +185,7 @@ const Moderation = () => {
           <TabsTrigger value="lookup">User Lookup</TabsTrigger>
           <TabsTrigger value="log">{t('moderation.log')}</TabsTrigger>
           {isAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
+          <TabsTrigger value="alerts">Alerts</TabsTrigger>
           <TabsTrigger value="domains">Domains</TabsTrigger>
           <TabsTrigger value="actors">Actors</TabsTrigger>
           <TabsTrigger value="coc">{t('moderation.codeOfConduct')}</TabsTrigger>
@@ -216,6 +218,11 @@ const Moderation = () => {
           </TabsContent>
         )}
         
+         {/* Site Alerts Tab */}
+         <TabsContent value="alerts" className="space-y-4">
+           <AlertManager />
+         </TabsContent>
+         
         {/* Domain Blocks Tab */}
         <TabsContent value="domains" className="space-y-4">
           <DomainModeration />
