@@ -44,8 +44,8 @@
    const { data: alerts = [], isLoading } = useQuery({
      queryKey: ["allSiteAlerts"],
      queryFn: async () => {
-       const { data, error } = await supabase
-         .from("site_alerts" as any)
+        const { data, error } = await supabase
+          .from("site_alerts")
          .select("*")
          .order("created_at", { ascending: false });
        if (error) throw error;
@@ -55,7 +55,7 @@
  
    const createMutation = useMutation({
      mutationFn: async (newAlert: { message: string; type: "error" | "success" }) => {
-       const { error } = await supabase.from("site_alerts" as any).insert(newAlert);
+        const { error } = await supabase.from("site_alerts").insert(newAlert);
        if (error) throw error;
      },
      onSuccess: () => {
@@ -70,7 +70,7 @@
    const updateMutation = useMutation({
      mutationFn: async (update: { id: string; message?: string; type?: string; is_active?: boolean }) => {
        const { id, ...fields } = update;
-       const { error } = await supabase.from("site_alerts" as any).update(fields).eq("id", id);
+        const { error } = await supabase.from("site_alerts").update(fields).eq("id", id);
        if (error) throw error;
      },
      onSuccess: () => {
@@ -84,7 +84,7 @@
  
    const deleteMutation = useMutation({
      mutationFn: async (id: string) => {
-       const { error } = await supabase.from("site_alerts" as any).delete().eq("id", id);
+        const { error } = await supabase.from("site_alerts").delete().eq("id", id);
        if (error) throw error;
      },
      onSuccess: () => {
