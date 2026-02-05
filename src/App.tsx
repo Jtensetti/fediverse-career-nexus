@@ -15,6 +15,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary, SkipToContent } from "@/components/common";
 import SessionExpiryWarning from "@/components/SessionExpiryWarning";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { AlertBanner } from "@/components/AlertBanner";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
@@ -107,6 +108,7 @@ function App() {
                 <SkipToContent />
                 <Toaster {...toasterConfig} />
                 <SessionExpiryWarning />
+                <AlertBanner />
                 <main id="main-content">
                   <Routes>
                     {/* Public routes */}
