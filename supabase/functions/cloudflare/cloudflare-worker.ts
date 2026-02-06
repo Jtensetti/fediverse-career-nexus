@@ -48,9 +48,9 @@ export default {
     });
 
     if (!shouldProxy) {
-      // If the path doesn't match, this worker shouldn't handle it
-      // Let Cloudflare/Lovable handle normally
-      return new Response("Path Not Found", { status: 404 });
+      // If the path doesn't match, pass through to the origin (Lovable frontend)
+      // This is critical for routes like /auth/callback which are handled by the SPA
+      return fetch(request);
     }
 
     // Build the destination URL
