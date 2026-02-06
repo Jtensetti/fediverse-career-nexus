@@ -235,6 +235,14 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       noteObject.sensitive = true;
     }
 
+    // Process federated mentions - adds Mention tags and cc addresses for remote users
+    try {
+      noteObject = await processFederatedMentions(postData.content, noteObject);
+      console.log('✅ Federated mentions processed:', noteObject.tag, noteObject.cc);
+    } catch (mentionError) {
+      console.warn('⚠️ Error processing federated mentions (continuing):', mentionError);
+    }
+
     const createActivity = {
       '@context': 'https://www.w3.org/ns/activitystreams',
       type: 'Create',
@@ -242,7 +250,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       actor: actorUrl,
       published: new Date().toISOString(),
       to: ['https://www.w3.org/ns/activitystreams#Public'],
-      cc: [`${actorUrl}/followers`],
+      cc: noteObject.cc || [`${actorUrl}/followers`],
       object: noteObject
     };
 
