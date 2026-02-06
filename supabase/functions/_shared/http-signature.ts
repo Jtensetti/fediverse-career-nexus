@@ -324,7 +324,7 @@ export async function signedFetch(
     headers.set("Host", new URL(url).host);
   }
   if (!headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/activity+json");
+    headers.set("Content-Type", 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"');
   }
   if (!headers.has("Accept")) {
     headers.set("Accept", "application/activity+json");
