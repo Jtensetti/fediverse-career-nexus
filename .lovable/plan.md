@@ -1,418 +1,293 @@
 
-# Refined Full Federation Implementation Plan
 
-## Analysis Summary
+# Adjusted Federation Stability Plan
 
-Your feedback identified three critical risks and strategic improvements. After reviewing the codebase, I can confirm:
+## Incorporated Feedback
 
-### Current State (What Works)
-| Component | Status | Notes |
-|-----------|--------|-------|
-| HTTP Signatures | Complete | Digest (SHA-256), Date header, signature all implemented correctly |
-| RSA Key Management | Complete | Auto-generation on demand |
-| WebFinger | Complete | Uses `nolto.social` domain |
-| Inbox Processing | Complete | Handles Follow/Accept/Undo/Create/Like/Announce/Delete |
-| Queue System | Complete | Partitioned (16 shards) with status tracking |
-| Outbox | Complete | JWT auth, batched delivery for Create activities |
-| Content-Type | Uses `application/activity+json` - needs upgrade to `ld+json` profile |
+### Risk 1: Database Logging (Point 3.2) - REMOVED
 
-### Gaps Identified
-1. Queue claim mechanism missing (race condition risk)
-2. SharedInbox batching not implemented in federation worker
-3. No Tombstone handling for Delete
-4. Content-Type missing `ld+json` profile
-5. No scheduled processing (pg_cron)
+You're correct - writing to `federation_request_logs` on every failed lookup is dangerous. Looking at the existing table schema, it's designed for request tracking, not error logging.
+
+**Adjustment**: 
+- Use `console.error` for failures (Supabase logs to Logflare automatically)
+- Remove the `logFailedLookup` function entirely from the plan
+- For critical monitoring, implement a simple counter metric (no DB writes)
 
 ---
 
-## Phase-by-Phase Implementation
+### Risk 2: WebFinger vs Actor Caching - NEW TABLE REQUIRED
 
-### Phase 1A: Fix The Trigger Trap (Queue Claim Mechanism)
+You're right that WebFinger (JRD) and Actor documents are different:
+- **WebFinger**: `acct:user@domain` → `https://domain/users/user` (the mapping)
+- **Actor**: `https://domain/users/user` → `{inbox, outbox, sharedInbox, ...}` (the data)
 
-The current federation worker has a race condition - it marks items as "processing" AFTER fetching them.
+**Current state**: `remote_actors_cache` only caches **Actor documents** (indexed by `actor_url`)
 
-**Current Problematic Code** (`supabase/functions/federation/index.ts`):
-```typescript
-// PROBLEM: Fetches items, THEN marks as processing
-const { data: queueItems } = await supabaseClient
-  .from("federation_queue_partitioned")
-  .select("*")
-  .eq("status", "pending")
-  ...
-
-// Later, in loop:
-await supabaseClient
-  .update({ status: "processing" })
-  .eq("id", item.id);
-```
-
-**Fix**: Add database function for atomic claim with SKIP LOCKED:
+**Adjustment**: Create a separate `webfinger_cache` table:
 
 ```sql
--- New migration: claim mechanism
-CREATE OR REPLACE FUNCTION claim_federation_items(
-  p_partition INTEGER,
-  p_limit INTEGER DEFAULT 50
-)
-RETURNS SETOF federation_queue_partitioned
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  RETURN QUERY
-  UPDATE federation_queue_partitioned
-  SET 
-    status = 'processing',
-    processed_at = now()
-  WHERE id IN (
-    SELECT id FROM federation_queue_partitioned
-    WHERE partition_key = p_partition
-      AND status = 'pending'
-      AND (scheduled_for IS NULL OR scheduled_for <= now())
-    ORDER BY priority DESC, created_at ASC
-    LIMIT p_limit
-    FOR UPDATE SKIP LOCKED
-  )
-  RETURNING *;
-END;
-$$;
-```
-
-**Update Edge Function**: Replace SELECT+UPDATE with single RPC call.
-
----
-
-### Phase 1B: Thin Trigger for Post Fanout
-
-Instead of building heavy JSON in the trigger, store only IDs and let the worker build the activity.
-
-```sql
--- Minimal trigger - just queue the post ID
-CREATE OR REPLACE FUNCTION queue_post_for_federation()
-RETURNS TRIGGER 
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  -- Only for Note types (skip Create wrappers which are already handled by outbox)
-  IF NEW.type = 'Note' AND NEW.attributed_to IS NOT NULL THEN
-    INSERT INTO federation_queue_partitioned (
-      actor_id, 
-      activity,  -- Minimal payload - worker will enrich
-      status, 
-      partition_key,
-      priority
-    ) VALUES (
-      NEW.attributed_to,
-      jsonb_build_object(
-        'type', 'Create',
-        'object_id', NEW.id::text,
-        'needs_enrichment', true
-      ),
-      'pending',
-      actor_id_to_partition_key(NEW.attributed_to),
-      5  -- Normal priority
-    );
-  END IF;
-  RETURN NEW;
-END;
-$$;
-```
-
-Note: The current `postService.ts` already invokes the outbox directly (line 307), so this trigger is primarily for posts created through other paths.
-
----
-
-### Phase 2: SharedInbox Optimization (Critical for Scaling)
-
-Update `supabase/functions/federation/index.ts` to batch by sharedInbox.
-
-```typescript
-async function getSharedInboxMap(actorId: string): Promise<Map<string, string[]>> {
-  // Get all accepted followers
-  const { data: followers } = await supabaseClient
-    .from("actor_followers")
-    .select("follower_actor_url")
-    .eq("local_actor_id", actorId)
-    .eq("status", "accepted");
-  
-  const inboxMap = new Map<string, string[]>();
-  
-  for (const follower of followers || []) {
-    // Check cache for sharedInbox
-    const { data: cached } = await supabaseClient
-      .from("remote_actors_cache")
-      .select("actor_data")
-      .eq("actor_url", follower.follower_actor_url)
-      .single();
-    
-    const actorData = cached?.actor_data as any;
-    const sharedInbox = actorData?.endpoints?.sharedInbox || actorData?.inbox;
-    
-    if (sharedInbox) {
-      if (!inboxMap.has(sharedInbox)) {
-        inboxMap.set(sharedInbox, []);
-      }
-      inboxMap.get(sharedInbox)!.push(follower.follower_actor_url);
-    }
-  }
-  
-  return inboxMap;
-}
-```
-
-This reduces N individual HTTP calls to M unique sharedInbox calls (typically 10-100x fewer requests).
-
----
-
-### Phase 3: Content-Type Header Upgrade
-
-Update `supabase/functions/_shared/http-signature.ts`:
-
-```typescript
-// Line 326-328: Change Content-Type
-if (!headers.has("Content-Type")) {
-  headers.set("Content-Type", 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"');
-}
-```
-
-Some strict servers (Pleroma, certain Mastodon forks) require the full LD+JSON profile.
-
----
-
-### Phase 4: Delete with Tombstone
-
-When a post is deleted, preserve a Tombstone for proper 410 responses.
-
-```sql
--- Trigger for delete propagation
-CREATE OR REPLACE FUNCTION queue_delete_for_federation()
-RETURNS TRIGGER 
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  IF OLD.attributed_to IS NOT NULL THEN
-    -- Create tombstone record
-    INSERT INTO ap_objects (
-      id, type, attributed_to, content, published_at
-    ) VALUES (
-      OLD.id,
-      'Tombstone',
-      OLD.attributed_to,
-      jsonb_build_object(
-        'type', 'Tombstone',
-        'formerType', OLD.type,
-        'deleted', now()
-      ),
-      now()
-    )
-    ON CONFLICT (id) DO UPDATE SET 
-      type = 'Tombstone',
-      content = EXCLUDED.content;
-    
-    -- Queue delete activity
-    INSERT INTO federation_queue_partitioned (
-      actor_id, activity, status, partition_key, priority
-    ) VALUES (
-      OLD.attributed_to,
-      jsonb_build_object(
-        'type', 'Delete',
-        'object', OLD.content->>'id',
-        'needs_enrichment', true
-      ),
-      'pending',
-      actor_id_to_partition_key(OLD.attributed_to),
-      8  -- High priority for deletes
-    );
-  END IF;
-  RETURN OLD;
-END;
-$$;
-
-CREATE TRIGGER trigger_federate_deleted_post
-  BEFORE DELETE ON ap_objects
-  FOR EACH ROW
-  WHEN (OLD.type IN ('Note', 'Create'))
-  EXECUTE FUNCTION queue_delete_for_federation();
-```
-
-Update the actor endpoint to return 410 Gone for Tombstones.
-
----
-
-### Phase 5: Mention Handling
-
-When a post contains @user@domain.tld:
-
-1. Parse mentions from content
-2. WebFinger lookup for each remote mention
-3. Add to `tag` array in Note object
-4. Add actor URL to `cc` field
-5. Queue direct delivery to their inbox
-
-The current `postService.ts` already extracts mentions (line 271), but only creates local notifications. Extend for federation:
-
-```typescript
-// In postService.ts or new federationMentionService.ts
-async function processFederatedMentions(content: string, noteObject: any) {
-  const mentions = extractMentions(content);
-  const tags: any[] = [];
-  
-  for (const mention of mentions) {
-    if (mention.includes('@')) {
-      // Remote mention - format: user@domain
-      const [username, domain] = mention.split('@');
-      
-      // WebFinger lookup
-      const actorUrl = await lookupRemoteActor(username, domain);
-      
-      if (actorUrl) {
-        tags.push({
-          type: 'Mention',
-          href: actorUrl,
-          name: `@${mention}`
-        });
-        
-        // Add to cc for direct delivery
-        if (!noteObject.cc) noteObject.cc = [];
-        noteObject.cc.push(actorUrl);
-      }
-    }
-  }
-  
-  if (tags.length > 0) {
-    noteObject.tag = [...(noteObject.tag || []), ...tags];
-  }
-  
-  return noteObject;
-}
-```
-
----
-
-### Phase 6: Retry with Exponential Backoff
-
-Add columns and update worker logic:
-
-```sql
--- Add retry scheduling columns
-ALTER TABLE federation_queue_partitioned
-ADD COLUMN IF NOT EXISTS next_retry_at TIMESTAMPTZ DEFAULT now(),
-ADD COLUMN IF NOT EXISTS max_attempts INTEGER DEFAULT 10;
-
--- Update claim function to respect retry timing
-CREATE OR REPLACE FUNCTION claim_federation_items(
-  p_partition INTEGER,
-  p_limit INTEGER DEFAULT 50
-)
-RETURNS SETOF federation_queue_partitioned
-...
-WHERE partition_key = p_partition
-  AND status IN ('pending', 'retry')
-  AND (next_retry_at IS NULL OR next_retry_at <= now())
-  AND attempts < max_attempts
-...
-```
-
-Worker response handling:
-```typescript
-// In federation worker
-if (!response.ok) {
-  const shouldRetry = response.status >= 500 || 
-                      response.status === 408 || 
-                      response.status === 429;
-  
-  if (shouldRetry && item.attempts < 10) {
-    const backoffMinutes = Math.pow(2, item.attempts); // 1, 2, 4, 8, 16, 32...
-    await supabaseClient
-      .from("federation_queue_partitioned")
-      .update({ 
-        status: 'retry',
-        attempts: item.attempts + 1,
-        next_retry_at: new Date(Date.now() + backoffMinutes * 60000),
-        last_error: `HTTP ${response.status}`
-      })
-      .eq("id", item.id);
-  } else if (response.status === 410) {
-    // Gone - actor deleted, remove from followers
-    await supabaseClient
-      .from("actor_followers")
-      .delete()
-      .eq("follower_actor_url", recipientUri);
-    
-    await markAsCompleted(item.id);
-  } else {
-    await markAsFailed(item.id, `HTTP ${response.status}`);
-  }
-}
-```
-
----
-
-### Phase 7: Scheduled Processing (pg_cron)
-
-Since Lovable Cloud uses Supabase, pg_cron should be available:
-
-```sql
--- Enable pg_cron extension (if not already enabled)
-CREATE EXTENSION IF NOT EXISTS pg_cron;
-
--- Schedule coordinator to run every minute
-SELECT cron.schedule(
-  'federation-coordinator',
-  '* * * * *',
-  $$
-  SELECT net.http_post(
-    url := current_setting('app.supabase_url') || '/functions/v1/federation-coordinator',
-    headers := jsonb_build_object(
-      'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
-      'Content-Type', 'application/json'
-    ),
-    body := '{}'::jsonb
-  );
-  $$
+CREATE TABLE IF NOT EXISTS webfinger_cache (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  acct TEXT UNIQUE NOT NULL,           -- e.g., "user@mastodon.social"
+  actor_url TEXT NOT NULL,             -- resolved actor URL
+  created_at TIMESTAMPTZ DEFAULT now(),
+  expires_at TIMESTAMPTZ DEFAULT now() + INTERVAL '1 hour',
+  hit_count INTEGER DEFAULT 0
 );
+
+CREATE INDEX idx_webfinger_acct ON webfinger_cache(acct);
+CREATE INDEX idx_webfinger_expires ON webfinger_cache(expires_at);
+```
+
+This separates the two cache layers and allows proper TTL management.
+
+---
+
+### Risk 3: Regex Validation - TWO-STEP APPROACH
+
+**Adjustment**: Use URL constructor as cheap first-pass validation:
+
+```typescript
+function isValidDomain(domain: string): boolean {
+  // Step 1: Cheap URL constructor check
+  try {
+    new URL(`https://${domain}`);
+  } catch {
+    return false;
+  }
+  
+  // Step 2: Character format check (only if Step 1 passes)
+  const DOMAIN_REGEX = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+  return domain.length <= 253 && DOMAIN_REGEX.test(domain);
+}
 ```
 
 ---
 
-## Files to Modify
+## Revised Implementation Tasks
 
-| File | Changes |
-|------|---------|
-| `supabase/migrations/XXXXXX_federation_v2.sql` | New - claim function, triggers, retry columns, cron |
-| `supabase/functions/federation/index.ts` | Use claim RPC, sharedInbox batching, retry logic |
-| `supabase/functions/_shared/http-signature.ts` | Content-Type upgrade |
-| `src/services/postService.ts` | Add federated mention handling |
-| `supabase/functions/actor/index.ts` | Return 410 for Tombstones |
+### Phase 1.1: Create `lookup-remote-actor` Edge Function
+
+**New file**: `supabase/functions/lookup-remote-actor/index.ts`
+
+**Features**:
+1. Accept `resource` parameter (format: `acct:user@domain` or just `user@domain`)
+2. Two-step domain validation (URL constructor + regex)
+3. Check `webfinger_cache` first (1-hour TTL)
+4. If miss, fetch with 10s AbortController timeout
+5. Cache successful lookups
+6. Return actor URL + inbox (resolve actor document in same call)
+7. Use `console.error` for failures (NO database logging)
+
+**Response format**:
+```json
+{
+  "success": true,
+  "actorUrl": "https://mastodon.social/users/user",
+  "inbox": "https://mastodon.social/users/user/inbox",
+  "cached": true
+}
+```
 
 ---
 
-## Definition of Done Checklist
+### Phase 1.2: Update Client to Use Proxy
 
-Before deploying:
+**File**: `src/services/federationMentionService.ts`
 
-- [ ] Digest Header: SHA-256 of body included in signature (Verified: line 86-90 of http-signature.ts)
-- [ ] Date Header: Within 5 minutes tolerance (Verified: line 163-168 of http-signature.ts)
-- [ ] Content-Type: Upgrade to `application/ld+json; profile="..."` (Needs fix)
-- [ ] Claim mechanism: SKIP LOCKED prevents double-processing (Needs implementation)
-- [ ] SharedInbox: Batched delivery reduces API calls (Needs implementation)
-- [ ] Tombstone: 410 Gone for deleted content (Needs implementation)
-- [ ] Retry: Exponential backoff with max attempts (Needs implementation)
+**Changes**:
+1. Replace direct `fetch(webfingerUrl)` with Edge Function call
+2. Remove `getRemoteActorInbox` (now handled server-side)
+3. Add graceful fallback if proxy fails
+
+```typescript
+async function lookupRemoteActor(username: string, domain: string): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lookup-remote-actor`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resource: `${username}@${domain}` }),
+      }
+    );
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    return data.actorUrl || null;
+  } catch (error) {
+    console.warn(`Remote actor lookup failed: ${username}@${domain}`, error);
+    return null;
+  }
+}
+```
 
 ---
 
-## Implementation Priority
+### Phase 1.3: Add Timeout Guards to Federation Worker
 
-1. **Phase 1A** (Critical): Claim mechanism - prevents duplicate deliveries
-2. **Phase 2** (Critical): SharedInbox batching - prevents rate limiting
-3. **Phase 6** (High): Retry logic - handles transient failures gracefully
-4. **Phase 3** (Medium): Content-Type fix - compatibility with strict servers
-5. **Phase 4** (Medium): Tombstone handling - proper delete propagation
-6. **Phase 5** (Medium): Mention handling - social interactions
-7. **Phase 7** (High): pg_cron scheduling - automated processing
-8. **Phase 1B** (Low): Post fanout trigger - backup path (outbox already handles this)
+**File**: `supabase/functions/federation/index.ts`
+
+**Create shared utility**:
+```typescript
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+```
+
+**Apply to**:
+- Actor document fetches: 10 seconds
+- Inbox deliveries: 15 seconds (via signedFetch enhancement)
+
+---
+
+### Phase 2.1: Fix Null Safety
+
+**File**: `supabase/functions/federation/index.ts`
+
+**Line 274 fix**:
+```typescript
+// Add at function start
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+if (!supabaseUrl) {
+  console.error("CRITICAL: SUPABASE_URL not configured");
+  return new Response(
+    JSON.stringify({ error: "Server misconfiguration" }),
+    { status: 500, headers: corsHeaders }
+  );
+}
+
+// Line 274 - now safe to use without assertion
+if (recipientUri.startsWith(supabaseUrl)) { ... }
+```
+
+**Add recipient validation**:
+```typescript
+// Before processing recipientUri
+if (!recipientUri || typeof recipientUri !== 'string' || !recipientUri.startsWith('http')) {
+  console.warn(`Skipping invalid recipient URI: ${recipientUri}`);
+  continue;
+}
+```
+
+---
+
+### Phase 2.2: Enhanced Error Logging (Console Only)
+
+**File**: `src/services/postService.ts`
+
+```typescript
+try {
+  noteObject = await processFederatedMentions(postData.content, noteObject);
+  console.log('Federated mentions processed:', {
+    tags: noteObject.tag?.length || 0,
+    ccAddresses: (noteObject.cc as string[])?.length || 0
+  });
+} catch (mentionError) {
+  // Log but don't block the post - NO DATABASE WRITE
+  console.warn('Mention resolution failed', {
+    postId,
+    contentPreview: postData.content.substring(0, 50),
+    error: mentionError instanceof Error ? mentionError.message : 'Unknown'
+  });
+}
+```
+
+---
+
+### Phase 3: Database Migration
+
+**New migration**: Add `webfinger_cache` table and update trigger comments
+
+```sql
+-- WebFinger cache (separate from actor cache)
+CREATE TABLE IF NOT EXISTS webfinger_cache (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  acct TEXT UNIQUE NOT NULL,
+  actor_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  expires_at TIMESTAMPTZ DEFAULT now() + INTERVAL '1 hour',
+  hit_count INTEGER DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_webfinger_acct ON webfinger_cache(acct);
+CREATE INDEX IF NOT EXISTS idx_webfinger_expires ON webfinger_cache(expires_at);
+
+-- Add comment to delete trigger for documentation
+COMMENT ON FUNCTION queue_delete_for_federation IS 
+'FEDERATION DELETE HANDLER: This trigger returns NULL to intercept and cancel DELETE operations.
+The row is preserved as a Tombstone for ActivityPub compliance (RFC 7231).
+To hard delete, bypass this trigger or use: SET LOCAL app.bypass_tombstone = true;';
+```
+
+---
+
+## Summary of Changes from Original Plan
+
+| Original Task | Status | Reason |
+|---------------|--------|--------|
+| Log failed lookups to DB | REMOVED | DoS risk - use console.error instead |
+| Single cache table | SPLIT | WebFinger and Actor are different data types |
+| Regex-only validation | IMPROVED | URL constructor as cheap first-pass |
+| HTTP timeout 30s | REDUCED | 10s for lookups, 15s for deliveries |
+
+---
+
+## Files to Create/Modify
+
+| File | Action |
+|------|--------|
+| `supabase/migrations/XXXXXX_webfinger_cache.sql` | Create |
+| `supabase/functions/lookup-remote-actor/index.ts` | Create |
+| `src/services/federationMentionService.ts` | Update |
+| `supabase/functions/federation/index.ts` | Update |
+| `src/services/postService.ts` | Update |
+
+---
+
+## Technical Notes
+
+### Caching Architecture
+
+```text
+Browser                    Edge Function                  Remote Server
+   |                            |                              |
+   |--POST /lookup-remote-actor |                              |
+   |   {resource: "u@masto.soc"}|                              |
+   |                            |--Check webfinger_cache       |
+   |                            |  (1h TTL)                    |
+   |                            |                              |
+   |                            |--[MISS] WebFinger lookup---->|
+   |                            |  (10s timeout)               |
+   |                            |<--actor_url-------------------|
+   |                            |                              |
+   |                            |--Check remote_actors_cache   |
+   |                            |  (1h TTL)                    |
+   |                            |                              |
+   |                            |--[MISS] Actor fetch--------->|
+   |                            |  (10s timeout)               |
+   |                            |<--inbox, endpoints------------|
+   |                            |                              |
+   |                            |--Cache both responses        |
+   |<--{actorUrl, inbox}--------|                              |
+```
+
+### Error Handling Strategy
+
+```text
+Error Type          | Action                    | Log Level
+--------------------|---------------------------|------------
+Invalid domain      | Return 400, skip          | warn
+WebFinger timeout   | Return null, skip mention | warn
+WebFinger 404       | Return null, skip mention | info (expected)
+Actor fetch fail    | Retry later               | error
+Inbox delivery fail | Queue for retry           | error
+```
+
