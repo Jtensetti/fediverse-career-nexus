@@ -94,6 +94,34 @@ export async function fetchActorFromDatabase(username: string) {
   return { profile, actor };
 }
 
+// Check if an object is a Tombstone (deleted content)
+export async function checkTombstone(objectId: string): Promise<{ isTombstone: boolean; tombstoneData?: any }> {
+  const { data: apObject, error } = await supabaseClient
+    .from("ap_objects")
+    .select("id, type, content")
+    .eq("id", objectId)
+    .single();
+  
+  if (error || !apObject) {
+    return { isTombstone: false };
+  }
+  
+  if (apObject.type === "Tombstone") {
+    return { 
+      isTombstone: true, 
+      tombstoneData: {
+        "@context": "https://www.w3.org/ns/activitystreams",
+        type: "Tombstone",
+        id: objectId,
+        formerType: apObject.content?.formerType || "Note",
+        deleted: apObject.content?.deleted || new Date().toISOString()
+      }
+    };
+  }
+  
+  return { isTombstone: false };
+}
+
 // Create a local actor record and return profile and actor
 export async function createLocalActor(username: string) {
   // Look up the user profile

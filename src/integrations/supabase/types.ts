@@ -1319,6 +1319,8 @@ export type Database = {
           created_at: string
           id: string
           last_error: string | null
+          max_attempts: number | null
+          next_retry_at: string | null
           partition_key: number
           priority: number | null
           processed_at: string | null
@@ -1332,6 +1334,8 @@ export type Database = {
           created_at?: string
           id?: string
           last_error?: string | null
+          max_attempts?: number | null
+          next_retry_at?: string | null
           partition_key?: number
           priority?: number | null
           processed_at?: string | null
@@ -1345,6 +1349,8 @@ export type Database = {
           created_at?: string
           id?: string
           last_error?: string | null
+          max_attempts?: number | null
+          next_retry_at?: string | null
           partition_key?: number
           priority?: number | null
           processed_at?: string | null
@@ -3641,6 +3647,30 @@ export type Database = {
       check_host_rate_limit: {
         Args: { p_max_requests_per_minute?: number; p_remote_host: string }
         Returns: boolean
+      }
+      claim_federation_items: {
+        Args: { p_limit?: number; p_partition: number }
+        Returns: {
+          activity: Json
+          actor_id: string
+          attempts: number | null
+          created_at: string
+          id: string
+          last_error: string | null
+          max_attempts: number | null
+          next_retry_at: string | null
+          partition_key: number
+          priority: number | null
+          processed_at: string | null
+          scheduled_for: string | null
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "federation_queue_partitioned"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       cleanup_expired_actor_cache: { Args: never; Returns: undefined }
       cleanup_expired_reset_codes: { Args: never; Returns: undefined }
