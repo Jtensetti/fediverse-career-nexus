@@ -238,9 +238,17 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     // Process federated mentions - adds Mention tags and cc addresses for remote users
     try {
       noteObject = await processFederatedMentions(postData.content, noteObject);
-      console.log('✅ Federated mentions processed:', noteObject.tag, noteObject.cc);
+      console.log('✅ Federated mentions processed:', {
+        tags: (noteObject.tag as unknown[])?.length || 0,
+        ccAddresses: (noteObject.cc as string[])?.length || 0
+      });
     } catch (mentionError) {
-      console.warn('⚠️ Error processing federated mentions (continuing):', mentionError);
+      // Log but don't block the post - NO DATABASE WRITE
+      console.warn('⚠️ Mention resolution failed', {
+        contentPreview: postData.content.substring(0, 50),
+        error: mentionError instanceof Error ? mentionError.message : 'Unknown error'
+      });
+      // Continue without federated mentions - post still works locally
     }
 
     const createActivity = {
