@@ -4,15 +4,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Repeat2 } from "lucide-react";
 import DOMPurify from "dompurify";
 
+interface ActorInfo {
+  id?: string;
+  preferredUsername?: string;
+  name?: string;
+  icon?: { url?: string };
+}
+
 interface QuotedPostContent {
   id?: string;
   content?: string;
-  actor?: {
-    id?: string;
-    preferredUsername?: string;
-    name?: string;
-    icon?: { url?: string };
-  };
+  actor?: ActorInfo | string;
+  attributedTo?: ActorInfo | string;
   attachment?: Array<{ url?: string; mediaType?: string }>;
   published?: string;
 }
@@ -22,10 +25,46 @@ interface QuotedPostPreviewProps {
   className?: string;
 }
 
+// Extract username from an actor URL like "https://nolto.social/functions/v1/actor/username"
+function extractUsernameFromUrl(url: string): string | null {
+  try {
+    // Handle actor URLs like /actor/username or /users/username
+    const match = url.match(/\/(?:actor|users|u)\/([^\/\?#]+)$/i);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+// Normalize actor data which could be an object or a string URL
+function normalizeActorInfo(actor: ActorInfo | string | undefined): { name: string; username: string; avatarUrl?: string } {
+  if (!actor) {
+    return { name: 'Unknown', username: 'unknown' };
+  }
+  
+  // If actor is an object with data
+  if (typeof actor === 'object') {
+    const name = actor.name || actor.preferredUsername || 'Unknown';
+    const username = actor.preferredUsername || 'unknown';
+    const avatarUrl = actor.icon?.url;
+    return { name, username, avatarUrl };
+  }
+  
+  // If actor is a string (URL), try to extract username from it
+  if (typeof actor === 'string') {
+    const extractedUsername = extractUsernameFromUrl(actor);
+    if (extractedUsername) {
+      return { name: extractedUsername, username: extractedUsername };
+    }
+  }
+  
+  return { name: 'Unknown', username: 'unknown' };
+}
+
 export function QuotedPostPreview({ quotedPost, className }: QuotedPostPreviewProps) {
-  const authorName = quotedPost.actor?.name || quotedPost.actor?.preferredUsername || 'Unknown';
-  const authorUsername = quotedPost.actor?.preferredUsername || 'unknown';
-  const avatarUrl = quotedPost.actor?.icon?.url;
+  // Try actor first, then attributedTo (ActivityPub can use either)
+  const actorData = quotedPost.actor || quotedPost.attributedTo;
+  const { name: authorName, username: authorUsername, avatarUrl } = normalizeActorInfo(actorData);
   const postId = quotedPost.id;
   
   // Sanitize the content
