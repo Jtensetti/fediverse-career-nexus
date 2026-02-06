@@ -1,6 +1,6 @@
 /**
  * Federation Mention Service
- * Handles WebFinger lookups and ActivityPub mention tagging for remote users
+ * Handles WebFinger lookups via Edge Function proxy and ActivityPub mention tagging
  */
 
 import { extractMentionsWithInstances, type ParsedMention } from "@/lib/linkify";
@@ -11,56 +11,66 @@ export interface ActivityPubMentionTag {
   name: string;
 }
 
+interface LookupRemoteActorResponse {
+  success: boolean;
+  actorUrl?: string;
+  inbox?: string | null;
+  cached?: boolean;
+  error?: string;
+}
+
 /**
- * Performs a WebFinger lookup to resolve a remote user's ActivityPub actor URL
+ * Performs a WebFinger lookup via the Edge Function proxy.
+ * This avoids CORS issues by making the request server-side.
  */
 export async function lookupRemoteActor(
   username: string,
   domain: string
 ): Promise<string | null> {
   try {
-    const resource = `acct:${username}@${domain}`;
-    const webfingerUrl = `https://${domain}/.well-known/webfinger?resource=${encodeURIComponent(resource)}`;
-    
-    console.log(`WebFinger lookup: ${webfingerUrl}`);
-    
-    const response = await fetch(webfingerUrl, {
-      headers: {
-        Accept: "application/jrd+json, application/json",
-      },
-    });
-    
-    if (!response.ok) {
-      console.warn(`WebFinger lookup failed for ${username}@${domain}: ${response.status}`);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) {
+      console.error("VITE_SUPABASE_URL not configured");
       return null;
     }
-    
-    const data = await response.json();
-    
-    // Find the ActivityPub actor link
-    const actorLink = data.links?.find(
-      (link: any) =>
-        link.rel === "self" &&
-        (link.type === "application/activity+json" ||
-          link.type === 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"')
+
+    const resource = `${username}@${domain}`;
+    console.log(`Looking up remote actor via proxy: ${resource}`);
+
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/lookup-remote-actor`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ resource }),
+      }
     );
-    
-    if (actorLink?.href) {
-      console.log(`Resolved ${username}@${domain} to ${actorLink.href}`);
-      return actorLink.href;
+
+    if (!response.ok) {
+      console.warn(`Remote actor lookup failed for ${resource}: HTTP ${response.status}`);
+      return null;
     }
-    
-    console.warn(`No ActivityPub actor found for ${username}@${domain}`);
-    return null;
+
+    const data: LookupRemoteActorResponse = await response.json();
+
+    if (!data.success || !data.actorUrl) {
+      console.warn(`Remote actor lookup failed for ${resource}: ${data.error || "No actor URL"}`);
+      return null;
+    }
+
+    console.log(`Resolved ${resource} -> ${data.actorUrl}${data.cached ? " (cached)" : ""}`);
+    return data.actorUrl;
   } catch (error) {
-    console.error(`Error looking up remote actor ${username}@${domain}:`, error);
+    console.warn(`Error looking up remote actor ${username}@${domain}:`, error);
     return null;
   }
 }
 
 /**
  * Process federated mentions in post content
- * - Resolves remote users via WebFinger
+ * - Resolves remote users via Edge Function proxy (WebFinger)
  * - Adds Mention tags to the ActivityPub object
  * - Adds actor URLs to cc field for direct delivery
  * 
@@ -86,6 +96,13 @@ export async function processFederatedMentions(
   // Process remote mentions in parallel for speed
   const remoteMentions = mentions.filter(m => m.isRemote);
   
+  if (remoteMentions.length === 0) {
+    console.log("No remote mentions to process");
+    return noteObject;
+  }
+
+  console.log(`Resolving ${remoteMentions.length} remote mentions...`);
+  
   const lookupPromises = remoteMentions.map(async (mention) => {
     if (!mention.instance) return null;
     
@@ -102,10 +119,12 @@ export async function processFederatedMentions(
   
   const results = await Promise.all(lookupPromises);
   
+  let resolvedCount = 0;
   for (const result of results) {
     if (!result) continue;
     
     const { mention, actorUrl } = result;
+    resolvedCount++;
     
     // Add Mention tag
     tags.push({
@@ -121,38 +140,15 @@ export async function processFederatedMentions(
     
     console.log(`Added federated mention: @${mention.full} -> ${actorUrl}`);
   }
+
+  console.log(`Resolved ${resolvedCount}/${remoteMentions.length} remote mentions`);
   
   // Merge tags with existing tags
-  const existingTags = (noteObject.tag as any[]) || [];
+  const existingTags = (noteObject.tag as unknown[]) || [];
   
   return {
     ...noteObject,
     tag: [...existingTags, ...tags],
     cc: ccAddresses,
   };
-}
-
-/**
- * Get the inbox URL for a remote actor
- * Fetches the actor document and extracts the inbox endpoint
- */
-export async function getRemoteActorInbox(actorUrl: string): Promise<string | null> {
-  try {
-    const response = await fetch(actorUrl, {
-      headers: {
-        Accept: 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-      },
-    });
-    
-    if (!response.ok) {
-      console.warn(`Failed to fetch actor document: ${actorUrl}`);
-      return null;
-    }
-    
-    const actor = await response.json();
-    return actor.inbox || null;
-  } catch (error) {
-    console.error(`Error fetching remote actor inbox:`, error);
-    return null;
-  }
 }

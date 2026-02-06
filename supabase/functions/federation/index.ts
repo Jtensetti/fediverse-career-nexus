@@ -8,11 +8,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Timeout for actor document fetches (10 seconds)
+const ACTOR_FETCH_TIMEOUT_MS = 10000;
+
+// Validate environment at startup
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error("CRITICAL: Missing required environment variables (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)");
+}
+
 // Initialize the Supabase client
 const supabaseClient = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  supabaseUrl ?? "",
+  supabaseServiceKey ?? ""
 );
+
+// Fetch with AbortController timeout
+async function fetchWithTimeout(
+  url: string, 
+  options: RequestInit, 
+  timeoutMs: number
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 // Get sharedInbox map for batched delivery - reduces N calls to M unique endpoints
 async function getSharedInboxMap(actorId: string): Promise<Map<string, string[]>> {
