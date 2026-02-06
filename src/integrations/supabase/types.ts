@@ -3236,6 +3236,36 @@ export type Database = {
         }
         Relationships: []
       }
+      webfinger_cache: {
+        Row: {
+          acct: string
+          actor_url: string
+          created_at: string | null
+          expires_at: string | null
+          hit_count: number | null
+          id: string
+          inbox_url: string | null
+        }
+        Insert: {
+          acct: string
+          actor_url: string
+          created_at?: string | null
+          expires_at?: string | null
+          hit_count?: number | null
+          id?: string
+          inbox_url?: string | null
+        }
+        Update: {
+          acct?: string
+          actor_url?: string
+          created_at?: string | null
+          expires_at?: string | null
+          hit_count?: number | null
+          id?: string
+          inbox_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       federated_feed: {

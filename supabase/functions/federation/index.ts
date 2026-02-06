@@ -8,11 +8,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Timeout for actor document fetches (10 seconds)
+const ACTOR_FETCH_TIMEOUT_MS = 10000;
+
+// Validate environment at startup
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error("CRITICAL: Missing required environment variables (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)");
+}
+
 // Initialize the Supabase client
 const supabaseClient = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  supabaseUrl ?? "",
+  supabaseServiceKey ?? ""
 );
+
+// Fetch with AbortController timeout
+async function fetchWithTimeout(
+  url: string, 
+  options: RequestInit, 
+  timeoutMs: number
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 // Get sharedInbox map for batched delivery - reduces N calls to M unique endpoints
 async function getSharedInboxMap(actorId: string): Promise<Map<string, string[]>> {
@@ -136,6 +162,15 @@ serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Validate environment is configured
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("CRITICAL: Server misconfiguration - missing environment variables");
+    return new Response(
+      JSON.stringify({ error: "Server misconfiguration" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 
   try {
@@ -265,26 +300,73 @@ serve(async (req) => {
         console.log(`Activity ${item.id} has ${recipients.length} direct recipients`);
         
         for (const recipientUri of recipients) {
+          // Validate recipient URI before processing
+          if (!recipientUri || typeof recipientUri !== 'string' || !recipientUri.startsWith('http')) {
+            console.warn(`Skipping invalid recipient URI: ${recipientUri}`);
+            continue;
+          }
+          
           try {
             console.log(`Determining inbox for recipient: ${recipientUri}`);
             
-            const supabaseUrl = Deno.env.get("SUPABASE_URL");
             let inboxUrl: string;
             
-            if (recipientUri.startsWith(supabaseUrl!)) {
+            if (supabaseUrl && recipientUri.startsWith(supabaseUrl)) {
               // Local actor
               const username = recipientUri.split('/').pop();
               inboxUrl = `${supabaseUrl}/functions/v1/inbox/${username}`;
             } else {
-              // Remote actor - fetch their actor document for inbox
+              // Remote actor - fetch their actor document for inbox with timeout
               const { data: cached } = await supabaseClient
                 .from("remote_actors_cache")
                 .select("actor_data")
                 .eq("actor_url", recipientUri)
                 .single();
               
-              const actorData = cached?.actor_data as any;
-              inboxUrl = actorData?.inbox || `${recipientUri}/inbox`;
+              const actorData = cached?.actor_data as Record<string, unknown> | undefined;
+              
+              if (actorData?.inbox && typeof actorData.inbox === 'string') {
+                inboxUrl = actorData.inbox;
+              } else {
+                // Need to fetch actor document
+                console.log(`Fetching actor document for inbox: ${recipientUri}`);
+                try {
+                  const actorResponse = await fetchWithTimeout(
+                    recipientUri,
+                    {
+                      headers: {
+                        "Accept": 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+                        "User-Agent": "Nolto-Federation/1.0 (+https://nolto.social)"
+                      }
+                    },
+                    ACTOR_FETCH_TIMEOUT_MS
+                  );
+                  
+                  if (actorResponse.ok) {
+                    const fetchedActorData = await actorResponse.json();
+                    inboxUrl = fetchedActorData.inbox || `${recipientUri}/inbox`;
+                    
+                    // Cache for future use
+                    await supabaseClient
+                      .from("remote_actors_cache")
+                      .upsert({
+                        actor_url: recipientUri,
+                        actor_data: fetchedActorData,
+                        fetched_at: new Date().toISOString()
+                      }, { onConflict: "actor_url" });
+                  } else {
+                    console.warn(`Failed to fetch actor ${recipientUri}: ${actorResponse.status}`);
+                    inboxUrl = `${recipientUri}/inbox`;
+                  }
+                } catch (fetchError) {
+                  if (fetchError.name === "AbortError") {
+                    console.error(`Timeout fetching actor document: ${recipientUri}`);
+                  } else {
+                    console.error(`Error fetching actor document: ${fetchError}`);
+                  }
+                  inboxUrl = `${recipientUri}/inbox`;
+                }
+              }
             }
             
             console.log(`Sending activity to ${inboxUrl}`);

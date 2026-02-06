@@ -95,7 +95,7 @@ export async function fetchActorFromDatabase(username: string) {
 }
 
 // Check if an object is a Tombstone (deleted content)
-export async function checkTombstone(objectId: string): Promise<{ isTombstone: boolean; tombstoneData?: any }> {
+export async function checkTombstone(objectId: string): Promise<{ isTombstone: boolean; tombstoneData?: Record<string, unknown> }> {
   const { data: apObject, error } = await supabaseClient
     .from("ap_objects")
     .select("id, type, content")
@@ -107,14 +107,17 @@ export async function checkTombstone(objectId: string): Promise<{ isTombstone: b
   }
   
   if (apObject.type === "Tombstone") {
+    // Safe type guard for content
+    const content = apObject.content as Record<string, unknown> | null;
+    
     return { 
       isTombstone: true, 
       tombstoneData: {
         "@context": "https://www.w3.org/ns/activitystreams",
         type: "Tombstone",
         id: objectId,
-        formerType: apObject.content?.formerType || "Note",
-        deleted: apObject.content?.deleted || new Date().toISOString()
+        formerType: (typeof content?.formerType === 'string' ? content.formerType : "Note"),
+        deleted: (typeof content?.deleted === 'string' ? content.deleted : new Date().toISOString())
       }
     };
   }
