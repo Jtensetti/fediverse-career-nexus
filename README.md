@@ -103,13 +103,10 @@ If AI-assisted development isn’t your thing, that’s fine — feel free to mo
 ## 🚀 Quick Start
 
 ```bash
-# 1. Clone & install (choose one)
-git clone https://codeberg.org/Tensetti/Nolto.git
-# or
+# 1. Clone & install
 git clone https://github.com/Jtensetti/fediverse-career-nexus.git
 
-cd nolto
-npm install
+cd fediverse-career-nexus
 npm install
 
 # 2. Configure environment variables
@@ -117,7 +114,7 @@ cp .env.example .env
 # Edit `.env` with your Supabase URL and anon key
 
 # 3. Start Supabase + React app
-supabase start
+npx supabase start
 npm run dev
 
 # 4. Deploy Edge Functions (prod)
