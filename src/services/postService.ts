@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractMentions } from "@/lib/linkify";
+import { processFederatedMentions } from "./federationMentionService";
 
 export interface Post {
   id: string;
