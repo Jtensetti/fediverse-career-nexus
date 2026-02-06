@@ -164,6 +164,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate environment is configured
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("CRITICAL: Server misconfiguration - missing environment variables");
+    return new Response(
+      JSON.stringify({ error: "Server misconfiguration" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const { limit = 50, partition = 0 } = await req.json().catch(() => ({}));
     
