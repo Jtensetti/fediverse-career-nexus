@@ -143,6 +143,16 @@ export function extractUrls(text: string): string[] {
 }
 
 /**
+ * Represents a mention with optional remote instance
+ */
+export interface ParsedMention {
+  username: string;
+  instance?: string;
+  isRemote: boolean;
+  full: string; // e.g., "user" or "user@mastodon.social"
+}
+
+/**
  * Extracts all @mentions from text content
  * Returns array of usernames (without the @ symbol)
  */
@@ -156,6 +166,33 @@ export function extractMentions(text: string): string[] {
   // Return unique usernames (first capture group)
   const usernames = matches.map(m => m[1].toLowerCase());
   return [...new Set(usernames)];
+}
+
+/**
+ * Extracts all @mentions from text content with full details
+ * Returns array of ParsedMention objects including remote instances
+ */
+export function extractMentionsWithInstances(text: string): ParsedMention[] {
+  // Remove HTML tags first for cleaner extraction
+  const plainText = text.replace(/<[^>]+>/g, ' ');
+  const matches = [...plainText.matchAll(MENTION_REGEX)];
+  
+  if (!matches.length) return [];
+
+  const mentions: ParsedMention[] = matches.map(m => ({
+    username: m[1].toLowerCase(),
+    instance: m[2]?.toLowerCase(),
+    isRemote: !!m[2],
+    full: m[2] ? `${m[1].toLowerCase()}@${m[2].toLowerCase()}` : m[1].toLowerCase()
+  }));
+
+  // Deduplicate by full mention string
+  const seen = new Set<string>();
+  return mentions.filter(m => {
+    if (seen.has(m.full)) return false;
+    seen.add(m.full);
+    return true;
+  });
 }
 
 /**
