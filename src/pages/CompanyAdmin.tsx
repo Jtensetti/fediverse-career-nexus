@@ -25,13 +25,14 @@ import { SEOHead, EmptyState } from "@/components/common";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCompanyBySlug } from "@/services/companyService";
 import { getUserCompanyRole, getCompanyRoles, removeCompanyRole } from "@/services/companyRolesService";
+import type { CompanyRoleWithProfile } from "@/services/companyRolesService";
 import {
   getPendingEmployees,
   getAllEmployees,
   verifyEmployee,
   removeEmployee,
 } from "@/services/companyEmployeeService";
-import { getCompanyAuditLog } from "@/services/companyAuditService";
+import { getCompanyAuditLog, logAuditAction } from "@/services/companyAuditService";
 import { format } from "date-fns";
 
 export default function CompanyAdmin() {
@@ -95,33 +96,39 @@ export default function CompanyAdmin() {
     return <Navigate to={company ? `/company/${slug}` : "/companies"} replace />;
   }
 
-  const handleVerify = async (employeeId: string) => {
+  const handleVerify = async (employeeId: string, employeeName?: string) => {
     try {
       await verifyEmployee(employeeId);
+      await logAuditAction(company.id, "verified_employee", { employee_id: employeeId, name: employeeName });
       toast.success("Employee verified");
       queryClient.invalidateQueries({ queryKey: ["pendingEmployees", company.id] });
       queryClient.invalidateQueries({ queryKey: ["allEmployees", company.id] });
+      queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
       toast.error(err.message || "Failed to verify");
     }
   };
 
-  const handleReject = async (employeeId: string) => {
+  const handleReject = async (employeeId: string, employeeName?: string) => {
     try {
       await removeEmployee(employeeId);
+      await logAuditAction(company.id, "rejected_employee", { employee_id: employeeId, name: employeeName });
       toast.success("Employee claim removed");
       queryClient.invalidateQueries({ queryKey: ["pendingEmployees", company.id] });
       queryClient.invalidateQueries({ queryKey: ["allEmployees", company.id] });
+      queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
       toast.error(err.message || "Failed to remove");
     }
   };
 
-  const handleRemoveRole = async (userId: string) => {
+  const handleRemoveRole = async (userId: string, userName?: string) => {
     try {
       await removeCompanyRole(company.id, userId);
+      await logAuditAction(company.id, "removed_role", { user_id: userId, name: userName });
       toast.success("Role removed");
       queryClient.invalidateQueries({ queryKey: ["companyRoles", company.id] });
+      queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
       toast.error(err.message || "Failed to remove role");
     }
@@ -237,16 +244,16 @@ export default function CompanyAdmin() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
+                         <Button
                           size="sm"
                           variant="outline"
                           className="text-destructive hover:text-destructive"
-                          onClick={() => handleReject(emp.id)}
+                          onClick={() => handleReject(emp.id, emp.profile?.fullname || undefined)}
                         >
                           <XCircle className="h-4 w-4 mr-1" />
                           Reject
                         </Button>
-                        <Button size="sm" onClick={() => handleVerify(emp.id)}>
+                        <Button size="sm" onClick={() => handleVerify(emp.id, emp.profile?.fullname || undefined)}>
                           <CheckCircle className="h-4 w-4 mr-1" />
                           Verify
                         </Button>
@@ -265,14 +272,21 @@ export default function CompanyAdmin() {
 
             {/* Roles */}
             <TabsContent value="roles" className="mt-6 space-y-4">
-              {roles.length > 0 ? (
+             {roles.length > 0 ? (
                 roles.map((role) => (
                   <Card key={role.id}>
                     <CardContent className="flex items-center justify-between py-3">
                       <div className="flex items-center gap-3">
-                        <Shield className="h-5 w-5 text-muted-foreground" />
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={role.profile?.avatar_url || ""} />
+                          <AvatarFallback>
+                            {(role.profile?.fullname || role.profile?.username || "U").charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         <div>
-                          <p className="font-medium text-sm">{role.user_id.slice(0, 8)}…</p>
+                          <p className="font-medium text-sm">
+                            {role.profile?.fullname || role.profile?.username || role.user_id.slice(0, 8) + "…"}
+                          </p>
                           <Badge variant="secondary" className="text-xs capitalize">
                             {role.role}
                           </Badge>
@@ -283,7 +297,7 @@ export default function CompanyAdmin() {
                           size="sm"
                           variant="ghost"
                           className="text-destructive hover:text-destructive"
-                          onClick={() => handleRemoveRole(role.user_id)}
+                          onClick={() => handleRemoveRole(role.user_id, role.profile?.fullname || undefined)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

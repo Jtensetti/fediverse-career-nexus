@@ -88,7 +88,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       to: ['https://www.w3.org/ns/activitystreams#Public'],
       attachment: imageUrl ? [{
         type: 'Image',
-        mediaType: 'image/jpeg',
+        mediaType: postData.imageFile?.type || 'image/jpeg',
         url: imageUrl,
         name: postData.imageAltText || ''
       }] : undefined,

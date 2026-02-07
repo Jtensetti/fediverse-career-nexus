@@ -49,8 +49,17 @@ export async function canEditCompanyContent(companyId: string): Promise<boolean>
   return role === 'owner' || role === 'admin' || role === 'editor';
 }
 
-// Get all roles for a company (admins only)
-export async function getCompanyRoles(companyId: string): Promise<CompanyRole[]> {
+// Get all roles for a company with profile data (admins only)
+export interface CompanyRoleWithProfile extends CompanyRole {
+  profile?: {
+    id: string;
+    fullname: string | null;
+    avatar_url: string | null;
+    username: string | null;
+  } | null;
+}
+
+export async function getCompanyRoles(companyId: string): Promise<CompanyRoleWithProfile[]> {
   const { data, error } = await supabase
     .from('company_roles')
     .select('*')
@@ -60,6 +69,20 @@ export async function getCompanyRoles(companyId: string): Promise<CompanyRole[]>
   if (error) {
     console.error('Error fetching company roles:', error);
     return [];
+  }
+
+  if (data && data.length > 0) {
+    const userIds = [...new Set(data.map((r) => r.user_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, fullname, avatar_url, username')
+      .in('id', userIds);
+
+    const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+    return data.map((role) => ({
+      ...role,
+      profile: profileMap.get(role.user_id) || null,
+    }));
   }
 
   return data || [];

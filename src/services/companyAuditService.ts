@@ -52,3 +52,28 @@ export async function getCompanyAuditLog(
 
   return data || [];
 }
+
+/**
+ * Log an admin action to the company audit log.
+ */
+export async function logAuditAction(
+  companyId: string,
+  action: string,
+  metadata?: Record<string, unknown>
+): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { error } = await supabase.from("company_audit_log").insert({
+    company_id: companyId,
+    actor_user_id: user.id,
+    action,
+    metadata: metadata as any,
+  });
+
+  if (error) {
+    console.error("Error logging audit action:", error);
+  }
+}

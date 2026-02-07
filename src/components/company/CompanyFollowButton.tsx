@@ -30,25 +30,43 @@ export default function CompanyFollowButton({
 
   const followMutation = useMutation({
     mutationFn: () => followCompany(companyId),
-    onSuccess: () => {
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['companyFollow', companyId] });
+      const previous = queryClient.getQueryData(['companyFollow', companyId]);
+      queryClient.setQueryData(['companyFollow', companyId], true);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(['companyFollow', companyId], context?.previous);
+      toast.error("Failed to follow company");
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['companyFollow', companyId] });
       queryClient.invalidateQueries({ queryKey: ['company'] });
-      toast.success("Now following this company");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to follow company");
+    onSuccess: () => {
+      toast.success("Now following this company");
     },
   });
 
   const unfollowMutation = useMutation({
     mutationFn: () => unfollowCompany(companyId),
-    onSuccess: () => {
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['companyFollow', companyId] });
+      const previous = queryClient.getQueryData(['companyFollow', companyId]);
+      queryClient.setQueryData(['companyFollow', companyId], false);
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      queryClient.setQueryData(['companyFollow', companyId], context?.previous);
+      toast.error("Failed to unfollow company");
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['companyFollow', companyId] });
       queryClient.invalidateQueries({ queryKey: ['company'] });
-      toast.success("Unfollowed company");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to unfollow company");
+    onSuccess: () => {
+      toast.success("Unfollowed company");
     },
   });
 

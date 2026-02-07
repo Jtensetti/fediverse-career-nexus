@@ -11,7 +11,7 @@ import { SEOHead, EmptyState } from "@/components/common";
 import { CompanyHeader, CompanyPostComposer, CompanyPostCard } from "@/components/company";
 import CompanyPeopleTab from "@/components/company/CompanyPeopleTab";
 import { getCompanyBySlug } from "@/services/companyService";
-import { getUserCompanyRole, canManageWithRole } from "@/services/companyRolesService";
+import { getUserCompanyRole, canManageWithRole, canEditWithRole } from "@/services/companyRolesService";
 import { getCompanyPosts } from "@/services/companyPostService";
 import { getJobsByCompanyId } from "@/services/jobPostsService";
 import JobCard from "@/components/JobCard";
@@ -47,7 +47,8 @@ export default function CompanyProfile() {
     enabled: !!company?.id,
   });
 
-  const canPost = canManageWithRole(userRole || null);
+  const canPost = canEditWithRole(userRole || null);
+  const canDelete = canManageWithRole(userRole || null);
 
   const handleCompanyUpdate = (updates: Partial<typeof company>) => {
     queryClient.setQueryData(['company', slug], (old: typeof company) =>
@@ -172,7 +173,7 @@ export default function CompanyProfile() {
                     <CompanyPostCard 
                       key={post.id} 
                       post={post} 
-                      canDelete={canPost}
+                      canDelete={canDelete}
                       onDelete={handlePostDelete}
                     />
                   ))}

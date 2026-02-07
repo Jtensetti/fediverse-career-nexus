@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,11 +29,12 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
   const [industry, setIndustry] = useState<string>("");
   const [size, setSize] = useState<string>("");
   const [location, setLocation] = useState("");
-  const [industries, setIndustries] = useState<string[]>([]);
 
-  useEffect(() => {
-    getCompanyIndustries().then(setIndustries);
-  }, []);
+  const { data: industries = [] } = useQuery({
+    queryKey: ['companyIndustries'],
+    queryFn: getCompanyIndustries,
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => {
