@@ -1,44 +1,84 @@
 import { Link } from "react-router-dom";
-import { Building2, Globe, MapPin, Calendar, Settings, CheckCircle2 } from "lucide-react";
+import { Building2, Globe, MapPin, Calendar, Settings, CheckCircle2, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CompanyFollowButton from "./CompanyFollowButton";
+import CompanyImageUpload from "./CompanyImageUpload";
 import type { Company } from "@/services/companyService";
 import type { CompanyRoleEnum } from "@/services/companyRolesService";
 
 interface CompanyHeaderProps {
   company: Company;
   userRole: CompanyRoleEnum | null;
+  onCompanyUpdate?: (updates: Partial<Company>) => void;
 }
 
-export default function CompanyHeader({ company, userRole }: CompanyHeaderProps) {
+export default function CompanyHeader({ company, userRole, onCompanyUpdate }: CompanyHeaderProps) {
   const canManage = userRole === 'owner' || userRole === 'admin';
   const isVerified = company.claim_status === 'verified';
+
+  const handleImageUploaded = (type: "logo" | "banner", url: string) => {
+    if (onCompanyUpdate) {
+      onCompanyUpdate(type === "logo" ? { logo_url: url } : { banner_url: url });
+    }
+  };
+
+  const bannerContent = (
+    <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/20 via-secondary/10 to-primary/20 rounded-lg overflow-hidden">
+      {company.banner_url && (
+        <img 
+          src={company.banner_url} 
+          alt="" 
+          className="w-full h-full object-cover"
+        />
+      )}
+    </div>
+  );
+
+  const logoContent = (
+    <Avatar className="h-24 w-24 sm:h-32 sm:w-32 rounded-xl border-4 border-background shadow-lg bg-card">
+      <AvatarImage src={company.logo_url || ''} alt={company.name} />
+      <AvatarFallback className="rounded-xl bg-primary text-primary-foreground text-3xl font-bold">
+        {company.name.charAt(0).toUpperCase()}
+      </AvatarFallback>
+    </Avatar>
+  );
 
   return (
     <div className="relative">
       {/* Banner */}
-      <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/20 via-secondary/10 to-primary/20 rounded-lg overflow-hidden">
-        {company.banner_url && (
-          <img 
-            src={company.banner_url} 
-            alt="" 
-            className="w-full h-full object-cover"
-          />
-        )}
-      </div>
+      {canManage ? (
+        <CompanyImageUpload
+          companyId={company.id}
+          type="banner"
+          currentUrl={company.banner_url}
+          onUploaded={(url) => handleImageUploaded("banner", url)}
+          className="rounded-lg overflow-hidden"
+        >
+          {bannerContent}
+        </CompanyImageUpload>
+      ) : (
+        bannerContent
+      )}
 
       {/* Company Info */}
       <div className="px-4 sm:px-6">
         <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-16">
           {/* Logo */}
-          <Avatar className="h-24 w-24 sm:h-32 sm:w-32 rounded-xl border-4 border-background shadow-lg bg-card">
-            <AvatarImage src={company.logo_url || ''} alt={company.name} />
-            <AvatarFallback className="rounded-xl bg-primary text-primary-foreground text-3xl font-bold">
-              {company.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          {canManage ? (
+            <CompanyImageUpload
+              companyId={company.id}
+              type="logo"
+              currentUrl={company.logo_url}
+              onUploaded={(url) => handleImageUploaded("logo", url)}
+              className="rounded-xl"
+            >
+              {logoContent}
+            </CompanyImageUpload>
+          ) : (
+            logoContent
+          )}
 
           {/* Name & Actions */}
           <div className="flex-1 sm:pb-2">
@@ -58,12 +98,20 @@ export default function CompanyHeader({ company, userRole }: CompanyHeaderProps)
               <div className="flex items-center gap-2">
                 <CompanyFollowButton companyId={company.id} />
                 {canManage && (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/company/${company.slug}/edit`}>
-                      <Settings className="h-4 w-4 mr-2" />
-                      Settings
-                    </Link>
-                  </Button>
+                  <>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/company/${company.slug}/admin`}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/company/${company.slug}/edit`}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
+                      </Link>
+                    </Button>
+                  </>
                 )}
               </div>
             </div>

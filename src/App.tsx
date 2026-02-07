@@ -69,6 +69,7 @@ import Companies from "./pages/Companies";
 import CompanyProfile from "./pages/CompanyProfile";
 import CompanyCreate from "./pages/CompanyCreate";
 import CompanyEdit from "./pages/CompanyEdit";
+import CompanyAdmin from "./pages/CompanyAdmin";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -133,6 +134,7 @@ function App() {
                     <Route path="/company/:slug" element={<CompanyProfile />} />
                     <Route path="/companies/create" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
                     <Route path="/company/:slug/edit" element={<ProtectedRoute><CompanyEdit /></ProtectedRoute>} />
+                    <Route path="/company/:slug/admin" element={<ProtectedRoute><CompanyAdmin /></ProtectedRoute>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />
