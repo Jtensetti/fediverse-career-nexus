@@ -32,6 +32,7 @@
     "connections": "Kontakter",
     "articles": "Artiklar",
     "jobs": "Jobb",
+    "companies": "Företag",
     "events": "Evenemang",
     "messages": "Meddelanden",
     "moderation": "Moderering",
@@ -911,5 +912,74 @@
     "rejectFailed": "Kunde inte ta bort",
     "roleRemoved": "Roll borttagen",
     "roleRemoveFailed": "Kunde inte ta bort roll"
+  },
+  "companies": {
+    "title": "Företag",
+    "createTitle": "Skapa företag",
+    "createDescription": "Skapa en företagssida för att visa upp din organisation",
+    "createSuccess": "Företaget skapades!",
+    "createError": "Kunde inte skapa företag",
+    "create": "Skapa företag",
+    "iWorkHere": "Jag jobbar här",
+    "pendingVerification": "Ditt anställningsanspråk väntar på verifiering",
+    "pendingVerificationDescription": "En företagsadmin kommer att granska ditt anspråk.",
+    "noPeople": "Inga anställda listade",
+    "noPeopleDescription": "Var först med att lägga till dig som anställd",
+    "backToCompanies": "Tillbaka till företag"
+  },
+  "companyHeader": {
+    "admin": "Admin",
+    "settings": "Inställningar",
+    "followers": "följare",
+    "employees": "anställda",
+    "companySize": "företagsstorlek",
+    "founded": "Grundat",
+    "verified": "Verifierat företag"
+  },
+  "companyForm": {
+    "basicInfo": "Grundläggande information",
+    "basicInfoDesc": "Ange kärnuppgifterna om ditt företag",
+    "companyName": "Företagsnamn",
+    "companyUrl": "Företagets URL",
+    "available": "Tillgänglig",
+    "taken": "Upptagen",
+    "urlImmutable": "Företagets URL kan inte ändras efter skapande",
+    "uniqueUrl": "Detta blir ditt företags unika URL",
+    "tagline": "Tagline",
+    "taglineDesc": "En kort beskrivning (max 140 tecken)",
+    "about": "Om",
+    "companyDetails": "Företagsdetaljer",
+    "companyDetailsDesc": "Ytterligare information hjälper människor att hitta och lära sig om ditt företag",
+    "website": "Webbplats",
+    "industry": "Bransch",
+    "companySize": "Företagsstorlek",
+    "selectSize": "Välj storlek",
+    "employees": "anställda",
+    "headquarters": "Huvudkontor",
+    "foundedYear": "Grundat år"
+  },
+  "companyPost": {
+    "deleteTitle": "Radera inlägg?",
+    "deleteDesc": "Denna åtgärd kan inte ångras. Inlägget raderas permanent.",
+    "deleting": "Raderar...",
+    "company": "Företag"
+  },
+  "companyImage": {
+    "invalidFile": "Ladda upp en bildfil",
+    "tooLarge": "Bilden måste vara mindre än {{size}}",
+    "uploading": "Laddar upp...",
+    "changeLogo": "Ändra logotyp",
+    "changeBanner": "Ändra banner",
+    "logoUpdated": "Logotyp uppdaterad",
+    "bannerUpdated": "Banner uppdaterad",
+    "uploadFailed": "Kunde inte ladda upp bild"
+  },
+  "companyFollow": {
+    "follow": "Följ",
+    "following": "Följer",
+    "followSuccess": "Följer nu detta företag",
+    "unfollowSuccess": "Slutade följa företag",
+    "followFailed": "Kunde inte följa företag",
+    "unfollowFailed": "Kunde inte sluta följa företag"
   }
 }

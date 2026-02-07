@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -61,9 +61,10 @@ export default function CompanyForm({
   defaultValues,
   onSubmit,
   isSubmitting = false,
-  submitButtonText = "Create Company",
+  submitButtonText,
   isEdit = false,
 }: CompanyFormProps) {
+  const { t } = useTranslation();
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [checkingSlug, setCheckingSlug] = useState(false);
 
@@ -130,6 +131,8 @@ export default function CompanyForm({
     await onSubmit(cleanedData);
   };
 
+  const resolvedButtonText = submitButtonText || t("companies.create", "Create Company");
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -137,10 +140,10 @@ export default function CompanyForm({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              Basic Information
+              {t("companyForm.basicInfo", "Basic Information")}
             </CardTitle>
             <CardDescription>
-              Enter the core details about your company
+              {t("companyForm.basicInfoDesc", "Enter the core details about your company")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -149,7 +152,7 @@ export default function CompanyForm({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Company Name *</FormLabel>
+                  <FormLabel>{t("companyForm.companyName", "Company Name")} *</FormLabel>
                   <FormControl>
                     <Input placeholder="Acme Corporation" {...field} />
                   </FormControl>
@@ -163,7 +166,7 @@ export default function CompanyForm({
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Company URL *</FormLabel>
+                  <FormLabel>{t("companyForm.companyUrl", "Company URL")} *</FormLabel>
                   <FormControl>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">/company/</span>
@@ -175,17 +178,17 @@ export default function CompanyForm({
                       />
                       {checkingSlug && <Loader2 className="h-4 w-4 animate-spin" />}
                       {!checkingSlug && slugAvailable === true && (
-                        <span className="text-sm text-success">Available</span>
+                        <span className="text-sm text-success">{t("companyForm.available", "Available")}</span>
                       )}
                       {!checkingSlug && slugAvailable === false && (
-                        <span className="text-sm text-destructive">Taken</span>
+                        <span className="text-sm text-destructive">{t("companyForm.taken", "Taken")}</span>
                       )}
                     </div>
                   </FormControl>
                   {isEdit ? (
-                    <FormDescription>Company URL cannot be changed after creation</FormDescription>
+                    <FormDescription>{t("companyForm.urlImmutable", "Company URL cannot be changed after creation")}</FormDescription>
                   ) : (
-                    <FormDescription>This will be your company's unique URL</FormDescription>
+                    <FormDescription>{t("companyForm.uniqueUrl", "This will be your company's unique URL")}</FormDescription>
                   )}
                   <FormMessage />
                 </FormItem>
@@ -197,7 +200,7 @@ export default function CompanyForm({
               name="tagline"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tagline</FormLabel>
+                  <FormLabel>{t("companyForm.tagline", "Tagline")}</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="Building the future of..." 
@@ -206,7 +209,7 @@ export default function CompanyForm({
                     />
                   </FormControl>
                   <FormDescription>
-                    A short description (max 140 characters)
+                    {t("companyForm.taglineDesc", "A short description (max 140 characters)")}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -218,7 +221,7 @@ export default function CompanyForm({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>About</FormLabel>
+                  <FormLabel>{t("companyForm.about", "About")}</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Tell people about your company..."
@@ -235,9 +238,9 @@ export default function CompanyForm({
 
         <Card>
           <CardHeader>
-            <CardTitle>Company Details</CardTitle>
+            <CardTitle>{t("companyForm.companyDetails", "Company Details")}</CardTitle>
             <CardDescription>
-              Additional information helps people find and learn about your company
+              {t("companyForm.companyDetailsDesc", "Additional information helps people find and learn about your company")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -246,7 +249,7 @@ export default function CompanyForm({
               name="website"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Website</FormLabel>
+                  <FormLabel>{t("companyForm.website", "Website")}</FormLabel>
                   <FormControl>
                     <Input placeholder="https://example.com" {...field} />
                   </FormControl>
@@ -260,7 +263,7 @@ export default function CompanyForm({
               name="industry"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Industry</FormLabel>
+                  <FormLabel>{t("companyForm.industry", "Industry")}</FormLabel>
                   <FormControl>
                     <Input placeholder="Technology, Healthcare, etc." {...field} />
                   </FormControl>
@@ -274,20 +277,20 @@ export default function CompanyForm({
               name="size"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Company Size</FormLabel>
+                  <FormLabel>{t("companyForm.companySize", "Company Size")}</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     value={field.value || undefined}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select size" />
+                        <SelectValue placeholder={t("companyForm.selectSize", "Select size")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {companySizes.map((size) => (
                         <SelectItem key={size} value={size}>
-                          {size} employees
+                          {size} {t("companyForm.employees", "employees")}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -302,7 +305,7 @@ export default function CompanyForm({
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Headquarters</FormLabel>
+                  <FormLabel>{t("companyForm.headquarters", "Headquarters")}</FormLabel>
                   <FormControl>
                     <Input placeholder="San Francisco, CA" {...field} />
                   </FormControl>
@@ -316,7 +319,7 @@ export default function CompanyForm({
               name="founded_year"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Founded Year</FormLabel>
+                  <FormLabel>{t("companyForm.foundedYear", "Founded Year")}</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
@@ -341,7 +344,7 @@ export default function CompanyForm({
             disabled={isSubmitting || (!isEdit && slugAvailable === false)}
           >
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {submitButtonText}
+            {resolvedButtonText}
           </Button>
         </div>
       </form>

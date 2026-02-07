@@ -32,6 +32,7 @@
     "connections": "Connections",
     "articles": "Articles",
     "jobs": "Jobs",
+    "companies": "Companies",
     "events": "Events",
     "messages": "Messages",
     "moderation": "Moderation",
@@ -903,5 +904,74 @@
     "rejectFailed": "Failed to remove",
     "roleRemoved": "Role removed",
     "roleRemoveFailed": "Failed to remove role"
+  },
+  "companies": {
+    "title": "Companies",
+    "createTitle": "Create Company",
+    "createDescription": "Create a company page to showcase your organization",
+    "createSuccess": "Company created successfully!",
+    "createError": "Failed to create company",
+    "create": "Create Company",
+    "iWorkHere": "I work here",
+    "pendingVerification": "Your employment claim is pending verification",
+    "pendingVerificationDescription": "A company admin will review your claim.",
+    "noPeople": "No employees listed",
+    "noPeopleDescription": "Be the first to add yourself as an employee",
+    "backToCompanies": "Back to Companies"
+  },
+  "companyHeader": {
+    "admin": "Admin",
+    "settings": "Settings",
+    "followers": "followers",
+    "employees": "employees",
+    "companySize": "company size",
+    "founded": "Founded",
+    "verified": "Verified company"
+  },
+  "companyForm": {
+    "basicInfo": "Basic Information",
+    "basicInfoDesc": "Enter the core details about your company",
+    "companyName": "Company Name",
+    "companyUrl": "Company URL",
+    "available": "Available",
+    "taken": "Taken",
+    "urlImmutable": "Company URL cannot be changed after creation",
+    "uniqueUrl": "This will be your company's unique URL",
+    "tagline": "Tagline",
+    "taglineDesc": "A short description (max 140 characters)",
+    "about": "About",
+    "companyDetails": "Company Details",
+    "companyDetailsDesc": "Additional information helps people find and learn about your company",
+    "website": "Website",
+    "industry": "Industry",
+    "companySize": "Company Size",
+    "selectSize": "Select size",
+    "employees": "employees",
+    "headquarters": "Headquarters",
+    "foundedYear": "Founded Year"
+  },
+  "companyPost": {
+    "deleteTitle": "Delete post?",
+    "deleteDesc": "This action cannot be undone. The post will be permanently deleted.",
+    "deleting": "Deleting...",
+    "company": "Company"
+  },
+  "companyImage": {
+    "invalidFile": "Please upload an image file",
+    "tooLarge": "Image must be smaller than {{size}}",
+    "uploading": "Uploading...",
+    "changeLogo": "Change logo",
+    "changeBanner": "Change banner",
+    "logoUpdated": "Logo updated",
+    "bannerUpdated": "Banner updated",
+    "uploadFailed": "Failed to upload image"
+  },
+  "companyFollow": {
+    "follow": "Follow",
+    "following": "Following",
+    "followSuccess": "Now following this company",
+    "unfollowSuccess": "Unfollowed company",
+    "followFailed": "Failed to follow company",
+    "unfollowFailed": "Failed to unfollow company"
   }
 }

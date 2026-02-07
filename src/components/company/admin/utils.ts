@@ -7,9 +7,8 @@ export function formatEmploymentType(type: string): string {
     full_time: "Full-time",
     part_time: "Part-time",
     contract: "Contract",
-    internship: "Internship",
+    intern: "Intern",
     freelance: "Freelance",
-    temporary: "Temporary",
   };
   return labels[type] || type.replace(/_/g, "-");
 }
