@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatEmploymentType } from "./admin/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -113,7 +114,7 @@ export default function CompanyPeopleTab({ companyId }: CompanyPeopleTabProps) {
                 <div className="flex items-center gap-1.5 shrink-0">
                   <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                   <Badge variant="secondary" className="text-xs font-normal">
-                    {emp.employment_type.replace("_", "-")}
+                    {formatEmploymentType(emp.employment_type)}
                   </Badge>
                 </div>
               </CardContent>
