@@ -72,7 +72,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
 
       <div className="flex flex-wrap gap-3">
         <Select value={industry} onValueChange={setIndustry}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Industry" />
           </SelectTrigger>
           <SelectContent>
@@ -86,7 +86,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
         </Select>
 
         <Select value={size} onValueChange={setSize}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Size" />
           </SelectTrigger>
           <SelectContent>
@@ -103,7 +103,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
           placeholder="Location"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-[180px]"
+          className="w-full sm:w-[180px]"
         />
 
         {hasFilters && (

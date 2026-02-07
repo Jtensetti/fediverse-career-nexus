@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/common";
+import { Button } from "@/components/ui/button";
 import CompanyForm, { type CompanyFormData } from "@/components/company/CompanyForm";
 import { createCompany } from "@/services/companyService";
 
@@ -50,6 +52,12 @@ export default function CompanyCreate() {
       <main className="flex-grow">
         <div className="container max-w-3xl mx-auto py-10 px-4 sm:px-6">
           <div className="mb-8">
+            <Button variant="ghost" size="sm" asChild className="mb-4">
+              <Link to="/companies">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                {t("companies.backToCompanies", "Back to Companies")}
+              </Link>
+            </Button>
             <h1 className="text-3xl font-bold tracking-tight">
               {t("companies.createTitle", "Create Company")}
             </h1>
@@ -61,7 +69,6 @@ export default function CompanyCreate() {
           <CompanyForm
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
-            submitButtonText={t("companies.create", "Create Company")}
           />
         </div>
       </main>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserCheck, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +19,7 @@ export default function CompanyFollowButton({
   size = "default",
   className = "" 
 }: CompanyFollowButtonProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -38,14 +40,14 @@ export default function CompanyFollowButton({
     },
     onError: (_err, _vars, context) => {
       queryClient.setQueryData(['companyFollow', companyId], context?.previous);
-      toast.error("Failed to follow company");
+      toast.error(t("companyFollow.followFailed", "Failed to follow company"));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['companyFollow', companyId] });
       queryClient.invalidateQueries({ queryKey: ['company'] });
     },
     onSuccess: () => {
-      toast.success("Now following this company");
+      toast.success(t("companyFollow.followSuccess", "Now following this company"));
     },
   });
 
@@ -59,14 +61,14 @@ export default function CompanyFollowButton({
     },
     onError: (_err, _vars, context) => {
       queryClient.setQueryData(['companyFollow', companyId], context?.previous);
-      toast.error("Failed to unfollow company");
+      toast.error(t("companyFollow.unfollowFailed", "Failed to unfollow company"));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['companyFollow', companyId] });
       queryClient.invalidateQueries({ queryKey: ['company'] });
     },
     onSuccess: () => {
-      toast.success("Unfollowed company");
+      toast.success(t("companyFollow.unfollowSuccess", "Unfollowed company"));
     },
   });
 
@@ -89,7 +91,7 @@ export default function CompanyFollowButton({
     return (
       <Button size={size} onClick={handleClick} className={className}>
         <UserPlus className="h-4 w-4 mr-2" />
-        Follow
+        {t("companyFollow.follow", "Follow")}
       </Button>
     );
   }
@@ -109,7 +111,7 @@ export default function CompanyFollowButton({
       ) : (
         <UserPlus className="h-4 w-4 mr-2" />
       )}
-      {isFollowing ? "Following" : "Follow"}
+      {isFollowing ? t("companyFollow.following", "Following") : t("companyFollow.follow", "Follow")}
     </Button>
   );
 }

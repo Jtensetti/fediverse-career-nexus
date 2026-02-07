@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Building2, MoreHorizontal, Trash2, Globe } from "lucide-react";
+import { Building2, MoreHorizontal, Trash2, Globe, Share2 } from "lucide-react";
 import { ShareButton } from "@/components/common/ShareButton";
 import { deleteCompanyPost } from "@/services/companyPostService";
 import { linkifyWithMarkdown, stripHtml } from "@/lib/linkify";
@@ -21,6 +22,7 @@ interface CompanyPostCardProps {
 }
 
 export default function CompanyPostCard({ post, canDelete = false, onDelete }: CompanyPostCardProps) {
+  const { t } = useTranslation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -57,6 +59,9 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
     }
   };
 
+  const shareUrl = `${window.location.origin}/post/${post.id}`;
+  const shareTitle = stripHtml(content).substring(0, 100);
+
   return (
     <>
       <Card className="overflow-hidden hover:shadow-md transition-shadow">
@@ -76,7 +81,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
                 to={`/company/${company?.slug}`}
                 className="font-semibold hover:underline truncate block"
               >
-                {company?.name || 'Company'}
+                {company?.name || t("companyPost.company", "Company")}
               </Link>
               <div className="text-xs text-muted-foreground flex items-center gap-1">
                 <Globe className="h-3 w-3" />
@@ -97,15 +102,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
                     className="text-destructive"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <ShareButton
-                      url={`${window.location.origin}/post/${post.id}`}
-                      title={stripHtml(content).substring(0, 100)}
-                      variant="ghost"
-                      size="sm"
-                    />
+                    {t("common.delete", "Delete")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -148,8 +145,8 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
 
         <CardFooter className="pt-0 pb-3 flex justify-end">
           <ShareButton
-            url={`${window.location.origin}/post/${post.id}`}
-            title={stripHtml(content).substring(0, 100)}
+            url={shareUrl}
+            title={shareTitle}
             variant="ghost"
             size="sm"
           />
@@ -160,19 +157,19 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete post?</AlertDialogTitle>
+            <AlertDialogTitle>{t("companyPost.deleteTitle", "Delete post?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The post will be permanently deleted.
+              {t("companyPost.deleteDesc", "This action cannot be undone. The post will be permanently deleted.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t("common.cancel", "Cancel")}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? t("companyPost.deleting", "Deleting...") : t("common.delete", "Delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

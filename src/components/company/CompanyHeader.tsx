@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Building2, Globe, MapPin, Calendar, Settings, CheckCircle2, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ interface CompanyHeaderProps {
 }
 
 export default function CompanyHeader({ company, userRole, onCompanyUpdate }: CompanyHeaderProps) {
+  const { t } = useTranslation();
   const canManage = userRole === 'owner' || userRole === 'admin';
   const isVerified = company.claim_status === 'verified';
 
@@ -87,7 +89,7 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl sm:text-3xl font-bold">{company.name}</h1>
                   {isVerified && (
-                    <CheckCircle2 className="h-6 w-6 text-primary" aria-label="Verified company" />
+                    <CheckCircle2 className="h-6 w-6 text-primary" aria-label={t("companyHeader.verified", "Verified company")} />
                   )}
                 </div>
                 {company.tagline && (
@@ -102,13 +104,13 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
                     <Button variant="outline" size="sm" asChild>
                       <Link to={`/company/${company.slug}/admin`}>
                         <Shield className="h-4 w-4 mr-2" />
-                        Admin
+                        {t("companyHeader.admin", "Admin")}
                       </Link>
                     </Button>
                     <Button variant="outline" size="sm" asChild>
                       <Link to={`/company/${company.slug}/edit`}>
                         <Settings className="h-4 w-4 mr-2" />
-                        Settings
+                        {t("companyHeader.settings", "Settings")}
                       </Link>
                     </Button>
                   </>
@@ -146,7 +148,7 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
           {company.founded_year && (
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Founded {company.founded_year}
+              {t("companyHeader.founded", "Founded")} {company.founded_year}
             </span>
           )}
         </div>
@@ -155,15 +157,15 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
         <div className="flex items-center gap-6 mt-4 pt-4 border-t">
           <div>
             <span className="font-semibold text-foreground">{company.follower_count}</span>
-            <span className="text-muted-foreground ml-1">followers</span>
+            <span className="text-muted-foreground ml-1">{t("companyHeader.followers", "followers")}</span>
           </div>
           <div>
             <span className="font-semibold text-foreground">{company.employee_count}</span>
-            <span className="text-muted-foreground ml-1">employees</span>
+            <span className="text-muted-foreground ml-1">{t("companyHeader.employees", "employees")}</span>
           </div>
           {company.size && (
             <div className="text-muted-foreground">
-              <span className="font-medium text-foreground">{company.size}</span> company size
+              <span className="font-medium text-foreground">{company.size}</span> {t("companyHeader.companySize", "company size")}
             </div>
           )}
         </div>

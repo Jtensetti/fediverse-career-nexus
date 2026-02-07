@@ -103,6 +103,7 @@ const Navbar = () => {
     { name: t("nav.connections", "Connections"), href: "/connections" },
     { name: t("nav.articles", "Articles"), href: "/articles" },
     { name: t("nav.jobs", "Jobs"), href: "/jobs" },
+    { name: t("nav.companies", "Companies"), href: "/companies" },
     { name: t("nav.events", "Events"), href: "/events" },
     { name: t("nav.messages", "Messages"), href: "/messages" },
   ];
