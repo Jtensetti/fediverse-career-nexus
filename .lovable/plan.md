@@ -1,132 +1,107 @@
 
 
-# Company Pages Implementation - Status Report
+# Company Pages Code Review -- Issues Found
 
-## Summary
-
-The plan has made **strong progress through Phases 1-5**, with the core database foundation, security guardrails, and basic frontend all in place. However, several key features remain unfinished, particularly around the **People/Employees tab**, **Admin dashboard**, **Claims workflow**, and **Storage bucket**.
+After a thorough review of all company-related services, components, pages, edge functions, migrations, and types, here are the issues I found, grouped by severity.
 
 ---
 
-## What Has Been Done (Completed)
+## Critical Bugs
 
-### Phase 1: Database Foundation -- COMPLETE
-- All 5 enum types created: `company_role`, `company_claim_status`, `company_size`, `employment_type`, `claim_request_status`
-- All 7 tables created with correct schema:
-  - `companies` (all 22 columns including `search_vector`, `claim_status`, `follower_count`, `employee_count`)
-  - `company_roles` (with unique constraint on company_id + user_id)
-  - `company_followers`
-  - `company_employees` (with verification fields and the `idx_company_employees_verified_current` index)
-  - `company_audit_log`
-  - `reserved_company_slugs` (seeded with 20 reserved slugs, more than the original 9)
-  - `company_claim_requests`
-- All 3 existing table modifications done:
-  - `job_posts.company_id` column added
-  - `ap_objects.company_id` column added
-  - `articles.company_id` column added
+### 1. Editors Cannot Post (Permission Logic Bug)
 
-### Phase 2: Functions, Triggers, and Data Integrity -- COMPLETE
-All 9 functions exist in the database:
-- `has_company_role()` -- RLS-safe role checker
-- `is_slug_reserved()` -- Reserved slug checker
-- `prevent_slug_change()` -- Slug immutability trigger
-- `safe_uuid()` -- Safe UUID parser
-- `update_company_search_vector()` -- Full-text search trigger
-- `update_company_follower_count()` -- Denormalized follower count
-- `update_company_employee_count()` -- Denormalized employee count (current only)
-- `recalc_company_counts()` -- Reconciliation function
-- `prevent_self_verification()` -- Self-verification hard block
+**File:** `src/pages/CompanyProfile.tsx` line 50
 
-### Phase 3: RLS Policies -- COMPLETE
-All RLS policies are in place across all 6 tables:
-- `companies`: 3 policies (public view, authenticated create, admin update)
-- `company_roles`: 4 policies (admin view, owner add/update/delete with self-delete protection)
-- `company_followers`: 3 policies (auth view, user follow/unfollow)
-- `company_employees`: 6 policies (public view, user claim/update/delete, admin update/delete)
-- `company_audit_log`: 1 policy (admin view)
-- `company_claim_requests`: 3 policies (user view own, admin view, user create)
+The company post composer visibility uses `canManageWithRole()` which only allows `owner` and `admin`. But the plan explicitly defines an `editor` role whose purpose is to create content. The `canEditWithRole()` helper exists in `companyRolesService.ts` but is never used.
 
-### Phase 5: Backend Services -- MOSTLY COMPLETE
-- `companyService.ts` -- Full CRUD, search with filters, slug generation/validation, deactivation
-- `companyRolesService.ts` -- Role checking (sync and async), CRUD for roles, user company listing
-- `companyFollowService.ts` -- Follow/unfollow, status check, follower listing, followed companies
-- `companyPostService.ts` -- Create/delete company posts (local-only V1), get company posts with company branding
-- `company-create` edge function -- Service role company creation (solves RLS chicken-and-egg), with audit logging
+```text
+Current:  const canPost = canManageWithRole(userRole || null);  // owner, admin only
+Should be: const canPost = canEditWithRole(userRole || null);   // owner, admin, editor
+```
 
-### Phase 6: Frontend Pages -- PARTIALLY COMPLETE
-- `/companies` -- Company directory with search/filter (CompanySearchFilter component) -- DONE
-- `/companies/create` -- Company creation form (protected route) -- DONE
-- `/company/:slug` -- Public profile with tabs (About, Posts, Jobs, People) -- DONE but People tab is a stub
-- `/company/:slug/edit` -- Edit form with access control -- DONE
-- All routes registered in App.tsx with proper `ProtectedRoute` wrapping
+The same issue applies to `canDelete` on line 175 -- editors should probably be allowed to post but not delete. This needs to be separated:
+- `canPost` should use `canEditWithRole` (owner, admin, editor)
+- `canDelete` should use `canManageWithRole` (owner, admin only)
 
-### Frontend Components -- DONE
-- `CompanyCard` -- Directory card
-- `CompanyHeader` -- Profile header with banner, logo, metadata, stats, verified badge
-- `CompanyFollowButton` -- Follow/unfollow toggle
-- `CompanyForm` -- Create/edit form
-- `CompanySearchFilter` -- Search and filter UI
-- `CompanyPostComposer` -- Post creation as company
-- `CompanyPostCard` -- Company post display
+### 2. `rounded-inherit` is Not a Valid CSS/Tailwind Class
+
+**File:** `src/components/company/CompanyImageUpload.tsx` line 81
+
+The overlay button uses `rounded-inherit` which does not exist in Tailwind CSS. This means the hover overlay on image upload will have square corners instead of matching the parent's border radius. It should be a standard Tailwind rounding class or use `[border-radius:inherit]`.
 
 ---
 
-## What Is Left (Not Yet Implemented)
+## Moderate Issues
 
-### Phase 4: Storage Configuration -- NOT DONE
-- The `company-assets` storage bucket does **not exist** yet
-- No storage policies for company logo/banner uploads
-- Currently, company logo and banner URLs exist in the schema but there is **no upload UI** in CompanyForm or CompanyHeader
+### 3. No INSERT RLS Policy for `company_audit_log`
 
-### Phase 5: Missing Services
-- **`companyEmployeeService.ts`** -- Does not exist. No service for:
-  - Fetching verified current employees (public People tab)
-  - Fetching pending/unverified employees (admin dashboard)
-  - Adding yourself as an employee ("I work here")
-  - Admin verification/rejection of employee claims
-- **`companyAuditService.ts`** -- Does not exist. No service for viewing audit logs
+The `company_audit_log` table only has a SELECT policy ("Admins view audit"). There is no INSERT policy for authenticated users. Currently this works because the only insert happens in the `company-create` edge function via service role. However, if any client-side code ever tries to write an audit entry (e.g., for employee verification, role changes), it will silently fail due to RLS.
 
-### Phase 6: Incomplete Frontend
+**Impact:** Currently low (edge function bypasses RLS), but will become a bug the moment audit logging is added to client-side admin actions like verify/reject employee or remove role.
 
-#### People Tab (stub only)
-The People tab on `/company/:slug` currently shows a static empty state. It needs:
-- List of verified current employees with profiles
-- "I work here" button for authenticated users to claim employment
-- Employee add form (title, employment type, start date)
-- Links to employee profiles
+### 4. Employee Verification Does Not Create Audit Log Entries
 
-#### Admin Dashboard -- NOT STARTED
-No `/company/:slug/admin` route or page exists. Planned features:
-- Employee verification queue (pending employees with Verify/Reject buttons)
-- Role management UI (add/remove admins and editors)
-- Audit log viewer
-- Company analytics/stats
+When an admin verifies or rejects an employee in `CompanyAdmin.tsx`, no audit log entry is created. The handlers call `verifyEmployee()` and `removeEmployee()` directly but never log the action. The audit log will appear empty despite admin activity.
 
-#### Logo/Banner Upload UI -- NOT DONE
-The CompanyForm does not include image upload for logo or banner. The CompanyHeader renders them if URLs exist, but there is no way to set them through the UI.
+### 5. Role Removal Does Not Create Audit Log Entries
 
-### Phase 7: ActivityPub Integration -- DEFERRED (V1 is local-only, which is working)
-Company posts are correctly local-only in V1. Federation of company posts is a future phase.
+Same issue: `handleRemoveRole` in `CompanyAdmin.tsx` calls `removeCompanyRole()` but does not log the action.
 
-### Phase 8: Claims Workflow -- NOT STARTED
-- No UI for submitting a company claim request
-- No admin UI for reviewing claim requests
-- The `company_claim_requests` table and RLS policies exist, but nothing uses them yet
+### 6. Admin Dashboard Shows Truncated User IDs Instead of Names
 
-### Phase 9: Jobs Integration -- PARTIALLY DONE
-- `job_posts.company_id` column exists
-- `getJobsByCompanyId()` function exists and is called from CompanyProfile
-- Jobs tab renders on the company profile
-- **Missing**: UI to link a job post to a company during job creation/editing
+**File:** `src/pages/CompanyAdmin.tsx` line 275
+
+The Roles tab displays `{role.user_id.slice(0, 8)}...` instead of the user's actual name. The `getCompanyRoles()` service returns raw role rows without profile data. This should be enriched with profile names/avatars like the employee lists are.
 
 ---
 
-## Priority Order for Remaining Work
+## Minor Issues
 
-1. **Storage bucket + upload UI** -- Enable logo/banner uploads for company pages
-2. **Employee service + People tab** -- The most visible missing feature on company profiles
-3. **Admin dashboard** -- Employee verification, role management, audit log
-4. **Job linking** -- Connect job creation form to company pages
-5. **Claims workflow UI** -- Allow users to claim unclaimed companies
-6. **ActivityPub (V2)** -- Federate company posts
+### 7. `isSlugAvailable` Does Not Check Deactivated Companies
+
+**File:** `src/services/companyService.ts` lines 192-199
+
+The slug availability check only queries for existing companies without filtering by `is_active`. This is actually correct behavior (slugs should remain reserved even for deactivated companies). No change needed -- but worth noting the query doesn't filter `is_active`, which is intentional for slug uniqueness.
+
+### 8. Company Post Uses Hardcoded `image/jpeg` Media Type
+
+**File:** `src/services/companyPostService.ts` line 91
+
+When creating a company post with an image, the ActivityPub attachment always uses `mediaType: 'image/jpeg'` regardless of the actual file type (could be PNG, WebP, etc.). The actual file type from the upload should be used instead.
+
+### 9. `CompanySearchFilter` Uses Direct State Effects for Industry Fetching
+
+**File:** `src/components/company/CompanySearchFilter.tsx` lines 33-35
+
+Industries are fetched with `useEffect` + `.then()` instead of `useQuery`. This means no caching, no error handling, no loading states, and the fetch runs on every mount. Minor, but inconsistent with the rest of the codebase pattern.
+
+### 10. `canPost` Used for Both Posting and Deleting
+
+**File:** `src/pages/CompanyProfile.tsx` line 175
+
+The `canDelete` prop is set to the same value as `canPost`. Editors should be able to post but perhaps not delete other editors' posts. Once bug #1 is fixed (editors can post), this becomes a real permissions question.
+
+### 11. No Optimistic Update on Follow/Unfollow
+
+**File:** `src/components/company/CompanyFollowButton.tsx`
+
+When following/unfollowing, the button waits for the full round-trip before updating. This could feel sluggish. Minor UX concern.
+
+---
+
+## Summary of Fixes Needed
+
+| # | Severity | File | Fix |
+|---|----------|------|-----|
+| 1 | Critical | CompanyProfile.tsx | Use `canEditWithRole` for posting, `canManageWithRole` for deleting |
+| 2 | Critical | CompanyImageUpload.tsx | Replace `rounded-inherit` with `[border-radius:inherit]` |
+| 3 | Moderate | Migration/RLS | Add INSERT policy for `company_audit_log` for admin users |
+| 4 | Moderate | CompanyAdmin.tsx | Add audit log entries for verify/reject/role actions |
+| 5 | Moderate | CompanyAdmin.tsx | Same as #4 for role removal |
+| 6 | Moderate | CompanyAdmin.tsx + companyRolesService | Enrich roles with profile data (names, avatars) |
+| 7 | N/A | companyService.ts | No change needed (correct behavior) |
+| 8 | Minor | companyPostService.ts | Use actual file MIME type for attachments |
+| 9 | Minor | CompanySearchFilter.tsx | Migrate to `useQuery` for industry fetching |
+| 10 | Minor | CompanyProfile.tsx | Separate `canPost` and `canDelete` permissions |
+| 11 | Minor | CompanyFollowButton.tsx | Add optimistic updates |
 
