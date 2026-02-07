@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SEOHead, EmptyState } from "@/components/common";
 import { CompanyHeader, CompanyPostComposer, CompanyPostCard } from "@/components/company";
+import CompanyPeopleTab from "@/components/company/CompanyPeopleTab";
 import { getCompanyBySlug } from "@/services/companyService";
 import { getUserCompanyRole, canManageWithRole } from "@/services/companyRolesService";
 import { getCompanyPosts } from "@/services/companyPostService";
@@ -20,6 +21,7 @@ export default function CompanyProfile() {
   const { slug } = useParams<{ slug: string }>();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data: company, isLoading, error } = useQuery({
     queryKey: ['company', slug],
@@ -45,10 +47,15 @@ export default function CompanyProfile() {
     enabled: !!company?.id,
   });
 
-  const queryClient = useQueryClient();
   const canPost = canManageWithRole(userRole || null);
 
-  const handlePostDelete = (postId: string) => {
+  const handleCompanyUpdate = (updates: Partial<typeof company>) => {
+    queryClient.setQueryData(['company', slug], (old: typeof company) =>
+      old ? { ...old, ...updates } : old
+    );
+  };
+
+  const handlePostDelete = () => {
     queryClient.invalidateQueries({ queryKey: ['companyPosts', company?.id] });
   };
 
@@ -97,7 +104,11 @@ export default function CompanyProfile() {
       <Navbar />
       <main className="flex-grow">
         <div className="container max-w-5xl mx-auto py-6 px-4 sm:px-6">
-          <CompanyHeader company={company} userRole={userRole || null} />
+          <CompanyHeader
+            company={company}
+            userRole={userRole || null}
+            onCompanyUpdate={handleCompanyUpdate}
+          />
 
           <Tabs defaultValue="about" className="mt-8">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
@@ -198,11 +209,7 @@ export default function CompanyProfile() {
             </TabsContent>
 
             <TabsContent value="people" className="mt-6">
-              <EmptyState
-                icon={Building2}
-                title={t("companies.noPeople", "No employees listed")}
-                description={t("companies.noPeopleDescription", "Be the first to add yourself as an employee")}
-              />
+              <CompanyPeopleTab companyId={company.id} />
             </TabsContent>
           </Tabs>
         </div>

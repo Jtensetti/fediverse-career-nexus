@@ -2,7 +2,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { JobPost } from "@/services/jobPostsService";
+import { getUserCompanies } from "@/services/companyRolesService";
+import { getCompanyById } from "@/services/companyService";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -27,6 +31,7 @@ import {
 const jobFormSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   company: z.string().min(2, "Company name is required"),
+  company_id: z.string().nullable().optional(),
   location: z.string().min(2, "Location is required"),
   description: z.string().min(20, "Description must be at least 20 characters"),
   employment_type: z.string().default("full-time"),
@@ -55,7 +60,7 @@ const jobFormSchema = z.object({
 export type JobFormValues = z.infer<typeof jobFormSchema>;
 
 interface JobFormProps {
-  defaultValues?: Partial<JobPost>;
+  defaultValues?: Partial<JobPost> & { company_id?: string | null };
   onSubmit: (data: JobFormValues) => void;
   isSubmitting: boolean;
   submitButtonText?: string;
@@ -68,10 +73,31 @@ const JobForm = ({
   submitButtonText = "Create Job Post"
 }: JobFormProps) => {
   const [isOnline] = useState(false);
+  const { user } = useAuth();
+
+  // Fetch user's companies for linking
+  const { data: userCompanyRoles = [] } = useQuery({
+    queryKey: ["userCompanies"],
+    queryFn: getUserCompanies,
+    enabled: !!user,
+  });
+
+  // Fetch company details for each role
+  const { data: userCompanies = [] } = useQuery({
+    queryKey: ["userCompanyDetails", userCompanyRoles.map(r => r.company_id)],
+    queryFn: async () => {
+      const results = await Promise.all(
+        userCompanyRoles.map(r => getCompanyById(r.company_id))
+      );
+      return results.filter(Boolean) as NonNullable<Awaited<ReturnType<typeof getCompanyById>>>[];
+    },
+    enabled: userCompanyRoles.length > 0,
+  });
   
   const formattedDefaultValues = {
     title: defaultValues.title || "",
     company: defaultValues.company || "",
+    company_id: (defaultValues as any).company_id || null,
     location: defaultValues.location || "",
     description: defaultValues.description || "",
     employment_type: defaultValues.employment_type || "full-time",
@@ -131,6 +157,50 @@ const JobForm = ({
             )}
           />
         </div>
+
+        {/* Company page linking */}
+        {userCompanies.length > 0 && (
+          <FormField
+            control={form.control}
+            name="company_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link to Company Page</FormLabel>
+                <Select 
+                  onValueChange={(val) => {
+                    field.onChange(val === "none" ? null : val);
+                    // Auto-fill company name when selecting a company page
+                    if (val !== "none") {
+                      const selected = userCompanies.find(c => c.id === val);
+                      if (selected) {
+                        form.setValue("company", selected.name);
+                      }
+                    }
+                  }} 
+                  value={field.value || "none"}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a company page (optional)" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">No company page</SelectItem>
+                    {userCompanies.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Link this job post to a company page you manage
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         
         <div className="grid gap-6 md:grid-cols-2">
           <FormField
