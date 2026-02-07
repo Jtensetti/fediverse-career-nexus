@@ -78,7 +78,7 @@ export default function CompanyImageUpload({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={isUploading}
-        className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors cursor-pointer rounded-inherit"
+        className="absolute inset-0 z-10 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors cursor-pointer [border-radius:inherit]"
         aria-label={`Change ${type}`}
       >
         <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-white text-sm font-medium">
