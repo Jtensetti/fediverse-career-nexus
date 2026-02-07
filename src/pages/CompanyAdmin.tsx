@@ -1,31 +1,19 @@
 import { useParams, Navigate, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import {
-  Users,
-  Shield,
-  ScrollText,
-  CheckCircle,
-  XCircle,
-  ArrowLeft,
-  Loader2,
-  UserPlus,
-  Trash2,
-} from "lucide-react";
+import { Users, Shield, Clock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { SEOHead, EmptyState } from "@/components/common";
+import { SEOHead } from "@/components/common";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCompanyBySlug } from "@/services/companyService";
 import { getUserCompanyRole, getCompanyRoles, removeCompanyRole } from "@/services/companyRolesService";
-import type { CompanyRoleWithProfile } from "@/services/companyRolesService";
 import {
   getPendingEmployees,
   getAllEmployees,
@@ -33,7 +21,7 @@ import {
   removeEmployee,
 } from "@/services/companyEmployeeService";
 import { getCompanyAuditLog, logAuditAction } from "@/services/companyAuditService";
-import { format } from "date-fns";
+import { VerificationQueue, RolesTab, AuditLogTab } from "@/components/company/admin";
 
 export default function CompanyAdmin() {
   const { slug } = useParams<{ slug: string }>();
@@ -100,12 +88,12 @@ export default function CompanyAdmin() {
     try {
       await verifyEmployee(employeeId);
       await logAuditAction(company.id, "verified_employee", { employee_id: employeeId, name: employeeName });
-      toast.success("Employee verified");
+      toast.success(t("companyAdmin.employeeVerified", "Employee verified"));
       queryClient.invalidateQueries({ queryKey: ["pendingEmployees", company.id] });
       queryClient.invalidateQueries({ queryKey: ["allEmployees", company.id] });
       queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
-      toast.error(err.message || "Failed to verify");
+      toast.error(err.message || t("companyAdmin.verifyFailed", "Failed to verify"));
     }
   };
 
@@ -113,12 +101,12 @@ export default function CompanyAdmin() {
     try {
       await removeEmployee(employeeId);
       await logAuditAction(company.id, "rejected_employee", { employee_id: employeeId, name: employeeName });
-      toast.success("Employee claim removed");
+      toast.success(t("companyAdmin.claimRemoved", "Employee claim removed"));
       queryClient.invalidateQueries({ queryKey: ["pendingEmployees", company.id] });
       queryClient.invalidateQueries({ queryKey: ["allEmployees", company.id] });
       queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
-      toast.error(err.message || "Failed to remove");
+      toast.error(err.message || t("companyAdmin.rejectFailed", "Failed to remove"));
     }
   };
 
@@ -126,12 +114,17 @@ export default function CompanyAdmin() {
     try {
       await removeCompanyRole(company.id, userId);
       await logAuditAction(company.id, "removed_role", { user_id: userId, name: userName });
-      toast.success("Role removed");
+      toast.success(t("companyAdmin.roleRemoved", "Role removed"));
       queryClient.invalidateQueries({ queryKey: ["companyRoles", company.id] });
       queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
-      toast.error(err.message || "Failed to remove role");
+      toast.error(err.message || t("companyAdmin.roleRemoveFailed", "Failed to remove role"));
     }
+  };
+
+  const handleRoleAdded = () => {
+    queryClient.invalidateQueries({ queryKey: ["companyRoles", company.id] });
+    queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
   };
 
   return (
@@ -149,9 +142,11 @@ export default function CompanyAdmin() {
               </Link>
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">{company.name} — Admin</h1>
+              <h1 className="text-2xl font-bold">
+                {company.name} — {t("companyAdmin.title", "Admin")}
+              </h1>
               <p className="text-sm text-muted-foreground">
-                Manage employees, roles, and view activity
+                {t("companyAdmin.subtitle", "Manage employees, roles, and view activity")}
               </p>
             </div>
           </div>
@@ -163,16 +158,20 @@ export default function CompanyAdmin() {
                 <Users className="h-8 w-8 text-primary" />
                 <div>
                   <p className="text-2xl font-bold">{allEmployees.length}</p>
-                  <p className="text-xs text-muted-foreground">Employees</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("companyAdmin.employees", "Employees")}
+                  </p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex items-center gap-3 py-4">
-                <Loader2 className="h-8 w-8 text-muted-foreground" />
+                <Clock className="h-8 w-8 text-muted-foreground" />
                 <div>
                   <p className="text-2xl font-bold">{pendingEmployees.length}</p>
-                  <p className="text-xs text-muted-foreground">Pending Verification</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("companyAdmin.pendingVerification", "Pending Verification")}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -181,7 +180,9 @@ export default function CompanyAdmin() {
                 <Shield className="h-8 w-8 text-muted-foreground" />
                 <div>
                   <p className="text-2xl font-bold">{roles.length}</p>
-                  <p className="text-xs text-muted-foreground">Admins & Editors</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("companyAdmin.adminsAndEditors", "Admins & Editors")}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -193,7 +194,7 @@ export default function CompanyAdmin() {
                 value="verification"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                Verification Queue{" "}
+                {t("companyAdmin.verificationQueue", "Verification Queue")}{" "}
                 {pendingEmployees.length > 0 && (
                   <Badge variant="destructive" className="ml-1.5 text-xs">
                     {pendingEmployees.length}
@@ -204,144 +205,37 @@ export default function CompanyAdmin() {
                 value="roles"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                Roles
+                {t("companyAdmin.roles", "Roles")}
               </TabsTrigger>
               <TabsTrigger
                 value="audit"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                Audit Log
+                {t("companyAdmin.auditLog", "Audit Log")}
               </TabsTrigger>
             </TabsList>
 
-            {/* Verification Queue */}
-            <TabsContent value="verification" className="mt-6 space-y-4">
-              {pendingLoading ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, i) => (
-                    <Skeleton key={i} className="h-20 rounded-lg" />
-                  ))}
-                </div>
-              ) : pendingEmployees.length > 0 ? (
-                pendingEmployees.map((emp) => (
-                  <Card key={emp.id}>
-                    <CardContent className="flex items-center justify-between py-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={emp.profile?.avatar_url || ""} />
-                          <AvatarFallback>
-                            {(emp.profile?.fullname || "U").charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {emp.profile?.fullname || emp.profile?.username || "Unknown"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {emp.title} · {emp.employment_type.replace("_", "-")} · since{" "}
-                            {format(new Date(emp.start_date), "MMM yyyy")}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                         <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleReject(emp.id, emp.profile?.fullname || undefined)}
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                        <Button size="sm" onClick={() => handleVerify(emp.id, emp.profile?.fullname || undefined)}>
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Verify
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <EmptyState
-                  icon={CheckCircle}
-                  title="All caught up"
-                  description="No pending employee verifications"
-                />
-              )}
+            <TabsContent value="verification" className="mt-6">
+              <VerificationQueue
+                employees={pendingEmployees}
+                isLoading={pendingLoading}
+                onVerify={handleVerify}
+                onReject={handleReject}
+              />
             </TabsContent>
 
-            {/* Roles */}
-            <TabsContent value="roles" className="mt-6 space-y-4">
-             {roles.length > 0 ? (
-                roles.map((role) => (
-                  <Card key={role.id}>
-                    <CardContent className="flex items-center justify-between py-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={role.profile?.avatar_url || ""} />
-                          <AvatarFallback>
-                            {(role.profile?.fullname || role.profile?.username || "U").charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {role.profile?.fullname || role.profile?.username || role.user_id.slice(0, 8) + "…"}
-                          </p>
-                          <Badge variant="secondary" className="text-xs capitalize">
-                            {role.role}
-                          </Badge>
-                        </div>
-                      </div>
-                      {userRole === "owner" && role.role !== "owner" && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleRemoveRole(role.user_id, role.profile?.fullname || undefined)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <EmptyState
-                  icon={UserPlus}
-                  title="No additional roles"
-                  description="Only the owner currently has access"
-                />
-              )}
+            <TabsContent value="roles" className="mt-6">
+              <RolesTab
+                roles={roles}
+                userRole={userRole}
+                companyId={company.id}
+                onRemoveRole={handleRemoveRole}
+                onRoleAdded={handleRoleAdded}
+              />
             </TabsContent>
 
-            {/* Audit Log */}
-            <TabsContent value="audit" className="mt-6 space-y-3">
-              {auditLog.length > 0 ? (
-                auditLog.map((entry) => (
-                  <Card key={entry.id}>
-                    <CardContent className="flex items-center gap-3 py-3">
-                      <ScrollText className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm">
-                          <span className="font-medium">
-                            {entry.actor_profile?.fullname || entry.actor_profile?.username || "System"}
-                          </span>{" "}
-                          <span className="text-muted-foreground">{entry.action}</span>
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(entry.created_at), "PPp")}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <EmptyState
-                  icon={ScrollText}
-                  title="No activity yet"
-                  description="Actions performed by admins will appear here"
-                />
-              )}
+            <TabsContent value="audit" className="mt-6">
+              <AuditLogTab auditLog={auditLog} />
             </TabsContent>
           </Tabs>
         </div>
