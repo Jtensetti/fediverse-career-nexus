@@ -60,14 +60,18 @@ async function webfingerLookup(username: string, domain: string): Promise<WebFin
   }
 }
 
+// The canonical redirect URI — always www.nolto.social
+const CANONICAL_REDIRECT_URI = 'https://www.nolto.social/auth/callback';
+
 // Register an OAuth client with a Mastodon-compatible instance
 // Mastodon allows multiple redirect URIs, so we can include both domains
 async function registerOAuthClient(domain: string, redirectUri: string): Promise<{ clientId: string; clientSecret: string } | null> {
   const appsUrl = `https://${domain}/api/v1/apps`;
   
-  // Include both the custom domain and the lovable.app domain as valid redirect URIs
-  // This prevents 422 errors when users access from different domains
+  // Always include the canonical www.nolto.social, the apex nolto.social,
+  // and the lovable.app preview domain as valid redirect URIs
   const redirectUris = [
+    CANONICAL_REDIRECT_URI,
     redirectUri,
     'https://nolto.social/auth/callback',
     'https://fediverse-career.lovable.app/auth/callback'
@@ -163,25 +167,25 @@ serve(async (req) => {
     let clientSecret: string;
     
     // List of known valid redirect domains - use existing client if it matches any
-    const validDomains = ['nolto.social', 'fediverse-career.lovable.app'];
+    const validDomains = ['www.nolto.social', 'nolto.social', 'fediverse-career.lovable.app'];
     const existingDomain = existingClient?.redirect_uri?.match(/https?:\/\/([^/]+)/)?.[1];
     const requestedDomain = redirectUri.match(/https?:\/\/([^/]+)/)?.[1];
     
     // Use existing client if both the existing and requested URIs are from our known domains
     const canReuseClient = existingClient && 
-      validDomains.some(d => existingDomain?.includes(d)) && 
-      validDomains.some(d => requestedDomain?.includes(d));
+      validDomains.some(d => existingDomain === d) && 
+      validDomains.some(d => requestedDomain === d);
 
     if (canReuseClient) {
       console.log(`Using existing OAuth client for ${domain} (compatible redirect URI)`);
       clientId = existingClient.client_id;
       clientSecret = existingClient.client_secret;
       
-      // Update our stored redirect_uri to match the current request
-      if (existingClient.redirect_uri !== redirectUri) {
+      // Always store the canonical redirect URI
+      if (existingClient.redirect_uri !== CANONICAL_REDIRECT_URI) {
         await supabase
           .from('oauth_clients')
-          .update({ redirect_uri: redirectUri })
+          .update({ redirect_uri: CANONICAL_REDIRECT_URI })
           .eq('instance_domain', domain);
       }
     } else {
@@ -200,13 +204,14 @@ serve(async (req) => {
       }
 
       // Store the client credentials
+      // Always store the canonical redirect URI
       const { error: insertError } = await supabase
         .from('oauth_clients')
         .insert({
           instance_domain: domain,
           client_id: registration.clientId,
           client_secret: registration.clientSecret,
-          redirect_uri: redirectUri,
+          redirect_uri: CANONICAL_REDIRECT_URI,
           scopes: 'read'
         });
 
