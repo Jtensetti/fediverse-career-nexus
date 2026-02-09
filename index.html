@@ -40,6 +40,14 @@
 
   <body>
     <div id="root"></div>
+    <!-- Canonical domain redirect: ensure all users are on www.nolto.social -->
+    <script>
+      (function() {
+        if (window.location.hostname === 'nolto.social') {
+          window.location.replace('https://www.nolto.social' + window.location.pathname + window.location.search + window.location.hash);
+        }
+      })();
+    </script>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
