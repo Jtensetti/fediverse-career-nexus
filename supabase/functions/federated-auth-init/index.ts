@@ -239,7 +239,7 @@ serve(async (req) => {
     const authUrl = new URL(`https://${domain}/oauth/authorize`);
     authUrl.searchParams.set('client_id', clientId);
     authUrl.searchParams.set('scope', 'read');
-    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('redirect_uri', CANONICAL_REDIRECT_URI);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('state', stateData);
 
