@@ -161,9 +161,10 @@ serve(async (req) => {
       });
     }
 
-    // Exchange code for token - prioritize state-embedded redirectUri for exact match
-    const tokenRedirectUri = stateData.redirectUri || redirectUri || oauthClient.redirect_uri;
-    console.log(`Using redirect URI for token exchange: ${tokenRedirectUri}`);
+    // Always use the canonical redirect URI for token exchange to ensure consistency
+    const CANONICAL_REDIRECT_URI = 'https://www.nolto.social/auth/callback';
+    const tokenRedirectUri = CANONICAL_REDIRECT_URI;
+    console.log(`Using canonical redirect URI for token exchange: ${tokenRedirectUri}`);
     
     const tokenResult = await exchangeCodeForToken(
       domain,
