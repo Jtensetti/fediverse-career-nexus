@@ -182,7 +182,7 @@ export async function getCompanyPosts(companyId: string, limit = 20, offset = 0)
     .eq('id', companyId)
     .single();
 
-  return (posts || []).map(post => {
+  return topLevelPosts.map(post => {
     const raw = post.content as any;
     const note = raw?.type === 'Create' ? raw.object : raw;
 
