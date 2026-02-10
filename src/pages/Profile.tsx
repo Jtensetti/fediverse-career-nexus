@@ -25,6 +25,7 @@ import {
   Bookmark,
   BookText,
   UserPlus,
+  Lock,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
