@@ -271,11 +271,12 @@ export async function deletePostReply(commentId: string): Promise<void> {
   if (error) throw new Error('Failed to delete comment');
 }
 
-// Create a reply to a post (or to another reply)
+// Create a reply to a post (or to another reply), optionally as a company
 export async function createPostReply(
   postId: string, 
   content: string, 
-  parentReplyId?: string
+  parentReplyId?: string,
+  companyId?: string
 ): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
