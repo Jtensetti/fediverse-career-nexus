@@ -169,7 +169,8 @@ export const getFederatedFeed = async (
         published_at,
         source,
         type,
-        attributed_to
+        attributed_to,
+        company_id
       `
     );
 
