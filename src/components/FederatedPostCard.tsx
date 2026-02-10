@@ -156,8 +156,16 @@ export default function FederatedPostCard({
   // Get the first URL to show as a preview card
   const previewUrl = contentUrls.length > 0 ? contentUrls[0] : null;
 
+  // Check if this is a company post
+  const isCompanyPost = !!post.company;
+
   // Extract name from actor or use profile data for local posts
   const getActorName = () => {
+    // Company posts use company name
+    if (isCompanyPost) {
+      return post.company!.name;
+    }
+
     // For local posts, prioritize fullname from profile, then username, then fallback
     if (post.source === 'local' && post.profile) {
       return post.profile.fullname || post.profile.username || post.actor_name || 'Unknown user';
@@ -170,6 +178,9 @@ export default function FederatedPostCard({
 
   // Extract username from profile or actor data (single source of truth)
   const getActorUsername = () => {
+    if (isCompanyPost) {
+      return post.company!.slug;
+    }
     if (post.source === 'local') {
       return post.profile?.username || post.actor?.preferredUsername || post.actor_name || '';
     }
@@ -178,6 +189,11 @@ export default function FederatedPostCard({
 
   // Get avatar URL with proxy for remote images
   const getAvatarUrl = () => {
+    // Company posts use company logo
+    if (isCompanyPost) {
+      return post.company!.logo_url;
+    }
+
     // For local posts, use profile avatar
     if (post.source === 'local' && post.profile?.avatar_url) {
       return post.profile.avatar_url;
@@ -188,6 +204,17 @@ export default function FederatedPostCard({
     if (!iconUrl) return null;
 
     return post.source === 'remote' ? getProxiedMediaUrl(iconUrl) : iconUrl;
+  };
+
+  // Get the profile link target
+  const getProfileLink = () => {
+    if (isCompanyPost) {
+      return `/company/${post.company!.slug}`;
+    }
+    if (post.source === 'local') {
+      return `/profile/${post.profile?.username || post.user_id}`;
+    }
+    return '#';
   };
 
   // Check if current user owns this post
