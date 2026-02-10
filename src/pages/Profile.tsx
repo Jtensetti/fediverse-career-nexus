@@ -843,6 +843,8 @@ const ProfilePage = () => {
                       </Button>
                     </div>
                   )}
+                  </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
