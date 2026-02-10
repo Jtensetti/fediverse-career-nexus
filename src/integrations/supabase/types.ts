@@ -3271,6 +3271,7 @@ export type Database = {
       federated_feed: {
         Row: {
           attributed_to: string | null
+          company_id: string | null
           content: Json | null
           id: string | null
           published_at: string | null
@@ -3297,6 +3298,13 @@ export type Database = {
             columns: ["attributed_to"]
             isOneToOne: false
             referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
