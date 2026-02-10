@@ -902,9 +902,10 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Users size={20} className="text-primary" />
                     Connections
+                    {renderVisibilityToggle('connections')}
                   </h3>
 
-                  {profile.networkVisibilityEnabled === false ? (
+                  {!isSectionVisible('connections') ? renderHiddenMessage() : profile.networkVisibilityEnabled === false ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
                       <p>Connections are hidden</p>
