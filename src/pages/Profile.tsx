@@ -71,6 +71,7 @@ const ProfilePage = () => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isRespondingToConnection, setIsRespondingToConnection] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityMap>({});
   const [showStickyHeader, setShowStickyHeader] = useState(false);
 
   const isAuthenticated = !!user;
