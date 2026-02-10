@@ -8,13 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SEOHead, EmptyState } from "@/components/common";
-import { CompanyHeader, CompanyPostComposer, CompanyPostCard } from "@/components/company";
+import { CompanyHeader, CompanyPostComposer } from "@/components/company";
 import CompanyPeopleTab from "@/components/company/CompanyPeopleTab";
 import { getCompanyBySlug } from "@/services/companyService";
 import { getUserCompanyRole, canManageWithRole, canEditWithRole } from "@/services/companyRolesService";
 import { getCompanyPosts } from "@/services/companyPostService";
 import { getJobsByCompanyId } from "@/services/jobPostsService";
 import JobCard from "@/components/JobCard";
+import FederatedPostCard from "@/components/FederatedPostCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function CompanyProfile() {
