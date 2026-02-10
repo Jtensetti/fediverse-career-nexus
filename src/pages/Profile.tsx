@@ -769,9 +769,10 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <School size={20} className="text-primary" />
                     {t("profile.education", "Education")}
+                    {renderVisibilityToggle('education')}
                   </h3>
 
-                  {profile.education && profile.education.length > 0 ? (
+                  {!isSectionVisible('education') ? renderHiddenMessage() : profile.education && profile.education.length > 0 ? (
                     <div className="space-y-6">
                       {profile.education.map((edu) => (
                         <motion.div
