@@ -25,6 +25,7 @@ import {
   Bookmark,
   BookText,
   UserPlus,
+  Lock,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ConnectionBadge, { ConnectionDegree } from "@/components/ConnectionBadge";
@@ -59,6 +60,8 @@ import { SEOHead } from "@/components/common/SEOHead";
 import { ShareButton } from "@/components/common/ShareButton";
 import { ShareProfileCard } from "@/components/profile/ShareProfileCard";
 import SimpleMarkdown from "@/components/common/SimpleMarkdown";
+import { getSectionVisibility, canViewSection, type SectionVisibilityMap, type SectionVisibility, type ProfileSection } from "@/services/sectionVisibilityService";
+import SectionVisibilityToggle from "@/components/SectionVisibilityToggle";
 
 const ProfilePage = () => {
   const { usernameOrId } = useParams();
@@ -69,6 +72,7 @@ const ProfilePage = () => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isRespondingToConnection, setIsRespondingToConnection] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityMap>({});
   const [showStickyHeader, setShowStickyHeader] = useState(false);
 
   const isAuthenticated = !!user;
@@ -133,6 +137,49 @@ const ProfilePage = () => {
     },
     enabled: !!profile?.id && !!currentUserId && !viewingOwnProfile,
   });
+
+  // Fetch section visibility settings for the profile being viewed
+  const { data: fetchedSectionVisibility } = useQuery({
+    queryKey: ["sectionVisibility", profile?.id],
+    queryFn: () => getSectionVisibility(profile!.id),
+    enabled: !!profile?.id,
+  });
+
+  // Sync fetched visibility into local state
+  useEffect(() => {
+    if (fetchedSectionVisibility) {
+      setSectionVisibility(fetchedSectionVisibility);
+    }
+  }, [fetchedSectionVisibility]);
+
+  const isConnected = connectionRelationship?.status === 'accepted';
+
+  const handleVisibilityChanged = (section: ProfileSection, visibility: SectionVisibility) => {
+    setSectionVisibility(prev => ({ ...prev, [section]: visibility }));
+  };
+
+  const isSectionVisible = (section: ProfileSection): boolean => {
+    if (viewingOwnProfile) return true;
+    return canViewSection(sectionVisibility[section], isAuthenticated, isConnected);
+  };
+
+  const renderVisibilityToggle = (section: ProfileSection) => {
+    if (!viewingOwnProfile) return null;
+    return (
+      <SectionVisibilityToggle
+        section={section}
+        currentVisibility={(sectionVisibility[section] as SectionVisibility) || 'everyone'}
+        onChanged={(v) => handleVisibilityChanged(section, v)}
+      />
+    );
+  };
+
+  const renderHiddenMessage = () => (
+    <div className="text-center py-8 text-muted-foreground">
+      <Lock className="h-12 w-12 mx-auto mb-3 opacity-30" />
+      <p>{t('visibility.sectionHidden', 'This section is not visible to you')}</p>
+    </div>
+  );
 
   // Canonical URL redirect: if accessed via UUID but username exists, redirect to username URL
   useEffect(() => {
@@ -665,9 +712,10 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Briefcase size={20} className="text-primary" />
                     {t("profile.experience", "Experience")}
+                    {renderVisibilityToggle('experience')}
                   </h3>
 
-                  {profile.experience && profile.experience.length > 0 ? (
+                  {!isSectionVisible('experience') ? renderHiddenMessage() : profile.experience && profile.experience.length > 0 ? (
                     <div className="space-y-6">
                       {profile.experience.map((exp) => (
                         <motion.div
@@ -721,9 +769,10 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <School size={20} className="text-primary" />
                     {t("profile.education", "Education")}
+                    {renderVisibilityToggle('education')}
                   </h3>
 
-                  {profile.education && profile.education.length > 0 ? (
+                  {!isSectionVisible('education') ? renderHiddenMessage() : profile.education && profile.education.length > 0 ? (
                     <div className="space-y-6">
                       {profile.education.map((edu) => (
                         <motion.div
@@ -775,7 +824,10 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                     <Star size={20} className="text-primary" />
                     {t("profile.skills", "Skills")} & {t("skills.endorsements", "Endorsements")}
+                    {renderVisibilityToggle('skills')}
                   </h3>
+                  {!isSectionVisible('skills') ? renderHiddenMessage() : (
+                  <>
                   <p className="text-sm text-muted-foreground mb-6">
                     {viewingOwnProfile
                       ? t("skills.addSkillsDesc", "Add skills to let your connections endorse your expertise")
@@ -791,6 +843,8 @@ const ProfilePage = () => {
                       </Button>
                     </div>
                   )}
+                  </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -801,9 +855,12 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <BookText size={20} className="text-primary" />
                     {t("profile.articles", "Articles")}
+                    {renderVisibilityToggle('articles')}
                   </h3>
 
+                  {!isSectionVisible('articles') ? renderHiddenMessage() : (
                   <UserArticlesList userId={profile.id} isOwnProfile={viewingOwnProfile} />
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -829,9 +886,12 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Activity size={20} className="text-primary" />
                     Activity
+                    {renderVisibilityToggle('activity')}
                   </h3>
 
+                  {!isSectionVisible('activity') ? renderHiddenMessage() : (
                   <UserActivityList userId={profile.id} />
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -842,9 +902,10 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Users size={20} className="text-primary" />
                     Connections
+                    {renderVisibilityToggle('connections')}
                   </h3>
 
-                  {profile.networkVisibilityEnabled === false ? (
+                  {!isSectionVisible('connections') ? renderHiddenMessage() : profile.networkVisibilityEnabled === false ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
                       <p>Connections are hidden</p>

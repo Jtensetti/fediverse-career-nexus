@@ -2214,6 +2214,30 @@ export type Database = {
           },
         ]
       }
+      profile_section_visibility: {
+        Row: {
+          id: string
+          section: string
+          updated_at: string
+          user_id: string
+          visibility: Database["public"]["Enums"]["section_visibility"]
+        }
+        Insert: {
+          id?: string
+          section: string
+          updated_at?: string
+          user_id: string
+          visibility?: Database["public"]["Enums"]["section_visibility"]
+        }
+        Update: {
+          id?: string
+          section?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: Database["public"]["Enums"]["section_visibility"]
+        }
+        Relationships: []
+      }
       profile_views: {
         Row: {
           created_at: string
@@ -3910,6 +3934,7 @@ export type Database = {
         | "contract"
         | "intern"
         | "freelance"
+      section_visibility: "everyone" | "logged_in" | "connections"
       verification_status: "unverified" | "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
@@ -4059,6 +4084,7 @@ export const Constants = {
         "intern",
         "freelance",
       ],
+      section_visibility: ["everyone", "logged_in", "connections"],
       verification_status: ["unverified", "pending", "verified", "rejected"],
     },
   },
