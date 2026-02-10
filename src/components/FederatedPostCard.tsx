@@ -415,9 +415,12 @@ export default function FederatedPostCard({
 
               {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">
-                  @{getActorUsername()}{post.source === 'local'
-                    ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}`
-                    : post.instance ? `@${post.instance}` : ''}
+                  {isCompanyPost
+                    ? <Link to={`/company/${post.company!.slug}`} className="hover:underline">Company page</Link>
+                    : <>@{getActorUsername()}{post.source === 'local'
+                        ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}`
+                        : post.instance ? `@${post.instance}` : ''}</>
+                  }
                 </div>
               )}
 
