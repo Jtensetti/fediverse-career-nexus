@@ -171,11 +171,10 @@ export default function CompanyProfile() {
               ) : posts.length > 0 ? (
                 <div className="space-y-4">
                   {posts.map((post) => (
-                    <CompanyPostCard 
+                    <FederatedPostCard 
                       key={post.id} 
-                      post={post} 
-                      canDelete={canDelete}
-                      onDelete={handlePostDelete}
+                      post={post}
+                      onDelete={canDelete ? handlePostDelete : undefined}
                     />
                   ))}
                 </div>
