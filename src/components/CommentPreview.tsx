@@ -310,6 +310,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
             onCancel={() => setShowReplyComposer(false)}
             placeholder={t("comments.writeComment", "Write a comment...")}
             autoFocus
+            companyContext={companyContext}
           />
         </div>
       ) : (
