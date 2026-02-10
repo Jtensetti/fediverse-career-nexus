@@ -886,9 +886,12 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Activity size={20} className="text-primary" />
                     Activity
+                    {renderVisibilityToggle('activity')}
                   </h3>
 
+                  {!isSectionVisible('activity') ? renderHiddenMessage() : (
                   <UserActivityList userId={profile.id} />
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
