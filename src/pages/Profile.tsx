@@ -137,6 +137,49 @@ const ProfilePage = () => {
     enabled: !!profile?.id && !!currentUserId && !viewingOwnProfile,
   });
 
+  // Fetch section visibility settings for the profile being viewed
+  const { data: fetchedSectionVisibility } = useQuery({
+    queryKey: ["sectionVisibility", profile?.id],
+    queryFn: () => getSectionVisibility(profile!.id),
+    enabled: !!profile?.id,
+  });
+
+  // Sync fetched visibility into local state
+  useEffect(() => {
+    if (fetchedSectionVisibility) {
+      setSectionVisibility(fetchedSectionVisibility);
+    }
+  }, [fetchedSectionVisibility]);
+
+  const isConnected = connectionRelationship?.status === 'accepted';
+
+  const handleVisibilityChanged = (section: ProfileSection, visibility: SectionVisibility) => {
+    setSectionVisibility(prev => ({ ...prev, [section]: visibility }));
+  };
+
+  const isSectionVisible = (section: ProfileSection): boolean => {
+    if (viewingOwnProfile) return true;
+    return canViewSection(sectionVisibility[section], isAuthenticated, isConnected);
+  };
+
+  const renderVisibilityToggle = (section: ProfileSection) => {
+    if (!viewingOwnProfile) return null;
+    return (
+      <SectionVisibilityToggle
+        section={section}
+        currentVisibility={(sectionVisibility[section] as SectionVisibility) || 'everyone'}
+        onChanged={(v) => handleVisibilityChanged(section, v)}
+      />
+    );
+  };
+
+  const renderHiddenMessage = () => (
+    <div className="text-center py-8 text-muted-foreground">
+      <Lock className="h-12 w-12 mx-auto mb-3 opacity-30" />
+      <p>{t('visibility.sectionHidden', 'This section is not visible to you')}</p>
+    </div>
+  );
+
   // Canonical URL redirect: if accessed via UUID but username exists, redirect to username URL
   useEffect(() => {
     if (profile?.username && usernameOrId) {
