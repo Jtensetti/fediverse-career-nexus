@@ -163,6 +163,13 @@ export async function getCompanyPosts(companyId: string, limit = 20, offset = 0)
     .order('published_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
+  // Filter out replies – they have inReplyTo in their content
+  const topLevelPosts = (posts || []).filter(post => {
+    const raw = post.content as any;
+    const note = raw?.type === 'Create' ? raw.object : raw;
+    return !note?.inReplyTo && !note?.content?.inReplyTo;
+  });
+
   if (error) {
     console.error('Error fetching company posts:', error);
     return [];
@@ -175,7 +182,7 @@ export async function getCompanyPosts(companyId: string, limit = 20, offset = 0)
     .eq('id', companyId)
     .single();
 
-  return (posts || []).map(post => {
+  return topLevelPosts.map(post => {
     const raw = post.content as any;
     const note = raw?.type === 'Create' ? raw.object : raw;
 
