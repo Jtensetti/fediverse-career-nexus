@@ -29,6 +29,12 @@ export interface FederatedPost {
   content_warning?: string;
   remote_url?: string;
   is_boost?: boolean;
+  company?: {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+  };
 }
 
 export type FeedType = "following" | "local" | "federated";
