@@ -378,14 +378,14 @@ export default function FederatedPostCard({
           {isQuoteRepost && <RepostIndicator reposterName={getActorName()} />}
           <div className="flex items-center gap-3">
             <ProfileHoverCard
-              username={post.source === 'local' ? post.profile?.username : undefined}
-              userId={post.source === 'local' ? post.user_id : undefined}
-              disabled={post.source !== 'local'}
+              username={post.source === 'local' && !isCompanyPost ? post.profile?.username : undefined}
+              userId={post.source === 'local' && !isCompanyPost ? post.user_id : undefined}
+              disabled={post.source !== 'local' || isCompanyPost}
             >
               <Link
-                to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
-                className={post.source === 'local' ? 'cursor-pointer' : 'cursor-default'}
-                onClick={(e) => post.source !== 'local' && e.preventDefault()}
+                to={getProfileLink()}
+                className={post.source === 'local' || isCompanyPost ? 'cursor-pointer' : 'cursor-default'}
+                onClick={(e) => post.source !== 'local' && !isCompanyPost && e.preventDefault()}
               >
                 <AvatarWithStatus
                   src={getAvatarUrl() || undefined}
@@ -393,21 +393,21 @@ export default function FederatedPostCard({
                   fallback={getActorName().charAt(0).toUpperCase()}
                   size="md"
                   status={post.source === 'remote' ? 'remote' : 'none'}
-                  isFreelancer={post.source === 'local' && post.profile?.is_freelancer}
+                  isFreelancer={!isCompanyPost && post.source === 'local' && post.profile?.is_freelancer}
                 />
               </Link>
             </ProfileHoverCard>
 
             <div className="flex-1 min-w-0">
               <ProfileHoverCard
-                username={post.source === 'local' ? post.profile?.username : undefined}
-                userId={post.source === 'local' ? post.user_id : undefined}
-                disabled={post.source !== 'local'}
+                username={post.source === 'local' && !isCompanyPost ? post.profile?.username : undefined}
+                userId={post.source === 'local' && !isCompanyPost ? post.user_id : undefined}
+                disabled={post.source !== 'local' || isCompanyPost}
               >
                 <Link
-                  to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
-                  className={post.source === 'local' ? 'hover:underline cursor-pointer' : 'cursor-default'}
-                  onClick={(e) => post.source !== 'local' && e.preventDefault()}
+                  to={getProfileLink()}
+                  className={post.source === 'local' || isCompanyPost ? 'hover:underline cursor-pointer' : 'cursor-default'}
+                  onClick={(e) => post.source !== 'local' && !isCompanyPost && e.preventDefault()}
                 >
                   <div className="font-semibold truncate">{getActorName()}</div>
                 </Link>
