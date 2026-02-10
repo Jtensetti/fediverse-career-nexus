@@ -156,8 +156,16 @@ export default function FederatedPostCard({
   // Get the first URL to show as a preview card
   const previewUrl = contentUrls.length > 0 ? contentUrls[0] : null;
 
+  // Check if this is a company post
+  const isCompanyPost = !!post.company;
+
   // Extract name from actor or use profile data for local posts
   const getActorName = () => {
+    // Company posts use company name
+    if (isCompanyPost) {
+      return post.company!.name;
+    }
+
     // For local posts, prioritize fullname from profile, then username, then fallback
     if (post.source === 'local' && post.profile) {
       return post.profile.fullname || post.profile.username || post.actor_name || 'Unknown user';
@@ -170,6 +178,9 @@ export default function FederatedPostCard({
 
   // Extract username from profile or actor data (single source of truth)
   const getActorUsername = () => {
+    if (isCompanyPost) {
+      return post.company!.slug;
+    }
     if (post.source === 'local') {
       return post.profile?.username || post.actor?.preferredUsername || post.actor_name || '';
     }
@@ -178,6 +189,11 @@ export default function FederatedPostCard({
 
   // Get avatar URL with proxy for remote images
   const getAvatarUrl = () => {
+    // Company posts use company logo
+    if (isCompanyPost) {
+      return post.company!.logo_url;
+    }
+
     // For local posts, use profile avatar
     if (post.source === 'local' && post.profile?.avatar_url) {
       return post.profile.avatar_url;
@@ -188,6 +204,17 @@ export default function FederatedPostCard({
     if (!iconUrl) return null;
 
     return post.source === 'remote' ? getProxiedMediaUrl(iconUrl) : iconUrl;
+  };
+
+  // Get the profile link target
+  const getProfileLink = () => {
+    if (isCompanyPost) {
+      return `/company/${post.company!.slug}`;
+    }
+    if (post.source === 'local') {
+      return `/profile/${post.profile?.username || post.user_id}`;
+    }
+    return '#';
   };
 
   // Check if current user owns this post
@@ -351,14 +378,14 @@ export default function FederatedPostCard({
           {isQuoteRepost && <RepostIndicator reposterName={getActorName()} />}
           <div className="flex items-center gap-3">
             <ProfileHoverCard
-              username={post.source === 'local' ? post.profile?.username : undefined}
-              userId={post.source === 'local' ? post.user_id : undefined}
-              disabled={post.source !== 'local'}
+              username={post.source === 'local' && !isCompanyPost ? post.profile?.username : undefined}
+              userId={post.source === 'local' && !isCompanyPost ? post.user_id : undefined}
+              disabled={post.source !== 'local' || isCompanyPost}
             >
               <Link
-                to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
-                className={post.source === 'local' ? 'cursor-pointer' : 'cursor-default'}
-                onClick={(e) => post.source !== 'local' && e.preventDefault()}
+                to={getProfileLink()}
+                className={post.source === 'local' || isCompanyPost ? 'cursor-pointer' : 'cursor-default'}
+                onClick={(e) => post.source !== 'local' && !isCompanyPost && e.preventDefault()}
               >
                 <AvatarWithStatus
                   src={getAvatarUrl() || undefined}
@@ -366,21 +393,21 @@ export default function FederatedPostCard({
                   fallback={getActorName().charAt(0).toUpperCase()}
                   size="md"
                   status={post.source === 'remote' ? 'remote' : 'none'}
-                  isFreelancer={post.source === 'local' && post.profile?.is_freelancer}
+                  isFreelancer={!isCompanyPost && post.source === 'local' && post.profile?.is_freelancer}
                 />
               </Link>
             </ProfileHoverCard>
 
             <div className="flex-1 min-w-0">
               <ProfileHoverCard
-                username={post.source === 'local' ? post.profile?.username : undefined}
-                userId={post.source === 'local' ? post.user_id : undefined}
-                disabled={post.source !== 'local'}
+                username={post.source === 'local' && !isCompanyPost ? post.profile?.username : undefined}
+                userId={post.source === 'local' && !isCompanyPost ? post.user_id : undefined}
+                disabled={post.source !== 'local' || isCompanyPost}
               >
                 <Link
-                  to={post.source === 'local' ? `/profile/${post.profile?.username || post.user_id}` : '#'}
-                  className={post.source === 'local' ? 'hover:underline cursor-pointer' : 'cursor-default'}
-                  onClick={(e) => post.source !== 'local' && e.preventDefault()}
+                  to={getProfileLink()}
+                  className={post.source === 'local' || isCompanyPost ? 'hover:underline cursor-pointer' : 'cursor-default'}
+                  onClick={(e) => post.source !== 'local' && !isCompanyPost && e.preventDefault()}
                 >
                   <div className="font-semibold truncate">{getActorName()}</div>
                 </Link>
@@ -388,9 +415,12 @@ export default function FederatedPostCard({
 
               {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">
-                  @{getActorUsername()}{post.source === 'local'
-                    ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}`
-                    : post.instance ? `@${post.instance}` : ''}
+                  {isCompanyPost
+                    ? <Link to={`/company/${post.company!.slug}`} className="hover:underline">Company page</Link>
+                    : <>@{getActorUsername()}{post.source === 'local'
+                        ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}`
+                        : post.instance ? `@${post.instance}` : ''}</>
+                  }
                 </div>
               )}
 
