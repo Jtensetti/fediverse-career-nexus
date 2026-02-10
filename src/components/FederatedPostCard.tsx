@@ -639,6 +639,7 @@ export default function FederatedPostCard({
                 maxComments={2}
                 autoOpenComposer={shouldOpenComposer}
                 onComposerOpened={() => setShouldOpenComposer(false)}
+                companyContext={post.company}
               />
             </Suspense>
           </div>
