@@ -71,8 +71,10 @@ export default function AuthCallback() {
 
           if (verifyError) {
             console.error('Session verification error:', verifyError);
-            // Even if this fails, the user might still be logged in
+            throw new Error('Failed to establish session. Please try signing in again.');
           }
+        } else {
+          throw new Error('No authentication token received. Please try signing in again.');
         }
 
         setStatus('success');
