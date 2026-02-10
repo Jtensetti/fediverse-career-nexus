@@ -264,6 +264,7 @@ export default function PostView() {
             postId={post.id} 
             onReplyCreated={handleReplyCreated}
             placeholder="Write a reply..."
+            companyContext={post.company}
           />
         </div>
 
