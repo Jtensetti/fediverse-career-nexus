@@ -3820,6 +3820,7 @@ export type Database = {
         Returns: {
           actor_user_id: string
           actor_username: string
+          company_id: string
           content: Json
           created_at: string
           id: string

@@ -12,6 +12,12 @@ export interface PostReply {
   created_at: string;
   user_id: string;
   parent_reply_id?: string | null; // For threading support
+  company?: {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+  };
 }
 
 /**
@@ -112,9 +118,24 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
       }
     }
 
+    // Fetch company data for company replies
+    const companyIds = [...new Set((replies || []).map((r: any) => r.company_id).filter(Boolean))];
+    let companiesMap: Record<string, { id: string; name: string; slug: string; logo_url: string | null }> = {};
+    if (companyIds.length > 0) {
+      const { data: companies } = await supabase
+        .from('companies')
+        .select('id, name, slug, logo_url')
+        .in('id', companyIds);
+
+      if (companies) {
+        companiesMap = Object.fromEntries(companies.map(c => [c.id, c]));
+      }
+    }
+
     return (replies || []).map((reply: any) => {
       const content = reply.content as any;
       const profile = reply.actor_user_id ? profilesMap[reply.actor_user_id] : undefined;
+      const company = reply.company_id ? companiesMap[reply.company_id] : undefined;
       
       // Determine parent_reply_id: if inReplyTo is NOT the main post, it's a parent reply
       const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
@@ -129,11 +150,18 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
         created_at: reply.created_at,
         user_id: reply.actor_user_id || '',
         parent_reply_id: parentReplyId,
-        author: {
-          username: profile?.username || reply.actor_username || 'Unknown',
-          avatar_url: profile?.avatar_url,
-          fullname: profile?.fullname
-        }
+        author: company
+          ? {
+              username: company.slug,
+              avatar_url: company.logo_url || undefined,
+              fullname: company.name,
+            }
+          : {
+              username: profile?.username || reply.actor_username || 'Unknown',
+              avatar_url: profile?.avatar_url,
+              fullname: profile?.fullname,
+            },
+        company: company || undefined,
       };
     });
   } catch (error) {
@@ -243,11 +271,12 @@ export async function deletePostReply(commentId: string): Promise<void> {
   if (error) throw new Error('Failed to delete comment');
 }
 
-// Create a reply to a post (or to another reply)
+// Create a reply to a post (or to another reply), optionally as a company
 export async function createPostReply(
   postId: string, 
   content: string, 
-  parentReplyId?: string
+  parentReplyId?: string,
+  companyId?: string
 ): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -310,23 +339,70 @@ export async function createPostReply(
 
     // Create reply object - if parentReplyId is provided, reply to that instead
     const inReplyTo = parentReplyId || postId;
-    
-    const replyObject = {
-      type: 'Note',
-      content: {
+
+    // If replying as a company, fetch company info and use company_id instead of attributed_to
+    let replyObject: any;
+
+    if (companyId) {
+      // Verify user has permission to reply as this company
+      const { data: role } = await supabase
+        .from('company_roles')
+        .select('role')
+        .eq('company_id', companyId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (!role || !['owner', 'admin', 'editor'].includes(role.role)) {
+        toast.error("You don't have permission to reply as this company");
+        return false;
+      }
+
+      const { data: company } = await supabase
+        .from('companies')
+        .select('name, slug, logo_url')
+        .eq('id', companyId)
+        .single();
+
+      if (!company) {
+        toast.error('Company not found');
+        return false;
+      }
+
+      replyObject = {
         type: 'Note',
-        content: content,
-        inReplyTo: inReplyTo,
-        rootPost: postId, // Keep reference to original post for threading
-        actor: {
-          id: actor.id,
-          preferredUsername: actor.preferred_username,
-          name: profile?.fullname || profile?.username || actor.preferred_username
+        content: {
+          type: 'Note',
+          content: content,
+          inReplyTo: inReplyTo,
+          rootPost: postId,
+          company: {
+            id: companyId,
+            name: company.name,
+            slug: company.slug,
+            logo_url: company.logo_url,
+          },
+          published: new Date().toISOString()
         },
-        published: new Date().toISOString()
-      },
-      attributed_to: actor.id
-    };
+        company_id: companyId,
+      };
+    } else {
+      replyObject = {
+        type: 'Note',
+        content: {
+          type: 'Note',
+          content: content,
+          inReplyTo: inReplyTo,
+          rootPost: postId,
+          actor: {
+            id: actor.id,
+            preferredUsername: actor.preferred_username,
+            name: profile?.fullname || profile?.username || actor.preferred_username
+          },
+          published: new Date().toISOString()
+        },
+        attributed_to: actor.id
+      };
+    }
 
     const { data: replyData, error } = await supabase
       .from('ap_objects')
