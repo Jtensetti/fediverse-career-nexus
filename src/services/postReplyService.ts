@@ -12,6 +12,12 @@ export interface PostReply {
   created_at: string;
   user_id: string;
   parent_reply_id?: string | null; // For threading support
+  company?: {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+  };
 }
 
 /**
