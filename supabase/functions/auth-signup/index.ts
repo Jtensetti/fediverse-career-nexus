@@ -16,8 +16,12 @@ const supabase = createClient(
 
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 const rawSiteUrl = Deno.env.get("SITE_URL") ?? "https://fediverse-career.lovable.app";
-// Ensure URL has https:// prefix
-const siteUrl = rawSiteUrl.startsWith("http") ? rawSiteUrl : `https://${rawSiteUrl}`;
+// Ensure URL has https:// prefix and uses www.nolto.social canonical domain
+let siteUrl = rawSiteUrl.startsWith("http") ? rawSiteUrl : `https://${rawSiteUrl}`;
+// Force canonical www subdomain for nolto.social to prevent cross-origin session issues
+if (siteUrl.includes("nolto.social") && !siteUrl.includes("www.nolto.social")) {
+  siteUrl = siteUrl.replace("nolto.social", "www.nolto.social");
+}
 
 const signupSchema = z.object({
   email: z.string().email(),
