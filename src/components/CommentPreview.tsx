@@ -42,7 +42,7 @@ interface CommentWithState extends PostReply {
 }
 
 const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
-  ({ postId, onCommentClick, maxComments = 2, autoOpenComposer, onComposerOpened }, ref) => {
+  ({ postId, onCommentClick, maxComments = 2, autoOpenComposer, onComposerOpened, companyContext }, ref) => {
   const { t } = useTranslation();
   const [comments, setComments] = useState<CommentWithState[]>([]);
   const [totalCount, setTotalCount] = useState(0);
