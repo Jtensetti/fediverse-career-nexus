@@ -289,14 +289,30 @@ export const getFederatedFeed = async (
       }
     }
 
+    // Fetch company data for company posts
+    const companyIds = [...new Set(filteredObjects.map((obj: any) => obj.company_id).filter(Boolean))];
+    let companiesMap: Record<string, { id: string; name: string; slug: string; logo_url: string | null }> = {};
+
+    if (companyIds.length > 0) {
+      const { data: companies } = await supabase
+        .from("companies")
+        .select("id, name, slug, logo_url")
+        .in("id", companyIds);
+
+      if (companies) {
+        companiesMap = Object.fromEntries(companies.map((c) => [c.id, c]));
+      }
+    }
+
     // Transform the data into our expected format
     const federatedPosts: FederatedPost[] = filteredObjects.map((obj: any) => {
       const raw = obj.content as any;
       const note = raw?.type === "Create" ? raw.object : raw;
       const actor = obj.actors;
       const profile = actor?.user_id ? profilesMap[actor.user_id] : undefined;
+      const company = obj.company_id ? companiesMap[obj.company_id] : undefined;
 
-      const displayName = profile?.fullname || profile?.username || actor?.preferred_username || "Unknown User";
+      const displayName = company?.name || profile?.fullname || profile?.username || actor?.preferred_username || "Unknown User";
 
       // Get content warning from ActivityPub summary field
       const contentWarning = note?.summary || raw?.summary || null;
@@ -307,7 +323,7 @@ export const getFederatedFeed = async (
         created_at: obj.published_at,
         published_at: obj.published_at,
         actor_name: displayName,
-        actor_avatar: profile?.avatar_url || null,
+        actor_avatar: company?.logo_url || profile?.avatar_url || null,
         user_id: actor?.user_id || null,
         profile: profile
           ? {
@@ -318,6 +334,7 @@ export const getFederatedFeed = async (
               is_freelancer: profile.is_freelancer || false,
             }
           : undefined,
+        company: company || undefined,
         source: obj.source === "local" ? "local" : "remote",
         type: note?.type || "Note",
         content_warning: contentWarning,
