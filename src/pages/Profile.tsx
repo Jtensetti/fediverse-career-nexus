@@ -824,7 +824,10 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                     <Star size={20} className="text-primary" />
                     {t("profile.skills", "Skills")} & {t("skills.endorsements", "Endorsements")}
+                    {renderVisibilityToggle('skills')}
                   </h3>
+                  {!isSectionVisible('skills') ? renderHiddenMessage() : (
+                  <>
                   <p className="text-sm text-muted-foreground mb-6">
                     {viewingOwnProfile
                       ? t("skills.addSkillsDesc", "Add skills to let your connections endorse your expertise")
