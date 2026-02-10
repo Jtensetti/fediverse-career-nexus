@@ -118,9 +118,24 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
       }
     }
 
+    // Fetch company data for company replies
+    const companyIds = [...new Set((replies || []).map((r: any) => r.company_id).filter(Boolean))];
+    let companiesMap: Record<string, { id: string; name: string; slug: string; logo_url: string | null }> = {};
+    if (companyIds.length > 0) {
+      const { data: companies } = await supabase
+        .from('companies')
+        .select('id, name, slug, logo_url')
+        .in('id', companyIds);
+
+      if (companies) {
+        companiesMap = Object.fromEntries(companies.map(c => [c.id, c]));
+      }
+    }
+
     return (replies || []).map((reply: any) => {
       const content = reply.content as any;
       const profile = reply.actor_user_id ? profilesMap[reply.actor_user_id] : undefined;
+      const company = reply.company_id ? companiesMap[reply.company_id] : undefined;
       
       // Determine parent_reply_id: if inReplyTo is NOT the main post, it's a parent reply
       const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
@@ -135,11 +150,18 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
         created_at: reply.created_at,
         user_id: reply.actor_user_id || '',
         parent_reply_id: parentReplyId,
-        author: {
-          username: profile?.username || reply.actor_username || 'Unknown',
-          avatar_url: profile?.avatar_url,
-          fullname: profile?.fullname
-        }
+        author: company
+          ? {
+              username: company.slug,
+              avatar_url: company.logo_url || undefined,
+              fullname: company.name,
+            }
+          : {
+              username: profile?.username || reply.actor_username || 'Unknown',
+              avatar_url: profile?.avatar_url,
+              fullname: profile?.fullname,
+            },
+        company: company || undefined,
       };
     });
   } catch (error) {
