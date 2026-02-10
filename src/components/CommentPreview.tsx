@@ -15,12 +15,21 @@ import { toast } from "sonner";
 import InlineReplyComposer from "./InlineReplyComposer";
 import { EnhancedCommentReactions } from "./EnhancedCommentReactions";
 
+interface CompanyContext {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+}
+
 interface CommentPreviewProps {
   postId: string;
   onCommentClick?: () => void;
   maxComments?: number;
   autoOpenComposer?: boolean;
   onComposerOpened?: () => void;
+  /** Company context for reply-as-company toggle */
+  companyContext?: CompanyContext;
 }
 
 export interface CommentPreviewHandle {
