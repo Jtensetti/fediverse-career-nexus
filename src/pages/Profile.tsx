@@ -855,9 +855,12 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <BookText size={20} className="text-primary" />
                     {t("profile.articles", "Articles")}
+                    {renderVisibilityToggle('articles')}
                   </h3>
 
+                  {!isSectionVisible('articles') ? renderHiddenMessage() : (
                   <UserArticlesList userId={profile.id} isOwnProfile={viewingOwnProfile} />
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
