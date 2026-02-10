@@ -59,6 +59,8 @@ import { SEOHead } from "@/components/common/SEOHead";
 import { ShareButton } from "@/components/common/ShareButton";
 import { ShareProfileCard } from "@/components/profile/ShareProfileCard";
 import SimpleMarkdown from "@/components/common/SimpleMarkdown";
+import { getSectionVisibility, canViewSection, type SectionVisibilityMap, type SectionVisibility, type ProfileSection } from "@/services/sectionVisibilityService";
+import SectionVisibilityToggle from "@/components/SectionVisibilityToggle";
 
 const ProfilePage = () => {
   const { usernameOrId } = useParams();
