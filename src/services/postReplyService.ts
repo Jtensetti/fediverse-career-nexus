@@ -339,23 +339,70 @@ export async function createPostReply(
 
     // Create reply object - if parentReplyId is provided, reply to that instead
     const inReplyTo = parentReplyId || postId;
-    
-    const replyObject = {
-      type: 'Note',
-      content: {
+
+    // If replying as a company, fetch company info and use company_id instead of attributed_to
+    let replyObject: any;
+
+    if (companyId) {
+      // Verify user has permission to reply as this company
+      const { data: role } = await supabase
+        .from('company_roles')
+        .select('role')
+        .eq('company_id', companyId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (!role || !['owner', 'admin', 'editor'].includes(role.role)) {
+        toast.error("You don't have permission to reply as this company");
+        return false;
+      }
+
+      const { data: company } = await supabase
+        .from('companies')
+        .select('name, slug, logo_url')
+        .eq('id', companyId)
+        .single();
+
+      if (!company) {
+        toast.error('Company not found');
+        return false;
+      }
+
+      replyObject = {
         type: 'Note',
-        content: content,
-        inReplyTo: inReplyTo,
-        rootPost: postId, // Keep reference to original post for threading
-        actor: {
-          id: actor.id,
-          preferredUsername: actor.preferred_username,
-          name: profile?.fullname || profile?.username || actor.preferred_username
+        content: {
+          type: 'Note',
+          content: content,
+          inReplyTo: inReplyTo,
+          rootPost: postId,
+          company: {
+            id: companyId,
+            name: company.name,
+            slug: company.slug,
+            logo_url: company.logo_url,
+          },
+          published: new Date().toISOString()
         },
-        published: new Date().toISOString()
-      },
-      attributed_to: actor.id
-    };
+        company_id: companyId,
+      };
+    } else {
+      replyObject = {
+        type: 'Note',
+        content: {
+          type: 'Note',
+          content: content,
+          inReplyTo: inReplyTo,
+          rootPost: postId,
+          actor: {
+            id: actor.id,
+            preferredUsername: actor.preferred_username,
+            name: profile?.fullname || profile?.username || actor.preferred_username
+          },
+          published: new Date().toISOString()
+        },
+        attributed_to: actor.id
+      };
+    }
 
     const { data: replyData, error } = await supabase
       .from('ap_objects')
