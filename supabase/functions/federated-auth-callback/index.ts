@@ -330,9 +330,18 @@ serve(async (req) => {
     }
 
     // Extract the token from the magic link
+    // Supabase may use either 'token' or 'token_hash' depending on version/PKCE settings
     const magicLinkUrl = new URL(sessionData.properties.action_link);
-    const token = magicLinkUrl.searchParams.get('token');
+    const token = magicLinkUrl.searchParams.get('token_hash') || magicLinkUrl.searchParams.get('token');
     const tokenType = magicLinkUrl.searchParams.get('type');
+    
+    if (!token) {
+      console.error('No token found in magic link URL:', sessionData.properties.action_link);
+      return new Response(JSON.stringify({ error: 'Failed to generate authentication token' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     console.log(`Successfully authenticated ${fullHandle}`);
 
