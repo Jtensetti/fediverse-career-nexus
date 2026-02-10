@@ -712,9 +712,10 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Briefcase size={20} className="text-primary" />
                     {t("profile.experience", "Experience")}
+                    {renderVisibilityToggle('experience')}
                   </h3>
 
-                  {profile.experience && profile.experience.length > 0 ? (
+                  {!isSectionVisible('experience') ? renderHiddenMessage() : profile.experience && profile.experience.length > 0 ? (
                     <div className="space-y-6">
                       {profile.experience.map((exp) => (
                         <motion.div
