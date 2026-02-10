@@ -68,7 +68,8 @@ export default function PostView() {
           content,
           created_at,
           published_at,
-          attributed_to
+          attributed_to,
+          company_id
         `)
         .eq('id', postId)
         .maybeSingle();
