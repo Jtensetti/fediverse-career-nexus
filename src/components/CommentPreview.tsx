@@ -229,7 +229,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
     <div ref={containerRef} className="pt-2 border-t border-border/50 space-y-2" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
       {comments.map((comment) => (
         <div key={comment.id} className="flex gap-2 group/comment">
-          <Link to={`/profile/${comment.author.username || comment.user_id}`}>
+          <Link to={comment.company ? `/company/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`}>
             <Avatar className="h-6 w-6 aspect-square flex-shrink-0">
               {comment.author.avatar_url && (
                 <AvatarImage src={comment.author.avatar_url} />
@@ -244,11 +244,16 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
             <div className="bg-muted/50 rounded-lg px-3 py-1.5">
               <div className="flex items-center gap-1.5">
                 <Link 
-                  to={`/profile/${comment.author.username || comment.user_id}`}
+                  to={comment.company ? `/company/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`}
                   className="text-xs font-medium hover:underline"
                 >
                   {comment.author.fullname || comment.author.username || 'Unknown'}
                 </Link>
+                {comment.company && (
+                  <span className="text-[10px] text-primary font-medium">
+                    · {t("comments.companyReply", "Company")}
+                  </span>
+                )}
                 <span className="text-[10px] text-muted-foreground">
                   · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                 </span>
