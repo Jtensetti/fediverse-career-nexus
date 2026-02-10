@@ -124,6 +124,17 @@ export default function PostView() {
         profile = (profileData as typeof profile) || null;
       }
 
+      // Resolve company data if this is a company post
+      let companyData: { id: string; name: string; slug: string; logo_url: string | null } | undefined;
+      if ((postData as any).company_id) {
+        const { data: company } = await supabase
+          .from('companies')
+          .select('id, name, slug, logo_url')
+          .eq('id', (postData as any).company_id)
+          .single();
+        if (company) companyData = company;
+      }
+
       // Transform to FederatedPost format
       const federatedPost: FederatedPost = {
         id: postData.id,
@@ -133,7 +144,8 @@ export default function PostView() {
         published_at: postData.published_at || undefined,
         source: actor?.is_remote ? 'remote' : 'local',
         user_id: actor?.user_id || undefined,
-        actor_name: actor?.preferred_username || undefined,
+        actor_name: companyData?.name || actor?.preferred_username || undefined,
+        actor_avatar: companyData?.logo_url || undefined,
         actor: {
           preferredUsername: actor?.preferred_username,
         },
@@ -142,6 +154,7 @@ export default function PostView() {
           fullname: profile.fullname || undefined,
           avatar_url: profile.avatar_url || undefined,
         } : undefined,
+        company: companyData,
       };
 
       setPost(federatedPost);
