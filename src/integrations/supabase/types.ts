@@ -3700,6 +3700,7 @@ export type Database = {
         Returns: boolean
       }
       ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
+      exec_sql: { Args: { sql: string }; Returns: undefined }
       generate_referral_code: { Args: never; Returns: string }
       get_actor_private_key: { Args: { actor_uuid: string }; Returns: string }
       get_actor_private_key_service: {
