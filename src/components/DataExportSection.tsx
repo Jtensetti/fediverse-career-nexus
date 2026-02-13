@@ -25,14 +25,6 @@ export default function DataExportSection() {
         return;
       }
 
-      const response = await supabase.functions.invoke("export-user-data", {
-        body: {},
-        headers: {
-          Authorization: `Bearer ${session.session.access_token}`
-        }
-      });
-
-      // Build URL with query param for format
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const exportUrl = `${supabaseUrl}/functions/v1/export-user-data?format=${format}`;
       
