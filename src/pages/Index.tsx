@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/common/SEOHead";
 
 // Shutdown date: June 13, 2025
-const SHUTDOWN_DATE = new Date('2025-06-13T00:00:00Z');
+const SHUTDOWN_DATE = new Date('2026-03-13T00:00:00Z');
 
 export default function Index() {
   const { user, loading } = useAuth();
