@@ -205,8 +205,8 @@ function DataExportInline() {
         className="w-full flex items-center justify-between p-5 rounded-lg border border-border hover:bg-muted/50 transition-colors disabled:opacity-50"
       >
         <div className="text-left">
-          <h3 className="font-medium text-foreground">Fediverse Migration Export</h3>
-          <p className="text-sm text-muted-foreground mt-1">ActivityPub format — import your following list to Mastodon or another instance</p>
+          <h3 className="font-medium text-foreground">Fediverse Data Export</h3>
+          <p className="text-sm text-muted-foreground mt-1">ActivityPub format. You can import your following list to Mastodon or another compatible instance.</p>
         </div>
         <Download className="h-5 w-5 text-muted-foreground shrink-0 ml-4" />
       </button>
