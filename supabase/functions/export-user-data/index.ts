@@ -129,6 +129,37 @@ async function fetchAllUserData(userId: string) {
     supabaseClient.from("newsletter_subscribers").select("*").eq("user_id", userId),
   ]);
 
+  // Fetch company data for companies where user is owner or admin
+  const adminRoles = (companyRoles.data || []).filter(
+    (r: any) => r.role === 'owner' || r.role === 'admin'
+  );
+  const adminCompanyIds = adminRoles.map((r: any) => r.company_id);
+
+  let managedCompanies: any[] = [];
+  if (adminCompanyIds.length > 0) {
+    const companyDataPromises = adminCompanyIds.map(async (companyId: string) => {
+      const [company, employees, roles, posts, auditLog, followers, claimRequests] = await Promise.all([
+        supabaseClient.from("companies").select("*").eq("id", companyId).single(),
+        supabaseClient.from("company_employees").select("*").eq("company_id", companyId),
+        supabaseClient.from("company_roles").select("*").eq("company_id", companyId),
+        supabaseClient.from("ap_objects").select("*").eq("company_id", companyId),
+        supabaseClient.from("company_audit_log").select("*").eq("company_id", companyId),
+        supabaseClient.from("company_followers").select("*").eq("company_id", companyId),
+        supabaseClient.from("company_claim_requests").select("*").eq("company_id", companyId),
+      ]);
+      return {
+        company: company.data,
+        employees: employees.data || [],
+        roles: roles.data || [],
+        posts: posts.data || [],
+        auditLog: auditLog.data || [],
+        followers: followers.data || [],
+        claimRequests: claimRequests.data || [],
+      };
+    });
+    managedCompanies = await Promise.all(companyDataPromises);
+  }
+
   return {
     profile: profile.data,
     actor: actor.data,
@@ -180,6 +211,7 @@ async function fetchAllUserData(userId: string) {
     actorFollowers: actorFollowers.data || [],
     outgoingFollows: outgoingFollows.data || [],
     newsletterSubs: newsletterSubs.data || [],
+    managedCompanies,
   };
 }
 
@@ -241,6 +273,7 @@ function buildGdprExport(user: any, d: any) {
     cwPreferences: d.cwPreferences,
     profileViews: d.profileViews,
     newsletterSubscriptions: d.newsletterSubs,
+    managedCompanies: d.managedCompanies.length > 0 ? d.managedCompanies : undefined,
     dataCategories: {
       profile: "Personal information provided during account creation",
       actor: "ActivityPub identity and federation data (private key redacted)",
@@ -288,6 +321,7 @@ function buildGdprExport(user: any, d: any) {
       cwPreferences: "Content warning preferences",
       profileViews: "Profile views you made",
       newsletterSubscriptions: "Newsletter subscriptions",
+      managedCompanies: "Full data for companies you own or administer (profile, employees, roles, posts, audit log, followers, claims)",
     }
   };
 
@@ -523,7 +557,16 @@ function buildActivityPubExport(user: any, d: any, supabaseUrl: string) {
       crossPostSettings: d.crossPostSettings,
       userSettings: d.userSettings,
       consents: d.consents,
-    }
+    },
+    managedCompanies: d.managedCompanies.length > 0 ? d.managedCompanies.map((mc: any) => ({
+      company: mc.company,
+      employees: mc.employees,
+      roles: mc.roles,
+      posts: mc.posts,
+      auditLog: mc.auditLog,
+      followers: mc.followers,
+      claimRequests: mc.claimRequests,
+    })) : undefined,
   };
 
   return new Response(JSON.stringify(activityPubExport, null, 2), {
