@@ -5,8 +5,13 @@ import { Github, ExternalLink, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/common/SEOHead";
 
+// Shutdown date: June 13, 2025
+const SHUTDOWN_DATE = new Date('2025-06-13T00:00:00Z');
+
 export default function Index() {
   const { user, loading } = useAuth();
+
+  const daysRemaining = Math.max(0, Math.ceil((SHUTDOWN_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 
   if (loading) {
     return (
@@ -27,7 +32,7 @@ export default function Index() {
           </div>
 
           <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6 mb-8 text-center">
-            <h2 className="text-xl font-bold text-destructive mb-2">Your data will be permanently deleted in 30 days</h2>
+          <h2 className="text-xl font-bold text-destructive mb-2">Your data will be permanently deleted in {daysRemaining} day{daysRemaining !== 1 ? 's' : ''}</h2>
             <p className="text-muted-foreground text-sm">
               All user data, the database, and stored files will be removed entirely. Please download your data now.
             </p>
@@ -81,7 +86,7 @@ export default function Index() {
 
           <p>You can log in and download your data. Nothing else on the platform will remain active. The site now exists only for data export.</p>
 
-          <p>All user data will be permanently deleted 30 days from now, including the database and stored files. After that, the backend will be removed entirely.</p>
+          <p>All user data will be permanently deleted in {daysRemaining} day{daysRemaining !== 1 ? 's' : ''}, including the database and stored files. After that, the backend will be removed entirely.</p>
 
           <p>The source code will remain available for anyone who wants to explore it, improve it, fork it or continue the idea.</p>
         </article>
