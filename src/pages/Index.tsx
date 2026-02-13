@@ -114,8 +114,9 @@ export default function Index() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-5 py-3 rounded-lg border border-border hover:bg-muted transition-colors text-sm font-medium text-foreground"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
-              <path d="M11.955.49A12 12 0 0 0 0 12.49a12 12 0 0 0 1.832 6.373L11.838 5.928a.187.187 0 0 1 .324 0l10.006 12.935A12 12 0 0 0 24 12.49a12 12 0 0 0-12-12 12 12 0 0 0-.045 0zm.375 6.467 4.416 16.553a12 12 0 0 1-4.416.89 12 12 0 0 1-4.686-.959z" />
+            <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="fill-current" aria-hidden="true">
+              <path fill="currentColor" d="M12 1A11 11 0 0 0 1 12a11 11 0 0 0 1.7 6.4L12 6l9.3 12.4A11 11 0 0 0 23 12 11 11 0 0 0 12 1Z"/>
+              <path fill="currentColor" opacity="0.6" d="M21.3 18.4 12 6l4.4 16.8a11 11 0 0 0 4.9-4.4Z"/>
             </svg>
             Codeberg
             <ExternalLink className="h-3 w-3 text-muted-foreground" />
