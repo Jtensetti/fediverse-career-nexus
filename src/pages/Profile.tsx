@@ -217,7 +217,7 @@ const ProfilePage = () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (error) {
       console.error("Error updating header:", error);
-      toast.error("Failed to update header image");
+      toast.error(t("toasts.failedUpdateHeader", "Failed to update header image"));
     }
   };
 
