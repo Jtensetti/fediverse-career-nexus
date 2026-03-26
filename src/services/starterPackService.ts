@@ -211,7 +211,7 @@ export async function followStarterPack(packId: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('Error following starter pack:', error);
-    toast.error('Failed to follow pack');
+    toast.error('Kunde inte följa paket');
     return false;
   }
 }
