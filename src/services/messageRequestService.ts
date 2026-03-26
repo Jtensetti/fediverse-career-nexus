@@ -207,7 +207,7 @@ export async function acceptMessageRequest(requestId: string): Promise<boolean> 
       .eq('id', requestId);
 
     if (error) throw error;
-    toast.success('Request accepted! You can now message each other.');
+    toast.success('Förfrågan accepterad! Ni kan nu skicka meddelanden till varandra.');
     return true;
   } catch (error) {
     console.error('Error accepting request:', error);
