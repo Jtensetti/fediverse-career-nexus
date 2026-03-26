@@ -18,7 +18,7 @@ interface ArticleEditorProps {
 export function ArticleEditor({
   value,
   onChange,
-  placeholder = "Write your article...",
+  placeholder = "Skriv din artikel...",
   className,
 }: ArticleEditorProps) {
   const [hasSelection, setHasSelection] = useState(false);
