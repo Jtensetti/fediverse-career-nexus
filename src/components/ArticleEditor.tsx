@@ -92,7 +92,7 @@ export function ArticleEditor({
           break;
         case "image-url":
           // Prompt for URL as fallback
-          const url = prompt("Enter image URL:");
+          const url = prompt("Ange bild-URL:");
           if (url) {
             editor.insertImage(url);
           }
