@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useQuery } from "@tanstack/react-query";
@@ -28,36 +29,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const jobFormSchema = z.object({
-  title: z.string().min(5, "Title must be at least 5 characters"),
-  company: z.string().min(2, "Company name is required"),
-  company_id: z.string().nullable().optional(),
-  location: z.string().min(2, "Location is required"),
-  description: z.string().min(20, "Description must be at least 20 characters"),
-  employment_type: z.string().default("full-time"),
-  salary_min: z.coerce.number().nullable().optional(),
-  salary_max: z.coerce.number().nullable().optional(),
-  salary_currency: z.string().optional(),
-  remote_policy: z.string().default("on-site"),
-  experience_level: z.string().optional(),
-  skills: z.string().transform(val => val ? val.split(",").map(s => s.trim()).filter(Boolean) : []),
-  is_active: z.boolean().default(false),
-  interview_process: z.string().optional(),
-  response_time: z.string().optional(),
-  team_size: z.string().optional(),
-  growth_path: z.string().optional(),
-  visa_sponsorship: z.boolean().default(false),
-}).refine(data => {
-  if (data.salary_min && data.salary_max) {
-    return Number(data.salary_min) <= Number(data.salary_max);
-  }
-  return true;
-}, {
-  message: "Minimum salary must be less than maximum salary",
-  path: ["salary_min"],
-});
+export type JobFormValues = z.infer<ReturnType<typeof createJobFormSchema>>;
 
-export type JobFormValues = z.infer<typeof jobFormSchema>;
+function createJobFormSchema(t: (key: string, fallback?: string) => string) {
+  return z.object({
+    title: z.string().min(5, t("jobFormLabels.titleValidation")),
+    company: z.string().min(2, t("jobFormLabels.companyValidation")),
+    company_id: z.string().nullable().optional(),
+    location: z.string().min(2, t("jobFormLabels.locationValidation")),
+    description: z.string().min(20, t("jobFormLabels.descriptionValidation")),
+    employment_type: z.string().default("full-time"),
+    salary_min: z.coerce.number().nullable().optional(),
+    salary_max: z.coerce.number().nullable().optional(),
+    salary_currency: z.string().optional(),
+    remote_policy: z.string().default("on-site"),
+    experience_level: z.string().optional(),
+    skills: z.string().transform(val => val ? val.split(",").map(s => s.trim()).filter(Boolean) : []),
+    is_active: z.boolean().default(false),
+    interview_process: z.string().optional(),
+    response_time: z.string().optional(),
+    team_size: z.string().optional(),
+    growth_path: z.string().optional(),
+    visa_sponsorship: z.boolean().default(false),
+  }).refine(data => {
+    if (data.salary_min && data.salary_max) {
+      return Number(data.salary_min) <= Number(data.salary_max);
+    }
+    return true;
+  }, {
+    message: t("jobFormLabels.salaryValidation"),
+    path: ["salary_min"],
+  });
+}
 
 interface JobFormProps {
   defaultValues?: Partial<JobPost> & { company_id?: string | null };
@@ -70,10 +73,13 @@ const JobForm = ({
   defaultValues = {}, 
   onSubmit, 
   isSubmitting,
-  submitButtonText = "Create Job Post"
+  submitButtonText
 }: JobFormProps) => {
   const [isOnline] = useState(false);
   const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const jobFormSchema = createJobFormSchema(t);
 
   // Fetch user's companies for linking
   const { data: userCompanyRoles = [] } = useQuery({
@@ -103,7 +109,7 @@ const JobForm = ({
     employment_type: defaultValues.employment_type || "full-time",
     salary_min: defaultValues.salary_min ?? null,
     salary_max: defaultValues.salary_max ?? null,
-    salary_currency: defaultValues.salary_currency || "USD",
+    salary_currency: defaultValues.salary_currency || "SEK",
     remote_policy: defaultValues.remote_policy || "on-site",
     experience_level: defaultValues.experience_level || "",
     skills: defaultValues.skills?.join(", ") || "",
@@ -120,10 +126,11 @@ const JobForm = ({
     defaultValues: formattedDefaultValues as any,
   });
 
-  // Simple handleSubmit - mirrors EventForm pattern exactly
   const handleSubmit = (values: JobFormValues) => {
     onSubmit(values);
   };
+
+  const finalSubmitText = submitButtonText || t("jobFormLabels.createJobPost");
 
   return (
     <Form {...form}>
@@ -134,9 +141,9 @@ const JobForm = ({
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Job Title *</FormLabel>
+                <FormLabel>{t("jobFormLabels.jobTitle")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. Senior Frontend Developer" {...field} />
+                  <Input placeholder={t("jobFormLabels.jobTitlePlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -148,9 +155,9 @@ const JobForm = ({
             name="company"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Name *</FormLabel>
+                <FormLabel>{t("jobFormLabels.companyName")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. Acme Inc." {...field} />
+                  <Input placeholder={t("jobFormLabels.companyNamePlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -165,11 +172,10 @@ const JobForm = ({
             name="company_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Link to Company Page</FormLabel>
+                <FormLabel>{t("jobFormLabels.linkToCompany")}</FormLabel>
                 <Select 
                   onValueChange={(val) => {
                     field.onChange(val === "none" ? null : val);
-                    // Auto-fill company name when selecting a company page
                     if (val !== "none") {
                       const selected = userCompanies.find(c => c.id === val);
                       if (selected) {
@@ -181,11 +187,11 @@ const JobForm = ({
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a company page (optional)" />
+                      <SelectValue placeholder={t("jobFormLabels.selectCompany")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="none">No company page</SelectItem>
+                    <SelectItem value="none">{t("jobFormLabels.noCompanyPage")}</SelectItem>
                     {userCompanies.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.name}
@@ -194,7 +200,7 @@ const JobForm = ({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Link this job post to a company page you manage
+                  {t("jobFormLabels.linkDescription")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -208,9 +214,9 @@ const JobForm = ({
             name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Location *</FormLabel>
+                <FormLabel>{t("jobFormLabels.location")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. New York, NY" {...field} />
+                  <Input placeholder={t("jobFormLabels.locationPlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -222,19 +228,19 @@ const JobForm = ({
             name="employment_type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Employment Type</FormLabel>
+                <FormLabel>{t("jobFormLabels.employmentType")}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select employment type" />
+                      <SelectValue placeholder={t("jobFormLabels.selectEmploymentType")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="full-time">Full-time</SelectItem>
-                    <SelectItem value="part-time">Part-time</SelectItem>
-                    <SelectItem value="contract">Contract</SelectItem>
-                    <SelectItem value="internship">Internship</SelectItem>
-                    <SelectItem value="temporary">Temporary</SelectItem>
+                    <SelectItem value="full-time">{t("jobFormLabels.fullTime")}</SelectItem>
+                    <SelectItem value="part-time">{t("jobFormLabels.partTime")}</SelectItem>
+                    <SelectItem value="contract">{t("jobFormLabels.contract")}</SelectItem>
+                    <SelectItem value="internship">{t("jobFormLabels.internship")}</SelectItem>
+                    <SelectItem value="temporary">{t("jobFormLabels.temporary")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -248,17 +254,17 @@ const JobForm = ({
           name="remote_policy"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Remote Policy</FormLabel>
+              <FormLabel>{t("jobFormLabels.remotePolicy")}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select remote policy" />
+                    <SelectValue placeholder={t("jobFormLabels.selectRemotePolicy")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="on-site">On-site</SelectItem>
-                  <SelectItem value="remote">Remote</SelectItem>
-                  <SelectItem value="hybrid">Hybrid</SelectItem>
+                  <SelectItem value="on-site">{t("jobFormLabels.onSite")}</SelectItem>
+                  <SelectItem value="remote">{t("jobFormLabels.remote")}</SelectItem>
+                  <SelectItem value="hybrid">{t("jobFormLabels.hybrid")}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -271,19 +277,19 @@ const JobForm = ({
           name="experience_level"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Experience Level</FormLabel>
+              <FormLabel>{t("jobFormLabels.experienceLevel")}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select experience level" />
+                    <SelectValue placeholder={t("jobFormLabels.selectExperienceLevel")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="entry">Entry Level</SelectItem>
-                  <SelectItem value="mid">Mid Level</SelectItem>
-                  <SelectItem value="senior">Senior Level</SelectItem>
-                  <SelectItem value="lead">Lead/Principal</SelectItem>
-                  <SelectItem value="executive">Executive</SelectItem>
+                  <SelectItem value="entry">{t("jobFormLabels.entryLevel")}</SelectItem>
+                  <SelectItem value="mid">{t("jobFormLabels.midLevel")}</SelectItem>
+                  <SelectItem value="senior">{t("jobFormLabels.seniorLevel")}</SelectItem>
+                  <SelectItem value="lead">{t("jobFormLabels.leadPrincipal")}</SelectItem>
+                  <SelectItem value="executive">{t("jobFormLabels.executive")}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -292,17 +298,17 @@ const JobForm = ({
         />
         
         <div className="border rounded-lg p-4 space-y-4">
-          <h3 className="text-lg font-semibold">Compensation</h3>
+          <h3 className="text-lg font-semibold">{t("jobFormLabels.compensation")}</h3>
           <div className="grid gap-4 md:grid-cols-3">
             <FormField
               control={form.control}
               name="salary_min"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Minimum Salary</FormLabel>
+                  <FormLabel>{t("jobFormLabels.minSalary")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="e.g. 50000" 
+                      placeholder="t.ex. 50000" 
                       type="number" 
                       value={field.value ?? ""} 
                       onChange={(e) => {
@@ -321,10 +327,10 @@ const JobForm = ({
               name="salary_max"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Maximum Salary</FormLabel>
+                  <FormLabel>{t("jobFormLabels.maxSalary")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="e.g. 80000" 
+                      placeholder="t.ex. 80000" 
                       type="number" 
                       value={field.value ?? ""}
                       onChange={(e) => {
@@ -343,19 +349,20 @@ const JobForm = ({
               name="salary_currency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Currency</FormLabel>
+                  <FormLabel>{t("jobFormLabels.currency")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select currency" />
+                        <SelectValue placeholder={t("jobFormLabels.selectCurrency")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="USD">USD - US Dollar</SelectItem>
+                      <SelectItem value="SEK">SEK - Svensk krona</SelectItem>
                       <SelectItem value="EUR">EUR - Euro</SelectItem>
-                      <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                      <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
-                      <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
+                      <SelectItem value="USD">USD - US Dollar</SelectItem>
+                      <SelectItem value="GBP">GBP - Brittiskt pund</SelectItem>
+                      <SelectItem value="NOK">NOK - Norsk krona</SelectItem>
+                      <SelectItem value="DKK">DKK - Dansk krona</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -370,10 +377,10 @@ const JobForm = ({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Job Description *</FormLabel>
+              <FormLabel>{t("jobFormLabels.jobDescription")}</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Describe the responsibilities, requirements, and benefits of the position..." 
+                  placeholder={t("jobFormLabels.jobDescPlaceholder")} 
                   className="min-h-[200px]"
                   {...field}
                 />
@@ -388,15 +395,15 @@ const JobForm = ({
           name="skills"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Required Skills</FormLabel>
+              <FormLabel>{t("jobFormLabels.requiredSkills")}</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="e.g. React, JavaScript, TypeScript (comma-separated)"
+                  placeholder={t("jobFormLabels.skillsPlaceholder")}
                   {...field}
                 />
               </FormControl>
               <FormDescription>
-                Enter skills separated by commas
+                {t("jobFormLabels.skillsDescription")}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -405,8 +412,8 @@ const JobForm = ({
 
         <div className="border rounded-lg p-4 space-y-4 bg-primary/5">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Transparency Details</h3>
-            <span className="text-xs text-muted-foreground">Helps candidates trust your listing</span>
+            <h3 className="text-lg font-semibold">{t("jobFormLabels.transparencyDetails")}</h3>
+            <span className="text-xs text-muted-foreground">{t("jobFormLabels.helpsCandidate")}</span>
           </div>
           
           <div className="grid gap-4 md:grid-cols-2">
@@ -415,10 +422,10 @@ const JobForm = ({
               name="interview_process"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Interview Process</FormLabel>
+                  <FormLabel>{t("jobFormLabels.interviewProcess")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="e.g. 3 rounds: phone screen, technical, final"
+                      placeholder={t("jobFormLabels.interviewPlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -432,10 +439,10 @@ const JobForm = ({
               name="response_time"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Response Time</FormLabel>
+                  <FormLabel>{t("jobFormLabels.responseTime")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="e.g. We respond within 5 business days"
+                      placeholder={t("jobFormLabels.responseTimePlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -451,10 +458,10 @@ const JobForm = ({
               name="team_size"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Team Size</FormLabel>
+                  <FormLabel>{t("jobFormLabels.teamSize")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="e.g. You'll join a team of 8"
+                      placeholder={t("jobFormLabels.teamSizePlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -468,10 +475,10 @@ const JobForm = ({
               name="growth_path"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Growth Path</FormLabel>
+                  <FormLabel>{t("jobFormLabels.growthPath")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="e.g. Senior → Lead → Manager track available"
+                      placeholder={t("jobFormLabels.growthPathPlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -487,9 +494,9 @@ const JobForm = ({
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
                 <div>
-                  <FormLabel>Visa Sponsorship</FormLabel>
+                  <FormLabel>{t("jobFormLabels.visaSponsorship")}</FormLabel>
                   <FormDescription>
-                    Can you sponsor work visas for this position?
+                    {t("jobFormLabels.visaSponsorshipDesc")}
                   </FormDescription>
                 </div>
                 <FormControl>
@@ -509,9 +516,9 @@ const JobForm = ({
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
               <div>
-                <FormLabel>Publish Immediately</FormLabel>
+                <FormLabel>{t("jobFormLabels.publishImmediately")}</FormLabel>
                 <FormDescription>
-                  Make this job post visible to candidates right away
+                  {t("jobFormLabels.publishDescription")}
                 </FormDescription>
               </div>
               <FormControl>
@@ -526,10 +533,10 @@ const JobForm = ({
 
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={() => window.history.back()}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : submitButtonText}
+            {isSubmitting ? t("jobFormLabels.submitting") : finalSubmitText}
           </Button>
         </div>
       </form>
