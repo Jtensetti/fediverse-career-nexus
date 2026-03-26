@@ -288,7 +288,7 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="users" className="gap-2">
                   <Users className="h-4 w-4" />
-                  Users
+                  Användare
                 </TabsTrigger>
                 <TabsTrigger value="bans" className="gap-2">
                   <Ban className="h-4 w-4" />
