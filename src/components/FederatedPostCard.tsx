@@ -283,11 +283,9 @@ export default function FederatedPostCard({
   // Handle reply - now activates inline composer
   const handleReply = () => {
     if (!user) {
-      toast.error('Please sign in to reply to posts');
+      toast.error(t('postCard.signInToReply'));
       return;
     }
-
-    // Try to open via ref, or set flag for when component loads
     if (commentPreviewRef.current) {
       commentPreviewRef.current.openComposer();
     } else {
