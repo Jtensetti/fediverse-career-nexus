@@ -326,7 +326,7 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
       .eq('id', id);
     
     if (error) {
-      toast.error(`Error deleting article: ${error.message}`);
+      toast.error(`${i18n.t('toasts.articleDeleteFailed')}: ${error.message}`);
       return false;
     }
     
