@@ -64,7 +64,7 @@ export async function getOrCreateJobConversation(
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('You must be logged in to start a conversation');
+      toast.error(i18n.t('toasts.loginRequiredConversation'));
       return null;
     }
 
