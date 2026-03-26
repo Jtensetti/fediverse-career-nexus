@@ -207,7 +207,7 @@ export default function PostView() {
 
   if (loading) {
     return (
-      <DashboardLayout title="Loading Post" description="Loading post details...">
+      <DashboardLayout title="Laddar inlägg" description="Laddar inläggsdetaljer...">
         <div className="min-h-[50vh] flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
