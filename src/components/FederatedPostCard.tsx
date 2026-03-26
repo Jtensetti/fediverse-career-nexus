@@ -613,7 +613,7 @@ export default function FederatedPostCard({
               isBoosted ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950" : "hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950"
             )}
             onClick={handleBoost}
-            aria-label={isBoosted ? "Remove boost" : "Boost post"}
+            aria-label={isBoosted ? t('postCard.removeBoost') : t('postCard.boostPost')}
             aria-pressed={isBoosted}
           >
             <Repeat className={cn("h-4 w-4 transition-transform", isBoosted && "text-green-500")} />
