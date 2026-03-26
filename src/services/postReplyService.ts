@@ -353,7 +353,7 @@ export async function createPostReply(
         .single();
 
       if (!role || !['owner', 'admin', 'editor'].includes(role.role)) {
-        toast.error("You don't have permission to reply as this company");
+        toast.error("Du har inte behörighet att svara som detta företag");
         return false;
       }
 
