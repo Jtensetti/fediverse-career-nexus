@@ -80,7 +80,7 @@ export const votePoll = async (
 
     if (error) {
       console.error("Error voting:", error);
-      toast.error("Failed to submit vote");
+      toast.error("Kunde inte skicka röst");
       return false;
     }
 
