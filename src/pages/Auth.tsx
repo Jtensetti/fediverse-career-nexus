@@ -96,7 +96,7 @@ export default function AuthPage() {
       }
     } else if (field === 'password') {
       if (value && value.length < 6) {
-        error = 'Password must be at least 6 characters';
+        error = t("auth.passwordTooShort", "Password must be at least 6 characters");
       }
     }
     
