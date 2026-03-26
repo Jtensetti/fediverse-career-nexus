@@ -15,22 +15,18 @@ export default function EventCreate() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createMutation = useMutation({
-    mutationFn: (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
-      return createEvent(eventData);
-    },
+    mutationFn: (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => createEvent(eventData),
     onSuccess: (event) => {
       if (event) {
-        toast.success('Event created successfully!');
+        toast.success(t('eventCreate.success'));
         navigate(`/events/${event.id}`);
       }
     },
     onError: (error) => {
       console.error('Failed to create event:', error);
-      toast.error('Failed to create event. Please try again.');
+      toast.error(t('eventCreate.failed'));
     },
-    onSettled: () => {
-      setIsSubmitting(false);
-    }
+    onSettled: () => setIsSubmitting(false),
   });
 
   const handleSubmit = (data: Event) => {
@@ -40,26 +36,16 @@ export default function EventCreate() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead 
-        title={t("events.createTitle")} 
-        description={t("events.createDescription")} 
-      />
+      <SEOHead title={t("eventCreate.title")} description={t("eventCreate.description")} />
       <Navbar />
       <main className="flex-grow">
         <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Create Event</h1>
-            <p className="text-muted-foreground mt-2">
-              Create a new event with livestream capabilities, speaker lineup, and comprehensive details.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t("eventCreate.title")}</h1>
+            <p className="text-muted-foreground mt-2">{t("eventCreate.description")}</p>
           </div>
-          
           <div className="bg-card rounded-lg border p-6">
-            <EventForm 
-              onSubmit={handleSubmit}
-              isSubmitting={isSubmitting}
-              submitButtonText="Create Event"
-            />
+            <EventForm onSubmit={handleSubmit} isSubmitting={isSubmitting} submitButtonText={t("eventCreate.title")} />
           </div>
         </div>
       </main>
