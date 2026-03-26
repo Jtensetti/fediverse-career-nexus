@@ -72,7 +72,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       console.error('❌ Authentication error:', authError);
-      toast.error("You must be logged in to create a post");
+      toast.error("Du måste vara inloggad för att skapa ett inlägg");
       return false;
     }
     
