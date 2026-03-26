@@ -275,7 +275,7 @@ export default function ModerationDashboard() {
               <TabsList className="flex-wrap h-auto gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="overview" className="gap-2">
                   <Activity className="h-4 w-4" />
-                  Overview
+                  Översikt
                 </TabsTrigger>
                 <TabsTrigger value="reports" className="gap-2">
                   <Flag className="h-4 w-4" />
