@@ -69,13 +69,13 @@ export default function EventEdit() {
   return (
     <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
       <SEOHead 
-        title={event?.title ? `Edit: ${event.title}` : t('events.editTitle')} 
-        description={t('events.editDescription')} 
+        title={event?.title ? `${t('eventEdit.editTitle')}: ${event.title}` : t('eventEdit.editTitle')} 
+        description={t('eventEdit.editDescription')} 
       />
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">{t('events.editTitle')}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('eventEdit.editTitle')}</h1>
         <p className="text-muted-foreground mt-2">
-          {t('events.editDescription')}
+          {t('eventEdit.editDescription')}
         </p>
       </div>
       
@@ -84,7 +84,7 @@ export default function EventEdit() {
           defaultValues={event}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
-          submitButtonText={t('events.edit')}
+          submitButtonText={t('eventEdit.editButton')}
         />
       </div>
     </div>
