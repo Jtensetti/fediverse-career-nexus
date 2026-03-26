@@ -229,8 +229,8 @@ export default function ModerationDashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead 
-        title="Moderation Dashboard" 
-        description="Comprehensive moderation tools for managing community content and users." 
+        title="Modereringscenter" 
+        description="Verktyg för att hantera innehåll och användare i nätverket."
       />
       <Navbar />
       
