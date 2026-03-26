@@ -348,7 +348,7 @@ const DefaultToolbar = ({
               className="justify-start h-8 text-sm gap-2"
             >
               <List className="h-4 w-4" />
-              Bullet list
+              Punktlista
             </Button>
             <Button
               type="button"
