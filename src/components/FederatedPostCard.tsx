@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import AvatarWithStatus from "@/components/common/AvatarWithStatus";
 import { formatDistanceToNow } from "date-fns";
