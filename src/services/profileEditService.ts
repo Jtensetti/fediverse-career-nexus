@@ -106,7 +106,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     return true;
   } catch (error) {
     console.error("❌ Error updating profile:", error);
-    toast.error("Failed to update profile");
+    toast.error("Kunde inte uppdatera profil");
     return false;
   }
 };
