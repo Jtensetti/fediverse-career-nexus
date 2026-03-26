@@ -287,7 +287,7 @@ export default function AuthPage() {
         navigate("/");
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to sign in");
+      toast.error(error.message || t("toasts.failedSignIn", "Failed to sign in"));
     } finally {
       setIsLoading(false);
     }
