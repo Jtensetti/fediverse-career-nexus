@@ -10,13 +10,13 @@ const InstanceGuidelinesPage = () => {
 
   return (
     <>
-      <SEOHead title={t("instanceGuidelines.pageTitle")} description={t("instanceGuidelines.seoDescription")} />
+      <SEOHead title="Instansriktlinjer — Nolto" description="Riktlinjer för att driva en Nolto-instans inom det federerade nätverket." />
       <div className="min-h-screen flex flex-col bg-background">
         <div className="bg-primary text-primary-foreground py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">{t("instanceGuidelines.headerTitle")}</h1>
-              <h2 className="text-xl md:text-2xl font-medium text-accent">{t("instanceGuidelines.headerSubtitle")}</h2>
+              <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Instansriktlinjer</h1>
+              <h2 className="text-xl md:text-2xl font-medium text-accent">Riktlinjer för instansoperatörer</h2>
             </div>
           </div>
         </div>
@@ -26,7 +26,7 @@ const InstanceGuidelinesPage = () => {
         <div className="border-t border-border py-6">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <Button asChild variant="outline"><Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />{t("instanceGuidelines.backToHome")}</Link></Button>
+              <Button asChild variant="outline"><Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />Tillbaka till startsidan</Link></Button>
             </div>
           </div>
         </div>
