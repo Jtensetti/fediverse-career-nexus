@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getJobPostById, type JobPost } from "@/services/jobPostsService";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -13,41 +14,42 @@ import TransparencyScore from "@/components/TransparencyScore";
 import { JobInquiryButton } from "@/components/JobInquiryButton";
 import { useAuth } from "@/contexts/AuthContext";
 
-const JobTypeLabels: Record<string, string> = {
-  "full-time": "Full-time",
-  "part-time": "Part-time",
-  "full_time": "Full-time",
-  "part_time": "Part-time",
-  contract: "Contract",
-  internship: "Internship",
-  temporary: "Temporary"
-};
-
-const formatSalary = (min: number | null, max: number | null, currency: string | null) => {
-  if (!min && !max) return "Salary not specified";
-  
-  const currencySymbol = currency === "USD" ? "$" :
-                          currency === "EUR" ? "€" :
-                          currency === "GBP" ? "£" : currency || "";
-  
-  if (min && max) {
-    return `${currencySymbol}${min.toLocaleString()} - ${currencySymbol}${max.toLocaleString()}`;
-  }
-  
-  if (min) {
-    return `${currencySymbol}${min.toLocaleString()}+`;
-  }
-  
-  return `Up to ${currencySymbol}${max?.toLocaleString()}`;
-};
-
 const JobView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [job, setJob] = useState<JobPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
+
+  const JobTypeLabels: Record<string, string> = {
+    "full-time": t("jobView.fullTime"),
+    "part-time": t("jobView.partTime"),
+    "full_time": t("jobView.fullTime"),
+    "part_time": t("jobView.partTime"),
+    contract: t("jobView.contract"),
+    internship: t("jobView.internship"),
+    temporary: t("jobView.temporary")
+  };
+
+  const formatSalary = (min: number | null, max: number | null, currency: string | null) => {
+    if (!min && !max) return t("jobView.salaryNotSpecified");
+    
+    const currencySymbol = currency === "USD" ? "$" :
+                            currency === "EUR" ? "€" :
+                            currency === "GBP" ? "£" : currency || "";
+    
+    if (min && max) {
+      return `${currencySymbol}${min.toLocaleString()} - ${currencySymbol}${max.toLocaleString()}`;
+    }
+    
+    if (min) {
+      return `${currencySymbol}${min.toLocaleString()}+`;
+    }
+    
+    return `${t("jobView.upTo")} ${currencySymbol}${max?.toLocaleString()}`;
+  };
   
   useEffect(() => {
     const fetchJob = async () => {
@@ -59,7 +61,6 @@ const JobView = () => {
       setIsLoading(false);
       
       if (!jobData) {
-        // Redirect to jobs page if job not found
         navigate("/jobs", { replace: true });
       }
     };
@@ -69,19 +70,16 @@ const JobView = () => {
 
   const handleSaveJob = () => {
     setIsSaved(!isSaved);
-    toast.success(isSaved ? "Job removed from saved" : "Job saved!");
+    toast.success(isSaved ? t("jobView.jobUnsaved") : t("jobView.jobSaved"));
   };
   
-  // Helper to get company name (handles both field names)
   const getCompanyName = (job: JobPost) => job.company_name || job.company;
   
-  // Helper to check if remote work is allowed
   const isRemoteAllowed = (job: JobPost) => {
     if (job.remote_allowed !== undefined) return job.remote_allowed;
     return job.remote_policy === 'remote' || job.remote_policy === 'hybrid';
   };
   
-  // Helper to get employment type label
   const getEmploymentType = (job: JobPost) => {
     const type = job.job_type || job.employment_type || 'full-time';
     return JobTypeLabels[type] || type;
@@ -92,7 +90,7 @@ const JobView = () => {
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow container py-12 flex justify-center items-center">
-          <p className="text-lg text-muted-foreground">Loading job details...</p>
+          <p className="text-lg text-muted-foreground">{t("jobView.loading")}</p>
         </main>
         <Footer />
       </div>
@@ -105,12 +103,10 @@ const JobView = () => {
         <Navbar />
         <main className="flex-grow container py-12 flex justify-center items-center">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold mb-2">Job not found</h2>
-            <p className="text-muted-foreground mb-6">
-              The job post you're looking for doesn't exist or has been removed.
-            </p>
+            <h2 className="text-2xl font-semibold mb-2">{t("jobView.notFound")}</h2>
+            <p className="text-muted-foreground mb-6">{t("jobView.notFoundDesc")}</p>
             <Button asChild>
-              <Link to="/jobs">Browse Jobs</Link>
+              <Link to="/jobs">{t("jobView.browseJobs")}</Link>
             </Button>
           </div>
         </main>
@@ -126,20 +122,18 @@ const JobView = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title={`${job.title} at ${companyName}`}
-        description={job.description?.substring(0, 160) || `${job.title} position at ${companyName}`}
+        title={`${job.title} - ${companyName}`}
+        description={job.description?.substring(0, 160) || `${job.title} - ${companyName}`}
         type="website"
       />
       <Navbar />
       <main className="flex-grow container py-8">
-        {/* Back button */}
         <div className="mb-6">
           <Button variant="outline" asChild>
-            <Link to="/jobs">← Back to Jobs</Link>
+            <Link to="/jobs">{t("jobView.backToJobs")}</Link>
           </Button>
         </div>
         
-        {/* Job header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
             <div className="flex items-start gap-4">
@@ -152,43 +146,39 @@ const JobView = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={employmentType === "Full-time" ? "default" : "outline"} className="text-sm whitespace-nowrap">
+              <Badge variant={employmentType === t("jobView.fullTime") ? "default" : "outline"} className="text-sm whitespace-nowrap">
                 {employmentType}
               </Badge>
               {isRemote && (
                 <Badge variant="secondary" className="text-sm whitespace-nowrap">
                   <Globe className="h-3 w-3 mr-1" />
-                  {job.remote_policy === 'hybrid' ? 'Hybrid' : 'Remote'}
+                  {job.remote_policy === 'hybrid' ? t("jobView.hybrid") : t("jobView.remote")}
                 </Badge>
               )}
             </div>
           </div>
           
-          {/* Job meta info */}
           <div className="flex flex-wrap gap-4 text-muted-foreground mb-4">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              <span>{job.location || 'Location not specified'}</span>
+              <span>{job.location || t("jobView.locationNotSpecified")}</span>
             </div>
-            
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>Posted {job.created_at ? format(new Date(job.created_at), "PPP") : "recently"}</span>
+              <span>{t("jobView.posted")} {job.created_at ? format(new Date(job.created_at), "PPP") : ""}</span>
             </div>
           </div>
           
-          {/* Salary and Transparency Score */}
           <div className="flex flex-wrap gap-4 mb-6">
             <div className="bg-muted/50 p-4 rounded-lg flex items-center gap-3 flex-1 min-w-[200px]">
               <DollarSign className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Compensation</p>
+                <p className="text-sm text-muted-foreground">{t("jobView.compensation")}</p>
                 <p className="text-xl font-semibold">
                   {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
                 </p>
               </div>
             </div>
-            
             <div className="bg-muted/50 p-4 rounded-lg flex items-center gap-3">
               <TransparencyScore 
                 score={job.transparency_score || 0}
@@ -206,7 +196,6 @@ const JobView = () => {
             </div>
           </div>
           
-          {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
             <JobInquiryButton 
               jobId={job.id}
@@ -214,49 +203,46 @@ const JobView = () => {
               posterId={job.user_id}
               companyName={companyName}
             />
-            <ShareButton title={`${job.title} at ${companyName}`} description={job.description?.substring(0, 100)} />
+            <ShareButton title={`${job.title} - ${companyName}`} description={job.description?.substring(0, 100)} />
             <Button variant="outline" size="sm" onClick={handleSaveJob}>
               <Bookmark className={`h-4 w-4 mr-2 ${isSaved ? 'fill-current' : ''}`} />
-              {isSaved ? 'Saved' : 'Save Job'}
+              {isSaved ? t("jobView.saved") : t("jobView.saveJob")}
             </Button>
             <ReportDialog contentType="job" contentId={job.id} contentTitle={job.title} />
           </div>
         </div>
         
-        {/* Job description */}
         <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">Job Description</h3>
+          <h3 className="text-xl font-semibold mb-4">{t("jobView.jobDescription")}</h3>
           <div className="prose prose-slate max-w-none">
             {job.description?.split('\n').map((paragraph, index) => (
               <p key={index}>{paragraph}</p>
-            )) || <p className="text-muted-foreground">No description provided</p>}
+            )) || <p className="text-muted-foreground">{t("jobView.noDescription")}</p>}
           </div>
         </div>
         
-        {/* Skills */}
         <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">Required Skills</h3>
+          <h3 className="text-xl font-semibold mb-4">{t("jobView.requiredSkills")}</h3>
           <div className="flex flex-wrap gap-2">
             {job.skills && job.skills.length > 0 ? (
               job.skills.map((skill, index) => (
                 <Badge key={index} variant="outline">{skill}</Badge>
               ))
             ) : (
-              <p className="text-muted-foreground">No specific skills listed</p>
+              <p className="text-muted-foreground">{t("jobView.noSkills")}</p>
             )}
           </div>
         </div>
         
-        {/* Transparency Details */}
         {(job.interview_process || job.response_time || job.team_size || job.growth_path || job.visa_sponsorship !== null) && (
           <div className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">Hiring Details</h3>
+            <h3 className="text-xl font-semibold mb-4">{t("jobView.hiringDetails")}</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               {job.interview_process && (
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
                   <Clock className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium text-sm">Interview Process</p>
+                    <p className="font-medium text-sm">{t("jobView.interviewProcess")}</p>
                     <p className="text-sm text-muted-foreground">{job.interview_process}</p>
                   </div>
                 </div>
@@ -265,7 +251,7 @@ const JobView = () => {
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
                   <Calendar className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium text-sm">Response Time</p>
+                    <p className="font-medium text-sm">{t("jobView.responseTime")}</p>
                     <p className="text-sm text-muted-foreground">{job.response_time}</p>
                   </div>
                 </div>
@@ -274,7 +260,7 @@ const JobView = () => {
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
                   <Users className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium text-sm">Team Size</p>
+                    <p className="font-medium text-sm">{t("jobView.teamSize")}</p>
                     <p className="text-sm text-muted-foreground">{job.team_size}</p>
                   </div>
                 </div>
@@ -283,7 +269,7 @@ const JobView = () => {
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
                   <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium text-sm">Growth Path</p>
+                    <p className="font-medium text-sm">{t("jobView.growthPath")}</p>
                     <p className="text-sm text-muted-foreground">{job.growth_path}</p>
                   </div>
                 </div>
@@ -292,9 +278,9 @@ const JobView = () => {
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
                   <Plane className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium text-sm">Visa Sponsorship</p>
+                    <p className="font-medium text-sm">{t("jobView.visaSponsorship")}</p>
                     <p className="text-sm text-muted-foreground">
-                      {job.visa_sponsorship ? 'Available' : 'Not available'}
+                      {job.visa_sponsorship ? t("jobView.visaAvailable") : t("jobView.visaNotAvailable")}
                     </p>
                   </div>
                 </div>
@@ -303,28 +289,25 @@ const JobView = () => {
           </div>
         )}
         
-        {/* Apply section */}
         <div className="border rounded-lg p-6 bg-card">
-          <h3 className="text-xl font-semibold mb-4">How to Apply</h3>
+          <h3 className="text-xl font-semibold mb-4">{t("jobView.howToApply")}</h3>
           <div className="flex flex-wrap gap-4">
-            {/* Message hiring manager button */}
             <JobInquiryButton 
               jobId={job.id}
               jobTitle={job.title}
               posterId={job.user_id}
               companyName={companyName}
             />
-            
             {job.application_url ? (
               <Button asChild size="lg">
                 <a href={job.application_url} target="_blank" rel="noopener noreferrer" className="flex items-center">
-                  Apply Now <LinkIcon className="ml-2 h-4 w-4" />
+                  {t("jobView.applyNow")} <LinkIcon className="ml-2 h-4 w-4" />
                 </a>
               </Button>
             ) : job.contact_email ? (
               <Button asChild size="lg" variant="outline">
                 <a href={`mailto:${job.contact_email}`} className="flex items-center">
-                  Email Application <LinkIcon className="ml-2 h-4 w-4" />
+                  {t("jobView.emailApplication")} <LinkIcon className="ml-2 h-4 w-4" />
                 </a>
               </Button>
             ) : null}
@@ -332,7 +315,7 @@ const JobView = () => {
           
           {!job.application_url && !job.contact_email && user?.id !== job.user_id && (
             <p className="text-muted-foreground mt-4">
-              Use the "Message Hiring Manager" button above to inquire about this position.
+              {t("jobView.messageHiringManager")}
             </p>
           )}
         </div>
