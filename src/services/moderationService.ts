@@ -233,8 +233,8 @@ export async function banUser(
       expires_at: expiresAt,
     });
 
-    const duration = durationDays ? `for ${durationDays} days` : "permanently";
-    toast.success(`User banned ${duration}`);
+    const duration = durationDays ? `i ${durationDays} dagar` : "permanent";
+    toast.success(`Användare avstängd ${duration}`);
     return true;
   } catch (error) {
     console.error("Error banning user:", error);
