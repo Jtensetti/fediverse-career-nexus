@@ -6,6 +6,7 @@ import { GlobalSearch } from "./GlobalSearch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 export function MobileSearch() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   
   return (
