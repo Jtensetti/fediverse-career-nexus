@@ -330,7 +330,7 @@ export async function updateDmPrivacy(privacy: DmPrivacy): Promise<boolean> {
       .eq('id', session.session.user.id);
 
     if (error) throw error;
-    toast.success('Message settings updated');
+    toast.success('Meddelandeinställningar uppdaterade');
     return true;
   } catch (error) {
     console.error('Error updating DM privacy:', error);
