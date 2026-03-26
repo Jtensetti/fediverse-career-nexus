@@ -61,7 +61,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
         return;
       }
       
-      setIsSöker...ue);
+      setIsSearching(true);
       try {
         const { data, error } = await supabase
           .from('public_profiles')
