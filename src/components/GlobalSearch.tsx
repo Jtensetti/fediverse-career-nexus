@@ -19,6 +19,7 @@ interface GlobalSearchProps {
 }
 
 export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = false, inlineResults = false, hideInputClear = false }: GlobalSearchProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isOpen, setIsOpen] = useState(false);
