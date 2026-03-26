@@ -318,7 +318,7 @@ export async function getEventRSVPs(eventId: string): Promise<EventRSVP[]> {
     return data as EventRSVP[];
   } catch (error) {
     console.error('Error fetching RSVPs:', error);
-    toast.error('Failed to load RSVPs');
+    toast.error(i18n.t('toasts.rsvpFailed'));
     return [];
   }
 }
