@@ -32,7 +32,7 @@ export default function LinkedInImportButton({
         className={`gap-2 ${className}`}
       >
         <Linkedin className="h-4 w-4" />
-        Import from LinkedIn
+        Importera från LinkedIn
       </Button>
 
       <LinkedInImportModal
