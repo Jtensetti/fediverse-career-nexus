@@ -756,7 +756,7 @@
   },
   "jobs": {
     "title": "Job Listings",
-    "subtitle": "Find your next opportunity on Nolto. Browse transparent job listings from companies across the Fediverse.",
+    "subtitle": "Find your next opportunity on Nolto. Browse transparent job listings from public sector organizations.",
     "manage": "Manage My Job Posts",
     "searchPlaceholder": "Search job title, company, or keywords...",
     "jobType": "Job Type",
