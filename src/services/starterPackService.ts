@@ -207,7 +207,7 @@ export async function followStarterPack(packId: string): Promise<boolean> {
         .upsert(followRecords, { onConflict: 'follower_id,author_id', ignoreDuplicates: true });
     }
 
-    toast.success(`Following ${memberIds.length} people from this pack!`);
+    toast.success(`Följer ${memberIds.length} personer från detta paket!`);
     return true;
   } catch (error) {
     console.error('Error following starter pack:', error);
