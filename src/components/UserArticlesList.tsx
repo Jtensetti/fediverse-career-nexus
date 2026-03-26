@@ -53,10 +53,10 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
     return (
       <div className="text-center py-8 text-muted-foreground">
         <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-        <p>No articles published yet</p>
+        <p>Inga artiklar publicerade ännu</p>
         {isOwnProfile && (
           <Button variant="outline" asChild className="mt-4">
-            <Link to="/articles/create">Write Your First Article</Link>
+            <Link to="/articles/create">Skriv din första artikel</Link>
           </Button>
         )}
       </div>
