@@ -440,11 +440,11 @@ export default function FederatedPostCard({
                   <>
                     <DropdownMenuItem onClick={handleEdit}>
                       <Edit className="mr-2 h-4 w-4" />
-                      Edit
+                      {t('postCard.edit')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive">
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
+                      {t('postCard.deletePost')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
