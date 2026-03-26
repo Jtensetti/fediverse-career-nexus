@@ -3,14 +3,18 @@ import { initReactI18next } from "react-i18next";
 
 // Import translations
 import enTranslation from "./locales/en.json";
+import svTranslation from "./locales/sv.json";
 
 i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: enTranslation,
     },
+    sv: {
+      translation: svTranslation,
+    },
   },
-  lng: "en", // Tvinga engelska
+  lng: "sv", // Swedish as default
   fallbackLng: "en",
   interpolation: {
     escapeValue: false,

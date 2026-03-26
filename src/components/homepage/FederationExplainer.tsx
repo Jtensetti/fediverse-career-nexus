@@ -1,21 +1,24 @@
 import { User, Server, Globe } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const FederationExplainer = () => {
+  const { t } = useTranslation();
+
   const steps = [
     {
       icon: User,
-      title: "Create Your Profile",
-      description: "Sign up and build your professional identity",
+      title: t("homepage.onboarding.step1"),
+      description: t("homepage.onboarding.step1Desc"),
     },
     {
       icon: Server,
-      title: "Choose Your Instance",
-      description: "Pick a community that shares your values",
+      title: t("homepage.onboarding.step2"),
+      description: t("homepage.onboarding.step2Desc"),
     },
     {
       icon: Globe,
-      title: "Connect Everywhere",
-      description: "Follow anyone across the entire Fediverse",
+      title: t("homepage.onboarding.step3"),
+      description: t("homepage.onboarding.step3Desc"),
     },
   ];
 
@@ -25,15 +28,14 @@ const FederationExplainer = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-4">
-              How Federation Works
+              {t("homepage.onboarding.title")}
             </h2>
             <p className="text-muted-foreground text-lg">
-              Join a network without borders — like email, but for professional networking
+              {t("homepage.onboarding.subtitle")}
             </p>
           </div>
 
           <div className="relative">
-            {/* Connection line */}
             <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary via-secondary to-accent -translate-y-1/2 z-0" />
 
             <div className="grid md:grid-cols-3 gap-8 relative z-10">
@@ -51,18 +53,6 @@ const FederationExplainer = () => {
                   <p className="text-muted-foreground text-sm">{description}</p>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Instance illustration */}
-          <div className="mt-12 p-6 bg-card rounded-xl border shadow-sm">
-            <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">Works with:</span>
-              <span className="px-3 py-1 bg-muted rounded-full">Mastodon</span>
-              <span className="px-3 py-1 bg-muted rounded-full">Pleroma</span>
-              <span className="px-3 py-1 bg-muted rounded-full">Pixelfed</span>
-              <span className="px-3 py-1 bg-muted rounded-full">PeerTube</span>
-              <span className="px-3 py-1 bg-muted rounded-full">+ 5000 more</span>
             </div>
           </div>
         </div>

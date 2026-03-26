@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   User, 
@@ -8,38 +7,41 @@ import {
   Briefcase, 
   Shield 
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Features = () => {
+  const { t } = useTranslation();
+
   const features = [
     {
       icon: <User size={28} className="text-secondary" />,
-      title: 'Professional Profiles',
-      description: 'Create a structured professional profile with work history, education, projects, and skills. Share via QR code or presentation mode.'
+      title: t('features.profiles.title', 'Professionella profiler'),
+      description: t('features.profiles.desc', 'Skapa en strukturerad profil med erfarenhet, utbildning, projekt och kompetenser. Dela via QR-kod eller presentationsläge.')
     },
     {
       icon: <Users size={28} className="text-secondary" />,
-      title: 'Meaningful Connections',
-      description: 'Build a network of genuine connections with 1st & 2nd-degree relations, with user opt-in options to appear in professional networks.'
+      title: t('features.connections.title', 'Meningsfulla kontakter'),
+      description: t('features.connections.desc', 'Bygg ett nätverk av genuina kontakter inom och mellan organisationer i offentlig sektor.')
     },
     {
       icon: <MessageSquare size={28} className="text-secondary" />,
-      title: 'Secure Messaging',
-      description: 'Communicate with end-to-end encrypted direct messages, with connection-based permissions so only connections can initiate conversations.'
+      title: t('features.messaging.title', 'Säkra meddelanden'),
+      description: t('features.messaging.desc', 'Kommunicera med krypterade direktmeddelanden. Kontaktbaserade behörigheter säkerställer en professionell miljö.')
     },
     {
       icon: <Calendar size={28} className="text-secondary" />,
-      title: 'Events & Live',
-      description: 'Create and join professional events with RSVP functionality, calendar integration, and embedded livestreams via Jitsi.'
+      title: t('features.events.title', 'Evenemang & möten'),
+      description: t('features.events.desc', 'Skapa och delta i professionella evenemang med anmälningsfunktion, kalenderintegration och inbyggd videokonferens.')
     },
     {
       icon: <Briefcase size={28} className="text-secondary" />,
-      title: 'Job Marketplace',
-      description: 'Browse and post job opportunities with transparent details including title, location, seniority, and salary information.'
+      title: t('features.jobs.title', 'Rekryteringsverktyg'),
+      description: t('features.jobs.desc', 'Publicera och hitta tjänster med transparenta uppgifter om titel, placering, kravprofil och lönespann.')
     },
     {
       icon: <Shield size={28} className="text-secondary" />,
-      title: 'Community Moderation',
-      description: 'Enjoy a healthy community with built-in moderation tools, transparent instance policies, and federated content standards.'
+      title: t('features.moderation.title', 'Trygg miljö'),
+      description: t('features.moderation.desc', 'En sund arbetsmiljö med inbyggda modereringsverktyg, tydliga riktlinjer och transparenta policyer.')
     }
   ];
 
@@ -48,10 +50,10 @@ const Features = () => {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-primary">
-            Features Built for Professionals
+            {t('features.heading', 'Funktioner byggda för offentlig sektor')}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Nolto combines the best aspects of professional networking with modern, privacy-focused technology and federation.
+            {t('features.subheading', 'Nolto kombinerar det bästa från professionella nätverk med GDPR-säker, svensk-hostad teknik.')}
           </p>
         </div>
 

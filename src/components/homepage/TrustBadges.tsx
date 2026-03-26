@@ -1,15 +1,15 @@
 import { Badge } from "@/components/ui/badge";
-import { Globe, Lock, Code, Server } from "lucide-react";
+import { Shield, Lock, Server, FileCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const TrustBadges = () => {
   const { t } = useTranslation();
 
   const badges = [
-    { icon: Globe, labelKey: "activityPub", shortLabelKey: "activityPubShort" },
-    { icon: Lock, labelKey: "privacy", shortLabelKey: "privacyShort" },
-    { icon: Code, labelKey: "openSource", shortLabelKey: "openSourceShort" },
-    { icon: Server, labelKey: "selfHostable", shortLabelKey: "selfHostableShort" },
+    { icon: Shield, labelKey: "gdpr", shortLabelKey: "gdprShort" },
+    { icon: Server, labelKey: "swedishData", shortLabelKey: "swedishDataShort" },
+    { icon: Lock, labelKey: "secureLogin", shortLabelKey: "secureLoginShort" },
+    { icon: FileCheck, labelKey: "hostedSweden", shortLabelKey: "hostedSwedenShort" },
   ];
 
   return (
