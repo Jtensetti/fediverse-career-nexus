@@ -146,7 +146,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (uploadError) {
       console.error('❌ Avatar upload error:', uploadError);
-      toast.error(`Failed to upload avatar: ${uploadError.message}`);
+      toast.error(`Kunde inte ladda upp avatar: ${uploadError.message}`);
       return null;
     }
 
