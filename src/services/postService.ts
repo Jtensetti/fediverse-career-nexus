@@ -336,7 +336,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       }
     }
 
-    toast.success("Post created successfully!");
+    toast.success("Inlägget skapades!");
     return true;
 
   } catch (error) {
