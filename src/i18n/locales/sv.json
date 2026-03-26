@@ -135,7 +135,8 @@
     "post": "Publicera",
     "selectDate": "Välj datum",
     "selectTime": "Välj tid",
-    "done": "Klar"
+    "done": "Klar",
+    "whatsOnMind": "Vad tänker du på?"
   },
   "reactions": {
     "react": "Reagera",
