@@ -399,9 +399,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
-                    User Management
+                    Användarhantering
                   </CardTitle>
-                  <CardDescription>Search and manage user accounts</CardDescription>
+                  <CardDescription>Sök och hantera användarkonton</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
