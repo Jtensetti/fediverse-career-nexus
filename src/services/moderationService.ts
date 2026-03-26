@@ -248,7 +248,7 @@ export async function revokeBan(banId: string): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("You must be logged in");
+      toast.error("Du måste vara inloggad");
       return false;
     }
 
@@ -262,7 +262,7 @@ export async function revokeBan(banId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Ban revoked successfully");
+    toast.success("Avstängning upphävd");
     return true;
   } catch (error) {
     console.error("Error revoking ban:", error);
