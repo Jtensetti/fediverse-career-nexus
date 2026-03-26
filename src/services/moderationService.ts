@@ -341,7 +341,7 @@ export async function addModerator(userId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Moderator role added");
+    toast.success("Moderatorsroll tillagd");
     return true;
   } catch (error: any) {
     console.error("Error adding moderator:", error);
