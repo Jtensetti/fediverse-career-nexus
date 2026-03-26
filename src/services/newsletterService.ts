@@ -33,7 +33,7 @@ export const subscribeToNewsletter = async (email: string): Promise<NewsletterSu
     return data as NewsletterSubscription;
   } catch (error) {
     console.error('Error subscribing to newsletter:', error);
-    toast.error('Failed to subscribe to newsletter. Please try again.');
+    toast.error('Kunde inte prenumerera. Försök igen.');
     return null;
   }
 };
