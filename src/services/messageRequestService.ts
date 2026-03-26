@@ -228,7 +228,7 @@ export async function declineMessageRequest(requestId: string): Promise<boolean>
       .eq('id', requestId);
 
     if (error) throw error;
-    toast.success('Request declined');
+    toast.success('Förfrågan avvisad');
     return true;
   } catch (error) {
     console.error('Error declining request:', error);
