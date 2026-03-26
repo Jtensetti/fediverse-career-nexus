@@ -21,7 +21,7 @@ export default function DataExportSection() {
     try {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.access_token) {
-        toast.error("You must be logged in to export your data");
+        toast.error("Du måste vara inloggad för att exportera din data");
         return;
       }
 
