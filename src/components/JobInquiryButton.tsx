@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,61 +27,57 @@ interface JobInquiryButtonProps {
 export function JobInquiryButton({ jobId, jobTitle, posterId, companyName }: JobInquiryButtonProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  // Don't show button if user is the poster
   if (user?.id === posterId) {
     return null;
   }
 
   const handleSend = async () => {
     if (!user) {
-      toast.error("Please sign in to send a message");
+      toast.error(t('jobInquiry.signInToSend'));
       navigate("/auth");
       return;
     }
-
     if (!message.trim()) {
-      toast.error("Please enter a message");
+      toast.error(t('jobInquiry.enterMessage'));
       return;
     }
-
     setIsSending(true);
     const success = await sendJobMessage(jobId, posterId, message.trim());
     setIsSending(false);
-
     if (success) {
-      toast.success("Message sent successfully!");
+      toast.success(t('jobInquiry.messageSent'));
       setMessage("");
       setIsOpen(false);
-      // Navigate to messages with the poster
       navigate(`/messages/${posterId}?job=${jobId}`);
     }
   };
 
-  const defaultMessage = `Hi, I'm interested in the "${jobTitle}" position at ${companyName}. I'd love to learn more about this opportunity.`;
+  const defaultMessage = t('jobInquiry.templateMessage', { title: jobTitle, company: companyName });
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary" size="sm">
           <MessageCircle className="h-4 w-4 mr-2" />
-          Message Hiring Manager
+          {t('jobInquiry.messageHiringManager')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Send a Message</DialogTitle>
+          <DialogTitle>{t('jobInquiry.sendMessage')}</DialogTitle>
           <DialogDescription>
-            Reach out about the {jobTitle} position at {companyName}
+            {t('jobInquiry.reachOutAbout', { title: jobTitle, company: companyName })}
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
           <Textarea
-            placeholder="Write your message..."
+            placeholder={t('jobInquiry.writeMessage')}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className="min-h-[120px]"
@@ -91,21 +88,21 @@ export function JobInquiryButton({ jobId, jobTitle, posterId, companyName }: Job
             className="text-xs text-muted-foreground"
             onClick={() => setMessage(defaultMessage)}
           >
-            Use template message
+            {t('jobInquiry.useTemplate')}
           </Button>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancel
+            {t('jobInquiry.cancel')}
           </Button>
           <Button onClick={handleSend} disabled={isSending || !message.trim()}>
             {isSending ? (
-              <>Sending...</>
+              <>{t('jobInquiry.sending')}</>
             ) : (
               <>
                 <Send className="h-4 w-4 mr-2" />
-                Send Message
+                {t('jobInquiry.sendMessageBtn')}
               </>
             )}
           </Button>

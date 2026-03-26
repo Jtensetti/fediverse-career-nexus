@@ -28,7 +28,6 @@ interface CommentPreviewProps {
   maxComments?: number;
   autoOpenComposer?: boolean;
   onComposerOpened?: () => void;
-  /** Company context for reply-as-company toggle */
   companyContext?: CompanyContext;
 }
 
@@ -54,57 +53,39 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   const composerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
-  // Expose openComposer method to parent via ref
   useImperativeHandle(ref, () => ({
     openComposer: () => {
       if (!user) {
-        toast.error(t("comments.signInToReply", "Please sign in to comment"));
+        toast.error(t("commentPreview.signInToComment"));
         return;
       }
       setShowReplyComposer(true);
-      // Scroll to composer after state updates
       setTimeout(() => {
         composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     }
   }));
 
-  // Lazy loading: only load when visible
   useEffect(() => {
     if (!containerRef.current) return;
-
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasLoaded) {
-          setIsVisible(true);
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting && !hasLoaded) setIsVisible(true); },
       { rootMargin: '50px', threshold: 0.1 }
     );
-
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, [hasLoaded]);
 
-  // Load comments when visible
   useEffect(() => {
-    if (isVisible && !hasLoaded) {
-      loadComments();
-    }
+    if (isVisible && !hasLoaded) loadComments();
   }, [isVisible, hasLoaded, postId]);
 
-  // Auto-open composer when prop is set - don't wait for hasLoaded
   useEffect(() => {
     if (autoOpenComposer && user) {
       setShowReplyComposer(true);
       onComposerOpened?.();
-      // Force load comments if not already loaded
-      if (!hasLoaded) {
-        loadComments();
-      }
-      setTimeout(() => {
-        composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+      if (!hasLoaded) loadComments();
+      setTimeout(() => { composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
     }
   }, [autoOpenComposer, user]);
 
@@ -113,24 +94,14 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
     setHasLoaded(true);
     try {
       const replies = await getPostReplies(postId);
-      
-      // Get only top-level replies (no parent)
       const topLevelReplies = replies.filter(r => !r.parent_reply_id);
       setTotalCount(topLevelReplies.length);
-      
-      // Get the first few
       const previewReplies = topLevelReplies.slice(0, maxComments);
-      
-      // Batch fetch reactions for all preview comments
       const replyIds = previewReplies.map(r => r.id);
       const reactionsMap = await getBatchReplyReactions(replyIds);
-      
       const commentsWithState = previewReplies.map(reply => ({
-        ...reply,
-        isSaved: false, // Default to false in preview for performance
-        reactions: reactionsMap[reply.id] || undefined
+        ...reply, isSaved: false, reactions: reactionsMap[reply.id] || undefined
       }));
-      
       setComments(commentsWithState);
     } catch (error) {
       console.error('Error loading comment preview:', error);
@@ -142,30 +113,16 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
 
   const handleSaveComment = async (commentId: string) => {
     if (!user) {
-      toast.error('Please sign in to save comments');
+      toast.error(t("commentPreview.signInToSave"));
       return;
     }
-
-    // Optimistic update
-    setComments(prev => prev.map(c => {
-      if (c.id === commentId) {
-        return { ...c, isSaved: !c.isSaved };
-      }
-      return c;
-    }));
-
+    setComments(prev => prev.map(c => c.id === commentId ? { ...c, isSaved: !c.isSaved } : c));
     const result = await toggleSaveItem("comment", commentId);
     if (!result.success) {
-      // Revert on failure
-      setComments(prev => prev.map(c => {
-        if (c.id === commentId) {
-          return { ...c, isSaved: !c.isSaved };
-        }
-        return c;
-      }));
-      toast.error('Failed to save comment');
+      setComments(prev => prev.map(c => c.id === commentId ? { ...c, isSaved: !c.isSaved } : c));
+      toast.error(t("commentPreview.failedToSave"));
     } else {
-      toast.success(result.saved ? "Comment saved" : "Removed from saved");
+      toast.success(result.saved ? t("commentPreview.commentSaved") : t("commentPreview.removedFromSaved"));
     }
   };
 
@@ -174,11 +131,10 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
     loadComments();
   };
 
-  // Show minimal skeleton while not visible
   if (!isVisible && !hasLoaded) {
     return (
       <div ref={containerRef} className="pt-2 border-t border-border/50 min-h-[40px]" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-        <div className="h-8" /> {/* Placeholder space */}
+        <div className="h-8" />
       </div>
     );
   }
@@ -208,17 +164,17 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
               postId={postId}
               onReplyCreated={handleReplyCreated}
               onCancel={() => setShowReplyComposer(false)}
-              placeholder="Write a comment..."
+              placeholder={t("commentPreview.writeComment")}
               autoFocus
               companyContext={companyContext}
             />
           </div>
         ) : (
           <button
-            onClick={() => user ? setShowReplyComposer(true) : toast.error('Please sign in to comment')}
+            onClick={() => user ? setShowReplyComposer(true) : toast.error(t("commentPreview.signInToComment"))}
             className="w-full text-left text-sm text-muted-foreground hover:text-foreground py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors"
           >
-            Write the first comment...
+            {t("commentPreview.writeFirstComment")}
           </button>
         )}
       </div>
@@ -231,63 +187,44 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
         <div key={comment.id} className="flex gap-2 group/comment">
           <Link to={comment.company ? `/company/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`}>
             <Avatar className="h-6 w-6 aspect-square flex-shrink-0">
-              {comment.author.avatar_url && (
-                <AvatarImage src={comment.author.avatar_url} />
-              )}
+              {comment.author.avatar_url && <AvatarImage src={comment.author.avatar_url} />}
               <AvatarFallback className="text-[10px] bg-muted">
                 {(comment.author.fullname || comment.author.username || 'U').charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </Link>
-          
           <div className="flex-1 min-w-0">
             <div className="bg-muted/50 rounded-lg px-3 py-1.5">
               <div className="flex items-center gap-1.5">
-                <Link 
-                  to={comment.company ? `/company/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`}
-                  className="text-xs font-medium hover:underline"
-                >
+                <Link to={comment.company ? `/company/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`} className="text-xs font-medium hover:underline">
                   {comment.author.fullname || comment.author.username || 'Unknown'}
                 </Link>
                 {comment.company && (
-                  <span className="text-[10px] text-primary font-medium">
-                    · {t("comments.companyReply", "Company")}
-                  </span>
+                  <span className="text-[10px] text-primary font-medium">· {t("commentPreview.companyReply")}</span>
                 )}
                 <span className="text-[10px] text-muted-foreground">
                   · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                 </span>
               </div>
               <p className="text-sm text-foreground/90 line-clamp-2">
-                {typeof comment.content === 'string' ? comment.content : 'Comment unavailable'}
+                {typeof comment.content === 'string' ? comment.content : t("commentPreview.commentUnavailable")}
               </p>
             </div>
-            
             <div className="flex items-center gap-1 mt-0.5 ml-1">
-              {/* Enhanced reactions with full emoji picker - now with initial data */}
-              <EnhancedCommentReactions 
-                replyId={comment.id} 
-                className="scale-90 origin-left" 
-                initialReactions={comment.reactions}
-              />
-              
+              <EnhancedCommentReactions replyId={comment.id} className="scale-90 origin-left" initialReactions={comment.reactions} />
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "h-5 px-1.5 text-[10px] rounded-full",
-                        comment.isSaved ? "text-primary" : "text-muted-foreground hover:text-primary"
-                      )}
+                      variant="ghost" size="sm"
+                      className={cn("h-5 px-1.5 text-[10px] rounded-full", comment.isSaved ? "text-primary" : "text-muted-foreground hover:text-primary")}
                       onClick={() => handleSaveComment(comment.id)}
                     >
                       <Bookmark className={cn("h-3 w-3", comment.isSaved && "fill-current")} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{comment.isSaved ? t("comments.removeFromSaved", "Remove from saved") : t("comments.saveComment", "Save comment")}</p>
+                    <p>{comment.isSaved ? t("commentPreview.removeFromSaved") : t("commentPreview.saveComment")}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -297,34 +234,29 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
       ))}
       
       {totalCount > maxComments && (
-        <Link
-          to={`/post/${postId}`}
-          className="block text-xs text-primary hover:underline pl-8"
-          onClick={onCommentClick}
-        >
-          {t("comments.viewAll", "View all {{count}} comments", { count: totalCount })}
+        <Link to={`/post/${postId}`} className="block text-xs text-primary hover:underline pl-8" onClick={onCommentClick}>
+          {t("commentPreview.viewAllComments", { count: totalCount })}
         </Link>
       )}
       
-      {/* Quick reply input */}
       {showReplyComposer ? (
         <div className="pt-1" ref={composerRef}>
           <InlineReplyComposer
             postId={postId}
             onReplyCreated={handleReplyCreated}
             onCancel={() => setShowReplyComposer(false)}
-            placeholder={t("comments.writeComment", "Write a comment...")}
+            placeholder={t("commentPreview.writeComment")}
             autoFocus
             companyContext={companyContext}
           />
         </div>
       ) : (
         <button
-          onClick={() => user ? setShowReplyComposer(true) : toast.error(t("comments.signInToReply", "Please sign in to comment"))}
+          onClick={() => user ? setShowReplyComposer(true) : toast.error(t("commentPreview.signInToComment"))}
           className="w-full text-left text-xs text-muted-foreground hover:text-foreground py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-2"
         >
           <MessageSquare className="h-3 w-3" />
-          {t("comments.addComment", "Add a comment...")}
+          {t("commentPreview.addComment")}
         </button>
       )}
     </div>
