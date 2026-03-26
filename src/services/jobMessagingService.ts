@@ -158,7 +158,7 @@ export async function sendJobMessage(
 
     if (error) {
       console.error('Error sending job message:', error);
-      toast.error('Failed to send message');
+      toast.error(i18n.t('toasts.messageSendFailed'));
       return false;
     }
 

@@ -379,7 +379,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
     return userProfile;
   } catch (error) {
     console.error("❌ Error fetching user profile:", error);
-    toast.error("Failed to load profile data");
+    toast.error(i18n.t("toasts.profileLoadFailed"));
     return null;
   }
 };
