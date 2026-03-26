@@ -70,7 +70,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      toast.error('You must be logged in to boost posts');
+      toast.error('Du måste vara inloggad för att boosta inlägg');
       return false;
     }
 
