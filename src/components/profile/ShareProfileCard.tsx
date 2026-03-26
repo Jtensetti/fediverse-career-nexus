@@ -12,17 +12,16 @@ interface ShareProfileCardProps {
 
 export function ShareProfileCard({ username, displayName }: ShareProfileCardProps) {
   const [copied, setCopied] = useState(false);
-  // Uses window.location.origin - will be nolto.social when accessed via custom domain
   const profileUrl = `${window.location.origin}/profile/${username}`;
 
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(profileUrl);
       setCopied(true);
-      toast.success("Profile link copied!");
+      toast.success("Profillänk kopierad!");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy link");
+      toast.error("Kunde inte kopiera länken");
     }
   };
 
@@ -36,7 +35,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
 
   const shareToTwitter = () => {
     window.open(
-      `https://twitter.com/intent/tweet?url=${encodeURIComponent(profileUrl)}&text=${encodeURIComponent(`Check out ${displayName}'s profile on Nolto`)}`,
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(profileUrl)}&text=${encodeURIComponent(`Kolla in ${displayName}s profil på Nolto`)}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -44,7 +43,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
 
   const shareToMastodon = () => {
     window.open(
-      `https://mastodon.social/share?text=${encodeURIComponent(`Check out ${displayName}'s profile on Nolto ${profileUrl}`)}`,
+      `https://mastodon.social/share?text=${encodeURIComponent(`Kolla in ${displayName}s profil på Nolto ${profileUrl}`)}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -52,7 +51,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
 
   const shareToBluesky = () => {
     window.open(
-      `https://bsky.app/intent/compose?text=${encodeURIComponent(`Check out ${displayName}'s profile on Nolto ${profileUrl}`)}`,
+      `https://bsky.app/intent/compose?text=${encodeURIComponent(`Kolla in ${displayName}s profil på Nolto ${profileUrl}`)}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -63,7 +62,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Link2 className="h-4 w-4 text-primary" />
-          Share Your Profile
+          Dela din profil
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -77,7 +76,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
             variant="outline"
             size="icon"
             onClick={copyToClipboard}
-            aria-label="Copy profile link"
+            aria-label="Kopiera profillänk"
           >
             {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
           </Button>

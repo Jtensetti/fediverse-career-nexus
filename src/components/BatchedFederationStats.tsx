@@ -19,106 +19,54 @@ interface BatchStats {
 const BatchedFederationStats = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Fetch batch statistics
   const { data: batchStats, isLoading, refetch } = useQuery({
     queryKey: ["batchStats"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('follower_batch_stats')
         .select('*');
-      
       if (error) throw new Error(error.message);
       return data as BatchStats[];
     }
   });
 
-  // Mutation to trigger batch processing for a specific partition
   const processPartitionMutation = useMutation({
     mutationFn: async (partition: number) => {
       setIsProcessing(true);
-      const { data, error } = await supabase.functions.invoke("follower-batch-processor", {
-        body: { partition }
-      });
-      
+      const { data, error } = await supabase.functions.invoke("follower-batch-processor", { body: { partition } });
       if (error) throw new Error(error.message);
       return data;
     },
-    onSuccess: (data) => {
-      toast({
-        title: "Batch processing started",
-        description: data.message
-      });
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to process batches",
-        description: error.message,
-        variant: "destructive"
-      });
-    },
-    onSettled: () => {
-      setIsProcessing(false);
-    }
+    onSuccess: (data) => { toast({ title: "Batchbearbetning startad", description: data.message }); refetch(); },
+    onError: (error) => { toast({ title: "Kunde inte bearbeta batcher", description: error.message, variant: "destructive" }); },
+    onSettled: () => { setIsProcessing(false); }
   });
 
-  // Mutation to process all pending batches
   const processAllBatchesMutation = useMutation({
     mutationFn: async () => {
       setIsProcessing(true);
-      const { data, error } = await supabase.functions.invoke("follower-batch-processor", {
-        body: {}
-      });
-      
+      const { data, error } = await supabase.functions.invoke("follower-batch-processor", { body: {} });
       if (error) throw new Error(error.message);
       return data;
     },
-    onSuccess: (data) => {
-      toast({
-        title: "Batch processing started",
-        description: data.message
-      });
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to process batches",
-        description: error.message,
-        variant: "destructive"
-      });
-    },
-    onSettled: () => {
-      setIsProcessing(false);
-    }
+    onSuccess: (data) => { toast({ title: "Batchbearbetning startad", description: data.message }); refetch(); },
+    onError: (error) => { toast({ title: "Kunde inte bearbeta batcher", description: error.message, variant: "destructive" }); },
+    onSettled: () => { setIsProcessing(false); }
   });
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Follower Batch Fan-out</h2>
-          <p className="text-muted-foreground">
-            Batch processing of ActivityPub messages to followers
-          </p>
+          <h2 className="text-2xl font-bold">Följarbatch-utskick</h2>
+          <p className="text-muted-foreground">Batchbearbetning av ActivityPub-meddelanden till följare</p>
         </div>
-        
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => refetch()}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+          <Button variant="outline" onClick={() => refetch()} disabled={isLoading}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />Uppdatera
           </Button>
-          
-          <Button 
-            variant="default" 
-            onClick={() => processAllBatchesMutation.mutate()}
-            disabled={isProcessing}
-          >
-            <Play className="mr-2 h-4 w-4" />
-            Process All Batches
+          <Button variant="default" onClick={() => processAllBatchesMutation.mutate()} disabled={isProcessing}>
+            <Play className="mr-2 h-4 w-4" />Bearbeta alla batcher
           </Button>
         </div>
       </div>
@@ -135,37 +83,25 @@ const BatchedFederationStats = () => {
             batchStats.map((stats) => (
               <Card key={stats.actor_id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-lg font-medium">
-                    Actor: {stats.preferred_username}
-                  </CardTitle>
-                  <Button
-                    size="sm"
-                    onClick={() => processPartitionMutation.mutate(0)}
-                    disabled={processPartitionMutation.isPending}
-                  >
-                    Process
-                  </Button>
+                  <CardTitle className="text-lg font-medium">Aktör: {stats.preferred_username}</CardTitle>
+                  <Button size="sm" onClick={() => processPartitionMutation.mutate(0)} disabled={processPartitionMutation.isPending}>Bearbeta</Button>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div>
                       <div className="flex items-center justify-between text-sm">
-                        <span>Total Batches: {stats.total_batches}</span>
-                        <span className="text-muted-foreground">Pending: {stats.pending_batches}</span>
+                        <span>Totalt antal batcher: {stats.total_batches}</span>
+                        <span className="text-muted-foreground">Väntande: {stats.pending_batches}</span>
                       </div>
-                      <Progress 
-                        value={stats.total_batches > 0 ? (stats.processed_batches / stats.total_batches) * 100 : 0} 
-                        className="h-2 mt-1" 
-                      />
+                      <Progress value={stats.total_batches > 0 ? (stats.processed_batches / stats.total_batches) * 100 : 0} className="h-2 mt-1" />
                     </div>
-                    
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="rounded-md bg-muted p-2">
-                        <div className="text-muted-foreground">Pending</div>
+                        <div className="text-muted-foreground">Väntande</div>
                         <div className="text-xl font-bold">{stats.pending_batches}</div>
                       </div>
                       <div className="rounded-md bg-muted p-2">
-                        <div className="text-muted-foreground">Processed</div>
+                        <div className="text-muted-foreground">Bearbetade</div>
                         <div className="text-xl font-bold text-green-600 dark:text-green-400">{stats.processed_batches}</div>
                       </div>
                     </div>
@@ -176,9 +112,7 @@ const BatchedFederationStats = () => {
           ) : (
             <Card className="md:col-span-2">
               <CardContent className="flex items-center justify-center p-6">
-                <p className="text-muted-foreground">
-                  No batch statistics available yet. Start creating activities to generate batches.
-                </p>
+                <p className="text-muted-foreground">Ingen batchstatistik tillgänglig ännu. Börja skapa aktiviteter för att generera batcher.</p>
               </CardContent>
             </Card>
           )}

@@ -8,19 +8,14 @@ export function ModerationStatsCards() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["moderation-stats"],
     queryFn: getModerationStats,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
-            <CardContent className="pt-6">
-              <Skeleton className="h-4 w-20 mb-2" />
-              <Skeleton className="h-8 w-12" />
-            </CardContent>
-          </Card>
+          <Card key={i}><CardContent className="pt-6"><Skeleton className="h-4 w-20 mb-2" /><Skeleton className="h-8 w-12" /></CardContent></Card>
         ))}
       </div>
     );
@@ -28,28 +23,28 @@ export function ModerationStatsCards() {
 
   const statItems = [
     {
-      label: "Pending Reports",
+      label: "Väntande rapporter",
       value: stats?.pendingReports || 0,
       icon: Flag,
       color: stats?.pendingReports && stats.pendingReports > 0 ? "text-yellow-500" : "text-muted-foreground",
       bgColor: stats?.pendingReports && stats.pendingReports > 0 ? "bg-yellow-500/10" : "bg-muted",
     },
     {
-      label: "Active Bans",
+      label: "Aktiva blockeringar",
       value: stats?.activeBans || 0,
       icon: Ban,
       color: "text-destructive",
       bgColor: "bg-destructive/10",
     },
     {
-      label: "Actions Today",
+      label: "Åtgärder idag",
       value: stats?.totalActionsToday || 0,
       icon: Activity,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },
     {
-      label: "Moderators",
+      label: "Moderatorer",
       value: stats?.totalModerators || 0,
       icon: Shield,
       color: "text-green-500",

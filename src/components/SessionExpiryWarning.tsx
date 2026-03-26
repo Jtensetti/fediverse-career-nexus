@@ -13,10 +13,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Reduced to 2 minutes for less intrusive warnings
-const SESSION_WARNING_THRESHOLD = 2 * 60 * 1000; // 2 minutes in ms
-const DISMISS_COOLDOWN = 10 * 60 * 1000; // 10 minutes cooldown after dismissing
-const ACTIVITY_THRESHOLD = 2 * 60 * 1000; // 2 minutes - if active, auto-refresh
+const SESSION_WARNING_THRESHOLD = 2 * 60 * 1000;
+const DISMISS_COOLDOWN = 10 * 60 * 1000;
+const ACTIVITY_THRESHOLD = 2 * 60 * 1000;
 
 export default function SessionExpiryWarning() {
   const { session } = useAuth();
@@ -24,16 +23,14 @@ export default function SessionExpiryWarning() {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Track user activity
   const updateLastActivity = useCallback(() => {
     localStorage.setItem('lastActivity', Date.now().toString());
   }, []);
 
-  // Set up activity listeners
   useEffect(() => {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
     events.forEach(event => window.addEventListener(event, updateLastActivity, { passive: true }));
-    updateLastActivity(); // Set initial activity
+    updateLastActivity();
 
     return () => {
       events.forEach(event => window.removeEventListener(event, updateLastActivity));
@@ -44,25 +41,21 @@ export default function SessionExpiryWarning() {
     if (!session?.expires_at) return;
 
     const checkExpiry = async () => {
-      const expiresAt = session.expires_at * 1000; // Convert to ms
+      const expiresAt = session.expires_at * 1000;
       const now = Date.now();
       const remaining = expiresAt - now;
 
-      // Check if user dismissed recently
       const lastDismissed = localStorage.getItem('sessionWarningDismissed');
       if (lastDismissed && now - parseInt(lastDismissed) < DISMISS_COOLDOWN) {
         return;
       }
 
       if (remaining <= SESSION_WARNING_THRESHOLD && remaining > 0) {
-        // Check if user was recently active - auto refresh instead of warning
         const lastActivity = parseInt(localStorage.getItem('lastActivity') || '0');
         if (now - lastActivity < ACTIVITY_THRESHOLD) {
-          // User is active, silently refresh
           try {
             await supabase.auth.refreshSession();
           } catch {
-            // If silent refresh fails, show warning
             setTimeRemaining(Math.floor(remaining / 1000));
             setShowWarning(true);
           }
@@ -73,20 +66,18 @@ export default function SessionExpiryWarning() {
         setShowWarning(true);
       } else if (remaining <= 0) {
         setShowWarning(false);
-        toast.error("Your session has expired. Please sign in again.");
+        toast.error("Din session har gått ut. Logga in igen.");
       } else {
         setShowWarning(false);
       }
     };
 
-    // Check immediately and then every 30 seconds
     checkExpiry();
     const interval = setInterval(checkExpiry, 30000);
 
     return () => clearInterval(interval);
   }, [session?.expires_at]);
 
-  // Update countdown every second when warning is shown
   useEffect(() => {
     if (!showWarning || timeRemaining === null) return;
 
@@ -108,10 +99,10 @@ export default function SessionExpiryWarning() {
     try {
       const { error } = await supabase.auth.refreshSession();
       if (error) throw error;
-      toast.success("Session extended successfully");
+      toast.success("Sessionen har förlängts");
       setShowWarning(false);
     } catch {
-      toast.error("Failed to extend session. Please sign in again.");
+      toast.error("Kunde inte förlänga sessionen. Logga in igen.");
     } finally {
       setIsRefreshing(false);
     }
@@ -136,22 +127,22 @@ export default function SessionExpiryWarning() {
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-warning" />
-            Session Expiring Soon
+            Sessionen går ut snart
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Your session will expire in{" "}
+            Din session går ut om{" "}
             <span className="font-bold text-foreground">
               {formatTime(timeRemaining)}
             </span>
-            . Would you like to extend your session?
+            . Vill du förlänga sessionen?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <Button variant="outline" onClick={handleDismiss}>
-            Dismiss
+            Avfärda
           </Button>
           <Button onClick={handleExtendSession} disabled={isRefreshing}>
-            {isRefreshing ? "Extending..." : "Extend Session"}
+            {isRefreshing ? "Förlänger..." : "Förläng session"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -20,12 +20,11 @@ export function ProfileHoverCard({ children, username, userId, disabled = false 
   const identifier = username || userId;
   const [isOpen, setIsOpen] = useState(false);
   
-  // Only fetch when hover card is actually opened - prevents N+1 queries on page load
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile-hover", identifier],
     queryFn: () => getProfilePreview(identifier!),
     enabled: !!identifier && !disabled && isOpen,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   if (!identifier || disabled) {
@@ -44,7 +43,7 @@ export function ProfileHoverCard({ children, username, userId, disabled = false 
           <ProfileHoverCardContent profile={profile} />
         ) : (
           <div className="p-4 text-center text-muted-foreground text-sm">
-            Profile not found
+            Profilen hittades inte
           </div>
         )}
       </HoverCardContent>
@@ -93,10 +92,8 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
   
   return (
     <div>
-      {/* Header with gradient background */}
       <div className="h-16 bg-gradient-to-r from-primary/20 to-primary/5 rounded-t-md" />
       
-      {/* Profile info */}
       <div className="px-4 pb-4 -mt-8">
         <div className="flex items-end gap-3 mb-3">
           <Avatar className="h-14 w-14 ring-4 ring-background">
@@ -113,11 +110,11 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
               to={`/profile/${profile.username || profile.id}`}
               className="font-semibold hover:underline text-foreground"
             >
-              {profile.displayName || 'Unknown User'}
+              {profile.displayName || 'Okänd användare'}
             </Link>
             {profile.isVerified && (
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 px-1.5 py-0">
-                <Check size={10} className="mr-0.5" /> Verified
+                <Check size={10} className="mr-0.5" /> Verifierad
               </Badge>
             )}
           </div>
@@ -130,15 +127,13 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
             <p className="text-sm text-muted-foreground line-clamp-2">{profile.headline}</p>
           )}
           
-          {/* Current role */}
           {currentRole && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <Briefcase size={14} className="flex-shrink-0" />
-              <span className="truncate">{currentRole.title} at {currentRole.company}</span>
+              <span className="truncate">{currentRole.title} på {currentRole.company}</span>
             </div>
           )}
           
-          {/* Location */}
           {profile.contact?.location && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin size={14} className="flex-shrink-0" />
@@ -146,16 +141,14 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
             </div>
           )}
           
-          {/* Connections */}
           {typeof profile.connections === 'number' && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <Users size={14} className="flex-shrink-0" />
-              <span>{profile.connections} connections</span>
+              <span>{profile.connections} kontakter</span>
             </div>
           )}
         </div>
         
-        {/* View profile button */}
         <Button 
           variant="outline" 
           size="sm" 
@@ -163,7 +156,7 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
           asChild
         >
           <Link to={`/profile/${profile.username || profile.id}`}>
-            View Profile
+            Visa profil
             <ExternalLink size={14} className="ml-1.5" />
           </Link>
         </Button>

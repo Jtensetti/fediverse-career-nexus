@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { MessageSquare, Bookmark, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,6 @@ export default function PostReplyThread({
   onReplyCreated,
   highlightedReplyId
 }: PostReplyThreadProps) {
-  // Compute child replies for this reply
   const childReplies = allReplies.filter(r => r.parent_reply_id === reply.id);
   const isHighlighted = reply.id === highlightedReplyId;
   const { t } = useTranslation();
@@ -68,7 +68,7 @@ export default function PostReplyThread({
 
   const handleReplyClick = () => {
     if (!user) {
-      toast.error(t("comments.signInToReply", "Please sign in to reply"));
+      toast.error(t("comments.signInToReply", "Logga in för att svara"));
       return;
     }
     setShowReplyComposer(!showReplyComposer);
@@ -81,7 +81,7 @@ export default function PostReplyThread({
 
   const handleSave = async () => {
     if (!user) {
-      toast.error(t("comments.signInToReply", "Please sign in to save"));
+      toast.error(t("comments.signInToReply", "Logga in för att spara"));
       return;
     }
 
@@ -91,15 +91,15 @@ export default function PostReplyThread({
     const result = await toggleSaveItem("comment", reply.id);
     if (!result.success) {
       setIsSaved(prevSaved);
-      toast.error('Failed to save comment');
+      toast.error('Kunde inte spara kommentaren');
     } else {
-      toast.success(result.saved ? t("comments.saved", "Comment saved") : t("comments.removedFromSaved", "Removed from saved"));
+      toast.success(result.saved ? t("comments.saved", "Kommentar sparad") : t("comments.removedFromSaved", "Borttagen från sparade"));
     }
   };
 
   const getPublishedDate = () => {
     try {
-      return formatDistanceToNow(new Date(reply.created_at), { addSuffix: true });
+      return formatDistanceToNow(new Date(reply.created_at), { addSuffix: true, locale: sv });
     } catch {
       return '';
     }
@@ -109,10 +109,10 @@ export default function PostReplyThread({
     setIsDeleting(true);
     try {
       await deletePostReply(reply.id);
-      toast.success(t("comments.deleted", "Comment deleted"));
-      onReplyCreated(reply.id); // Trigger refresh
+      toast.success(t("comments.deleted", "Kommentar borttagen"));
+      onReplyCreated(reply.id);
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete comment");
+      toast.error(err.message || "Kunde inte ta bort kommentaren");
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
@@ -132,19 +132,19 @@ export default function PostReplyThread({
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("comments.deleteComment", "Delete comment?")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("comments.deleteComment", "Ta bort kommentar?")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("comments.deleteCommentDesc", "This action cannot be undone. This will permanently delete your comment.")}
+              {t("comments.deleteCommentDesc", "Detta kan inte ångras. Din kommentar tas bort permanent.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>{t("common.cancel", "Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>{t("common.cancel", "Avbryt")}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete} 
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? t("comments.deleting", "Deleting...") : t("common.delete", "Delete")}
+              {isDeleting ? t("comments.deleting", "Tar bort...") : t("common.delete", "Ta bort")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -162,7 +162,6 @@ export default function PostReplyThread({
         isHighlighted && "ring-2 ring-primary/50 bg-primary/5"
       )}>
         <CardContent className="p-4">
-          {/* Author Info */}
           <div className="flex items-start gap-3">
             <ProfileHoverCard username={reply.author.username} userId={reply.user_id}>
               <Link to={`/profile/${reply.author.username || reply.user_id}`}>
@@ -184,7 +183,7 @@ export default function PostReplyThread({
                     to={`/profile/${reply.author.username || reply.user_id}`}
                     className="font-medium text-sm hover:underline"
                   >
-                    {reply.author.fullname || reply.author.username || 'Unknown'}
+                    {reply.author.fullname || reply.author.username || 'Okänd'}
                   </Link>
                 </ProfileHoverCard>
                 {reply.author.username && (
@@ -197,14 +196,11 @@ export default function PostReplyThread({
                 </span>
               </div>
 
-              {/* Reply Content - with failsafe for non-string content */}
               <p className="mt-1 text-sm whitespace-pre-wrap break-words">
-                {typeof reply.content === 'string' ? reply.content : 'Comment unavailable'}
+                {typeof reply.content === 'string' ? reply.content : 'Kommentar ej tillgänglig'}
               </p>
 
-              {/* Action Buttons */}
               <div className="flex items-center gap-1 mt-2">
-                {/* Enhanced reactions with full emoji picker */}
                 <EnhancedCommentReactions replyId={reply.id} />
 
                 <TooltipProvider>
@@ -223,7 +219,7 @@ export default function PostReplyThread({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{isSaved ? t("comments.removeFromSaved", "Remove from saved") : t("comments.saveComment", "Save comment")}</p>
+                      <p>{isSaved ? t("comments.removeFromSaved", "Ta bort från sparade") : t("comments.saveComment", "Spara kommentar")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -236,7 +232,7 @@ export default function PostReplyThread({
                     onClick={handleReplyClick}
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
-                    {t("comments.reply", "Reply")}
+                    {t("comments.reply", "Svara")}
                   </Button>
                 )}
 
@@ -250,14 +246,14 @@ export default function PostReplyThread({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        {t("common.edit", "Edit")}
+                        {t("common.edit", "Redigera")}
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setShowDeleteConfirm(true)}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        {t("common.delete", "Delete")}
+                        {t("common.delete", "Ta bort")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -266,7 +262,6 @@ export default function PostReplyThread({
             </div>
           </div>
 
-          {/* Inline Reply Composer */}
           {showReplyComposer && (
             <div className="mt-3 ml-11">
               <InlineReplyComposer
@@ -274,7 +269,7 @@ export default function PostReplyThread({
                 parentReplyId={reply.id}
                 onReplyCreated={handleReplyCreated}
                 onCancel={() => setShowReplyComposer(false)}
-                placeholder={`${t("comments.replyTo", "Reply to")} @${reply.author.username || 'user'}...`}
+                placeholder={`${t("comments.replyTo", "Svara till")} @${reply.author.username || 'användare'}...`}
                 autoFocus
               />
             </div>
@@ -282,7 +277,6 @@ export default function PostReplyThread({
         </CardContent>
       </Card>
 
-      {/* Render child replies recursively */}
       {childReplies.length > 0 && depth < MAX_DEPTH && (
         <div className="mt-2 space-y-2">
           {childReplies.map(childReply => (

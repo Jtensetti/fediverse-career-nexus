@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bookmark, Heart, MessageCircle, Repeat2, Share } from "lucide-react";
 import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 import { Article } from "@/services/articleService";
 import FollowAuthorButton from "./FollowAuthorButton";
 import ArticleCardReactions from "./ArticleCardReactions";
@@ -28,14 +29,14 @@ const ArticlePreviewCard = ({
   onFollowChange 
 }: ArticlePreviewCardProps) => {
   const publishDate = article.published_at 
-    ? format(new Date(article.published_at), 'MMM d, yyyy')
-    : format(new Date(article.created_at), 'MMM d, yyyy');
+    ? format(new Date(article.published_at), 'd MMM yyyy', { locale: sv })
+    : format(new Date(article.created_at), 'd MMM yyyy', { locale: sv });
 
   const initials = authorInfo?.fullname
     ? authorInfo.fullname.split(' ').map(n => n[0]).join('').toUpperCase()
     : authorInfo?.username?.[0]?.toUpperCase() || '?';
 
-  const displayName = authorInfo?.fullname || authorInfo?.username || 'Unknown Author';
+  const displayName = authorInfo?.fullname || authorInfo?.username || 'Okänd författare';
 
   return (
     <motion.div
@@ -44,7 +45,6 @@ const ArticlePreviewCard = ({
       transition={{ duration: 0.3 }}
       className="space-y-2"
     >
-      {/* Author header - above card like Substack */}
       {authorInfo && (
         <div className="flex items-center justify-between px-1">
           <Link 
@@ -76,11 +76,9 @@ const ArticlePreviewCard = ({
         </div>
       )}
 
-      {/* Main card with image and overlay title */}
       <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow">
         <Link to={`/articles/${article.slug}`} className="block">
           <div className="relative aspect-[16/10] overflow-hidden">
-            {/* Image or fallback */}
             {article.cover_image_url ? (
               <img
                 src={article.cover_image_url}
@@ -107,14 +105,12 @@ const ArticlePreviewCard = ({
               </div>
             )}
             
-            {/* Gradient overlay for text readability */}
             <div className={cn(
               "absolute inset-0 flex flex-col justify-end p-4",
               article.cover_image_url 
                 ? "bg-gradient-to-t from-black/80 via-black/40 to-transparent"
                 : "bg-gradient-to-t from-foreground/10 to-transparent"
             )}>
-              {/* Author badge overlay (small, on image) */}
               {authorInfo && article.cover_image_url && (
                 <div className="flex items-center gap-1.5 mb-2">
                   <Avatar className="h-5 w-5 border border-white/20">
@@ -132,7 +128,6 @@ const ArticlePreviewCard = ({
                 </div>
               )}
               
-              {/* Title on image */}
               <h3 className={cn(
                 "text-lg font-bold leading-tight line-clamp-2 pr-8",
                 article.cover_image_url ? "text-white" : "text-foreground"
@@ -140,7 +135,6 @@ const ArticlePreviewCard = ({
                 {article.title}
               </h3>
               
-              {/* Bookmark icon */}
               <Bookmark className={cn(
                 "absolute top-4 right-4 h-5 w-5 opacity-70 hover:opacity-100 transition-opacity",
                 article.cover_image_url ? "text-white" : "text-muted-foreground"
@@ -150,7 +144,6 @@ const ArticlePreviewCard = ({
         </Link>
       </Card>
 
-      {/* Reactions row below card */}
       <div className="flex items-center gap-4 px-1 text-muted-foreground">
         <ArticleCardReactions articleId={article.id} />
         <button className="flex items-center gap-1 hover:text-foreground transition-colors">
