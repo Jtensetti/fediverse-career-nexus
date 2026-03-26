@@ -197,9 +197,9 @@ export const isPoll = (content: Record<string, unknown>): boolean => {
 
 // Get poll duration options
 export const pollDurationOptions = [
-  { label: "1 hour", minutes: 60 },
-  { label: "6 hours", minutes: 360 },
-  { label: "1 day", minutes: 1440 },
-  { label: "3 days", minutes: 4320 },
-  { label: "7 days", minutes: 10080 }
+  { label: "1 timme", minutes: 60 },
+  { label: "6 timmar", minutes: 360 },
+  { label: "1 dag", minutes: 1440 },
+  { label: "3 dagar", minutes: 4320 },
+  { label: "7 dagar", minutes: 10080 }
 ];

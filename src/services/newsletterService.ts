@@ -59,7 +59,7 @@ export const unsubscribeFromNewsletter = async (email: string): Promise<Newslett
     return data as NewsletterSubscription;
   } catch (error) {
     console.error('Error unsubscribing from newsletter:', error);
-    toast.error('Failed to unsubscribe from newsletter. Please try again.');
+    toast.error('Kunde inte avprenumerera. Försök igen.');
     return null;
   }
 };

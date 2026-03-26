@@ -644,7 +644,7 @@ export const deletePost = async (postId: string): Promise<void> => {
     }
 
     console.log('✅ Post deleted successfully');
-    toast.success('Post deleted successfully!');
+    toast.success('Inlägget raderades!');
   } catch (error) {
     console.error('❌ Error deleting post:', error);
     throw error;

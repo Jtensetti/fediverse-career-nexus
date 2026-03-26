@@ -345,7 +345,7 @@ export async function toggleMessageReaction(
     }
   } catch (error) {
     console.error('Error in toggleMessageReaction:', error);
-    toast.error("Failed to process reaction");
+    toast.error("Kunde inte hantera reaktion");
     return { success: false, action: 'error', reaction };
   }
 }

@@ -177,7 +177,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     return publicUrl;
   } catch (error) {
     console.error("❌ Error uploading avatar:", error);
-    toast.error("Failed to upload avatar");
+    toast.error("Kunde inte ladda upp avatar");
     return null;
   }
 };
