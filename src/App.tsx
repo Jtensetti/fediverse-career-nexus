@@ -51,6 +51,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CodeOfConductPage from "./pages/CodeOfConductPage";
 import InstanceGuidelinesPage from "./pages/InstanceGuidelines";
+import CookiesPage from "./pages/CookiesPage";
 import Instances from "./pages/Instances";
 import AdminFederationHealth from "./pages/AdminFederationHealth";
 import AdminInstances from "./pages/AdminInstances";
