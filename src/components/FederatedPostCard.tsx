@@ -453,14 +453,14 @@ export default function FederatedPostCard({
                   <>
                     <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
                       <Flag className="mr-2 h-4 w-4" />
-                      Report Post
+                      {t('postCard.reportPost')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive"
                       onClick={() => setShowBlockDialog(true)}
                     >
                       <UserX className="mr-2 h-4 w-4" />
-                      Block User
+                      {t('postCard.blockUser')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
