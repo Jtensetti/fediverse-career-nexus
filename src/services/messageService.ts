@@ -318,7 +318,7 @@ export async function sendMessage(recipientId: string, content: string): Promise
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('You must be logged in to send messages');
+      toast.error('Du måste vara inloggad för att skicka meddelanden');
       return null;
     }
 
