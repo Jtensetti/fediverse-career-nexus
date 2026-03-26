@@ -180,7 +180,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
         return false;
       }
 
-      toast.success('Post boosted');
+      toast.success('Inlägg boostat');
       return true;
     }
   } catch (error) {
