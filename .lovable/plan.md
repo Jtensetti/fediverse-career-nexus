@@ -1,59 +1,75 @@
 
 
-# Pivot Platform Messaging for Public Sector + Swedish Default
+# Översätt alla kvarvarande engelska strängar till svenska
 
-## Summary
-Rewrite all user-facing marketing/selling language to appeal to public sector organizations (municipalities, government agencies, regions). Remove references to Fediverse, federation, open source ideology, and "freedom" rhetoric. Replace with language about **secure internal communication**, **digital sovereignty**, **GDPR compliance**, **interoperability between agencies**, and **transparent governance**. Make Swedish the default language.
+## Sammanfattning
+Det finns hundratals hårdkodade engelska strängar spridda över ~40+ filer (sidor, komponenter, formulär, toast-meddelanden, validering). Alla behöver antingen ersättas med `t()` anrop mot befintliga nycklar i `sv.json`, eller nya nycklar behöver läggas till i båda locale-filerna.
 
-## What Changes
+## Omfattning — Kategorier av kvarvarande engelsk text
 
-### 1. Set Swedish as Default Language
-- **`src/i18n/index.ts`**: Change `lng: "en"` to `lng: "sv"`, import `svTranslation`, add `sv` resource bundle
+### 1. Toast-meddelanden (~140 instanser i 15 filer)
+Filer som `EventCreate.tsx`, `FeedSettings.tsx`, `StarterPackCreate.tsx`, `EventView.tsx`, `FederatedPostCard.tsx`, `CommentPreview.tsx`, `FollowAuthorButton.tsx`, `DMPrivacySettings.tsx`, `ArticleReactions.tsx`, `SavedItems.tsx`, m.fl. har alla `toast.success('...')` och `toast.error('...')` med engelsk text.
 
-### 2. Rewrite Swedish Homepage Translations (`src/i18n/locales/sv.json`)
-All `homepage.*` keys rewritten with public sector framing:
+### 2. Formuläretiketter, placeholders & validering (~200+ instanser)
+- **`JobForm.tsx`**: "Job Title *", "Company Name *", "Location *", "Employment Type", "Remote Policy", "Full-time", "Part-time", "Contract", placeholders ("e.g. Senior Frontend Developer"), select-alternativ
+- **`EventForm.tsx`**: Valideringsmeddelanden ("Title must be at least 3 characters"), synlighetsalternativ ("Public", "Connections Only", "Private")
+- **`ArticleEdit.tsx`**: "Search users by name...", "Saving...", "Update Article", placeholders
+- **`StarterPackCreate.tsx`**: "Pack Name *", "URL Slug *", "Description", "Category", "Cancel", "Creating..."
+- **`CompanyForm.tsx`**, **`CompanyEmployeeForm.tsx`**: Formulärfält
+- **`PostReplyDialog.tsx`**: "Write your reply..."
+- **`CommentEditDialog.tsx`**: "Edit your comment..."
+- **`JobInquiryButton.tsx`**: "Write your message..."
+- **`RemoteInstancesTable.tsx`**: "Provide a reason for..."
+- **`AccountMigrationSection.tsx`**: Mastodon-relaterade placeholders
 
-- **Hero**: "Det professionella nätverket" / "för offentlig sektor" -- "Samla medarbetare, dela kunskap och rekrytera -- på en säker, GDPR-kompatibel plattform byggd för kommuner, regioner och myndigheter."
-- **Trust badges**: Replace "ActivityPub" / "Öppen källkod" / "Självhostbar" with "GDPR-säkrad" / "Svensk data" / "Säker inloggning" / "Driftas i Sverige"
-- **Features sections**: Reframe around "Tryggt flöde utan algoritmer", "Professionella profiler för offentlig sektor", "Transparent rekrytering inom offentlig sektor"
-- **Federation visual**: Reframe as "Så fungerar samverkan" -- connecting municipalities/regions/agencies instead of Mastodon instances
-- **FAQ**: Replace Fediverse questions with public sector relevant ones: "Är plattformen GDPR-kompatibel?", "Hur skiljer sig Nolto från LinkedIn?", "Kan vi drifta Nolto själva?", "Hur hanteras personuppgifter?", "Fungerar det med andra organisationer?", "Vad kostar det?"
-- **Final CTA**: "Redo att modernisera er interna kommunikation?"
-- **Featured In badges**: Replace with "GDPR-kompatibel", "Svensk hosting", "Krypterad kommunikation", "Öppen standard", "Tillgänglig (WCAG)", "Offentlig sektor"
-- **Live feed/jobs sections**: Reframe for public sector context
-- **Referral**: "Bjud in kollegor" stays, but remove "Fediverse" references
-- **Auth welcome**: "Välkommen till Nolto -- Den säkra plattformen för professionellt nätverkande inom offentlig sektor"
+### 3. Sidrubriker & beskrivningar (~30+ instanser)
+- **`EventCreate.tsx`**: "Create Event", beskrivningstext
+- **`Search.tsx`**: "Search", "Find people, jobs, articles, and events"
+- **`SavedItems.tsx`**: "No saved items yet", "Save jobs, articles..."
+- **`StarterPacks.tsx`**: "Starter Packs", "Featured Packs", "No packs found"
+- **`StarterPackView.tsx`**: "Pack not found"
+- **`StarterPackCreate.tsx`**: "Create a Starter Pack", "Sign in required", "Back to Packs"
+- **`ArticleView.tsx`**: "Article not found"
+- **`CompanyCreate.tsx`**: Fallback-text
+- **`InstanceGuidelinesPage.tsx`**: "Instance Guidelines", "Back to Home"
+- **`ProfileEdit.tsx`**: Valideringsfel ("Institution is required", "Degree is required", "Start year is required")
 
-### 3. Rewrite English Homepage Translations (`src/i18n/locales/en.json`)
-Mirror the same public-sector pivot in English:
-- Hero: "The Professional Network for the Public Sector"
-- Trust badges: "GDPR Compliant" / "Swedish Hosting" / "Secure Login" / "Hosted in Sweden"
-- Features: Government/municipality framing
-- FAQ: Public sector relevant questions
-- Remove all Fediverse/ActivityPub/federation ideology language
+### 4. Komponentspecifik text
+- **`AppScreenshot.tsx`**: Namn som "Sarah Chen", "Marcus Weber" — byt till svenska namn
+- **`FederatedPostCard.tsx`**: aria-labels ("Post options", "Boost post", "Remove boost", "Read more")
+- **`EditorToolbar.tsx`**: aria-labels ("Text style", "Insert link", "Block quote", "Code block", "Hide keyboard")
+- **`ContentGate.tsx`**: Engelsk text
+- **`ModerationHeader.tsx`**: Redan lokaliserad men kontrollera fallbacks
 
-### 4. Update Hardcoded Component Text
-- **`src/components/homepage/FeaturedIn.tsx`**: Replace Mastodon/Pleroma/Pixelfed platform list with public sector integrations or remove entirely
-- **`src/components/homepage/FederationVisual.tsx`**: Replace instance names (fosstodon.org, mastodon.social) with municipality/agency names (e.g., "kommun.se", "region.se", "myndighet.se")
-- **`src/components/Features.tsx`**: Update feature descriptions to public sector language
-- **`src/components/CallToAction.tsx`**: Update CTA text
-- **`src/components/Hero.tsx`**: Update default props
-- **`src/components/homepage/WhyFederated.tsx`**: Change comparison from "Traditional vs Nolto" to reframe benefits for public sector (no Fediverse language)
-- **`src/components/homepage/FederationExplainer.tsx`**: Reframe steps for public sector onboarding
-- **`src/pages/Mission.tsx`**: Rewrite mission for public sector focus
+### 5. SEOHead-titlar
+- Flera sidor har engelska titlar i `<SEOHead>`: "Search | Nolto", "Create Starter Pack", etc.
 
-### 5. Update Auth-Related Translations
-- Remove "Fediverse login" references from both `en.json` and `sv.json` auth sections
-- Update `auth.welcomeSubtitle` to public sector messaging
-- Update `referral.shareText` to remove Fediverse mention
+## Genomförande
 
-### 6. Update Footer Translations
-- `footer.tagline`: "En säker professionell plattform för offentlig sektor" / "A secure professional platform for the public sector"
-- `footer.howFederationWorks` -> "Hur samverkan fungerar" / "How Collaboration Works"
+### Steg 1: Utöka `sv.json` och `en.json`
+Lägg till ~150 nya översättningsnycklar i båda filerna, organiserade under befintliga sektioner plus nya:
+- `savedItems.*` — Sparade objekt
+- `starterPacks.*` — Startpaket
+- `search.*` — Sök
+- `jobForm.*` — Jobbformulär
+- `eventForm.*` — Evenemangsformulär
+- `articleEdit.*` — Artikelredigering
+- `toasts.*` — Gemensamma toast-meddelanden
+- `validation.*` — Valideringsmeddelanden
+- `ariaLabels.*` — Tillgänglighetsetiketter
 
-## Scope
-- ~2 JSON locale files (major rewrites of homepage/auth/footer sections)
-- ~8 component files (hardcoded strings and content)
-- 1 i18n config file
-- No database changes, no backend changes
+### Steg 2: Uppdatera sidorna (~15 filer)
+Ersätt alla hårdkodade strängar med `t()` anrop:
+- `EventCreate.tsx`, `Search.tsx`, `SavedItems.tsx`, `StarterPacks.tsx`, `StarterPackCreate.tsx`, `StarterPackView.tsx`, `ArticleView.tsx`, `ArticleEdit.tsx`, `CompanyCreate.tsx`, `InstanceGuidelines.tsx (page)`, `FeedSettings.tsx`, `ProfileEdit.tsx` (valideringsfel), `EventView.tsx`, `JobCreate.tsx`
+
+### Steg 3: Uppdatera komponenterna (~15 filer)
+- `JobForm.tsx`, `EventForm.tsx`, `FederatedPostCard.tsx`, `CommentPreview.tsx`, `PostReplyDialog.tsx`, `CommentEditDialog.tsx`, `JobInquiryButton.tsx`, `EditorToolbar.tsx`, `AppScreenshot.tsx`, `FollowAuthorButton.tsx`, `DMPrivacySettings.tsx`, `ArticleReactions.tsx`, `ContentGate.tsx`, `RemoteInstancesTable.tsx`, `AccountMigrationSection.tsx`
+
+### Steg 4: Uppdatera Zod-valideringsscheman
+`EventForm.tsx` och eventuellt `JobForm.tsx` har Zod-scheman med engelska felmeddelanden — dessa behöver ändras till svenska strängar.
+
+## Teknisk detalj
+- Alla filer som inte redan importerar `useTranslation` behöver importera den
+- Zod-valideringsmeddelanden kan inte enkelt använda `t()` (de initieras utanför komponenter), så flytta schemat inuti komponenten eller använd statiska svenska strängar
+- Totalt ~30 filer att redigera, ~150 nya locale-nycklar
 
