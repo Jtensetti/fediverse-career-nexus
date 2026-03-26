@@ -277,7 +277,7 @@ const DefaultToolbar = ({
               }}
               className="justify-start h-8 text-sm"
             >
-              Image
+              Bild
             </Button>
             <Button
               type="button"
