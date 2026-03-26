@@ -204,7 +204,7 @@ const ProfileEditPage = () => {
       if (data.username && data.username !== profile?.username) {
         const isAvailable = await checkUsernameAvailability(data.username);
         if (!isAvailable) {
-          toast.error("Username is already taken");
+          toast.error(t("toasts.usernameAlreadyTaken"));
           setIsLoading(prev => ({ ...prev, saving: false }));
           return;
         }
