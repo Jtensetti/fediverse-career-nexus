@@ -338,7 +338,7 @@ export default function FederatedPostCard({
     return (
       <div className={bannerClasses}>
         <Globe size={14} />
-        <span>From {post.instance}</span>
+        <span>{t('postCard.fromInstance')} {post.instance}</span>
         {post.moderation_status !== 'normal' && (
           <>
             <span className="mx-1">•</span>
