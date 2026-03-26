@@ -279,7 +279,7 @@ export const toggleJobPostPublished = async (id: string, isActive: boolean): Pro
       .eq('id', id);
 
     if (error) throw error;
-    toast.success(isActive ? 'Job post published' : 'Job post unpublished');
+    toast.success(isActive ? 'Jobbannons publicerad' : 'Jobbannons avpublicerad');
     return true;
   } catch (error) {
     console.error('Error toggling job post published:', error);
