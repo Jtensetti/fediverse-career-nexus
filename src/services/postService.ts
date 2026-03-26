@@ -134,7 +134,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
       if (createActorError || !newActor) {
         console.error('❌ Actor creation error:', createActorError);
-        toast.error("Failed to create user actor");
+        toast.error("Kunde inte skapa användaraktör");
         return false;
       }
 

@@ -522,7 +522,7 @@ export async function createPostReply(
     toast.success('Svar postat!');
     return true;
   } catch (error) {
-    toast.error('An unexpected error occurred');
+    toast.error('Ett oväntat fel uppstod');
     return false;
   }
 };

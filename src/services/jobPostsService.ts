@@ -300,7 +300,7 @@ export const deleteJobPost = async (id: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Error deleting job post:', error);
-    toast.error('Failed to delete job post');
+    toast.error('Kunde inte radera jobbannons');
     return false;
   }
 };

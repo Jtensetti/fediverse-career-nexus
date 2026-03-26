@@ -184,7 +184,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
       return true;
     }
   } catch (error) {
-    toast.error('Failed to process boost. Please try again.');
+    toast.error('Kunde inte bearbeta boost. Försök igen.');
     return false;
   }
 };

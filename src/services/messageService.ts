@@ -450,7 +450,7 @@ async function sendFederatedMessage(
     return data.message as Message;
   } catch (error) {
     console.error('Error in sendFederatedMessage:', error);
-    toast.error('Failed to send federated message');
+    toast.error('Kunde inte skicka federerat meddelande');
     return null;
   }
 }
