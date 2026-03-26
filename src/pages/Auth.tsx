@@ -203,7 +203,7 @@ export default function AuthPage() {
           return;
         }
         if (usernameAvailable === false) {
-          toast.error("This username is already taken");
+          toast.error(t("toasts.usernameAlreadyTaken"));
           setIsLoading(false);
           return;
         }
