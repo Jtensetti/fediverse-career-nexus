@@ -847,7 +847,7 @@
     "dpfCertification": "EU-US Data Privacy Framework certification",
     "sccs": "Standard Contractual Clauses (SCCs)",
     "technicalMeasures": "Supplementary technical measures (encryption in transit and at rest)",
-    "federationTransfers": "Federation transfers to other Fediverse instances may involve servers in various countries. Each remote instance is responsible for its own data protection practices."
+    "federationTransfers": "Data transfers to other connected instances may involve servers in various countries. Each remote instance is responsible for its own data protection practices."
   },
   "cookies": {
     "title": "Cookie Notice",
