@@ -166,7 +166,7 @@ const ProfileEditPage = () => {
         }
       } catch (error) {
         console.error("Error loading profile:", error);
-        toast.error("Failed to load profile");
+        toast.error(t("toasts.profileLoadError"));
       } finally {
         setIsLoading(prev => ({ ...prev, profile: false }));
         setLoading(false);
