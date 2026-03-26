@@ -84,7 +84,7 @@ export const votePoll = async (
       return false;
     }
 
-    toast.success("Vote submitted!");
+    toast.success("Röst registrerad!");
     return true;
   } catch (error) {
     console.error("Error in votePoll:", error);
