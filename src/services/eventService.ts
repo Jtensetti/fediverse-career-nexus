@@ -249,7 +249,7 @@ export async function updateEvent(id: string, eventData: Partial<Omit<Event, 'id
     return data as Event;
   } catch (error) {
     console.error('Error updating event:', error);
-    toast.error('Failed to update event');
+    toast.error(i18n.t('toasts.eventUpdateFailed'));
     return null;
   }
 }
