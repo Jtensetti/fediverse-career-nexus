@@ -273,7 +273,7 @@ export default function PostView() {
           <>
             <Separator className="my-4" />
             <h3 className="text-sm font-medium text-muted-foreground mb-4">
-              {replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}
+              {replies.length} {replies.length === 1 ? 'svar' : 'svar'}
             </h3>
             <div className="space-y-4">
               {topLevelReplies.map((reply) => (
