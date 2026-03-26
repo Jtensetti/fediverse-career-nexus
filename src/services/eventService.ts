@@ -180,7 +180,7 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
     const user_id = session.data.session?.user.id;
     
     if (!user_id) {
-      toast.error('You must be logged in to create an event');
+      toast.error(i18n.t('toasts.loginRequiredEvent'));
       return null;
     }
     
