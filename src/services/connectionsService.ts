@@ -183,7 +183,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("You must be logged in to connect with others");
+      toast.error("Du måste vara inloggad för att ansluta till andra");
       return false;
     }
 
