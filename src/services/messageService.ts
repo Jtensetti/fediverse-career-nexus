@@ -446,7 +446,7 @@ async function sendFederatedMessage(
       return null;
     }
 
-    toast.success('Message sent to federated user');
+    toast.success('Meddelande skickat till federerad användare');
     return data.message as Message;
   } catch (error) {
     console.error('Error in sendFederatedMessage:', error);
