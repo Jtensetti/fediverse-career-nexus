@@ -945,7 +945,7 @@ const ProfilePage = () => {
                   {userConnections && userConnections.length > 6 && (
                     <div className="text-center mt-4">
                       <Button variant="outline" asChild>
-                        <Link to="/connections">View All Connections</Link>
+                        <Link to="/connections">{t("profilePage.viewAllConnections")}</Link>
                       </Button>
                     </div>
                   )}
