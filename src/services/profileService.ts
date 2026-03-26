@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 
 // Lightweight profile data for hover cards - single query, no joins
 export interface ProfilePreview {
