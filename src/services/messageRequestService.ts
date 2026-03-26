@@ -308,7 +308,7 @@ export async function canMessageDirectly(targetUserId: string): Promise<{
       return { canMessage: true };
     }
 
-    return { canMessage: false, needsRequest: true, reason: 'Send a message request first' };
+    return { canMessage: false, needsRequest: true, reason: 'Skicka en meddelandeförfrågan först' };
   } catch (error) {
     console.error('Error checking message permissions:', error);
     return { canMessage: false, reason: 'Error checking permissions' };
