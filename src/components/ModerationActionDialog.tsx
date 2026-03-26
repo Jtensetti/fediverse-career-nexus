@@ -42,7 +42,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
-  const [isSöker...etIsSöker... useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   
   const form = useForm({
     defaultValues: {
@@ -61,7 +61,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
         return;
       }
       
-      setIsSöker...ue);
+      setIsSearching(true);
       try {
         const { data, error } = await supabase
           .from('public_profiles')
@@ -75,7 +75,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
       } catch (error) {
         console.error('Error searching for users:', error);
       } finally {
-        setIsSöker...lse);
+        setIsSearching(false);
       }
     };
     
@@ -217,8 +217,8 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
                     </div>
                   )}
                   
-                  {isSöker... (
-                    <div className="text-sm text-gray-500 mt-1">Söker...</div>
+                  {isSearching && (
+                    <div className="text-sm text-muted-foreground mt-1">Söker...</div>
                   )}
                   
                   <FormMessage />

@@ -4,25 +4,25 @@ import { Quote } from "lucide-react";
 
 const testimonials = [
   {
-    quote: "Finally, a professional network where I own my data. No more algorithmic manipulation or privacy concerns.",
-    author: "Sarah Chen",
-    role: "Senior Developer at Mozilla",
-    avatar: "SC",
-    instance: "fosstodon.org"
+    quote: "Äntligen ett professionellt nätverk där vi äger vår data. Ingen algoritmisk manipulation eller integritetsproblem.",
+    author: "Anna Lindström",
+    role: "IT-chef, Göteborgs kommun",
+    avatar: "AL",
+    instance: "nolto.se"
   },
   {
-    quote: "The federation model means my network isn't locked into one platform. I can switch instances without losing connections.",
-    author: "Marcus Weber",
-    role: "Tech Lead at Fairphone",
-    avatar: "MW",
-    instance: "mastodon.social"
+    quote: "Federationsmodellen innebär att vårt nätverk inte är inlåst i en plattform. Vi kan byta instans utan att förlora kontakter.",
+    author: "Erik Johansson",
+    role: "Digitaliseringsstrateg, Region Skåne",
+    avatar: "EJ",
+    instance: "nolto.se"
   },
   {
-    quote: "Transparent, open-source, and community-driven. This is what professional networking should have been from the start.",
-    author: "Priya Sharma",
-    role: "Open Source Advocate",
-    avatar: "PS",
-    instance: "hachyderm.io"
+    quote: "Transparent, öppen källkod och community-drivet. Det här är vad professionell nätverksbyggande borde ha varit från början.",
+    author: "Maria Bergström",
+    role: "Verksamhetsutvecklare, Arbetsförmedlingen",
+    avatar: "MB",
+    instance: "nolto.se"
   }
 ];
 
@@ -32,10 +32,10 @@ const Testimonials = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-3">
-            Trusted by Professionals Who Value Freedom
+            Betrodd av yrkesverksamma som värdesätter frihet
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of professionals building their networks on their own terms
+            Gå med tusentals yrkesverksamma som bygger sina nätverk på egna villkor
           </p>
         </div>
 

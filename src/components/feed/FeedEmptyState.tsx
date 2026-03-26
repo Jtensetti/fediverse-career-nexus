@@ -11,41 +11,41 @@ export default function FeedEmptyState({ onCreatePost }: FeedEmptyStateProps) {
   const suggestions = [
     {
       icon: Package,
-      title: "Browse Starter Packs",
-      description: "Discover curated lists of professionals to follow",
+      title: "Utforska startpaket",
+      description: "Upptäck kurerade listor med yrkesverksamma att följa",
       action: (
         <Button size="sm" variant="default" asChild>
-          <Link to="/packs">Explore Packs</Link>
+          <Link to="/packs">Utforska paket</Link>
         </Button>
       ),
     },
     {
       icon: PenLine,
-      title: "Share your first post",
-      description: "Tell the community about your work or interests",
+      title: "Dela ditt första inlägg",
+      description: "Berätta för communityn om ditt arbete eller dina intressen",
       action: onCreatePost ? (
         <Button size="sm" variant="outline" onClick={onCreatePost}>
-          Create Post
+          Skapa inlägg
         </Button>
       ) : null,
     },
     {
       icon: Users,
-      title: "Find people to follow",
-      description: "Connect with professionals in your field",
+      title: "Hitta personer att följa",
+      description: "Anslut till yrkesverksamma inom ditt område",
       action: (
         <Button size="sm" variant="outline" asChild>
-          <Link to="/connections">Browse Connections</Link>
+          <Link to="/connections">Bläddra bland kontakter</Link>
         </Button>
       ),
     },
     {
       icon: TrendingUp,
-      title: "Complete your profile",
-      description: "Help others discover you",
+      title: "Fyll i din profil",
+      description: "Hjälp andra att upptäcka dig",
       action: (
         <Button size="sm" variant="outline" asChild>
-          <Link to="/profile/edit">Edit Profile</Link>
+          <Link to="/profile/edit">Redigera profil</Link>
         </Button>
       ),
     },
@@ -60,21 +60,21 @@ export default function FeedEmptyState({ onCreatePost }: FeedEmptyStateProps) {
             <Sparkles className="h-8 w-8 text-primary" />
           </div>
           <h3 className="text-xl font-semibold text-foreground mb-2">
-            Your feed is ready for content
+            Ditt flöde är redo för innehåll
           </h3>
           <p className="text-muted-foreground max-w-md mb-6">
-            Start by following some people! Browse Starter Packs to discover 
-            curated lists of professionals, or explore what others are posting.
+            Börja med att följa några personer! Utforska startpaket för att hitta 
+            kurerade listor med yrkesverksamma, eller se vad andra publicerar.
           </p>
           <div className="flex gap-3">
             <Button asChild>
               <Link to="/packs">
                 <Package className="mr-2 h-4 w-4" />
-                Browse Starter Packs
+                Utforska startpaket
               </Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/jobs">Browse Jobs</Link>
+              <Link to="/jobs">Bläddra bland jobb</Link>
             </Button>
           </div>
         </CardContent>

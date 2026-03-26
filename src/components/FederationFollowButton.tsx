@@ -50,8 +50,8 @@ export default function FederationFollowButton({
   const handleFollow = async () => {
     if (!localActorId) {
       toast({
-        title: "Cannot follow",
-        description: "You need to be logged in and have an active federation profile to follow others.",
+        title: "Kan inte följa",
+        description: "Du måste vara inloggad och ha en aktiv federationsprofil för att följa andra.",
         variant: "destructive"
       });
       return;
@@ -60,13 +60,12 @@ export default function FederationFollowButton({
     try {
       setLoading(true);
       
-      // Ensure the actor has RSA keys before creating follow
       const hasKeys = await ensureActorKeys(localActorId);
       
       if (!hasKeys) {
         toast({
-          title: "Key generation failed",
-          description: "Could not generate signing keys for your actor.",
+          title: "Nyckelgenerering misslyckades",
+          description: "Kunde inte generera signeringsnycklar för din aktör.",
           variant: "destructive"
         });
         return;
@@ -79,7 +78,7 @@ export default function FederationFollowButton({
       
       if (error) {
         toast({
-          title: "Follow failed",
+          title: "Följning misslyckades",
           description: error.message,
           variant: "destructive"
         });
@@ -87,17 +86,16 @@ export default function FederationFollowButton({
       }
       
       toast({
-        title: "Follow request sent",
-        description: "Your follow request has been queued for federation with proper HTTP signatures.",
+        title: "Följförfrågan skickad",
+        description: "Din följförfrågan har lagts i kö för federation med korrekta HTTP-signaturer.",
         variant: "default"
       });
       
-      // Update local status to pending
       setFollowStatus('pending');
     } catch (error) {
       toast({
-        title: "An error occurred",
-        description: "Could not send follow request.",
+        title: "Ett fel uppstod",
+        description: "Kunde inte skicka följförfrågan.",
         variant: "destructive"
       });
     } finally {
@@ -109,7 +107,7 @@ export default function FederationFollowButton({
     if (loading) {
       return {
         icon: <Clock size={16} className="animate-spin" />,
-        text: "Processing...",
+        text: "Bearbetar...",
         variant: "secondary" as const
       };
     }
@@ -118,25 +116,25 @@ export default function FederationFollowButton({
       case 'pending':
         return {
           icon: <Clock size={16} />,
-          text: "Pending",
+          text: "Väntande",
           variant: "secondary" as const
         };
       case 'accepted':
         return {
           icon: <UserCheck size={16} />,
-          text: "Following",
+          text: "Följer",
           variant: "default" as const
         };
       case 'rejected':
         return {
           icon: <UserX size={16} />,
-          text: "Rejected",
+          text: "Avvisad",
           variant: "destructive" as const
         };
       default:
         return {
           icon: <UserPlus size={16} />,
-          text: "Follow",
+          text: "Följ",
           variant: "default" as const
         };
     }
