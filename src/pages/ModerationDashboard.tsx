@@ -304,7 +304,7 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="alerts" className="gap-2">
                   <Bell className="h-4 w-4" />
-                  Alerts
+                  Varningar
                 </TabsTrigger>
               </TabsList>
 
