@@ -363,7 +363,7 @@ const DefaultToolbar = ({
               className="justify-start h-8 text-sm gap-2"
             >
               <ListOrdered className="h-4 w-4" />
-              Numbered list
+              Numrerad lista
             </Button>
           </div>
         </PopoverContent>

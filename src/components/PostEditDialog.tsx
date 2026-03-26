@@ -27,7 +27,6 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
 
   useEffect(() => {
     if (post) {
-      // Extract content from different ActivityPub formats
       let text = "";
       if (post.type === 'Create' && post.content.object?.content) {
         text = post.content.object.content;
@@ -35,7 +34,6 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
         text = post.content.content;
       }
       
-      // Convert HTML line breaks to newlines before stripping tags
       text = text
         .replace(/<br\s*\/?>/gi, '\n')
         .replace(/<\/p>/gi, '\n\n')
@@ -54,11 +52,11 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
     
     try {
       await updatePost(post.id, { content });
-      toast.success("Post updated");
+      toast.success("Inlägget uppdaterat");
       onUpdated();
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || "Failed to update post");
+      toast.error(err.message || "Kunde inte uppdatera inlägget");
     } finally {
       setLoading(false);
     }
@@ -68,13 +66,13 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{postIsPoll ? "Edit Poll" : "Edit Post"}</DialogTitle>
+          <DialogTitle>{postIsPoll ? "Redigera omröstning" : "Redigera inlägg"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={postIsPoll ? "Edit your poll question..." : "What's on your mind?"}
+            placeholder={postIsPoll ? "Redigera din omröstningsfråga..." : "Vad tänker du på?"}
             className="min-h-[150px] resize-none"
             disabled={loading}
           />
@@ -83,18 +81,18 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Poll options cannot be edited after creation to preserve vote integrity. 
-                You can only edit the question text above.
+                Omröstningsalternativ kan inte redigeras efter att de skapats för att bevara rösternas integritet. 
+                Du kan bara redigera frågetexten ovan.
               </AlertDescription>
             </Alert>
           )}
           
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-              Cancel
+              Avbryt
             </Button>
             <Button onClick={handleSave} disabled={loading || !content.trim()}>
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? "Sparar..." : "Spara ändringar"}
             </Button>
           </div>
         </div>

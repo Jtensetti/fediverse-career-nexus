@@ -161,7 +161,7 @@ export function ArticleEditor({
     const url = await uploadImage(file);
     if (url) {
       editor.insertImage(url);
-      toast.success("Image inserted");
+      toast.success("Bild infogad");
     }
 
     // Reset file input

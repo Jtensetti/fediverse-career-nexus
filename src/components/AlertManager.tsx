@@ -61,10 +61,10 @@
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ["allSiteAlerts"] });
        queryClient.invalidateQueries({ queryKey: ["siteAlerts"] });
-       toast.success("Alert created");
+       toast.success("Avisering skapad");
        closeDialog();
      },
-     onError: () => toast.error("Failed to create alert"),
+     onError: () => toast.error("Kunde inte skapa avisering"),
    });
  
    const updateMutation = useMutation({
@@ -76,10 +76,10 @@
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ["allSiteAlerts"] });
        queryClient.invalidateQueries({ queryKey: ["siteAlerts"] });
-       toast.success("Alert updated");
+       toast.success("Avisering uppdaterad");
        closeDialog();
      },
-     onError: () => toast.error("Failed to update alert"),
+     onError: () => toast.error("Kunde inte uppdatera avisering"),
    });
  
    const deleteMutation = useMutation({
@@ -90,9 +90,9 @@
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ["allSiteAlerts"] });
        queryClient.invalidateQueries({ queryKey: ["siteAlerts"] });
-       toast.success("Alert deleted");
+       toast.success("Avisering borttagen");
      },
-     onError: () => toast.error("Failed to delete alert"),
+     onError: () => toast.error("Kunde inte ta bort avisering"),
    });
  
    const openCreate = () => {
@@ -117,7 +117,7 @@
  
    const handleSubmit = () => {
      if (!message.trim()) {
-       toast.error("Message is required");
+       toast.error("Meddelande krävs");
        return;
      }
      if (editingAlert) {
@@ -134,17 +134,17 @@
    return (
      <Card>
        <CardHeader className="flex flex-row items-center justify-between">
-         <CardTitle>Site Alerts</CardTitle>
+         <CardTitle>Webbplatsaviseringar</CardTitle>
          <Button onClick={openCreate} size="sm">
            <Plus className="h-4 w-4 mr-2" />
-           New Alert
+           Ny avisering
          </Button>
        </CardHeader>
        <CardContent>
          {isLoading ? (
-           <p className="text-muted-foreground">Loading...</p>
+           <p className="text-muted-foreground">Laddar...</p>
          ) : alerts.length === 0 ? (
-           <p className="text-muted-foreground">No alerts configured</p>
+           <p className="text-muted-foreground">Inga aviseringar konfigurerade</p>
          ) : (
            <div className="space-y-3">
              {alerts.map((alert) => (
@@ -163,14 +163,14 @@
                    )}
                    <span className="truncate">{alert.message}</span>
                    <Badge variant={alert.type === "error" ? "destructive" : "secondary"}>
-                     {alert.type}
+                     {alert.type === "error" ? "Fel" : "Info"}
                    </Badge>
                  </div>
                  <div className="flex items-center gap-2 shrink-0">
                    <Switch
                      checked={alert.is_active}
                      onCheckedChange={() => toggleActive(alert)}
-                     aria-label="Toggle active"
+                     aria-label="Växla aktiv"
                    />
                    <Button variant="ghost" size="icon" onClick={() => openEdit(alert)}>
                      <Pencil className="h-4 w-4" />
@@ -192,20 +192,20 @@
          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
            <DialogContent>
              <DialogHeader>
-               <DialogTitle>{editingAlert ? "Edit Alert" : "Create Alert"}</DialogTitle>
+               <DialogTitle>{editingAlert ? "Redigera avisering" : "Skapa avisering"}</DialogTitle>
              </DialogHeader>
              <div className="space-y-4 py-4">
                <div className="space-y-2">
-                 <Label htmlFor="message">Message</Label>
+                 <Label htmlFor="message">Meddelande</Label>
                  <Input
                    id="message"
                    value={message}
                    onChange={(e) => setMessage(e.target.value)}
-                   placeholder="Enter alert message..."
+                   placeholder="Ange aviseringsmeddelande..."
                  />
                </div>
                <div className="space-y-2">
-                 <Label htmlFor="type">Type</Label>
+                 <Label htmlFor="type">Typ</Label>
                  <Select value={type} onValueChange={(v) => setType(v as "error" | "success")}>
                    <SelectTrigger>
                      <SelectValue />
@@ -214,13 +214,13 @@
                      <SelectItem value="success">
                        <span className="flex items-center gap-2">
                          <CheckCircle className="h-4 w-4 text-primary" />
-                         Success (Green)
+                         Info (Grön)
                        </span>
                      </SelectItem>
                      <SelectItem value="error">
                        <span className="flex items-center gap-2">
                          <AlertTriangle className="h-4 w-4 text-destructive" />
-                         Error (Red)
+                         Fel (Röd)
                        </span>
                      </SelectItem>
                    </SelectContent>
@@ -229,10 +229,10 @@
              </div>
              <DialogFooter>
                <Button variant="outline" onClick={closeDialog}>
-                 Cancel
+                 Avbryt
                </Button>
                <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
-                 {editingAlert ? "Save" : "Create"}
+                 {editingAlert ? "Spara" : "Skapa"}
                </Button>
              </DialogFooter>
            </DialogContent>

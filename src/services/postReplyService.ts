@@ -364,7 +364,7 @@ export async function createPostReply(
         .single();
 
       if (!company) {
-        toast.error('Company not found');
+        toast.error('Företag hittades inte');
         return false;
       }
 

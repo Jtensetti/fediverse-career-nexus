@@ -65,7 +65,7 @@ export default function DataExportSection() {
       );
     } catch (error) {
       console.error("Export error:", error);
-      toast.error("Failed to export data. Please try again.");
+      toast.error("Kunde inte exportera data. Försök igen.");
     } finally {
       setLoading(false);
     }

@@ -16,17 +16,14 @@ export default function FederationAnalytics() {
   const [rateLimitedHosts, setRateLimitedHosts] = useState<any[]>([]);
   const [summary, setSummary] = useState<any | null>(null);
   
-  // Load data when tab or timeframe changes
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       
       try {
-        // Get the summary for all tabs
         const summaryData = await getFederationSummary(timeframe);
         setSummary(summaryData);
         
-        // Load tab-specific data
         switch (activeTab) {
           case "metrics":
             const metricsData = await getMetricsByHost(10);
@@ -56,24 +53,24 @@ export default function FederationAnalytics() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Activity className="h-5 w-5" />
-          Federation Analytics
+          Federationsanalys
         </CardTitle>
         <CardDescription>
-          Performance metrics and insights for federation traffic
+          Prestandamått och insikter för federationstrafik
         </CardDescription>
         {summary && (
           <div className="grid grid-cols-3 gap-4 mt-4">
             <div className="bg-muted p-3 rounded-lg text-center">
               <div className="text-2xl font-bold">{summary.total_requests}</div>
-              <div className="text-xs text-muted-foreground">Total Requests</div>
+              <div className="text-xs text-muted-foreground">Totala förfrågningar</div>
             </div>
             <div className="bg-muted p-3 rounded-lg text-center">
               <div className="text-2xl font-bold">{summary.success_percent}%</div>
-              <div className="text-xs text-muted-foreground">Success Rate</div>
+              <div className="text-xs text-muted-foreground">Lyckade</div>
             </div>
             <div className="bg-muted p-3 rounded-lg text-center">
               <div className="text-2xl font-bold">{summary.median_latency_ms}ms</div>
-              <div className="text-xs text-muted-foreground">Median Latency</div>
+              <div className="text-xs text-muted-foreground">Median latens</div>
             </div>
           </div>
         )}
@@ -82,9 +79,9 @@ export default function FederationAnalytics() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex justify-between items-center mb-4">
             <TabsList>
-              <TabsTrigger value="metrics">Host Metrics</TabsTrigger>
-              <TabsTrigger value="failures">Failures</TabsTrigger>
-              <TabsTrigger value="ratelimited">Rate Limited</TabsTrigger>
+              <TabsTrigger value="metrics">Värdmått</TabsTrigger>
+              <TabsTrigger value="failures">Misslyckanden</TabsTrigger>
+              <TabsTrigger value="ratelimited">Hastighetsbegränsade</TabsTrigger>
             </TabsList>
             
             <select 
@@ -92,27 +89,27 @@ export default function FederationAnalytics() {
               onChange={(e) => setTimeframe(e.target.value)}
               className="text-sm border rounded px-2 py-1"
             >
-              <option value="1h">Last hour</option>
-              <option value="6h">Last 6 hours</option>
-              <option value="24h">Last 24 hours</option>
-              <option value="72h">Last 3 days</option>
+              <option value="1h">Senaste timmen</option>
+              <option value="6h">Senaste 6 timmarna</option>
+              <option value="24h">Senaste 24 timmarna</option>
+              <option value="72h">Senaste 3 dagarna</option>
             </select>
           </div>
           
           <TabsContent value="metrics">
             {loading ? (
               <div className="flex justify-center items-center h-60">
-                <div className="animate-pulse">Loading metrics...</div>
+                <div className="animate-pulse">Laddar mått...</div>
               </div>
             ) : (
               <Table>
-                <TableCaption>Federation metrics by host for the {timeframe} timeframe</TableCaption>
+                <TableCaption>Federationsmått per värd för tidsperioden {timeframe}</TableCaption>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Host</TableHead>
-                    <TableHead>Requests</TableHead>
-                    <TableHead>Success Rate</TableHead>
-                    <TableHead>Latency (ms)</TableHead>
+                    <TableHead>Värd</TableHead>
+                    <TableHead>Förfrågningar</TableHead>
+                    <TableHead>Lyckade</TableHead>
+                    <TableHead>Latens (ms)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -132,7 +129,7 @@ export default function FederationAnalytics() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">No data available</TableCell>
+                      <TableCell colSpan={4} className="text-center">Ingen data tillgänglig</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -143,17 +140,17 @@ export default function FederationAnalytics() {
           <TabsContent value="failures">
             {loading ? (
               <div className="flex justify-center items-center h-60">
-                <div className="animate-pulse">Loading failure data...</div>
+                <div className="animate-pulse">Laddar feldata...</div>
               </div>
             ) : (
               <Table>
-                <TableCaption>Top failing hosts for the {timeframe} timeframe</TableCaption>
+                <TableCaption>Mest misslyckade värdar för tidsperioden {timeframe}</TableCaption>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Host</TableHead>
-                    <TableHead>Failed Requests</TableHead>
-                    <TableHead>Success Rate</TableHead>
-                    <TableHead>Total Requests</TableHead>
+                    <TableHead>Värd</TableHead>
+                    <TableHead>Misslyckade</TableHead>
+                    <TableHead>Lyckade</TableHead>
+                    <TableHead>Totalt</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -176,7 +173,7 @@ export default function FederationAnalytics() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">No failures recorded</TableCell>
+                      <TableCell colSpan={4} className="text-center">Inga misslyckanden registrerade</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -187,16 +184,16 @@ export default function FederationAnalytics() {
           <TabsContent value="ratelimited">
             {loading ? (
               <div className="flex justify-center items-center h-60">
-                <div className="animate-pulse">Loading rate limit data...</div>
+                <div className="animate-pulse">Laddar hastighetsbegränsningsdata...</div>
               </div>
             ) : (
               <Table>
-                <TableCaption>Rate-limited hosts for the {timeframe} timeframe</TableCaption>
+                <TableCaption>Hastighetsbegränsade värdar för tidsperioden {timeframe}</TableCaption>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Host</TableHead>
-                    <TableHead>Request Count</TableHead>
-                    <TableHead>Latest Request</TableHead>
+                    <TableHead>Värd</TableHead>
+                    <TableHead>Antal förfrågningar</TableHead>
+                    <TableHead>Senaste förfrågan</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -215,7 +212,7 @@ export default function FederationAnalytics() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">No rate-limited hosts</TableCell>
+                      <TableCell colSpan={3} className="text-center">Inga hastighetsbegränsade värdar</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ExternalLink, Key, Globe2, Copy, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -33,7 +32,6 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
         
         const { data: session } = await supabase.auth.getSession();
         
-        // Fetch actor information for this user from public_actors view
         const { data, error } = await supabase
           .from("public_actors")
           .select("*")
@@ -48,7 +46,6 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
         setActor(data);
         setFederationEnabled(data?.status === "active");
         
-        // If logged in, fetch current user's actor info for follow functionality
         if (session?.session?.user) {
           const { data: currentUserProfile } = await supabase
             .from("public_profiles")
@@ -91,7 +88,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
       
       if (error) {
         toast({
-          title: "Error updating federation status",
+          title: "Kunde inte uppdatera federationsstatus",
           description: error.message,
           variant: "destructive"
         });
@@ -100,15 +97,15 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
       
       setFederationEnabled(enabled);
       toast({
-        title: `Federation ${enabled ? "enabled" : "disabled"}`,
-        description: `Your profile is now ${enabled ? "visible to" : "hidden from"} other Fediverse instances.`,
+        title: `Federation ${enabled ? "aktiverad" : "inaktiverad"}`,
+        description: `Din profil är nu ${enabled ? "synlig för" : "dold från"} andra Fediverse-instanser.`,
         variant: "default"
       });
     } catch (error) {
       console.error("Error updating federation status:", error);
       toast({
-        title: "An error occurred",
-        description: "Could not update federation status.",
+        title: "Ett fel inträffade",
+        description: "Kunde inte uppdatera federationsstatus.",
         variant: "destructive"
       });
     } finally {
@@ -117,14 +114,13 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   };
   
   if (loading) {
-    return null; // Or a loading spinner
+    return null;
   }
   
   if (!actor) {
-    return null; // This user doesn't have a federated profile
+    return null;
   }
   
-  // Use home_instance if available (for federated users), otherwise use nolto.social
   const isLocalUser = !actor?.home_instance || actor?.home_instance === 'local';
   const domain = isLocalUser ? getNoltoInstanceDomain() : actor.home_instance;
   const federatedHandle = `@${username}@${domain}`;
@@ -143,18 +139,18 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
     try {
       await navigator.clipboard.writeText(federatedHandle);
       setCopied(true);
-      toast({ title: "Handle copied!", description: federatedHandle });
+      toast({ title: "Handle kopierad!", description: federatedHandle });
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast({ title: "Failed to copy", variant: "destructive" });
+      toast({ title: "Kunde inte kopiera", variant: "destructive" });
     }
   };
 
   const openRemoteProfile = () => {
     if (!normalizedLookupInstance) {
       toast({
-        title: "Enter an instance domain",
-        description: "Add a domain like mastodon.social to open your profile.",
+        title: "Ange en instansdomän",
+        description: "Lägg till en domän som mastodon.social för att öppna din profil.",
         variant: "destructive"
       });
       return;
@@ -169,13 +165,13 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Globe2 size={20} className="text-bondy-primary" />
-            Fediverse Profile
+            Fediverse-profil
           </h3>
           
           {isOwnProfile && (
             <div className="flex items-center space-x-2">
               <Label htmlFor="federation-toggle">
-                {federationEnabled ? "Active" : "Disabled"}
+                {federationEnabled ? "Aktiv" : "Inaktiverad"}
               </Label>
               <Switch
                 id="federation-toggle"
@@ -189,18 +185,18 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
         
         <div className="space-y-4">
           <div className="flex flex-col space-y-1">
-            <Label className="text-sm text-muted-foreground">Fediverse Handle</Label>
+            <Label className="text-sm text-muted-foreground">Fediverse-handle</Label>
             <div className="flex items-center space-x-2">
               <code className="bg-muted px-2 py-1 rounded text-sm">{federatedHandle}</code>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyHandle}>
-                <span className="sr-only">Copy handle</span>
+                <span className="sr-only">Kopiera handle</span>
                 {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
               </Button>
             </div>
           </div>
 
           <div className="flex flex-col space-y-2">
-            <Label className="text-sm text-muted-foreground">Find your profile on another instance</Label>
+            <Label className="text-sm text-muted-foreground">Hitta din profil på en annan instans</Label>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Input
                 value={lookupInstance}
@@ -210,12 +206,12 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
               />
               <Button type="button" onClick={openRemoteProfile} className="sm:w-auto">
                 <ExternalLink size={16} />
-                <span className="ml-2">Open on instance</span>
+                <span className="ml-2">Öppna på instans</span>
               </Button>
             </div>
             {remoteProfileUrl && (
               <p className="text-xs text-muted-foreground">
-                This opens{" "}
+                Detta öppnar{" "}
                 <span className="font-mono text-foreground">{remoteProfileUrl}</span>
               </p>
             )}
@@ -223,11 +219,11 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
           
           {actor.key_fingerprint && (
             <div className="flex flex-col space-y-1">
-              <Label className="text-sm text-muted-foreground">Key Fingerprint</Label>
+              <Label className="text-sm text-muted-foreground">Nyckelfingeravtryck</Label>
               <div className="flex items-center space-x-2">
                 <code className="bg-muted px-2 py-1 rounded text-sm font-mono">{actor.key_fingerprint}</code>
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigator.clipboard.writeText(actor.key_fingerprint)}>
-                  <span className="sr-only">Copy fingerprint</span>
+                  <span className="sr-only">Kopiera fingeravtryck</span>
                   <Key size={14} />
                 </Button>
               </div>

@@ -29,7 +29,7 @@ const FreelancerBadge = ({ size = "md", className }: FreelancerBadgeProps) => {
         sizeClasses[size],
         className
       )}
-      aria-label="Open for work"
+      aria-label="Öppen för uppdrag"
     />
   );
 };

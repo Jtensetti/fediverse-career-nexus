@@ -8,6 +8,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
+const itemTypeLabels: Record<string, string> = {
+  job: "Jobb",
+  article: "Artikel",
+  event: "Evenemang",
+};
+
 export default function SavedItemsList() {
   const { user } = useAuth();
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
@@ -33,9 +39,9 @@ export default function SavedItemsList() {
       setSavedItems((prev) =>
         prev.filter((item) => !(item.item_type === itemType && item.item_id === itemId))
       );
-      toast.success("Item removed from saved");
+      toast.success("Objekt borttaget från sparade");
     } else {
-      toast.error("Failed to remove item");
+      toast.error("Kunde inte ta bort objekt");
     }
   };
 
@@ -77,21 +83,21 @@ export default function SavedItemsList() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bookmark className="h-5 w-5" />
-          Saved Items
+          Sparade objekt
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SavedItemType | "all")}>
           <TabsList className="mb-4">
-            <TabsTrigger value="all">All ({savedItems.length})</TabsTrigger>
+            <TabsTrigger value="all">Alla ({savedItems.length})</TabsTrigger>
             <TabsTrigger value="job">
-              Jobs ({savedItems.filter((i) => i.item_type === "job").length})
+              Jobb ({savedItems.filter((i) => i.item_type === "job").length})
             </TabsTrigger>
             <TabsTrigger value="article">
-              Articles ({savedItems.filter((i) => i.item_type === "article").length})
+              Artiklar ({savedItems.filter((i) => i.item_type === "article").length})
             </TabsTrigger>
             <TabsTrigger value="event">
-              Events ({savedItems.filter((i) => i.item_type === "event").length})
+              Evenemang ({savedItems.filter((i) => i.item_type === "event").length})
             </TabsTrigger>
           </TabsList>
 
@@ -103,8 +109,8 @@ export default function SavedItemsList() {
             ) : filteredItems.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Bookmark className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No saved items yet</p>
-                <p className="text-sm">Save jobs, articles, and events to view them here</p>
+                <p>Inga sparade objekt ännu</p>
+                <p className="text-sm">Spara jobb, artiklar och evenemang för att se dem här</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -122,10 +128,10 @@ export default function SavedItemsList() {
                           to={getItemLink(item.item_type, item.item_id)}
                           className="font-medium hover:underline text-foreground"
                         >
-                          {item.item_type.charAt(0).toUpperCase() + item.item_type.slice(1)} #{item.item_id.slice(0, 8)}
+                          {itemTypeLabels[item.item_type] || item.item_type} #{item.item_id.slice(0, 8)}
                         </Link>
                         <p className="text-xs text-muted-foreground">
-                          Saved {new Date(item.created_at).toLocaleDateString()}
+                          Sparad {new Date(item.created_at).toLocaleDateString("sv-SE")}
                         </p>
                       </div>
                     </div>
@@ -134,7 +140,7 @@ export default function SavedItemsList() {
                       size="sm"
                       onClick={() => handleUnsave(item.item_type, item.item_id)}
                     >
-                      Remove
+                      Ta bort
                     </Button>
                   </div>
                 ))}
