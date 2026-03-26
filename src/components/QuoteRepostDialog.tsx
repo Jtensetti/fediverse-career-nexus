@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import DOMPurify from "dompurify";
 
 interface QuoteRepostDialogProps {
@@ -59,7 +60,7 @@ export default function QuoteRepostDialog({
 
   const handleSubmit = async () => {
     if (!user) {
-      toast.error("Please sign in to repost");
+      toast.error("Logga in för att dela vidare");
       return;
     }
 
@@ -86,12 +87,11 @@ export default function QuoteRepostDialog({
           .single();
 
         if (createError || !newActor) {
-          throw new Error("Failed to create actor");
+          throw new Error("Kunde inte skapa aktör");
         }
         actor = newActor;
       }
 
-      // Create the quote repost as an ap_object with type "Announce" and quoted content
       const quoteRepostActivity = {
         type: 'Announce',
         actor: {
@@ -99,7 +99,7 @@ export default function QuoteRepostDialog({
           preferredUsername: actor.preferred_username,
           name: profile?.fullname || profile?.username || actor.preferred_username
         },
-        content: content.trim() || null, // User's comment on the repost
+        content: content.trim() || null,
         object: {
           id: originalPost.id,
           type: 'Note',
@@ -112,7 +112,7 @@ export default function QuoteRepostDialog({
           published: originalPost.publishedAt
         },
         published: new Date().toISOString(),
-        isQuoteRepost: true // Flag to distinguish from simple boosts
+        isQuoteRepost: true
       };
 
       const { error } = await supabase
@@ -126,19 +126,18 @@ export default function QuoteRepostDialog({
 
       if (error) throw error;
 
-      toast.success("Post reposted to your profile!");
+      toast.success("Inlägget delades till din profil!");
       setContent("");
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error creating quote repost:", error);
-      toast.error("Failed to repost. Please try again.");
+      toast.error("Kunde inte dela vidare. Försök igen.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Sanitize original content for display
   const sanitizedContent = DOMPurify.sanitize(originalPost.content, {
     ALLOWED_TAGS: ['p', 'br', 'a', 'strong', 'em', 'b', 'i'],
     ALLOWED_ATTR: ['href', 'target', 'rel'],
@@ -150,12 +149,11 @@ export default function QuoteRepostDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Repeat className="h-5 w-5 text-green-500" />
-            Repost to your profile
+            Dela till din profil
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* User's comment input */}
           <div className="flex gap-3">
             <Avatar className="h-10 w-10">
               {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
@@ -165,7 +163,7 @@ export default function QuoteRepostDialog({
             </Avatar>
             <div className="flex-1">
               <Textarea
-                placeholder="Add your thoughts (optional)..."
+                placeholder="Lägg till dina tankar (valfritt)..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[80px] resize-none border-0 focus-visible:ring-0 p-0 text-base"
@@ -174,7 +172,6 @@ export default function QuoteRepostDialog({
             </div>
           </div>
 
-          {/* Original post preview */}
           <Card className="border-2 border-dashed">
             <CardContent className="p-3">
               <div className="flex items-start gap-2">
@@ -201,7 +198,7 @@ export default function QuoteRepostDialog({
                     )}
                     {originalPost.publishedAt && (
                       <span className="text-xs text-muted-foreground">
-                        · {formatDistanceToNow(new Date(originalPost.publishedAt), { addSuffix: true })}
+                        · {formatDistanceToNow(new Date(originalPost.publishedAt), { addSuffix: true, locale: sv })}
                       </span>
                     )}
                   </div>
@@ -214,7 +211,6 @@ export default function QuoteRepostDialog({
             </CardContent>
           </Card>
 
-          {/* Character count */}
           {content.length > 0 && (
             <div className="text-xs text-muted-foreground text-right">
               {content.length}/500
@@ -224,14 +220,14 @@ export default function QuoteRepostDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            Avbryt
           </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting}
             className="bg-green-600 hover:bg-green-700"
           >
-            {isSubmitting ? "Reposting..." : "Repost"}
+            {isSubmitting ? "Delar..." : "Dela vidare"}
           </Button>
         </DialogFooter>
       </DialogContent>

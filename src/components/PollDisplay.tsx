@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { getPollResults, votePoll, PollResults } from "@/services/pollService";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 
 interface PollDisplayProps {
   pollId: string;
@@ -24,7 +25,6 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  // Normalize content: extract Question from Create activity if nested
   const pollContent = useMemo(() => {
     if (!content) return {} as Record<string, unknown>;
     
@@ -40,23 +40,20 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
   const isMultipleChoice = Array.isArray(pollContent?.anyOf);
   const rawOptions = pollContent?.oneOf || pollContent?.anyOf;
   
-  // Ensure options is a valid array with objects containing name strings
   const options = useMemo(() => {
     if (!Array.isArray(rawOptions)) return [];
     return rawOptions.map((opt: unknown) => {
       if (typeof opt === 'object' && opt !== null && 'name' in opt) {
-        // Ensure name is a string, not an object
         const name = (opt as { name: unknown }).name;
         return { name: typeof name === 'string' ? name : String(name) };
       }
-      return { name: 'Unknown option' };
+      return { name: 'Okänt alternativ' };
     });
   }, [rawOptions]);
   
   const endTime = pollContent?.endTime as string | undefined;
   const isClosed = endTime ? new Date(endTime) < new Date() : false;
   
-  // Check if poll has valid options
   const hasValidOptions = options && options.length > 0;
 
   useEffect(() => {
@@ -74,11 +71,10 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
     }
   };
   
-  // If no valid options, don't render the poll (after all hooks)
   if (!hasValidOptions) {
     return (
       <div className={cn("p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground", className)}>
-        Poll data unavailable
+        Omröstningsdata ej tillgänglig
       </div>
     );
   }
@@ -116,24 +112,19 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
   const getTimeRemaining = () => {
     if (!endTime) return null;
     const end = new Date(endTime);
-    if (end < new Date()) return "Closed";
-    return formatDistanceToNow(end, { addSuffix: true });
+    if (end < new Date()) return "Avslutad";
+    return formatDistanceToNow(end, { addSuffix: true, locale: sv });
   };
 
   return (
     <div className={cn("space-y-3", className)}>
-      {/* Poll question (from post content) */}
-      
-      {/* Options */}
       <div className="space-y-2">
         {showResults ? (
-          // Results view
           options.map((option, index) => {
             const voteCount = results?.options.find(o => o.index === index)?.voteCount || 0;
             const percentage = getPercentage(voteCount);
             const isUserVote = results?.userVotes.includes(index);
             
-            // Fun themed colors that work in both light and dark modes
             const barColors = [
               "bg-primary",
               "bg-success", 
@@ -144,7 +135,6 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
 
             return (
               <div key={index} className="relative overflow-hidden rounded-lg">
-                {/* Colored background bar */}
                 <div 
                   className={cn(
                     "absolute inset-0 h-full transition-all duration-500 ease-out opacity-20 dark:opacity-30",
@@ -172,7 +162,6 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
             );
           })
         ) : (
-          // Voting view
           isMultipleChoice ? (
             <div className="space-y-2">
               {options.map((option, index) => (
@@ -221,13 +210,12 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
         )}
       </div>
 
-      {/* Footer */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-3">
           {results && (
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              {results.totalVotes} vote{results.totalVotes !== 1 ? "s" : ""}
+              {results.totalVotes} {results.totalVotes !== 1 ? "röster" : "röst"}
             </span>
           )}
           {endTime && (
@@ -244,12 +232,12 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
             onClick={handleVote}
             disabled={selectedOptions.length === 0 || isVoting}
           >
-            {isVoting ? "Voting..." : "Vote"}
+            {isVoting ? "Röstar..." : "Rösta"}
           </Button>
         )}
 
         {!showResults && !isClosed && !user && (
-          <span className="text-xs text-muted-foreground">Log in to vote</span>
+          <span className="text-xs text-muted-foreground">Logga in för att rösta</span>
         )}
 
         {hasVoted && !isClosed && (
@@ -262,7 +250,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
             }}
             className="text-xs h-7"
           >
-            Change vote
+            Ändra röst
           </Button>
         )}
       </div>

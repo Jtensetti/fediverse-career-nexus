@@ -25,14 +25,14 @@ const AdminFixSecurityInvoker = () => {
 
       setResult(data);
       toast({
-        title: "Views updated successfully",
-        description: "All views have been updated to use SECURITY INVOKER",
+        title: "Vyer uppdaterade",
+        description: "Alla vyer har uppdaterats till SECURITY INVOKER",
       });
     } catch (error) {
       console.error("Error fixing view security:", error);
       toast({
-        title: "Failed to update views",
-        description: error.message || "An unknown error occurred",
+        title: "Kunde inte uppdatera vyer",
+        description: error.message || "Ett okänt fel inträffade",
         variant: "destructive",
       });
     } finally {
@@ -45,13 +45,13 @@ const AdminFixSecurityInvoker = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShieldAlert className="h-5 w-5 text-amber-500" />
-          Security Invoker Fix
+          Säkerhetsfix för vyer
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          This utility will update all federation-related views to use SECURITY INVOKER
-          context, resolving any Supabase linter warnings about SECURITY DEFINER views.
+          Detta verktyg uppdaterar alla federationsrelaterade vyer till SECURITY INVOKER-kontext,
+          vilket löser eventuella varningar om SECURITY DEFINER-vyer.
         </p>
         
         <Button 
@@ -62,16 +62,16 @@ const AdminFixSecurityInvoker = () => {
           {isFixing ? (
             <>
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Updating views...
+              Uppdaterar vyer...
             </>
           ) : (
-            "Fix View Security Settings"
+            "Åtgärda säkerhetsinställningar"
           )}
         </Button>
 
         {result && (
           <div className="mt-4 rounded-md bg-muted p-3">
-            <h3 className="font-medium mb-2">Updated views:</h3>
+            <h3 className="font-medium mb-2">Uppdaterade vyer:</h3>
             <ul className="list-disc list-inside text-sm">
               {result.views.map((view: string) => (
                 <li key={view} className="text-xs">{view}</li>
@@ -81,8 +81,8 @@ const AdminFixSecurityInvoker = () => {
         )}
 
         <div className="text-xs text-muted-foreground mt-4">
-          <p>Note: After running this fix, you may need to wait a few minutes for 
-          the Supabase linter to refresh its cache before the warnings disappear.</p>
+          <p>OBS: Efter att denna fix har körts kan det ta några minuter innan 
+          varningarna försvinner.</p>
         </div>
       </CardContent>
     </Card>

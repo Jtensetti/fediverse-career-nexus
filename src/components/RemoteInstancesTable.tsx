@@ -5,25 +5,11 @@ import { Ban, Check, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRateLimitedHosts, updateDomainModeration, getDomainModeration } from "@/services/federationService";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -45,6 +31,10 @@ interface InstanceModerationFormData {
   reason: string;
 }
 
+const statusLabels: Record<string, string> = {
+  normal: 'normal', probation: 'begränsad', blocked: 'blockerad',
+};
+
 const RemoteInstancesTable = () => {
   const queryClient = useQueryClient();
   const [requestThreshold, setRequestThreshold] = useState(25);
@@ -53,82 +43,46 @@ const RemoteInstancesTable = () => {
   const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
   const [selectedAction, setSelectedAction] = useState<InstanceStatus | null>(null);
 
-  // Fetch rate limited hosts
-  const { 
-    data: rateLimitedData, 
-    isLoading: loadingRateLimited,
-    error: rateLimitedError 
-  } = useQuery({
+  const { data: rateLimitedData, isLoading: loadingRateLimited, error: rateLimitedError } = useQuery({
     queryKey: ['rateLimitedHosts', requestThreshold, timeWindow],
     queryFn: () => getRateLimitedHosts(requestThreshold, timeWindow)
   });
 
-  // Fetch domain moderation data
-  const {
-    data: domainData,
-    isLoading: loadingDomains,
-    error: domainsError
-  } = useQuery({
+  const { data: domainData, isLoading: loadingDomains, error: domainsError } = useQuery({
     queryKey: ['domainModeration'],
     queryFn: () => getDomainModeration()
   });
 
-  // Update domain moderation status mutation
   const updateDomainMutation = useMutation({
-    mutationFn: (data: InstanceModerationFormData) => 
-      updateDomainModeration(data.host, data.status, data.reason),
+    mutationFn: (data: InstanceModerationFormData) => updateDomainModeration(data.host, data.status, data.reason),
     onSuccess: () => {
-      toast({
-        title: "Domain status updated",
-        description: `${selectedInstance} has been set to ${selectedAction}`,
-      });
+      toast({ title: "Domänstatus uppdaterad", description: `${selectedInstance} har ställts in som ${statusLabels[selectedAction || 'normal']}` });
       queryClient.invalidateQueries({ queryKey: ['domainModeration'] });
-      setSelectedInstance(null);
-      setSelectedAction(null);
-      setBlockReason("");
+      setSelectedInstance(null); setSelectedAction(null); setBlockReason("");
     },
     onError: (error) => {
-      toast({
-        title: "Failed to update domain status",
-        description: "An error occurred. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Kunde inte uppdatera domänstatus", description: "Ett fel inträffade. Försök igen.", variant: "destructive" });
       console.error("Error updating domain moderation:", error);
     }
   });
 
-  // Handle form submission
   const handleUpdateDomain = () => {
     if (!selectedInstance || !selectedAction) return;
-    
-    updateDomainMutation.mutate({
-      host: selectedInstance,
-      status: selectedAction,
-      reason: blockReason || `Automatically ${selectedAction} due to rate limiting`
-    });
+    updateDomainMutation.mutate({ host: selectedInstance, status: selectedAction, reason: blockReason || `Automatiskt ${statusLabels[selectedAction]} p.g.a. frekvensbegränsning` });
   };
 
-  // Combine rate limit data with domain moderation data
   const mergedData = (): RemoteInstance[] => {
-    if (!rateLimitedData?.success || !domainData) {
-      return [];
-    }
-
+    if (!rateLimitedData?.success || !domainData) return [];
     return rateLimitedData.hosts.map(host => {
       const domainInfo = domainData.find(d => d.host === host.remote_host);
-      return {
-        ...host,
-        status: domainInfo?.status as InstanceStatus || 'normal',
-        reason: domainInfo?.reason
-      };
+      return { ...host, status: domainInfo?.status as InstanceStatus || 'normal', reason: domainInfo?.reason };
     });
   };
 
-  // Handle error states
   if (rateLimitedError || domainsError) {
     return (
       <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-md">
-        <h3 className="font-medium text-red-800 dark:text-red-300">Error loading data</h3>
+        <h3 className="font-medium text-red-800 dark:text-red-300">Kunde inte ladda data</h3>
         <p className="text-sm text-red-700 dark:text-red-400">{(rateLimitedError || domainsError)?.toString()}</p>
       </div>
     );
@@ -139,34 +93,16 @@ const RemoteInstancesTable = () => {
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
         <div className="flex flex-col sm:flex-row gap-4">
           <div>
-            <Label htmlFor="requestThreshold">Request threshold</Label>
-            <Input 
-              id="requestThreshold"
-              type="number" 
-              value={requestThreshold} 
-              onChange={(e) => setRequestThreshold(parseInt(e.target.value) || 25)} 
-              className="w-32"
-            />
+            <Label htmlFor="requestThreshold">Tröskelvärde för förfrågningar</Label>
+            <Input id="requestThreshold" type="number" value={requestThreshold} onChange={(e) => setRequestThreshold(parseInt(e.target.value) || 25)} className="w-32" />
           </div>
           <div>
-            <Label htmlFor="timeWindow">Time window (minutes)</Label>
-            <Input 
-              id="timeWindow"
-              type="number" 
-              value={timeWindow} 
-              onChange={(e) => setTimeWindow(parseInt(e.target.value) || 10)} 
-              className="w-32"
-            />
+            <Label htmlFor="timeWindow">Tidsfönster (minuter)</Label>
+            <Input id="timeWindow" type="number" value={timeWindow} onChange={(e) => setTimeWindow(parseInt(e.target.value) || 10)} className="w-32" />
           </div>
         </div>
-        
-        <Button 
-          variant="outline" 
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['rateLimitedHosts', 'domainModeration'] })}
-          disabled={loadingRateLimited || loadingDomains}
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${(loadingRateLimited || loadingDomains) ? 'animate-spin' : ''}`} />
-          Refresh
+        <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['rateLimitedHosts', 'domainModeration'] })} disabled={loadingRateLimited || loadingDomains}>
+          <RefreshCw className={`mr-2 h-4 w-4 ${(loadingRateLimited || loadingDomains) ? 'animate-spin' : ''}`} />Uppdatera
         </Button>
       </div>
 
@@ -183,11 +119,11 @@ const RemoteInstancesTable = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Instance</TableHead>
-                    <TableHead className="text-right">Request Count</TableHead>
-                    <TableHead>Latest Request</TableHead>
+                    <TableHead>Instans</TableHead>
+                    <TableHead className="text-right">Antal förfrågningar</TableHead>
+                    <TableHead>Senaste förfrågan</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right">Åtgärder</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -195,15 +131,10 @@ const RemoteInstancesTable = () => {
                     <TableRow key={instance.remote_host}>
                       <TableCell className="font-medium">{instance.remote_host}</TableCell>
                       <TableCell className="text-right">{instance.request_count}</TableCell>
-                      <TableCell>{new Date(instance.latest_request).toLocaleString()}</TableCell>
+                      <TableCell>{new Date(instance.latest_request).toLocaleString('sv-SE')}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            instance.status === 'blocked' ? 'destructive' :
-                            instance.status === 'probation' ? 'secondary' : 'outline'
-                          }
-                        >
-                          {instance.status || 'normal'}
+                        <Badge variant={instance.status === 'blocked' ? 'destructive' : instance.status === 'probation' ? 'secondary' : 'outline'}>
+                          {statusLabels[instance.status || 'normal']}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -211,30 +142,16 @@ const RemoteInstancesTable = () => {
                           {instance.status !== 'normal' && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedInstance(instance.remote_host);
-                                    setSelectedAction('normal');
-                                    setBlockReason("");
-                                  }}
-                                >
-                                  <Check className="h-4 w-4 mr-1" />
-                                  Allow
+                                <Button variant="outline" size="sm" onClick={() => { setSelectedInstance(instance.remote_host); setSelectedAction('normal'); setBlockReason(""); }}>
+                                  <Check className="h-4 w-4 mr-1" />Tillåt
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Allow instance?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will remove all restrictions for {instance.remote_host}.
-                                  </AlertDialogDescription>
+                                  <AlertDialogTitle>Tillåt instans?</AlertDialogTitle>
+                                  <AlertDialogDescription>Detta tar bort alla restriktioner för {instance.remote_host}.</AlertDialogDescription>
                                 </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={handleUpdateDomain}>Confirm</AlertDialogAction>
-                                </AlertDialogFooter>
+                                <AlertDialogFooter><AlertDialogCancel>Avbryt</AlertDialogCancel><AlertDialogAction onClick={handleUpdateDomain}>Bekräfta</AlertDialogAction></AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
                           )}
@@ -242,38 +159,15 @@ const RemoteInstancesTable = () => {
                           {instance.status !== 'probation' && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedInstance(instance.remote_host);
-                                    setSelectedAction('probation');
-                                    setBlockReason(instance.reason || "");
-                                  }}
-                                >
-                                  Restrict
-                                </Button>
+                                <Button variant="secondary" size="sm" onClick={() => { setSelectedInstance(instance.remote_host); setSelectedAction('probation'); setBlockReason(instance.reason || ""); }}>Begränsa</Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Restrict instance?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will put {instance.remote_host} on probation with limited functionality.
-                                  </AlertDialogDescription>
+                                  <AlertDialogTitle>Begränsa instans?</AlertDialogTitle>
+                                  <AlertDialogDescription>Detta sätter {instance.remote_host} under begränsning med reducerad funktionalitet.</AlertDialogDescription>
                                 </AlertDialogHeader>
-                                <div className="mb-4">
-                                  <Label htmlFor="reasonInput">Reason</Label>
-                                  <Input
-                                    id="reasonInput"
-                                    value={blockReason}
-                                    onChange={(e) => setBlockReason(e.target.value)}
-                                    placeholder="Provide a reason for restriction"
-                                  />
-                                </div>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={handleUpdateDomain}>Confirm</AlertDialogAction>
-                                </AlertDialogFooter>
+                                <div className="mb-4"><Label htmlFor="reasonInput">Anledning</Label><Input id="reasonInput" value={blockReason} onChange={(e) => setBlockReason(e.target.value)} placeholder="Ange en anledning för begränsningen" /></div>
+                                <AlertDialogFooter><AlertDialogCancel>Avbryt</AlertDialogCancel><AlertDialogAction onClick={handleUpdateDomain}>Bekräfta</AlertDialogAction></AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
                           )}
@@ -281,39 +175,17 @@ const RemoteInstancesTable = () => {
                           {instance.status !== 'blocked' && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedInstance(instance.remote_host);
-                                    setSelectedAction('blocked');
-                                    setBlockReason(instance.reason || "");
-                                  }}
-                                >
-                                  <Ban className="h-4 w-4 mr-1" />
-                                  Block
+                                <Button variant="destructive" size="sm" onClick={() => { setSelectedInstance(instance.remote_host); setSelectedAction('blocked'); setBlockReason(instance.reason || ""); }}>
+                                  <Ban className="h-4 w-4 mr-1" />Blockera
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Block instance?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will block all traffic from {instance.remote_host}.
-                                  </AlertDialogDescription>
+                                  <AlertDialogTitle>Blockera instans?</AlertDialogTitle>
+                                  <AlertDialogDescription>Detta blockerar all trafik från {instance.remote_host}.</AlertDialogDescription>
                                 </AlertDialogHeader>
-                                <div className="mb-4">
-                                  <Label htmlFor="reasonInput">Reason</Label>
-                                  <Input
-                                    id="reasonInput"
-                                    value={blockReason}
-                                    onChange={(e) => setBlockReason(e.target.value)}
-                                    placeholder="Provide a reason for blocking"
-                                  />
-                                </div>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={handleUpdateDomain}>Confirm</AlertDialogAction>
-                                </AlertDialogFooter>
+                                <div className="mb-4"><Label htmlFor="reasonInput">Anledning</Label><Input id="reasonInput" value={blockReason} onChange={(e) => setBlockReason(e.target.value)} placeholder="Ange en anledning för blockeringen" /></div>
+                                <AlertDialogFooter><AlertDialogCancel>Avbryt</AlertDialogCancel><AlertDialogAction onClick={handleUpdateDomain}>Bekräfta</AlertDialogAction></AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
                           )}
@@ -326,9 +198,7 @@ const RemoteInstancesTable = () => {
             </div>
           ) : (
             <div className="text-center py-8 border border-dashed rounded-lg">
-              <p className="text-muted-foreground">
-                No instances found exceeding the request threshold.
-              </p>
+              <p className="text-muted-foreground">Inga instanser hittades som överskrider tröskelvärdet.</p>
             </div>
           )}
         </>
