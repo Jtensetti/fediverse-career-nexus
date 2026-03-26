@@ -1,181 +1,59 @@
 
 
-# Company Pages Code Review -- Round 3: Critical Errors
+# Pivot Platform Messaging for Public Sector + Swedish Default
 
-## CRITICAL: 5 blocking issues found
+## Summary
+Rewrite all user-facing marketing/selling language to appeal to public sector organizations (municipalities, government agencies, regions). Remove references to Fediverse, federation, open source ideology, and "freedom" rhetoric. Replace with language about **secure internal communication**, **digital sovereignty**, **GDPR compliance**, **interoperability between agencies**, and **transparent governance**. Make Swedish the default language.
 
----
+## What Changes
 
-## 1. CRITICAL: Editors Are Completely Broken (RLS Gap)
+### 1. Set Swedish as Default Language
+- **`src/i18n/index.ts`**: Change `lng: "en"` to `lng: "sv"`, import `svTranslation`, add `sv` resource bundle
 
-The `company_roles` table SELECT policy ("Admins view roles") only allows users with `owner` or `admin` roles to read rows:
+### 2. Rewrite Swedish Homepage Translations (`src/i18n/locales/sv.json`)
+All `homepage.*` keys rewritten with public sector framing:
 
-```text
-USING(has_company_role(auth.uid(), company_id, ARRAY['owner','admin']))
-```
+- **Hero**: "Det professionella nätverket" / "för offentlig sektor" -- "Samla medarbetare, dela kunskap och rekrytera -- på en säker, GDPR-kompatibel plattform byggd för kommuner, regioner och myndigheter."
+- **Trust badges**: Replace "ActivityPub" / "Öppen källkod" / "Självhostbar" with "GDPR-säkrad" / "Svensk data" / "Säker inloggning" / "Driftas i Sverige"
+- **Features sections**: Reframe around "Tryggt flöde utan algoritmer", "Professionella profiler för offentlig sektor", "Transparent rekrytering inom offentlig sektor"
+- **Federation visual**: Reframe as "Så fungerar samverkan" -- connecting municipalities/regions/agencies instead of Mastodon instances
+- **FAQ**: Replace Fediverse questions with public sector relevant ones: "Är plattformen GDPR-kompatibel?", "Hur skiljer sig Nolto från LinkedIn?", "Kan vi drifta Nolto själva?", "Hur hanteras personuppgifter?", "Fungerar det med andra organisationer?", "Vad kostar det?"
+- **Final CTA**: "Redo att modernisera er interna kommunikation?"
+- **Featured In badges**: Replace with "GDPR-kompatibel", "Svensk hosting", "Krypterad kommunikation", "Öppen standard", "Tillgänglig (WCAG)", "Offentlig sektor"
+- **Live feed/jobs sections**: Reframe for public sector context
+- **Referral**: "Bjud in kollegor" stays, but remove "Fediverse" references
+- **Auth welcome**: "Välkommen till Nolto -- Den säkra plattformen för professionellt nätverkande inom offentlig sektor"
 
-This creates a **circular dependency** for editors: `has_company_role()` calls a SELECT on `company_roles`, but the SELECT policy itself calls `has_company_role()`, which only checks for owner/admin. An editor cannot read their own row from `company_roles`.
+### 3. Rewrite English Homepage Translations (`src/i18n/locales/en.json`)
+Mirror the same public-sector pivot in English:
+- Hero: "The Professional Network for the Public Sector"
+- Trust badges: "GDPR Compliant" / "Swedish Hosting" / "Secure Login" / "Hosted in Sweden"
+- Features: Government/municipality framing
+- FAQ: Public sector relevant questions
+- Remove all Fediverse/ActivityPub/federation ideology language
 
-**Impact chain:**
-- `getUserCompanyRole()` returns `null` for editors (cannot SELECT their own role)
-- `canEditWithRole(null)` returns `false`
-- CompanyPostComposer is hidden from editors
-- Even if forced, `createCompanyPost()` queries `company_roles` to verify permission and would fail
-- The entire editor role is non-functional
+### 4. Update Hardcoded Component Text
+- **`src/components/homepage/FeaturedIn.tsx`**: Replace Mastodon/Pleroma/Pixelfed platform list with public sector integrations or remove entirely
+- **`src/components/homepage/FederationVisual.tsx`**: Replace instance names (fosstodon.org, mastodon.social) with municipality/agency names (e.g., "kommun.se", "region.se", "myndighet.se")
+- **`src/components/Features.tsx`**: Update feature descriptions to public sector language
+- **`src/components/CallToAction.tsx`**: Update CTA text
+- **`src/components/Hero.tsx`**: Update default props
+- **`src/components/homepage/WhyFederated.tsx`**: Change comparison from "Traditional vs Nolto" to reframe benefits for public sector (no Fediverse language)
+- **`src/components/homepage/FederationExplainer.tsx`**: Reframe steps for public sector onboarding
+- **`src/pages/Mission.tsx`**: Rewrite mission for public sector focus
 
-**Fix:** Add a new SELECT policy allowing users to read their own role:
+### 5. Update Auth-Related Translations
+- Remove "Fediverse login" references from both `en.json` and `sv.json` auth sections
+- Update `auth.welcomeSubtitle` to public sector messaging
+- Update `referral.shareText` to remove Fediverse mention
 
-```sql
-CREATE POLICY "Users view own role" ON public.company_roles
-  FOR SELECT TO authenticated
-  USING (user_id = auth.uid());
-```
+### 6. Update Footer Translations
+- `footer.tagline`: "En säker professionell plattform för offentlig sektor" / "A secure professional platform for the public sector"
+- `footer.howFederationWorks` -> "Hur samverkan fungerar" / "How Collaboration Works"
 
----
-
-## 2. CRITICAL: Duplicate SELECT Policies on `company_employees` (Old Policy Not Dropped)
-
-The latest migration added "Public view verified employees" with `USING(is_verified = true)`, but the **old** "Public view employees" with `USING(true)` was never dropped. Both policies currently exist:
-
-```text
-"Public view employees"          -> USING(true)           -- OLD, should have been dropped
-"Public view verified employees" -> USING(is_verified = true)  -- NEW
-```
-
-PostgreSQL ORs multiple SELECT policies on the same table. Since `true OR (is_verified = true)` is always `true`, the verified-only filter is completely ineffective. **All unverified employee claims are still publicly visible.**
-
-**Fix:** Drop the old policy:
-
-```sql
-DROP POLICY "Public view employees" ON public.company_employees;
-```
-
----
-
-## 3. CRITICAL: `intern` vs `internship` Mismatch in Employment Type Labels
-
-The database enum defines the value as `intern`:
-
-```text
-Database enum values: full_time, part_time, contract, intern, freelance
-```
-
-But `formatEmploymentType()` in `src/components/company/admin/utils.ts` maps `internship` (not `intern`):
-
-```typescript
-const labels = {
-  full_time: "Full-time",
-  part_time: "Part-time",
-  contract: "Contract",
-  internship: "Internship",  // WRONG - should be "intern"
-  freelance: "Freelance",
-  temporary: "Temporary",    // Does not exist in enum either
-};
-```
-
-When an employee selects "Intern" from the form (value `intern`), the display will fall through to the fallback `type.replace(/_/g, "-")` showing lowercase "intern" instead of properly capitalized "Intern".
-
-**Fix:** Update the labels map to use `intern` instead of `internship`.
-
----
-
-## 4. No Navigation to Company Pages
-
-There is **no link to `/companies` anywhere** in the main navigation:
-
-- **Desktop navbar** (`authenticatedNavigationItems`): Feed, Connections, Articles, Jobs, Events, Messages -- no Companies
-- **Mobile hamburger menu**: Same items -- no Companies
-- **Mobile bottom nav** (`MobileBottomNav`): Feed, Jobs, Messages, Profile -- no Companies
-
-Users can only reach company pages through:
-- Direct URL
-- Search results (if Global Search indexes companies)
-- Links from job posts (if linked to a company)
-
-**Fix:** Add "Companies" to the navigation items in `Navbar.tsx` and consider the mobile sidebar menu.
-
----
-
-## 5. Hardcoded English Strings Across Multiple Components
-
-The following components have English strings not wrapped in `t()` translation calls, breaking i18n:
-
-**CompanyHeader.tsx:**
-- "Admin", "Settings" (button labels, lines 105-112)
-- "followers", "employees", "company size" (stats, lines 157-167)
-- "Founded" (line 149)
-
-**CompanyForm.tsx:**
-- "Basic Information", "Enter the core details about your company" (lines 139-144)
-- "Company Name *", "Company URL *" (form labels)
-- "Available", "Taken" (slug status, lines 178-181)
-- "Company Details", "Company Size", "Headquarters", "Founded Year" etc.
-- "Company URL cannot be changed after creation"
-
-**CompanyPostCard.tsx:**
-- "Delete", "Cancel", "Delete post?", "Deleting..." (lines 99-175)
-- "This action cannot be undone. The post will be permanently deleted."
-- "Company" fallback (line 79)
-
-**CompanyImageUpload.tsx:**
-- "Please upload an image file" (line 33)
-- "Image must be smaller than..." (line 38)
-- "Uploading...", "Change {type}" (lines 89-90)
-- "Logo updated", "Banner updated" (line 56)
-
-**CompanyFollowButton.tsx:**
-- "Follow", "Following" (lines 92, 112)
-- "Now following this company", "Unfollowed company" (lines 48, 69)
-- "Failed to follow/unfollow company" (lines 41, 62)
-
----
-
-## Additional Issues (Non-Blocking)
-
-### 6. CompanySearchFilter Fixed Widths Break on Mobile
-The industry select uses `w-[180px]` and size select uses `w-[160px]`. On screens smaller than 375px, these fixed-width elements plus the location input don't wrap properly and can overflow horizontally.
-
-**Fix:** Use responsive widths like `w-full sm:w-[180px]`.
-
-### 7. CompanyCreate Page Has No Back/Cancel Button
-Unlike CompanyEdit which has a back button, the CompanyCreate page has no way to go back to `/companies` other than the browser back button.
-
-### 8. ShareButton Inside DropdownMenuItem May Cause Nesting Issues
-In `CompanyPostCard.tsx` line 102-109, `ShareButton` is rendered as a child of `DropdownMenuItem`. `ShareButton` renders its own `Button` component, creating a nested interactive element (button inside a menu item button). This can cause accessibility warnings and click handling issues.
-
----
-
-## Implementation Plan
-
-### Step 1: RLS Migration (fixes 1, 2)
-
-```sql
--- Fix 1: Allow editors to read their own role
-CREATE POLICY "Users view own role" ON public.company_roles
-  FOR SELECT TO authenticated USING (user_id = auth.uid());
-
--- Fix 2: Drop the old blanket SELECT policy
-DROP POLICY "Public view employees" ON public.company_employees;
-```
-
-### Step 2: Fix employment type labels (fix 3)
-
-Update `src/components/company/admin/utils.ts`:
-- Change `internship` key to `intern`
-- Remove `temporary` (not in enum)
-
-### Step 3: Add Companies to navigation (fix 4)
-
-Update `src/components/Navbar.tsx`:
-- Add `{ name: t("nav.companies", "Companies"), href: "/companies" }` to `authenticatedNavigationItems`
-
-### Step 4: i18n wrap all hardcoded strings (fix 5)
-
-Update `CompanyHeader.tsx`, `CompanyForm.tsx`, `CompanyPostCard.tsx`, `CompanyImageUpload.tsx`, `CompanyFollowButton.tsx` to wrap all English strings in `t()` calls, and add keys to `en.json` and `sv.json`.
-
-### Step 5: Mobile/UX fixes (fixes 6, 7, 8)
-
-- Make CompanySearchFilter widths responsive
-- Add back button to CompanyCreate
-- Fix ShareButton nesting in CompanyPostCard
+## Scope
+- ~2 JSON locale files (major rewrites of homepage/auth/footer sections)
+- ~8 component files (hardcoded strings and content)
+- 1 i18n config file
+- No database changes, no backend changes
 
