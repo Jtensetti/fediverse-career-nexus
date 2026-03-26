@@ -7,67 +7,67 @@ const InstanceGuidelines = () => {
   const guidelines = [
     {
       icon: Scale,
-      title: "1. Legal Compliance",
+      title: "1. Rättslig efterlevnad",
       points: [
-        "You are responsible for ensuring that your instance complies with all applicable laws and regulations, including GDPR and local data protection laws.",
-        "You must provide clear information about who operates the instance and how users can contact you.",
-        "Publish a Privacy Policy and Terms of Service on your instance."
+        "Du ansvarar för att din instans följer alla tillämpliga lagar och förordningar, inklusive GDPR och lokala dataskyddslagar.",
+        "Du måste tillhandahålla tydlig information om vem som driver instansen och hur användare kan kontakta dig.",
+        "Publicera en integritetspolicy och användarvillkor på din instans."
       ]
     },
     {
       icon: Shield,
-      title: "2. Moderation & Safety", 
+      title: "2. Moderering och säkerhet", 
       points: [
-        "Implement moderation processes to prevent abuse, harassment, illegal content, and spam.",
-        "Designate moderators who can respond to reports and enforce rules quickly and fairly.",
-        "Remove or block users and content that violate your rules, Nolto's Code of Conduct, or applicable laws.",
-        "Respond to reports from users and other instance admins in a timely manner."
+        "Implementera modereringsprocesser för att förhindra missbruk, trakasserier, olagligt innehåll och spam.",
+        "Utse moderatorer som kan hantera rapporter och upprätthålla regler snabbt och rättvist.",
+        "Ta bort eller blockera användare och innehåll som bryter mot dina regler, Noltos uppförandekod eller tillämpliga lagar.",
+        "Svara på rapporter från användare och andra instansadministratörer inom rimlig tid."
       ]
     },
     {
       icon: Lock,
-      title: "3. Data Protection & Privacy",
+      title: "3. Dataskydd och integritet",
       points: [
-        "Secure user data with appropriate technical and organizational measures.",
-        "Allow users to export their data and delete their accounts at any time.", 
-        "Limit retention of logs and personal data to what is necessary for security and operation."
+        "Skydda användardata med lämpliga tekniska och organisatoriska åtgärder.",
+        "Tillåt användare att exportera sina uppgifter och radera sina konton när som helst.", 
+        "Begränsa lagring av loggar och personuppgifter till vad som är nödvändigt för säkerhet och drift."
       ]
     },
     {
       icon: Network,
-      title: "4. Federation Responsibilities",
+      title: "4. Federationsansvar",
       points: [
-        "Respect blocklists and moderation decisions from other instances.",
-        "Avoid federating with instances known for harassment, abuse, or illegal activity.",
-        "Maintain up-to-date contact and technical information so others can reach you if needed.",
-        "Notify users if you plan major changes, downtime, or federation policy updates."
+        "Respektera blocklistor och modereringsbeslut från andra instanser.",
+        "Undvik att federera med instanser kända för trakasserier, missbruk eller olaglig verksamhet.",
+        "Håll kontakt- och teknisk information uppdaterad så att andra kan nå dig vid behov.",
+        "Informera användare om du planerar större ändringar, driftstopp eller uppdateringar av federationspolicy."
       ]
     },
     {
       icon: Eye,
-      title: "5. Transparency",
+      title: "5. Transparens",
       points: [
-        "Make your rules and moderation practices public.",
-        "Publish any blocklists or federation policies if you restrict federation with certain instances.",
-        "Be open about changes to your moderation team, software version, or key policies."
+        "Gör dina regler och modereringspraxis offentliga.",
+        "Publicera eventuella blocklistor eller federationspolicyer om du begränsar federation med vissa instanser.",
+        "Var öppen om ändringar i ditt modereringsteam, programvaruversion eller viktiga policyer."
       ]
     },
     {
       icon: Settings,
-      title: "6. Technical Requirements", 
+      title: "6. Tekniska krav", 
       points: [
-        "Keep your Nolto software and dependencies up-to-date with security patches.",
-        "Maintain regular backups and disaster recovery plans.",
-        "Monitor your instance's performance and availability."
+        "Håll din Nolto-programvara och beroenden uppdaterade med säkerhetspatchar.",
+        "Underhåll regelbundna säkerhetskopior och katastrofåterställningsplaner.",
+        "Övervaka din instans prestanda och tillgänglighet."
       ]
     },
     {
       icon: Users,
-      title: "7. Community Standards",
+      title: "7. Gemenskapsstandarder",
       points: [
-        "Promote an inclusive, respectful, and professional environment.",
-        "Apply the Code of Conduct consistently.",
-        "Foster open dialogue but act quickly on threats to user safety or legal compliance."
+        "Främja en inkluderande, respektfull och professionell miljö.",
+        "Tillämpa uppförandekoden konsekvent.",
+        "Uppmuntra öppen dialog men agera snabbt vid hot mot användarsäkerhet eller rättslig efterlevnad."
       ]
     }
   ];
@@ -75,8 +75,8 @@ const InstanceGuidelines = () => {
   return (
     <div className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
       <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-        Running a Nolto instance is a responsibility. To ensure the health of the network and protect users, 
-        all instance operators must follow these guidelines.
+        Att driva en Nolto-instans är ett ansvar. För att säkerställa nätverkets hälsa och skydda användare 
+        måste alla instansoperatörer följa dessa riktlinjer.
       </p>
 
       <div className="space-y-12">
@@ -101,15 +101,15 @@ const InstanceGuidelines = () => {
       </div>
 
       <section className="bg-primary text-primary-foreground p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Commitment to Guidelines</h2>
+        <h2 className="text-2xl font-bold mb-4">Åtagande att följa riktlinjerna</h2>
         <p className="text-lg mb-6 text-primary-foreground/90">
-          By operating a Nolto instance, you agree to uphold these guidelines. 
-          Failure to do so may result in defederation or removal from Nolto's public instance listings.
+          Genom att driva en Nolto-instans förbinder du dig att upprätthålla dessa riktlinjer. 
+          Underlåtenhet att göra det kan leda till defederation eller borttagning från Noltos offentliga instanslistor.
         </p>
         <p className="text-lg font-medium text-secondary mb-6">
-          If you have questions or need support, consult the{" "}
-          <Link to="/documentation" className="underline hover:text-primary-foreground transition-colors">Documentation</Link>, 
-          join the community forum, or contact the Nolto team.
+          Om du har frågor eller behöver stöd, se{" "}
+          <Link to="/documentation" className="underline hover:text-primary-foreground transition-colors">Dokumentationen</Link>, 
+          gå med i communityforumet eller kontakta Nolto-teamet.
         </p>
       </section>
     </div>

@@ -51,6 +51,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CodeOfConductPage from "./pages/CodeOfConductPage";
 import InstanceGuidelinesPage from "./pages/InstanceGuidelines";
+import CookiesPage from "./pages/CookiesPage";
 import Instances from "./pages/Instances";
 import AdminFederationHealth from "./pages/AdminFederationHealth";
 import AdminInstances from "./pages/AdminInstances";
@@ -122,6 +123,7 @@ function App() {
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
                     <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
+                    <Route path="/cookies" element={<CookiesPage />} />
                     <Route path="/instances" element={<Instances />} />
                     <Route path="/packs" element={<StarterPacks />} />
                     <Route path="/packs/:slug" element={<StarterPackView />} />
