@@ -311,7 +311,7 @@ export async function toggleMessageReaction(
 
       if (insertError) {
         console.error('❌ Error adding message reaction:', insertError);
-        toast.error("Failed to add reaction");
+        toast.error("Kunde inte lägga till reaktion");
         return { success: false, action: 'error', reaction };
       }
 
