@@ -53,10 +53,10 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
     return (
       <div className="text-center py-8 text-muted-foreground">
         <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-        <p>No articles published yet</p>
+        <p>Inga artiklar publicerade ännu</p>
         {isOwnProfile && (
           <Button variant="outline" asChild className="mt-4">
-            <Link to="/articles/create">Write Your First Article</Link>
+            <Link to="/articles/create">Skriv din första artikel</Link>
           </Button>
         )}
       </div>
@@ -102,7 +102,7 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
                 ) : (
                   <div className="flex items-center gap-2 mt-2">
                     <Lock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Follow to read</span>
+                    <span className="text-sm text-muted-foreground">Följ för att läsa</span>
                   </div>
                 )}
 
@@ -124,7 +124,7 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
       {!canReadFull && !isOwnProfile && (
         <div className="text-center pt-4 border-t">
           <p className="text-sm text-muted-foreground mb-3">
-            Follow to access all articles and get notified of new ones
+            Följ för att få tillgång till alla artiklar och bli notifierad om nya
           </p>
           <FollowAuthorButton authorId={userId} />
         </div>
