@@ -88,7 +88,7 @@ export default function DomainModeration() {
       })) : [];
       setDomains(domainEntries);
     } catch (err) {
-      setError("Failed to load domain moderation data");
+      setError("Kunde inte ladda domänmoderationsdata");
       console.error(err);
     } finally {
       setLoading(false);
@@ -100,12 +100,12 @@ export default function DomainModeration() {
     setSuccess(null);
     
     if (!host) {
-      setError("Domain host is required");
+      setError("Domänvärd krävs");
       return;
     }
     
     if (!reason) {
-      setError("Reason is required");
+      setError("Anledning krävs");
       return;
     }
     
@@ -113,20 +113,20 @@ export default function DomainModeration() {
       const result = await updateDomainModeration(host, status, reason);
       
       if (result.success) {
-        setSuccess(`Domain ${host} has been added to the ${status} list`);
+        setSuccess(`Domän ${host} har lagts till i ${status}-listan`);
         setHost("");
         setReason("");
         fetchDomains();
         
         toast({
-          title: "Domain Added",
-          description: `${host} has been added to the ${status} list`,
+          title: "Domän tillagd",
+          description: `${host} har lagts till i ${status}-listan`,
         });
       } else {
-        setError("Failed to add domain");
+        setError("Kunde inte lägga till domän");
       }
     } catch (err) {
-      setError("An error occurred while adding the domain");
+      setError("Ett fel uppstod vid tillägg av domän");
       console.error(err);
     }
   };
@@ -146,21 +146,21 @@ export default function DomainModeration() {
         fetchDomains();
         
         toast({
-          title: "Domain Updated",
-          description: `${currentDomain.host} has been updated to ${editStatus} status`,
+          title: "Domän uppdaterad",
+          description: `${currentDomain.host} har uppdaterats till ${editStatus}`,
         });
       } else {
         toast({
-          title: "Update Failed",
-          description: "Failed to update domain status",
+          title: "Uppdatering misslyckades",
+          description: "Kunde inte uppdatera domänstatus",
           variant: "destructive",
         });
       }
     } catch (err) {
       console.error(err);
       toast({
-        title: "Update Failed",
-        description: "An error occurred while updating",
+        title: "Uppdatering misslyckades",
+        description: "Ett fel uppstod vid uppdatering",
         variant: "destructive",
       });
     }
@@ -177,21 +177,21 @@ export default function DomainModeration() {
         fetchDomains();
         
         toast({
-          title: "Domain Removed",
-          description: `${domainToDelete} has been removed from moderation`,
+          title: "Domän borttagen",
+          description: `${domainToDelete} har tagits bort från moderering`,
         });
       } else {
         toast({
-          title: "Deletion Failed",
-          description: "Failed to remove domain",
+          title: "Borttagning misslyckades",
+          description: "Kunde inte ta bort domän",
           variant: "destructive",
         });
       }
     } catch (err) {
       console.error(err);
       toast({
-        title: "Deletion Failed",
-        description: "An error occurred while deleting",
+        title: "Borttagning misslyckades",
+        description: "Ett fel uppstod vid borttagning",
         variant: "destructive",
       });
     } finally {
@@ -214,9 +214,9 @@ export default function DomainModeration() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'blocked':
-        return <Badge variant="destructive">Blocked</Badge>;
+        return <Badge variant="destructive">Blockerad</Badge>;
       case 'probation':
-        return <Badge variant="outline" className="text-amber-500 border-amber-500">Probation</Badge>;
+        return <Badge variant="outline" className="text-amber-500 border-amber-500">Prövotid</Badge>;
       default:
         return <Badge variant="secondary">Normal</Badge>;
     }
@@ -226,18 +226,18 @@ export default function DomainModeration() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Add Domain Moderation</CardTitle>
+          <CardTitle>Lägg till domänmoderering</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="host" className="block text-sm font-medium mb-1">
-                  Domain Host
+                  Domänvärd
                 </label>
                 <Input
                   id="host"
-                  placeholder="example.social"
+                  placeholder="exempel.social"
                   value={host}
                   onChange={(e) => setHost(e.target.value)}
                 />
@@ -248,12 +248,12 @@ export default function DomainModeration() {
                 </label>
                 <Select value={status} onValueChange={(value) => setStatus(value as any)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder="Välj status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="probation">Probation</SelectItem>
-                    <SelectItem value="blocked">Blocked</SelectItem>
+                    <SelectItem value="probation">Prövotid</SelectItem>
+                    <SelectItem value="blocked">Blockerad</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -264,7 +264,7 @@ export default function DomainModeration() {
               </label>
               <Textarea
                 id="reason"
-                placeholder="Reason for moderation"
+                placeholder="Anledning till moderering"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
@@ -298,7 +298,7 @@ export default function DomainModeration() {
       </Card>
       
       <div>
-        <h3 className="text-lg font-medium mb-4">Domain Moderation List</h3>
+        <h3 className="text-lg font-medium mb-4">Domänmoderationslista</h3>
         
         {loading ? (
           <div className="animate-pulse space-y-3">
@@ -307,13 +307,13 @@ export default function DomainModeration() {
           </div>
         ) : domains.length > 0 ? (
           <Table>
-            <TableCaption>List of domains with moderation status</TableCaption>
+            <TableCaption>Lista över domäner med modereringsstatus</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Domain</TableHead>
+                <TableHead>Domän</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead className="w-[180px]">Actions</TableHead>
+                <TableHead>Anledning</TableHead>
+                <TableHead className="w-[180px]">Åtgärder</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -338,7 +338,7 @@ export default function DomainModeration() {
           </Table>
         ) : (
           <div className="text-center p-8 border border-dashed rounded-md">
-            <p className="text-muted-foreground">No domain moderation entries found</p>
+            <p className="text-muted-foreground">Inga domänmodereringsposterna hittades</p>
           </div>
         )}
       </div>
@@ -347,9 +347,9 @@ export default function DomainModeration() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Domain Moderation</DialogTitle>
+            <DialogTitle>Redigera domänmoderering</DialogTitle>
             <DialogDescription>
-              Update moderation settings for {currentDomain?.host}
+              Uppdatera modereringsinställningar för {currentDomain?.host}
             </DialogDescription>
           </DialogHeader>
           
@@ -358,18 +358,18 @@ export default function DomainModeration() {
               <label htmlFor="edit-status">Status</label>
               <Select value={editStatus} onValueChange={(value) => setEditStatus(value as any)}>
                 <SelectTrigger id="edit-status">
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder="Välj status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="probation">Probation</SelectItem>
-                  <SelectItem value="blocked">Blocked</SelectItem>
+                  <SelectItem value="probation">Prövotid</SelectItem>
+                  <SelectItem value="blocked">Blockerad</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="grid gap-2">
-              <label htmlFor="edit-reason">Reason</label>
+              <label htmlFor="edit-reason">Anledning</label>
               <Textarea
                 id="edit-reason"
                 value={editReason}
@@ -394,9 +394,9 @@ export default function DomainModeration() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>Bekräfta borttagning</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {domainToDelete} from moderation?
+              Är du säker på att du vill ta bort {domainToDelete} från moderering?
             </DialogDescription>
           </DialogHeader>
           
