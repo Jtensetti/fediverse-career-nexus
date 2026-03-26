@@ -79,7 +79,19 @@
     "connectFediverse": "Samverka med andra organisationer",
     "enterEmail": "Ange din e-postadress",
     "enterPassword": "Ange ditt lösenord",
-    "createPassword": "Skapa ett lösenord (minst 6 tecken)"
+    "createPassword": "Skapa ett lösenord (minst 6 tecken)",
+    "firstNamePlaceholder": "Förnamn",
+    "lastNamePlaceholder": "Efternamn",
+    "usernamePlaceholder": "ditt_användarnamn",
+    "firstNameRequired": "Förnamn krävs",
+    "lastNameRequired": "Efternamn krävs",
+    "emailRequired": "E-post krävs",
+    "passwordRequired": "Lösenord krävs",
+    "nameTooLong": "Måste vara mindre än 50 tecken",
+    "nameInvalidChars": "Kan bara innehålla bokstäver, mellanslag, bindestreck, apostrofer och punkter",
+    "usernameMinChars": "Minst 3 tecken",
+    "usernameMaxChars": "Max 20 tecken",
+    "usernameCharsOnly": "Bara små bokstäver, siffror och understreck"
   },
   "footer": {
     "tagline": "En säker professionell plattform för offentlig sektor.",
