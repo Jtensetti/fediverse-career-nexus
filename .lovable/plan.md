@@ -1,73 +1,49 @@
 
 
-# Slutgiltig översättning — alla kvarvarande engelska strängar
+# Fix /profile och /profile/edit — saknade svenska översättningar
 
-## Sammanfattning
-Efter genomgång av hela kodbasen finns det fortfarande **~200+ hårdkodade engelska strängar** i **~20 filer** — mestadels i tjänster (services), admin-sidor och vissa komponenter som missades i tidigare omgångar.
+## Problem
+1. **Duplicerat `profileEdit`-block i sv.json** — det finns två `profileEdit`-objekt (rad 490 och rad 2159). JSON tillåter inte duplicerade nycklar, så det andra blocket (som bara har `usernameDesc` och `profileSchema`) **överskriver det första** som har alla ~40 nycklar. Detta är orsaken till att `profileEdit.displayName` visas rått.
 
----
+2. **Saknade nycklar** — många nycklar som koden refererar till finns inte alls i sv.json:
+   - `profileEdit.experience.*`: `loading`, `jobTitle`, `jobTitlePlaceholder`, `companyPlaceholder`, `companyDomain`, `companyDomainPlaceholder`, `locationPlaceholder`, `pickDate`, `descriptionPlaceholder`, `noExperience`, `update`, `titleRequired`, `startDateRequired`
+   - `profileEdit.education.*`: `loading`, `institutionPlaceholder`, `degreePlaceholder`, `fieldPlaceholder`, `update`, `noEducation`, `delete`
+   - `profileEdit.skills.*`: `loading`, `noSkills`
+   - `profileEdit.present`, `profileEdit.phonePlaceholder`, `profileEdit.locationPlaceholder`, `profileEdit.contactEmail`, `profileEdit.contactEmailDesc`, `profileEdit.username`, `profileEdit.usernamePlaceholder`
+   - `profileEdit.freelance.title`
+   - `profileEdit.tabs.freelance`
 
-## Filer att uppdatera
+3. **Helt saknad `freelancer`-sektion i sv.json** — FreelancerSettings.tsx använder ~15 nycklar under `freelancer.*` men ingen av dessa finns i sv.json.
 
-### Tjänster (services) — engelska toasts
+4. **Hårdkodade engelska strängar** i koden:
+   - Profile.tsx: `"Sign up to connect"` (2 ställen), `"on Nolto"` i SEO/share
+   - ProfileEdit.tsx: `"Experience #"`, `"Education #"`, `"Institution is required"`, `"Degree is required"`, `"Start year is required"`, `"institution"/"degree"/"start year"` i toast, `"e.g. Acme Inc, Freelance, Self-employed"`, `"Job title is required"`, `"Start date is required"`
 
-| Fil | Strängar att översätta |
-|-----|----------------------|
-| `src/services/messageService.ts` | ~15 st: "You must be logged in to view conversations/messages/send", "Failed to load conversations/messages", "You can only message users you are connected with", "You cannot message yourself", "Cannot send message to this user", "Failed to send message", "Message saved but delivery to remote server failed", "Failed to deliver message", "Message sent to federated user" |
-| `src/services/messageRequestService.ts` | ~8 st: "You must be logged in", "You cannot send a request to yourself", "This user is not accepting messages", "You can message this person directly", "You already have a pending request", "Your previous request was declined" |
-| `src/services/connectionsService.ts` | ~5 st: "Failed to load connections/suggestions", "You must be logged in to connect", "You can't connect with yourself" |
-| `src/services/jobPostsService.ts` | ~8 st: "You must be logged in to create a job post", "Failed to create/update/delete job post", "Job post updated/deleted successfully" |
-| `src/services/starterPackService.ts` | ~12 st: "You must be logged in to follow/create a pack", "Failed to follow/unfollow/create pack", "Starter pack created!", "Unfollowed pack", "User is already in this pack", "Failed to add/remove member", "A pack with this URL already exists" |
-| `src/services/postBoostService.ts` | ~6 st: "You must be logged in to boost posts", "Actor not found", "Boost removed", "Post boosted", "Failed to process boost" |
-| `src/services/postReplyService.ts` | 3 kvar: "Actor not found", "Reply posted successfully!", "An unexpected error occurred" |
-| `src/services/profileEditService.ts` | 3 kvar: "You must be logged in to update your profile" (rad 196), "Profile and actor created successfully", "Profile updated but actor creation failed" |
-| `src/services/postService.ts` | 2 kvar: "Failed to update username", "Failed to create user actor" |
-| `src/services/profileService.ts` | 1 kvar: "Failed to load profile data" |
+## Plan
 
-### Sidor (pages) — engelska toasts och strängar
+### Steg 1: Slå ihop de duplicerade `profileEdit`-blocken i sv.json
+Flytta `usernameDesc` och `profileSchema` från det andra blocket (rad 2159) in i det första blocket (rad 490) och ta bort det andra blocket. Lägg till alla saknade nycklar.
 
-| Fil | Strängar |
-|-----|----------|
-| `src/pages/ProfileEdit.tsx` | 2 st: "You need to be signed in to add education/skill" |
-| `src/pages/JobManage.tsx` | 1 st: "Please sign in to manage job posts" |
-| `src/pages/AdminFederationHealth.tsx` | ~6 st: "Failed to load health data", "Data refreshed", "Cleanup failed", "Cache pre-warm failed", "Alert acknowledged", "Failed to acknowledge alert" |
-| `src/pages/AdminFederationMetrics.tsx` | ~4 st (toast-objekt): "Error checking admin status", "Access denied", "Admin access granted", "Error" |
-| `src/pages/Moderation.tsx` | 3 st: "Failed to verify admin/moderator/user permissions" |
-| `src/pages/MessageConversation.tsx` | 2 st (toast-objekt): "Connection issue", "Failed to send message" |
-| `src/pages/ArticleManage.tsx` | 1 st: placeholder "Search articles..." |
+### Steg 2: Lägg till alla saknade `profileEdit`-nycklar
+Komplettera med: `username`, `usernamePlaceholder`, `contactEmail`, `contactEmailDesc`, `phonePlaceholder`, `locationPlaceholder`, `present`, `tabs.freelance`, `freelance.title`, plus alla `experience.*`, `education.*`, `skills.*` undernycklar som saknas.
 
-### Komponenter — engelska strängar
+### Steg 3: Lägg till `freelancer`-sektion i sv.json
+~15 nycklar: `openForWork`, `visibleToClients`, `notVisible`, `skills`, `addSkill`, `rate`, `ratePlaceholder`, `availability`, `selectAvailability`, `fullTime`, `partTime`, `projectBased`, `notAvailable`, `settingsSaved`, `settingsError`, `dmSuggestion`, `openSettings`, `dmReminder`, `dmReminderDesc`, `checkDmSettings`, `noSkillsYet`.
 
-| Fil | Strängar |
-|-----|----------|
-| `src/components/DomainModeration.tsx` | ~20 st: alla toasts ("Domain Added/Updated/Removed", "Update/Deletion Failed"), labels ("Add Domain Moderation", "Domain Host", "Status", "Reason"), placeholders, status badges ("Blocked", "Probation", "Normal"), dialog-texter |
-| `src/components/ServerKeyInitializer.tsx` | ~6 st: "Server Key Management", "Checking server key status...", "Server has a valid RSA key pair", "No server key found", "Server key created successfully" |
-| `src/components/MonthYearPicker.tsx` | 1 st: "Select Year" |
-| `src/components/ModerationActionDialog.tsx` | 1 st: placeholder "Search by username or ID" |
-| `src/components/homepage/Testimonials.tsx` | Hela filen: engelska citat, namn, titlar, rubrik — byt till svenska offentlig sektor-citat |
-| `src/components/homepage/EnhancedTestimonials.tsx` | Alla citat, roller, handles — byt till svenska offentlig sektor-exempel |
-| `src/components/company/CompanyForm.tsx` | ~6 st: placeholders "Acme Corporation", "acme-corp", "Building the future of...", "Tell people about your company...", "Technology, Healthcare, etc.", "San Francisco, CA" |
-| `src/components/editor/EditorToolbar.tsx` | ~12 aria-labels: "Bold", "Italic", "Strikethrough", "Text style", "Insert link", "Block quote", "Code block", "Insert", "Lists", "Undo", "Hide keyboard" |
-| `src/pages/AdminFederationHealth.tsx` | "X minutes" — behöver formateras på svenska |
+### Steg 4: Ersätt hårdkodade engelska strängar i Profile.tsx
+- `"Sign up to connect"` → `t("profile.signUpToConnect", "Registrera dig för att ansluta")`
+- `"on Nolto"` i SEO-description → svenska
 
----
-
-## Genomförande
-
-### Steg 1: Översätt alla tjänster (~60 strängar)
-Byt alla engelska toast-strängar i 10 tjänstefiler till svenska (direkt hårdkodade strängar, inte i18n-nycklar — följer samma mönster som redan finns i de nyligen översatta tjänsterna).
-
-### Steg 2: Översätt alla sidor (~15 strängar)
-Byt engelska toasts/placeholders i 6 sidfiler.
-
-### Steg 3: Översätt alla komponenter (~45 strängar)
-Uppdatera DomainModeration, ServerKeyInitializer, MonthYearPicker, ModerationActionDialog, CompanyForm, EditorToolbar aria-labels.
-
-### Steg 4: Skriv om Testimonials till svenska offentlig sektor
-Byt engelska tech-citat till svenska kommuner/regioner/myndigheter i både Testimonials.tsx och EnhancedTestimonials.tsx.
+### Steg 5: Ersätt hårdkodade engelska strängar i ProfileEdit.tsx
+- `"Experience #"` → `Erfarenhet #`
+- `"Education #"` → `Utbildning #`
+- `"Institution is required"` → `Institution krävs`
+- `"Degree is required"` → `Examen krävs`
+- `"Start year is required"` → `Startår krävs`
+- Valideringsmeddelanden i `saveEducation` toast (`"institution"`, `"degree"`, `"start year"`) → svenska
 
 ## Teknisk detalj
-- Totalt ~20 filer, ~200 strängar
+- Huvudproblemet är det duplicerade JSON-blocket — att fixa detta löser majoriteten av de "trasiga" strängarna direkt
+- Totalt ~60 nya nycklar i sv.json + ~10 hårdkodade strängar att byta i 2 filer
 - Ingen databasändring
-- Följer samma mönster som redan etablerats: direkt svenska strängar i tjänster, `t()` i komponenter där `useTranslation` redan finns
 
