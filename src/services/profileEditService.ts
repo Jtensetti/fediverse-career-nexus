@@ -81,7 +81,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
 
     if (error) {
       console.error('❌ Profile update error:', error);
-      toast.error(`Failed to update profile: ${error.message}`);
+      toast.error(`Kunde inte uppdatera profil: ${error.message}`);
       return false;
     }
 
