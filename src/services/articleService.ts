@@ -448,7 +448,7 @@ export const updateAuthorPermissions = async (authorId: string, canEdit: boolean
     return true;
   } catch (error) {
     console.error('Error updating author permissions:', error);
-    toast.error('Failed to update author permissions. Please try again.');
+    toast.error(i18n.t('toasts.authorPermissionsFailed'));
     return false;
   }
 };
