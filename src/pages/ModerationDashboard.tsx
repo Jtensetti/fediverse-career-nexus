@@ -296,7 +296,7 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="federation" className="gap-2">
                   <Globe className="h-4 w-4" />
-                  Federation
+                  Samverkan
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="gap-2">
                   <Eye className="h-4 w-4" />
