@@ -969,9 +969,9 @@ const ProfilePage = () => {
           {!viewingOwnProfile && (
             <Card>
               <CardContent className="pt-6">
-                <h3 className="text-sm font-semibold mb-3">Follow for Articles</h3>
+                <h3 className="text-sm font-semibold mb-3">{t("profilePage.followForArticles")}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Get notified when {profile.displayName?.split(" ")[0] || "this user"} publishes new articles
+                  {t("profilePage.followForArticlesDesc")} {profile.displayName?.split(" ")[0] || ""} {t("profilePage.followForArticlesDescSuffix")}
                 </p>
                 <FollowAuthorButton
                   authorId={profile.id}

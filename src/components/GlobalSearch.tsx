@@ -228,7 +228,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
                 onResultClick?.();
               }}
             >
-              <span>Advanced search</span>
+              <span>{t("globalSearch.advancedSearch")}</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

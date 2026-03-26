@@ -268,7 +268,7 @@ const Navbar = () => {
                       <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                         <RouterLink to="/admin/instances" className="flex items-center gap-2">
                           <Settings className="h-4 w-4" />
-                          Instance Management
+                          {t("nav.instanceManagement", "Instanshantering")}
                         </RouterLink>
                       </DropdownMenuItem>
                     </>
