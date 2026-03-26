@@ -469,12 +469,12 @@ export default function ModerationDashboard() {
                     <div className="flex items-center gap-3">
                       <Server className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">Instance Management</p>
-                        <p className="text-sm text-muted-foreground">View rate-limited instances and federation health</p>
+                        <p className="font-medium">Instanshantering</p>
+                        <p className="text-sm text-muted-foreground">Visa begränsade instanser och samverkanshälsa</p>
                       </div>
                     </div>
                     <Button onClick={() => navigate('/admin/instances')} variant="outline">
-                      Open Instance Manager
+                      Öppna instanshanteraren
                     </Button>
                   </div>
                 </CardContent>
