@@ -742,7 +742,7 @@ const ProfileEditPage = () => {
                         <div className="flex justify-between items-center mb-4">
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium">
-                              {exp.title || `Experience #${index + 1}`}
+                              {exp.title || `Erfarenhet #${index + 1}`}
                             </h4>
                             {exp.verification_status && (
                               <VerificationBadge status={exp.verification_status} />
