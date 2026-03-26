@@ -124,7 +124,7 @@ export async function toggleReaction(
 
         if (updateError) {
           console.error('❌ toggleReaction: Error switching reaction:', updateError);
-          toast.error("Failed to update reaction");
+          toast.error("Kunde inte uppdatera reaktion");
           return { success: false, action: 'error', reaction };
         }
 
