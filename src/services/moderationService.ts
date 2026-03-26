@@ -369,7 +369,7 @@ export async function removeModerator(userId: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error("Error removing moderator:", error);
-    toast.error("Failed to remove moderator");
+    toast.error("Kunde inte ta bort moderator");
     return false;
   }
 }
