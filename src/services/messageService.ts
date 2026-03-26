@@ -235,7 +235,7 @@ export async function getMessages(partnerId: string): Promise<Message[]> {
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('You must be logged in to view messages');
+      toast.error('Du måste vara inloggad för att visa meddelanden');
       return [];
     }
 
