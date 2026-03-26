@@ -291,7 +291,7 @@
     "returnHome": "Återvänd hem",
     "errorLoading": "Fel vid laddning av profil",
     "errorLoadingDesc": "Ett fel uppstod vid laddning av profilen. Försök igen senare.",
-    "syncSuccess": "Profil synkroniserad från din Fediverse-instans!",
+    "syncSuccess": "Profil synkroniserad!",
     "syncFailed": "Kunde inte synka profil",
     "connectFirst": "Anslut med denna person först för att skicka meddelanden",
     "mustBeLoggedIn": "Du måste vara inloggad för att ansluta med andra",
