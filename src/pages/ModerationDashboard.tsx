@@ -300,7 +300,7 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="gap-2">
                   <Eye className="h-4 w-4" />
-                  Logs
+                  Loggar
                 </TabsTrigger>
                 <TabsTrigger value="alerts" className="gap-2">
                   <Bell className="h-4 w-4" />
