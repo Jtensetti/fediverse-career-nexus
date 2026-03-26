@@ -248,8 +248,8 @@ export default function ModerationDashboard() {
                   <Shield className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight">Moderation Center</h1>
-                  <p className="text-muted-foreground">Monitor, review, and manage community activity</p>
+                  <h1 className="text-3xl font-bold tracking-tight">Modereringscenter</h1>
+                  <p className="text-muted-foreground">Övervaka, granska och hantera aktivitet</p>
                 </div>
               </div>
               
