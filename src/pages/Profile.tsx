@@ -901,7 +901,7 @@ const ProfilePage = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Users size={20} className="text-primary" />
-                    Connections
+                    {t("profilePage.connectionsTitle")}
                     {renderVisibilityToggle('connections')}
                   </h3>
 
