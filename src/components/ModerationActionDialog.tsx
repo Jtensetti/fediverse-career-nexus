@@ -217,8 +217,8 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
                     </div>
                   )}
                   
-                  {isSöker... (
-                    <div className="text-sm text-gray-500 mt-1">Söker...</div>
+                  {isSearching && (
+                    <div className="text-sm text-muted-foreground mt-1">Söker...</div>
                   )}
                   
                   <FormMessage />

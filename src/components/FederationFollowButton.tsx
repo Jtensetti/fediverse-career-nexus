@@ -107,7 +107,7 @@ export default function FederationFollowButton({
     if (loading) {
       return {
         icon: <Clock size={16} className="animate-spin" />,
-        text: "Processing...",
+        text: "Bearbetar...",
         variant: "secondary" as const
       };
     }
@@ -116,25 +116,25 @@ export default function FederationFollowButton({
       case 'pending':
         return {
           icon: <Clock size={16} />,
-          text: "Pending",
+          text: "Väntande",
           variant: "secondary" as const
         };
       case 'accepted':
         return {
           icon: <UserCheck size={16} />,
-          text: "Following",
+          text: "Följer",
           variant: "default" as const
         };
       case 'rejected':
         return {
           icon: <UserX size={16} />,
-          text: "Rejected",
+          text: "Avvisad",
           variant: "destructive" as const
         };
       default:
         return {
           icon: <UserPlus size={16} />,
-          text: "Follow",
+          text: "Följ",
           variant: "default" as const
         };
     }
