@@ -213,7 +213,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
-              No results found for "{query}"
+              {t("globalSearch.noResults")} "{query}"
             </div>
           )}
           
