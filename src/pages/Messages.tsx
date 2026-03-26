@@ -67,7 +67,7 @@ export default function Messages() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead title="Messages" description="Your conversations on Nolto." />
+      <SEOHead title={t("messagesPage.title")} description={t("messagesPage.title")} />
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-6">
@@ -251,7 +251,7 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-center">
                 <p className="font-medium truncate">
-                  {otherUser?.fullname || otherUser?.username || 'Unknown User'}
+                  {otherUser?.fullname || otherUser?.username || t("messagesPage.unknownUser")}
                 </p>
                 <span className="text-xs text-muted-foreground">{lastMessageTime}</span>
               </div>

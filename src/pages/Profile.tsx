@@ -217,7 +217,7 @@ const ProfilePage = () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (error) {
       console.error("Error updating header:", error);
-      toast.error("Failed to update header image");
+      toast.error(t("toasts.failedUpdateHeader", "Failed to update header image"));
     }
   };
 
@@ -885,7 +885,7 @@ const ProfilePage = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Activity size={20} className="text-primary" />
-                    Activity
+                    {t("profilePage.activity")}
                     {renderVisibilityToggle('activity')}
                   </h3>
 
@@ -901,14 +901,14 @@ const ProfilePage = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Users size={20} className="text-primary" />
-                    Connections
+                    {t("profilePage.connectionsTitle")}
                     {renderVisibilityToggle('connections')}
                   </h3>
 
                   {!isSectionVisible('connections') ? renderHiddenMessage() : profile.networkVisibilityEnabled === false ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>Connections are hidden</p>
+                      <p>{t("profilePage.connectionsHidden")}</p>
                     </div>
                   ) : connectionsLoading ? (
                     <div className="flex justify-center py-8">
@@ -938,14 +938,14 @@ const ProfilePage = () => {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>No connections yet</p>
+                      <p>{t("profilePage.noConnectionsYet")}</p>
                     </div>
                   )}
 
                   {userConnections && userConnections.length > 6 && (
                     <div className="text-center mt-4">
                       <Button variant="outline" asChild>
-                        <Link to="/connections">View All Connections</Link>
+                        <Link to="/connections">{t("profilePage.viewAllConnections")}</Link>
                       </Button>
                     </div>
                   )}
@@ -969,9 +969,9 @@ const ProfilePage = () => {
           {!viewingOwnProfile && (
             <Card>
               <CardContent className="pt-6">
-                <h3 className="text-sm font-semibold mb-3">Follow for Articles</h3>
+                <h3 className="text-sm font-semibold mb-3">{t("profilePage.followForArticles")}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Get notified when {profile.displayName?.split(" ")[0] || "this user"} publishes new articles
+                  {t("profilePage.followForArticlesDesc")} {profile.displayName?.split(" ")[0] || ""} {t("profilePage.followForArticlesDescSuffix")}
                 </p>
                 <FollowAuthorButton
                   authorId={profile.id}

@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 import { ConnectionDegree } from "@/components/ConnectionBadge";
 import { notificationService } from "./notificationService";
 
@@ -218,7 +219,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
         await supabase.from("user_connections").delete().eq("id", outgoingDuplicate.id);
       }
 
-      toast.success("You're already connected");
+      toast.success(i18n.t("toasts.alreadyConnected"));
       return true;
     }
 
@@ -234,7 +235,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
       (r: any) => r.status === "pending" && r.user_id === user.id && r.connected_user_id === userId
     );
     if (outgoingPending) {
-      toast.success("Connection request already pending");
+      toast.success(i18n.t("toasts.connectionRequestPending"));
       return true;
     }
 
@@ -267,7 +268,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
         console.warn('Failed to create connection notification:', notifError);
       }
 
-      toast.success("Connection request sent");
+      toast.success(i18n.t("toasts.connectionRequestSent"));
       return true;
     }
 
@@ -298,11 +299,11 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
       console.warn('Failed to create connection notification:', notifError);
     }
 
-    toast.success("Connection request sent");
+    toast.success(i18n.t("toasts.connectionRequestSent"));
     return true;
   } catch (error) {
     console.error("Error sending connection request:", error);
-    toast.error("Failed to send connection request");
+    toast.error(i18n.t("toasts.failedSendRequest"));
     return false;
   }
 };
@@ -367,11 +368,11 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
       }
     }
 
-    toast.success("Connection accepted");
+    toast.success(i18n.t("toasts.connectionAccepted"));
     return true;
   } catch (error) {
     console.error("Error accepting connection:", error);
-    toast.error("Failed to accept connection");
+    toast.error(i18n.t("toasts.failedAccept"));
     return false;
   }
 };
@@ -389,11 +390,11 @@ export const rejectConnectionRequest = async (connectionId: string): Promise<boo
 
     if (error) throw error;
 
-    toast.success("Connection rejected");
+    toast.success(i18n.t("toasts.connectionRejected"));
     return true;
   } catch (error) {
     console.error("Error rejecting connection:", error);
-    toast.error("Failed to reject connection");
+    toast.error(i18n.t("toasts.failedReject"));
     return false;
   }
 };
@@ -433,11 +434,11 @@ export const removeConnection = async (connectionId: string): Promise<boolean> =
         );
     }
 
-    toast.success("Connection removed");
+    toast.success(i18n.t("toasts.connectionRemoved"));
     return true;
   } catch (error) {
     console.error("Error removing connection:", error);
-    toast.error("Failed to remove connection");
+    toast.error(i18n.t("toasts.failedRemove"));
     return false;
   }
 };
@@ -495,7 +496,7 @@ export const getPendingConnectionRequests = async (): Promise<PendingConnectionR
     }).filter(Boolean) as PendingConnectionRequest[];
   } catch (error) {
     console.error("Error fetching pending requests:", error);
-    toast.error("Failed to load connection requests");
+    toast.error(i18n.t("toasts.failedLoadRequests"));
   return [];
   }
 };
@@ -648,12 +649,12 @@ export const updateProfileVisibilitySettings = async (showNetworkConnections: bo
     
     if (error) throw error;
     
-    toast.success(`Your network connections are now ${showNetworkConnections ? 'visible' : 'hidden'} to others.`);
+    toast.success(i18n.t(showNetworkConnections ? "toasts.networkNowVisible" : "toasts.networkNowHidden"));
     
     return true;
   } catch (error) {
     console.error('Error updating network visibility settings:', error);
-    toast.error("Failed to update network visibility settings");
+    toast.error(i18n.t("toasts.failedUpdateVisibility"));
     return false;
   }
 };

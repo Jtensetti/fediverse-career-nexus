@@ -302,69 +302,6 @@ const ConnectionsPage = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="invitations">
-          {pendingLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : pendingError ? (
-            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
-              <h3 className="text-lg font-medium mb-2 text-destructive">Error Loading Invitations</h3>
-              <p className="text-muted-foreground">There was an error loading your invitations. Please try again later.</p>
-              <Button variant="outline" onClick={() => refetchPending()} className="mt-4">Retry</Button>
-            </div>
-          ) : pendingRequests.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pendingRequests.map((request: PendingConnectionRequest) => (
-                <div key={request.id} className="bg-card rounded-lg shadow-sm p-4">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-14 w-14 border-2 border-white">
-                      <AvatarImage src={request.avatarUrl} alt={request.displayName} />
-                      <AvatarFallback>{(request.displayName || 'UN').substring(0, 2)}</AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1">
-                      <Link to={`/profile/${request.username}`} className="font-semibold hover:underline">
-                        {request.displayName}
-                      </Link>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{request.headline}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Sent {new Date(request.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 mt-4">
-                    <Button 
-                      className="flex-1"
-                      size="sm"
-                      onClick={() => handleAcceptRequest(request.id)}
-                      disabled={isResponding[request.id]}
-                    >
-                      <UserCheck size={16} className="mr-1" />
-                      {isResponding[request.id] ? 'Accepting...' : 'Accept'}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleRejectRequest(request.id)}
-                      disabled={isResponding[request.id]}
-                    >
-                      {isResponding[request.id] ? 'Declining...' : 'Decline'}
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-card rounded-lg shadow-sm p-8 text-center">
-              <Bell size={48} className="mx-auto text-muted-foreground/50 mb-3" />
-              <h3 className="text-lg font-medium mb-1">No pending invitations</h3>
-              <p className="text-muted-foreground">You don't have any pending connection requests at this time.</p>
-            </div>
-          )}
-        </TabsContent>
         
         <TabsContent value="suggestions">
           {suggestionsLoading ? (

@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "./GlobalSearch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 export function MobileSearch() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   
   return (
@@ -22,8 +24,8 @@ export function MobileSearch() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="top" className="h-auto max-h-[90vh] overflow-auto [&>button]:hidden">
           <SheetHeader className="sr-only">
-            <SheetTitle>Search</SheetTitle>
-            <SheetDescription>Search for people, jobs, articles, and events</SheetDescription>
+            <SheetTitle>{t("mobileSearch.title")}</SheetTitle>
+            <SheetDescription>{t("mobileSearch.description")}</SheetDescription>
           </SheetHeader>
           <div className="pt-2 pb-4">
             <GlobalSearch 

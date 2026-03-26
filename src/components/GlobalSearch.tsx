@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Search, User, Briefcase, FileText, Calendar, X, Loader2, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ interface GlobalSearchProps {
 }
 
 export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = false, inlineResults = false, hideInputClear = false }: GlobalSearchProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -98,10 +100,10 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
 
   const getTypeLabel = (type: SearchResult['type']) => {
     switch (type) {
-      case 'profile': return 'People';
-      case 'job': return 'Jobs';
-      case 'article': return 'Articles';
-      case 'event': return 'Events';
+      case 'profile': return t("globalSearch.people");
+      case 'job': return t("globalSearch.jobs");
+      case 'article': return t("globalSearch.articles");
+      case 'event': return t("globalSearch.events");
     }
   };
 
@@ -170,7 +172,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search people, jobs, articles..."
+          placeholder={t("globalSearch.placeholder")}
           className="pl-9 pr-9"
           autoFocus={autoFocus}
         />
@@ -210,7 +212,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
-              No results found for "{query}"
+              {t("globalSearch.noResults")} "{query}"
             </div>
           )}
           
@@ -225,7 +227,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
                 onResultClick?.();
               }}
             >
-              <span>Advanced search</span>
+              <span>{t("globalSearch.advancedSearch")}</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

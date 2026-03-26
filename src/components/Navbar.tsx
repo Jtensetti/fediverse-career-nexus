@@ -79,10 +79,10 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success("Successfully logged out");
+      toast.success(t("toasts.loggedOut", "Du har loggats ut"));
       navigate("/");
     } catch (error) {
-      toast.error("Error signing out");
+      toast.error(t("toasts.logoutError", "Fel vid utloggning"));
     }
   };
 
@@ -268,7 +268,7 @@ const Navbar = () => {
                       <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                         <RouterLink to="/admin/instances" className="flex items-center gap-2">
                           <Settings className="h-4 w-4" />
-                          Instance Management
+                          {t("nav.instanceManagement", "Instanshantering")}
                         </RouterLink>
                       </DropdownMenuItem>
                     </>
