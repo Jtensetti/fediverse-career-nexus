@@ -296,7 +296,7 @@ export default function AuthPage() {
   const handleMFASuccess = () => {
     setMfaRequired(false);
     setMfaFactorId(null);
-    toast.success("Signed in successfully!");
+    toast.success(t("toasts.signedInSuccess"));
     navigate("/");
   };
 
