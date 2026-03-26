@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import DOMPurify from 'dompurify';
 import {
@@ -45,6 +46,7 @@ export default function EventView() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [videoOpen, setVideoOpen] = useState(false);
+  const { t } = useTranslation();
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -78,7 +80,7 @@ export default function EventView() {
 
   const handleRSVP = (status: 'attending' | 'maybe' | 'declined') => {
     if (!session) {
-      toast.error('You must be logged in to RSVP');
+      toast.error(t('eventView.mustBeLoggedIn'));
       return;
     }
     
@@ -103,8 +105,6 @@ export default function EventView() {
         });
       } catch (error) {
         console.error('Error sharing:', error);
-        
-        // Fallback to clipboard
         copyToClipboard(eventUrl);
       }
     } else {
@@ -114,14 +114,14 @@ export default function EventView() {
   
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-      .then(() => toast.success('Event link copied to clipboard!'))
+      .then(() => toast.success(t('eventView.linkCopied')))
       .catch(err => console.error('Failed to copy:', err));
   };
 
   if (isLoading) {
     return (
       <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
-        <div className="text-center">Loading event details...</div>
+        <div className="text-center">{t('eventView.loading')}</div>
       </div>
     );
   }
@@ -130,12 +130,12 @@ export default function EventView() {
     return (
       <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Event not found</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('eventView.notFound')}</h2>
           <p className="text-muted-foreground mb-6">
-            The event you're looking for doesn't exist or has been removed.
+            {t('eventView.notFoundDescription')}
           </p>
           <Button asChild>
-            <Link to="/events">Back to Events</Link>
+            <Link to="/events">{t('eventView.backToEvents')}</Link>
           </Button>
         </div>
       </div>
@@ -156,17 +156,17 @@ export default function EventView() {
     <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
       <SEOHead 
         title={event.title} 
-        description={event.description?.slice(0, 160) || "View event details on Nolto."} 
+        description={event.description?.slice(0, 160) || t('eventView.seoDescription')} 
       />
       <div className="flex flex-col space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Link to="/events" className="text-sm text-muted-foreground hover:underline">
-                Events
+                {t('eventView.breadcrumbEvents')}
               </Link>
               <span className="text-muted-foreground">/</span>
-              <span className="text-sm">Event Details</span>
+              <span className="text-sm">{t('eventView.eventDetails')}</span>
             </div>
             <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
           </div>
@@ -175,7 +175,7 @@ export default function EventView() {
             {event.is_online && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <Video className="h-3 w-3" />
-                <span>Virtual</span>
+                <span>{t('eventView.virtual')}</span>
               </Badge>
             )}
           </div>
@@ -194,7 +194,7 @@ export default function EventView() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-6">
             <div>
-              <h2 className="text-xl font-semibold mb-4">About this event</h2>
+              <h2 className="text-xl font-semibold mb-4">{t('eventView.aboutEvent')}</h2>
               <div 
                 className="whitespace-pre-wrap prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ 
@@ -208,7 +208,7 @@ export default function EventView() {
 
             {event.is_online && event.meeting_url && (
               <div>
-                <h2 className="text-xl font-semibold mb-4">Meeting Link</h2>
+                <h2 className="text-xl font-semibold mb-4">{t('eventView.meetingLink')}</h2>
                 {videoOpen ? (
                   <div className="aspect-video w-full mb-4">
                     {event.meeting_url.includes('youtube') || event.meeting_url.includes('youtu.be') ? (
@@ -233,7 +233,7 @@ export default function EventView() {
                       <div className="h-full w-full flex items-center justify-center bg-muted rounded-lg">
                         <div className="text-center p-6">
                           <Video className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                          <h3 className="text-lg font-medium mb-1">Meeting Link</h3>
+                          <h3 className="text-lg font-medium mb-1">{t('eventView.meetingLink')}</h3>
                           <a 
                             href={event.meeting_url} 
                             target="_blank" 
@@ -253,7 +253,7 @@ export default function EventView() {
                     onClick={() => setVideoOpen(true)}
                   >
                     <Video className="h-10 w-10" />
-                    <span>Click to view meeting</span>
+                    <span>{t('eventView.clickToViewMeeting')}</span>
                   </Button>
                 )}
               </div>
@@ -267,7 +267,7 @@ export default function EventView() {
                   <div className="flex items-start gap-3">
                     <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
                     <div>
-                      <div className="font-medium">Date and time</div>
+                      <div className="font-medium">{t('eventView.dateAndTime')}</div>
                       <div className="text-sm text-muted-foreground">{formattedDate}</div>
                       <div className="text-sm text-muted-foreground">
                         {formattedStartTime} - {formattedEndTime} ({browserTimezone})
@@ -279,7 +279,7 @@ export default function EventView() {
                     <div className="flex items-start gap-3">
                       <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div>
-                        <div className="font-medium">Location</div>
+                        <div className="font-medium">{t('eventView.location')}</div>
                         <div className="text-sm text-muted-foreground">{event.location}</div>
                       </div>
                     </div>
@@ -289,9 +289,9 @@ export default function EventView() {
                     <div className="flex items-start gap-3">
                       <User className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div>
-                        <div className="font-medium">Capacity</div>
+                        <div className="font-medium">{t('eventView.capacity')}</div>
                         <div className="text-sm text-muted-foreground">
-                          {event.rsvp_count || 0} / {event.max_attendees} attendees
+                          {event.rsvp_count || 0} / {event.max_attendees} {t('eventView.attendees')}
                         </div>
                       </div>
                     </div>
@@ -309,8 +309,8 @@ export default function EventView() {
                       onClick={() => handleRSVP('attending')}
                     >
                       {event.user_rsvp_status === 'attending'
-                        ? '✓ Attending'
-                        : 'Attend this event'}
+                        ? t('eventView.attending')
+                        : t('eventView.attendEvent')}
                     </Button>
                     <div className="flex gap-3">
                       <Button
@@ -319,7 +319,7 @@ export default function EventView() {
                         disabled={!session || rsvpMutation.isPending}
                         onClick={() => handleRSVP('maybe')}
                       >
-                        {event.user_rsvp_status === 'maybe' ? '✓ Maybe' : 'Maybe'}
+                        {event.user_rsvp_status === 'maybe' ? t('eventView.maybeConfirmed') : t('eventView.maybe')}
                       </Button>
                       <Button
                         variant={event.user_rsvp_status === 'declined' ? 'destructive' : 'outline'}
@@ -327,7 +327,7 @@ export default function EventView() {
                         disabled={!session || rsvpMutation.isPending}
                         onClick={() => handleRSVP('declined')}
                       >
-                        {event.user_rsvp_status === 'declined' ? '✓ Declined' : 'Decline'}
+                        {event.user_rsvp_status === 'declined' ? t('eventView.declined') : t('eventView.decline')}
                       </Button>
                     </div>
                   </div>
@@ -342,7 +342,7 @@ export default function EventView() {
                 className="gap-2"
               >
                 <Calendar className="h-4 w-4" />
-                <span className="hidden sm:inline">Add to calendar</span>
+                <span className="hidden sm:inline">{t('eventView.addToCalendar')}</span>
               </Button>
 
               <TooltipProvider>
@@ -357,7 +357,7 @@ export default function EventView() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Share event</p>
+                    <p>{t('eventView.shareEvent')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -366,25 +366,24 @@ export default function EventView() {
             {isCreator && (
               <div className="flex flex-col gap-3">
                 <Button asChild variant="outline">
-                  <Link to={`/events/edit/${event.id}`}>Edit Event</Link>
+                  <Link to={`/events/edit/${event.id}`}>{t('eventView.editEvent')}</Link>
                 </Button>
                 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive">Delete Event</Button>
+                    <Button variant="destructive">{t('eventView.deleteEvent')}</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogTitle>{t('eventView.deleteConfirmTitle')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete
-                        the event and all associated RSVPs.
+                        {t('eventView.deleteConfirmDescription')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                       <AlertDialogAction onClick={handleDelete}>
-                        Delete
+                        {t('common.delete')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

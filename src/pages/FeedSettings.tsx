@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const FeedSettings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   
   const [newMutedWord, setNewMutedWord] = useState('');
   const [localPrefs, setLocalPrefs] = useState<Partial<FeedPreferences>>({});
@@ -34,14 +36,13 @@ const FeedSettings = () => {
     mutationFn: updateFeedPreferences,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feedPreferences'] });
-      toast.success('Settings saved!');
+      toast.success(t('feedSettingsPage.saved'));
     },
     onError: () => {
-      toast.error('Failed to save settings');
+      toast.error(t('feedSettingsPage.saveFailed'));
     }
   });
 
-  // Initialize local state from fetched preferences
   useEffect(() => {
     if (preferences) {
       setLocalPrefs({
@@ -60,13 +61,11 @@ const FeedSettings = () => {
 
   const handleAddMutedWord = () => {
     if (!newMutedWord.trim()) return;
-    
     const currentWords = localPrefs.muted_words || [];
     if (currentWords.includes(newMutedWord.trim().toLowerCase())) {
-      toast.error('Word already in list');
+      toast.error(t('feedSettingsPage.wordAlreadyInList'));
       return;
     }
-    
     setLocalPrefs(prev => ({
       ...prev,
       muted_words: [...currentWords, newMutedWord.trim().toLowerCase()]
@@ -87,12 +86,10 @@ const FeedSettings = () => {
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold mb-2">Sign in required</h2>
-            <p className="text-muted-foreground mb-4">
-              You need to be signed in to manage feed settings.
-            </p>
+            <h2 className="text-2xl font-semibold mb-2">{t('feedSettingsPage.signInRequired')}</h2>
+            <p className="text-muted-foreground mb-4">{t('feedSettingsPage.signInDescription')}</p>
             <Button asChild>
-              <Link to="/auth">Sign In</Link>
+              <Link to="/auth">{t('auth.signIn')}</Link>
             </Button>
           </div>
         </main>
@@ -115,15 +112,14 @@ const FeedSettings = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead title="Feed Settings" description="Customize your feed preferences, default feeds, and muted words." />
+      <SEOHead title={t('feedSettingsPage.title')} description={t('feedSettingsPage.subtitle')} />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8 max-w-2xl">
-        {/* Back button */}
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/feed">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Feed
+            {t('feedSettingsPage.backToFeed')}
           </Link>
         </Button>
 
@@ -132,17 +128,16 @@ const FeedSettings = () => {
             <Settings className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Feed Settings</h1>
-            <p className="text-muted-foreground">Customize how your feed works</p>
+            <h1 className="text-2xl font-bold">{t('feedSettingsPage.title')}</h1>
+            <p className="text-muted-foreground">{t('feedSettingsPage.subtitle')}</p>
           </div>
         </div>
 
         <div className="space-y-6">
-          {/* Default Feed */}
           <Card>
             <CardHeader>
-              <CardTitle>Default Feed</CardTitle>
-              <CardDescription>Choose which feed loads by default</CardDescription>
+              <CardTitle>{t('feedSettingsPage.defaultFeed')}</CardTitle>
+              <CardDescription>{t('feedSettingsPage.defaultFeedDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Select 
@@ -153,25 +148,24 @@ const FeedSettings = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="following">Following</SelectItem>
-                  <SelectItem value="local">Local</SelectItem>
-                  <SelectItem value="federated">Federated</SelectItem>
+                  <SelectItem value="following">{t('feedSettingsPage.following')}</SelectItem>
+                  <SelectItem value="local">{t('feedSettingsPage.local')}</SelectItem>
+                  <SelectItem value="federated">{t('feedSettingsPage.federated')}</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>
           </Card>
 
-          {/* Content Filters */}
           <Card>
             <CardHeader>
-              <CardTitle>Content Filters</CardTitle>
-              <CardDescription>Control what appears in your feed</CardDescription>
+              <CardTitle>{t('feedSettingsPage.contentFilters')}</CardTitle>
+              <CardDescription>{t('feedSettingsPage.contentFiltersDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="show-reposts">Show reposts</Label>
-                  <p className="text-sm text-muted-foreground">Include boosted posts in your feed</p>
+                  <Label htmlFor="show-reposts">{t('feedSettingsPage.showReposts')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('feedSettingsPage.showRepostsDesc')}</p>
                 </div>
                 <Switch
                   id="show-reposts"
@@ -179,11 +173,10 @@ const FeedSettings = () => {
                   onCheckedChange={(checked) => setLocalPrefs(prev => ({ ...prev, show_reposts: checked }))}
                 />
               </div>
-              
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="show-replies">Show replies</Label>
-                  <p className="text-sm text-muted-foreground">Include reply posts in your feed</p>
+                  <Label htmlFor="show-replies">{t('feedSettingsPage.showReplies')}</Label>
+                  <p className="text-sm text-muted-foreground">{t('feedSettingsPage.showRepliesDesc')}</p>
                 </div>
                 <Switch
                   id="show-replies"
@@ -194,70 +187,56 @@ const FeedSettings = () => {
             </CardContent>
           </Card>
 
-          {/* Muted Words */}
           <Card>
             <CardHeader>
-              <CardTitle>Muted Words</CardTitle>
-              <CardDescription>Hide posts containing these words or phrases</CardDescription>
+              <CardTitle>{t('feedSettingsPage.mutedWords')}</CardTitle>
+              <CardDescription>{t('feedSettingsPage.mutedWordsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Add a word or phrase..."
+                  placeholder={t('feedSettingsPage.addWordPlaceholder')}
                   value={newMutedWord}
                   onChange={(e) => setNewMutedWord(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMutedWord())}
                 />
-                <Button type="button" onClick={handleAddMutedWord}>Add</Button>
+                <Button type="button" onClick={handleAddMutedWord}>{t('feedSettingsPage.add')}</Button>
               </div>
-              
               {(localPrefs.muted_words || []).length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {(localPrefs.muted_words || []).map((word) => (
                     <Badge key={word} variant="secondary" className="flex items-center gap-1 pr-1">
                       {word}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 p-0 hover:bg-transparent"
-                        onClick={() => handleRemoveMutedWord(word)}
-                      >
+                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0 hover:bg-transparent" onClick={() => handleRemoveMutedWord(word)}>
                         <X className="h-3 w-3" />
                       </Button>
                     </Badge>
                   ))}
                 </div>
               )}
-              
               {(localPrefs.muted_words || []).length === 0 && (
-                <p className="text-sm text-muted-foreground">No muted words yet</p>
+                <p className="text-sm text-muted-foreground">{t('feedSettingsPage.noMutedWords')}</p>
               )}
             </CardContent>
           </Card>
 
-          {/* Save Button */}
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => navigate('/feed')} className="flex-1">
-              Cancel
+              {t('common.cancel')}
             </Button>
-            <Button 
-              onClick={handleSave} 
-              disabled={updateMutation.isPending}
-              className="flex-1"
-            >
+            <Button onClick={handleSave} disabled={updateMutation.isPending} className="flex-1">
               {updateMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  {t('feedSettingsPage.saving')}
                 </>
               ) : (
-                'Save Settings'
+                t('feedSettingsPage.saveSettings')
               )}
             </Button>
           </div>
         </div>
       </main>
-      
       <Footer />
     </div>
   );

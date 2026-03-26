@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getArticleBySlug } from "@/services/articleService";
 import { canAccessFullArticle } from "@/services/authorFollowService";
 import DOMPurify from "dompurify";
@@ -23,6 +24,7 @@ const ArticleView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   
   const { data: article, isLoading, isError } = useQuery({
     queryKey: ['article', slug],
@@ -30,7 +32,6 @@ const ArticleView = () => {
     enabled: !!slug,
   });
 
-  // Fetch author profile
   const { data: authorProfile } = useQuery({
     queryKey: ['articleAuthorProfile', article?.user_id],
     queryFn: async () => {
@@ -45,12 +46,10 @@ const ArticleView = () => {
     enabled: !!article?.user_id,
   });
 
-  // Check if user has access to full article
   const { data: hasAccess, isLoading: accessLoading } = useQuery({
     queryKey: ['articleAccess', article?.user_id, user?.id],
     queryFn: async () => {
       if (!article?.user_id) return false;
-      // Own article
       if (user?.id === article.user_id) return true;
       return canAccessFullArticle(article.user_id);
     },
@@ -92,11 +91,11 @@ const ArticleView = () => {
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto text-center py-12">
-            <h2 className="text-2xl font-bold mb-4">Article not found</h2>
-            <p className="text-muted-foreground mb-6">The article you're looking for doesn't exist or has been removed.</p>
+            <h2 className="text-2xl font-bold mb-4">{t('articleView.notFound')}</h2>
+            <p className="text-muted-foreground mb-6">{t('articleView.notFoundDescription')}</p>
             <Button onClick={() => navigate("/articles")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Articles
+              {t('articleView.backToArticles')}
             </Button>
           </div>
         </main>
@@ -109,10 +108,9 @@ const ArticleView = () => {
     ? format(new Date(article.published_at), 'MMMM d, yyyy')
     : format(new Date(article.created_at), 'MMMM d, yyyy');
 
-  const authorName = authorProfile?.fullname || authorProfile?.username || 'Author';
+  const authorName = authorProfile?.fullname || authorProfile?.username || t('articleView.author');
   const authorInitials = authorName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
-  // Show preview content for gated articles
   const previewContent = article.excerpt || article.content.substring(0, 500);
   const showFullContent = hasAccess || accessLoading;
 
@@ -131,7 +129,7 @@ const ArticleView = () => {
         <div className="max-w-3xl mx-auto">
           <Link to="/articles" className="inline-flex items-center text-muted-foreground hover:text-primary mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Articles
+            {t('articleView.backToArticles')}
           </Link>
           
           <article className="prose prose-sm sm:prose max-w-none dark:prose-invert overflow-x-hidden">
@@ -172,7 +170,6 @@ const ArticleView = () => {
               />
             ) : (
               <>
-                {/* Preview content */}
                 <div className="relative">
                   <div 
                     className="article-content"
@@ -183,12 +180,8 @@ const ArticleView = () => {
                       })
                     }} 
                   />
-                  
-                  {/* Fade overlay */}
                   <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                 </div>
-                
-                {/* Content gate */}
                 <div className="mt-8">
                   <ContentGate 
                     authorId={article.user_id} 
@@ -199,10 +192,9 @@ const ArticleView = () => {
             )}
           </article>
           
-          {/* Only show reactions if user has access */}
           {showFullContent && (
             <div className="my-8 p-4 border rounded-md bg-background/50">
-              <h3 className="text-lg font-medium mb-2">Reactions</h3>
+              <h3 className="text-lg font-medium mb-2">{t('articleView.reactions')}</h3>
               <ArticleReactions articleId={article.id} />
             </div>
           )}
@@ -215,7 +207,7 @@ const ArticleView = () => {
             <Link to="/articles">
               <Button variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Articles
+                {t('articleView.backToArticles')}
               </Button>
             </Link>
           </div>

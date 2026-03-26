@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import AvatarWithStatus from "@/components/common/AvatarWithStatus";
 import { formatDistanceToNow } from "date-fns";
@@ -68,6 +69,7 @@ export default function FederatedPostCard({
   const commentPreviewRef = useRef<CommentPreviewHandle>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Update state when initialData changes (from parent batch fetch)
   useEffect(() => {
@@ -266,7 +268,7 @@ export default function FederatedPostCard({
   // Handle boost/repost - now opens quote repost dialog
   const handleBoost = () => {
     if (!user) {
-      toast.error('Please sign in to repost');
+      toast.error(t('postCard.signInToRepost'));
       return;
     }
     setShowQuoteRepostDialog(true);
@@ -281,11 +283,9 @@ export default function FederatedPostCard({
   // Handle reply - now activates inline composer
   const handleReply = () => {
     if (!user) {
-      toast.error('Please sign in to reply to posts');
+      toast.error(t('postCard.signInToReply'));
       return;
     }
-
-    // Try to open via ref, or set flag for when component loads
     if (commentPreviewRef.current) {
       commentPreviewRef.current.openComposer();
     } else {
@@ -314,7 +314,7 @@ export default function FederatedPostCard({
         onDelete(post.id);
       }
     } catch (error) {
-      toast.error('Failed to delete post');
+      toast.error(t('postCard.failedToDelete'));
     }
   };
 
@@ -338,13 +338,13 @@ export default function FederatedPostCard({
     return (
       <div className={bannerClasses}>
         <Globe size={14} />
-        <span>From {post.instance}</span>
+        <span>{t('postCard.fromInstance')} {post.instance}</span>
         {post.moderation_status !== 'normal' && (
           <>
             <span className="mx-1">•</span>
             <Badge variant={badgeVariant === "outline" ? "outline" : "destructive"} className="text-xs">
-              {post.moderation_status === 'probation' && 'Instance on probation'}
-              {post.moderation_status === 'blocked' && 'Blocked instance'}
+              {post.moderation_status === 'probation' && t('postCard.instanceOnProbation')}
+              {post.moderation_status === 'blocked' && t('postCard.blockedInstance')}
             </Badge>
           </>
         )}
@@ -416,7 +416,7 @@ export default function FederatedPostCard({
               {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">
                   {isCompanyPost
-                    ? <Link to={`/company/${post.company!.slug}`} className="hover:underline">Company page</Link>
+                    ? <Link to={`/company/${post.company!.slug}`} className="hover:underline">{t('postCard.companyPage')}</Link>
                     : <>@{getActorUsername()}{post.source === 'local'
                         ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}`
                         : post.instance ? `@${post.instance}` : ''}</>
@@ -431,7 +431,7 @@ export default function FederatedPostCard({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Post options">
+                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity" aria-label={t('postCard.postOptions')}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -440,11 +440,11 @@ export default function FederatedPostCard({
                   <>
                     <DropdownMenuItem onClick={handleEdit}>
                       <Edit className="mr-2 h-4 w-4" />
-                      Edit
+                      {t('postCard.edit')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive">
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
+                      {t('postCard.deletePost')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
@@ -453,14 +453,14 @@ export default function FederatedPostCard({
                   <>
                     <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
                       <Flag className="mr-2 h-4 w-4" />
-                      Report Post
+                      {t('postCard.reportPost')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive"
                       onClick={() => setShowBlockDialog(true)}
                     >
                       <UserX className="mr-2 h-4 w-4" />
-                      Block User
+                      {t('postCard.blockUser')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
@@ -506,7 +506,7 @@ export default function FederatedPostCard({
                     console.error('Poll rendering error:', e);
                     return (
                       <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-                        Failed to load poll
+                        {t('postCard.failedToLoadPoll')}
                       </div>
                     );
                   }
@@ -539,7 +539,7 @@ export default function FederatedPostCard({
                   navigate(`/post/${post.id}`);
                 }}
               >
-                Read more
+                {t('postCard.readMore')}
               </button>
             )}
 
@@ -574,7 +574,7 @@ export default function FederatedPostCard({
                     {/* Hover overlay with click hint */}
                     <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors flex items-center justify-center">
                       <span className="opacity-0 group-hover/image:opacity-100 transition-opacity text-white text-sm bg-black/50 px-2 py-1 rounded">
-                        Click to enlarge
+                        {t('postCard.clickToEnlarge')}
                       </span>
                     </div>
                   </div>
@@ -600,7 +600,7 @@ export default function FederatedPostCard({
             size="sm"
             className="gap-1.5 rounded-full hover:text-primary hover:bg-primary/10 transition-all duration-200 px-3"
             onClick={handleReply}
-            aria-label="Reply to post"
+            aria-label={t('postCard.replyToPost')}
           >
             <MessageSquare className="h-4 w-4" />
             {replyCount > 0 && <span className="text-xs">{replyCount}</span>}
@@ -613,7 +613,7 @@ export default function FederatedPostCard({
               isBoosted ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950" : "hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950"
             )}
             onClick={handleBoost}
-            aria-label={isBoosted ? "Remove boost" : "Boost post"}
+            aria-label={isBoosted ? t('postCard.removeBoost') : t('postCard.boostPost')}
             aria-pressed={isBoosted}
           >
             <Repeat className={cn("h-4 w-4 transition-transform", isBoosted && "text-green-500")} />
@@ -649,15 +649,15 @@ export default function FederatedPostCard({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogTitle>{t('postCard.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this post? This action cannot be undone.
+              {t('postCard.deleteConfirmDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('postCard.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-              Delete
+              {t('postCard.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
