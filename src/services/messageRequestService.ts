@@ -117,7 +117,7 @@ export async function sendMessageRequest(
     return true;
   } catch (error) {
     console.error('Error sending message request:', error);
-    toast.error('Failed to send request');
+    toast.error('Kunde inte skicka förfrågan');
     return false;
   }
 }
