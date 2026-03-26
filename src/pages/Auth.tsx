@@ -318,7 +318,7 @@ export default function AuthPage() {
     // Validate handle format
     const handlePattern = /^@?[a-zA-Z0-9_]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!handlePattern.test(fediHandle)) {
-      toast.error("Invalid handle format. Use @username@instance.social");
+      toast.error(t("toasts.invalidHandle"));
       return;
     }
 
