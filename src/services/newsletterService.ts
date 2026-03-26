@@ -29,7 +29,7 @@ export const subscribeToNewsletter = async (email: string): Promise<NewsletterSu
       return null;
     }
     
-    toast.success('Successfully subscribed to newsletter!');
+    toast.success('Prenumeration lyckades!');
     return data as NewsletterSubscription;
   } catch (error) {
     console.error('Error subscribing to newsletter:', error);
