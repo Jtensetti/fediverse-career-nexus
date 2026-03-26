@@ -161,7 +161,7 @@ const ProfileEditPage = () => {
             await fetchCVData();
           }
         } else {
-          toast.error("You must be logged in to edit your profile");
+          toast.error(t("toasts.loginRequiredProfile"));
           navigate("/auth/login");
         }
       } catch (error) {
