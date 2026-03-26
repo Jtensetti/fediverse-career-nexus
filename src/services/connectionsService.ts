@@ -302,7 +302,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
     return true;
   } catch (error) {
     console.error("Error sending connection request:", error);
-    toast.error("Failed to send connection request");
+    toast.error(i18n.t("toasts.failedSendRequest"));
     return false;
   }
 };
