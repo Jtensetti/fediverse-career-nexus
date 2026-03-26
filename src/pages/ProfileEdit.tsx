@@ -114,7 +114,8 @@ const ProfileEditPage = () => {
     saving: false
   });
 
-  // Form for basic profile information
+  // Form for basic profile information  
+  const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
