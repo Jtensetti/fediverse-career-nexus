@@ -70,7 +70,7 @@ export default function AuthPage() {
     const trimmed = name.trim();
     // Allow single character names (many cultures have them, also initials like "J.")
     if (trimmed.length < 1) {
-      return `${field} is required`;
+      return t("auth.firstNameRequired", `${field} is required`);
     }
     if (trimmed.length > 50) {
       return `${field} must be less than 50 characters`;
