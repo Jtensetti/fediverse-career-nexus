@@ -217,16 +217,16 @@ export default function PostView() {
 
   if (error || !post) {
     return (
-      <DashboardLayout title="Post Not Found" description="This post could not be found.">
+      <DashboardLayout title="Inlägg hittades inte" description="Inlägget kunde inte hittas.">
         <div className="max-w-2xl mx-auto px-4 py-8">
           <Link to="/feed">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Feed
+              Tillbaka till flödet
             </Button>
           </Link>
           <div className="text-center py-12">
-            <p className="text-muted-foreground">{error || 'Post not found'}</p>
+            <p className="text-muted-foreground">{error || 'Inlägget hittades inte'}</p>
           </div>
         </div>
       </DashboardLayout>
