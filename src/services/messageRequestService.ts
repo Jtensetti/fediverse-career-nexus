@@ -113,7 +113,7 @@ export async function sendMessageRequest(
 
     if (error) throw error;
 
-    toast.success('Message request sent!');
+    toast.success('Meddelandeförfrågan skickad!');
     return true;
   } catch (error) {
     console.error('Error sending message request:', error);
