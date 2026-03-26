@@ -124,7 +124,7 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
       {!canReadFull && !isOwnProfile && (
         <div className="text-center pt-4 border-t">
           <p className="text-sm text-muted-foreground mb-3">
-            Follow to access all articles and get notified of new ones
+            Följ för att få tillgång till alla artiklar och bli notifierad om nya
           </p>
           <FollowAuthorButton authorId={userId} />
         </div>

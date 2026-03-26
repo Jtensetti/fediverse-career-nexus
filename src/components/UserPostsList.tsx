@@ -73,7 +73,7 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
                   }
                 : { content: post.content },
               created_at: post.created_at,
-              actor_name: post.author?.fullname || post.author?.username || "Unknown User",
+              actor_name: post.author?.fullname || post.author?.username || "Okänd användare",
               actor_avatar: post.author?.avatar_url,
               user_id: post.user_id,
               profile: {

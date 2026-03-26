@@ -737,10 +737,10 @@ const ProfilePage = () => {
                           </div>
                           <p className="text-primary font-medium">{exp.company}</p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(exp.startDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })} -
+                            {new Date(exp.startDate).toLocaleDateString("sv-SE", { year: "numeric", month: "short" })} -
                             {exp.isCurrentRole
-                              ? ` ${t("profileEdit.present", "Present")}`
-                              : ` ${new Date(exp.endDate).toLocaleDateString("en-US", { year: "numeric", month: "short" })}`}
+                              ? ` ${t("profileEdit.present", "Nuvarande")}`
+                              : ` ${new Date(exp.endDate).toLocaleDateString("sv-SE", { year: "numeric", month: "short" })}`}
                           </p>
                           {exp.location && <p className="text-sm text-muted-foreground">{exp.location}</p>}
                           {exp.description && <p className="mt-2 text-muted-foreground whitespace-pre-line">{exp.description}</p>}
