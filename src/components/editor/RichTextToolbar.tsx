@@ -293,7 +293,7 @@ const DefaultToolbar = ({
               }}
               className="justify-start h-8 text-sm"
             >
-              Divider
+              Avdelare
             </Button>
           </div>
         </PopoverContent>
