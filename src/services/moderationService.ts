@@ -266,7 +266,7 @@ export async function revokeBan(banId: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error("Error revoking ban:", error);
-    toast.error("Failed to revoke ban");
+    toast.error("Kunde inte upphäva avstängning");
     return false;
   }
 }
