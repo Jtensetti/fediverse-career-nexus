@@ -55,7 +55,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     
     if (!user) {
       console.error('❌ No user found in updateUserProfile');
-      toast.error("You must be logged in to update your profile");
+      toast.error("Du måste vara inloggad för att uppdatera din profil");
       return false;
     }
 
