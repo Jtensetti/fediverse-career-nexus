@@ -334,7 +334,7 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Error deleting article:', error);
-    toast.error('Failed to delete article. Please try again.');
+    toast.error(i18n.t('toasts.articleDeleteFailed'));
     return false;
   }
 };
