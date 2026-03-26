@@ -298,7 +298,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
       console.warn('Failed to create connection notification:', notifError);
     }
 
-    toast.success("Connection request sent");
+    toast.success(i18n.t("toasts.connectionRequestSent"));
     return true;
   } catch (error) {
     console.error("Error sending connection request:", error);
