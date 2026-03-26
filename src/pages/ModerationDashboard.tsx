@@ -436,9 +436,9 @@ export default function ModerationDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Globe className="h-5 w-5 text-primary" />
-                      Domain Moderation
+                      Domänmoderering
                     </CardTitle>
-                    <CardDescription>Manage blocked and restricted domains</CardDescription>
+                    <CardDescription>Hantera blockerade och begränsade domäner</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Suspense fallback={<LoadingFallback />}>
