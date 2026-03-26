@@ -341,7 +341,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
   } catch (error) {
     console.error('❌ Unexpected error creating post:', error);
-    toast.error("An unexpected error occurred");
+    toast.error("Ett oväntat fel uppstod");
     return false;
   }
 };
