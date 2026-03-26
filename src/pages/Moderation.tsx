@@ -144,7 +144,7 @@ const Moderation = () => {
   if (!acceptedCoC) {
     return (
       <div className="container mx-auto py-10 px-4 sm:px-6">
-        <SEOHead title={t('moderation.title')} description="Community moderation tools for administrators and moderators." />
+        <SEOHead title={t('moderation.title')} description="Modereringsverktyg för administratörer och moderatorer." />
         <ModerationHeader isAdmin={isAdmin} isModerator={isModerator} />
         <div className="mt-6 space-y-6">
           <CodeOfConduct />
@@ -153,7 +153,7 @@ const Moderation = () => {
               onClick={() => handleAcceptCoC(true)}
               className="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:opacity-90 transition"
             >
-              I Accept the Code of Conduct
+              Jag accepterar uppförandekoden
             </button>
           </div>
         </div>
@@ -163,7 +163,7 @@ const Moderation = () => {
 
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6">
-      <SEOHead title={t('moderation.title')} description="Community moderation tools for administrators and moderators." />
+      <SEOHead title={t('moderation.title')} description="Modereringsverktyg för administratörer och moderatorer." />
       <ModerationHeader isAdmin={isAdmin} isModerator={isModerator} />
       
       {/* Stats Overview */}
@@ -181,13 +181,13 @@ const Moderation = () => {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="bans">User Bans</TabsTrigger>
-          <TabsTrigger value="lookup">User Lookup</TabsTrigger>
+          <TabsTrigger value="bans">Avstängningar</TabsTrigger>
+          <TabsTrigger value="lookup">Användarsökning</TabsTrigger>
           <TabsTrigger value="log">{t('moderation.log')}</TabsTrigger>
           {isAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
-          <TabsTrigger value="alerts">Alerts</TabsTrigger>
-          <TabsTrigger value="domains">Domains</TabsTrigger>
-          <TabsTrigger value="actors">Actors</TabsTrigger>
+          <TabsTrigger value="alerts">Varningar</TabsTrigger>
+          <TabsTrigger value="domains">Domäner</TabsTrigger>
+          <TabsTrigger value="actors">Aktörer</TabsTrigger>
           <TabsTrigger value="coc">{t('moderation.codeOfConduct')}</TabsTrigger>
         </TabsList>
         

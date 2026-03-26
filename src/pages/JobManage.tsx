@@ -88,29 +88,29 @@ const JobManage = () => {
       <Navbar />
       <main className="flex-grow container py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Manage Job Posts</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Hantera jobbannonser</h1>
           <Button asChild>
             <Link to="/jobs/create">
               <Plus className="mr-2 h-4 w-4" />
-              Create Job Post
+              Skapa jobbannons
             </Link>
           </Button>
         </div>
         
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
-            <p className="text-lg text-muted-foreground">Loading your job posts...</p>
+            <p className="text-lg text-muted-foreground">Laddar dina jobbannonser...</p>
           </div>
         ) : jobs.length > 0 ? (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Job Title</TableHead>
-                  <TableHead>Company</TableHead>
+                  <TableHead>Jobbtitel</TableHead>
+                  <TableHead>Företag</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>Skapad</TableHead>
+                  <TableHead>Åtgärder</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -124,7 +124,7 @@ const JobManage = () => {
                     <TableCell>{job.company}</TableCell>
                     <TableCell>
                       <Badge variant={job.is_active ? "default" : "outline"}>
-                        {job.is_active ? "Published" : "Draft"}
+                        {job.is_active ? "Publicerad" : "Utkast"}
                       </Badge>
                     </TableCell>
                     <TableCell>{format(new Date(job.created_at), "MMM d, yyyy")}</TableCell>
@@ -158,14 +158,14 @@ const JobManage = () => {
           </div>
         ) : (
           <div className="py-12 text-center">
-            <h2 className="text-2xl font-semibold mb-2">No job posts yet</h2>
+            <h2 className="text-2xl font-semibold mb-2">Inga jobbannonser ännu</h2>
             <p className="text-muted-foreground mb-6">
-              You haven't created any job posts yet. Get started by creating your first job post.
+              Du har inte skapat några jobbannonser ännu. Kom igång genom att skapa din första.
             </p>
             <Button asChild>
               <Link to="/jobs/create">
                 <Plus className="mr-2 h-4 w-4" />
-                Create Job Post
+                Skapa jobbannons
               </Link>
             </Button>
           </div>
@@ -174,13 +174,13 @@ const JobManage = () => {
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle>Är du säker?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the job post.
+                Denna åtgärd kan inte ångras. Jobbannonsen raderas permanent.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
               <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
                 Delete
               </AlertDialogAction>
