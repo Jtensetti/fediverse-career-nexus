@@ -410,9 +410,9 @@ const ProfileEditPage = () => {
     if (Object.keys(errors).length > 0) {
       setEducationErrors(prev => ({ ...prev, [index]: errors }));
       const missingFields = [];
-      if (errors.institution) missingFields.push("institution");
-      if (errors.degree) missingFields.push("degree");
-      if (errors.start_year) missingFields.push("start year");
+      if (errors.institution) missingFields.push(t("profileEdit.education.institution", "institution"));
+      if (errors.degree) missingFields.push(t("profileEdit.education.degree", "examen"));
+      if (errors.start_year) missingFields.push(t("profileEdit.education.startYear", "startår"));
       toast.error(`Fyll i obligatoriska fält: ${missingFields.join(", ")}`);
       return;
     }

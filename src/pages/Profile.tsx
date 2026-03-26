@@ -580,7 +580,7 @@ const ProfilePage = () => {
                   )}
                   <ShareButton
                     url={`${window.location.origin}/profile/${profile.username}`}
-                    title={`${profile.displayName} on Nolto`}
+                    title={`${profile.displayName} på Nolto`}
                     description={profile.headline || profile.bio || undefined}
                     variant="outline"
                     size="icon"
@@ -590,12 +590,12 @@ const ProfilePage = () => {
                 <>
                   <Button asChild>
                     <Link to="/auth/signup">
-                      <UserPlus className="h-4 w-4 mr-2" /> Sign up to connect
+                      <UserPlus className="h-4 w-4 mr-2" /> {t("profile.signUpToConnect", "Registrera dig för att ansluta")}
                     </Link>
                   </Button>
                   <ShareButton
                     url={`${window.location.origin}/profile/${profile.username}`}
-                    title={`${profile.displayName} on Nolto`}
+                    title={`${profile.displayName} på Nolto`}
                     description={profile.headline || profile.bio || undefined}
                     variant="outline"
                     size="icon"

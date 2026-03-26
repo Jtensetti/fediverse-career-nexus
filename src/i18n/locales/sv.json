@@ -2227,17 +2227,6 @@
     "addEducationLoginRequired": "Du måste vara inloggad för att lägga till utbildning",
     "addSkillLoginRequired": "Du måste vara inloggad för att lägga till kompetens"
   },
-  "profileEdit": {
-    "usernameDesc": "Ditt @användarnamn på Nolto",
-    "profileSchema": {
-      "usernameMin": "Användarnamnet måste vara minst 3 tecken",
-      "usernameMax": "Användarnamnet måste vara högst 20 tecken",
-      "usernameRegex": "Bara små bokstäver, siffror och understreck",
-      "displayNameMin": "Visningsnamnet måste vara minst 2 tecken",
-      "headlineMin": "Rubriken måste vara minst 5 tecken",
-      "invalidEmail": "Ange en giltig e-postadress"
-    }
-  },
   "legal": {
     "backToHome": "Tillbaka till startsidan",
     "termsTitle": "Användarvillkor",
