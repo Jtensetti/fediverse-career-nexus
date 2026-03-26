@@ -494,7 +494,8 @@
       "experience": "Erfarenhet",
       "education": "Utbildning",
       "skills": "Färdigheter",
-      "privacy": "Sekretess"
+      "privacy": "Sekretess",
+      "freelance": "Frilans"
     },
     "personalInfo": "Personlig information",
     "displayName": "Visningsnamn",
@@ -511,9 +512,28 @@
     "email": "E-post",
     "emailDesc": "E-post kan inte ändras här",
     "phone": "Telefon",
+    "phonePlaceholder": "Ditt telefonnummer",
     "location": "Plats",
+    "locationPlaceholder": "t.ex. Stockholm, Sverige",
+    "contactEmail": "Kontakt-e-post",
+    "contactEmailDesc": "Används för aviseringar. Lämna tomt om du inte vill ta emot e-post.",
+    "username": "Användarnamn",
+    "usernamePlaceholder": "ditt_användarnamn",
+    "usernameDesc": "Ditt @användarnamn på Nolto",
     "saveChanges": "Spara ändringar",
     "saving": "Sparar...",
+    "present": "Nuvarande",
+    "freelance": {
+      "title": "Frilansinställningar"
+    },
+    "profileSchema": {
+      "usernameMin": "Användarnamnet måste vara minst 3 tecken",
+      "usernameMax": "Användarnamnet måste vara högst 20 tecken",
+      "usernameRegex": "Bara små bokstäver, siffror och understreck",
+      "displayNameMin": "Visningsnamnet måste vara minst 2 tecken",
+      "headlineMin": "Rubriken måste vara minst 5 tecken",
+      "invalidEmail": "Ange en giltig e-postadress"
+    },
     "experience": {
       "title": "Erfarenhet",
       "company": "Företag",
@@ -524,24 +544,75 @@
       "description": "Beskrivning",
       "add": "Lägg till erfarenhet",
       "save": "Spara erfarenhet",
-      "delete": "Ta bort"
+      "update": "Uppdatera erfarenhet",
+      "delete": "Ta bort",
+      "loading": "Laddar erfarenheter...",
+      "jobTitle": "Yrkestitel",
+      "jobTitlePlaceholder": "t.ex. Projektledare",
+      "companyPlaceholder": "t.ex. Kommun AB, Frilans, Egenföretagare",
+      "companyDomain": "Företagsdomän",
+      "companyDomainPlaceholder": "t.ex. foretag.se",
+      "locationPlaceholder": "t.ex. Stockholm",
+      "pickDate": "Välj datum",
+      "descriptionPlaceholder": "Beskriv dina arbetsuppgifter och ansvarsområden...",
+      "noExperience": "Ingen erfarenhet tillagd ännu",
+      "titleRequired": "Yrkestitel krävs",
+      "startDateRequired": "Startdatum krävs"
     },
     "education": {
       "title": "Utbildning",
       "institution": "Institution",
+      "institutionPlaceholder": "t.ex. Stockholms universitet",
       "degree": "Examen",
+      "degreePlaceholder": "t.ex. Kandidatexamen",
       "field": "Studieområde",
+      "fieldPlaceholder": "t.ex. Datavetenskap",
       "startYear": "Startår",
       "endYear": "Slutår",
       "add": "Lägg till utbildning",
-      "save": "Spara utbildning"
+      "save": "Spara utbildning",
+      "update": "Uppdatera utbildning",
+      "delete": "Ta bort",
+      "loading": "Laddar utbildningar...",
+      "noEducation": "Ingen utbildning tillagd ännu",
+      "institutionRequired": "Institution krävs",
+      "degreeRequired": "Examen krävs",
+      "startYearRequired": "Startår krävs"
     },
     "skills": {
       "title": "Färdigheter",
       "add": "Lägg till färdighet",
       "placeholder": "Skriv en färdighet...",
-      "addButton": "Lägg till"
+      "addButton": "Lägg till",
+      "loading": "Laddar färdigheter...",
+      "noSkills": "Inga färdigheter tillagda ännu"
+    },
+    "privacy": {
+      "title": "Sekretess & Säkerhet"
     }
+  },
+  "freelancer": {
+    "openForWork": "Tillgänglig för uppdrag",
+    "visibleToClients": "Din profil syns för potentiella kunder som letar efter frilansare.",
+    "notVisible": "Aktivera detta för att synas i frilanskatalogen.",
+    "skills": "Färdigheter",
+    "addSkill": "Lägg till en färdighet...",
+    "noSkillsYet": "Inga färdigheter tillagda ännu",
+    "rate": "Arvode (valfritt)",
+    "ratePlaceholder": "t.ex. 500-1000 kr/tim, 5000 kr/dag",
+    "availability": "Tillgänglighet",
+    "selectAvailability": "Välj tillgänglighet",
+    "fullTime": "Heltid",
+    "partTime": "Deltid",
+    "projectBased": "Projektbaserat",
+    "notAvailable": "Inte tillgänglig just nu",
+    "settingsSaved": "Frilansinställningar sparade!",
+    "settingsError": "Kunde inte spara inställningar",
+    "dmSuggestion": "Överväg att öppna dina DM så att potentiella kunder kan nå dig direkt!",
+    "openSettings": "Inställningar",
+    "dmReminder": "Låt kunder skicka meddelanden till dig",
+    "dmReminderDesc": "Se till att dina DM-inställningar tillåter meddelanden från icke-anslutningar.",
+    "checkDmSettings": "Kontrollera DM-inställningar →"
   },
   "homepage": {
     "hero": {
@@ -2155,17 +2226,6 @@
     "addExperienceLoginRequired": "Du måste vara inloggad för att lägga till erfarenhet",
     "addEducationLoginRequired": "Du måste vara inloggad för att lägga till utbildning",
     "addSkillLoginRequired": "Du måste vara inloggad för att lägga till kompetens"
-  },
-  "profileEdit": {
-    "usernameDesc": "Ditt @användarnamn på Nolto",
-    "profileSchema": {
-      "usernameMin": "Användarnamnet måste vara minst 3 tecken",
-      "usernameMax": "Användarnamnet måste vara högst 20 tecken",
-      "usernameRegex": "Bara små bokstäver, siffror och understreck",
-      "displayNameMin": "Visningsnamnet måste vara minst 2 tecken",
-      "headlineMin": "Rubriken måste vara minst 5 tecken",
-      "invalidEmail": "Ange en giltig e-postadress"
-    }
   },
   "legal": {
     "backToHome": "Tillbaka till startsidan",

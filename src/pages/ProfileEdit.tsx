@@ -410,9 +410,9 @@ const ProfileEditPage = () => {
     if (Object.keys(errors).length > 0) {
       setEducationErrors(prev => ({ ...prev, [index]: errors }));
       const missingFields = [];
-      if (errors.institution) missingFields.push("institution");
-      if (errors.degree) missingFields.push("degree");
-      if (errors.start_year) missingFields.push("start year");
+      if (errors.institution) missingFields.push(t("profileEdit.education.institution", "institution"));
+      if (errors.degree) missingFields.push(t("profileEdit.education.degree", "examen"));
+      if (errors.start_year) missingFields.push(t("profileEdit.education.startYear", "startår"));
       toast.error(`Fyll i obligatoriska fält: ${missingFields.join(", ")}`);
       return;
     }
@@ -742,7 +742,7 @@ const ProfileEditPage = () => {
                         <div className="flex justify-between items-center mb-4">
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium">
-                              {exp.title || `Experience #${index + 1}`}
+                              {exp.title || `Erfarenhet #${index + 1}`}
                             </h4>
                             {exp.verification_status && (
                               <VerificationBadge status={exp.verification_status} />
@@ -950,7 +950,7 @@ const ProfileEditPage = () => {
                         <div className="flex justify-between items-center mb-4">
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium">
-                              {edu.institution || `Education #${index + 1}`}
+                              {edu.institution || `Utbildning #${index + 1}`}
                             </h4>
                           </div>
                           <div className="flex gap-2">
@@ -986,7 +986,7 @@ const ProfileEditPage = () => {
                               className={`mt-1 ${educationErrors[index]?.institution ? 'border-destructive' : ''}`}
                             />
                             {educationErrors[index]?.institution && (
-                              <p className="text-sm text-destructive mt-1">Institution is required</p>
+                              <p className="text-sm text-destructive mt-1">{t("profileEdit.education.institutionRequired", "Institution krävs")}</p>
                             )}
                           </div>
                           
@@ -1010,7 +1010,7 @@ const ProfileEditPage = () => {
                               className={`mt-1 ${educationErrors[index]?.degree ? 'border-destructive' : ''}`}
                             />
                             {educationErrors[index]?.degree && (
-                              <p className="text-sm text-destructive mt-1">Degree is required</p>
+                              <p className="text-sm text-destructive mt-1">{t("profileEdit.education.degreeRequired", "Examen krävs")}</p>
                             )}
                           </div>
                           
@@ -1046,7 +1046,7 @@ const ProfileEditPage = () => {
                               className={`mt-1 ${educationErrors[index]?.start_year ? 'border-destructive' : ''}`}
                             />
                             {educationErrors[index]?.start_year && (
-                              <p className="text-sm text-destructive mt-1">Start year is required</p>
+                              <p className="text-sm text-destructive mt-1">{t("profileEdit.education.startYearRequired", "Startår krävs")}</p>
                             )}
                           </div>
                           
