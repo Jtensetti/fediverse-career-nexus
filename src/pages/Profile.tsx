@@ -908,7 +908,7 @@ const ProfilePage = () => {
                   {!isSectionVisible('connections') ? renderHiddenMessage() : profile.networkVisibilityEnabled === false ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>Connections are hidden</p>
+                      <p>{t("profilePage.connectionsHidden")}</p>
                     </div>
                   ) : connectionsLoading ? (
                     <div className="flex justify-center py-8">
