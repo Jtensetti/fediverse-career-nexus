@@ -350,7 +350,7 @@ export default function AuthPage() {
         window.location.href = authorizationUrl;
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to connect with your Fediverse instance");
+      toast.error(error.message || t("toasts.failedFederatedLogin"));
     } finally {
       setIsFederatedLoading(false);
     }
