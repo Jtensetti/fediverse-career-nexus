@@ -238,7 +238,7 @@ export async function banUser(
     return true;
   } catch (error) {
     console.error("Error banning user:", error);
-    toast.error("Failed to ban user");
+    toast.error("Kunde inte stänga av användare");
     return false;
   }
 }
