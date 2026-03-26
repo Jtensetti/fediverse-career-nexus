@@ -114,8 +114,8 @@ export default function MessageConversation() {
     const handleError = (error: any) => {
       console.error('Error in realtime subscription:', error);
       toast({
-        title: "Connection issue",
-        description: "Problem receiving new messages. Try refreshing.",
+        title: "Anslutningsproblem",
+        description: "Problem med att ta emot nya meddelanden. Försök uppdatera.",
         variant: "destructive"
       });
     };
@@ -183,8 +183,8 @@ export default function MessageConversation() {
     onError: (error) => {
       console.error('Failed to send message:', error);
       toast({
-        title: "Failed to send message",
-        description: "Please try again",
+        title: "Kunde inte skicka meddelande",
+        description: "Försök igen",
         variant: "destructive"
       });
     }

@@ -66,7 +66,7 @@ const Moderation = () => {
           console.error('Error checking admin status:', adminError);
           toast({
             title: t('common.error'),
-            description: 'Failed to verify admin permissions',
+            description: 'Kunde inte verifiera adminbehörigheter',
             variant: 'destructive',
           });
         } else {
@@ -82,7 +82,7 @@ const Moderation = () => {
           console.error('Error checking moderator status:', modError);
           toast({
             title: t('common.error'),
-            description: 'Failed to verify moderator permissions',
+            description: 'Kunde inte verifiera moderatorbehörigheter',
             variant: 'destructive',
           });
         } else {
@@ -98,7 +98,7 @@ const Moderation = () => {
         console.error('Error checking user role:', error);
         toast({
           title: t('common.error'),
-          description: 'Failed to check user permissions',
+          description: 'Kunde inte kontrollera användarbehörigheter',
           variant: 'destructive',
         });
         setLoading(false);

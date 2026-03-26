@@ -40,7 +40,7 @@ const JobManage = () => {
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!loading && !user) {
-      toast.error("Please sign in to manage job posts");
+      toast.error("Logga in för att hantera jobbannonser");
       navigate("/auth");
       return;
     }
