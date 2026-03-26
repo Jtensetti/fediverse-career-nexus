@@ -439,7 +439,7 @@ async function sendFederatedMessage(
       console.error('Federated message error:', data.error);
       if (data.message) {
         // Message was stored but delivery failed
-        toast.warning('Message saved but delivery to remote server failed');
+        toast.warning('Meddelande sparat men leverans till fjärrserver misslyckades');
         return data.message as Message;
       }
       toast.error('Failed to deliver message');
