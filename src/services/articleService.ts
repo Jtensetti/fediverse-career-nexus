@@ -79,7 +79,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      toast.error('You must be logged in to create an article');
+      toast.error(i18n.t('toasts.loginRequiredArticle'));
       return null;
     }
     
