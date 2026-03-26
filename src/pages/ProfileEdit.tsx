@@ -82,7 +82,7 @@ const ProfileEditPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const queryClient = useQueryClient();
+  const profileSchema = createProfileSchema(t);
   const [profile, setProfile] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
