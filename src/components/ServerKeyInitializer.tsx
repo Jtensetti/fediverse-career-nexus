@@ -29,7 +29,7 @@ export default function ServerKeyInitializer() {
       console.error("Error checking server key:", error);
       toast({
         title: "Error",
-        description: "Failed to check server key status",
+        description: "Kunde inte kontrollera servernyckels status",
         variant: "destructive",
       });
     } finally {
@@ -82,14 +82,14 @@ export default function ServerKeyInitializer() {
       setKeyStatus("created");
       toast({
         title: "Success",
-        description: "Server key generated successfully",
+        description: "Servernyckel genererades",
         variant: "default",
       });
     } catch (error) {
       console.error("Error generating server key:", error);
       toast({
         title: "Error",
-        description: "Failed to generate server key",
+        description: "Kunde inte generera servernyckel",
         variant: "destructive",
       });
     } finally {
@@ -114,14 +114,14 @@ export default function ServerKeyInitializer() {
       setActorKeyStatus("ok");
       toast({
         title: "Success",
-        description: "Actor keys generated successfully",
+        description: "Aktörnycklar genererades",
         variant: "default",
       });
     } catch (error) {
       console.error("Error generating actor keys:", error);
       toast({
         title: "Error",
-        description: "Failed to generate actor keys",
+        description: "Kunde inte generera aktörnycklar",
         variant: "destructive",
       });
     }
@@ -135,16 +135,16 @@ export default function ServerKeyInitializer() {
 
   return (
     <div className="space-y-4">
-      {/* Server Key Management */}
+      {/* Servernyckelhantering */}
       <div className="p-4 bg-card border rounded-lg shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-medium">Server Key Management</h3>
+            <h3 className="text-lg font-medium">Servernyckelhantering</h3>
             <p className="text-muted-foreground text-sm">
-              {keyStatus === "unknown" && "Checking server key status..."}
-              {keyStatus === "exists" && "Server has a valid RSA key pair"}
-              {keyStatus === "none" && "No server key found - generate one to enable federation"}
-              {keyStatus === "created" && "Server key created successfully"}
+              {keyStatus === "unknown" && "Kontrollerar servernyckels status..."}
+              {keyStatus === "exists" && "Servern har ett giltigt RSA-nyckelpar"}
+              {keyStatus === "none" && "Ingen servernyckel hittad - generera en för att aktivera federation"}
+              {keyStatus === "created" && "Servernyckel skapades"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export default function ServerKeyInitializer() {
               className="flex items-center gap-2"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Generate Server Key
+              Generera servernyckel
             </Button>
           )}
           
@@ -175,20 +175,20 @@ export default function ServerKeyInitializer() {
             onClick={checkServerKey} 
             disabled={loading}
           >
-            Refresh Status
+            Uppdatera status
           </Button>
         </div>
       </div>
 
-      {/* Actor Key Management */}
+      {/* Aktörnyckelhantering */}
       <div className="p-4 bg-card border rounded-lg shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-medium">Actor Key Management</h3>
+            <h3 className="text-lg font-medium">Aktörnyckelhantering</h3>
             <p className="text-muted-foreground text-sm">
-              {actorKeyStatus === "checking" && "Checking actor key status..."}
-              {actorKeyStatus === "ok" && "Actor has valid RSA key pair"}
-              {actorKeyStatus === "needs_keys" && "Actor needs key generation for federation"}
+              {actorKeyStatus === "checking" && "Kontrollerar aktörnyckels status..."}
+              {actorKeyStatus === "ok" && "Aktören har ett giltigt RSA-nyckelpar"}
+              {actorKeyStatus === "needs_keys" && "Aktören behöver nyckelgenerering för federation"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function ServerKeyInitializer() {
               onClick={generateActorKeys}
               className="flex items-center gap-2"
             >
-              Generate Actor Keys
+              Generera aktörnycklar
             </Button>
           )}
           
@@ -216,7 +216,7 @@ export default function ServerKeyInitializer() {
             variant="outline"
             onClick={checkActorKeys}
           >
-            Refresh Status
+            Uppdatera status
           </Button>
         </div>
       </div>

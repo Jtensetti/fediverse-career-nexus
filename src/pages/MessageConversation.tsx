@@ -114,8 +114,8 @@ export default function MessageConversation() {
     const handleError = (error: any) => {
       console.error('Error in realtime subscription:', error);
       toast({
-        title: "Connection issue",
-        description: "Problem receiving new messages. Try refreshing.",
+        title: "Anslutningsproblem",
+        description: "Problem med att ta emot nya meddelanden. Försök uppdatera.",
         variant: "destructive"
       });
     };
@@ -183,8 +183,8 @@ export default function MessageConversation() {
     onError: (error) => {
       console.error('Failed to send message:', error);
       toast({
-        title: "Failed to send message",
-        description: "Please try again",
+        title: "Kunde inte skicka meddelande",
+        description: "Försök igen",
         variant: "destructive"
       });
     }
@@ -236,7 +236,7 @@ export default function MessageConversation() {
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center">
-            <p>Please sign in to view your messages</p>
+            <p>Logga in för att visa dina meddelanden</p>
             <Button 
               variant="outline" 
               className="mt-4"
@@ -293,7 +293,7 @@ export default function MessageConversation() {
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center py-8">
-            <p className="text-red-500">Error loading conversation</p>
+            <p className="text-red-500">Fel vid laddning av konversation</p>
             <Button 
               variant="outline" 
               className="mt-4"
@@ -350,8 +350,8 @@ export default function MessageConversation() {
             <div className="space-y-4">
               {messages.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="text-muted-foreground">No messages yet</p>
-                  <p className="text-sm">Start the conversation!</p>
+                  <p className="text-muted-foreground">Inga meddelanden ännu</p>
+                  <p className="text-sm">Starta konversationen!</p>
                 </div>
               ) : (
                 messages.map((message) => {
@@ -406,7 +406,7 @@ export default function MessageConversation() {
             {canMessage === false ? (
               <div className="w-full flex items-center justify-center gap-2 text-muted-foreground py-2">
                 <AlertCircle className="h-4 w-4" />
-                <span>You must be connected to send messages</span>
+                <span>Ni måste vara anslutna för att skicka meddelanden</span>
               </div>
             ) : (
               <form onSubmit={handleSendMessage} className="w-full">
@@ -416,7 +416,7 @@ export default function MessageConversation() {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={canMessage === null ? "Checking connection..." : "Type your message..."}
+                    placeholder={canMessage === null ? "Kontrollerar anslutning..." : "Skriv ditt meddelande..."}
                     className="flex-grow min-h-[40px] max-h-[150px] resize-none py-2"
                     disabled={canMessage === null}
                     rows={1}

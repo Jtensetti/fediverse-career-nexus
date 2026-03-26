@@ -114,7 +114,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
         if (updateError) {
           console.error('❌ Username update error:', updateError);
-          toast.error("Failed to update username");
+          toast.error("Kunde inte uppdatera användarnamn");
           return false;
         }
       }
@@ -134,7 +134,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
       if (createActorError || !newActor) {
         console.error('❌ Actor creation error:', createActorError);
-        toast.error("Failed to create user actor");
+        toast.error("Kunde inte skapa användaraktör");
         return false;
       }
 

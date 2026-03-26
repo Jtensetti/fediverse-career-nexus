@@ -83,7 +83,7 @@ const ArticleManage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead title="Manage My Articles" description="View, edit, and delete your articles and drafts." />
+      <SEOHead title="Hantera mina artiklar" description="Visa, redigera och ta bort dina artiklar och utkast." />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">
@@ -94,12 +94,12 @@ const ArticleManage = () => {
                 <BookText className="h-6 w-6" />
                 My Articles
               </h1>
-              <p className="text-muted-foreground">Manage your articles and drafts</p>
+              <p className="text-muted-foreground">Hantera dina artiklar och utkast</p>
             </div>
             
             <div className="flex gap-4 mt-4 sm:mt-0">
               <Link to="/articles">
-                <Button variant="outline">View All Articles</Button>
+                <Button variant="outline">Visa alla artiklar</Button>
               </Link>
               <Link to="/articles/create">
                 <Button className="flex items-center gap-2">
@@ -115,7 +115,7 @@ const ArticleManage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
               <Input
                 type="text"
-                placeholder="Search articles..."
+                placeholder="Sök artiklar..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -124,16 +124,16 @@ const ArticleManage = () => {
             
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="drafts">Drafts</TabsTrigger>
-                <TabsTrigger value="published">Published</TabsTrigger>
+                <TabsTrigger value="all">Alla</TabsTrigger>
+                <TabsTrigger value="drafts">Utkast</TabsTrigger>
+                <TabsTrigger value="published">Publicerad</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
           
           {isLoading ? (
             <div className="text-center py-12">
-              <p>Loading articles...</p>
+              <p>Laddar artiklar...</p>
             </div>
           ) : filteredArticles.length > 0 ? (
             <>
@@ -142,10 +142,10 @@ const ArticleManage = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[40%]">Title</TableHead>
+                      <TableHead className="w-[40%]">Titel</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>Skapad</TableHead>
+                      <TableHead className="text-right">Åtgärder</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -165,9 +165,9 @@ const ArticleManage = () => {
                         </TableCell>
                         <TableCell>
                           {article.published ? (
-                            <Badge variant="default" className="bg-green-500">Published</Badge>
+                            <Badge variant="default" className="bg-green-500">Publicerad</Badge>
                           ) : (
-                            <Badge variant="outline">Draft</Badge>
+                            <Badge variant="outline">Utkast</Badge>
                           )}
                         </TableCell>
                         <TableCell>
@@ -215,9 +215,9 @@ const ArticleManage = () => {
                         )}
                       </div>
                       {article.published ? (
-                        <Badge variant="default" className="bg-green-500 flex-shrink-0">Published</Badge>
+                        <Badge variant="default" className="bg-green-500 flex-shrink-0">Publicerad</Badge>
                       ) : (
-                        <Badge variant="outline" className="flex-shrink-0">Draft</Badge>
+                        <Badge variant="outline" className="flex-shrink-0">Utkast</Badge>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
@@ -249,15 +249,15 @@ const ArticleManage = () => {
           ) : (
             <div className="text-center py-12 border rounded-md">
               <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No articles found</h2>
+              <h2 className="text-xl font-semibold mb-2">Inga artiklar hittades</h2>
               <p className="text-gray-600 mb-6">
                 {searchQuery
-                  ? "No articles match your search query."
+                  ? "Inga artiklar matchar din sökning."
                   : activeTab === "drafts"
-                  ? "You haven't created any draft articles yet."
+                  ? "Du har inte skapat några utkast ännu."
                   : activeTab === "published"
-                  ? "You haven't published any articles yet."
-                  : "You haven't created any articles yet."}
+                  ? "Du har inte publicerat några artiklar ännu."
+                  : "Du har inte skapat några artiklar ännu."}
               </p>
               <Link to="/articles/create">
                 <Button className="flex items-center gap-2">
@@ -273,9 +273,9 @@ const ArticleManage = () => {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Article</DialogTitle>
+            <DialogTitle>Radera artikel</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this article? This action cannot be undone.
+              Är du säker på att du vill radera denna artikel? Denna åtgärd kan inte ångras.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

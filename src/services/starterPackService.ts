@@ -167,7 +167,7 @@ export async function followStarterPack(packId: string): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('You must be logged in to follow a pack');
+      toast.error('Du måste vara inloggad för att följa ett paket');
       return false;
     }
 
@@ -207,11 +207,11 @@ export async function followStarterPack(packId: string): Promise<boolean> {
         .upsert(followRecords, { onConflict: 'follower_id,author_id', ignoreDuplicates: true });
     }
 
-    toast.success(`Following ${memberIds.length} people from this pack!`);
+    toast.success(`Följer ${memberIds.length} personer från detta paket!`);
     return true;
   } catch (error) {
     console.error('Error following starter pack:', error);
-    toast.error('Failed to follow pack');
+    toast.error('Kunde inte följa paket');
     return false;
   }
 }
@@ -231,11 +231,11 @@ export async function unfollowStarterPack(packId: string): Promise<boolean> {
       .eq('pack_id', packId);
 
     if (error) throw error;
-    toast.success('Unfollowed pack');
+    toast.success('Slutade följa paket');
     return true;
   } catch (error) {
     console.error('Error unfollowing pack:', error);
-    toast.error('Failed to unfollow pack');
+    toast.error('Kunde inte sluta följa paket');
     return false;
   }
 }
@@ -270,7 +270,7 @@ export async function createStarterPack(data: {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('You must be logged in to create a pack');
+      toast.error('Du måste vara inloggad för att skapa ett paket');
       return null;
     }
 
@@ -284,7 +284,7 @@ export async function createStarterPack(data: {
       .single();
 
     if (error) throw error;
-    toast.success('Starter pack created!');
+    toast.success('Startpaket skapat!');
     return pack;
   } catch (error: any) {
     console.error('Error creating starter pack:', error);
@@ -336,7 +336,7 @@ export async function removePackMember(packId: string, userId: string): Promise<
     return true;
   } catch (error) {
     console.error('Error removing pack member:', error);
-    toast.error('Failed to remove member');
+    toast.error('Kunde inte ta bort medlem');
     return false;
   }
 }

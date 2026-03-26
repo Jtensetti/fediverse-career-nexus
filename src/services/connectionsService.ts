@@ -90,7 +90,7 @@ export const getUserConnections = async (targetUserId?: string): Promise<Network
       .filter(Boolean) as NetworkConnection[];
   } catch (error) {
     console.error("Error fetching connections:", error);
-    toast.error("Failed to load connections");
+    toast.error("Kunde inte ladda kontakter");
     return [];
   }
 };
@@ -124,11 +124,11 @@ export const getConnectionSuggestions = async (): Promise<NetworkSuggestion[]> =
       connectionDegree: profile.mutual_count > 0 ? 2 as ConnectionDegree : 3 as ConnectionDegree,
       isVerified: profile.is_verified || false,
       mutualConnections: Number(profile.mutual_count) || 0,
-      suggestionReason: profile.suggestion_reason || "Suggested for you"
+      suggestionReason: profile.suggestion_reason || "Förslag för dig"
     }));
   } catch (error) {
     console.error("Error fetching connection suggestions:", error);
-    toast.error("Failed to load connection suggestions");
+    toast.error("Kunde inte ladda kontaktförslag");
     return [];
   }
 };
@@ -175,7 +175,7 @@ const getSimpleSuggestions = async (userId: string): Promise<NetworkSuggestion[]
     connectionDegree: 3 as ConnectionDegree,
     isVerified: profile.is_verified || false,
     mutualConnections: 0,
-    suggestionReason: "Suggested for you"
+    suggestionReason: "Förslag för dig"
   }));
 };
 
@@ -183,7 +183,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("You must be logged in to connect with others");
+      toast.error("Du måste vara inloggad för att ansluta till andra");
       return false;
     }
 

@@ -519,10 +519,10 @@ export async function createPostReply(
       console.error('Failed to create notification:', notifError);
     }
 
-    toast.success('Reply posted successfully!');
+    toast.success('Svar postat!');
     return true;
   } catch (error) {
-    toast.error('An unexpected error occurred');
+    toast.error('Ett oväntat fel uppstod');
     return false;
   }
 };

@@ -154,7 +154,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.companyName", "Company Name")} *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Acme Corporation" {...field} />
+                    <Input placeholder="Företagsnamn AB" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -171,7 +171,7 @@ export default function CompanyForm({
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">/company/</span>
                       <Input 
-                        placeholder="acme-corp" 
+                        placeholder="foretagsnamn" 
                         {...field} 
                         disabled={isEdit}
                         className={isEdit ? "bg-muted" : ""}
@@ -203,7 +203,7 @@ export default function CompanyForm({
                   <FormLabel>{t("companyForm.tagline", "Tagline")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Building the future of..." 
+                      placeholder="Vi bygger framtiden för..." 
                       maxLength={140}
                       {...field} 
                     />
@@ -224,7 +224,7 @@ export default function CompanyForm({
                   <FormLabel>{t("companyForm.about", "About")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Tell people about your company..."
+                      placeholder="Berätta om ditt företag..."
                       className="min-h-[120px]"
                       {...field} 
                     />
@@ -265,7 +265,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.industry", "Industry")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Technology, Healthcare, etc." {...field} />
+                    <Input placeholder="Teknik, Sjukvård, etc." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -307,7 +307,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.headquarters", "Headquarters")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="San Francisco, CA" {...field} />
+                    <Input placeholder="Stockholm, Sverige" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

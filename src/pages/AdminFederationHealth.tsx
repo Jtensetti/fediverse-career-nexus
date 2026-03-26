@@ -98,7 +98,7 @@ export default function AdminFederationHealth() {
 
     } catch (error) {
       console.error("Error loading health data:", error);
-      toast.error("Failed to load health data");
+      toast.error("Kunde inte ladda hälsodata");
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,7 @@ export default function AdminFederationHealth() {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
-    toast.success("Data refreshed");
+    toast.success("Data uppdaterad");
   };
 
   const handleCleanup = async (dryRun: boolean) => {
@@ -130,7 +130,7 @@ export default function AdminFederationHealth() {
         await loadData();
       }
     } catch (error) {
-      toast.error("Cleanup failed");
+      toast.error("Rensning misslyckades");
     }
   };
 
@@ -144,7 +144,7 @@ export default function AdminFederationHealth() {
       toast.success(`Pre-warmed ${data.refreshed} actor caches`);
       await loadData();
     } catch (error) {
-      toast.error("Cache pre-warm failed");
+      toast.error("Cache-förvärmning misslyckades");
     }
   };
 
@@ -156,9 +156,9 @@ export default function AdminFederationHealth() {
         .eq("id", alertId);
       
       setAlerts(prev => prev.filter(a => a.id !== alertId));
-      toast.success("Alert acknowledged");
+      toast.success("Varning bekräftad");
     } catch (error) {
-      toast.error("Failed to acknowledge alert");
+      toast.error("Kunde inte bekräfta varning");
     }
   };
 

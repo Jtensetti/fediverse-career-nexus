@@ -39,7 +39,7 @@ export default function AdminFederationMetrics() {
       if (error) {
         console.error("Error checking admin status:", error);
         toast({
-          title: "Error checking admin status",
+          title: "Fel vid kontroll av adminstatus",
           description: error.message,
           variant: "destructive"
         });
@@ -49,8 +49,8 @@ export default function AdminFederationMetrics() {
       
       if (!data) {
         toast({
-          title: "Access denied",
-          description: "You don't have admin privileges",
+          title: "Åtkomst nekad",
+          description: "Du har inte adminbehörighet",
           variant: "destructive"
         });
         navigate('/');
@@ -59,13 +59,13 @@ export default function AdminFederationMetrics() {
       
       setIsAdmin(true);
       toast({
-        title: "Admin access granted",
-        description: "Welcome to the Federation Management console"
+        title: "Adminåtkomst beviljad",
+        description: "Välkommen till federationshanteringskonsolen"
       });
     } catch (error: any) {
       console.error("Error checking admin status:", error);
       toast({
-        title: "Error",
+        title: "Fel",
         description: error.message || "An unexpected error occurred",
         variant: "destructive"
       });

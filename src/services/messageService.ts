@@ -126,7 +126,7 @@ export async function getConversations(): Promise<Conversation[]> {
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('You must be logged in to view conversations');
+      toast.error('Du måste vara inloggad för att visa konversationer');
       return [];
     }
 
@@ -178,7 +178,7 @@ export async function getConversations(): Promise<Conversation[]> {
     return conversations;
   } catch (error) {
     console.error('Error in getConversations:', error);
-    toast.error('Failed to load conversations');
+    toast.error('Kunde inte ladda konversationer');
     return [];
   }
 }
@@ -235,7 +235,7 @@ export async function getMessages(partnerId: string): Promise<Message[]> {
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('You must be logged in to view messages');
+      toast.error('Du måste vara inloggad för att visa meddelanden');
       return [];
     }
 
@@ -250,7 +250,7 @@ export async function getMessages(partnerId: string): Promise<Message[]> {
 
     if (error) {
       console.error('Error fetching messages:', error);
-      toast.error('Failed to load messages');
+      toast.error('Kunde inte ladda meddelanden');
       return [];
     }
 
@@ -286,7 +286,7 @@ export async function getMessages(partnerId: string): Promise<Message[]> {
     }
   } catch (error) {
     console.error('Error in getMessages:', error);
-    toast.error('Failed to load messages');
+    toast.error('Kunde inte ladda meddelanden');
     return [];
   }
 }
@@ -318,7 +318,7 @@ export async function sendMessage(recipientId: string, content: string): Promise
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('You must be logged in to send messages');
+      toast.error('Du måste vara inloggad för att skicka meddelanden');
       return null;
     }
 
@@ -329,11 +329,11 @@ export async function sendMessage(recipientId: string, content: string): Promise
 
     if (!canMessageResult.can_message) {
       if (canMessageResult.reason === 'not_connected') {
-        toast.error('You can only message users you are connected with');
+        toast.error('Du kan bara skicka meddelanden till användare du är ansluten till');
       } else if (canMessageResult.reason === 'cannot_message_self') {
-        toast.error('You cannot message yourself');
+        toast.error('Du kan inte skicka meddelanden till dig själv');
       } else {
-        toast.error('Cannot send message to this user');
+        toast.error('Kan inte skicka meddelande till denna användare');
       }
       return null;
     }
@@ -384,9 +384,9 @@ export async function sendMessage(recipientId: string, content: string): Promise
       console.error('Error sending message:', error);
       // Check if it's an RLS violation (not connected)
       if (error.code === '42501' || error.message.includes('row-level security')) {
-        toast.error('You can only message users you are connected with');
+        toast.error('Du kan bara skicka meddelanden till användare du är ansluten till');
       } else {
-        toast.error('Failed to send message');
+        toast.error('Kunde inte skicka meddelande');
       }
       return null;
     }
@@ -411,7 +411,7 @@ export async function sendMessage(recipientId: string, content: string): Promise
     return returnData;
   } catch (error) {
     console.error('Error in sendMessage:', error);
-    toast.error('Failed to send message');
+    toast.error('Kunde inte skicka meddelande');
     return null;
   }
 }
@@ -431,7 +431,7 @@ async function sendFederatedMessage(
 
     if (error) {
       console.error('Error sending federated message:', error);
-      toast.error('Failed to send message to federated user');
+      toast.error('Kunde inte skicka meddelande till federerad användare');
       return null;
     }
 
@@ -439,18 +439,18 @@ async function sendFederatedMessage(
       console.error('Federated message error:', data.error);
       if (data.message) {
         // Message was stored but delivery failed
-        toast.warning('Message saved but delivery to remote server failed');
+        toast.warning('Meddelande sparat men leverans till fjärrserver misslyckades');
         return data.message as Message;
       }
-      toast.error('Failed to deliver message');
+      toast.error('Kunde inte leverera meddelande');
       return null;
     }
 
-    toast.success('Message sent to federated user');
+    toast.success('Meddelande skickat till federerad användare');
     return data.message as Message;
   } catch (error) {
     console.error('Error in sendFederatedMessage:', error);
-    toast.error('Failed to send federated message');
+    toast.error('Kunde inte skicka federerat meddelande');
     return null;
   }
 }

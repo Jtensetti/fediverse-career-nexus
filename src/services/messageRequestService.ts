@@ -44,14 +44,14 @@ export async function sendMessageRequest(
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('You must be logged in');
+      toast.error('Du måste vara inloggad');
       return false;
     }
 
     const senderId = session.session.user.id;
     
     if (senderId === recipientId) {
-      toast.error('You cannot send a request to yourself');
+      toast.error('Du kan inte skicka en förfrågan till dig själv');
       return false;
     }
 
@@ -65,7 +65,7 @@ export async function sendMessageRequest(
     const dmPrivacy = ((recipient as any)?.dm_privacy as DmPrivacy) || 'connections';
 
     if (dmPrivacy === 'nobody') {
-      toast.error('This user is not accepting messages');
+      toast.error('Denna användare tar inte emot meddelanden');
       return false;
     }
 
@@ -76,7 +76,7 @@ export async function sendMessageRequest(
       
       if (connected) {
         // They're connected, they can message directly
-        toast.info('You can message this person directly');
+        toast.info('Du kan skicka meddelanden direkt till denna person');
         return false;
       }
     }
@@ -91,10 +91,10 @@ export async function sendMessageRequest(
 
     if (existing) {
       if (existing.status === 'pending') {
-        toast.error('You already have a pending request to this person');
+        toast.error('Du har redan en väntande förfrågan till denna person');
         return false;
       } else if (existing.status === 'declined') {
-        toast.error('Your previous request was declined');
+        toast.error('Din tidigare förfrågan avslogs');
         return false;
       }
     }
@@ -113,11 +113,11 @@ export async function sendMessageRequest(
 
     if (error) throw error;
 
-    toast.success('Message request sent!');
+    toast.success('Meddelandeförfrågan skickad!');
     return true;
   } catch (error) {
     console.error('Error sending message request:', error);
-    toast.error('Failed to send request');
+    toast.error('Kunde inte skicka förfrågan');
     return false;
   }
 }
@@ -207,11 +207,11 @@ export async function acceptMessageRequest(requestId: string): Promise<boolean> 
       .eq('id', requestId);
 
     if (error) throw error;
-    toast.success('Request accepted! You can now message each other.');
+    toast.success('Förfrågan accepterad! Ni kan nu skicka meddelanden till varandra.');
     return true;
   } catch (error) {
     console.error('Error accepting request:', error);
-    toast.error('Failed to accept request');
+    toast.error('Kunde inte acceptera förfrågan');
     return false;
   }
 }
@@ -228,11 +228,11 @@ export async function declineMessageRequest(requestId: string): Promise<boolean>
       .eq('id', requestId);
 
     if (error) throw error;
-    toast.success('Request declined');
+    toast.success('Förfrågan avvisad');
     return true;
   } catch (error) {
     console.error('Error declining request:', error);
-    toast.error('Failed to decline request');
+    toast.error('Kunde inte avvisa förfrågan');
     return false;
   }
 }
@@ -293,7 +293,7 @@ export async function canMessageDirectly(targetUserId: string): Promise<{
     }
 
     if (dmPrivacy === 'nobody') {
-      return { canMessage: false, reason: 'User not accepting messages' };
+      return { canMessage: false, reason: 'Användaren tar inte emot meddelanden' };
     }
 
     // Check for accepted request
@@ -308,10 +308,10 @@ export async function canMessageDirectly(targetUserId: string): Promise<{
       return { canMessage: true };
     }
 
-    return { canMessage: false, needsRequest: true, reason: 'Send a message request first' };
+    return { canMessage: false, needsRequest: true, reason: 'Skicka en meddelandeförfrågan först' };
   } catch (error) {
     console.error('Error checking message permissions:', error);
-    return { canMessage: false, reason: 'Error checking permissions' };
+    return { canMessage: false, reason: 'Fel vid kontroll av behörigheter' };
   }
 }
 
@@ -320,7 +320,7 @@ export async function updateDmPrivacy(privacy: DmPrivacy): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('You must be logged in');
+      toast.error('Du måste vara inloggad');
       return false;
     }
 
@@ -330,11 +330,11 @@ export async function updateDmPrivacy(privacy: DmPrivacy): Promise<boolean> {
       .eq('id', session.session.user.id);
 
     if (error) throw error;
-    toast.success('Message settings updated');
+    toast.success('Meddelandeinställningar uppdaterade');
     return true;
   } catch (error) {
     console.error('Error updating DM privacy:', error);
-    toast.error('Failed to update settings');
+    toast.error('Kunde inte uppdatera inställningar');
     return false;
   }
 }

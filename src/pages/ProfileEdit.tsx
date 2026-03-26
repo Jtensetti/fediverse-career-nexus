@@ -358,7 +358,7 @@ const ProfileEditPage = () => {
   // Education handlers
   const addEducation = () => {
     if (!userId) {
-      toast.error("You need to be signed in to add education");
+      toast.error(t("toasts.loginRequiredProfile"));
       return;
     }
     
@@ -413,7 +413,7 @@ const ProfileEditPage = () => {
       if (errors.institution) missingFields.push("institution");
       if (errors.degree) missingFields.push("degree");
       if (errors.start_year) missingFields.push("start year");
-      toast.error(`Please fill in required fields: ${missingFields.join(", ")}`);
+      toast.error(`Fyll i obligatoriska fält: ${missingFields.join(", ")}`);
       return;
     }
     
@@ -472,7 +472,7 @@ const ProfileEditPage = () => {
   // Skills handlers
   const addSkill = async () => {
     if (!userId) {
-      toast.error("You need to be signed in to add a skill");
+      toast.error(t("toasts.loginRequiredProfile"));
       return;
     }
     

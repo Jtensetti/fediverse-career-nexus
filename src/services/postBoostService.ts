@@ -70,7 +70,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      toast.error('You must be logged in to boost posts');
+      toast.error('Du måste vara inloggad för att boosta inlägg');
       return false;
     }
 
@@ -93,7 +93,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
       profile = profileData as typeof profile;
 
       if (!profile?.username) {
-        toast.error('Actor not found');
+        toast.error('Aktör hittades inte');
         return false;
       }
 
@@ -109,7 +109,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
         .single();
 
       if (createError || !newActor) {
-        toast.error('Actor not found');
+        toast.error('Aktör hittades inte');
         return false;
       }
 
@@ -150,7 +150,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
         return false;
       }
 
-      toast.success('Boost removed');
+      toast.success('Boost borttagen');
       return true;
     } else {
       // Add boost
@@ -180,11 +180,11 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
         return false;
       }
 
-      toast.success('Post boosted');
+      toast.success('Inlägg boostat');
       return true;
     }
   } catch (error) {
-    toast.error('Failed to process boost. Please try again.');
+    toast.error('Kunde inte bearbeta boost. Försök igen.');
     return false;
   }
 };
