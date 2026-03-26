@@ -284,7 +284,7 @@ export async function createStarterPack(data: {
       .single();
 
     if (error) throw error;
-    toast.success('Starter pack created!');
+    toast.success('Startpaket skapat!');
     return pack;
   } catch (error: any) {
     console.error('Error creating starter pack:', error);
