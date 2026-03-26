@@ -101,10 +101,10 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
 
   const getTypeLabel = (type: SearchResult['type']) => {
     switch (type) {
-      case 'profile': return 'People';
-      case 'job': return 'Jobs';
-      case 'article': return 'Articles';
-      case 'event': return 'Events';
+      case 'profile': return t("globalSearch.people");
+      case 'job': return t("globalSearch.jobs");
+      case 'article': return t("globalSearch.articles");
+      case 'event': return t("globalSearch.events");
     }
   };
 
