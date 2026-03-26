@@ -234,7 +234,7 @@ const ProfileEditPage = () => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
+      toast.error(t("toasts.profileUpdateFailed"));
     } finally {
       setIsLoading(prev => ({ ...prev, saving: false }));
     }
