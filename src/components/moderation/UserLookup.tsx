@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,7 +37,6 @@ export function UserLookup() {
   const [isSearching, setIsSearching] = useState(false);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
 
-  // Debounced search
   useEffect(() => {
     if (searchQuery.length < 2) {
       setSearchResults([]);
@@ -54,32 +53,27 @@ export function UserLookup() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch selected user details
   const { data: userDetails, isLoading: loadingDetails } = useQuery({
     queryKey: ["user-details", selectedUserId],
     queryFn: async () => {
       if (!selectedUserId) return null;
 
-      // Get profile from public view (for display info)
       const { data: profile } = await supabase
         .from("public_profiles")
         .select("*")
         .eq("id", selectedUserId)
         .single();
 
-      // Get ban status
       const { data: banStatus } = await supabase.rpc("is_user_banned", {
         check_user_id: selectedUserId,
       });
 
-      // Get report count
       const { count: reportCount } = await supabase
         .from("content_reports")
         .select("id", { count: "exact", head: true })
         .eq("content_type", "user")
         .eq("content_id", selectedUserId);
 
-      // Get moderation actions against this user
       const { count: actionCount } = await supabase
         .from("moderation_actions")
         .select("id", { count: "exact", head: true })
@@ -105,7 +99,7 @@ export function UserLookup() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Search className="h-5 w-5" />
-        <h3 className="text-lg font-semibold">User Lookup</h3>
+        <h3 className="text-lg font-semibold">Användaruppslag</h3>
       </div>
 
       <Card>
@@ -113,7 +107,7 @@ export function UserLookup() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search for a user by username or name..."
+              placeholder="Sök efter användare med användarnamn eller namn..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -121,7 +115,7 @@ export function UserLookup() {
           </div>
 
           {isSearching && (
-            <p className="text-sm text-muted-foreground mt-4">Searching...</p>
+            <p className="text-sm text-muted-foreground mt-4">Söker...</p>
           )}
 
           {searchResults.length > 0 && (
@@ -142,7 +136,7 @@ export function UserLookup() {
                     <p className="text-sm font-medium truncate flex items-center gap-2">
                       @{user.username}
                       {user.is_banned && (
-                        <Badge variant="destructive" className="text-xs">Banned</Badge>
+                        <Badge variant="destructive" className="text-xs">Avstängd</Badge>
                       )}
                     </p>
                     {user.fullname && (
@@ -161,7 +155,7 @@ export function UserLookup() {
       {selectedUserId && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">User Details</CardTitle>
+            <CardTitle className="text-base">Användardetaljer</CardTitle>
           </CardHeader>
           <CardContent>
             {loadingDetails ? (
@@ -188,7 +182,7 @@ export function UserLookup() {
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold">@{userDetails.username}</h4>
                       {userDetails.is_banned && (
-                        <Badge variant="destructive">Banned</Badge>
+                        <Badge variant="destructive">Avstängd</Badge>
                       )}
                     </div>
                     {userDetails.fullname && (
@@ -204,14 +198,14 @@ export function UserLookup() {
                   <div className="border rounded-lg p-3">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <AlertTriangle className="h-4 w-4" />
-                      Reports
+                      Rapporter
                     </div>
                     <p className="text-2xl font-semibold">{userDetails.report_count}</p>
                   </div>
                   <div className="border rounded-lg p-3">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Ban className="h-4 w-4" />
-                      Actions
+                      Åtgärder
                     </div>
                     <p className="text-2xl font-semibold">{userDetails.moderation_action_count}</p>
                   </div>
@@ -221,13 +215,13 @@ export function UserLookup() {
                   <Button variant="outline" size="sm" asChild>
                     <Link to={`/profile/${userDetails.username}`} target="_blank">
                       <ExternalLink className="h-4 w-4 mr-1" />
-                      View Profile
+                      Visa profil
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
                     <Link to={`/messages?user=${userDetails.id}`}>
                       <MessageSquare className="h-4 w-4 mr-1" />
-                      Message
+                      Meddelande
                     </Link>
                   </Button>
                   {!userDetails.is_banned && (
@@ -237,13 +231,13 @@ export function UserLookup() {
                       onClick={() => setBanDialogOpen(true)}
                     >
                       <Ban className="h-4 w-4 mr-1" />
-                      Ban User
+                      Stäng av användare
                     </Button>
                   )}
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground">User not found</p>
+              <p className="text-muted-foreground">Användaren hittades inte</p>
             )}
           </CardContent>
         </Card>

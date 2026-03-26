@@ -32,7 +32,6 @@ const Instances = () => {
   useEffect(() => {
     const fetchInstances = async () => {
       try {
-        // Get unique hosts from remote actors using public view
         const { data, error } = await supabase
           .from("public_actors")
           .select("remote_actor_url")
@@ -40,7 +39,6 @@ const Instances = () => {
 
         if (error) throw error;
 
-        // Extract unique hosts and count actors per host
         const hostCounts = new Map<string, number>();
         data?.forEach(actor => {
           if (actor.remote_actor_url) {
@@ -54,7 +52,6 @@ const Instances = () => {
           }
         });
 
-        // Convert to array and sort by actor count
         const instanceList: FederatedInstance[] = Array.from(hostCounts.entries())
           .map(([host, actor_count]) => ({ host, actor_count }))
           .sort((a, b) => b.actor_count - a.actor_count);
@@ -75,18 +72,18 @@ const Instances = () => {
   );
 
   const getInstanceCategory = (host: string): string => {
-    if (host.includes("mastodon")) return "General";
-    if (host.includes("fosstodon") || host.includes("tech")) return "Technology";
-    if (host.includes("art") || host.includes("creative")) return "Creative";
-    if (host.includes("hachyderm")) return "Technology";
-    return "General";
+    if (host.includes("mastodon")) return "Allmän";
+    if (host.includes("fosstodon") || host.includes("tech")) return "Teknik";
+    if (host.includes("art") || host.includes("creative")) return "Kreativ";
+    if (host.includes("hachyderm")) return "Teknik";
+    return "Allmän";
   };
 
   return (
     <>
       <SEOHead 
-        title="Federated Instances" 
-        description="Explore the network of federated instances connected to Nolto. Join the decentralized professional network." 
+        title="Anslutna instanser" 
+        description="Utforska nätverket av anslutna instanser som samverkar med Nolto." 
       />
 
       <div className="min-h-screen flex flex-col bg-background">
@@ -98,25 +95,25 @@ const Instances = () => {
             <div className="container mx-auto px-4 text-center">
               <Globe className="h-16 w-16 mx-auto mb-6 opacity-80" />
               <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">
-                The Federated Network
+                Anslutet nätverk
               </h1>
               <p className="text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-8">
-                Nolto connects with instances across the Fediverse. 
-                Your professional network extends beyond any single platform.
+                Nolto samverkar med instanser inom nätverket. 
+                Ditt professionella nätverk sträcker sig bortom en enskild plattform.
               </p>
               
               <div className="flex flex-wrap justify-center gap-6 text-sm">
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <Server className="h-4 w-4" />
-                  <span>{instances.length} Connected Instances</span>
+                  <span>{instances.length} anslutna instanser</span>
                 </div>
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <Shield className="h-4 w-4" />
-                  <span>ActivityPub Protocol</span>
+                  <span>Säker samverkan</span>
                 </div>
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <CheckCircle className="h-4 w-4" />
-                  <span>Decentralized & Open</span>
+                  <span>Verifierade anslutningar</span>
                 </div>
               </div>
             </div>
@@ -130,7 +127,7 @@ const Instances = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder="Search instances..."
+                    placeholder="Sök instanser..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -162,18 +159,18 @@ const Instances = () => {
                 <div className="text-center py-16">
                   <Globe className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
                   <h3 className="text-xl font-semibold text-foreground mb-2">
-                    {searchQuery ? "No instances found" : "No instances connected yet"}
+                    {searchQuery ? "Inga instanser hittades" : "Inga instanser anslutna ännu"}
                   </h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
                     {searchQuery 
-                      ? "Try a different search term"
-                      : "Be the first to connect from your instance! Sign up and start building your federated network."
+                      ? "Prova ett annat sökord"
+                      : "Bli den första att ansluta! Registrera dig och börja bygga ditt nätverk."
                     }
                   </p>
                 </div>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-                {filteredInstances.map((instance, index) => (
+                {filteredInstances.map((instance) => (
                     <Card 
                       key={instance.host}
                       className="border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
@@ -196,7 +193,7 @@ const Instances = () => {
                             className="bg-green-500/10 text-green-600 border-green-500/30"
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            Active
+                            Aktiv
                           </Badge>
                         </div>
                       </CardHeader>
@@ -204,11 +201,11 @@ const Instances = () => {
                         <div className="space-y-3">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Users className="h-4 w-4" />
-                            <span>{instance.actor_count} {instance.actor_count === 1 ? 'user' : 'users'} connected</span>
+                            <span>{instance.actor_count} {instance.actor_count === 1 ? 'användare' : 'användare'} anslutna</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Shield className="h-4 w-4" />
-                            <span>ActivityPub compatible</span>
+                            <span>Kompatibel samverkan</span>
                           </div>
                         </div>
                         <Button 
@@ -222,7 +219,7 @@ const Instances = () => {
                             target="_blank" 
                             rel="noopener noreferrer"
                           >
-                            Visit Instance
+                            Besök instans
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         </Button>
@@ -239,18 +236,18 @@ const Instances = () => {
             <div className="container mx-auto px-4">
               <div className="max-w-3xl mx-auto text-center">
                 <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-4">
-                  Connect Your Instance
+                  Anslut din organisation
                 </h2>
                 <p className="text-muted-foreground mb-8">
-                  Any ActivityPub-compatible instance can connect with Nolto. 
-                  Simply follow users from your instance, and the connection is established automatically.
+                  Kompatibla organisationer kan ansluta till Nolto-nätverket. 
+                  Följ användare och anslutningen upprättas automatiskt.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild>
-                    <Link to="/auth/signup">Join Nolto</Link>
+                    <Link to="/auth/signup">Gå med i Nolto</Link>
                   </Button>
                   <Button variant="outline" asChild>
-                    <Link to="/federation">Learn About Federation</Link>
+                    <Link to="/federation">Läs mer om samverkan</Link>
                   </Button>
                 </div>
               </div>

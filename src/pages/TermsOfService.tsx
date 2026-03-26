@@ -7,23 +7,23 @@ const TermsOfService = () => {
   const keyPoints = [
     {
       icon: Scale,
-      title: "Legal Agreement",
-      description: "These terms constitute a binding agreement between you and your instance operator."
+      title: "Juridiskt avtal",
+      description: "Dessa villkor utgör ett bindande avtal mellan dig och Nolto."
     },
     {
       icon: Users,
-      title: "Federation Rules",
-      description: "Content may be shared across federated instances with their own policies."
+      title: "Samverkan",
+      description: "Innehåll kan delas med anslutna organisationer inom nätverket."
     },
     {
       icon: Shield,
-      title: "User Safety",
-      description: "We maintain community standards and reserve the right to moderate content."
+      title: "Användarsäkerhet",
+      description: "Vi upprätthåller riktlinjer och förbehåller oss rätten att moderera innehåll."
     },
     {
       icon: FileText,
-      title: "Your Rights",
-      description: "You retain ownership of your content while granting necessary licenses for operation."
+      title: "Dina rättigheter",
+      description: "Du behåller äganderätten till ditt innehåll och beviljar nödvändiga licenser för drift."
     }
   ];
 
@@ -34,17 +34,17 @@ const TermsOfService = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">
-              Terms of Service
+              Användarvillkor
             </h1>
             <p className="text-xl text-accent">
-              Legal Terms and Conditions for Using Nolto
+              Juridiska villkor för användning av Nolto
             </p>
             <p className="text-lg text-primary-foreground/90 mt-4">
-              <strong>Effective Date:</strong> June 16, 2025
+              <strong>Ikraftträdandedatum:</strong> 16 juni 2025
             </p>
             <p className="text-lg text-primary-foreground/90 mt-2">
-              These Terms of Service constitute a legally binding agreement between you and the operator 
-              of this Nolto instance, governing your use of the Nolto platform and associated services.
+              Dessa användarvillkor utgör ett juridiskt bindande avtal mellan dig och Nolto, 
+              som reglerar din användning av Nolto-plattformen och tillhörande tjänster.
             </p>
           </div>
         </div>
@@ -71,191 +71,183 @@ const TermsOfService = () => {
           <div className="prose prose-lg max-w-none">
             
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">1. Definitions</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">1. Definitioner</h2>
               <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong className="text-foreground">Nolto:</strong> The open-source, federated platform for professional networking and job postings, including all code, features, and services provided.</li>
-                  <li><strong className="text-foreground">Instance:</strong> A server running the Nolto software, managed either by us or by a third-party administrator, participating in the federated Nolto network.</li>
-                  <li><strong className="text-foreground">User:</strong> Any person or entity who accesses, registers for, or uses the Service.</li>
-                  <li><strong className="text-foreground">Content:</strong> All information, data, text, images, files, links, or other material posted, transmitted, or otherwise made available via the Service.</li>
-                  <li><strong className="text-foreground">Federation:</strong> The process by which information is exchanged between Nolto instances using the ActivityPub protocol or other compatible means.</li>
+                  <li><strong className="text-foreground">Nolto:</strong> Plattformen för professionellt nätverkande, jobbpublicering och intern kommunikation inom offentlig sektor, inklusive all kod, funktionalitet och tjänster.</li>
+                  <li><strong className="text-foreground">Användare:</strong> Varje person eller organisation som har åtkomst till, registrerar sig för eller använder tjänsten.</li>
+                  <li><strong className="text-foreground">Innehåll:</strong> All information, data, text, bilder, filer, länkar eller annat material som publiceras, överförs eller på annat sätt görs tillgängligt via tjänsten.</li>
+                  <li><strong className="text-foreground">Samverkan:</strong> Processen där information utbyts mellan anslutna organisationer och instanser inom Nolto-nätverket.</li>
                 </ul>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">2. Eligibility</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">2. Behörighet</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  You must be at least 16 years of age, or the minimum age of digital consent in your country, 
-                  to use this Service. By using the Service, you warrant that you meet this age requirement and 
-                  that all information you provide is truthful and accurate.
+                  Du måste vara minst 16 år gammal, eller uppfylla minimiåldern för digitalt samtycke i ditt land, 
+                  för att använda denna tjänst. Genom att använda tjänsten garanterar du att du uppfyller detta 
+                  ålderskrav och att all information du lämnar är sanningsenlig och korrekt.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">3. Account Registration and Security</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">3. Kontoregistrering och säkerhet</h2>
               <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>You may be required to create an account to access certain features. You are responsible for maintaining the confidentiality of your account credentials.</li>
-                  <li>You agree to provide accurate, current, and complete information and to update it as necessary.</li>
-                  <li>You are solely responsible for any activity that occurs under your account.</li>
-                  <li>If you suspect unauthorized access or breach of security, you must notify your instance administrator immediately.</li>
+                  <li>Du kan behöva skapa ett konto för att få åtkomst till vissa funktioner. Du ansvarar för att hålla dina kontouppgifter konfidentiella.</li>
+                  <li>Du förbinder dig att tillhandahålla korrekt, aktuell och fullständig information och att uppdatera den vid behov.</li>
+                  <li>Du är ensam ansvarig för all aktivitet som sker under ditt konto.</li>
+                  <li>Om du misstänker obehörig åtkomst eller säkerhetsbrott ska du omedelbart meddela administratören.</li>
                 </ul>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">4. User Conduct</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">4. Användaruppförande</h2>
               <div className="space-y-4 text-muted-foreground">
-                <p>By using the Service, you agree to:</p>
+                <p>Genom att använda tjänsten samtycker du till att:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Use the Service only for lawful purposes and in accordance with these Terms and applicable laws.</li>
-                  <li>Not impersonate any person or entity, or misrepresent your affiliation.</li>
-                  <li>Not upload, post, transmit, or otherwise make available any Content that:
+                  <li>Använda tjänsten endast för lagliga ändamål och i enlighet med dessa villkor och tillämplig lagstiftning.</li>
+                  <li>Inte utge dig för att vara en annan person eller organisation, eller felaktigt uppge din tillhörighet.</li>
+                  <li>Inte ladda upp, publicera, överföra eller på annat sätt tillgängliggöra innehåll som:
                     <ul className="list-disc pl-6 mt-2 space-y-1">
-                      <li>Is illegal, threatening, abusive, harassing, defamatory, obscene, hateful, or otherwise objectionable.</li>
-                      <li>Infringes any intellectual property, privacy, or other rights of any party.</li>
-                      <li>Contains viruses, malware, or other harmful components.</li>
+                      <li>Är olagligt, hotfullt, kränkande, trakasserande, förtalande, obscent, hatiskt eller på annat sätt stötande.</li>
+                      <li>Gör intrång i immateriella rättigheter, integritet eller andra rättigheter.</li>
+                      <li>Innehåller virus, skadlig kod eller andra skadliga komponenter.</li>
                     </ul>
                   </li>
-                  <li>Not attempt to gain unauthorized access to any part of the Service or disrupt the normal operation of the network.</li>
-                  <li>Not use the Service for unsolicited advertising, spam, or commercial purposes except as explicitly permitted (e.g., job postings).</li>
+                  <li>Inte försöka få obehörig åtkomst till någon del av tjänsten eller störa nätverkets normala drift.</li>
+                  <li>Inte använda tjänsten för oönskad reklam, spam eller kommersiella syften utom när det uttryckligen är tillåtet (t.ex. jobbpubliceringar).</li>
                 </ul>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-primary mb-6">5. Innehållsägandeskap och licens</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Du behåller äganderätten till allt innehåll du skickar in, publicerar eller visar i tjänsten.</li>
+                  <li>Genom att skicka in innehåll ger du oss en världsomspännande, icke-exklusiv, royaltyfri licens att använda, visa, reproducera, anpassa och distribuera ditt innehåll så som krävs för tjänstens drift.</li>
+                  <li>Du ansvarar för att du har nödvändiga rättigheter att bevilja denna licens för allt innehåll du delar.</li>
+                  <li>Innehåll som du raderar kan finnas kvar i cache eller lagras av anslutna instanser utanför vår direkta kontroll.</li>
+                </ul>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-primary mb-6">6. Moderering och efterlevnad</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Vi förbehåller oss rätten att ta bort innehåll, stänga av eller avsluta konton efter eget gottfinnande vid överträdelser av dessa villkor eller tillämplig lag.</li>
+                  <li>Innehåll eller konton kan tas bort, blockeras eller begränsas enligt lag, eller för att skydda tjänsten, användare eller tredje part.</li>
+                </ul>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-primary mb-6">7. Datadelning och samverkan</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Genom att använda tjänsten förstår du att visst innehåll (inklusive din profil och inlägg) kan delas med andra anslutna organisationer inom nätverket.</li>
+                  <li>Vi ansvarar inte för åtgärder, säkerhetspraxis eller datahantering hos tredje part.</li>
+                </ul>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-primary mb-6">8. Integritet</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Din integritet är viktig för oss. Se vår <Link to="/privacy" className="text-secondary hover:text-primary transition-colors underline">integritetspolicy</Link> för information om hur dina personuppgifter samlas in, behandlas och delas.</li>
+                  <li>Genom att använda tjänsten samtycker du till insamling, användning och delning av din information enligt integritetspolicyn.</li>
+                </ul>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-primary mb-6">9. Uppsägning</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Du kan avsluta ditt konto när som helst genom att följa instruktionerna i tjänsten.</li>
+                  <li>Vi förbehåller oss rätten att stänga av eller avsluta din åtkomst till tjänsten, med eller utan förvarning, vid överträdelse av dessa villkor eller tillämplig lag, eller av säkerhetsskäl.</li>
+                  <li>Vid uppsägning hanteras dina uppgifter i enlighet med vår integritetspolicy.</li>
+                </ul>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-primary mb-6">10. Friskrivningsklausuler</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Tjänsten tillhandahålls "i befintligt skick" och "som tillgänglig" utan garantier av något slag, uttryckliga eller underförstådda.</li>
+                  <li>Vi garanterar inte att tjänsten kommer att vara oavbruten, felfri eller säker.</li>
+                  <li>Vi ansvarar inte för åtgärder, innehåll eller tillgänglighet hos tredje parts tjänster.</li>
+                  <li>Vi garanterar inte riktigheten, fullständigheten eller tillförlitligheten av innehåll eller information i tjänsten.</li>
+                </ul>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-primary mb-6">11. Ansvarsbegränsning</h2>
+              <div className="space-y-4 text-muted-foreground">
+                <p>I den utsträckning tillämplig lag tillåter:</p>
+                <ul className="list-disc pl-6 space-y-2">
+                  <li>Vi, våra närstående och våra administratörer ska inte hållas ansvariga för indirekta, oförutsedda, speciella eller följdskador som uppstår ur eller i samband med din användning av tjänsten.</li>
+                  <li>Vårt totala ansvar för anspråk relaterade till dessa villkor eller tjänsten ska inte överstiga det högre av (a) det belopp du betalat (om något) för att använda tjänsten under de 12 månaderna före anspråket, eller (b) 100 EUR.</li>
+                </ul>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold text-primary mb-6">12. Ändringar av villkoren</h2>
+              <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Each instance may set additional community rules or moderation guidelines. You are responsible 
-                  for following both these Terms and any local rules of the instance you use.
+                  Vi kan uppdatera dessa villkor från tid till annan. Ändringar publiceras på denna sida med ett nytt 
+                  ikraftträdandedatum. Din fortsatta användning av tjänsten efter att ändringar har publicerats innebär 
+                  att du godkänner de reviderade villkoren.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">5. Content Ownership and License</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>You retain ownership of any Content you submit, post, or display on the Service.</li>
-                  <li>By submitting Content, you grant us and other federated instances a worldwide, non-exclusive, royalty-free license to use, display, reproduce, adapt, and distribute your Content as required for the operation of the Service, including federation.</li>
-                  <li>You are responsible for ensuring you have the necessary rights to grant this license for any Content you share.</li>
-                  <li>Content you delete may remain cached or stored by federated instances outside our direct control.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">6. Moderation and Enforcement</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>We and other instance administrators reserve the right to remove Content, suspend, or terminate accounts at our discretion for violations of these Terms or applicable laws.</li>
-                  <li>Content or accounts may be removed, blocked, or limited as required by law, or to protect the Service, users, or third parties.</li>
-                  <li>Actions taken by federated instances (e.g., blocking, removal) are outside our control and may affect your Content or interactions across the network.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">7. Federation and Data Sharing</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>By using a federated Service, you understand that certain Content (including your profile, posts, and messages) may be shared with and stored by other instances as part of the federation process.</li>
-                  <li>Once Content is federated to other instances, it is governed by their policies and may not be fully subject to removal or modification by us.</li>
-                  <li>We are not responsible for the actions, security practices, or data handling of third-party instances.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">8. Privacy</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Your privacy is important to us. Please refer to our <Link to="/privacy" className="text-secondary hover:text-primary transition-colors underline">Privacy Policy</Link> for information on how your personal data is collected, processed, and shared.</li>
-                  <li>By using the Service, you consent to the collection, use, and sharing of your information as described in the Privacy Policy.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">9. Termination</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>You may terminate your account at any time by following the instructions provided by your instance.</li>
-                  <li>We reserve the right to suspend or terminate your access to the Service, with or without notice, for any violation of these Terms or applicable laws, or for security reasons.</li>
-                  <li>Upon termination, your data will be handled in accordance with our Privacy Policy. Content previously federated may remain available on remote instances.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">10. Disclaimers</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>The Service is provided "as is" and "as available" without warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, or availability.</li>
-                  <li>We do not warrant that the Service will be uninterrupted, error-free, or secure.</li>
-                  <li>We are not responsible for the actions, content, or availability of federated or third-party instances or services.</li>
-                  <li>We do not guarantee the accuracy, completeness, or reliability of any Content or information on the Service.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">11. Limitation of Liability</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <p>To the maximum extent permitted by law:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>We, our affiliates, and our administrators shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use or inability to use the Service.</li>
-                  <li>Our total liability for any claim arising out of or relating to these Terms or the Service shall not exceed the greater of (a) the amount you paid (if any) to use the Service during the 12 months preceding the claim, or (b) 100 EUR.</li>
-                  <li>You agree to indemnify and hold us harmless from any claims, damages, losses, liabilities, costs, and expenses (including attorneys' fees) arising out of your use of the Service or violation of these Terms.</li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">12. Changes to the Terms</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">13. Tillämplig lag och jurisdiktion</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  We may update these Terms from time to time. Changes will be posted on this page with a new 
-                  effective date. Your continued use of the Service after changes are posted constitutes your 
-                  acceptance of the revised Terms.
+                  Dessa villkor ska regleras av och tolkas i enlighet med svensk lagstiftning. 
+                  Eventuella tvister som uppstår ur dessa villkor eller tjänsten ska avgöras av 
+                  behörig domstol i Sverige.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">13. Governing Law and Jurisdiction</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">14. Ogiltighetsklausul</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  These Terms shall be governed by and construed in accordance with the laws of Sweden, 
-                  without regard to conflict of law principles. Any disputes arising out of these Terms or the Service 
-                  shall be subject to the exclusive jurisdiction of the courts located in Sweden.
+                  Om någon bestämmelse i dessa villkor befinns vara olaglig, ogiltig eller ogenomförbar, 
+                  ska den bestämmelsen anses avskiljbar från dessa villkor och ska inte påverka giltigheten 
+                  och verkställbarheten av övriga bestämmelser.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">14. Severability</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">15. Kontakt</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  If any provision of these Terms is found to be unlawful, void, or unenforceable, that provision 
-                  shall be deemed severable from these Terms and shall not affect the validity and enforceability 
-                  of any remaining provisions.
-                </p>
-              </div>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">15. Contact</h2>
-              <div className="space-y-4 text-muted-foreground">
-                <p>
-                  For questions or notices regarding these Terms, please contact:
+                  Vid frågor eller meddelanden angående dessa villkor, vänligen kontakta:
                 </p>
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <p><strong>Email:</strong> jtensetti@protonmail.com</p>
-                  <p><strong>Nolto Account:</strong> JTensetti (@user_f33be7a8)</p>
+                  <p><strong>E-post:</strong> jtensetti@protonmail.com</p>
+                  <p><strong>Nolto-konto:</strong> JTensetti (@user_f33be7a8)</p>
                 </div>
                 <div className="bg-muted/50 p-4 rounded-lg mt-4">
                   <p>
-                    <strong>By using this Service, you agree to these Terms of Service.</strong><br />
-                    Thank you for being part of the Nolto network.
+                    <strong>Genom att använda denna tjänst godkänner du dessa användarvillkor.</strong><br />
+                    Tack för att du är en del av Nolto-nätverket.
                   </p>
                 </div>
               </div>
@@ -271,7 +263,7 @@ const TermsOfService = () => {
             <Button asChild variant="outline">
               <Link to="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
+                Tillbaka till startsidan
               </Link>
             </Button>
           </div>
