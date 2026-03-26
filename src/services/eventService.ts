@@ -245,7 +245,7 @@ export async function updateEvent(id: string, eventData: Partial<Omit<Event, 'id
     
     if (error) throw error;
     
-    toast.success('Event updated successfully');
+    toast.success(i18n.t('toasts.eventUpdated'));
     return data as Event;
   } catch (error) {
     console.error('Error updating event:', error);
