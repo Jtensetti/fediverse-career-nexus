@@ -69,6 +69,7 @@ export default function FederatedPostCard({
   const commentPreviewRef = useRef<CommentPreviewHandle>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Update state when initialData changes (from parent batch fetch)
   useEffect(() => {
