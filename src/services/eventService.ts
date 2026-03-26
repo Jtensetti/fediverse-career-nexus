@@ -297,7 +297,7 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
     
     if (error) throw error;
     
-    toast.success(`RSVP ${status} submitted successfully`);
+    toast.success(i18n.t('toasts.rsvpSubmitted'));
     return data as EventRSVP;
   } catch (error) {
     console.error('Error creating RSVP:', error);
