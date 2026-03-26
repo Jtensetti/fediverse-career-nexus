@@ -181,8 +181,8 @@ export default function AuthPage() {
 
     // Validate password length
     if (password.length < 6) {
-      setFieldErrors(prev => ({ ...prev, password: "Password must be at least 6 characters" }));
-      toast.error("Password must be at least 6 characters");
+      setFieldErrors(prev => ({ ...prev, password: t("toasts.passwordTooShort") }));
+      toast.error(t("toasts.passwordTooShort"));
       return;
     }
 
