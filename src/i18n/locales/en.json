@@ -582,8 +582,8 @@
       "exploreFeed": "Explore the Platform"
     },
     "trustBadges": {
-      "gdpr": "GDPR Compliant",
-      "gdprShort": "GDPR",
+      "gdpr": "Data Protection",
+      "gdprShort": "Secure",
       "swedishData": "Swedish Data Storage",
       "swedishDataShort": "Swedish Data",
       "secureLogin": "Secure Login",
