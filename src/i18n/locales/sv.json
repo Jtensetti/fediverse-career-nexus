@@ -1368,7 +1368,16 @@
     "enterCode": "Ange verifieringskod",
     "verify": "Verifiera",
     "verifying": "Verifierar...",
-    "verifyError": "Ogiltig kod. Försök igen."
+    "verifyError": "Ogiltig kod. Försök igen.",
+    "verifyTitle": "Tvåfaktorsautentisering",
+    "verifyDesc": "Ange den 6-siffriga koden från din autentiseringsapp för att fortsätta.",
+    "authCode": "Autentiseringskod",
+    "continue": "Fortsätt",
+    "useAnotherMethod": "Avbryt inloggning",
+    "lostAccess": "Har du tappat åtkomst till din autentiseringsapp?",
+    "contactSupport": "Kontakta support",
+    "loginSuccess": "Verifierad!",
+    "invalidCode": "Ogiltig kod. Försök igen."
   },
   "dataExport": {
     "title": "Ladda ner din data",
