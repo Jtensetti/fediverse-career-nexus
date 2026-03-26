@@ -45,7 +45,7 @@ const timeOptions = () => {
   return times;
 };
 
-function createEventFormSchema(t: (key: string) => string) {
+function createEventFormSchema(t: any) {
   return z
     .object({
       title: z.string().min(3, t("eventFormLabels.titleValidation")),

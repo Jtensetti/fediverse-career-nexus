@@ -31,7 +31,7 @@ import {
 
 export type JobFormValues = z.infer<ReturnType<typeof createJobFormSchema>>;
 
-function createJobFormSchema(t: (key: string, fallback?: string) => string) {
+function createJobFormSchema(t: any) {
   return z.object({
     title: z.string().min(5, t("jobFormLabels.titleValidation")),
     company: z.string().min(2, t("jobFormLabels.companyValidation")),
