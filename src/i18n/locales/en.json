@@ -693,8 +693,8 @@
     },
     "featuredIn": {
       "tagline": "Built for public sector requirements on security and accessibility",
-      "gdprCompliant": "GDPR Compliant",
-      "gdprDesc": "Full compliance",
+      "gdprCompliant": "Data Protection",
+      "gdprDesc": "EU legislation compliant",
       "swedishHosting": "Swedish Hosting",
       "swedishHostingDesc": "Data in EU",
       "encrypted": "Encrypted",
