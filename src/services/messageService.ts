@@ -442,7 +442,7 @@ async function sendFederatedMessage(
         toast.warning('Meddelande sparat men leverans till fjärrserver misslyckades');
         return data.message as Message;
       }
-      toast.error('Failed to deliver message');
+      toast.error('Kunde inte leverera meddelande');
       return null;
     }
 
