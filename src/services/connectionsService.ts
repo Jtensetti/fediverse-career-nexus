@@ -175,7 +175,7 @@ const getSimpleSuggestions = async (userId: string): Promise<NetworkSuggestion[]
     connectionDegree: 3 as ConnectionDegree,
     isVerified: profile.is_verified || false,
     mutualConnections: 0,
-    suggestionReason: "Suggested for you"
+    suggestionReason: "Förslag för dig"
   }));
 };
 
