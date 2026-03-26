@@ -117,7 +117,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
       // Don't fail the whole operation, the article was created
     }
     
-    toast.success('Article created successfully!');
+    toast.success(i18n.t('toasts.articleCreated'));
     return data;
   } catch (error) {
     console.error('Error creating article:', error);
