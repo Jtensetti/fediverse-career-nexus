@@ -140,7 +140,7 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
       .single();
     
     if (error) {
-      toast.error(`Error updating article: ${error.message}`);
+      toast.error(`${i18n.t('toasts.articleUpdateFailed')}: ${error.message}`);
       return null;
     }
     
