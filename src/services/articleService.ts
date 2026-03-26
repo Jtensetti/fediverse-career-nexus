@@ -330,7 +330,7 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
       return false;
     }
     
-    toast.success('Article deleted successfully!');
+    toast.success(i18n.t('toasts.articleDeleted'));
     return true;
   } catch (error) {
     console.error('Error deleting article:', error);
