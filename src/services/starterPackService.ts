@@ -336,7 +336,7 @@ export async function removePackMember(packId: string, userId: string): Promise<
     return true;
   } catch (error) {
     console.error('Error removing pack member:', error);
-    toast.error('Failed to remove member');
+    toast.error('Kunde inte ta bort medlem');
     return false;
   }
 }
