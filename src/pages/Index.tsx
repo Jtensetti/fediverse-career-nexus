@@ -36,8 +36,8 @@ export default function Index() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="Nolto - The Federated Professional Network"
-        description="Join the open, federated professional network. Connect with professionals across the Fediverse. No algorithms, no data harvesting, just authentic connections."
+        title="Nolto - Det professionella nätverket för offentlig sektor"
+        description="Anslut er organisation till en säker plattform byggd för kommuner, regioner och myndigheter. Inga algoritmer, ingen dataförsäljning."
       />
       <Navbar />
       <main className="flex-grow">
