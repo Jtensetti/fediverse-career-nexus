@@ -50,11 +50,11 @@ export default function UserPostsList({ userId, className = "" }: UserPostsListP
   }
 
   if (error) {
-    return <div className="p-4 text-center text-red-500">Failed to load posts</div>;
+    return <div className="p-4 text-center text-destructive">Kunde inte ladda inlägg</div>;
   }
 
   if (!posts || posts.length === 0) {
-    return <div className="p-4 text-center text-muted-foreground">No posts yet</div>;
+    return <div className="p-4 text-center text-muted-foreground">Inga inlägg ännu</div>;
   }
 
   return (
