@@ -279,7 +279,7 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="reports" className="gap-2">
                   <Flag className="h-4 w-4" />
-                  Reports
+                  Rapporter
                   {pendingCount > 0 && (
                     <Badge variant="destructive" className="ml-1 h-5 min-w-5 text-xs">
                       {pendingCount}
