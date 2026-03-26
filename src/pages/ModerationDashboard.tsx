@@ -357,36 +357,20 @@ export default function ModerationDashboard() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Quick Actions</CardTitle>
-                    <CardDescription>Common moderation tasks</CardDescription>
+                    <CardTitle className="text-lg">Snabbåtgärder</CardTitle>
+                    <CardDescription>Vanliga modereringsuppgifter</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <QuickAction
-                      icon={Flag}
-                      label="Review Reports"
-                      description="Check pending content reports"
-                      onClick={() => setActiveTab('reports')}
-                      variant={pendingCount > 0 ? 'warning' : 'default'}
-                    />
-                    <QuickAction
-                      icon={Search}
-                      label="User Lookup"
-                      description="Search and investigate users"
-                      onClick={() => setActiveTab('users')}
-                    />
-                    <QuickAction
-                      icon={Server}
-                      label="Instance Management"
-                      description="Manage federated instances"
-                      onClick={() => navigate('/admin/instances')}
-                    />
+                    <QuickAction icon={Flag} label="Granska rapporter" description="Kontrollera väntande rapporter" onClick={() => setActiveTab('reports')} variant={pendingCount > 0 ? 'warning' : 'default'} />
+                    <QuickAction icon={Search} label="Sök användare" description="Sök och granska användare" onClick={() => setActiveTab('users')} />
+                    <QuickAction icon={Server} label="Instanshantering" description="Hantera anslutna instanser" onClick={() => navigate('/admin/instances')} />
                   </CardContent>
                 </Card>
 
                 <Card className="md:col-span-2 lg:col-span-2">
                   <CardHeader>
-                    <CardTitle className="text-lg">Recent Activity</CardTitle>
-                    <CardDescription>Latest moderation actions</CardDescription>
+                    <CardTitle className="text-lg">Senaste aktivitet</CardTitle>
+                    <CardDescription>Senaste modereringsåtgärder</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-[200px]">
