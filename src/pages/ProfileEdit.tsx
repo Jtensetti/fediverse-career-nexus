@@ -64,16 +64,16 @@ import {
 } from "@/services/profileCVService";
 
 // Schema for the basic profile information
-const profileSchema = z.object({
+const createProfileSchema = (t: any) => z.object({
   username: z.string()
-    .min(3, "Username must be at least 3 characters")
-    .max(20, "Username must be 20 characters or less")
-    .regex(/^[a-z0-9_]+$/, "Username can only contain lowercase letters, numbers, and underscores")
+    .min(3, t("profileEdit.profileSchema.usernameMin"))
+    .max(20, t("profileEdit.profileSchema.usernameMax"))
+    .regex(/^[a-z0-9_]+$/, t("profileEdit.profileSchema.usernameRegex"))
     .optional(),
-  displayName: z.string().min(2, "Display name must be at least 2 characters"),
-  headline: z.string().min(5, "Headline must be at least 5 characters"),
+  displayName: z.string().min(2, t("profileEdit.profileSchema.displayNameMin")),
+  headline: z.string().min(5, t("profileEdit.profileSchema.headlineMin")),
   bio: z.string().optional(),
-  contactEmail: z.string().email("Please enter a valid email").optional().or(z.literal("")),
+  contactEmail: z.string().email(t("profileEdit.profileSchema.invalidEmail")).optional().or(z.literal("")),
   phone: z.string().optional(),
   location: z.string().optional()
 });
