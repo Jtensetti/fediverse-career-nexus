@@ -15,8 +15,8 @@ interface MonthYearPickerProps {
 }
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "Januari", "Februari", "Mars", "April", "Maj", "Juni",
+  "Juli", "Augusti", "September", "Oktober", "November", "December"
 ];
 
 export function MonthYearPicker({
@@ -96,7 +96,7 @@ export function MonthYearPicker({
               className="font-semibold"
               onClick={() => setView(view === "year" ? "month" : "year")}
             >
-              {view === "month" ? selectedYear : "Select Year"}
+              {view === "month" ? selectedYear : "Välj år"}
             </Button>
           </div>
           

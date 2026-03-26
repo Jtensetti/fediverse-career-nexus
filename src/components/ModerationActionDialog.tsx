@@ -42,7 +42,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isSöker...etIsSöker... useState(false);
   
   const form = useForm({
     defaultValues: {
@@ -61,7 +61,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
         return;
       }
       
-      setIsSearching(true);
+      setIsSöker...ue);
       try {
         const { data, error } = await supabase
           .from('public_profiles')
@@ -75,7 +75,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
       } catch (error) {
         console.error('Error searching for users:', error);
       } finally {
-        setIsSearching(false);
+        setIsSöker...lse);
       }
     };
     
@@ -99,7 +99,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
       if (!session?.user) {
         toast({
           title: t('common.error'),
-          description: 'You must be logged in to perform this action',
+          description: 'Du måste vara inloggad för att utföra denna åtgärd',
           variant: 'destructive',
         });
         return;
@@ -139,7 +139,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
       console.error('Error creating moderation action:', error);
       toast({
         title: t('common.error'),
-        description: error.message || 'Failed to create moderation action',
+        description: error.message || 'Kunde inte skapa modereringsåtgärd',
         variant: 'destructive',
       });
     }
@@ -192,7 +192,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
                       className="pl-10"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search by username or ID"
+                      placeholder="Sök på användarnamn eller ID"
                     />
                     <input type="hidden" {...field} />
                   </div>
@@ -207,7 +207,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
                             onClick={() => selectUser(user)}
                           >
                             <div className="flex justify-between">
-                              <span className="font-medium">{user.username || 'No username'}</span>
+                              <span className="font-medium">{user.username || 'Inget användarnamn'}</span>
                               <span className="text-sm text-gray-500">{user.fullname || ''}</span>
                             </div>
                             <div className="text-xs text-gray-500 truncate">{user.id}</div>
@@ -217,8 +217,8 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
                     </div>
                   )}
                   
-                  {isSearching && (
-                    <div className="text-sm text-gray-500 mt-1">Searching...</div>
+                  {isSöker... (
+                    <div className="text-sm text-gray-500 mt-1">Söker...</div>
                   )}
                   
                   <FormMessage />

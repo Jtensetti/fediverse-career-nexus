@@ -89,7 +89,7 @@ const SelectionToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("bold")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Bold"
+        aria-label="Fet"
       >
         <Bold className={iconSize} strokeWidth={2.5} />
       </Button>
@@ -103,7 +103,7 @@ const SelectionToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("italic")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Italic"
+        aria-label="Kursiv"
       >
         <Italic className={iconSize} />
       </Button>
@@ -117,7 +117,7 @@ const SelectionToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("strikethrough")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Strikethrough"
+        aria-label="Genomstruken"
       >
         <Strikethrough className={iconSize} />
       </Button>
@@ -135,7 +135,7 @@ const SelectionToolbar = ({
             onMouseDown={preventBlur}
             onTouchStart={preventBlur}
             className={cn(buttonSize, "p-0 shrink-0")}
-            aria-label="Text style"
+            aria-label="Textstil"
           >
             <Type className={iconSize} />
           </Button>
@@ -180,7 +180,7 @@ const SelectionToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("link")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Insert link"
+        aria-label="Infoga länk"
       >
         <Link className={iconSize} />
       </Button>
@@ -197,7 +197,7 @@ const SelectionToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("quote")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Block quote"
+        aria-label="Blockcitat"
       >
         <Quote className={iconSize} />
       </Button>
@@ -211,7 +211,7 @@ const SelectionToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("code-block")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Code block"
+        aria-label="Kodblock"
       >
         <Code className={iconSize} />
       </Button>
@@ -251,7 +251,7 @@ const DefaultToolbar = ({
             onMouseDown={preventBlur}
             onTouchStart={preventBlur}
             className={cn(buttonSize, "p-0 shrink-0")}
-            aria-label="Insert"
+            aria-label="Infoga"
           >
             <Plus className={iconSize} />
           </Button>
@@ -306,7 +306,7 @@ const DefaultToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("link")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Insert link"
+        aria-label="Infoga länk"
       >
         <Link className={iconSize} />
       </Button>
@@ -321,7 +321,7 @@ const DefaultToolbar = ({
             onMouseDown={preventBlur}
             onTouchStart={preventBlur}
             className={cn(buttonSize, "p-0 shrink-0")}
-            aria-label="Lists"
+            aria-label="Listor"
           >
             <List className={iconSize} />
           </Button>
@@ -378,7 +378,7 @@ const DefaultToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("quote")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Block quote"
+        aria-label="Blockcitat"
       >
         <Quote className={iconSize} />
       </Button>
@@ -392,7 +392,7 @@ const DefaultToolbar = ({
         onTouchStart={preventBlur}
         onClick={() => onAction("undo")}
         className={cn(buttonSize, "p-0 shrink-0")}
-        aria-label="Undo"
+        aria-label="Ångra"
       >
         <Undo2 className={iconSize} />
       </Button>
@@ -405,7 +405,7 @@ const DefaultToolbar = ({
           size="sm"
           onClick={onHideKeyboard}
           className={cn(buttonSize, "p-0 shrink-0")}
-          aria-label="Hide keyboard"
+          aria-label="Dölj tangentbord"
         >
           <ChevronDown className={iconSize} />
         </Button>
