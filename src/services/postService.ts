@@ -114,7 +114,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
         if (updateError) {
           console.error('❌ Username update error:', updateError);
-          toast.error("Failed to update username");
+          toast.error("Kunde inte uppdatera användarnamn");
           return false;
         }
       }
