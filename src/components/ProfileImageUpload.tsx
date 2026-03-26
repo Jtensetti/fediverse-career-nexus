@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
@@ -17,9 +18,9 @@ const ProfileImageUpload = ({
   displayName = "User",
   onImageUploaded
 }: ProfileImageUploadProps) => {
+  const { t } = useTranslation();
   const [isUploading, setIsUploading] = useState(false);
 
-  // Get initials for the avatar fallback
   const getInitials = () => {
     if (!displayName) return "U";
     return displayName
@@ -34,15 +35,13 @@ const ProfileImageUpload = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file");
+      alert(t("profileImage.selectImageFile"));
       return;
     }
 
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      alert("Please upload an image smaller than 5MB");
+      alert(t("profileImage.imageTooLarge"));
       return;
     }
 
@@ -91,7 +90,7 @@ const ProfileImageUpload = ({
         onClick={() => document.getElementById("profile-image")?.click()}
         disabled={isUploading}
       >
-        {isUploading ? "Uploading..." : "Change Photo"}
+        {isUploading ? t("profileImage.uploading") : t("profileImage.changePhoto")}
       </Button>
     </div>
   );
