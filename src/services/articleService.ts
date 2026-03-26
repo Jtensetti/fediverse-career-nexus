@@ -148,7 +148,7 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
     return data;
   } catch (error) {
     console.error('Error updating article:', error);
-    toast.error('Failed to update article. Please try again.');
+    toast.error(i18n.t('toasts.articleUpdateFailed'));
     return null;
   }
 };
