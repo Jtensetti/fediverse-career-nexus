@@ -1,122 +1,68 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { SEOHead } from "@/components/common/SEOHead";
 
 const HelpCenter = () => {
   const faqSections = [
     {
-      title: "Getting Started",
+      title: "Komma igång",
       items: [
-        {
-          question: "How do I join Nolto?",
-          answer: "Choose a Nolto instance (such as nolto.social) and create your account. Complete your profile to start connecting and browsing opportunities."
-        },
-        {
-          question: "Do I need to pay to use Nolto?",
-          answer: "No. Nolto is free to use. Some community-run instances may offer premium features or accept donations, but the core platform is always open."
-        },
-        {
-          question: "Can I use Nolto on mobile?",
-          answer: "Yes! Nolto works in all modern browsers on both desktop and mobile."
-        }
+        { question: "Hur går jag med i Nolto?", answer: "Välj en Nolto-instans (t.ex. nolto.social) och skapa ditt konto. Fyll i din profil för att börja ansluta och utforska möjligheter." },
+        { question: "Behöver jag betala för att använda Nolto?", answer: "Nej. Nolto är gratis att använda. Vissa organisationer kan erbjuda premiumfunktioner eller ta emot donationer, men kärnplattformen är alltid öppen." },
+        { question: "Kan jag använda Nolto på mobilen?", answer: "Ja! Nolto fungerar i alla moderna webbläsare på både dator och mobil." },
       ]
     },
     {
-      title: "Federation",
+      title: "Samverkan",
       items: [
-        {
-          question: "What is federation?",
-          answer: "Federation means Nolto isn't just one website. It's a network of independent servers (\"instances\") that talk to each other, letting you interact across the whole network."
-        },
-        {
-          question: "Can I connect with users from other Nolto instances?",
-          answer: "Yes. You can follow, message, and apply for jobs across all federated Nolto instances, no matter where your account was created."
-        },
-        {
-          question: "What happens if I want to move my account?",
-          answer: "You can export your profile data and move to a different Nolto instance whenever you want. Your connections and history go with you."
-        }
+        { question: "Vad är samverkan?", answer: "Samverkan innebär att Nolto inte bara är en enskild webbplats. Det är ett nätverk av oberoende servrar (\"instanser\") som kommunicerar med varandra." },
+        { question: "Kan jag ansluta med användare från andra Nolto-instanser?", answer: "Ja. Du kan följa, skicka meddelanden och söka jobb över alla anslutna Nolto-instanser, oavsett var ditt konto skapades." },
+        { question: "Vad händer om jag vill flytta mitt konto?", answer: "Du kan exportera din profildata och flytta till en annan Nolto-instans när du vill. Dina kontakter och historik följer med." },
       ]
     },
     {
-      title: "Privacy & Safety",
+      title: "Integritet och säkerhet",
       items: [
-        {
-          question: "Who can see my profile?",
-          answer: "You control your privacy. Set each part of your profile to public, private, or visible only to your connections."
-        },
-        {
-          question: "How is my data protected?",
-          answer: "Nolto is built with privacy in mind and follows strict GDPR principles. Your data stays on the instance you choose, and you're always in control."
-        },
-        {
-          question: "How do I report abuse or inappropriate content?",
-          answer: "Every Nolto instance has its own moderation team. Use the \"Report\" function on profiles, posts, or messages to flag issues."
-        }
+        { question: "Vem kan se min profil?", answer: "Du styr din integritet. Ställ in varje del av din profil som offentlig, privat eller synlig bara för dina kontakter." },
+        { question: "Hur skyddas min data?", answer: "Nolto är byggt med integritet i åtanke och följer strikta dataskyddsprinciper. Din data stannar på den instans du väljer och du har alltid kontroll." },
+        { question: "Hur rapporterar jag missbruk eller olämpligt innehåll?", answer: "Varje Nolto-instans har ett eget modereringsteam. Använd \"Rapportera\"-funktionen på profiler, inlägg eller meddelanden för att flagga problem." },
       ]
     },
     {
-      title: "Troubleshooting",
+      title: "Felsökning",
       items: [
-        {
-          question: "I forgot my password. What do I do?",
-          answer: "Click \"Forgot Password?\" on the login page and follow the instructions to reset your password by email."
-        },
-        {
-          question: "I can't find an answer to my problem—what now?",
-          answer: "Reach out to your instance admin, visit our community forum, or open a ticket on Codeberg Issues."
-        }
+        { question: "Jag har glömt mitt lösenord. Vad gör jag?", answer: "Klicka på \"Glömt lösenord?\" på inloggningssidan och följ instruktionerna för att återställa ditt lösenord via e-post." },
+        { question: "Jag hittar inte svar på mitt problem — vad gör jag nu?", answer: "Kontakta din instansadministratör, besök vårt communityforum eller öppna ett ärende på Codeberg Issues." },
       ]
     }
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <SEOHead 
-        title="Help Center" 
-        description="Find answers to common questions and get the most out of your federated professional network on Nolto." 
-      />
-      {/* Header */}
+      <SEOHead title="Hjälpcenter" description="Hitta svar på vanliga frågor och få ut det mesta av ditt professionella nätverk på Nolto." />
       <div className="bg-primary text-primary-foreground py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">
-              Help Center
-            </h1>
-            <p className="text-xl text-accent">
-              Welcome to the Nolto Help Center! Find answers to common questions and get the most out of your federated professional network.
-            </p>
+            <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Hjälpcenter</h1>
+            <p className="text-xl text-accent">Välkommen till Noltos hjälpcenter! Hitta svar på vanliga frågor och få ut det mesta av ditt professionella nätverk.</p>
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          
-          {/* FAQ Section */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-8">Frequently Asked Questions</h2>
-            
+            <h2 className="text-2xl font-bold text-primary mb-8">Vanliga frågor</h2>
             {faqSections.map((section, sectionIndex) => (
               <div key={sectionIndex} className="mb-8">
                 <h3 className="text-xl font-semibold text-primary mb-4">{section.title}</h3>
                 <Accordion type="single" collapsible className="w-full">
                   {section.items.map((item, itemIndex) => (
                     <AccordionItem key={itemIndex} value={`${sectionIndex}-${itemIndex}`}>
-                      <AccordionTrigger className="text-left">
-                        {item.question}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground">
-                        {item.answer}
-                      </AccordionContent>
+                      <AccordionTrigger className="text-left">{item.question}</AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">{item.answer}</AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
@@ -124,82 +70,49 @@ const HelpCenter = () => {
             ))}
           </section>
 
-          {/* Quick Start Guide */}
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-6">Quick Start Guide</h2>
+            <h2 className="text-2xl font-bold text-primary mb-6">Snabbstartsguide</h2>
             <div className="bg-muted p-6 rounded-lg">
               <ol className="space-y-4">
-                <li className="flex items-start">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0 mt-1">1</div>
-                  <div>
-                    <strong className="text-primary">Pick an Instance:</strong> Browse the list of public Nolto servers and choose one that suits you.
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0 mt-1">2</div>
-                  <div>
-                    <strong className="text-primary">Sign Up:</strong> Create your account and verify your email.
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0 mt-1">3</div>
-                  <div>
-                    <strong className="text-primary">Complete Your Profile:</strong> Add your skills, experience, and set your privacy preferences.
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0 mt-1">4</div>
-                  <div>
-                    <strong className="text-primary">Start Connecting:</strong> Search for jobs, follow organizations, and connect with other professionals.
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0 mt-1">5</div>
-                  <div>
-                    <strong className="text-primary">Explore the Network:</strong> Discover opportunities from across the entire Fediverse!
-                  </div>
-                </li>
+                {[
+                  { step: "1", title: "Välj en instans:", desc: "Bläddra bland publika Nolto-servrar och välj en som passar er." },
+                  { step: "2", title: "Registrera dig:", desc: "Skapa ditt konto och verifiera din e-post." },
+                  { step: "3", title: "Fyll i din profil:", desc: "Lägg till kompetenser, erfarenhet och ställ in dina integritetsinställningar." },
+                  { step: "4", title: "Börja ansluta:", desc: "Sök efter jobb, följ organisationer och anslut med kollegor." },
+                  { step: "5", title: "Utforska nätverket:", desc: "Upptäck möjligheter från hela nätverket!" },
+                ].map(({ step, title, desc }) => (
+                  <li key={step} className="flex items-start">
+                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0 mt-1">{step}</div>
+                    <div><strong className="text-primary">{title}</strong> {desc}</div>
+                  </li>
+                ))}
               </ol>
             </div>
           </section>
 
-          {/* Need More Help Section */}
           <section className="bg-primary text-primary-foreground p-8 rounded-lg text-center">
-            <h2 className="text-2xl font-bold mb-4">Need More Help?</h2>
+            <h2 className="text-2xl font-bold mb-4">Behöver du mer hjälp?</h2>
             <p className="text-lg mb-6 text-primary-foreground/90">
-              If you need more help, check the{" "}
-              <Link to="/documentation" className="text-accent hover:underline">
-                Documentation
-              </Link>{" "}
-              or contact your instance admin.
+              Om du behöver mer hjälp, kolla{" "}
+              <Link to="/documentation" className="text-accent hover:underline">Dokumentationen</Link>{" "}
+              eller kontakta din instansadministratör.
             </p>
             <p className="text-lg mb-6 text-primary-foreground/90">
-              For technical issues or feature requests, you can also open a ticket on{" "}
-              <a 
-                href="https://codeberg.org/Tensetti/Nolto/issues" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-accent hover:underline inline-flex items-center"
-              >
+              För tekniska problem eller funktionsförslag kan du också öppna ett ärende på{" "}
+              <a href="https://codeberg.org/Tensetti/Nolto/issues" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline inline-flex items-center">
                 Codeberg Issues <ExternalLink className="ml-1 h-4 w-4" />
               </a>
             </p>
-            <p className="text-xl font-semibold text-accent">
-              We're here to help—welcome to Nolto!
-            </p>
+            <p className="text-xl font-semibold text-accent">Vi finns här för att hjälpa — välkommen till Nolto!</p>
           </section>
         </div>
       </div>
 
-      {/* Navigation */}
       <div className="border-t py-6">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <Button asChild variant="outline">
-              <Link to="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
-              </Link>
+              <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />Tillbaka till startsidan</Link>
             </Button>
           </div>
         </div>

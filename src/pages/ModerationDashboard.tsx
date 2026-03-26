@@ -187,7 +187,7 @@ export default function ModerationDashboard() {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-              <p className="text-muted-foreground">Verifying access...</p>
+              <p className="text-muted-foreground">Verifierar åtkomst...</p>
             </div>
           </div>
         </main>
@@ -211,12 +211,12 @@ export default function ModerationDashboard() {
               <div className="p-4 rounded-full bg-destructive/10 w-fit mx-auto">
                 <Shield className="h-12 w-12 text-destructive" />
               </div>
-              <h1 className="text-2xl font-bold">Access Restricted</h1>
+              <h1 className="text-2xl font-bold">Åtkomst begränsad</h1>
               <p className="text-muted-foreground">
-                This area is restricted to authorized moderators only. If you believe you should have access, please contact the administrator.
+                Detta område är begränsat till behöriga moderatorer. Om du anser att du borde ha åtkomst, kontakta administratören.
               </p>
               <Button onClick={() => navigate('/')} variant="outline">
-                Return Home
+                Tillbaka hem
               </Button>
             </motion.div>
           </div>
@@ -229,8 +229,8 @@ export default function ModerationDashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead 
-        title="Moderation Dashboard" 
-        description="Comprehensive moderation tools for managing community content and users." 
+        title="Modereringscenter" 
+        description="Verktyg för att hantera innehåll och användare i nätverket."
       />
       <Navbar />
       
@@ -248,20 +248,20 @@ export default function ModerationDashboard() {
                   <Shield className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight">Moderation Center</h1>
-                  <p className="text-muted-foreground">Monitor, review, and manage community activity</p>
+                  <h1 className="text-3xl font-bold tracking-tight">Modereringscenter</h1>
+                  <p className="text-muted-foreground">Övervaka, granska och hantera aktivitet</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="gap-1">
                   <CheckCircle className="h-3 w-3 text-primary" />
-                  System Online
+                  System online
                 </Badge>
                 {pendingCount > 0 && (
                   <Badge variant="destructive" className="gap-1">
                     <AlertTriangle className="h-3 w-3" />
-                    {pendingCount} Pending
+                    {pendingCount} Väntande
                   </Badge>
                 )}
               </div>
@@ -275,11 +275,11 @@ export default function ModerationDashboard() {
               <TabsList className="flex-wrap h-auto gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="overview" className="gap-2">
                   <Activity className="h-4 w-4" />
-                  Overview
+                  Översikt
                 </TabsTrigger>
                 <TabsTrigger value="reports" className="gap-2">
                   <Flag className="h-4 w-4" />
-                  Reports
+                  Rapporter
                   {pendingCount > 0 && (
                     <Badge variant="destructive" className="ml-1 h-5 min-w-5 text-xs">
                       {pendingCount}
@@ -288,30 +288,30 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="users" className="gap-2">
                   <Users className="h-4 w-4" />
-                  Users
+                  Användare
                 </TabsTrigger>
                 <TabsTrigger value="bans" className="gap-2">
                   <Ban className="h-4 w-4" />
-                  Bans
+                  Avstängningar
                 </TabsTrigger>
                 <TabsTrigger value="federation" className="gap-2">
                   <Globe className="h-4 w-4" />
-                  Federation
+                  Samverkan
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="gap-2">
                   <Eye className="h-4 w-4" />
-                  Logs
+                  Loggar
                 </TabsTrigger>
                 <TabsTrigger value="alerts" className="gap-2">
                   <Bell className="h-4 w-4" />
-                  Alerts
+                  Varningar
                 </TabsTrigger>
               </TabsList>
 
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search users, reports..."
+                  placeholder="Sök användare, rapporter..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -324,28 +324,28 @@ export default function ModerationDashboard() {
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard 
-                  label="Pending Reports" 
+                  label="Väntande rapporter" 
                   value={stats?.pendingReports ?? 0}
                   icon={Flag}
                   color={pendingCount > 0 ? 'warning' : 'primary'}
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Active Bans" 
+                  label="Aktiva avstängningar" 
                   value={stats?.activeBans ?? 0}
                   icon={Ban}
                   color="destructive"
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Actions Today" 
+                  label="Åtgärder idag" 
                   value={stats?.totalActionsToday ?? 0}
                   icon={Gavel}
                   color="primary"
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Moderators" 
+                  label="Moderatorer" 
                   value={stats?.totalModerators ?? 0}
                   icon={Shield}
                   color="success"
@@ -357,36 +357,20 @@ export default function ModerationDashboard() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Quick Actions</CardTitle>
-                    <CardDescription>Common moderation tasks</CardDescription>
+                    <CardTitle className="text-lg">Snabbåtgärder</CardTitle>
+                    <CardDescription>Vanliga modereringsuppgifter</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <QuickAction
-                      icon={Flag}
-                      label="Review Reports"
-                      description="Check pending content reports"
-                      onClick={() => setActiveTab('reports')}
-                      variant={pendingCount > 0 ? 'warning' : 'default'}
-                    />
-                    <QuickAction
-                      icon={Search}
-                      label="User Lookup"
-                      description="Search and investigate users"
-                      onClick={() => setActiveTab('users')}
-                    />
-                    <QuickAction
-                      icon={Server}
-                      label="Instance Management"
-                      description="Manage federated instances"
-                      onClick={() => navigate('/admin/instances')}
-                    />
+                    <QuickAction icon={Flag} label="Granska rapporter" description="Kontrollera väntande rapporter" onClick={() => setActiveTab('reports')} variant={pendingCount > 0 ? 'warning' : 'default'} />
+                    <QuickAction icon={Search} label="Sök användare" description="Sök och granska användare" onClick={() => setActiveTab('users')} />
+                    <QuickAction icon={Server} label="Instanshantering" description="Hantera anslutna instanser" onClick={() => navigate('/admin/instances')} />
                   </CardContent>
                 </Card>
 
                 <Card className="md:col-span-2 lg:col-span-2">
                   <CardHeader>
-                    <CardTitle className="text-lg">Recent Activity</CardTitle>
-                    <CardDescription>Latest moderation actions</CardDescription>
+                    <CardTitle className="text-lg">Senaste aktivitet</CardTitle>
+                    <CardDescription>Senaste modereringsåtgärder</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-[200px]">
@@ -405,9 +389,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Flag className="h-5 w-5 text-accent-foreground" />
-                    Content Reports
+                    Innehållsrapporter
                   </CardTitle>
-                  <CardDescription>Review and take action on reported content</CardDescription>
+                  <CardDescription>Granska och vidta åtgärder för rapporterat innehåll</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
@@ -423,9 +407,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
-                    User Management
+                    Användarhantering
                   </CardTitle>
-                  <CardDescription>Search and manage user accounts</CardDescription>
+                  <CardDescription>Sök och hantera användarkonton</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
@@ -441,9 +425,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Ban className="h-5 w-5 text-destructive" />
-                    User Bans
+                    Användaravstängningar
                   </CardTitle>
-                  <CardDescription>View and manage active and historical bans</CardDescription>
+                  <CardDescription>Visa och hantera aktiva och historiska avstängningar</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
@@ -460,9 +444,9 @@ export default function ModerationDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Globe className="h-5 w-5 text-primary" />
-                      Domain Moderation
+                      Domänmoderering
                     </CardTitle>
-                    <CardDescription>Manage blocked and restricted domains</CardDescription>
+                    <CardDescription>Hantera blockerade och begränsade domäner</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Suspense fallback={<LoadingFallback />}>
@@ -475,9 +459,9 @@ export default function ModerationDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-secondary-foreground" />
-                      Actor Moderation
+                      Aktörsmoderering
                     </CardTitle>
-                    <CardDescription>Manage blocked federated actors</CardDescription>
+                    <CardDescription>Hantera blockerade aktörer</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Suspense fallback={<LoadingFallback />}>
@@ -493,12 +477,12 @@ export default function ModerationDashboard() {
                     <div className="flex items-center gap-3">
                       <Server className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">Instance Management</p>
-                        <p className="text-sm text-muted-foreground">View rate-limited instances and federation health</p>
+                        <p className="font-medium">Instanshantering</p>
+                        <p className="text-sm text-muted-foreground">Visa begränsade instanser och samverkanshälsa</p>
                       </div>
                     </div>
                     <Button onClick={() => navigate('/admin/instances')} variant="outline">
-                      Open Instance Manager
+                      Öppna instanshanteraren
                     </Button>
                   </div>
                 </CardContent>
@@ -511,9 +495,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Eye className="h-5 w-5 text-muted-foreground" />
-                    Moderation Log
+                    Modereringslogg
                   </CardTitle>
-                  <CardDescription>Complete history of moderation actions</CardDescription>
+                  <CardDescription>Fullständig historik över modereringsåtgärder</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>

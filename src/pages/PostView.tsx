@@ -207,7 +207,7 @@ export default function PostView() {
 
   if (loading) {
     return (
-      <DashboardLayout title="Loading Post" description="Loading post details...">
+      <DashboardLayout title="Laddar inlägg" description="Laddar inläggsdetaljer...">
         <div className="min-h-[50vh] flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -217,16 +217,16 @@ export default function PostView() {
 
   if (error || !post) {
     return (
-      <DashboardLayout title="Post Not Found" description="This post could not be found.">
+      <DashboardLayout title="Inlägg hittades inte" description="Inlägget kunde inte hittas.">
         <div className="max-w-2xl mx-auto px-4 py-8">
           <Link to="/feed">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Feed
+              Tillbaka till flödet
             </Button>
           </Link>
           <div className="text-center py-12">
-            <p className="text-muted-foreground">{error || 'Post not found'}</p>
+            <p className="text-muted-foreground">{error || 'Inlägget hittades inte'}</p>
           </div>
         </div>
       </DashboardLayout>
@@ -240,12 +240,12 @@ export default function PostView() {
     : 'Post';
   
   return (
-    <DashboardLayout title={postTitle || 'Post'} description="View post and replies on Nolto.">
+    <DashboardLayout title={postTitle || 'Inlägg'} description="Visa inlägg och svar på Nolto.">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Link to="/feed">
           <Button variant="ghost" size="sm" className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Feed
+            Tillbaka till flödet
           </Button>
         </Link>
 
@@ -263,7 +263,7 @@ export default function PostView() {
           <InlineReplyComposer 
             postId={post.id} 
             onReplyCreated={handleReplyCreated}
-            placeholder="Write a reply..."
+            placeholder="Skriv ett svar..."
             companyContext={post.company}
           />
         </div>
@@ -273,7 +273,7 @@ export default function PostView() {
           <>
             <Separator className="my-4" />
             <h3 className="text-sm font-medium text-muted-foreground mb-4">
-              {replies.length} {replies.length === 1 ? 'Reply' : 'Replies'}
+              {replies.length} {replies.length === 1 ? 'svar' : 'svar'}
             </h3>
             <div className="space-y-4">
               {topLevelReplies.map((reply) => (
@@ -292,7 +292,7 @@ export default function PostView() {
 
         {replies.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No replies yet. Be the first to reply!</p>
+            <p>Inga svar ännu. Bli först att svara!</p>
           </div>
         )}
       </div>
