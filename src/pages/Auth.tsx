@@ -92,7 +92,7 @@ export default function AuthPage() {
       error = validationError || undefined;
     } else if (field === 'email') {
       if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        error = 'Please enter a valid email address';
+        error = t("auth.invalidEmailFormat", "Please enter a valid email address");
       }
     } else if (field === 'password') {
       if (value && value.length < 6) {
