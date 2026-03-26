@@ -125,7 +125,7 @@ export async function getEvents(options: {
     return eventsWithCount;
   } catch (error) {
     console.error('Error fetching events:', error);
-    toast.error('Failed to load events');
+    toast.error(i18n.t('toasts.eventLoadFailed'));
     return [];
   }
 }
