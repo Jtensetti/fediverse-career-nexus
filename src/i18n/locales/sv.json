@@ -2187,20 +2187,6 @@
     "invalidHandle": "Ogiltigt format. Använd @användarnamn@instans.social",
     "usernameAlreadyTaken": "Det användarnamnet är redan taget"
   },
-  "auth": {
-    "firstNamePlaceholder": "Förnamn",
-    "lastNamePlaceholder": "Efternamn",
-    "usernamePlaceholder": "ditt_användarnamn",
-    "firstNameRequired": "Förnamn krävs",
-    "lastNameRequired": "Efternamn krävs",
-    "emailRequired": "E-post krävs",
-    "passwordRequired": "Lösenord krävs",
-    "nameTooLong": "Måste vara mindre än 50 tecken",
-    "nameInvalidChars": "Kan bara innehålla bokstäver, mellanslag, bindestreck, apostrofer och punkter",
-    "usernameMinChars": "Minst 3 tecken",
-    "usernameMaxChars": "Max 20 tecken",
-    "usernameCharsOnly": "Bara små bokstäver, siffror och understreck"
-  },
   "coverImage": {
     "selectImageFile": "Välj en bildfil",
     "imageTooLarge": "Bilden måste vara mindre än 10MB",
