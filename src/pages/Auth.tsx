@@ -239,7 +239,7 @@ export default function AuthPage() {
         }
       }
 
-      toast.success("Please check your email to confirm your account");
+      toast.success(t("toasts.checkEmail"));
       // Clear the form
       setFirstName("");
       setLastName("");
