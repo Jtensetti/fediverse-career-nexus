@@ -256,7 +256,7 @@ export default function ModerationDashboard() {
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="gap-1">
                   <CheckCircle className="h-3 w-3 text-primary" />
-                  System Online
+                  System online
                 </Badge>
                 {pendingCount > 0 && (
                   <Badge variant="destructive" className="gap-1">
