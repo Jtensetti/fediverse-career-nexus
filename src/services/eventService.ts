@@ -226,7 +226,7 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
     return event;
   } catch (error) {
     console.error('Error creating event:', error);
-    toast.error('Failed to create event');
+    toast.error(i18n.t('toasts.eventCreateFailed'));
     return null;
   }
 }
