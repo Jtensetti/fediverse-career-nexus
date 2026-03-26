@@ -222,7 +222,7 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
       // Don't fail event creation if post fails
     }
     
-    toast.success('Event created successfully');
+    toast.success(i18n.t('toasts.eventCreated'));
     return event;
   } catch (error) {
     console.error('Error creating event:', error);
