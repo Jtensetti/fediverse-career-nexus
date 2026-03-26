@@ -247,7 +247,7 @@ export async function toggleMessageReaction(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.warn('⚠️ toggleMessageReaction: User not authenticated');
-      toast.error("Please sign in to react");
+      toast.error("Logga in för att reagera");
       return { success: false, action: 'error', reaction };
     }
 
