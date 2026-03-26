@@ -425,7 +425,7 @@ export async function deleteFlaggedContent(
 
     if (error) throw error;
 
-    toast.success("Content deleted successfully");
+    toast.success("Innehåll raderat");
     return true;
   } catch (error) {
     console.error("Error deleting content:", error);
