@@ -365,7 +365,7 @@ const ProfilePage = () => {
       {/* SEO Meta Tags for social sharing */}
       <SEOHead
         title={`${profile.displayName} (@${profile.username})`}
-        description={profile.headline || profile.bio || `View ${profile.displayName}'s professional profile on Nolto`}
+        description={profile.headline || profile.bio || `${profile.displayName}s professionella profil på Nolto`}
         image={profile.avatarUrl || "/og-image.png"}
         url={`${window.location.origin}/profile/${profile.username}`}
         type="profile"
