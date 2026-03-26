@@ -418,11 +418,11 @@ export const removeCoAuthor = async (articleId: string, userId: string): Promise
       .eq('is_primary', false);
     
     if (error) {
-      toast.error(`Error removing co-author: ${error.message}`);
+      toast.error(`${i18n.t('toasts.coAuthorRemoveFailed')}: ${error.message}`);
       return false;
     }
     
-    toast.success('Co-author removed successfully!');
+    toast.success(i18n.t('toasts.coAuthorRemoved'));
     return true;
   } catch (error) {
     console.error('Error removing co-author:', error);
