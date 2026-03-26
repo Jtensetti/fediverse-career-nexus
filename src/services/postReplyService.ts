@@ -321,7 +321,7 @@ export async function createPostReply(
         .single();
 
       if (createError || !newActor) {
-        toast.error('Actor not found');
+        toast.error('Aktör hittades inte');
         return false;
       }
 
