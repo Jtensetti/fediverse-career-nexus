@@ -167,7 +167,7 @@ export async function followStarterPack(packId: string): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('You must be logged in to follow a pack');
+      toast.error('Du måste vara inloggad för att följa ett paket');
       return false;
     }
 
