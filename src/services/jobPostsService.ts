@@ -296,7 +296,7 @@ export const deleteJobPost = async (id: string): Promise<boolean> => {
       .eq('id', id);
 
     if (error) throw error;
-    toast.success('Job post deleted');
+    toast.success('Jobbannons raderad');
     return true;
   } catch (error) {
     console.error('Error deleting job post:', error);
