@@ -299,7 +299,7 @@ const ProfileEditPage = () => {
     
     if (errors.length > 0) {
       setExperienceErrors(prev => ({ ...prev, [index]: errors }));
-      toast.error(`Please fill in: ${errors.map(e => e === 'start_date' ? 'start date' : e).join(', ')}`);
+      toast.error(`${t("toasts.experienceFillIn")}${errors.map(e => e === 'start_date' ? t("profileEdit.experience.startDate", 'start date') : e).join(', ')}`);
       return;
     }
     
