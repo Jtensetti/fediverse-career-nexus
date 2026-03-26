@@ -265,7 +265,7 @@ const DefaultToolbar = ({
               }}
               className="justify-start h-8 text-sm"
             >
-              Upload from device
+              Ladda upp från enhet
             </Button>
             <Button
               type="button"
