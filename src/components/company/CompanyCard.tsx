@@ -63,7 +63,7 @@ export default function CompanyCard({ company }: CompanyCardProps) {
             <span className="flex items-center gap-1.5">
               <Users className="h-4 w-4" />
               <span className="font-medium text-foreground">{company.follower_count}</span>
-              <span>followers</span>
+              <span>följare</span>
             </span>
             {company.size && (
               <span className="flex items-center gap-1.5">

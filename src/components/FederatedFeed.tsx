@@ -301,7 +301,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   if (error) {
     return (
       <div className={`p-6 text-center ${className}`}>
-        <p className="text-destructive mb-2">Error loading federated posts</p>
+        <p className="text-destructive mb-2">Fel vid laddning av federerade inlägg</p>
         <Button onClick={() => refetch()} variant="outline">
           Try Again
         </Button>
@@ -343,7 +343,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
             {effectiveFeedType === 'federated' && remoteLoading && (
               <div className="p-3 bg-muted/30 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Fetching posts from your Fediverse instance...</span>
+                <span>Hämtar inlägg från din Fediverse-instans...</span>
               </div>
             )}
             {[...Array(3)].map((_, i) => (
@@ -367,7 +367,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
                 {isFetching ? (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Loading more posts...</span>
+                    <span>Laddar fler inlägg...</span>
                   </div>
                 ) : (
                   <Button 
@@ -392,13 +392,13 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
           <EmptyState
             icon={MessageSquare}
             title={effectiveFeedType === 'following' 
-              ? "Connect to see something here" 
-              : "This feed is still warming up"}
+              ? "Anslut för att se något här" 
+              : "Flödet värms fortfarande upp"}
             description={effectiveFeedType === 'following'
-              ? "Follow people or connect with others to see their posts in this feed."
-              : "You're early – that's a good thing! Be the first to share something with the network."}
+              ? "Följ personer eller anslut till andra för att se deras inlägg i detta flöde."
+              : "Du är tidig – det är bra! Bli den första att dela något med nätverket."}
             action={{
-              label: "Refresh",
+              label: "Uppdatera",
               onClick: () => {
                 setHasRetried(false);
                 refetch();

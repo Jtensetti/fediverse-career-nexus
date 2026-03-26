@@ -28,23 +28,23 @@ export default function Companies() {
   }, []);
 
   return (
-    <DashboardLayout title={t("companies.title", "Companies")}>
+    <DashboardLayout title={t("companies.title")}>
       <SEOHead
-        title={t("companies.title", "Companies")}
-        description={t("companies.subtitle", "Discover and follow companies on Nolto")}
+        title={t("companies.title")}
+        description={t("companies.subtitle")}
       />
 
       <div className="flex justify-between items-center mb-6">
         <div>
           <p className="text-muted-foreground">
-            {t("companies.subtitle", "Discover and follow companies on Nolto")}
+            {t("companies.subtitle")}
           </p>
         </div>
         {user && (
           <Button asChild>
             <Link to="/companies/create">
               <Plus className="h-4 w-4 mr-2" />
-              {t("companies.create", "Create Company")}
+              {t("companies.create")}
             </Link>
           </Button>
         )}
@@ -80,21 +80,21 @@ export default function Companies() {
         <EmptyState
           icon={Building2}
           title={hasFilters 
-            ? t("companies.noMatching", "No companies found")
-            : t("companies.beFirst", "Be the first to create a company page")
+            ? t("companies.noMatching")
+            : t("companies.beFirst")
           }
           description={hasFilters
-            ? t("companies.adjustFilters", "Try adjusting your search filters")
-            : t("companies.createDescription", "Showcase your company and connect with professionals")
+            ? t("companies.adjustFilters")
+            : t("companies.createDescription")
           }
           action={
             user
-              ? { label: t("companies.create", "Create Company"), link: "/companies/create" }
-              : { label: t("auth.signUp", "Sign Up"), link: "/auth/signup" }
+              ? { label: t("companies.create"), link: "/companies/create" }
+              : { label: t("auth.signUp"), link: "/auth/signup" }
           }
           secondaryAction={
             hasFilters
-              ? { label: t("common.clearFilters", "Clear Filters"), onClick: () => handleFilterChange({}) }
+              ? { label: t("common.clearFilters"), onClick: () => handleFilterChange({}) }
               : undefined
           }
         />
