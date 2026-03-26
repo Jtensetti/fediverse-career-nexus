@@ -174,8 +174,8 @@ export default function AuthPage() {
 
     // Validate email format
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFieldErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
-      toast.error("Please enter a valid email address");
+      setFieldErrors(prev => ({ ...prev, email: t("toasts.invalidEmailFormat") }));
+      toast.error(t("toasts.invalidEmailFormat"));
       return;
     }
 
