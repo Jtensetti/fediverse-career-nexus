@@ -526,7 +526,7 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("You must be logged in");
+      toast.error("Du måste vara inloggad");
       return false;
     }
 
@@ -540,7 +540,6 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
 
     if (error) throw error;
 
-    // Create a notification for the user
     await supabase.from("notifications").insert({
       type: "moderation_warning",
       recipient_id: userId,
@@ -549,7 +548,7 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
       object_type: "warning",
     });
 
-    toast.success("Warning sent to user");
+    toast.success("Varning skickad till användare");
     return true;
   } catch (error) {
     console.error("Error warning user:", error);
