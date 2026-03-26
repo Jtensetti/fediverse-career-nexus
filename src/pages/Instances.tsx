@@ -190,7 +190,7 @@ const Instances = () => {
                           </div>
                           <Badge 
                             variant="outline" 
-                            className="bg-green-500/10 text-green-600 border-green-500/30"
+                            className="bg-secondary/10 text-secondary border-secondary/30"
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Aktiv
