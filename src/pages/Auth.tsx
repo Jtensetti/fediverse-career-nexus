@@ -148,12 +148,12 @@ export default function AuthPage() {
     // Validate all fields BEFORE setting loading state (fixes mobile stuck button)
     if (!email || !password || !firstName || !lastName) {
       const errors: typeof fieldErrors = {};
-      if (!firstName) errors.firstName = "First name is required";
-      if (!lastName) errors.lastName = "Last name is required";
-      if (!email) errors.email = "Email is required";
-      if (!password) errors.password = "Password is required";
+      if (!firstName) errors.firstName = t("auth.firstNameRequired");
+      if (!lastName) errors.lastName = t("auth.lastNameRequired");
+      if (!email) errors.email = t("auth.emailRequired");
+      if (!password) errors.password = t("auth.passwordRequired");
       setFieldErrors(errors);
-      toast.error("Please fill in all required fields");
+      toast.error(t("toasts.fillAllFields"));
       return;
     }
 
