@@ -169,7 +169,7 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
     return eventWithCount;
   } catch (error) {
     console.error('Error fetching event:', error);
-    toast.error('Failed to load event details');
+    toast.error(i18n.t('toasts.eventDetailsFailed'));
     return null;
   }
 }
