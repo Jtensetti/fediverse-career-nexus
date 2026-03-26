@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
-import { Globe, Code, Lock, Server, Shield, Users } from "lucide-react";
+import { Globe, Shield, Lock, Server, FileCheck, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const FeaturedIn = () => {
   const { t } = useTranslation();
   
   const badges = [
-    { icon: Globe, labelKey: "activityPub", descKey: "openProtocol" },
-    { icon: Code, labelKey: "openSource", descKey: "mitLicensed" },
-    { icon: Lock, labelKey: "privacyFirst", descKey: "gdprCompliant" },
-    { icon: Server, labelKey: "selfHostable", descKey: "yourInfrastructure" },
-    { icon: Shield, labelKey: "secure", descKey: "e2eEncrypted" },
-    { icon: Users, labelKey: "community", descKey: "userGoverned" },
+    { icon: Shield, labelKey: "gdprCompliant", descKey: "gdprDesc" },
+    { icon: Server, labelKey: "swedishHosting", descKey: "swedishHostingDesc" },
+    { icon: Lock, labelKey: "encrypted", descKey: "encryptedDesc" },
+    { icon: Globe, labelKey: "openStandard", descKey: "openStandardDesc" },
+    { icon: FileCheck, labelKey: "accessible", descKey: "accessibleDesc" },
+    { icon: Users, labelKey: "publicSector", descKey: "publicSectorDesc" },
   ];
 
   return (
@@ -51,32 +51,6 @@ const FeaturedIn = () => {
             </motion.div>
           ))}
         </div>
-
-        {/* Compatible platforms */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-12 flex flex-wrap justify-center items-center gap-4 text-sm text-muted-foreground"
-        >
-          <span className="font-medium text-foreground">
-            {t("homepage.featuredIn.compatibleWith")}:
-          </span>
-          <div className="flex flex-wrap justify-center gap-3">
-            {["Mastodon", "Pleroma", "Pixelfed", "PeerTube", "Lemmy", "Misskey"].map((platform) => (
-              <span 
-                key={platform}
-                className="px-3 py-1.5 bg-background rounded-full border text-xs font-medium hover:border-primary/30 transition-colors"
-              >
-                {platform}
-              </span>
-            ))}
-            <span className="px-3 py-1.5 bg-secondary/10 text-secondary rounded-full text-xs font-medium">
-              + 5,000 more
-            </span>
-          </div>
-        </motion.div>
       </div>
     </section>
   );
