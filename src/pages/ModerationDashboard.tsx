@@ -389,17 +389,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Flag className="h-5 w-5 text-accent-foreground" />
-                    Content Reports
+                    Innehållsrapporter
                   </CardTitle>
-                  <CardDescription>Review and take action on reported content</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <FlaggedContentList />
-                  </Suspense>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                  <CardDescription>Granska och vidta åtgärder för rapporterat innehåll</CardDescription>
 
             {/* Users Tab */}
             <TabsContent value="users">
