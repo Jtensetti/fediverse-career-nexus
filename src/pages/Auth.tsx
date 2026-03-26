@@ -73,7 +73,7 @@ export default function AuthPage() {
       return t("auth.firstNameRequired", `${field} is required`);
     }
     if (trimmed.length > 50) {
-      return `${field} must be less than 50 characters`;
+      return t("auth.nameTooLong");
     }
     // Allow letters (including international), spaces, hyphens, apostrophes, and periods (for initials)
     if (!/^[a-zA-ZÀ-ÿ\s\-'.]+$/.test(trimmed)) {
