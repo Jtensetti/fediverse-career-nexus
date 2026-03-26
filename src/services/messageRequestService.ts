@@ -94,7 +94,7 @@ export async function sendMessageRequest(
         toast.error('Du har redan en väntande förfrågan till denna person');
         return false;
       } else if (existing.status === 'declined') {
-        toast.error('Your previous request was declined');
+        toast.error('Din tidigare förfrågan avslogs');
         return false;
       }
     }
