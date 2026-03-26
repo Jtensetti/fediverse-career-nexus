@@ -65,7 +65,7 @@ export async function sendMessageRequest(
     const dmPrivacy = ((recipient as any)?.dm_privacy as DmPrivacy) || 'connections';
 
     if (dmPrivacy === 'nobody') {
-      toast.error('This user is not accepting messages');
+      toast.error('Denna användare tar inte emot meddelanden');
       return false;
     }
 
