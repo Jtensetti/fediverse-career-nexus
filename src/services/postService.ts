@@ -166,7 +166,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
       if (uploadError) {
         console.error('❌ Image upload error:', uploadError);
-        toast.error("Failed to upload image");
+        toast.error("Kunde inte ladda upp bild");
         return false;
       }
 
