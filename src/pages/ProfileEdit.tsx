@@ -1067,7 +1067,7 @@ const ProfileEditPage = () => {
                           <div className="md:col-span-2 flex justify-end items-center gap-2">
                             {recentlySavedEducation[index] && (
                               <span className="text-primary flex items-center gap-1 text-sm">
-                                <Check size={16} /> Saved
+                                <Check size={16} /> {t("toasts.saved")}
                               </span>
                             )}
                             <Button
