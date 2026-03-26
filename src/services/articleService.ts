@@ -426,7 +426,7 @@ export const removeCoAuthor = async (articleId: string, userId: string): Promise
     return true;
   } catch (error) {
     console.error('Error removing co-author:', error);
-    toast.error('Failed to remove co-author. Please try again.');
+    toast.error(i18n.t('toasts.coAuthorRemoveFailed'));
     return false;
   }
 };
