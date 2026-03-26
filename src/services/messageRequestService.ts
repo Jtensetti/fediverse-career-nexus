@@ -293,7 +293,7 @@ export async function canMessageDirectly(targetUserId: string): Promise<{
     }
 
     if (dmPrivacy === 'nobody') {
-      return { canMessage: false, reason: 'User not accepting messages' };
+      return { canMessage: false, reason: 'Användaren tar inte emot meddelanden' };
     }
 
     // Check for accepted request
