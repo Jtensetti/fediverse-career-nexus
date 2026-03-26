@@ -248,7 +248,7 @@ const ProfileEditPage = () => {
   // Experience handlers
   const addExperience = () => {
     if (!userId) {
-      toast.error("You need to be signed in to add experience");
+      toast.error(t("toasts.addExperienceLoginRequired"));
       return;
     }
     
