@@ -261,7 +261,7 @@ export default function ModerationDashboard() {
                 {pendingCount > 0 && (
                   <Badge variant="destructive" className="gap-1">
                     <AlertTriangle className="h-3 w-3" />
-                    {pendingCount} Pending
+                    {pendingCount} Väntande
                   </Badge>
                 )}
               </div>
