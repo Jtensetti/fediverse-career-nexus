@@ -506,7 +506,7 @@ export default function FederatedPostCard({
                     console.error('Poll rendering error:', e);
                     return (
                       <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-                        Failed to load poll
+                        {t('postCard.failedToLoadPoll')}
                       </div>
                     );
                   }
