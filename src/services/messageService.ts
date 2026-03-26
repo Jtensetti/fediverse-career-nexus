@@ -178,7 +178,7 @@ export async function getConversations(): Promise<Conversation[]> {
     return conversations;
   } catch (error) {
     console.error('Error in getConversations:', error);
-    toast.error('Failed to load conversations');
+    toast.error('Kunde inte ladda konversationer');
     return [];
   }
 }
