@@ -218,7 +218,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
         await supabase.from("user_connections").delete().eq("id", outgoingDuplicate.id);
       }
 
-      toast.success("You're already connected");
+      toast.success(i18n.t("toasts.alreadyConnected"));
       return true;
     }
 
