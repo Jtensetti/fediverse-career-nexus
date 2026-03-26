@@ -1046,7 +1046,7 @@ const ProfileEditPage = () => {
                               className={`mt-1 ${educationErrors[index]?.start_year ? 'border-destructive' : ''}`}
                             />
                             {educationErrors[index]?.start_year && (
-                              <p className="text-sm text-destructive mt-1">Start year is required</p>
+                              <p className="text-sm text-destructive mt-1">{t("profileEdit.education.startYearRequired", "Startår krävs")}</p>
                             )}
                           </div>
                           
