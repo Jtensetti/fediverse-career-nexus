@@ -76,7 +76,7 @@ export async function sendMessageRequest(
       
       if (connected) {
         // They're connected, they can message directly
-        toast.info('You can message this person directly');
+        toast.info('Du kan skicka meddelanden direkt till denna person');
         return false;
       }
     }
