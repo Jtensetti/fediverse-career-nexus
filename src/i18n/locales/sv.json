@@ -692,8 +692,8 @@
     },
     "featuredIn": {
       "tagline": "Byggt för offentlig sektors krav på säkerhet och tillgänglighet",
-      "gdprCompliant": "GDPR-kompatibel",
-      "gdprDesc": "Fullständig efterlevnad",
+      "gdprCompliant": "Dataskydd",
+      "gdprDesc": "Enligt EU-lagstiftning",
       "swedishHosting": "Svensk hosting",
       "swedishHostingDesc": "Data i EU",
       "encrypted": "Krypterad",
