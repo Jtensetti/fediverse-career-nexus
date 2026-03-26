@@ -75,7 +75,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
       } catch (error) {
         console.error('Error searching for users:', error);
       } finally {
-        setIsSöker...lse);
+        setIsSearching(false);
       }
     };
     
