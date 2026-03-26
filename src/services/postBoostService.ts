@@ -150,7 +150,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
         return false;
       }
 
-      toast.success('Boost removed');
+      toast.success('Boost borttagen');
       return true;
     } else {
       // Add boost
