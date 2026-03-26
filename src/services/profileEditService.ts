@@ -125,7 +125,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     
     if (!user) {
       console.error('❌ No user found in uploadProfileAvatar');
-      toast.error("You must be logged in to upload an avatar");
+      toast.error("Du måste vara inloggad för att ladda upp en avatar");
       return null;
     }
 
