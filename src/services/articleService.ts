@@ -402,7 +402,7 @@ export const addCoAuthor = async (articleId: string, userId: string, canEdit: bo
     return true;
   } catch (error) {
     console.error('Error adding co-author:', error);
-    toast.error('Failed to add co-author. Please try again.');
+    toast.error(i18n.t('toasts.coAuthorAddFailed'));
     return false;
   }
 };
