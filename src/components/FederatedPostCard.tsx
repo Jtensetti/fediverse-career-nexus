@@ -600,7 +600,7 @@ export default function FederatedPostCard({
             size="sm"
             className="gap-1.5 rounded-full hover:text-primary hover:bg-primary/10 transition-all duration-200 px-3"
             onClick={handleReply}
-            aria-label="Reply to post"
+            aria-label={t('postCard.replyToPost')}
           >
             <MessageSquare className="h-4 w-4" />
             {replyCount > 0 && <span className="text-xs">{replyCount}</span>}
