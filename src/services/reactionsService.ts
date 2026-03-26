@@ -109,7 +109,7 @@ export async function toggleReaction(
 
         if (deleteError) {
           console.error('❌ toggleReaction: Error removing reaction:', deleteError);
-          toast.error("Failed to remove reaction");
+          toast.error("Kunde inte ta bort reaktion");
           return { success: false, action: 'error', reaction };
         }
 
