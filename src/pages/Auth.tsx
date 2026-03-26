@@ -158,7 +158,7 @@ export default function AuthPage() {
     }
 
     // Validate names
-    const firstNameError = validateName(firstName, "First name");
+    const firstNameError = validateName(firstName, t("auth.firstName"));
     if (firstNameError) {
       setFieldErrors(prev => ({ ...prev, firstName: firstNameError }));
       toast.error(firstNameError);
