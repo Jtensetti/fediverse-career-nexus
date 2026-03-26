@@ -173,7 +173,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     }
 
     console.log('✅ Avatar updated successfully');
-    toast.success("Avatar updated successfully");
+    toast.success("Avatar uppdaterad");
     return publicUrl;
   } catch (error) {
     console.error("❌ Error uploading avatar:", error);
