@@ -433,7 +433,7 @@ export const removeConnection = async (connectionId: string): Promise<boolean> =
         );
     }
 
-    toast.success("Connection removed");
+    toast.success(i18n.t("toasts.connectionRemoved"));
     return true;
   } catch (error) {
     console.error("Error removing connection:", error);
