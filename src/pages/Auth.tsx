@@ -311,7 +311,7 @@ export default function AuthPage() {
     e.preventDefault();
 
     if (!fediHandle) {
-      toast.error("Please enter your Fediverse handle");
+      toast.error(t("toasts.invalidHandle"));
       return;
     }
 
