@@ -938,7 +938,7 @@ const ProfilePage = () => {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>No connections yet</p>
+                      <p>{t("profilePage.noConnectionsYet")}</p>
                     </div>
                   )}
 
