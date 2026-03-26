@@ -79,10 +79,10 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success("Successfully logged out");
+      toast.success(t("toasts.loggedOut", "Du har loggats ut"));
       navigate("/");
     } catch (error) {
-      toast.error("Error signing out");
+      toast.error(t("toasts.logoutError", "Fel vid utloggning"));
     }
   };
 
