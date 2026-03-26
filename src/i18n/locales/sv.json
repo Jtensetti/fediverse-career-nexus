@@ -315,7 +315,11 @@
       "posts": "inlägg",
       "following": "följer",
       "followers": "följare"
-    }
+    },
+    "signUpToConnect": "Registrera dig för att ansluta",
+    "connectFirstToMessage": "Anslut först för att skicka meddelanden",
+    "profileViews": "Profilvisningar",
+    "profileViewsAlwaysOn": "Profilvisningsstatistik är alltid synlig för dig. Andra användare kan inte se vem som har besökt deras profil."
   },
   "followers": {
     "yourFollowers": "Personer som följer dig",
