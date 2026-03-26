@@ -656,8 +656,8 @@
     "faq": {
       "title": "Vanliga frågor",
       "description": "Allt du behöver veta om Nolto för offentlig sektor",
-      "q1": "Är plattformen GDPR-kompatibel?",
-      "a1": "Ja. Nolto är byggt med GDPR som grund. All data lagras i EU (Frankfurt, Tyskland), vi använder inga tredjepartsspårare och alla användare kan exportera eller radera sin data när som helst. Vi har avtal med alla underleverantörer enligt SCCs och EU-US DPF.",
+      "q1": "Hur hanterar ni dataskydd?",
+      "a1": "Nolto lagrar all data i EU, använder inga tredjepartsspårare och alla användare kan exportera eller radera sin data när som helst. Vi följer gällande dataskyddslagstiftning och har avtal med alla underleverantörer.",
       "q2": "Hur skiljer sig Nolto från LinkedIn?",
       "a2": "Nolto är byggt specifikt för offentlig sektor med GDPR-kompabilitet, svensk hosting och ingen reklam eller dataförsäljning. Till skillnad från LinkedIn finns inga algoritmer som manipulerar ert flöde och ni behåller full kontroll över er data.",
       "q3": "Kan vi drifta Nolto själva?",
