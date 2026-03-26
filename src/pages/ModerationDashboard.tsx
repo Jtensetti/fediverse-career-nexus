@@ -451,9 +451,9 @@ export default function ModerationDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-secondary-foreground" />
-                      Actor Moderation
+                      Aktörsmoderering
                     </CardTitle>
-                    <CardDescription>Manage blocked federated actors</CardDescription>
+                    <CardDescription>Hantera blockerade aktörer</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Suspense fallback={<LoadingFallback />}>
