@@ -292,7 +292,7 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="bans" className="gap-2">
                   <Ban className="h-4 w-4" />
-                  Bans
+                  Avstängningar
                 </TabsTrigger>
                 <TabsTrigger value="federation" className="gap-2">
                   <Globe className="h-4 w-4" />
