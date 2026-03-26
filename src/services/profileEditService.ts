@@ -168,7 +168,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (updateError) {
       console.error('❌ Avatar URL update error:', updateError);
-      toast.error(`Failed to update profile with avatar: ${updateError.message}`);
+      toast.error(`Kunde inte uppdatera profilbild: ${updateError.message}`);
       return null;
     }
 
