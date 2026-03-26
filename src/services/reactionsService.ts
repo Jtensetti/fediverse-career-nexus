@@ -95,7 +95,7 @@ export async function toggleReaction(
 
     if (fetchError) {
       console.error('Error checking existing reaction:', fetchError);
-      toast.error("Failed to process reaction");
+      toast.error("Kunde inte hantera reaktion");
       return { success: false, action: 'error', reaction };
     }
 
