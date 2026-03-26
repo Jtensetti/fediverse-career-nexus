@@ -193,8 +193,8 @@ export const updateProfile = async (profileData: any) => {
     
     if (!user) {
       console.error('❌ No user found in updateProfile');
-      toast.error('You must be logged in to update your profile');
-      throw new Error('You must be logged in to update your profile');
+      toast.error('Du måste vara inloggad för att uppdatera din profil');
+      throw new Error('Du måste vara inloggad');
     }
 
     console.log('📝 Updating profile with data:', profileData);
@@ -234,10 +234,10 @@ export const updateProfile = async (profileData: any) => {
         const actorCreated = await createUserActor(user.id);
         if (actorCreated) {
           console.log('✅ Actor created successfully');
-          toast.success("Profile and actor created successfully");
+          toast.success("Profil och aktör skapades");
         } else {
           console.warn('⚠️ Failed to create actor, but profile update succeeded');
-          toast.warning("Profile updated but actor creation failed");
+          toast.warning("Profil uppdaterad men aktörsskapande misslyckades");
         }
       }
     }

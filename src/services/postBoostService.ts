@@ -93,7 +93,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
       profile = profileData as typeof profile;
 
       if (!profile?.username) {
-        toast.error('Actor not found');
+        toast.error('Aktör hittades inte');
         return false;
       }
 
@@ -109,7 +109,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
         .single();
 
       if (createError || !newActor) {
-        toast.error('Actor not found');
+        toast.error('Aktör hittades inte');
         return false;
       }
 

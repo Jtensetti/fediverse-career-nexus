@@ -329,11 +329,11 @@ export async function sendMessage(recipientId: string, content: string): Promise
 
     if (!canMessageResult.can_message) {
       if (canMessageResult.reason === 'not_connected') {
-        toast.error('You can only message users you are connected with');
+        toast.error('Du kan bara skicka meddelanden till användare du är ansluten till');
       } else if (canMessageResult.reason === 'cannot_message_self') {
-        toast.error('You cannot message yourself');
+        toast.error('Du kan inte skicka meddelanden till dig själv');
       } else {
-        toast.error('Cannot send message to this user');
+        toast.error('Kan inte skicka meddelande till denna användare');
       }
       return null;
     }
@@ -384,9 +384,9 @@ export async function sendMessage(recipientId: string, content: string): Promise
       console.error('Error sending message:', error);
       // Check if it's an RLS violation (not connected)
       if (error.code === '42501' || error.message.includes('row-level security')) {
-        toast.error('You can only message users you are connected with');
+        toast.error('Du kan bara skicka meddelanden till användare du är ansluten till');
       } else {
-        toast.error('Failed to send message');
+        toast.error('Kunde inte skicka meddelande');
       }
       return null;
     }
@@ -411,7 +411,7 @@ export async function sendMessage(recipientId: string, content: string): Promise
     return returnData;
   } catch (error) {
     console.error('Error in sendMessage:', error);
-    toast.error('Failed to send message');
+    toast.error('Kunde inte skicka meddelande');
     return null;
   }
 }

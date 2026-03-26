@@ -100,8 +100,8 @@ export const createJobPost = async (
     const { data: session } = await supabase.auth.getSession();
     
     if (!session.session) {
-      toast.error('You must be logged in to create a job post');
-      return { ok: false, message: 'You must be logged in to create a job post', code: 'AUTH_REQUIRED' };
+      toast.error('Du måste vara inloggad för att skapa en jobbannons');
+      return { ok: false, message: 'Du måste vara inloggad', code: 'AUTH_REQUIRED' };
     }
     
     const normalizedData = normalizeJobPostData(jobPost as Record<string, unknown>);
@@ -119,15 +119,15 @@ export const createJobPost = async (
     
     if (error) {
       console.error('Error creating job post:', error);
-      toast.error('Failed to create job post');
-      return { ok: false, message: 'Failed to create job post', details: error.message };
+      toast.error('Kunde inte skapa jobbannons');
+      return { ok: false, message: 'Kunde inte skapa jobbannons', details: error.message };
     }
     
     return { ok: true, id: data.id };
   } catch (error) {
     console.error('Error creating job post:', error);
-    toast.error('Failed to create job post');
-    return { ok: false, message: 'An unexpected error occurred' };
+    toast.error('Kunde inte skapa jobbannons');
+    return { ok: false, message: 'Ett oväntat fel uppstod' };
   }
 };
 
@@ -266,7 +266,7 @@ export const updateJobPost = async (
     return enrichJobPost(data);
   } catch (error) {
     console.error('Error updating job post:', error);
-    toast.error('Failed to update job post');
+    toast.error('Kunde inte uppdatera jobbannons');
     return null;
   }
 };
@@ -283,7 +283,7 @@ export const toggleJobPostPublished = async (id: string, isActive: boolean): Pro
     return true;
   } catch (error) {
     console.error('Error toggling job post published:', error);
-    toast.error('Failed to update job post');
+    toast.error('Kunde inte uppdatera jobbannons');
     return false;
   }
 };

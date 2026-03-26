@@ -44,7 +44,7 @@ export async function sendMessageRequest(
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('You must be logged in');
+      toast.error('Du måste vara inloggad');
       return false;
     }
 
@@ -320,7 +320,7 @@ export async function updateDmPrivacy(privacy: DmPrivacy): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('You must be logged in');
+      toast.error('Du måste vara inloggad');
       return false;
     }
 
