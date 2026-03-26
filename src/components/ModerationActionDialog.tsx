@@ -42,7 +42,7 @@ const ModerationActionDialog = ({ isOpen, onOpenChange }: ModerationActionDialog
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
-  const [isSöker...etIsSöker... useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   
   const form = useForm({
     defaultValues: {
