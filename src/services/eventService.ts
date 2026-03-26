@@ -278,7 +278,7 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
     const user_id = session.data.session?.user.id;
     
     if (!user_id) {
-      toast.error('You must be logged in to RSVP to an event');
+      toast.error(i18n.t('toasts.loginRequiredRsvp'));
       return null;
     }
     
