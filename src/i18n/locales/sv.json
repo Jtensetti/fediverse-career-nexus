@@ -659,7 +659,7 @@
       "q1": "Hur hanterar ni dataskydd?",
       "a1": "Nolto lagrar all data i EU, använder inga tredjepartsspårare och alla användare kan exportera eller radera sin data när som helst. Vi följer gällande dataskyddslagstiftning och har avtal med alla underleverantörer.",
       "q2": "Hur skiljer sig Nolto från LinkedIn?",
-      "a2": "Nolto är byggt specifikt för offentlig sektor med GDPR-kompabilitet, svensk hosting och ingen reklam eller dataförsäljning. Till skillnad från LinkedIn finns inga algoritmer som manipulerar ert flöde och ni behåller full kontroll över er data.",
+      "a2": "Nolto är byggt specifikt för offentlig sektor med svensk hosting och ingen reklam eller dataförsäljning. Till skillnad från LinkedIn finns inga algoritmer som manipulerar ert flöde och ni behåller full kontroll över er data.",
       "q3": "Kan vi drifta Nolto själva?",
       "a3": "Ja! Nolto är öppen källkod under MIT-licens. Ni kan köra en egen instans inom er organisation eller använda vår hanterade tjänst. Alla instanser kan samverka med varandra.",
       "q4": "Hur hanteras personuppgifter?",
