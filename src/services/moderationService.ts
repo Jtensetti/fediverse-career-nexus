@@ -192,7 +192,7 @@ export async function updateReportStatus(
     return true;
   } catch (error) {
     console.error("Error updating report status:", error);
-    toast.error("Failed to update report");
+    toast.error("Kunde inte uppdatera rapport");
     return false;
   }
 }
