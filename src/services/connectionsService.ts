@@ -653,7 +653,7 @@ export const updateProfileVisibilitySettings = async (showNetworkConnections: bo
     return true;
   } catch (error) {
     console.error('Error updating network visibility settings:', error);
-    toast.error("Failed to update network visibility settings");
+    toast.error(i18n.t("toasts.failedUpdateVisibility"));
     return false;
   }
 };
