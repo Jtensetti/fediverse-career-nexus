@@ -128,7 +128,7 @@ export const getConnectionSuggestions = async (): Promise<NetworkSuggestion[]> =
     }));
   } catch (error) {
     console.error("Error fetching connection suggestions:", error);
-    toast.error("Failed to load connection suggestions");
+    toast.error("Kunde inte ladda kontaktförslag");
     return [];
   }
 };
