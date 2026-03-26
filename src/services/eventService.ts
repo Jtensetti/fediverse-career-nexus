@@ -263,7 +263,7 @@ export async function deleteEvent(id: string): Promise<boolean> {
     
     if (error) throw error;
     
-    toast.success('Event deleted successfully');
+    toast.success(i18n.t('toasts.eventDeleted'));
     return true;
   } catch (error) {
     console.error('Error deleting event:', error);
