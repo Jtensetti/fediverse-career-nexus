@@ -247,7 +247,7 @@ export default function AuthPage() {
       setPassword("");
       setUsername("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to create account");
+      toast.error(error.message || t("toasts.failedCreateAccount"));
     } finally {
       setIsLoading(false);
     }
