@@ -343,8 +343,8 @@ export default function FederatedPostCard({
           <>
             <span className="mx-1">•</span>
             <Badge variant={badgeVariant === "outline" ? "outline" : "destructive"} className="text-xs">
-              {post.moderation_status === 'probation' && 'Instance on probation'}
-              {post.moderation_status === 'blocked' && 'Blocked instance'}
+              {post.moderation_status === 'probation' && t('postCard.instanceOnProbation')}
+              {post.moderation_status === 'blocked' && t('postCard.blockedInstance')}
             </Badge>
           </>
         )}
