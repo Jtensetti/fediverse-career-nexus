@@ -51,7 +51,7 @@ export const unsubscribeFromNewsletter = async (email: string): Promise<Newslett
       .single();
     
     if (error) {
-      toast.error(`Error unsubscribing from newsletter: ${error.message}`);
+      toast.error(`Fel vid avprenumeration: ${error.message}`);
       return null;
     }
     
