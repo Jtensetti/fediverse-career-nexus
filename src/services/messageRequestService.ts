@@ -91,7 +91,7 @@ export async function sendMessageRequest(
 
     if (existing) {
       if (existing.status === 'pending') {
-        toast.error('You already have a pending request to this person');
+        toast.error('Du har redan en väntande förfrågan till denna person');
         return false;
       } else if (existing.status === 'declined') {
         toast.error('Your previous request was declined');
