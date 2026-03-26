@@ -392,6 +392,14 @@ export default function ModerationDashboard() {
                     Innehållsrapporter
                   </CardTitle>
                   <CardDescription>Granska och vidta åtgärder för rapporterat innehåll</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <FlaggedContentList />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Users Tab */}
             <TabsContent value="users">
