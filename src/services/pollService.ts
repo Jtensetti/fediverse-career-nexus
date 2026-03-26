@@ -56,7 +56,7 @@ export const votePoll = async (
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session) {
-      toast.error("You must be logged in to vote");
+      toast.error("Du måste vara inloggad för att rösta");
       return false;
     }
 
