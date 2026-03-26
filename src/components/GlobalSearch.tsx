@@ -173,7 +173,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search people, jobs, articles..."
+          placeholder={t("globalSearch.placeholder")}
           className="pl-9 pr-9"
           autoFocus={autoFocus}
         />
