@@ -657,8 +657,8 @@
     "faq": {
       "title": "Frequently Asked Questions",
       "description": "Everything you need to know about Nolto for the public sector",
-      "q1": "Is the platform GDPR compliant?",
-      "a1": "Yes. Nolto is built with GDPR at its core. All data is stored in the EU (Frankfurt, Germany), we use no third-party trackers and all users can export or delete their data at any time. We have agreements with all sub-processors under SCCs and EU-US DPF.",
+      "q1": "How do you handle data protection?",
+      "a1": "Nolto stores all data in the EU, uses no third-party trackers and all users can export or delete their data at any time. We comply with applicable data protection legislation and have agreements with all sub-processors.",
       "q2": "How is Nolto different from LinkedIn?",
       "a2": "Nolto is built specifically for the public sector with GDPR compliance, Swedish hosting and no ads or data selling. Unlike LinkedIn, there are no algorithms manipulating your feed and you retain full control of your data.",
       "q3": "Can we self-host Nolto?",
