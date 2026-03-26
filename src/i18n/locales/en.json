@@ -291,7 +291,7 @@
     "returnHome": "Return Home",
     "errorLoading": "Error Loading Profile",
     "errorLoadingDesc": "There was an error loading the profile. Please try again later.",
-    "syncSuccess": "Profile synced successfully from your Fediverse instance!",
+    "syncSuccess": "Profile synced successfully!",
     "syncFailed": "Failed to sync profile",
     "connectFirst": "Connect with this person first to send messages",
     "mustBeLoggedIn": "You must be logged in to connect with others",
