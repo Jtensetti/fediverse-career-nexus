@@ -292,7 +292,7 @@ export default function PostView() {
 
         {replies.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No replies yet. Be the first to reply!</p>
+            <p>Inga svar ännu. Bli först att svara!</p>
           </div>
         )}
       </div>
