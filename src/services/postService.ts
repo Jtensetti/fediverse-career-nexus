@@ -97,7 +97,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
       if (profileError || !profile) {
         console.error('❌ Profile error:', profileError);
-        toast.error("Profile not found. Please complete your profile setup.");
+        toast.error("Profil hittades inte. Vänligen fyll i din profilinformation.");
         return false;
       }
 
