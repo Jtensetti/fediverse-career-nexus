@@ -106,9 +106,9 @@ export default function AuthPage() {
 
   // Username validation
   const validateUsername = (value: string): string | null => {
-    if (value.length > 0 && value.length < 3) return "At least 3 characters";
-    if (value.length > 20) return "Maximum 20 characters";
-    if (!/^[a-z0-9_]*$/.test(value)) return "Lowercase letters, numbers, underscores only";
+    if (value.length > 0 && value.length < 3) return t("auth.usernameMinChars");
+    if (value.length > 20) return t("auth.usernameMaxChars");
+    if (!/^[a-z0-9_]*$/.test(value)) return t("auth.usernameCharsOnly");
     return null;
   };
 
