@@ -188,7 +188,7 @@ export async function updateReportStatus(
       });
     }
 
-    toast.success(`Report marked as ${status}`);
+    toast.success(`Rapport markerad som ${status}`);
     return true;
   } catch (error) {
     console.error("Error updating report status:", error);
