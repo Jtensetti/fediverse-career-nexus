@@ -950,7 +950,7 @@ const ProfileEditPage = () => {
                         <div className="flex justify-between items-center mb-4">
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium">
-                              {edu.institution || `Education #${index + 1}`}
+                              {edu.institution || `Utbildning #${index + 1}`}
                             </h4>
                           </div>
                           <div className="flex gap-2">
