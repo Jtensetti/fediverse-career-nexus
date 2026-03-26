@@ -87,8 +87,8 @@ export default function AuthPage() {
     let error: string | undefined;
     
     if (field === 'firstName' || field === 'lastName') {
-      const fieldName = field === 'firstName' ? 'First name' : 'Last name';
-      const validationError = validateName(value, fieldName);
+      const validationError = validateName(value, field === 'firstName' ? t("auth.firstName") : t("auth.lastName"));
+      error = validationError || undefined;
       error = validationError || undefined;
     } else if (field === 'email') {
       if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
