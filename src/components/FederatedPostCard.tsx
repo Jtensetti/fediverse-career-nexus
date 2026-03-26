@@ -268,7 +268,7 @@ export default function FederatedPostCard({
   // Handle boost/repost - now opens quote repost dialog
   const handleBoost = () => {
     if (!user) {
-      toast.error('Please sign in to repost');
+      toast.error(t('postCard.signInToRepost'));
       return;
     }
     setShowQuoteRepostDialog(true);
