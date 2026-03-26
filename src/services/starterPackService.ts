@@ -231,7 +231,7 @@ export async function unfollowStarterPack(packId: string): Promise<boolean> {
       .eq('pack_id', packId);
 
     if (error) throw error;
-    toast.success('Unfollowed pack');
+    toast.success('Slutade följa paket');
     return true;
   } catch (error) {
     console.error('Error unfollowing pack:', error);
