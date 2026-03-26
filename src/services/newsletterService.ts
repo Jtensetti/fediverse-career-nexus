@@ -25,7 +25,7 @@ export const subscribeToNewsletter = async (email: string): Promise<NewsletterSu
       .single();
     
     if (error) {
-      toast.error(`Error subscribing to newsletter: ${error.message}`);
+      toast.error(`Fel vid prenumeration: ${error.message}`);
       return null;
     }
     
