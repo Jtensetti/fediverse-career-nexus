@@ -552,7 +552,7 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
     return true;
   } catch (error) {
     console.error("Error warning user:", error);
-    toast.error("Failed to send warning");
+    toast.error("Kunde inte skicka varning");
     return false;
   }
 }
