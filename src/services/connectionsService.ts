@@ -124,7 +124,7 @@ export const getConnectionSuggestions = async (): Promise<NetworkSuggestion[]> =
       connectionDegree: profile.mutual_count > 0 ? 2 as ConnectionDegree : 3 as ConnectionDegree,
       isVerified: profile.is_verified || false,
       mutualConnections: Number(profile.mutual_count) || 0,
-      suggestionReason: profile.suggestion_reason || "Suggested for you"
+      suggestionReason: profile.suggestion_reason || "Förslag för dig"
     }));
   } catch (error) {
     console.error("Error fetching connection suggestions:", error);
