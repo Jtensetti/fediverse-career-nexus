@@ -417,9 +417,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Ban className="h-5 w-5 text-destructive" />
-                    User Bans
+                    Användaravstängningar
                   </CardTitle>
-                  <CardDescription>View and manage active and historical bans</CardDescription>
+                  <CardDescription>Visa och hantera aktiva och historiska avstängningar</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
