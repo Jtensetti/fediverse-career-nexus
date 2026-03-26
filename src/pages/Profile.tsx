@@ -422,7 +422,7 @@ const ProfilePage = () => {
           {!viewingOwnProfile && !isAuthenticated && (
             <Button size="sm" asChild>
               <Link to="/auth/signup">
-                <UserPlus className="h-4 w-4 mr-1" /> Sign up to connect
+                <UserPlus className="h-4 w-4 mr-1" /> {t("profile.signUpToConnect", "Registrera dig för att ansluta")}
               </Link>
             </Button>
           )}
