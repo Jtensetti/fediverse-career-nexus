@@ -19,7 +19,7 @@ interface TipTapEditorProps {
 export function TipTapEditor({
   value,
   onChange,
-  placeholder = "Write your article...",
+  placeholder = "Skriv din artikel...",
   className,
   onFocus,
   onBlur,

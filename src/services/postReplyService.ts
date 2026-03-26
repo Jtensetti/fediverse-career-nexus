@@ -282,7 +282,7 @@ export async function createPostReply(
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      toast.error('You must be logged in to reply');
+      toast.error('Du måste vara inloggad för att svara');
       return false;
     }
 
@@ -321,7 +321,7 @@ export async function createPostReply(
         .single();
 
       if (createError || !newActor) {
-        toast.error('Actor not found');
+        toast.error('Aktör hittades inte');
         return false;
       }
 
@@ -353,7 +353,7 @@ export async function createPostReply(
         .single();
 
       if (!role || !['owner', 'admin', 'editor'].includes(role.role)) {
-        toast.error("You don't have permission to reply as this company");
+        toast.error("Du har inte behörighet att svara som detta företag");
         return false;
       }
 
@@ -364,7 +364,7 @@ export async function createPostReply(
         .single();
 
       if (!company) {
-        toast.error('Company not found');
+        toast.error('Företag hittades inte');
         return false;
       }
 

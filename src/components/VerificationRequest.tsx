@@ -50,8 +50,8 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
     if (token) {
       navigator.clipboard.writeText(token);
       toast({
-        title: "Token copied!",
-        description: "Verification token copied to clipboard"
+        title: "Token kopierad!",
+        description: "Verifieringstoken har kopierats till urklipp"
       });
     }
   };
@@ -61,9 +61,9 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
     
     return (
       <div className="mt-4">
-        <h4 className="text-sm font-semibold">Domain Verification</h4>
+        <h4 className="text-sm font-semibold">Domänverifiering</h4>
         <p className="text-sm text-muted-foreground mt-1">
-          Add the following TXT record to your domain's DNS settings:
+          Lägg till följande TXT-post i din domäns DNS-inställningar:
         </p>
         <div className="bg-muted p-2 rounded mt-2 flex justify-between items-center">
           <code className="text-xs break-all">{`nolto-verify=${token}`}</code>
@@ -84,16 +84,16 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1">
           <ShieldCheck className="h-4 w-4" />
-          <span className="hidden sm:inline">Request Verification</span>
+          <span className="hidden sm:inline">Begär verifiering</span>
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Request Verification</DialogTitle>
+          <DialogTitle>Begär verifiering</DialogTitle>
           <DialogDescription>
             {type === "experience" 
-              ? "Request verification for your work experience."
-              : "Request verification for your education credentials."}
+              ? "Begär verifiering av din arbetslivserfarenhet."
+              : "Begär verifiering av dina utbildningsmeriter."}
           </DialogDescription>
         </DialogHeader>
         
@@ -101,8 +101,8 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               {type === "experience" 
-                ? "We'll generate a verification token that you can use to prove your employment."
-                : "We'll generate a verification token that you can use to verify your education credentials."}
+                ? "Vi genererar en verifieringstoken som du kan använda för att bevisa din anställning."
+                : "Vi genererar en verifieringstoken som du kan använda för att verifiera dina utbildningsmeriter."}
             </p>
             
             <Button 
@@ -113,17 +113,17 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
+                  Genererar...
                 </>
               ) : (
-                "Generate Verification Token"
+                "Generera verifieringstoken"
               )}
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="token">Verification Token</Label>
+              <Label htmlFor="token">Verifieringstoken</Label>
               <div className="flex mt-1">
                 <Input 
                   id="token" 
@@ -144,15 +144,15 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
             {getTxtRecordInstructions()}
             
             <p className="text-sm text-muted-foreground">
-              Share this verification token with the {type === "experience" ? "employer" : "institution"} 
-              to verify your credentials.
+              Dela denna verifieringstoken med {type === "experience" ? "arbetsgivaren" : "lärosätet"} 
+              {" "}för att verifiera dina meriter.
             </p>
           </div>
         )}
         
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Close
+            Stäng
           </Button>
         </DialogFooter>
       </DialogContent>

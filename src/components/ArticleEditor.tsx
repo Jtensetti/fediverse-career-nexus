@@ -18,7 +18,7 @@ interface ArticleEditorProps {
 export function ArticleEditor({
   value,
   onChange,
-  placeholder = "Write your article...",
+  placeholder = "Skriv din artikel...",
   className,
 }: ArticleEditorProps) {
   const [hasSelection, setHasSelection] = useState(false);
@@ -92,7 +92,7 @@ export function ArticleEditor({
           break;
         case "image-url":
           // Prompt for URL as fallback
-          const url = prompt("Enter image URL:");
+          const url = prompt("Ange bild-URL:");
           if (url) {
             editor.insertImage(url);
           }
@@ -154,14 +154,14 @@ export function ArticleEditor({
 
     const editor = getEditor();
     if (!editor) {
-      toast.error("Editor not ready");
+      toast.error("Editorn är inte redo");
       return;
     }
 
     const url = await uploadImage(file);
     if (url) {
       editor.insertImage(url);
-      toast.success("Image inserted");
+      toast.success("Bild infogad");
     }
 
     // Reset file input

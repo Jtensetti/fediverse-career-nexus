@@ -277,7 +277,7 @@ const DefaultToolbar = ({
               }}
               className="justify-start h-8 text-sm"
             >
-              Image
+              Bild
             </Button>
             <Button
               type="button"
@@ -291,7 +291,7 @@ const DefaultToolbar = ({
               }}
               className="justify-start h-8 text-sm"
             >
-              Divider
+              Avdelare
             </Button>
           </div>
         </PopoverContent>
@@ -348,7 +348,7 @@ const DefaultToolbar = ({
               className="justify-start h-8 text-sm gap-2"
             >
               <List className="h-4 w-4" />
-              Bullet list
+              Punktlista
             </Button>
             <Button
               type="button"
@@ -363,7 +363,7 @@ const DefaultToolbar = ({
               className="justify-start h-8 text-sm gap-2"
             >
               <ListOrdered className="h-4 w-4" />
-              Numbered list
+              Numrerad lista
             </Button>
           </div>
         </PopoverContent>

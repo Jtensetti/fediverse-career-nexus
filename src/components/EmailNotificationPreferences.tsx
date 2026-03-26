@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Mail } from "lucide-react";
@@ -7,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const EmailNotificationPreferences = () => {
-  const { t } = useTranslation();
   const [digestEnabled, setDigestEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -25,7 +23,6 @@ const EmailNotificationPreferences = () => {
           .single();
 
         if (data) {
-          // Default to true if null (opt-out model)
           setDigestEnabled(data.email_digest_enabled !== false);
         }
       } catch (error) {
@@ -43,7 +40,7 @@ const EmailNotificationPreferences = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("You must be logged in");
+        toast.error("Du måste vara inloggad");
         return;
       }
 
@@ -58,10 +55,10 @@ const EmailNotificationPreferences = () => {
       if (error) throw error;
 
       setDigestEnabled(enabled);
-      toast.success(enabled ? "Email notifications enabled" : "Email notifications disabled");
+      toast.success(enabled ? "E-postnotifieringar aktiverade" : "E-postnotifieringar inaktiverade");
     } catch (error) {
       console.error("Error updating email preferences:", error);
-      toast.error("Failed to update preferences");
+      toast.error("Kunde inte uppdatera inställningar");
     } finally {
       setSaving(false);
     }
@@ -83,16 +80,16 @@ const EmailNotificationPreferences = () => {
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm font-medium">
         <Mail size={16} className="text-primary" />
-        <span>Email Notifications</span>
+        <span>E-postnotifieringar</span>
       </div>
       
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <Label htmlFor="digest-toggle" className="font-normal">
-            Notification digest emails
+            Sammanfattningsmail för notifieringar
           </Label>
           <p className="text-sm text-muted-foreground">
-            Receive email summaries of unread notifications
+            Ta emot e-postsammanfattningar av olästa notifieringar
           </p>
         </div>
         <Switch

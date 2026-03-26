@@ -21,7 +21,7 @@ export default function DataExportSection() {
     try {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.access_token) {
-        toast.error("You must be logged in to export your data");
+        toast.error("Du måste vara inloggad för att exportera din data");
         return;
       }
 
@@ -60,12 +60,12 @@ export default function DataExportSection() {
 
       toast.success(
         format === "gdpr" 
-          ? "Your data has been exported successfully" 
-          : "ActivityPub export complete - you can import following.csv to your new instance"
+          ? "Din data har exporterats" 
+          : "ActivityPub-export klar — du kan importera following.csv till din nya instans"
       );
     } catch (error) {
       console.error("Export error:", error);
-      toast.error("Failed to export data. Please try again.");
+      toast.error("Kunde inte exportera data. Försök igen.");
     } finally {
       setLoading(false);
     }

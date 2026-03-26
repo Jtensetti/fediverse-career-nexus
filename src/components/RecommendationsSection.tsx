@@ -24,6 +24,7 @@ import { Check, X, Loader2, PenLine, Quote } from "lucide-react";
 import { recommendationService, Recommendation, RelationshipType } from "@/services/recommendationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { toast } from "sonner";
 
 interface RecommendationsSectionProps {
@@ -58,7 +59,7 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
 
   const handleWriteRecommendation = async () => {
     if (!content.trim()) {
-      toast.error("Please write a recommendation");
+      toast.error("Skriv en rekommendation");
       return;
     }
 
@@ -70,12 +71,12 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
     });
 
     if (result.success) {
-      toast.success("Recommendation sent for approval!");
+      toast.success("Rekommendation skickad för godkännande!");
       setIsWriteOpen(false);
       setContent("");
       setRelationship("colleague");
     } else {
-      toast.error(result.error || "Failed to submit recommendation");
+      toast.error(result.error || "Kunde inte skicka rekommendation");
     }
     setIsSubmitting(false);
   };
@@ -83,26 +84,25 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
   const handleApprove = async (id: string) => {
     const success = await recommendationService.updateStatus(id, 'approved');
     if (success) {
-      toast.success("Recommendation approved!");
+      toast.success("Rekommendation godkänd!");
       loadRecommendations();
     } else {
-      toast.error("Failed to approve recommendation");
+      toast.error("Kunde inte godkänna rekommendation");
     }
   };
 
   const handleReject = async (id: string) => {
     const success = await recommendationService.updateStatus(id, 'rejected');
     if (success) {
-      toast.success("Recommendation hidden");
+      toast.success("Rekommendation dold");
       setPendingRecommendations((prev) => prev.filter((r) => r.id !== id));
     } else {
-      toast.error("Failed to reject recommendation");
+      toast.error("Kunde inte dölja rekommendation");
     }
   };
 
   const handleRequestRecommendation = async () => {
-    // In a real implementation, this would open a dialog to select a connection
-    toast.info("Request recommendation feature coming soon!");
+    toast.info("Funktionen att begära rekommendationer kommer snart!");
   };
 
   if (isLoading) {
@@ -113,49 +113,57 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
     );
   }
 
+  const relationshipLabels: Record<string, string> = {
+    colleague: "Kollega",
+    manager: "Jag var deras chef",
+    direct_report: "De var min chef",
+    client: "Kund",
+    mentor: "Mentor",
+    other: "Annat",
+  };
+
   return (
     <div className="space-y-6">
-      {/* Action buttons */}
       <div className="flex gap-2 flex-wrap">
         {!isOwnProfile && user && (
           <Dialog open={isWriteOpen} onOpenChange={setIsWriteOpen}>
             <DialogTrigger asChild>
               <Button>
                 <PenLine className="h-4 w-4 mr-2" />
-                Write a Recommendation
+                Skriv en rekommendation
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Write a Recommendation</DialogTitle>
+                <DialogTitle>Skriv en rekommendation</DialogTitle>
                 <DialogDescription>
-                  Share your experience working with this person. Your recommendation will be sent for their approval.
+                  Dela din erfarenhet av att arbeta med den här personen. Din rekommendation skickas för godkännande.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="relationship">How do you know them?</Label>
+                  <Label htmlFor="relationship">Hur känner du dem?</Label>
                   <Select value={relationship} onValueChange={(v) => setRelationship(v as RelationshipType)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="colleague">Colleague</SelectItem>
-                      <SelectItem value="manager">I was their manager</SelectItem>
-                      <SelectItem value="direct_report">They were my manager</SelectItem>
-                      <SelectItem value="client">Client</SelectItem>
+                      <SelectItem value="colleague">Kollega</SelectItem>
+                      <SelectItem value="manager">Jag var deras chef</SelectItem>
+                      <SelectItem value="direct_report">De var min chef</SelectItem>
+                      <SelectItem value="client">Kund</SelectItem>
                       <SelectItem value="mentor">Mentor</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="other">Annat</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="content">Your Recommendation</Label>
+                  <Label htmlFor="content">Din rekommendation</Label>
                   <Textarea
                     id="content"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder="Share what it was like working with them, their strengths, and what makes them great at what they do..."
+                    placeholder="Berätta hur det var att arbeta med dem, deras styrkor och vad som gör dem bra på det de gör..."
                     rows={6}
                     maxLength={2000}
                   />
@@ -166,13 +174,13 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsWriteOpen(false)}>
-                  Cancel
+                  Avbryt
                 </Button>
                 <Button onClick={handleWriteRecommendation} disabled={isSubmitting || !content.trim()}>
                   {isSubmitting ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : null}
-                  Submit Recommendation
+                  Skicka rekommendation
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -181,16 +189,15 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
         
         {isOwnProfile && (
           <Button variant="outline" onClick={handleRequestRecommendation}>
-            Request a Recommendation
+            Begär en rekommendation
           </Button>
         )}
       </div>
 
-      {/* Pending recommendations (only visible to profile owner) */}
       {isOwnProfile && pendingRecommendations.length > 0 && (
         <div className="space-y-4">
           <h4 className="font-medium text-sm text-muted-foreground">
-            Pending Approval ({pendingRecommendations.length})
+            Väntar på godkännande ({pendingRecommendations.length})
           </h4>
           {pendingRecommendations.map((rec) => (
             <div key={rec.id} className="p-4 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
@@ -207,7 +214,7 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
                       {rec.recommender?.fullname || rec.recommender?.username}
                     </span>
                     <Badge variant="secondary" className="text-xs">
-                      {recommendationService.getRelationshipLabel(rec.relationship as RelationshipType)}
+                      {relationshipLabels[rec.relationship] || recommendationService.getRelationshipLabel(rec.relationship as RelationshipType)}
                     </Badge>
                   </div>
                   {rec.recommender?.headline && (
@@ -217,11 +224,11 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
                   <div className="flex gap-2 mt-3">
                     <Button size="sm" onClick={() => handleApprove(rec.id)}>
                       <Check className="h-4 w-4 mr-1" />
-                      Approve
+                      Godkänn
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => handleReject(rec.id)}>
                       <X className="h-4 w-4 mr-1" />
-                      Hide
+                      Dölj
                     </Button>
                   </div>
                 </div>
@@ -231,7 +238,6 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
         </div>
       )}
 
-      {/* Approved recommendations */}
       {recommendations.length > 0 ? (
         <div className="space-y-4">
           {recommendations.map((rec) => (
@@ -253,14 +259,14 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
                           {rec.recommender?.fullname || rec.recommender?.username}
                         </span>
                         <Badge variant="outline" className="text-xs">
-                          {recommendationService.getRelationshipLabel(rec.relationship as RelationshipType)}
+                          {relationshipLabels[rec.relationship] || recommendationService.getRelationshipLabel(rec.relationship as RelationshipType)}
                         </Badge>
                       </div>
                       {rec.recommender?.headline && (
                         <p className="text-sm text-muted-foreground">{rec.recommender.headline}</p>
                       )}
                       <p className="text-xs text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(rec.created_at), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(rec.created_at), { addSuffix: true, locale: sv })}
                       </p>
                     </div>
                   </div>
@@ -272,9 +278,9 @@ export function RecommendationsSection({ userId, isOwnProfile }: Recommendations
       ) : (
         <div className="text-center py-8 text-muted-foreground">
           <Quote className="h-12 w-12 mx-auto mb-4 opacity-20" />
-          <p>No recommendations yet</p>
+          <p>Inga rekommendationer ännu</p>
           {!isOwnProfile && user && (
-            <p className="text-sm mt-2">Be the first to write one!</p>
+            <p className="text-sm mt-2">Bli den första att skriva en!</p>
           )}
         </div>
       )}
