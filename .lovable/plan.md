@@ -1,76 +1,98 @@
 
 
-# Fullständig översättning av alla kvarvarande engelska strängar
+# Fullständig svensk översättning — alla kvarvarande engelska strängar
 
 ## Sammanfattning
-Efter genomgång av hela kodbasen finns det fortfarande ~500+ hårdkodade engelska strängar i ~35 filer. Dessa inkluderar toast-meddelanden i tjänster, formuläretiketter, valideringsfel, sidrubriker, SEO-titlar, aria-labels, och hela sidor (Documentation, ConfirmEmail, TermsOfService, PrivacyPolicy).
+Det finns fortfarande **~600+ hårdkodade engelska strängar** spridda över **~45 filer** — sidor, komponenter och tjänster. Planen täcker allting uttömmande.
 
-## Filer att uppdatera
+---
 
-### Batch 1: Formulär (JobForm, EventForm)
-**`src/components/JobForm.tsx`** -- ~40 strängar: alla FormLabel, placeholders, select-alternativ, FormDescription, sektionsrubriker ("Compensation", "Transparency Details"), knappar ("Cancel", "Create Job Post"), valideringsmeddelanden i Zod-schemat
-**`src/components/EventForm.tsx`** -- ~35 strängar: alla FormLabel, placeholders, visibility-alternativ ("Public", "Connections Only", "Private"), sektionsrubriker ("Event Details", "Date & Time", "Location", "Capacity", "Privacy & Visibility"), Zod-valideringsmeddelanden, knappar
+## Batch 1: Hela sidor med engelsktext som behöver skrivas om
 
-### Batch 2: Tjänster med toast-meddelanden
-**`src/services/connectionsService.ts`** -- ~20 toast-meddelanden ("Connection request sent", "Connection accepted", etc.)
-**`src/services/jobMessagingService.ts`** -- 4 toast-meddelanden
-**`src/services/profileService.ts`** -- 2 toast-meddelanden
-**`src/services/companyService.ts`**, **`src/services/eventService.ts`**, **`src/services/articleService.ts`** -- alla toast-meddelanden
+| Fil | Beskrivning |
+|-----|-------------|
+| `src/pages/AuthRecovery.tsx` | ~30 strängar: "Reset Password", "Send Reset Code", "Verify Code", "New Password", alla labels, placeholders, toasts, statusmeddelanden |
+| `src/pages/FederationGuide.tsx` | ~100 rader helt på engelska: rubriker, FAQ, benefits, examples — hela sidan |
+| `src/pages/HelpCenter.tsx` | ~80 rader: alla FAQ-sektioner ("Getting Started", "Federation", "Privacy & Safety", "Troubleshooting"), SEOHead, rubrik |
+| `src/pages/CodeOfConductPage.tsx` | SEOHead, rubrik "Code of Conduct", "Back to Home" |
+| `src/components/CodeOfConduct.tsx` | ~150 rader: hela uppförandekoden på engelska — full omskrivning |
+| `src/pages/NotFound.tsx` | "Page not found", "Return to Home", SEOHead |
+| `src/pages/PostView.tsx` | "Loading Post", "Post Not Found", "Back to Feed" |
+| `src/pages/ArticleManage.tsx` | SEOHead "Manage My Articles", placeholder "Search articles..." |
+| `src/pages/JobManage.tsx` | toast "Please sign in to manage job posts" |
+| `src/pages/ModerationDashboard.tsx` | SEOHead "Moderation Dashboard" |
+| `src/pages/AdminFederationHealth.tsx` | ~10 toasts: "Failed to load health data", "Data refreshed", "Alert acknowledged" |
+| `src/pages/AdminFederationMetrics.tsx` | SEOHead |
+| `src/pages/AdminInstances.tsx` | SEOHead |
+| `src/pages/FederatedFeed.tsx` | SEOHead description |
+| `src/pages/Notifications.tsx` | SEOHead "Notifications" |
+| `src/pages/Index.tsx` | SEOHead "The Federated Professional Network" |
+| `src/pages/ProfileEdit.tsx` | Kvarvarande toasts: "You need to be signed in to add education/skill" |
 
-### Batch 3: Sidor med mycket hårdkodad text
-**`src/pages/JobView.tsx`** -- ~30 strängar: "Job not found", "Browse Jobs", "Back to Jobs", "Job Description", "Required Skills", "Hiring Details", "Interview Process", "Response Time", "Team Size", "Growth Path", "Visa Sponsorship", "How to Apply", "Apply Now", "Save Job", "Compensation", "Loading job details...", "Posted", "Location not specified", "Salary not specified", "Up to", "Available", "Not available", plus JobTypeLabels-objektet
-**`src/pages/Profile.tsx`** -- ~15 strängar: "Sign up to connect" (2x), "Activity" (rubrik), "Connections" (rubrik), "Connections are hidden", "No connections yet", "View All Connections", "Follow for Articles", "Failed to update header image", SEO-description fallback
-**`src/pages/Messages.tsx`** -- 2 strängar: SEOHead title "Messages", "Unknown User"
-**`src/pages/Connections.tsx`** -- Duplicerat TabsContent (rad 305-367) med helt hårdkodade strängar -- ska tas bort (det lokaliserade blocket finns redan rad 241-303)
-**`src/pages/ArticleEdit.tsx`** -- ~15 strängar: "Edit Article", "Search users by name...", placeholders, knappar
-**`src/pages/ArticleCreate.tsx`** -- ~10 strängar: placeholders, knappar
-**`src/pages/Instances.tsx`** -- ~10 strängar: "Federated Instances", "Visit Instance"
-**`src/pages/Documentation.tsx`** -- Hela sidan (~100 rader) med hårdkodad engelsk text. Bör skrivas om till svenska med t()-anrop
-**`src/pages/ConfirmEmail.tsx`** -- ~10 strängar: "Confirmation Failed", "Link Expired", statusmeddelanden
-**`src/pages/AuthCallback.tsx`** -- ~5 strängar: "Authentication Failed"
+## Batch 2: Komponenter med mycket engelska
 
-### Batch 4: Komponenter
-**`src/components/Navbar.tsx`** -- 3 strängar: "Successfully logged out", "Error signing out", "Instance Management"
-**`src/components/CoverImageUpload.tsx`** -- 4 toast-meddelanden
-**`src/components/ProfileImageUpload.tsx`** -- toast-meddelanden
-**`src/components/editor/LinkInsertSheet.tsx`** -- 2 placeholders
-**`src/components/moderation/UserLookup.tsx`** -- 1 placeholder
-**`src/components/AppScreenshot.tsx`** -- Engelska exempelnamn ("Sarah Chen", "Marcus Weber")
-**`src/components/PostComposer.tsx`** -- placeholders och knappar
-**`src/components/GlobalSearch.tsx`**, **`src/components/MobileSearch.tsx`** -- placeholders
+| Fil | Strängar |
+|-----|----------|
+| `src/components/onboarding/OnboardingFlow.tsx` | **~60 strängar**: "Welcome to Nolto!", "Tell us about yourself", alla labels (Full Name, Professional Headline, Bio, Current Role, Company), alla placeholders, "What are you interested in?", "Discover People to Follow", "You're all set!", "Explore the Feed", "Find Connections", "Browse Jobs", knappar (Let's Go, Continue, Skip, Back, Done, Saving...) |
+| `src/components/DeleteAccountSection.tsx` | ~15 strängar: "Delete Account", "This will permanently delete:", alla listpunkter, checkbox-text, "Type DELETE to confirm", dialog "Are you absolutely sure?", knappar |
+| `src/components/DataExportSection.tsx` | 3 toast-meddelanden kvar på engelska |
+| `src/components/IntroTemplateSelector.tsx` | Alla meddelandemallar: "Mutual Connection", "About a Post", "Event Connection", "Collaboration" |
+| `src/components/VerificationRequest.tsx` | "Token copied!", "Generate Verification Token", dialog-beskrivningar |
+| `src/components/BlockUserDialog.tsx` | placeholder "Why are you blocking this user?", toast |
+| `src/components/ContentWarningInput.tsx` | "Add content warning", placeholder "e.g., politics, spoilers, food..." |
+| `src/components/ArticleEditor.tsx` | placeholder "Write your article...", "Enter image URL:", toast "Editor not ready" |
+| `src/components/editor/TipTapEditor.tsx` | placeholder "Write your article..." |
+| `src/components/FederationInfo.tsx` | "Fediverse Handle", "Find your profile on another instance", "Open on instance", "Key Fingerprint" |
+| `src/components/FederationAnalytics.tsx` | ~20 strängar: "Total Requests", "Success Rate", "Host Metrics", "Failures", "Loading metrics...", tabellrubriker |
+| `src/components/RecommendationsSection.tsx` | ~8 toasts: "Please write a recommendation", "Recommendation sent!", "Recommendation approved!", etc. |
+| `src/components/common/SaveButton.tsx` | "Please sign in to save items", "Failed to save item" |
+| `src/components/common/ShareButton.tsx` | "Link copied to clipboard!", "Failed to copy link" |
+| `src/components/common/ReportDialog.tsx` | placeholder "Provide any additional context..." |
+| `src/components/SavedItemsList.tsx` | "Item removed from saved", "Failed to remove item" |
+| `src/components/AlertManager.tsx` | ~8 toasts: "Alert created", "Alert updated", "Alert deleted", "Message is required", placeholder "Enter alert message..." |
+| `src/components/PostEditDialog.tsx` | "Post updated" toast |
+| `src/components/EmailNotificationPreferences.tsx` | "You must be logged in", "Failed to update preferences" |
+| `src/components/ActorModeration.tsx` | Labels "Actor URL", "Reason", placeholders, "Select status" |
+| `src/components/AccountMigrationSection.tsx` | Kvarvarande placeholders |
+| `src/components/NewsletterSubscribe.tsx` | placeholder "your@email.com" |
+| `src/components/onboarding/InterestSelector.tsx` | Intressekategorier (om hårdkodade) |
+| `src/components/onboarding/ProfileCompleteness.tsx` | Eventuella engelska strängar |
+| `src/components/onboarding/SuggestedActions.tsx` | Eventuella engelska strängar |
 
-### Batch 5: ProfileEdit resterande
-**`src/pages/ProfileEdit.tsx`** -- ~10 strängar: "Institution is required", "Degree is required", "Start year is required", "Saved" (rad 1069), "Username is already taken", "You must be logged in to edit your profile", "Failed to load profile", "You need to be signed in to add experience/education/skill", Zod-valideringsmeddelanden i profileSchema, "Fediverse identity" i usernameDesc
-**`src/pages/Auth.tsx`** -- 3 placeholders: "Firstname", "Surname", "your_username"; och `@username@nolto.social`
+## Batch 3: Tjänster (services) med engelska toasts
 
-### Batch 6: Juridiska sidor
-**`src/pages/TermsOfService.tsx`** -- Hela sidan med engelska juridiska texter
-**`src/pages/PrivacyPolicy.tsx`** -- Hela sidan med engelska juridiska texter
+| Fil | Antal strängar |
+|-----|---------------|
+| `src/services/moderationService.ts` | ~20: "You must be logged in", "Failed to update report", "Ban revoked successfully", "Moderator role added/removed", "Content deleted successfully", "Warning sent to user" |
+| `src/services/reactionsService.ts` | ~15: "Please sign in to react", "Failed to process/add/remove/update reaction" |
+| `src/services/postService.ts` | ~10: "You must be logged in to create a post", "Profile not found", "Failed to upload image", "Post created successfully!", "An unexpected error occurred" |
+| `src/services/postReplyService.ts` | 1: "You don't have permission to reply as this company" |
+| `src/services/pollService.ts` | ~5: "You must be logged in to vote", "Vote submitted!", "Failed to submit/vote" |
+| `src/services/profileEditService.ts` | ~8: "Profile updated successfully", "Failed to update profile", "You must be logged in to upload an avatar" |
+| `src/services/profileService.ts` | 1: "Failed to load profile data" |
+| `src/services/newsletterService.ts` | ~6: "Error subscribing to newsletter", "Successfully subscribed", etc. |
+
+## Batch 4: Aria-labels (lägre prioritet men bör göras)
+Engelska aria-labels i `EditorToolbar.tsx`, `RichTextToolbar.tsx`, `FreelancerBadge.tsx`, `MobileBottomNav.tsx`, `MessageReactions.tsx`, `ShareProfileCard.tsx` — totalt ~25 strängar.
+
+---
 
 ## Genomförande
 
-### Steg 1: Lägg till ~200 nya nycklar i sv.json och en.json
-Nya sektioner:
-- `jobView.*`, `eventFormLabels.*`, `jobFormLabels.*`
-- `confirmEmail.*`, `documentation.*`, `authCallback.*`
-- `instances.*`, `articleCreate.*`, `articleEditPage.*`
-- `coverImage.*`, `profileImage.*`, `linkInsert.*`
-- `toasts.*` (gemensamma toast-meddelanden för tjänster)
+### Steg 1: Lägg till ~300 nya nycklar i `sv.json` och `en.json`
+Nya sektioner: `authRecovery`, `helpCenter`, `codeOfConduct`, `federationGuide`, `notFound`, `postView`, `onboarding`, `deleteAccount`, `introTemplates`, `verification`, `blockUser`, `contentWarning`, `recommendations`, `alertManager`, `actorModeration`, `newsletter`, `moderation` (toasts), `reactions` (toasts), `posts` (toasts), `poll`, `profileEditToasts`, `ariaLabels`
 
-### Steg 2: Uppdatera tjänstefiler
-Importera `i18n` (inte `useTranslation` -- tjänster är inte React-komponenter) eller flytta toast-anropen till komponenterna. Enklast: använd `i18next.t()` direkt i tjänsterna.
+### Steg 2: Uppdatera alla sidor (Batch 1) med `useTranslation` och `t()` anrop
 
-### Steg 3: Uppdatera alla sidor och komponenter med t()-anrop
+### Steg 3: Uppdatera alla komponenter (Batch 2) med `t()` anrop
 
-### Steg 4: Ta bort duplicerat block i Connections.tsx (rad 305-367)
+### Steg 4: Uppdatera alla tjänster (Batch 3) med `i18n.t()` (importera `i18n` från `@/i18n`)
 
-### Steg 5: Skriv om Documentation.tsx helt till lokaliserad version
-
-### Steg 6: Uppdatera Zod-scheman med svenska valideringsmeddelanden (flytta in i komponenterna eller använd statiska svenska strängar)
+### Steg 5: Uppdatera aria-labels (Batch 4)
 
 ## Teknisk detalj
-- Tjänstefiler (services/*.ts) kan inte använda `useTranslation()` -- importera `i18n` från `@/i18n` och använd `i18n.t()`
-- Zod-scheman som definieras utanför komponenter behöver antingen flyttas in eller använda statiska strängar
-- `JobTypeLabels` i JobView.tsx och liknande objekt behöver lokaliseras
-- Totalt ~35 filer, ~200 nya locale-nycklar
+- Tjänstefiler använder `import i18n from "@/i18n"` + `i18n.t()`
+- Komponenter använder `useTranslation()` + `t()`
+- Totalt ~45 filer, ~300 nya locale-nycklar
+- Ingen databasändring, inga backend-ändringar
 
