@@ -393,7 +393,7 @@ export const rejectConnectionRequest = async (connectionId: string): Promise<boo
     return true;
   } catch (error) {
     console.error("Error rejecting connection:", error);
-    toast.error("Failed to reject connection");
+    toast.error(i18n.t("toasts.failedReject"));
     return false;
   }
 };
