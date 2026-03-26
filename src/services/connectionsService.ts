@@ -648,7 +648,7 @@ export const updateProfileVisibilitySettings = async (showNetworkConnections: bo
     
     if (error) throw error;
     
-    toast.success(`Your network connections are now ${showNetworkConnections ? 'visible' : 'hidden'} to others.`);
+    toast.success(i18n.t(showNetworkConnections ? "toasts.networkNowVisible" : "toasts.networkNowHidden"));
     
     return true;
   } catch (error) {
