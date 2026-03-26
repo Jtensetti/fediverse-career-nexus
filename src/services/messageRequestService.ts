@@ -232,7 +232,7 @@ export async function declineMessageRequest(requestId: string): Promise<boolean>
     return true;
   } catch (error) {
     console.error('Error declining request:', error);
-    toast.error('Failed to decline request');
+    toast.error('Kunde inte avvisa förfrågan');
     return false;
   }
 }
