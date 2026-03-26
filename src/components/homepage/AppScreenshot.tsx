@@ -3,7 +3,6 @@ import { Heart, MessageCircle, Repeat2, Share2, Bell, UserPlus, Briefcase, Check
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
-// Import mastodon-style avatars
 import avatarSarah from "@/assets/avatars/avatar-sarah.png";
 import avatarMarcus from "@/assets/avatars/avatar-marcus.png";
 
@@ -16,9 +15,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
   if (variant === "feed") {
     return (
       <div className={`relative ${className}`}>
-        {/* Browser Frame */}
         <div className="bg-card rounded-xl shadow-2xl border overflow-hidden">
-          {/* Browser Header */}
           <div className="bg-muted px-4 py-2 flex items-center gap-2 border-b">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-destructive/60" />
@@ -33,23 +30,22 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             </div>
           </div>
 
-          {/* App Content */}
           <div className="bg-background p-4 space-y-3">
             {/* Post 1 */}
             <div className="bg-card rounded-lg border p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 border-2 border-secondary">
-                  <AvatarImage src={avatarSarah} alt="Sarah Chen" />
-                  <AvatarFallback className="bg-secondary/20 text-secondary font-semibold">SC</AvatarFallback>
+                  <AvatarImage src={avatarSarah} alt="Anna Lindström" />
+                  <AvatarFallback className="bg-secondary/20 text-secondary font-semibold">AL</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-foreground">Sarah Chen</span>
+                    <span className="font-semibold text-sm text-foreground">Anna Lindström</span>
                     <CheckCircle className="h-3.5 w-3.5 text-secondary" />
-                    <span className="text-xs text-muted-foreground">@fosstodon.org</span>
+                    <span className="text-xs text-muted-foreground">Göteborgs kommun</span>
                   </div>
                   <p className="text-sm text-foreground mt-1">
-                    Just shipped a major update to our open-source project! 🚀 Federation support is now live.
+                    Vi har lanserat vår nya digitala medborgarportal! 🚀 Samverkan med andra kommuner fungerar nu smidigt.
                   </p>
                   <div className="flex items-center gap-4 mt-3 text-muted-foreground">
                     <button className="flex items-center gap-1 text-xs hover:text-secondary transition-colors">
@@ -73,16 +69,16 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="bg-card rounded-lg border p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <Avatar className="h-10 w-10 border-2 border-primary">
-                  <AvatarImage src={avatarMarcus} alt="Marcus Weber" />
-                  <AvatarFallback className="bg-primary/20 text-primary font-semibold">MW</AvatarFallback>
+                  <AvatarImage src={avatarMarcus} alt="Erik Bergman" />
+                  <AvatarFallback className="bg-primary/20 text-primary font-semibold">EB</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-foreground">Marcus Weber</span>
-                    <span className="text-xs text-muted-foreground">@mastodon.social</span>
+                    <span className="font-semibold text-sm text-foreground">Erik Bergman</span>
+                    <span className="text-xs text-muted-foreground">Region Stockholm</span>
                   </div>
                   <p className="text-sm text-foreground mt-1">
-                    Looking for a frontend engineer to join our team. Remote-first, async culture. DM me!
+                    Söker en IT-strateg till vår digitaliseringsenhet. Flexibelt arbete, trygg anställning. Hör av dig!
                   </p>
                   <div className="flex items-center gap-4 mt-3 text-muted-foreground">
                     <button className="flex items-center gap-1 text-xs hover:text-secondary transition-colors">
@@ -112,8 +108,8 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <Bell className="h-4 w-4 text-secondary" />
           </div>
           <div>
-            <p className="text-xs font-medium text-foreground">New connection</p>
-            <p className="text-xs text-muted-foreground">from mastodon.social</p>
+            <p className="text-xs font-medium text-foreground">Ny kontakt</p>
+            <p className="text-xs text-muted-foreground">från Region Skåne</p>
           </div>
         </motion.div>
 
@@ -128,8 +124,8 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <UserPlus className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <p className="text-xs font-medium text-foreground">Connection request</p>
-            <p className="text-xs text-muted-foreground">3 pending</p>
+            <p className="text-xs font-medium text-foreground">Kontaktförfrågan</p>
+            <p className="text-xs text-muted-foreground">3 väntande</p>
           </div>
         </motion.div>
       </div>
@@ -140,7 +136,6 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
     return (
       <div className={`relative ${className}`}>
         <div className="bg-card rounded-xl shadow-2xl border overflow-hidden">
-          {/* Browser Header */}
           <div className="bg-muted px-4 py-2 flex items-center gap-2 border-b">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-destructive/60" />
@@ -150,58 +145,47 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                nolto.social/@sarah
+                nolto.social/@anna
               </div>
             </div>
           </div>
 
-          {/* Profile Header */}
           <div className="h-20 bg-gradient-to-r from-primary to-secondary" />
 
           <div className="px-6 pb-6">
             <div className="flex items-end gap-4 -mt-10">
               <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
-                <AvatarImage src={avatarSarah} alt="Sarah Chen" />
-                <AvatarFallback className="bg-secondary text-white text-2xl font-bold">SC</AvatarFallback>
+                <AvatarImage src={avatarSarah} alt="Anna Lindström" />
+                <AvatarFallback className="bg-secondary text-white text-2xl font-bold">AL</AvatarFallback>
               </Avatar>
               <div className="flex-1 pb-2">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-lg text-foreground">Sarah Chen</h3>
+                  <h3 className="font-bold text-lg text-foreground">Anna Lindström</h3>
                   <CheckCircle className="h-5 w-5 text-secondary" />
                 </div>
-                <p className="text-sm text-muted-foreground">Senior Developer at Mozilla</p>
+                <p className="text-sm text-muted-foreground">Digitaliseringschef, Göteborgs kommun</p>
               </div>
             </div>
 
             <p className="text-sm text-foreground mt-4">
-              Building open-source tools for the Fediverse. Passionate about privacy and decentralization.
+              Arbetar med digital transformation inom offentlig sektor. Brinner för tillgänglighet och e-tjänster.
             </p>
 
-            {/* Skills */}
             <div className="flex flex-wrap gap-2 mt-4">
-              <Badge variant="secondary" className="text-xs">
-                React
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                TypeScript
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                ActivityPub
-              </Badge>
-              <Badge variant="secondary" className="text-xs">
-                Open Source
-              </Badge>
+              <Badge variant="secondary" className="text-xs">Digitalisering</Badge>
+              <Badge variant="secondary" className="text-xs">E-tjänster</Badge>
+              <Badge variant="secondary" className="text-xs">Projektledning</Badge>
+              <Badge variant="secondary" className="text-xs">Tillgänglighet</Badge>
             </div>
 
-            {/* Stats */}
             <div className="flex gap-6 mt-4 text-sm">
               <div>
-                <span className="font-bold text-foreground">1.2K</span>
-                <span className="text-muted-foreground ml-1">Connections</span>
+                <span className="font-bold text-foreground">1,2K</span>
+                <span className="text-muted-foreground ml-1">Kontakter</span>
               </div>
               <div>
                 <span className="font-bold text-foreground">847</span>
-                <span className="text-muted-foreground ml-1">Posts</span>
+                <span className="text-muted-foreground ml-1">Inlägg</span>
               </div>
             </div>
           </div>
@@ -214,7 +198,6 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
     return (
       <div className={`relative ${className}`}>
         <div className="bg-card rounded-xl shadow-2xl border overflow-hidden">
-          {/* Browser Header */}
           <div className="bg-muted px-4 py-2 flex items-center gap-2 border-b">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-destructive/60" />
@@ -224,53 +207,42 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                nolto.social/jobs
+                nolto.social/jobb
               </div>
             </div>
           </div>
 
-          {/* Jobs Content */}
           <div className="bg-background p-4 space-y-3">
-            {/* Job 1 */}
             <div className="bg-card rounded-lg border p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Briefcase className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-sm text-foreground">Senior Frontend Engineer</h4>
-                  <p className="text-xs text-muted-foreground">Mozilla • Remote</p>
+                  <h4 className="font-semibold text-sm text-foreground">IT-strateg</h4>
+                  <p className="text-xs text-muted-foreground">Region Stockholm • Hybrid</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      React
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      TypeScript
-                    </Badge>
+                    <Badge variant="secondary" className="text-xs">Digitalisering</Badge>
+                    <Badge variant="secondary" className="text-xs">Strategi</Badge>
                   </div>
-                  <p className="text-sm font-semibold text-secondary mt-2">$150k - $200k</p>
+                  <p className="text-sm font-semibold text-secondary mt-2">55 000 - 65 000 kr/mån</p>
                 </div>
               </div>
             </div>
 
-            {/* Job 2 */}
             <div className="bg-card rounded-lg border p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center">
                   <Briefcase className="h-6 w-6 text-secondary" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-sm text-foreground">DevOps Engineer</h4>
-                  <p className="text-xs text-muted-foreground">Fairphone • Amsterdam</p>
+                  <h4 className="font-semibold text-sm text-foreground">Systemutvecklare</h4>
+                  <p className="text-xs text-muted-foreground">Malmö kommun • Malmö</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      Kubernetes
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      AWS
-                    </Badge>
+                    <Badge variant="secondary" className="text-xs">React</Badge>
+                    <Badge variant="secondary" className="text-xs">TypeScript</Badge>
                   </div>
-                  <p className="text-sm font-semibold text-secondary mt-2">€80k - €100k</p>
+                  <p className="text-sm font-semibold text-secondary mt-2">48 000 - 58 000 kr/mån</p>
                 </div>
               </div>
             </div>

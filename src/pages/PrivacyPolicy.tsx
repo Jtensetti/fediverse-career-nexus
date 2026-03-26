@@ -6,23 +6,23 @@ const PrivacyPolicy = () => {
   const keyPoints = [
     {
       icon: Database,
-      title: "Data Control",
-      description: "Your data is controlled by your chosen instance administrator, not Nolto centrally.",
+      title: "Datakontroll",
+      description: "Dina uppgifter hanteras och skyddas av Nolto i enlighet med tillämplig lagstiftning.",
     },
     {
       icon: Users,
-      title: "Federation",
-      description: "Some data is shared across the Fediverse when you interact with other instances.",
+      title: "Samverkan",
+      description: "Viss data kan delas med anslutna organisationer inom nätverket vid samarbete.",
     },
     {
       icon: Shield,
-      title: "Your Rights",
-      description: "Full GDPR rights including access, correction, deletion, and data portability.",
+      title: "Dina rättigheter",
+      description: "Fullständiga rättigheter enligt GDPR inklusive åtkomst, rättelse, radering och dataportabilitet.",
     },
     {
       icon: Lock,
-      title: "Security",
-      description: "Strong technical and organizational measures protect your personal data.",
+      title: "Säkerhet",
+      description: "Starka tekniska och organisatoriska åtgärder skyddar dina personuppgifter.",
     },
   ];
 
@@ -32,15 +32,14 @@ const PrivacyPolicy = () => {
       <div className="bg-primary text-primary-foreground py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Privacy Policy</h1>
-            <p className="text-xl text-accent">How Nolto Handles Your Personal Data</p>
+            <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Integritetspolicy</h1>
+            <p className="text-xl text-accent">Hur Nolto hanterar dina personuppgifter</p>
             <p className="text-lg text-primary-foreground/90 mt-4">
-              <strong>Effective Date:</strong> June 16, 2025
+              <strong>Ikraftträdandedatum:</strong> 16 juni 2025
             </p>
             <p className="text-lg text-primary-foreground/90 mt-2">
-              This Privacy Policy explains how Nolto handles your personal data, both on the Nolto platform and across
-              federated instances. We are committed to protecting your privacy and ensuring transparency about what
-              happens with your data.
+              Denna integritetspolicy förklarar hur Nolto hanterar dina personuppgifter. Vi är engagerade i att 
+              skydda din integritet och säkerställa transparens kring vad som händer med dina uppgifter.
             </p>
           </div>
         </div>
@@ -66,358 +65,297 @@ const PrivacyPolicy = () => {
           {/* Content Sections */}
           <div className="prose prose-lg max-w-none">
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">1. Who Controls Your Data</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">1. Vem kontrollerar dina uppgifter</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Nolto is a federated platform developed using{" "}
-                  <strong className="text-foreground">Lovable, a vibecoding tool registered in Sweden (EU)</strong>.
-                  When you sign up, your data is stored and managed by the instance (server) where you created your
-                  account.
+                  Nolto är en plattform utvecklad med{" "}
+                  <strong className="text-foreground">Lovable, ett utvecklingsverktyg registrerat i Sverige (EU)</strong>.
+                  När du registrerar dig lagras och hanteras dina uppgifter av Nolto-plattformen.
                 </p>
                 <p>
-                  Each instance is operated by its own administrator, who acts as the data controller under the GDPR and
-                  is responsible for handling your data in accordance with applicable law.
+                  Nolto agerar som personuppgiftsansvarig enligt GDPR och ansvarar för att hantera dina uppgifter 
+                  i enlighet med tillämplig lagstiftning.
                 </p>
                 <div className="bg-muted p-4 rounded-lg">
                   <p>
-                    <strong className="text-foreground">If you use nolto.social or another public instance:</strong>
+                    <strong className="text-foreground">Kontaktinformation:</strong>
                     <br />
-                    You can find contact information for the data controller on that instance's "About" or "Contact"
-                    page.
-                  </p>
-
-                  <p className="mt-3">
-                    <strong className="text-foreground">If you run your own instance:</strong>
-                    <br />
-                    You, or your organization, are the data controller for your users.
+                    Du hittar kontaktuppgifter för dataskyddsansvarig på vår kontaktsida.
                   </p>
                 </div>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">2. What Data is Collected</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">2. Vilka uppgifter som samlas in</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Depending on how you use Nolto, the following data may be collected and processed by your instance:
+                  Beroende på hur du använder Nolto kan följande uppgifter samlas in och behandlas:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>
-                    <strong className="text-foreground">Account information:</strong> Name, email address, chosen
-                    username, profile details, password (stored as a secure hash).
+                    <strong className="text-foreground">Kontoinformation:</strong> Namn, e-postadress, valt användarnamn, profiluppgifter, lösenord (lagras som en säker hash).
                   </li>
                   <li>
-                    <strong className="text-foreground">Professional data:</strong> Job history, skills, education,
-                    uploaded CV or portfolio.
+                    <strong className="text-foreground">Professionella uppgifter:</strong> Arbetshistorik, kompetenser, utbildning, uppladdat CV eller portfolio.
                   </li>
                   <li>
-                    <strong className="text-foreground">Content:</strong> Posts, messages, comments, job applications,
-                    and other user-generated content.
+                    <strong className="text-foreground">Innehåll:</strong> Inlägg, meddelanden, kommentarer, jobbansökningar och annat användargenererat innehåll.
                   </li>
                   <li>
-                    <strong className="text-foreground">Technical data:</strong> IP address, device information, access
-                    logs (for security, abuse prevention, and debugging).
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Federation data:</strong> Information shared with other Nolto or
-                    Fediverse instances as part of normal federation (see section 4).
+                    <strong className="text-foreground">Tekniska uppgifter:</strong> IP-adress, enhetsinformation, åtkomstloggar (för säkerhet, missbruksförebyggande och felsökning).
                   </li>
                 </ul>
                 <p>
-                  Nolto does not require sensitive personal data (e.g., government ID numbers, health data) unless you
-                  voluntarily provide it in your profile or posts.
+                  Nolto kräver inte känsliga personuppgifter (t.ex. personnummer, hälsodata) om du inte frivilligt 
+                  tillhandahåller dem i din profil eller dina inlägg.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">3. Legal Basis for Processing</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">3. Rättslig grund för behandling</h2>
               <div className="space-y-4 text-muted-foreground">
-                <p>Your data is processed for the following purposes and legal bases:</p>
+                <p>Dina uppgifter behandlas för följande ändamål och rättsliga grunder:</p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>
-                    <strong className="text-foreground">To provide the service:</strong> Necessary for the performance
-                    of our contract with you (GDPR Art. 6(1)(b)).
+                    <strong className="text-foreground">För att tillhandahålla tjänsten:</strong> Nödvändigt för fullgörandet av vårt avtal med dig (GDPR Art. 6(1)(b)).
                   </li>
                   <li>
-                    <strong className="text-foreground">To comply with legal obligations:</strong> For example, security
-                    and moderation duties (GDPR Art. 6(1)(c)).
+                    <strong className="text-foreground">För att uppfylla rättsliga skyldigheter:</strong> Exempelvis säkerhets- och modereringsskyldigheter (GDPR Art. 6(1)(c)).
                   </li>
                   <li>
-                    <strong className="text-foreground">With your consent:</strong> Where required (e.g., for optional
-                    communications, or if you explicitly choose to make your profile public) (GDPR Art. 6(1)(a)).
+                    <strong className="text-foreground">Med ditt samtycke:</strong> Där det krävs (t.ex. för valfri kommunikation) (GDPR Art. 6(1)(a)).
                   </li>
                   <li>
-                    <strong className="text-foreground">Legitimate interests:</strong> Such as security, abuse
-                    prevention, or improving the service, provided these do not override your rights (GDPR Art.
-                    6(1)(f)).
+                    <strong className="text-foreground">Berättigat intresse:</strong> Såsom säkerhet, missbruksförebyggande eller förbättring av tjänsten, förutsatt att dessa inte åsidosätter dina rättigheter (GDPR Art. 6(1)(f)).
                   </li>
                 </ul>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">4. How Data is Shared</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">4. Hur uppgifter delas</h2>
               <div className="space-y-4 text-muted-foreground">
-                <h3 className="text-xl font-semibold text-primary">Within the Instance</h3>
+                <h3 className="text-xl font-semibold text-primary">Inom plattformen</h3>
                 <p>
-                  Your data is available to administrators of your chosen instance, as needed for support and
-                  moderation.
+                  Dina uppgifter är tillgängliga för administratörer vid behov för support och moderering.
                 </p>
 
-                <h3 className="text-xl font-semibold text-primary">Across the Fediverse</h3>
+                <h3 className="text-xl font-semibold text-primary">Med anslutna organisationer</h3>
                 <p>
-                  When you interact with users or job posts on other Nolto or compatible Fediverse instances, relevant
-                  information (such as your profile, public posts, and job applications) may be federated and shared
-                  with those remote servers, according to the ActivityPub protocol.
+                  När du samarbetar med användare i andra anslutna organisationer kan relevant information 
+                  (såsom din profil och offentliga inlägg) delas med dessa.
                 </p>
                 <div className="bg-accent/20 border-l-4 border-accent p-4">
                   <p>
-                    <strong className="text-foreground">Note:</strong> Federated data is outside the sole control of
-                    your instance once delivered to another server. Each remote instance is responsible for its own data
-                    protection practices.
+                    <strong className="text-foreground">Observera:</strong> Delad data kan ligga utanför vår ensamma 
+                    kontroll när den överförs till en annan organisation. Varje mottagare ansvarar för sin egen dataskyddspraxis.
                   </p>
                 </div>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">5. Your Rights</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">5. Dina rättigheter</h2>
               <div className="space-y-4 text-muted-foreground">
-                <p>Under the GDPR (if applicable), you have the right to:</p>
+                <p>Enligt GDPR har du rätt att:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>Access your personal data.</li>
-                  <li>Correct inaccurate or incomplete data.</li>
-                  <li>Delete your account and associated data ("right to be forgotten").</li>
-                  <li>Restrict or object to certain data processing.</li>
-                  <li>Export your data in a machine-readable format (data portability).</li>
+                  <li>Få tillgång till dina personuppgifter.</li>
+                  <li>Rätta felaktiga eller ofullständiga uppgifter.</li>
+                  <li>Radera ditt konto och tillhörande uppgifter ("rätten att bli glömd").</li>
+                  <li>Begränsa eller invända mot viss behandling av uppgifter.</li>
+                  <li>Exportera dina uppgifter i ett maskinläsbart format (dataportabilitet).</li>
                 </ul>
                 <p>
-                  To exercise these rights, contact your instance administrator. For federated data, your instance will
-                  do its best to communicate your request to other servers, but complete erasure on remote instances
-                  cannot be fully guaranteed.
+                  För att utöva dessa rättigheter, kontakta vår administratör via kontaktinformationen nedan.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">6. Data Security</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">6. Datasäkerhet</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Nolto instances use appropriate technical and organizational measures to protect your data from
-                  unauthorized access, alteration, or loss.
+                  Nolto använder lämpliga tekniska och organisatoriska åtgärder för att skydda dina uppgifter 
+                  mot obehörig åtkomst, ändring eller förlust.
                 </p>
                 <p>
-                  However, no system is 100% secure. We encourage you to use strong passwords and be careful about what
-                  you choose to share publicly.
+                  Inget system är dock 100 % säkert. Vi uppmuntrar dig att använda starka lösenord och vara 
+                  försiktig med vad du väljer att dela offentligt.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">7. Data Retention</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">7. Datalagring</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Your data is kept as long as your account is active, and for a reasonable period afterwards to comply
-                  with legal obligations or resolve disputes.
+                  Dina uppgifter sparas så länge ditt konto är aktivt, och under en rimlig period därefter för 
+                  att uppfylla rättsliga skyldigheter eller lösa tvister.
                 </p>
                 <p>
-                  You can delete your account at any time; your data will be deleted or anonymized, except where
-                  retention is required by law.
+                  Du kan radera ditt konto när som helst; dina uppgifter raderas eller anonymiseras, 
+                  förutom där lagring krävs enligt lag.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">8. Cookies & External Resources</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">8. Cookies och externa resurser</h2>
               <div className="space-y-6 text-muted-foreground">
                 <div>
-                  <h3 className="text-xl font-semibold text-primary mb-3">8.1 Essential Cookies (Always Active)</h3>
+                  <h3 className="text-xl font-semibold text-primary mb-3">8.1 Nödvändiga cookies (alltid aktiva)</h3>
                   <p className="mb-3">
-                    These cookies are strictly necessary for the platform to function and cannot be disabled:
+                    Dessa cookies är strikt nödvändiga för att plattformen ska fungera och kan inte inaktiveras:
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>
-                      <strong className="text-foreground">Authentication cookies:</strong> Maintain your login session
-                      and keep your account secure.
+                      <strong className="text-foreground">Autentiseringscookies:</strong> Upprätthåller din inloggningssession och håller ditt konto säkert.
                     </li>
                     <li>
-                      <strong className="text-foreground">Security cookies (Cloudflare __cf_bm):</strong> Protect
-                      against bots and malicious traffic. These are set by our infrastructure provider and expire after
-                      30 minutes of inactivity.
+                      <strong className="text-foreground">Säkerhetscookies (Cloudflare __cf_bm):</strong> Skyddar mot botar och skadlig trafik. Dessa sätts av vår infrastrukturleverantör och upphör efter 30 minuters inaktivitet.
                     </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-primary mb-3">8.2 Typography Fonts</h3>
+                  <h3 className="text-xl font-semibold text-primary mb-3">8.2 Typsnitt</h3>
                   <p className="mb-3">
-                    Nolto uses the Inter and Montserrat fonts, which are self-hosted on our own servers. No requests are
-                    made to external font providers (such as Google Fonts), ensuring that your IP address is not shared
-                    with third parties for typography purposes.
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    This approach ensures full GDPR compliance for font loading.
+                    Nolto använder typsnitten Inter och Montserrat, som är egenvärdade på våra egna servrar. 
+                    Inga förfrågningar görs till externa typsnittsleverantörer (som Google Fonts), vilket säkerställer 
+                    att din IP-adress inte delas med tredje part för typsnittssyften.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-primary mb-3">8.3 What We Don't Use</h3>
-                  <p>Nolto does not use:</p>
+                  <h3 className="text-xl font-semibold text-primary mb-3">8.3 Vad vi inte använder</h3>
+                  <p>Nolto använder inte:</p>
                   <ul className="list-disc pl-6 space-y-2 mt-2">
-                    <li>Advertising or marketing cookies</li>
-                    <li>Analytics tracking (Google Analytics, etc.)</li>
-                    <li>Social media tracking pixels</li>
-                    <li>Cross-site tracking or fingerprinting</li>
-                    <li>Third-party data brokers or ad networks</li>
+                    <li>Reklam- eller marknadsföringscookies</li>
+                    <li>Analysspårning (Google Analytics etc.)</li>
+                    <li>Spårningspixlar från sociala medier</li>
+                    <li>Cross-site-spårning eller fingeravtrycksteknik</li>
+                    <li>Tredjepartsdatamäklare eller annonsnätverk</li>
                   </ul>
                 </div>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">9. Infrastructure & Data Storage</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">9. Infrastruktur och datalagring</h2>
               <div className="space-y-6 text-muted-foreground">
                 <div>
-                  <h3 className="text-xl font-semibold text-primary mb-3">9.1 Platform Provider</h3>
+                  <h3 className="text-xl font-semibold text-primary mb-3">9.1 Plattformsleverantör</h3>
                   <p>
-                    Nolto is developed using <strong className="text-foreground">Lovable</strong>, a company registered
-                    in <strong className="text-foreground">Sweden (EU)</strong>.
+                    Nolto är utvecklat med <strong className="text-foreground">Lovable</strong>, ett företag registrerat i{" "}
+                    <strong className="text-foreground">Sverige (EU)</strong>.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-primary mb-3">9.2 Data Center Location</h3>
-                  <p className="mb-3">Your data is stored and processed in the European Union:</p>
+                  <h3 className="text-xl font-semibold text-primary mb-3">9.2 Datacenterplats</h3>
+                  <p className="mb-3">Dina uppgifter lagras och behandlas inom Europeiska unionen:</p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>
-                      <strong className="text-foreground">Database & Authentication:</strong> Frankfurt, Germany (AWS
-                      eu-central-1)
+                      <strong className="text-foreground">Databas och autentisering:</strong> Frankfurt, Tyskland (AWS eu-central-1)
                     </li>
                     <li>
-                      <strong className="text-foreground">Edge Functions:</strong> EU-preferred routing via Deno Deploy
+                      <strong className="text-foreground">Edge-funktioner:</strong> EU-prioriterad routing via Deno Deploy
                     </li>
                     <li>
-                      <strong className="text-foreground">Content Delivery:</strong> Cloudflare global network with EU
-                      nodes
+                      <strong className="text-foreground">Innehållsleverans:</strong> Cloudflares globala nätverk med EU-noder
                     </li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold text-primary mb-3">9.3 Sub-processors</h3>
-                  <p className="mb-3">The following service providers process data on behalf of Nolto:</p>
+                  <h3 className="text-xl font-semibold text-primary mb-3">9.3 Underbiträden</h3>
+                  <p className="mb-3">Följande tjänsteleverantörer behandlar data på uppdrag av Nolto:</p>
                   <div className="overflow-x-auto">
                     <table className="min-w-full bg-card border border-border rounded-lg">
                       <thead className="bg-muted">
                         <tr>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">
-                            Service
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">
-                            Provider
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">
-                            Location
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">
-                            Safeguards
-                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">Tjänst</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">Leverantör</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">Plats</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-foreground border-b border-border">Skyddsåtgärder</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr className="border-b border-border">
-                          <td className="px-4 py-3 text-sm">Database & Auth</td>
+                          <td className="px-4 py-3 text-sm">Databas och autentisering</td>
                           <td className="px-4 py-3 text-sm">Supabase (via AWS)</td>
-                          <td className="px-4 py-3 text-sm">Frankfurt, Germany</td>
+                          <td className="px-4 py-3 text-sm">Frankfurt, Tyskland</td>
                           <td className="px-4 py-3 text-sm">EU-US DPF + SCCs</td>
                         </tr>
                         <tr className="border-b border-border">
-                          <td className="px-4 py-3 text-sm">Edge Functions</td>
+                          <td className="px-4 py-3 text-sm">Edge-funktioner</td>
                           <td className="px-4 py-3 text-sm">Deno Deploy</td>
-                          <td className="px-4 py-3 text-sm">Global / EU</td>
+                          <td className="px-4 py-3 text-sm">Globalt / EU</td>
                           <td className="px-4 py-3 text-sm">EU-US DPF</td>
                         </tr>
                         <tr>
-                          <td className="px-4 py-3 text-sm">CDN & Security</td>
+                          <td className="px-4 py-3 text-sm">CDN och säkerhet</td>
                           <td className="px-4 py-3 text-sm">Cloudflare</td>
-                          <td className="px-4 py-3 text-sm">Global</td>
+                          <td className="px-4 py-3 text-sm">Globalt</td>
                           <td className="px-4 py-3 text-sm">EU-US DPF + SCCs</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                   <p className="mt-3 text-sm">
-                    All sub-processors are certified under the{" "}
-                    <strong className="text-foreground">EU-US Data Privacy Framework</strong> and/or have signed{" "}
-                    <strong className="text-foreground">Standard Contractual Clauses (SCCs)</strong> for GDPR
-                    compliance.
+                    Alla underbiträden är certifierade under{" "}
+                    <strong className="text-foreground">EU-US Data Privacy Framework</strong> och/eller har tecknat{" "}
+                    <strong className="text-foreground">Standard Contractual Clauses (SCCs)</strong> för GDPR-efterlevnad.
                   </p>
                 </div>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">10. International Data Transfers</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">10. Internationella dataöverföringar</h2>
               <div className="space-y-4 text-muted-foreground">
                 <div className="bg-secondary/20 border-l-4 border-secondary p-4 mb-4">
                   <p className="font-semibold text-foreground">
-                    Primary data storage: European Union (Frankfurt, Germany)
+                    Primär datalagring: Europeiska unionen (Frankfurt, Tyskland)
                   </p>
                 </div>
                 <p>
-                  When data is processed by US-based infrastructure providers (Supabase, Cloudflare), transfers are
-                  protected by:
+                  När data behandlas av USA-baserade infrastrukturleverantörer skyddas överföringar av:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>
-                    <strong className="text-foreground">EU-US Data Privacy Framework</strong> certification
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Standard Contractual Clauses (SCCs)</strong>
-                  </li>
-                  <li>Supplementary technical measures (encryption in transit and at rest)</li>
+                  <li><strong className="text-foreground">EU-US Data Privacy Framework</strong>-certifiering</li>
+                  <li><strong className="text-foreground">Standard Contractual Clauses (SCCs)</strong></li>
+                  <li>Kompletterande tekniska åtgärder (kryptering under överföring och i vila)</li>
                 </ul>
-                <div className="bg-accent/20 border-l-4 border-accent p-4 mt-4">
-                  <p>
-                    <strong className="text-foreground">Note:</strong> Federation transfers to other Fediverse instances
-                    may involve servers in various countries. Each remote instance is responsible for its own data
-                    protection practices.
-                  </p>
-                </div>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">11. Changes to This Policy</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">11. Ändringar av denna policy</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  We may update this Privacy Policy from time to time. Changes will be posted on this page with an
-                  updated revision date.
+                  Vi kan uppdatera denna integritetspolicy från tid till annan. Ändringar publiceras på denna sida 
+                  med ett uppdaterat revisionsdatum.
                 </p>
               </div>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold text-primary mb-6">12. Contact</h2>
+              <h2 className="text-2xl font-bold text-primary mb-6">12. Kontakt</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  For questions or to exercise your rights, contact the instance administrator or Data Protection
-                  Officer (DPO):
+                  Vid frågor eller för att utöva dina rättigheter, kontakta dataskyddsansvarig:
                 </p>
                 <div className="bg-muted p-4 rounded-lg">
-                  <p>
-                    <strong className="text-foreground">Email:</strong> jtensetti@protonmail.com
-                  </p>
-                  <p>
-                    <strong className="text-foreground">Nolto Account:</strong> JTensetti (@user_f33be7a8)
-                  </p>
+                  <p><strong className="text-foreground">E-post:</strong> jtensetti@protonmail.com</p>
+                  <p><strong className="text-foreground">Nolto-konto:</strong> JTensetti (@user_f33be7a8)</p>
                 </div>
                 <div className="bg-muted p-4 rounded-lg mt-4">
                   <p>
-                    This policy applies to all Nolto instances and is intended to comply with the GDPR and other
-                    relevant privacy laws. For local variations or additional requirements, see your instance's own
-                    policy page.
+                    Denna policy gäller för Nolto-plattformen och syftar till att efterleva GDPR och andra 
+                    relevanta integritetslagar.
                   </p>
                 </div>
               </div>
@@ -433,7 +371,7 @@ const PrivacyPolicy = () => {
             <Button asChild variant="outline">
               <Link to="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
+                Tillbaka till startsidan
               </Link>
             </Button>
           </div>

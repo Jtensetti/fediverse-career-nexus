@@ -91,53 +91,36 @@ const ArticleEdit = () => {
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
-    // Only auto-update slug if it's empty or matches the original generated slug
     const shouldUpdateSlug = !article.slug || article.slug === generateSlug(originalArticle?.title || '');
-    
-    setArticle({
-      ...article,
-      title,
-      slug: shouldUpdateSlug ? generateSlug(title) : article.slug,
-    });
+    setArticle({ ...article, title, slug: shouldUpdateSlug ? generateSlug(title) : article.slug });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setArticle({
-      ...article,
-      [name]: value,
-    });
+    setArticle({ ...article, [name]: value });
   };
 
   const handleContentChange = (content: string) => {
-    setArticle({
-      ...article,
-      content,
-    });
+    setArticle({ ...article, content });
   };
 
   const handlePublishedChange = (checked: boolean) => {
-    setArticle({
-      ...article,
-      published: checked,
-    });
+    setArticle({ ...article, published: checked });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!id) {
-      toast.error("Article ID is missing");
+      toast.error("Artikel-ID saknas");
       return;
     }
-    
     if (!article.title) {
-      toast.error("Please enter a title for your article");
+      toast.error("Ange en titel för din artikel");
       return;
     }
-    
     if (!article.content) {
-      toast.error("Please enter content for your article");
+      toast.error("Ange innehåll för din artikel");
       return;
     }
     
@@ -146,14 +129,13 @@ const ArticleEdit = () => {
     try {
       const result = await updateArticle(id, article);
       if (result) {
-        // Update cover image if changed
         if (coverImageUrl !== originalArticle?.cover_image_url) {
           await supabase
             .from('articles')
             .update({ cover_image_url: coverImageUrl })
             .eq('id', id);
         }
-        toast.success("Article updated successfully!");
+        toast.success("Artikeln uppdaterades!");
         queryClient.invalidateQueries({ queryKey: ['article', id] });
         queryClient.invalidateQueries({ queryKey: ['user-articles'] });
         navigate("/articles/manage");
@@ -169,7 +151,6 @@ const ArticleEdit = () => {
     
     if (query.length >= 3) {
       const results = await searchUsers(query);
-      // Filter out users who are already authors
       const filteredResults = results.filter(
         user => !authors.some(author => author.user_id === user.id)
       );
@@ -181,7 +162,6 @@ const ArticleEdit = () => {
 
   const handleAddCoAuthor = async (userId: string) => {
     if (!id) return;
-    
     const success = await addCoAuthor(id, userId);
     if (success) {
       setSearchTerm("");
@@ -192,7 +172,6 @@ const ArticleEdit = () => {
 
   const handleRemoveCoAuthor = async (userId: string) => {
     if (!id) return;
-    
     const success = await removeCoAuthor(id, userId);
     if (success) {
       queryClient.invalidateQueries({ queryKey: ['article-authors', id] });
@@ -205,7 +184,7 @@ const ArticleEdit = () => {
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <p>Loading article...</p>
+            <p>Laddar artikel...</p>
           </div>
         </main>
         <Footer />
@@ -219,10 +198,10 @@ const ArticleEdit = () => {
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-4">Article not found</h2>
-            <p className="mb-6">The article you're trying to edit doesn't exist or you don't have permission to edit it.</p>
+            <h2 className="text-2xl font-bold mb-4">Artikeln hittades inte</h2>
+            <p className="mb-6">Artikeln du försöker redigera finns inte eller så har du inte behörighet att redigera den.</p>
             <Button onClick={() => navigate("/articles/manage")}>
-              Back to My Articles
+              Tillbaka till mina artiklar
             </Button>
           </div>
         </main>
@@ -238,13 +217,10 @@ const ArticleEdit = () => {
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Edit Article</h1>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/articles/manage")}
-            >
+            <h1 className="text-2xl font-bold">Redigera artikel</h1>
+            <Button variant="outline" onClick={() => navigate("/articles/manage")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Cancel
+              Avbryt
             </Button>
           </div>
           
@@ -253,7 +229,7 @@ const ArticleEdit = () => {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-medium flex items-center gap-2">
                   <Users size={18} />
-                  Authors
+                  Författare
                 </h2>
                 <Dialog open={showAddCoAuthorDialog} onOpenChange={setShowAddCoAuthorDialog}>
                   <DialogTrigger asChild>
@@ -264,21 +240,21 @@ const ArticleEdit = () => {
                       disabled={!isPrimaryAuthor && authors.length > 0}
                     >
                       <UserPlus size={16} />
-                      Add Co-Author
+                      Lägg till medförfattare
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add Co-Author</DialogTitle>
+                      <DialogTitle>Lägg till medförfattare</DialogTitle>
                       <DialogDescription>
-                        Search for users to add as co-authors to this article.
+                        Sök efter användare att lägga till som medförfattare till denna artikel.
                       </DialogDescription>
                     </DialogHeader>
                     
                     <div className="relative mt-2">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={16} />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
                       <Input 
-                        placeholder="Search users by name or username..." 
+                        placeholder="Sök användare efter namn eller användarnamn..." 
                         value={searchTerm}
                         onChange={handleSearchUsers}
                         className="pl-10"
@@ -289,7 +265,7 @@ const ArticleEdit = () => {
                       {searchResults.length > 0 ? (
                         <div className="space-y-2">
                           {searchResults.map((user) => (
-                            <div key={user.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                            <div key={user.id} className="flex items-center justify-between p-2 hover:bg-muted rounded">
                               <div className="flex items-center gap-3">
                                 <Avatar>
                                   <AvatarImage src={user.avatar_url} />
@@ -299,8 +275,8 @@ const ArticleEdit = () => {
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <p className="font-medium">{user.fullname || user.username || "Unnamed User"}</p>
-                                  {user.username && <p className="text-sm text-gray-500">@{user.username}</p>}
+                                  <p className="font-medium">{user.fullname || user.username || "Namnlös användare"}</p>
+                                  {user.username && <p className="text-sm text-muted-foreground">@{user.username}</p>}
                                 </div>
                               </div>
                               <Button 
@@ -310,23 +286,23 @@ const ArticleEdit = () => {
                                   setShowAddCoAuthorDialog(false);
                                 }}
                               >
-                                Add
+                                Lägg till
                               </Button>
                             </div>
                           ))}
                         </div>
                       ) : searchTerm.length >= 3 ? (
-                        <p className="text-center py-4 text-gray-500">No users found</p>
+                        <p className="text-center py-4 text-muted-foreground">Inga användare hittades</p>
                       ) : searchTerm.length > 0 ? (
-                        <p className="text-center py-4 text-gray-500">Type at least 3 characters to search</p>
+                        <p className="text-center py-4 text-muted-foreground">Skriv minst 3 tecken för att söka</p>
                       ) : (
-                        <p className="text-center py-4 text-gray-500">Search for users to add as co-authors</p>
+                        <p className="text-center py-4 text-muted-foreground">Sök efter användare att lägga till som medförfattare</p>
                       )}
                     </div>
                     
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setShowAddCoAuthorDialog(false)}>
-                        Cancel
+                        Avbryt
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -334,11 +310,11 @@ const ArticleEdit = () => {
               </div>
               
               {authorsLoading ? (
-                <p className="text-center py-2 text-gray-500">Loading authors...</p>
+                <p className="text-center py-2 text-muted-foreground">Laddar författare...</p>
               ) : authors.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {authors.map((author) => (
-                    <div key={author.id} className="flex items-center gap-2 px-3 py-2 rounded-full bg-gray-100">
+                    <div key={author.id} className="flex items-center gap-2 px-3 py-2 rounded-full bg-muted">
                       <Avatar className="h-6 w-6">
                         <AvatarImage src={author.profile?.avatar_url || undefined} />
                         <AvatarFallback className="text-xs">
@@ -347,10 +323,10 @@ const ArticleEdit = () => {
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm">
-                        {author.profile?.fullname || author.profile?.username || "Unnamed User"}
+                        {author.profile?.fullname || author.profile?.username || "Namnlös användare"}
                       </span>
                       {author.is_primary && (
-                        <Badge variant="outline" className="text-xs ml-1">Primary</Badge>
+                        <Badge variant="outline" className="text-xs ml-1">Primär</Badge>
                       )}
                       {!author.is_primary && isPrimaryAuthor && (
                         <TooltipProvider>
@@ -359,14 +335,14 @@ const ArticleEdit = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-5 w-5 ml-1 text-gray-500 hover:text-red-500"
+                                className="h-5 w-5 ml-1 text-muted-foreground hover:text-destructive"
                                 onClick={() => handleRemoveCoAuthor(author.user_id)}
                               >
                                 <X size={12} />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Remove co-author</p>
+                              <p>Ta bort medförfattare</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -375,7 +351,7 @@ const ArticleEdit = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-center py-2 text-gray-500">No authors found</p>
+                <p className="text-center py-2 text-muted-foreground">Inga författare hittades</p>
               )}
             </CardContent>
           </Card>
@@ -384,13 +360,13 @@ const ArticleEdit = () => {
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
+                  <Label htmlFor="title">Titel</Label>
                   <Input
                     id="title"
                     name="title"
                     value={article.title}
                     onChange={handleTitleChange}
-                    placeholder="Enter article title"
+                    placeholder="Ange artikelns titel"
                     required
                   />
                 </div>
@@ -403,46 +379,43 @@ const ArticleEdit = () => {
                       name="slug"
                       value={article.slug}
                       onChange={handleChange}
-                      placeholder="article-url-slug"
+                      placeholder="artikel-url-slug"
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
-                    The slug is used in the article's URL.
+                  <p className="text-xs text-muted-foreground">
+                    Slugen används i artikelns URL.
                   </p>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="excerpt">Excerpt (Optional)</Label>
+                  <Label htmlFor="excerpt">Sammanfattning (valfritt)</Label>
                   <Textarea
                     id="excerpt"
                     name="excerpt"
                     value={article.excerpt || ""}
                     onChange={handleChange}
-                    placeholder="Brief summary of the article"
+                    placeholder="Kort sammanfattning av artikeln"
                     rows={3}
                   />
-                  <p className="text-xs text-gray-500">
-                    A short summary that appears in article listings. If not provided, the beginning of the content will be used.
+                  <p className="text-xs text-muted-foreground">
+                    En kort sammanfattning som visas i artikellistor. Om den inte anges används början av innehållet.
                   </p>
                 </div>
 
                 {/* Cover Image */}
                 <div className="space-y-2">
-                  <Label>Cover Image (Optional)</Label>
-                  <CoverImageUpload
-                    value={coverImageUrl}
-                    onChange={setCoverImageUrl}
-                  />
+                  <Label>Omslagsbild (valfritt)</Label>
+                  <CoverImageUpload value={coverImageUrl} onChange={setCoverImageUrl} />
                   <p className="text-xs text-muted-foreground">
-                    This image will appear at the top of your article and in previews.
+                    Denna bild visas högst upp i din artikel och i förhandsvisningar.
                   </p>
                 </div>
                 
                 <ArticleEditor
                   value={article.content}
                   onChange={handleContentChange}
-                  placeholder="Write your article content here..."
+                  placeholder="Skriv ditt artikelinnehåll här..."
                 />
                 
                 <div className="flex items-center space-x-2">
@@ -451,17 +424,13 @@ const ArticleEdit = () => {
                     checked={article.published}
                     onCheckedChange={handlePublishedChange}
                   />
-                  <Label htmlFor="published">{article.published ? "Published" : "Draft"}</Label>
+                  <Label htmlFor="published">{article.published ? "Publicerad" : "Utkast"}</Label>
                 </div>
                 
                 <div className="pt-4 flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2"
-                  >
+                  <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
                     <Save size={16} />
-                    {isSubmitting ? "Saving..." : "Update Article"}
+                    {isSubmitting ? "Sparar..." : "Uppdatera artikel"}
                   </Button>
                 </div>
               </form>
