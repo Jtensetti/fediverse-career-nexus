@@ -270,7 +270,7 @@ export async function createStarterPack(data: {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('You must be logged in to create a pack');
+      toast.error('Du måste vara inloggad för att skapa ett paket');
       return null;
     }
 
