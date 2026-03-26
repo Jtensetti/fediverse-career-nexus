@@ -211,12 +211,12 @@ export default function ModerationDashboard() {
               <div className="p-4 rounded-full bg-destructive/10 w-fit mx-auto">
                 <Shield className="h-12 w-12 text-destructive" />
               </div>
-              <h1 className="text-2xl font-bold">Access Restricted</h1>
+              <h1 className="text-2xl font-bold">Åtkomst begränsad</h1>
               <p className="text-muted-foreground">
-                This area is restricted to authorized moderators only. If you believe you should have access, please contact the administrator.
+                Detta område är begränsat till behöriga moderatorer. Om du anser att du borde ha åtkomst, kontakta administratören.
               </p>
               <Button onClick={() => navigate('/')} variant="outline">
-                Return Home
+                Tillbaka hem
               </Button>
             </motion.div>
           </div>
