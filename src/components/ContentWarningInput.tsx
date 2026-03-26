@@ -17,13 +17,13 @@ interface ContentWarningInputProps {
 }
 
 const COMMON_CWS = [
-  'politics',
-  'job loss',
-  'mental health',
-  'violence',
+  'politik',
+  'uppsägning',
+  'psykisk hälsa',
+  'våld',
   'spoilers',
-  'food',
-  'alcohol'
+  'mat',
+  'alkohol'
 ];
 
 export default function ContentWarningInput({
@@ -63,7 +63,7 @@ export default function ContentWarningInput({
           )}
         >
           <AlertTriangle className="h-4 w-4" />
-          {value ? 'CW: ' + value.substring(0, 20) + (value.length > 20 ? '...' : '') : 'Add content warning'}
+          {value ? 'IVB: ' + value.substring(0, 20) + (value.length > 20 ? '...' : '') : 'Lägg till innehållsvarning'}
           {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </Button>
       </CollapsibleTrigger>
@@ -73,7 +73,7 @@ export default function ContentWarningInput({
           <Input
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="e.g., politics, spoilers, food..."
+            placeholder="t.ex. politik, spoilers, mat..."
             className="flex-1"
           />
           {value && (
@@ -103,7 +103,7 @@ export default function ContentWarningInput({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Content warnings help others choose what they want to see. Posts with CW will be collapsed by default.
+          Innehållsvarningar hjälper andra att välja vad de vill se. Inlägg med varning döljs som standard.
         </p>
       </CollapsibleContent>
     </Collapsible>

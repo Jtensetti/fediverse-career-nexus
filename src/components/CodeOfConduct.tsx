@@ -5,27 +5,27 @@ const CodeOfConduct = () => {
   return (
     <div className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
       <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-        Nolto is a professional, federated community. To keep Nolto open, respectful, and welcoming for everyone, 
-        we expect all users to follow these guidelines at all times—both on this instance and when interacting 
-        with users across the Fediverse.
+        Nolto är en professionell plattform. För att hålla Nolto öppet, respektfullt och välkomnande för alla 
+        förväntar vi oss att samtliga användare följer dessa riktlinjer — både på denna instans och vid 
+        interaktion med användare på andra instanser.
       </p>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-primary mb-6">1. Respect Others</h2>
+        <h2 className="text-2xl font-bold text-primary mb-6">1. Respektera andra</h2>
         <div className="bg-muted/50 p-6 rounded-lg mb-8">
           <ul className="space-y-4">
             <li className="flex items-start">
               <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
               <span className="text-muted-foreground">
-                Treat everyone with respect, regardless of profession, background, nationality, gender, ethnicity, 
-                religion, ability, age, or identity.
+                Behandla alla med respekt, oavsett yrke, bakgrund, nationalitet, kön, etnicitet, 
+                religion, funktionsförmåga, ålder eller identitet.
               </span>
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
               <span className="text-muted-foreground">
-                Disagreement is natural. Personal attacks, harassment, hate speech, threats, or discrimination 
-                will not be tolerated.
+                Meningsskiljaktigheter är naturliga. Personangrepp, trakasserier, hatretorik, hot eller 
+                diskriminering tolereras inte.
               </span>
             </li>
           </ul>
@@ -38,84 +38,84 @@ const CodeOfConduct = () => {
           <ul className="space-y-3">
             <li className="flex items-start">
               <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Maintain a professional tone in your posts, messages, and job offers.</span>
+              <span className="text-muted-foreground">Håll en professionell ton i dina inlägg, meddelanden och jobbannonser.</span>
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Do not post misleading, fraudulent, or defamatory content.</span>
+              <span className="text-muted-foreground">Publicera inte vilseledande, bedrägligt eller förtalande innehåll.</span>
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Respect confidentiality and do not share private information without consent.</span>
+              <span className="text-muted-foreground">Respektera sekretess och dela inte privat information utan samtycke.</span>
             </li>
           </ul>
         </div>
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-primary mb-6">3. No Harassment or Abuse</h2>
+        <h2 className="text-2xl font-bold text-primary mb-6">3. Inga trakasserier eller övergrepp</h2>
         <div className="space-y-4 mb-8">
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-            <span className="text-muted-foreground">Harassment, bullying, stalking, or repeated unwanted contact is strictly prohibited.</span>
+            <span className="text-muted-foreground">Trakasserier, mobbning, förföljelse eller upprepad oönskad kontakt är strikt förbjudet.</span>
           </div>
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-            <span className="text-muted-foreground">Do not use Nolto to intimidate, blackmail, or harm others in any way.</span>
+            <span className="text-muted-foreground">Använd inte Nolto för att hota, utpressa eller skada andra på något sätt.</span>
           </div>
         </div>
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-primary mb-6">4. Inclusive Communication</h2>
+        <h2 className="text-2xl font-bold text-primary mb-6">4. Inkluderande kommunikation</h2>
         <div className="bg-muted/50 p-6 rounded-lg mb-8">
           <ul className="space-y-4">
             <li className="flex items-start">
               <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Use inclusive and clear language.</span>
+              <span className="text-muted-foreground">Använd ett inkluderande och tydligt språk.</span>
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Avoid offensive, explicit, or sexually suggestive content.</span>
+              <span className="text-muted-foreground">Undvik stötande, explicit eller sexuellt suggestivt innehåll.</span>
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Respect that Nolto is a public, professional environment.</span>
+              <span className="text-muted-foreground">Respektera att Nolto är en offentlig, professionell miljö.</span>
             </li>
           </ul>
         </div>
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-primary mb-6">5. Integrity and Legality</h2>
+        <h2 className="text-2xl font-bold text-primary mb-6">5. Integritet och laglighet</h2>
         <div className="space-y-4 mb-8">
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
             <span className="text-muted-foreground">
-              Do not use Nolto for illegal activities, including fraud, phishing, or distribution of 
-              malicious content.
+              Använd inte Nolto för olaglig verksamhet, inklusive bedrägeri, nätfiske eller spridning av 
+              skadligt innehåll.
             </span>
           </div>
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-            <span className="text-muted-foreground">Only share content you have the right to publish.</span>
+            <span className="text-muted-foreground">Dela bara innehåll som du har rätt att publicera.</span>
           </div>
         </div>
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-primary mb-6">6. Moderation</h2>
+        <h2 className="text-2xl font-bold text-primary mb-6">6. Moderering</h2>
         <div className="bg-primary/5 p-6 rounded-lg mb-8">
           <ul className="space-y-3">
             <li className="flex items-start">
               <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Follow the moderation guidelines set by your Nolto instance.</span>
+              <span className="text-muted-foreground">Följ de modereringsriktlinjer som gäller för din instans.</span>
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
               <span className="text-muted-foreground">
-                Reports of rule violations are taken seriously. Repeated or severe violations may result in 
-                warnings, suspension, or permanent removal from the network.
+                Rapporter om regelbrott tas på allvar. Upprepade eller allvarliga överträdelser kan leda till 
+                varningar, avstängning eller permanent borttagning från nätverket.
               </span>
             </li>
           </ul>
@@ -123,32 +123,32 @@ const CodeOfConduct = () => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-primary mb-6">7. Federation Etiquette</h2>
+        <h2 className="text-2xl font-bold text-primary mb-6">7. Samverkansregler</h2>
         <div className="space-y-4 mb-8">
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
             <span className="text-muted-foreground">
-              Remember that your behavior may reflect on your instance and affect its federation with others.
+              Kom ihåg att ditt beteende kan påverka din instans och dess samverkan med andra.
             </span>
           </div>
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
             <span className="text-muted-foreground">
-              Be considerate in cross-instance interactions and follow the rules of remote communities when 
-              engaging there.
+              Var hänsynsfull vid interaktioner mellan instanser och följ reglerna i andra organisationers 
+              miljöer.
             </span>
           </div>
         </div>
       </section>
 
       <section className="bg-primary text-primary-foreground p-8 rounded-lg text-center">
-        <h2 className="text-2xl font-bold mb-4">Reporting Violations</h2>
+        <h2 className="text-2xl font-bold mb-4">Rapportera överträdelser</h2>
         <p className="text-lg mb-6 text-primary-foreground/90">
-          If you experience or witness behavior that violates this Code of Conduct, use the "Report" 
-          function or contact your instance administrators.
+          Om du upplever eller bevittnar beteende som bryter mot dessa riktlinjer, använd 
+          "Rapportera"-funktionen eller kontakta din instansadministratör.
         </p>
         <p className="text-lg font-medium text-secondary">
-          Together, we can build a professional network that is open, diverse, and safe for all.
+          Tillsammans kan vi bygga ett professionellt nätverk som är öppet, mångfaldigt och säkert för alla.
         </p>
       </section>
     </div>

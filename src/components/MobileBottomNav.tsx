@@ -5,20 +5,18 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
-  { to: "/feed", icon: Home, label: "Feed" },
-  { to: "/jobs", icon: Search, label: "Jobs" },
-  { to: "/messages", icon: MessageSquare, label: "Messages" },
-  { to: "/profile", icon: User, label: "Profile" },
+  { to: "/feed", icon: Home, label: "Flöde" },
+  { to: "/jobs", icon: Search, label: "Jobb" },
+  { to: "/messages", icon: MessageSquare, label: "Meddelanden" },
+  { to: "/profile", icon: User, label: "Profil" },
 ];
 
 export default function MobileBottomNav() {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Only show for authenticated users
   if (!user) return null;
 
-  // Don't show on auth pages or article editing pages
   if (location.pathname.startsWith("/auth")) return null;
   if (location.pathname.startsWith("/articles/create")) return null;
   if (location.pathname.startsWith("/articles/edit")) return null;
@@ -27,11 +25,10 @@ export default function MobileBottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border md:hidden"
       role="navigation"
-      aria-label="Mobile navigation"
+      aria-label="Mobilnavigering"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0.5rem)' }}
     >
       <div className="flex items-center justify-around h-16 px-2">
-        {/* Left nav items */}
         {navItems.slice(0, 2).map(({ to, icon: Icon, label }) => {
           const isActive = location.pathname === to;
           return (
@@ -67,11 +64,10 @@ export default function MobileBottomNav() {
           );
         })}
 
-        {/* Center Create Button */}
         <NavLink
           to="/articles/create"
           className="relative flex items-center justify-center -mt-6"
-          aria-label="Create new post"
+          aria-label="Skapa nytt inlägg"
         >
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -82,7 +78,6 @@ export default function MobileBottomNav() {
           </motion.div>
         </NavLink>
 
-        {/* Right nav items */}
         {navItems.slice(2).map(({ to, icon: Icon, label }) => {
           const isActive = location.pathname === to;
           return (
