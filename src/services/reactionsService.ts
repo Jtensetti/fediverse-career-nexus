@@ -78,7 +78,7 @@ export async function toggleReaction(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.warn('⚠️ toggleReaction: User not authenticated');
-      toast.error("Please sign in to react");
+      toast.error("Logga in för att reagera");
       return { success: false, action: 'error', reaction };
     }
     
