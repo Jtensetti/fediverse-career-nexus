@@ -334,7 +334,7 @@ export async function updateDmPrivacy(privacy: DmPrivacy): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('Error updating DM privacy:', error);
-    toast.error('Failed to update settings');
+    toast.error('Kunde inte uppdatera inställningar');
     return false;
   }
 }
