@@ -346,9 +346,9 @@ export async function addModerator(userId: string): Promise<boolean> {
   } catch (error: any) {
     console.error("Error adding moderator:", error);
     if (error.code === "23505") {
-      toast.error("User already has this role");
+      toast.error("Användaren har redan denna roll");
     } else {
-      toast.error("Failed to add moderator");
+      toast.error("Kunde inte lägga till moderator");
     }
     return false;
   }
