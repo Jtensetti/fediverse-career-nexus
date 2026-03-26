@@ -77,7 +77,7 @@ export default function AuthPage() {
     }
     // Allow letters (including international), spaces, hyphens, apostrophes, and periods (for initials)
     if (!/^[a-zA-ZÀ-ÿ\s\-'.]+$/.test(trimmed)) {
-      return `${field} can only contain letters, spaces, hyphens, apostrophes, and periods`;
+      return t("auth.nameInvalidChars");
     }
     return null;
   };
