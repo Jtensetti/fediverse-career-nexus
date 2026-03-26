@@ -262,7 +262,7 @@ export const updateJobPost = async (
       .single();
 
     if (error) throw error;
-    toast.success('Job post updated successfully');
+    toast.success('Jobbannons uppdaterad');
     return enrichJobPost(data);
   } catch (error) {
     console.error('Error updating job post:', error);
