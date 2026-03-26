@@ -42,30 +42,28 @@ export function SaveButton({
     e.stopPropagation();
     
     if (!user) {
-      toast.error("Please sign in to save items");
+      toast.error("Logga in för att spara objekt");
       return;
     }
 
     setIsLoading(true);
     
-    // Optimistic update
     setIsSaved(!isSaved);
     
     const result = await toggleSaveItem(itemType, itemId);
     
     if (result.success) {
-      toast.success(result.saved ? "Saved!" : "Removed from saved");
+      toast.success(result.saved ? "Sparat!" : "Borttaget från sparade");
     } else {
-      // Revert on failure
       setIsSaved(isSaved);
-      toast.error("Failed to save item");
+      toast.error("Kunde inte spara objektet");
     }
     
     setIsLoading(false);
   };
 
-  const label = isSaved ? "Saved" : "Save";
-  const ariaLabel = isSaved ? `Remove ${itemType} from saved` : `Save ${itemType}`;
+  const label = isSaved ? "Sparat" : "Spara";
+  const ariaLabel = isSaved ? `Ta bort ${itemType} från sparade` : `Spara ${itemType}`;
 
   return (
     <TooltipProvider>

@@ -4,23 +4,23 @@ import { cn } from "@/lib/utils";
 const templates = [
   {
     id: "mutual",
-    label: "Mutual Connection",
-    text: "Hi! I noticed we both know [name]. I'd love to connect and chat about...",
+    label: "Gemensam kontakt",
+    text: "Hej! Jag såg att vi båda känner [namn]. Jag skulle gärna vilja knyta kontakt och prata om...",
   },
   {
     id: "post",
-    label: "About a Post",
-    text: "Hi! I saw your post about [topic] and found it really insightful. I wanted to reach out because...",
+    label: "Om ett inlägg",
+    text: "Hej! Jag läste ditt inlägg om [ämne] och tyckte det var väldigt intressant. Jag ville höra av mig för att...",
   },
   {
     id: "event",
-    label: "Event Connection",
-    text: "Hi! We both attended [event]. I really enjoyed [aspect] and thought we might have things in common...",
+    label: "Evenemangsträff",
+    text: "Hej! Vi var båda på [evenemang]. Jag tyckte verkligen om [detalj] och tänkte att vi kanske har saker gemensamt...",
   },
   {
     id: "collaboration",
-    label: "Collaboration",
-    text: "Hi! I'm working on [project/idea] and think your expertise in [area] could be a great fit. Would you be open to a chat?",
+    label: "Samarbete",
+    text: "Hej! Jag jobbar med [projekt/idé] och tror att din expertis inom [område] kan vara en bra match. Skulle du vara öppen för ett samtal?",
   },
 ];
 
@@ -33,7 +33,7 @@ export default function IntroTemplateSelector({ onSelect, className }: IntroTemp
   return (
     <div className={cn("space-y-3", className)}>
       <p className="text-sm font-medium text-muted-foreground">
-        Start with a template (you can edit it):
+        Börja med en mall (du kan redigera den):
       </p>
       <div className="grid gap-2">
         {templates.map((template) => (

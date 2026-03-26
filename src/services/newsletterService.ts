@@ -25,15 +25,15 @@ export const subscribeToNewsletter = async (email: string): Promise<NewsletterSu
       .single();
     
     if (error) {
-      toast.error(`Error subscribing to newsletter: ${error.message}`);
+      toast.error(`Fel vid prenumeration: ${error.message}`);
       return null;
     }
     
-    toast.success('Successfully subscribed to newsletter!');
+    toast.success('Prenumeration lyckades!');
     return data as NewsletterSubscription;
   } catch (error) {
     console.error('Error subscribing to newsletter:', error);
-    toast.error('Failed to subscribe to newsletter. Please try again.');
+    toast.error('Kunde inte prenumerera. Försök igen.');
     return null;
   }
 };
@@ -51,15 +51,15 @@ export const unsubscribeFromNewsletter = async (email: string): Promise<Newslett
       .single();
     
     if (error) {
-      toast.error(`Error unsubscribing from newsletter: ${error.message}`);
+      toast.error(`Fel vid avprenumeration: ${error.message}`);
       return null;
     }
     
-    toast.success('Successfully unsubscribed from newsletter.');
+    toast.success('Avprenumeration lyckades.');
     return data as NewsletterSubscription;
   } catch (error) {
     console.error('Error unsubscribing from newsletter:', error);
-    toast.error('Failed to unsubscribe from newsletter. Please try again.');
+    toast.error('Kunde inte avprenumerera. Försök igen.');
     return null;
   }
 };

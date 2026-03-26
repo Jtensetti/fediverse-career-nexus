@@ -55,7 +55,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     
     if (!user) {
       console.error('❌ No user found in updateUserProfile');
-      toast.error("You must be logged in to update your profile");
+      toast.error("Du måste vara inloggad för att uppdatera din profil");
       return false;
     }
 
@@ -81,7 +81,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
 
     if (error) {
       console.error('❌ Profile update error:', error);
-      toast.error(`Failed to update profile: ${error.message}`);
+      toast.error(`Kunde inte uppdatera profil: ${error.message}`);
       return false;
     }
 
@@ -102,11 +102,11 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     }
 
     console.log('✅ Profile updated successfully');
-    toast.success("Profile updated successfully");
+    toast.success("Profil uppdaterad");
     return true;
   } catch (error) {
     console.error("❌ Error updating profile:", error);
-    toast.error("Failed to update profile");
+    toast.error("Kunde inte uppdatera profil");
     return false;
   }
 };
@@ -125,7 +125,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     
     if (!user) {
       console.error('❌ No user found in uploadProfileAvatar');
-      toast.error("You must be logged in to upload an avatar");
+      toast.error("Du måste vara inloggad för att ladda upp en avatar");
       return null;
     }
 
@@ -146,7 +146,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (uploadError) {
       console.error('❌ Avatar upload error:', uploadError);
-      toast.error(`Failed to upload avatar: ${uploadError.message}`);
+      toast.error(`Kunde inte ladda upp avatar: ${uploadError.message}`);
       return null;
     }
 
@@ -168,16 +168,16 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (updateError) {
       console.error('❌ Avatar URL update error:', updateError);
-      toast.error(`Failed to update profile with avatar: ${updateError.message}`);
+      toast.error(`Kunde inte uppdatera profilbild: ${updateError.message}`);
       return null;
     }
 
     console.log('✅ Avatar updated successfully');
-    toast.success("Avatar updated successfully");
+    toast.success("Avatar uppdaterad");
     return publicUrl;
   } catch (error) {
     console.error("❌ Error uploading avatar:", error);
-    toast.error("Failed to upload avatar");
+    toast.error("Kunde inte ladda upp avatar");
     return null;
   }
 };

@@ -56,7 +56,7 @@ export const votePoll = async (
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session) {
-      toast.error("You must be logged in to vote");
+      toast.error("Du måste vara inloggad för att rösta");
       return false;
     }
 
@@ -80,15 +80,15 @@ export const votePoll = async (
 
     if (error) {
       console.error("Error voting:", error);
-      toast.error("Failed to submit vote");
+      toast.error("Kunde inte skicka röst");
       return false;
     }
 
-    toast.success("Vote submitted!");
+    toast.success("Röst registrerad!");
     return true;
   } catch (error) {
     console.error("Error in votePoll:", error);
-    toast.error("Failed to vote");
+    toast.error("Kunde inte rösta");
     return false;
   }
 };
@@ -197,9 +197,9 @@ export const isPoll = (content: Record<string, unknown>): boolean => {
 
 // Get poll duration options
 export const pollDurationOptions = [
-  { label: "1 hour", minutes: 60 },
-  { label: "6 hours", minutes: 360 },
-  { label: "1 day", minutes: 1440 },
-  { label: "3 days", minutes: 4320 },
-  { label: "7 days", minutes: 10080 }
+  { label: "1 timme", minutes: 60 },
+  { label: "6 timmar", minutes: 360 },
+  { label: "1 dag", minutes: 1440 },
+  { label: "3 dagar", minutes: 4320 },
+  { label: "7 dagar", minutes: 10080 }
 ];

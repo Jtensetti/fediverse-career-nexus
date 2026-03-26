@@ -72,7 +72,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       console.error('❌ Authentication error:', authError);
-      toast.error("You must be logged in to create a post");
+      toast.error("Du måste vara inloggad för att skapa ett inlägg");
       return false;
     }
     
@@ -97,7 +97,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
       if (profileError || !profile) {
         console.error('❌ Profile error:', profileError);
-        toast.error("Profile not found. Please complete your profile setup.");
+        toast.error("Profil hittades inte. Vänligen fyll i din profilinformation.");
         return false;
       }
 
@@ -166,7 +166,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
       if (uploadError) {
         console.error('❌ Image upload error:', uploadError);
-        toast.error("Failed to upload image");
+        toast.error("Kunde inte ladda upp bild");
         return false;
       }
 
@@ -336,12 +336,12 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       }
     }
 
-    toast.success("Post created successfully!");
+    toast.success("Inlägget skapades!");
     return true;
 
   } catch (error) {
     console.error('❌ Unexpected error creating post:', error);
-    toast.error("An unexpected error occurred");
+    toast.error("Ett oväntat fel uppstod");
     return false;
   }
 };
@@ -602,7 +602,7 @@ export const updatePost = async (postId: string, updates: { content: string }): 
     }
 
     console.log('✅ Post updated successfully');
-    toast.success('Post updated successfully!');
+    toast.success('Inlägget uppdaterades!');
   } catch (error) {
     console.error('❌ Error updating post:', error);
     throw error;
@@ -644,7 +644,7 @@ export const deletePost = async (postId: string): Promise<void> => {
     }
 
     console.log('✅ Post deleted successfully');
-    toast.success('Post deleted successfully!');
+    toast.success('Inlägget raderades!');
   } catch (error) {
     console.error('❌ Error deleting post:', error);
     throw error;

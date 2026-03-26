@@ -33,28 +33,24 @@ const ProfileCompleteness = () => {
       if (!user) return;
 
       try {
-        // Fetch profile data
         const { data: profile } = await supabase
           .from("public_profiles")
           .select("fullname, headline, bio, avatar_url")
           .eq("id", user.id)
           .single();
 
-        // Fetch experiences
         const { data: experiences } = await supabase
           .from("experiences")
           .select("id")
           .eq("user_id", user.id)
           .limit(1);
 
-        // Fetch education
         const { data: education } = await supabase
           .from("education")
           .select("id")
           .eq("user_id", user.id)
           .limit(1);
 
-        // Fetch skills
         const { data: skills } = await supabase
           .from("skills")
           .select("id")
@@ -64,35 +60,35 @@ const ProfileCompleteness = () => {
         const completedSections: ProfileSection[] = [
           {
             id: "basic",
-            label: "Basic info (name, headline, bio)",
+            label: "Grundläggande info (namn, rubrik, bio)",
             icon: User,
             completed: !!(profile?.fullname && profile?.headline && profile?.bio),
             link: "/profile/edit",
           },
           {
             id: "avatar",
-            label: "Profile photo",
+            label: "Profilbild",
             icon: Image,
             completed: !!profile?.avatar_url,
             link: "/profile/edit",
           },
           {
             id: "experience",
-            label: "Work experience",
+            label: "Arbetslivserfarenhet",
             icon: Briefcase,
             completed: (experiences?.length || 0) > 0,
             link: "/profile/edit",
           },
           {
             id: "education",
-            label: "Education",
+            label: "Utbildning",
             icon: GraduationCap,
             completed: (education?.length || 0) > 0,
             link: "/profile/edit",
           },
           {
             id: "skills",
-            label: "Skills",
+            label: "Kompetenser",
             icon: FileText,
             completed: (skills?.length || 0) > 0,
             link: "/profile/edit",
@@ -118,7 +114,6 @@ const ProfileCompleteness = () => {
   const totalCount = sections.length;
   const percentage = Math.round((completedCount / totalCount) * 100);
 
-  // Don't show if profile is complete
   if (percentage === 100) {
     return null;
   }
@@ -129,7 +124,7 @@ const ProfileCompleteness = () => {
     <Card className="border-0 shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Complete Your Profile</CardTitle>
+          <CardTitle className="text-lg">Fyll i din profil</CardTitle>
           <span className="text-2xl font-bold text-primary">{percentage}%</span>
         </div>
         <Progress value={percentage} className="h-2" />
@@ -168,7 +163,7 @@ const ProfileCompleteness = () => {
         {nextIncomplete && (
           <Button asChild className="w-full gap-2">
             <Link to={nextIncomplete.link}>
-              Add {nextIncomplete.label.split(" ")[0]}
+              Lägg till {nextIncomplete.label.split(" ")[0].toLowerCase()}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>

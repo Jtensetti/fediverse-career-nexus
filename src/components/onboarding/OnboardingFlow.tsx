@@ -44,12 +44,12 @@ interface OnboardingFlowProps {
 }
 
 const steps = [
-  { id: 1, title: "Welcome", icon: Sparkles },
-  { id: 2, title: "Your Profile", icon: User },
-  { id: 3, title: "Your Role", icon: Briefcase },
-  { id: 4, title: "Interests", icon: Heart },
-  { id: 5, title: "Discover", icon: Users },
-  { id: 6, title: "Get Started", icon: MessageSquare },
+  { id: 1, title: "Välkommen", icon: Sparkles },
+  { id: 2, title: "Din profil", icon: User },
+  { id: 3, title: "Din roll", icon: Briefcase },
+  { id: 4, title: "Intressen", icon: Heart },
+  { id: 5, title: "Utforska", icon: Users },
+  { id: 6, title: "Kom igång", icon: MessageSquare },
 ];
 
 const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
@@ -74,7 +74,6 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
 
   useEffect(() => {
     if (user && open) {
-      // Pre-fill with existing data
       const fetchProfile = async () => {
         const { data } = await supabase
           .from("public_profiles")
@@ -95,7 +94,6 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
     }
   }, [user, open]);
 
-  // Fetch recommendations when moving to step 5 (Discover)
   useEffect(() => {
     if (currentStep === 5 && open) {
       const fetchRecommendations = async () => {
@@ -140,10 +138,8 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
 
   const handleNext = async () => {
     if (currentStep === 2) {
-      // Save profile data
       setLoading(true);
       try {
-        // First ensure profile exists (in case of race condition during signup)
         await ensureUserProfile(user!.id);
         
         const { error } = await supabase
@@ -158,7 +154,7 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         if (error) throw error;
       } catch (error) {
         console.error("Failed to save profile:", error);
-        toast.error("Failed to save profile. Please try again.");
+        toast.error("Kunde inte spara profilen. Försök igen.");
         setLoading(false);
         return;
       }
@@ -166,7 +162,6 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
     }
     
     if (currentStep === 3 && formData.currentRole && formData.company) {
-      // Save experience data
       setLoading(true);
       try {
         const { error } = await supabase
@@ -178,7 +173,7 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
             is_current_role: true,
           });
         
-        if (error && error.code !== "23505") throw error; // Ignore duplicates
+        if (error && error.code !== "23505") throw error;
       } catch (error) {
         console.error("Error saving experience:", error);
       }
@@ -186,11 +181,10 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
     }
     
     if (currentStep === 5 && selectedUsers.size > 0) {
-      // Follow selected users
       setFollowingUsers(true);
       try {
         await followSelectedUsers(Array.from(selectedUsers));
-        toast.success(`Following ${selectedUsers.size} people!`);
+        toast.success(`Följer ${selectedUsers.size} personer!`);
       } catch (error) {
         console.error("Error following users:", error);
       }
@@ -242,27 +236,27 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
                   className="w-16 h-16" 
                 />
               </div>
-              <DialogTitle className="text-2xl">Welcome to Nolto! 🎉</DialogTitle>
+              <DialogTitle className="text-2xl">Välkommen till Nolto! 🎉</DialogTitle>
               <DialogDescription className="text-base mt-2">
-                You're now part of the federated professional network. 
-                Let's set up your profile so you can connect with professionals across the Fediverse.
+                Du är nu en del av det professionella nätverket för offentlig sektor.
+                Låt oss sätta upp din profil så att du kan börja samarbeta med kollegor.
               </DialogDescription>
             </DialogHeader>
             <div className="mt-6 space-y-4">
               <div className="bg-muted/50 rounded-lg p-4">
-                <h4 className="font-medium text-foreground mb-2">What you'll do:</h4>
+                <h4 className="font-medium text-foreground mb-2">Det här kommer du att göra:</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
-                    Complete your professional profile
+                    Fyll i din professionella profil
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
-                    Add your current role
+                    Lägg till din nuvarande roll
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-primary" />
-                    Start connecting with peers
+                    Börja knyta kontakter
                   </li>
                 </ul>
               </div>
@@ -273,9 +267,9 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         {currentStep === 2 && (
           <>
             <DialogHeader>
-              <DialogTitle>Tell us about yourself</DialogTitle>
+              <DialogTitle>Berätta om dig själv</DialogTitle>
               <DialogDescription>
-                This helps others find and connect with you
+                Detta hjälper andra att hitta och kontakta dig
               </DialogDescription>
             </DialogHeader>
             <div className="mt-4 space-y-4">
@@ -288,28 +282,28 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
                 </Avatar>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="fullname">Full Name</Label>
+                <Label htmlFor="fullname">Fullständigt namn</Label>
                 <Input
                   id="fullname"
-                  placeholder="Jane Doe"
+                  placeholder="Anna Lindström"
                   value={formData.fullname}
                   onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="headline">Professional Headline</Label>
+                <Label htmlFor="headline">Professionell rubrik</Label>
                 <Input
                   id="headline"
-                  placeholder="Senior Developer | Open Source Enthusiast"
+                  placeholder="Verksamhetsutvecklare | Göteborgs kommun"
                   value={formData.headline}
                   onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">Om dig</Label>
                 <Textarea
                   id="bio"
-                  placeholder="Tell us a bit about yourself..."
+                  placeholder="Berätta lite om dig själv..."
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   rows={3}
@@ -322,32 +316,32 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         {currentStep === 3 && (
           <>
             <DialogHeader>
-              <DialogTitle>What do you do?</DialogTitle>
+              <DialogTitle>Vad jobbar du med?</DialogTitle>
               <DialogDescription>
-                Add your current role (you can add more later)
+                Lägg till din nuvarande roll (du kan lägga till fler senare)
               </DialogDescription>
             </DialogHeader>
             <div className="mt-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currentRole">Current Role</Label>
+                <Label htmlFor="currentRole">Nuvarande roll</Label>
                 <Input
                   id="currentRole"
-                  placeholder="Software Engineer"
+                  placeholder="Enhetschef"
                   value={formData.currentRole}
                   onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="company">Company / Organization</Label>
+                <Label htmlFor="company">Organisation</Label>
                 <Input
                   id="company"
-                  placeholder="Acme Inc."
+                  placeholder="Malmö kommun"
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                You can skip this step and add it later from your profile
+                Du kan hoppa över detta steg och lägga till det senare från din profil
               </p>
             </div>
           </>
@@ -356,9 +350,9 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         {currentStep === 4 && (
           <>
             <DialogHeader>
-              <DialogTitle>What are you interested in?</DialogTitle>
+              <DialogTitle>Vad är du intresserad av?</DialogTitle>
               <DialogDescription>
-                Select up to 5 interests to help us find relevant people for you
+                Välj upp till 5 intressen för att hjälpa oss hitta relevanta personer åt dig
               </DialogDescription>
             </DialogHeader>
             <div className="mt-4 space-y-4">
@@ -369,8 +363,8 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               />
               <p className="text-sm text-muted-foreground">
                 {formData.interests.length > 0 
-                  ? `${formData.interests.length} selected` 
-                  : "You can skip this step"}
+                  ? `${formData.interests.length} valda` 
+                  : "Du kan hoppa över detta steg"}
               </p>
             </div>
           </>
@@ -379,9 +373,9 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
         {currentStep === 5 && (
           <>
             <DialogHeader>
-              <DialogTitle>Discover People to Follow</DialogTitle>
+              <DialogTitle>Upptäck personer att följa</DialogTitle>
               <DialogDescription>
-                Based on your profile and interests, here are professionals you might want to follow
+                Baserat på din profil och dina intressen, här är professionella som du kanske vill följa
               </DialogDescription>
             </DialogHeader>
             <div className="mt-4">
@@ -405,14 +399,14 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No recommendations available yet</p>
-                  <p className="text-sm mt-1">Continue to start exploring the network</p>
+                  <p>Inga rekommendationer tillgängliga ännu</p>
+                  <p className="text-sm mt-1">Fortsätt för att börja utforska nätverket</p>
                 </div>
               )}
               <p className="text-sm text-muted-foreground mt-4">
                 {selectedUsers.size > 0 
-                  ? `Following ${selectedUsers.size} people` 
-                  : "You can skip this step"}
+                  ? `Följer ${selectedUsers.size} personer` 
+                  : "Du kan hoppa över detta steg"}
               </p>
             </div>
           </>
@@ -424,9 +418,9 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                 <Check className="h-8 w-8 text-primary" />
               </div>
-              <DialogTitle className="text-2xl">You're all set! 🚀</DialogTitle>
+              <DialogTitle className="text-2xl">Du är redo! 🚀</DialogTitle>
               <DialogDescription className="text-base mt-2">
-                Your profile is ready. Here's what you can do next:
+                Din profil är klar. Här är vad du kan göra härnäst:
               </DialogDescription>
             </DialogHeader>
             <div className="mt-6 space-y-3">
@@ -440,8 +434,8 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               >
                 <MessageSquare className="h-5 w-5 text-primary" />
                 <div className="text-left">
-                  <p className="font-medium">Explore the Feed</p>
-                  <p className="text-xs text-muted-foreground">See what's happening</p>
+                  <p className="font-medium">Utforska flödet</p>
+                  <p className="text-xs text-muted-foreground">Se vad som händer</p>
                 </div>
               </Button>
               <Button 
@@ -454,8 +448,8 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               >
                 <Users className="h-5 w-5 text-primary" />
                 <div className="text-left">
-                  <p className="font-medium">Find Connections</p>
-                  <p className="text-xs text-muted-foreground">Connect with professionals</p>
+                  <p className="font-medium">Hitta kontakter</p>
+                  <p className="text-xs text-muted-foreground">Knyt kontakter med kollegor</p>
                 </div>
               </Button>
               <Button 
@@ -468,8 +462,8 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               >
                 <Briefcase className="h-5 w-5 text-primary" />
                 <div className="text-left">
-                  <p className="font-medium">Browse Jobs</p>
-                  <p className="text-xs text-muted-foreground">Find opportunities</p>
+                  <p className="font-medium">Bläddra bland jobb</p>
+                  <p className="text-xs text-muted-foreground">Hitta möjligheter</p>
                 </div>
               </Button>
             </div>
@@ -484,7 +478,7 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               disabled={loading || followingUsers}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              Tillbaka
             </Button>
           ) : (
             <div />
@@ -492,15 +486,15 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
           
           {currentStep < 6 ? (
             <Button onClick={handleNext} disabled={loading || followingUsers}>
-              {loading || followingUsers ? "Saving..." : 
-                currentStep === 1 ? "Let's Go" : 
-                currentStep === 5 ? (selectedUsers.size > 0 ? "Follow & Continue" : "Skip") : 
-                "Continue"}
+              {loading || followingUsers ? "Sparar..." : 
+                currentStep === 1 ? "Sätt igång" : 
+                currentStep === 5 ? (selectedUsers.size > 0 ? "Följ & fortsätt" : "Hoppa över") : 
+                "Fortsätt"}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
             <Button onClick={onComplete}>
-              Done
+              Klar
               <Check className="h-4 w-4 ml-2" />
             </Button>
           )}

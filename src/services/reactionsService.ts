@@ -78,7 +78,7 @@ export async function toggleReaction(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.warn('⚠️ toggleReaction: User not authenticated');
-      toast.error("Please sign in to react");
+      toast.error("Logga in för att reagera");
       return { success: false, action: 'error', reaction };
     }
     
@@ -95,7 +95,7 @@ export async function toggleReaction(
 
     if (fetchError) {
       console.error('Error checking existing reaction:', fetchError);
-      toast.error("Failed to process reaction");
+      toast.error("Kunde inte hantera reaktion");
       return { success: false, action: 'error', reaction };
     }
 
@@ -109,7 +109,7 @@ export async function toggleReaction(
 
         if (deleteError) {
           console.error('❌ toggleReaction: Error removing reaction:', deleteError);
-          toast.error("Failed to remove reaction");
+          toast.error("Kunde inte ta bort reaktion");
           return { success: false, action: 'error', reaction };
         }
 
@@ -124,7 +124,7 @@ export async function toggleReaction(
 
         if (updateError) {
           console.error('❌ toggleReaction: Error switching reaction:', updateError);
-          toast.error("Failed to update reaction");
+          toast.error("Kunde inte uppdatera reaktion");
           return { success: false, action: 'error', reaction };
         }
 
@@ -144,7 +144,7 @@ export async function toggleReaction(
 
       if (insertError) {
         console.error('❌ toggleReaction: Error adding reaction:', insertError);
-        toast.error("Failed to add reaction");
+        toast.error("Kunde inte lägga till reaktion");
         return { success: false, action: 'error', reaction };
       }
       
@@ -215,7 +215,7 @@ export async function toggleReaction(
     }
   } catch (error) {
     console.error('Error in toggleReaction:', error);
-    toast.error("Failed to process reaction");
+    toast.error("Kunde inte hantera reaktion");
     return { success: false, action: 'error', reaction };
   }
 }
@@ -247,7 +247,7 @@ export async function toggleMessageReaction(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.warn('⚠️ toggleMessageReaction: User not authenticated');
-      toast.error("Please sign in to react");
+      toast.error("Logga in för att reagera");
       return { success: false, action: 'error', reaction };
     }
 
@@ -262,7 +262,7 @@ export async function toggleMessageReaction(
 
     if (fetchError) {
       console.error('Error checking existing reaction:', fetchError);
-      toast.error("Failed to process reaction");
+      toast.error("Kunde inte hantera reaktion");
       return { success: false, action: 'error', reaction };
     }
 
@@ -276,7 +276,7 @@ export async function toggleMessageReaction(
 
         if (deleteError) {
           console.error('❌ Error removing message reaction:', deleteError);
-          toast.error("Failed to remove reaction");
+          toast.error("Kunde inte ta bort reaktion");
           return { success: false, action: 'error', reaction };
         }
 
@@ -291,7 +291,7 @@ export async function toggleMessageReaction(
 
         if (updateError) {
           console.error('❌ Error switching message reaction:', updateError);
-          toast.error("Failed to update reaction");
+          toast.error("Kunde inte uppdatera reaktion");
           return { success: false, action: 'error', reaction };
         }
 
@@ -311,7 +311,7 @@ export async function toggleMessageReaction(
 
       if (insertError) {
         console.error('❌ Error adding message reaction:', insertError);
-        toast.error("Failed to add reaction");
+        toast.error("Kunde inte lägga till reaktion");
         return { success: false, action: 'error', reaction };
       }
 
@@ -345,7 +345,7 @@ export async function toggleMessageReaction(
     }
   } catch (error) {
     console.error('Error in toggleMessageReaction:', error);
-    toast.error("Failed to process reaction");
+    toast.error("Kunde inte hantera reaktion");
     return { success: false, action: 'error', reaction };
   }
 }

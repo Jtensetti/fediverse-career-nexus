@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 
 export interface FlaggedContent {
   id: string;
@@ -162,7 +163,7 @@ export async function updateReportStatus(
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("You must be logged in");
+      toast.error("Du måste vara inloggad");
       return false;
     }
 
@@ -187,11 +188,11 @@ export async function updateReportStatus(
       });
     }
 
-    toast.success(`Report marked as ${status}`);
+    toast.success(`Rapport markerad som ${status}`);
     return true;
   } catch (error) {
     console.error("Error updating report status:", error);
-    toast.error("Failed to update report");
+    toast.error("Kunde inte uppdatera rapport");
     return false;
   }
 }
@@ -205,7 +206,7 @@ export async function banUser(
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("You must be logged in");
+      toast.error("Du måste vara inloggad");
       return false;
     }
 
@@ -232,12 +233,12 @@ export async function banUser(
       expires_at: expiresAt,
     });
 
-    const duration = durationDays ? `for ${durationDays} days` : "permanently";
-    toast.success(`User banned ${duration}`);
+    const duration = durationDays ? `i ${durationDays} dagar` : "permanent";
+    toast.success(`Användare avstängd ${duration}`);
     return true;
   } catch (error) {
     console.error("Error banning user:", error);
-    toast.error("Failed to ban user");
+    toast.error("Kunde inte stänga av användare");
     return false;
   }
 }
@@ -247,7 +248,7 @@ export async function revokeBan(banId: string): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("You must be logged in");
+      toast.error("Du måste vara inloggad");
       return false;
     }
 
@@ -261,11 +262,11 @@ export async function revokeBan(banId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Ban revoked successfully");
+    toast.success("Avstängning upphävd");
     return true;
   } catch (error) {
     console.error("Error revoking ban:", error);
-    toast.error("Failed to revoke ban");
+    toast.error("Kunde inte upphäva avstängning");
     return false;
   }
 }
@@ -340,14 +341,14 @@ export async function addModerator(userId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Moderator role added");
+    toast.success("Moderatorsroll tillagd");
     return true;
   } catch (error: any) {
     console.error("Error adding moderator:", error);
     if (error.code === "23505") {
-      toast.error("User already has this role");
+      toast.error("Användaren har redan denna roll");
     } else {
-      toast.error("Failed to add moderator");
+      toast.error("Kunde inte lägga till moderator");
     }
     return false;
   }
@@ -364,11 +365,11 @@ export async function removeModerator(userId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Moderator role removed");
+    toast.success("Moderatorsroll borttagen");
     return true;
   } catch (error) {
     console.error("Error removing moderator:", error);
-    toast.error("Failed to remove moderator");
+    toast.error("Kunde inte ta bort moderator");
     return false;
   }
 }
@@ -424,11 +425,11 @@ export async function deleteFlaggedContent(
 
     if (error) throw error;
 
-    toast.success("Content deleted successfully");
+    toast.success("Innehåll raderat");
     return true;
   } catch (error) {
     console.error("Error deleting content:", error);
-    toast.error("Failed to delete content");
+    toast.error("Kunde inte radera innehåll");
     return false;
   }
 }
@@ -525,7 +526,7 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("You must be logged in");
+      toast.error("Du måste vara inloggad");
       return false;
     }
 
@@ -539,7 +540,6 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
 
     if (error) throw error;
 
-    // Create a notification for the user
     await supabase.from("notifications").insert({
       type: "moderation_warning",
       recipient_id: userId,
@@ -548,11 +548,11 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
       object_type: "warning",
     });
 
-    toast.success("Warning sent to user");
+    toast.success("Varning skickad till användare");
     return true;
   } catch (error) {
     console.error("Error warning user:", error);
-    toast.error("Failed to send warning");
+    toast.error("Kunde inte skicka varning");
     return false;
   }
 }
