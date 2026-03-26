@@ -365,7 +365,7 @@ export async function removeModerator(userId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Moderator role removed");
+    toast.success("Moderatorsroll borttagen");
     return true;
   } catch (error) {
     console.error("Error removing moderator:", error);
