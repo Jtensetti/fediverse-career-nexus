@@ -102,7 +102,7 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
                 ) : (
                   <div className="flex items-center gap-2 mt-2">
                     <Lock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Follow to read</span>
+                    <span className="text-sm text-muted-foreground">Följ för att läsa</span>
                   </div>
                 )}
 
