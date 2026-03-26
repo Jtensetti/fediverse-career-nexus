@@ -60,8 +60,8 @@ export default function DataExportSection() {
 
       toast.success(
         format === "gdpr" 
-          ? "Your data has been exported successfully" 
-          : "ActivityPub export complete - you can import following.csv to your new instance"
+          ? "Din data har exporterats" 
+          : "ActivityPub-export klar — du kan importera following.csv till din nya instans"
       );
     } catch (error) {
       console.error("Export error:", error);
