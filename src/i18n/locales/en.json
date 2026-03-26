@@ -660,7 +660,7 @@
       "q1": "How do you handle data protection?",
       "a1": "Nolto stores all data in the EU, uses no third-party trackers and all users can export or delete their data at any time. We comply with applicable data protection legislation and have agreements with all sub-processors.",
       "q2": "How is Nolto different from LinkedIn?",
-      "a2": "Nolto is built specifically for the public sector with GDPR compliance, Swedish hosting and no ads or data selling. Unlike LinkedIn, there are no algorithms manipulating your feed and you retain full control of your data.",
+      "a2": "Nolto is built specifically for the public sector with Swedish hosting and no ads or data selling. Unlike LinkedIn, there are no algorithms manipulating your feed and you retain full control of your data.",
       "q3": "Can we self-host Nolto?",
       "a3": "Yes! Nolto is open source under the MIT license. You can run your own instance within your organization or use our managed service. All instances can collaborate with each other.",
       "q4": "How is personal data handled?",
