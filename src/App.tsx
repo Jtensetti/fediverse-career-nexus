@@ -123,6 +123,7 @@ function App() {
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
                     <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
+                    <Route path="/cookies" element={<CookiesPage />} />
                     <Route path="/instances" element={<Instances />} />
                     <Route path="/packs" element={<StarterPacks />} />
                     <Route path="/packs/:slug" element={<StarterPackView />} />

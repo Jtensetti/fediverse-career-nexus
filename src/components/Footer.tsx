@@ -71,7 +71,7 @@ const Footer = () => {
           <div className="flex flex-wrap justify-center gap-4 sm:gap-6 items-center">
             <Link to="/terms" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.terms", "Terms")}</Link>
             <Link to="/privacy" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.privacy", "Privacy")}</Link>
-            <a href="#" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.cookies", "Cookies")}</a>
+            <Link to="/cookies" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.cookies", "Cookies")}</Link>
             <a 
               href="https://codeberg.org/Tensetti/Nolto" 
               target="_blank" 
