@@ -116,7 +116,7 @@ export default function FederatedPostCard({
       const contentValue = post.content.content;
       rawContent = typeof contentValue === 'string' ? contentValue : '';
     } else {
-      rawContent = 'No content available';
+      rawContent = 'Inget innehåll tillgängligt';
     }
 
     // Sanitize HTML content to prevent XSS attacks from federated content
@@ -170,12 +170,12 @@ export default function FederatedPostCard({
 
     // For local posts, prioritize fullname from profile, then username, then fallback
     if (post.source === 'local' && post.profile) {
-      return post.profile.fullname || post.profile.username || post.actor_name || 'Unknown user';
+      return post.profile.fullname || post.profile.username || post.actor_name || 'Okänd användare';
     }
 
     // For remote posts, use actor data
     const actor = post.actor;
-    return actor?.name || actor?.preferredUsername || post.actor_name || 'Unknown user';
+    return actor?.name || actor?.preferredUsername || post.actor_name || 'Okänd användare';
   };
 
   // Extract username from profile or actor data (single source of truth)
@@ -487,7 +487,7 @@ export default function FederatedPostCard({
             {post.content && isPoll(post.content as Record<string, unknown>) ? (
               <div className="space-y-3">
                 {/* Poll question text */}
-                {displayContent && displayContent !== 'No content available' && (
+                {displayContent && displayContent !== 'Inget innehåll tillgängligt' && (
                   <div
                     className="prose prose-sm max-w-none dark:prose-invert"
                     dangerouslySetInnerHTML={{ __html: displayContent }}
@@ -515,7 +515,7 @@ export default function FederatedPostCard({
             ) : (
               <>
                 {/* Post text content */}
-                {displayContent && displayContent !== 'No content available' && (
+                {displayContent && displayContent !== 'Inget innehåll tillgängligt' && (
                   <div
                     className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all whitespace-pre-line"
                     dangerouslySetInnerHTML={{ __html: displayContent }}

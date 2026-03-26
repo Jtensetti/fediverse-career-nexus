@@ -63,7 +63,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search companies..."
+          placeholder="Sök företag..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -73,10 +73,10 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
       <div className="flex flex-wrap gap-3">
         <Select value={industry} onValueChange={setIndustry}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Industry" />
+            <SelectValue placeholder="Bransch" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Industries</SelectItem>
+            <SelectItem value="all">Alla branscher</SelectItem>
             {industries.map((ind) => (
               <SelectItem key={ind} value={ind}>
                 {ind}
@@ -87,20 +87,20 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
 
         <Select value={size} onValueChange={setSize}>
           <SelectTrigger className="w-full sm:w-[160px]">
-            <SelectValue placeholder="Size" />
+            <SelectValue placeholder="Storlek" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Any Size</SelectItem>
+            <SelectItem value="all">Alla storlekar</SelectItem>
             {companySizes.map((s) => (
               <SelectItem key={s} value={s}>
-                {s} employees
+                {s} anställda
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <Input
-          placeholder="Location"
+          placeholder="Plats"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           className="w-full sm:w-[180px]"

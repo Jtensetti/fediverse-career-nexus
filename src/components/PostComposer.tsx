@@ -96,7 +96,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     },
     onError: (error: Error) => {
       console.error('Failed to create post:', error);
-      toast.error(error.message || 'Failed to create post. Please try again.');
+      toast.error(error.message || 'Kunde inte skapa inlägg. Försök igen.');
     },
   });
 
