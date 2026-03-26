@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 
 export interface JobConversation {
   id: string;
@@ -63,7 +64,7 @@ export async function getOrCreateJobConversation(
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('You must be logged in to start a conversation');
+      toast.error(i18n.t('toasts.loginRequiredConversation'));
       return null;
     }
 
@@ -94,7 +95,7 @@ export async function getOrCreateJobConversation(
 
     if (error) {
       console.error('Error creating job conversation:', error);
-      toast.error('Failed to start conversation');
+      toast.error(i18n.t('toasts.messageSendFailed'));
       return null;
     }
 
@@ -116,7 +117,7 @@ export async function sendJobMessage(
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('You must be logged in to send messages');
+      toast.error(i18n.t('toasts.loginRequiredMessage'));
       return false;
     }
 
@@ -157,7 +158,7 @@ export async function sendJobMessage(
 
     if (error) {
       console.error('Error sending job message:', error);
-      toast.error('Failed to send message');
+      toast.error(i18n.t('toasts.messageSendFailed'));
       return false;
     }
 

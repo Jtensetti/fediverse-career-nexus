@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 
 export interface Article {
   id: string;
@@ -78,7 +79,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      toast.error('You must be logged in to create an article');
+      toast.error(i18n.t('toasts.loginRequiredArticle'));
       return null;
     }
     
@@ -95,8 +96,8 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
       const isDuplicate = error.code === '23505' || /duplicate key/i.test(error.message);
       toast.error(
         isDuplicate
-          ? 'That title/slug is already in use. Please choose another.'
-          : `Error creating article: ${error.message}`
+          ? i18n.t('toasts.articleDuplicate')
+          : `${i18n.t('toasts.articleCreateFailed')}: ${error.message}`
       );
       return null;
     }
@@ -116,11 +117,11 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
       // Don't fail the whole operation, the article was created
     }
     
-    toast.success('Article created successfully!');
+    toast.success(i18n.t('toasts.articleCreated'));
     return data;
   } catch (error) {
     console.error('Error creating article:', error);
-    toast.error('Failed to create article. Please try again.');
+    toast.error(i18n.t('toasts.articleCreateFailed'));
     return null;
   }
 };
@@ -139,15 +140,15 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
       .single();
     
     if (error) {
-      toast.error(`Error updating article: ${error.message}`);
+      toast.error(`${i18n.t('toasts.articleUpdateFailed')}: ${error.message}`);
       return null;
     }
     
-    toast.success('Article updated successfully!');
+    toast.success(i18n.t('toasts.articleUpdated'));
     return data;
   } catch (error) {
     console.error('Error updating article:', error);
-    toast.error('Failed to update article. Please try again.');
+    toast.error(i18n.t('toasts.articleUpdateFailed'));
     return null;
   }
 };
@@ -325,15 +326,15 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
       .eq('id', id);
     
     if (error) {
-      toast.error(`Error deleting article: ${error.message}`);
+      toast.error(`${i18n.t('toasts.articleDeleteFailed')}: ${error.message}`);
       return false;
     }
     
-    toast.success('Article deleted successfully!');
+    toast.success(i18n.t('toasts.articleDeleted'));
     return true;
   } catch (error) {
     console.error('Error deleting article:', error);
-    toast.error('Failed to delete article. Please try again.');
+    toast.error(i18n.t('toasts.articleDeleteFailed'));
     return false;
   }
 };
@@ -393,15 +394,15 @@ export const addCoAuthor = async (articleId: string, userId: string, canEdit: bo
       });
     
     if (error) {
-      toast.error(`Error adding co-author: ${error.message}`);
+      toast.error(`${i18n.t('toasts.coAuthorAddFailed')}: ${error.message}`);
       return false;
     }
     
-    toast.success('Co-author added successfully!');
+    toast.success(i18n.t('toasts.coAuthorAdded'));
     return true;
   } catch (error) {
     console.error('Error adding co-author:', error);
-    toast.error('Failed to add co-author. Please try again.');
+    toast.error(i18n.t('toasts.coAuthorAddFailed'));
     return false;
   }
 };
@@ -417,15 +418,15 @@ export const removeCoAuthor = async (articleId: string, userId: string): Promise
       .eq('is_primary', false);
     
     if (error) {
-      toast.error(`Error removing co-author: ${error.message}`);
+      toast.error(`${i18n.t('toasts.coAuthorRemoveFailed')}: ${error.message}`);
       return false;
     }
     
-    toast.success('Co-author removed successfully!');
+    toast.success(i18n.t('toasts.coAuthorRemoved'));
     return true;
   } catch (error) {
     console.error('Error removing co-author:', error);
-    toast.error('Failed to remove co-author. Please try again.');
+    toast.error(i18n.t('toasts.coAuthorRemoveFailed'));
     return false;
   }
 };
@@ -439,15 +440,15 @@ export const updateAuthorPermissions = async (authorId: string, canEdit: boolean
       .eq('id', authorId);
     
     if (error) {
-      toast.error(`Error updating author permissions: ${error.message}`);
+      toast.error(`${i18n.t('toasts.authorPermissionsFailed')}: ${error.message}`);
       return false;
     }
     
-    toast.success('Author permissions updated successfully!');
+    toast.success(i18n.t('toasts.authorPermissionsUpdated'));
     return true;
   } catch (error) {
     console.error('Error updating author permissions:', error);
-    toast.error('Failed to update author permissions. Please try again.');
+    toast.error(i18n.t('toasts.authorPermissionsFailed'));
     return false;
   }
 };

@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 
 export interface Event {
   id: string;
@@ -124,7 +125,7 @@ export async function getEvents(options: {
     return eventsWithCount;
   } catch (error) {
     console.error('Error fetching events:', error);
-    toast.error('Failed to load events');
+    toast.error(i18n.t('toasts.eventLoadFailed'));
     return [];
   }
 }
@@ -168,7 +169,7 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
     return eventWithCount;
   } catch (error) {
     console.error('Error fetching event:', error);
-    toast.error('Failed to load event details');
+    toast.error(i18n.t('toasts.eventDetailsFailed'));
     return null;
   }
 }
@@ -179,7 +180,7 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
     const user_id = session.data.session?.user.id;
     
     if (!user_id) {
-      toast.error('You must be logged in to create an event');
+      toast.error(i18n.t('toasts.loginRequiredEvent'));
       return null;
     }
     
@@ -221,11 +222,11 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
       // Don't fail event creation if post fails
     }
     
-    toast.success('Event created successfully');
+    toast.success(i18n.t('toasts.eventCreated'));
     return event;
   } catch (error) {
     console.error('Error creating event:', error);
-    toast.error('Failed to create event');
+    toast.error(i18n.t('toasts.eventCreateFailed'));
     return null;
   }
 }
@@ -244,11 +245,11 @@ export async function updateEvent(id: string, eventData: Partial<Omit<Event, 'id
     
     if (error) throw error;
     
-    toast.success('Event updated successfully');
+    toast.success(i18n.t('toasts.eventUpdated'));
     return data as Event;
   } catch (error) {
     console.error('Error updating event:', error);
-    toast.error('Failed to update event');
+    toast.error(i18n.t('toasts.eventUpdateFailed'));
     return null;
   }
 }
@@ -262,11 +263,11 @@ export async function deleteEvent(id: string): Promise<boolean> {
     
     if (error) throw error;
     
-    toast.success('Event deleted successfully');
+    toast.success(i18n.t('toasts.eventDeleted'));
     return true;
   } catch (error) {
     console.error('Error deleting event:', error);
-    toast.error('Failed to delete event');
+    toast.error(i18n.t('toasts.eventDeleteFailed'));
     return false;
   }
 }
@@ -277,7 +278,7 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
     const user_id = session.data.session?.user.id;
     
     if (!user_id) {
-      toast.error('You must be logged in to RSVP to an event');
+      toast.error(i18n.t('toasts.loginRequiredRsvp'));
       return null;
     }
     
@@ -296,11 +297,11 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
     
     if (error) throw error;
     
-    toast.success(`RSVP ${status} submitted successfully`);
+    toast.success(i18n.t('toasts.rsvpSubmitted'));
     return data as EventRSVP;
   } catch (error) {
     console.error('Error creating RSVP:', error);
-    toast.error('Failed to submit RSVP');
+    toast.error(i18n.t('toasts.rsvpFailed'));
     return null;
   }
 }
@@ -317,7 +318,7 @@ export async function getEventRSVPs(eventId: string): Promise<EventRSVP[]> {
     return data as EventRSVP[];
   } catch (error) {
     console.error('Error fetching RSVPs:', error);
-    toast.error('Failed to load RSVPs');
+    toast.error(i18n.t('toasts.rsvpFailed'));
     return [];
   }
 }

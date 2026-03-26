@@ -70,14 +70,14 @@ export default function AuthPage() {
     const trimmed = name.trim();
     // Allow single character names (many cultures have them, also initials like "J.")
     if (trimmed.length < 1) {
-      return `${field} is required`;
+      return t("auth.firstNameRequired", `${field} is required`);
     }
     if (trimmed.length > 50) {
-      return `${field} must be less than 50 characters`;
+      return t("auth.nameTooLong");
     }
     // Allow letters (including international), spaces, hyphens, apostrophes, and periods (for initials)
     if (!/^[a-zA-ZÀ-ÿ\s\-'.]+$/.test(trimmed)) {
-      return `${field} can only contain letters, spaces, hyphens, apostrophes, and periods`;
+      return t("auth.nameInvalidChars");
     }
     return null;
   };
@@ -87,16 +87,16 @@ export default function AuthPage() {
     let error: string | undefined;
     
     if (field === 'firstName' || field === 'lastName') {
-      const fieldName = field === 'firstName' ? 'First name' : 'Last name';
-      const validationError = validateName(value, fieldName);
+      const validationError = validateName(value, field === 'firstName' ? t("auth.firstName") : t("auth.lastName"));
+      error = validationError || undefined;
       error = validationError || undefined;
     } else if (field === 'email') {
       if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        error = 'Please enter a valid email address';
+        error = t("auth.invalidEmailFormat", "Please enter a valid email address");
       }
     } else if (field === 'password') {
       if (value && value.length < 6) {
-        error = 'Password must be at least 6 characters';
+        error = t("auth.passwordTooShort", "Password must be at least 6 characters");
       }
     }
     
@@ -106,9 +106,9 @@ export default function AuthPage() {
 
   // Username validation
   const validateUsername = (value: string): string | null => {
-    if (value.length > 0 && value.length < 3) return "At least 3 characters";
-    if (value.length > 20) return "Maximum 20 characters";
-    if (!/^[a-z0-9_]*$/.test(value)) return "Lowercase letters, numbers, underscores only";
+    if (value.length > 0 && value.length < 3) return t("auth.usernameMinChars");
+    if (value.length > 20) return t("auth.usernameMaxChars");
+    if (!/^[a-z0-9_]*$/.test(value)) return t("auth.usernameCharsOnly");
     return null;
   };
 
@@ -148,24 +148,24 @@ export default function AuthPage() {
     // Validate all fields BEFORE setting loading state (fixes mobile stuck button)
     if (!email || !password || !firstName || !lastName) {
       const errors: typeof fieldErrors = {};
-      if (!firstName) errors.firstName = "First name is required";
-      if (!lastName) errors.lastName = "Last name is required";
-      if (!email) errors.email = "Email is required";
-      if (!password) errors.password = "Password is required";
+      if (!firstName) errors.firstName = t("auth.firstNameRequired");
+      if (!lastName) errors.lastName = t("auth.lastNameRequired");
+      if (!email) errors.email = t("auth.emailRequired");
+      if (!password) errors.password = t("auth.passwordRequired");
       setFieldErrors(errors);
-      toast.error("Please fill in all required fields");
+      toast.error(t("toasts.fillAllFields"));
       return;
     }
 
     // Validate names
-    const firstNameError = validateName(firstName, "First name");
+    const firstNameError = validateName(firstName, t("auth.firstName"));
     if (firstNameError) {
       setFieldErrors(prev => ({ ...prev, firstName: firstNameError }));
       toast.error(firstNameError);
       return;
     }
 
-    const lastNameError = validateName(lastName, "Last name");
+    const lastNameError = validateName(lastName, t("auth.lastName"));
     if (lastNameError) {
       setFieldErrors(prev => ({ ...prev, lastName: lastNameError }));
       toast.error(lastNameError);
@@ -174,15 +174,15 @@ export default function AuthPage() {
 
     // Validate email format
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFieldErrors(prev => ({ ...prev, email: "Please enter a valid email address" }));
-      toast.error("Please enter a valid email address");
+      setFieldErrors(prev => ({ ...prev, email: t("toasts.invalidEmailFormat") }));
+      toast.error(t("toasts.invalidEmailFormat"));
       return;
     }
 
     // Validate password length
     if (password.length < 6) {
-      setFieldErrors(prev => ({ ...prev, password: "Password must be at least 6 characters" }));
-      toast.error("Password must be at least 6 characters");
+      setFieldErrors(prev => ({ ...prev, password: t("toasts.passwordTooShort") }));
+      toast.error(t("toasts.passwordTooShort"));
       return;
     }
 
@@ -203,7 +203,7 @@ export default function AuthPage() {
           return;
         }
         if (usernameAvailable === false) {
-          toast.error("This username is already taken");
+          toast.error(t("toasts.usernameAlreadyTaken"));
           setIsLoading(false);
           return;
         }
@@ -239,7 +239,7 @@ export default function AuthPage() {
         }
       }
 
-      toast.success("Please check your email to confirm your account");
+      toast.success(t("toasts.checkEmail"));
       // Clear the form
       setFirstName("");
       setLastName("");
@@ -247,7 +247,7 @@ export default function AuthPage() {
       setPassword("");
       setUsername("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to create account");
+      toast.error(error.message || t("toasts.failedCreateAccount"));
     } finally {
       setIsLoading(false);
     }
@@ -256,7 +256,7 @@ export default function AuthPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error("Please fill in all fields");
+      toast.error(t("toasts.fillAllFields"));
       return;
     }
 
@@ -283,11 +283,11 @@ export default function AuthPage() {
           return;
         }
         
-        toast.success("Signed in successfully!");
+        toast.success(t("toasts.signedInSuccess"));
         navigate("/");
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to sign in");
+      toast.error(error.message || t("toasts.failedSignIn", "Failed to sign in"));
     } finally {
       setIsLoading(false);
     }
@@ -296,7 +296,7 @@ export default function AuthPage() {
   const handleMFASuccess = () => {
     setMfaRequired(false);
     setMfaFactorId(null);
-    toast.success("Signed in successfully!");
+    toast.success(t("toasts.signedInSuccess"));
     navigate("/");
   };
 
@@ -311,14 +311,14 @@ export default function AuthPage() {
     e.preventDefault();
 
     if (!fediHandle) {
-      toast.error("Please enter your Fediverse handle");
+      toast.error(t("toasts.invalidHandle"));
       return;
     }
 
     // Validate handle format
     const handlePattern = /^@?[a-zA-Z0-9_]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!handlePattern.test(fediHandle)) {
-      toast.error("Invalid handle format. Use @username@instance.social");
+      toast.error(t("toasts.invalidHandle"));
       return;
     }
 
@@ -350,7 +350,7 @@ export default function AuthPage() {
         window.location.href = authorizationUrl;
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to connect with your Fediverse instance");
+      toast.error(error.message || t("toasts.failedFederatedLogin"));
     } finally {
       setIsFederatedLoading(false);
     }
@@ -518,7 +518,7 @@ export default function AuthPage() {
                             }
                           }}
                           onBlur={() => validateField('firstName', firstName)}
-                          placeholder="Firstname"
+                          placeholder={t("auth.firstNamePlaceholder")}
                           required
                           maxLength={50}
                           className={fieldErrors.firstName ? "border-destructive" : ""}
@@ -540,7 +540,7 @@ export default function AuthPage() {
                             }
                           }}
                           onBlur={() => validateField('lastName', lastName)}
-                          placeholder="Surname"
+                          placeholder={t("auth.lastNamePlaceholder")}
                           required
                           maxLength={50}
                           className={fieldErrors.lastName ? "border-destructive" : ""}
@@ -564,7 +564,7 @@ export default function AuthPage() {
                             const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
                             setUsername(val);
                           }}
-                          placeholder="your_username"
+                          placeholder={t("auth.usernamePlaceholder")}
                           maxLength={20}
                           className="pr-9"
                         />

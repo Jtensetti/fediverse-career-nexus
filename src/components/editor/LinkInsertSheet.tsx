@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ export function LinkInsertSheet({
   selectedText = "",
   trigger,
 }: LinkInsertSheetProps) {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [url, setUrl] = useState("");
   const [text, setText] = useState(selectedText);
@@ -46,28 +48,28 @@ export function LinkInsertSheet({
   const content = (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="link-url">URL</Label>
+        <Label htmlFor="link-url">{t("linkInsert.urlLabel")}</Label>
         <Input
           id="link-url"
           type="url"
-          placeholder="https://example.com"
+          placeholder={t("linkInsert.urlPlaceholder")}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           autoFocus
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="link-text">Display text (optional)</Label>
+        <Label htmlFor="link-text">{t("linkInsert.textLabel")}</Label>
         <Input
           id="link-text"
           type="text"
-          placeholder="Link text"
+          placeholder={t("linkInsert.textPlaceholder")}
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
       </div>
       <Button onClick={handleInsert} disabled={!url} className="w-full">
-        Insert Link
+        {t("linkInsert.insert")}
       </Button>
     </div>
   );
@@ -78,7 +80,7 @@ export function LinkInsertSheet({
         {trigger}
         <SheetContent side="bottom" className="pb-safe">
           <SheetHeader>
-            <SheetTitle>Insert Link</SheetTitle>
+            <SheetTitle>{t("linkInsert.title")}</SheetTitle>
           </SheetHeader>
           <div className="mt-4">{content}</div>
         </SheetContent>
@@ -93,7 +95,7 @@ export function LinkInsertSheet({
         <div className="space-y-2">
           <h4 className="font-medium flex items-center gap-2">
             <Link className="h-4 w-4" />
-            Insert Link
+            {t("linkInsert.title")}
           </h4>
           {content}
         </div>

@@ -64,16 +64,16 @@ import {
 } from "@/services/profileCVService";
 
 // Schema for the basic profile information
-const profileSchema = z.object({
+const createProfileSchema = (t: any) => z.object({
   username: z.string()
-    .min(3, "Username must be at least 3 characters")
-    .max(20, "Username must be 20 characters or less")
-    .regex(/^[a-z0-9_]+$/, "Username can only contain lowercase letters, numbers, and underscores")
+    .min(3, t("profileEdit.profileSchema.usernameMin"))
+    .max(20, t("profileEdit.profileSchema.usernameMax"))
+    .regex(/^[a-z0-9_]+$/, t("profileEdit.profileSchema.usernameRegex"))
     .optional(),
-  displayName: z.string().min(2, "Display name must be at least 2 characters"),
-  headline: z.string().min(5, "Headline must be at least 5 characters"),
+  displayName: z.string().min(2, t("profileEdit.profileSchema.displayNameMin")),
+  headline: z.string().min(5, t("profileEdit.profileSchema.headlineMin")),
   bio: z.string().optional(),
-  contactEmail: z.string().email("Please enter a valid email").optional().or(z.literal("")),
+  contactEmail: z.string().email(t("profileEdit.profileSchema.invalidEmail")).optional().or(z.literal("")),
   phone: z.string().optional(),
   location: z.string().optional()
 });
@@ -82,7 +82,7 @@ const ProfileEditPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const queryClient = useQueryClient();
+  const profileSchema = createProfileSchema(t);
   const [profile, setProfile] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
@@ -114,7 +114,8 @@ const ProfileEditPage = () => {
     saving: false
   });
 
-  // Form for basic profile information
+  // Form for basic profile information  
+  const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -160,12 +161,12 @@ const ProfileEditPage = () => {
             await fetchCVData();
           }
         } else {
-          toast.error("You must be logged in to edit your profile");
+          toast.error(t("toasts.loginRequiredProfile"));
           navigate("/auth/login");
         }
       } catch (error) {
         console.error("Error loading profile:", error);
-        toast.error("Failed to load profile");
+        toast.error(t("toasts.profileLoadError"));
       } finally {
         setIsLoading(prev => ({ ...prev, profile: false }));
         setLoading(false);
@@ -203,7 +204,7 @@ const ProfileEditPage = () => {
       if (data.username && data.username !== profile?.username) {
         const isAvailable = await checkUsernameAvailability(data.username);
         if (!isAvailable) {
-          toast.error("Username is already taken");
+          toast.error(t("toasts.usernameAlreadyTaken"));
           setIsLoading(prev => ({ ...prev, saving: false }));
           return;
         }
@@ -233,7 +234,7 @@ const ProfileEditPage = () => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("Failed to update profile");
+      toast.error(t("toasts.profileUpdateFailed"));
     } finally {
       setIsLoading(prev => ({ ...prev, saving: false }));
     }
@@ -247,7 +248,7 @@ const ProfileEditPage = () => {
   // Experience handlers
   const addExperience = () => {
     if (!userId) {
-      toast.error("You need to be signed in to add experience");
+      toast.error(t("toasts.addExperienceLoginRequired"));
       return;
     }
     
@@ -298,7 +299,7 @@ const ProfileEditPage = () => {
     
     if (errors.length > 0) {
       setExperienceErrors(prev => ({ ...prev, [index]: errors }));
-      toast.error(`Please fill in: ${errors.map(e => e === 'start_date' ? 'start date' : e).join(', ')}`);
+      toast.error(`${t("toasts.experienceFillIn")}${errors.map(e => e === 'start_date' ? t("profileEdit.experience.startDate", 'start date') : e).join(', ')}`);
       return;
     }
     
@@ -1066,7 +1067,7 @@ const ProfileEditPage = () => {
                           <div className="md:col-span-2 flex justify-end items-center gap-2">
                             {recentlySavedEducation[index] && (
                               <span className="text-primary flex items-center gap-1 text-sm">
-                                <Check size={16} /> Saved
+                                <Check size={16} /> {t("toasts.saved")}
                               </span>
                             )}
                             <Button
