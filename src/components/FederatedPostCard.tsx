@@ -416,7 +416,7 @@ export default function FederatedPostCard({
               {getActorUsername() && (
                 <div className="text-xs text-muted-foreground truncate">
                   {isCompanyPost
-                    ? <Link to={`/company/${post.company!.slug}`} className="hover:underline">Company page</Link>
+                    ? <Link to={`/company/${post.company!.slug}`} className="hover:underline">{t('postCard.companyPage')}</Link>
                     : <>@{getActorUsername()}{post.source === 'local'
                         ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}`
                         : post.instance ? `@${post.instance}` : ''}</>
