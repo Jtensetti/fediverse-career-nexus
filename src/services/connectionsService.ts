@@ -367,7 +367,7 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
       }
     }
 
-    toast.success("Connection accepted");
+    toast.success(i18n.t("toasts.connectionAccepted"));
     return true;
   } catch (error) {
     console.error("Error accepting connection:", error);
