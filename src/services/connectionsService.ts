@@ -495,7 +495,7 @@ export const getPendingConnectionRequests = async (): Promise<PendingConnectionR
     }).filter(Boolean) as PendingConnectionRequest[];
   } catch (error) {
     console.error("Error fetching pending requests:", error);
-    toast.error("Failed to load connection requests");
+    toast.error(i18n.t("toasts.failedLoadRequests"));
   return [];
   }
 };
