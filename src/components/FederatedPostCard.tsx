@@ -574,7 +574,7 @@ export default function FederatedPostCard({
                     {/* Hover overlay with click hint */}
                     <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/10 transition-colors flex items-center justify-center">
                       <span className="opacity-0 group-hover/image:opacity-100 transition-opacity text-white text-sm bg-black/50 px-2 py-1 rounded">
-                        Click to enlarge
+                        {t('postCard.clickToEnlarge')}
                       </span>
                     </div>
                   </div>
