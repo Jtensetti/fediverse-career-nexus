@@ -755,7 +755,7 @@
   },
   "jobs": {
     "title": "Jobbannonser",
-    "subtitle": "Hitta din nästa möjlighet på Nolto. Bläddra bland transparenta jobbannonser från företag över Fediverse.",
+    "subtitle": "Hitta din nästa möjlighet på Nolto. Bläddra bland transparenta jobbannonser från organisationer inom offentlig sektor.",
     "manage": "Hantera mina jobbannonser",
     "searchPlaceholder": "Sök jobbtitel, företag eller nyckelord...",
     "jobType": "Jobbtyp",
