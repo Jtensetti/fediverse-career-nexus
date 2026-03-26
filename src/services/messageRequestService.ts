@@ -211,7 +211,7 @@ export async function acceptMessageRequest(requestId: string): Promise<boolean> 
     return true;
   } catch (error) {
     console.error('Error accepting request:', error);
-    toast.error('Failed to accept request');
+    toast.error('Kunde inte acceptera förfrågan');
     return false;
   }
 }
