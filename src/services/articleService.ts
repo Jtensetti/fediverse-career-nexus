@@ -121,7 +121,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
     return data;
   } catch (error) {
     console.error('Error creating article:', error);
-    toast.error('Failed to create article. Please try again.');
+    toast.error(i18n.t('toasts.articleCreateFailed'));
     return null;
   }
 };
