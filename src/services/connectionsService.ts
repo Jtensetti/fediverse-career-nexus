@@ -234,7 +234,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
       (r: any) => r.status === "pending" && r.user_id === user.id && r.connected_user_id === userId
     );
     if (outgoingPending) {
-      toast.success("Connection request already pending");
+      toast.success(i18n.t("toasts.connectionRequestPending"));
       return true;
     }
 
