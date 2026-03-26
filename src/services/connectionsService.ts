@@ -90,7 +90,7 @@ export const getUserConnections = async (targetUserId?: string): Promise<Network
       .filter(Boolean) as NetworkConnection[];
   } catch (error) {
     console.error("Error fetching connections:", error);
-    toast.error("Failed to load connections");
+    toast.error("Kunde inte ladda kontakter");
     return [];
   }
 };
