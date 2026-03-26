@@ -95,7 +95,7 @@ export async function getOrCreateJobConversation(
 
     if (error) {
       console.error('Error creating job conversation:', error);
-      toast.error('Failed to start conversation');
+      toast.error(i18n.t('toasts.messageSendFailed'));
       return null;
     }
 
