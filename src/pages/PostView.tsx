@@ -263,7 +263,7 @@ export default function PostView() {
           <InlineReplyComposer 
             postId={post.id} 
             onReplyCreated={handleReplyCreated}
-            placeholder="Write a reply..."
+            placeholder="Skriv ett svar..."
             companyContext={post.company}
           />
         </div>
