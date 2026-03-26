@@ -314,7 +314,7 @@ export default function FederatedPostCard({
         onDelete(post.id);
       }
     } catch (error) {
-      toast.error('Failed to delete post');
+      toast.error(t('postCard.failedToDelete'));
     }
   };
 
