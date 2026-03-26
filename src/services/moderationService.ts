@@ -429,7 +429,7 @@ export async function deleteFlaggedContent(
     return true;
   } catch (error) {
     console.error("Error deleting content:", error);
-    toast.error("Failed to delete content");
+    toast.error("Kunde inte radera innehåll");
     return false;
   }
 }
