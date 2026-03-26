@@ -283,7 +283,7 @@ export default function AuthPage() {
           return;
         }
         
-        toast.success("Signed in successfully!");
+        toast.success(t("toasts.signedInSuccess"));
         navigate("/");
       }
     } catch (error: any) {
