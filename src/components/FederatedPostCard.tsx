@@ -539,7 +539,7 @@ export default function FederatedPostCard({
                   navigate(`/post/${post.id}`);
                 }}
               >
-                Read more
+                {t('postCard.readMore')}
               </button>
             )}
 
