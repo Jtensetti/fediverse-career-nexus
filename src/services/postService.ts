@@ -602,7 +602,7 @@ export const updatePost = async (postId: string, updates: { content: string }): 
     }
 
     console.log('✅ Post updated successfully');
-    toast.success('Post updated successfully!');
+    toast.success('Inlägget uppdaterades!');
   } catch (error) {
     console.error('❌ Error updating post:', error);
     throw error;
