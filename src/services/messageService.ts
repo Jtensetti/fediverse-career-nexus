@@ -286,7 +286,7 @@ export async function getMessages(partnerId: string): Promise<Message[]> {
     }
   } catch (error) {
     console.error('Error in getMessages:', error);
-    toast.error('Failed to load messages');
+    toast.error('Kunde inte ladda meddelanden');
     return [];
   }
 }
