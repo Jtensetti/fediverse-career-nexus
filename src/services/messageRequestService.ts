@@ -51,7 +51,7 @@ export async function sendMessageRequest(
     const senderId = session.session.user.id;
     
     if (senderId === recipientId) {
-      toast.error('You cannot send a request to yourself');
+      toast.error('Du kan inte skicka en förfrågan till dig själv');
       return false;
     }
 
