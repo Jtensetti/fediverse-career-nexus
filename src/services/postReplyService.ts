@@ -282,7 +282,7 @@ export async function createPostReply(
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      toast.error('You must be logged in to reply');
+      toast.error('Du måste vara inloggad för att svara');
       return false;
     }
 
