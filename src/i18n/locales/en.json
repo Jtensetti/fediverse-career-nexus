@@ -864,7 +864,7 @@
     "enabled": "Enabled",
     "enabledDesc": "Your account is protected with two-factor authentication.",
     "loading": "Loading security settings...",
-    "federatedNote": "As a federated user, your security settings are managed by your home instance. Configure 2FA on your Fediverse server to protect your account.",
+    "federatedNote": "As a connected user, your security settings are managed by your home instance. Configure 2FA on your server to protect your account.",
     "enrollTitle": "Set Up Two-Factor Authentication",
     "enrollDesc": "Scan the QR code with your authenticator app.",
     "enrollDescMobile": "Add your account to an authenticator app.",
