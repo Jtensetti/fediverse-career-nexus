@@ -154,7 +154,7 @@ export function ArticleEditor({
 
     const editor = getEditor();
     if (!editor) {
-      toast.error("Editor not ready");
+      toast.error("Editorn är inte redo");
       return;
     }
 
