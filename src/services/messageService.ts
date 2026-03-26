@@ -431,7 +431,7 @@ async function sendFederatedMessage(
 
     if (error) {
       console.error('Error sending federated message:', error);
-      toast.error('Failed to send message to federated user');
+      toast.error('Kunde inte skicka meddelande till federerad användare');
       return null;
     }
 
