@@ -102,7 +102,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     }
 
     console.log('✅ Profile updated successfully');
-    toast.success("Profile updated successfully");
+    toast.success("Profil uppdaterad");
     return true;
   } catch (error) {
     console.error("❌ Error updating profile:", error);
