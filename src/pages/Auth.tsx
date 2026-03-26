@@ -518,7 +518,7 @@ export default function AuthPage() {
                             }
                           }}
                           onBlur={() => validateField('firstName', firstName)}
-                          placeholder="Firstname"
+                          placeholder={t("auth.firstNamePlaceholder")}
                           required
                           maxLength={50}
                           className={fieldErrors.firstName ? "border-destructive" : ""}
