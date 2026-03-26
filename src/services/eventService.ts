@@ -301,7 +301,7 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
     return data as EventRSVP;
   } catch (error) {
     console.error('Error creating RSVP:', error);
-    toast.error('Failed to submit RSVP');
+    toast.error(i18n.t('toasts.rsvpFailed'));
     return null;
   }
 }
