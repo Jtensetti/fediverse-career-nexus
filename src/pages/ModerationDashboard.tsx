@@ -324,28 +324,28 @@ export default function ModerationDashboard() {
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard 
-                  label="Pending Reports" 
+                  label="Väntande rapporter" 
                   value={stats?.pendingReports ?? 0}
                   icon={Flag}
                   color={pendingCount > 0 ? 'warning' : 'primary'}
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Active Bans" 
+                  label="Aktiva avstängningar" 
                   value={stats?.activeBans ?? 0}
                   icon={Ban}
                   color="destructive"
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Actions Today" 
+                  label="Åtgärder idag" 
                   value={stats?.totalActionsToday ?? 0}
                   icon={Gavel}
                   color="primary"
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Moderators" 
+                  label="Moderatorer" 
                   value={stats?.totalModerators ?? 0}
                   icon={Shield}
                   color="success"
