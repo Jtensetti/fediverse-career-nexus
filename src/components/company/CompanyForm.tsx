@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Building2 } from "lucide-react";
-import { generateSlug, isSlugAvailable } from "@/services/companyService";
+import { generateSlug, isSlugAvailable } from "@/services/company/companyService";
 import type { Database } from "@/integrations/supabase/types";
 
 type CompanySize = Database['public']['Enums']['company_size'];

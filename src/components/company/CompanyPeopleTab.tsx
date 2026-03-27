@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   getVerifiedEmployees,
   getUserEmployment,
-} from "@/services/companyEmployeeService";
+} from "@/services/company/companyEmployeeService";
 import CompanyEmployeeForm from "./CompanyEmployeeForm";
 
 interface CompanyPeopleTabProps {

@@ -4,14 +4,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import DashboardLayout from "@/components/DashboardLayout";
-import FederatedPostCard from "@/components/FederatedPostCard";
-import PostReplyThread from "@/components/PostReplyThread";
-import InlineReplyComposer from "@/components/InlineReplyComposer";
-import PostEditDialog from "@/components/PostEditDialog";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import FederatedPostCard from "@/components/federation/FederatedPostCard";
+import PostReplyThread from "@/components/posts/PostReplyThread";
+import InlineReplyComposer from "@/components/posts/InlineReplyComposer";
+import PostEditDialog from "@/components/posts/PostEditDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { getPostReplies, type PostReply } from "@/services/postReplyService";
-import type { FederatedPost } from "@/services/federationService";
+import { getPostReplies, type PostReply } from "@/services/posts/postReplyService";
+import type { FederatedPost } from "@/services/federation/federationService";
 
 export default function PostView() {
   const { postId } = useParams<{ postId: string }>();

@@ -3,7 +3,7 @@ import { Building2, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import type { Company } from "@/services/companyService";
+import type { Company } from "@/services/company/companyService";
 
 interface CompanyCardProps {
   company: Company;

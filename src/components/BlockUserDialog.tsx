@@ -12,7 +12,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { blockUser } from "@/services/blockService";
+import { blockUser } from "@/services/moderation/blockService";
 
 interface BlockUserDialogProps {
   open: boolean;

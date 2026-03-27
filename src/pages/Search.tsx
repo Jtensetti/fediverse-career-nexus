@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SEOHead } from "@/components/common/SEOHead";
-import Navbar from "@/components/Navbar";
-import { advancedSearchService, AdvancedProfileResult, AdvancedSearchFilters } from "@/services/advancedSearchService";
-import { searchService } from "@/services/searchService";
+import Navbar from "@/components/layout/Navbar";
+import { advancedSearchService, AdvancedProfileResult, AdvancedSearchFilters } from "@/services/search/advancedSearchService";
+import { searchService } from "@/services/search/searchService";
 import { cn } from "@/lib/utils";
 
 export default function Search() {

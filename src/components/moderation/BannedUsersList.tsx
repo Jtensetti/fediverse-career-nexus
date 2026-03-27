@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getActiveBans, getAllBans, revokeBan, UserBan } from "@/services/moderationService";
+import { getActiveBans, getAllBans, revokeBan, UserBan } from "@/services/moderation/moderationService";
 
 export function BannedUsersList() {
   const queryClient = useQueryClient();

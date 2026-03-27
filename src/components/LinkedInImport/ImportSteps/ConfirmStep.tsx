@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Check, AlertCircle, User, Briefcase, GraduationCap, Sparkles, FileText } from 'lucide-react';
-import { ImportResult } from '@/services/linkedinImportService';
+import { ImportResult } from '@/services/content/linkedinImportService';
 
 interface ConfirmStepProps {
   result: ImportResult;

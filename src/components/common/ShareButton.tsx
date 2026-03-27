@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import QuoteCardGenerator from "@/components/QuoteCardGenerator";
+import QuoteCardGenerator from "@/components/posts/QuoteCardGenerator";
 
 interface ShareButtonProps {
   url?: string;

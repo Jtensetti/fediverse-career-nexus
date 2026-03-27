@@ -1,0 +1,196 @@
+
+import { useState, useEffect } from "react";
+import { getUserJobPosts, type JobPost, deleteJobPost, toggleJobPostPublished } from "@/services/misc/jobPostsService";
+import { Link, useNavigate } from "react-router-dom";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { Edit, Trash, Plus } from "lucide-react";
+import { toast } from "sonner";
+
+const JobManage = () => {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const [jobs, setJobs] = useState<JobPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!loading && !user) {
+      toast.error("Logga in för att hantera jobbannonser");
+      navigate("/auth");
+      return;
+    }
+    
+    if (!user) return;
+    
+    const fetchJobs = async () => {
+      setIsLoading(true);
+      const jobsData = await getUserJobPosts();
+      setJobs(jobsData);
+      setIsLoading(false);
+    };
+    
+    fetchJobs();
+  }, [user, loading, navigate]);
+  
+  const handleDeleteClick = (jobId: string) => {
+    setJobToDelete(jobId);
+    setDeleteDialogOpen(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!jobToDelete) return;
+    
+    const success = await deleteJobPost(jobToDelete);
+    if (success) {
+      setJobs((prevJobs) => prevJobs.filter(job => job.id !== jobToDelete));
+    }
+    
+    setDeleteDialogOpen(false);
+    setJobToDelete(null);
+  };
+  
+  const handleTogglePublished = async (jobId: string, isActive: boolean) => {
+    const success = await toggleJobPostPublished(jobId, isActive);
+    if (success) {
+      setJobs((prevJobs) => prevJobs.map(job => 
+        job.id === jobId ? { ...job, is_active: isActive } : job
+      ));
+    }
+  };
+  
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-grow container py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">Hantera jobbannonser</h1>
+          <Button asChild>
+            <Link to="/jobs/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Skapa jobbannons
+            </Link>
+          </Button>
+        </div>
+        
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <p className="text-lg text-muted-foreground">Laddar dina jobbannonser...</p>
+          </div>
+        ) : jobs.length > 0 ? (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Jobbtitel</TableHead>
+                  <TableHead>Företag</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Skapad</TableHead>
+                  <TableHead>Åtgärder</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {jobs.map(job => (
+                  <TableRow key={job.id}>
+                    <TableCell className="font-medium">
+                      <Link to={`/jobs/${job.id}`} className="hover:underline">
+                        {job.title}
+                      </Link>
+                    </TableCell>
+                    <TableCell>{job.company}</TableCell>
+                    <TableCell>
+                      <Badge variant={job.is_active ? "default" : "outline"}>
+                        {job.is_active ? "Publicerad" : "Utkast"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{format(new Date(job.created_at), "MMM d, yyyy")}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/jobs/edit/${job.id}`}>
+                            <Edit className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button 
+                          variant={job.is_active ? "outline" : "default"} 
+                          size="sm"
+                          onClick={() => handleTogglePublished(job.id, !job.is_active)}
+                        >
+                          {job.is_active ? "Unpublish" : "Publish"}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDeleteClick(job.id)}
+                        >
+                          <Trash className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="py-12 text-center">
+            <h2 className="text-2xl font-semibold mb-2">Inga jobbannonser ännu</h2>
+            <p className="text-muted-foreground mb-6">
+              Du har inte skapat några jobbannonser ännu. Kom igång genom att skapa din första.
+            </p>
+            <Button asChild>
+              <Link to="/jobs/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Skapa jobbannons
+              </Link>
+            </Button>
+          </div>
+        )}
+        
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Är du säker?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Denna åtgärd kan inte ångras. Jobbannonsen raderas permanent.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default JobManage;

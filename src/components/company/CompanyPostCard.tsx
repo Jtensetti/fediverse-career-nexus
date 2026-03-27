@@ -10,11 +10,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Building2, MoreHorizontal, Trash2, Globe, Share2 } from "lucide-react";
 import { ShareButton } from "@/components/common/ShareButton";
-import { deleteCompanyPost } from "@/services/companyPostService";
+import { deleteCompanyPost } from "@/services/company/companyPostService";
 import { linkifyWithMarkdown, stripHtml } from "@/lib/linkify";
 import DOMPurify from "dompurify";
 import { cn } from "@/lib/utils";
-import type { FederatedPost } from "@/services/federationService";
+import type { FederatedPost } from "@/services/federation/federationService";
 
 interface CompanyPostCardProps {
   post: FederatedPost;

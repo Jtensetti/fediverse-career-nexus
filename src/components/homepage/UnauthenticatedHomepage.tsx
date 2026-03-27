@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import FederatedFeed from "../FederatedFeed";
+import FederatedFeed from "../federation/FederatedFeed";
 import { useEffect, useState } from "react";
-import { getPublishedJobPosts, type JobPost } from "@/services/jobPostsService";
+import { getPublishedJobPosts, type JobPost } from "@/services/misc/jobPostsService";
 import { useTranslation } from "react-i18next";
 import HeroWithScreenshot from "./HeroWithScreenshot";
 import FeaturedIn from "./FeaturedIn";

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ensureUserProfile } from "@/services/profileService";
+import { ensureUserProfile } from "@/services/profile/profileService";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +34,7 @@ import {
   getOnboardingRecommendations, 
   followSelectedUsers,
   RecommendedUser 
-} from "@/services/onboardingRecommendationService";
+} from "@/services/misc/onboardingRecommendationService";
 import { InterestSelector } from "./InterestSelector";
 import { RecommendedUserCard } from "./RecommendedUserCard";
 

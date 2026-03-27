@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Users, Briefcase, Check, ExternalLink } from "lucide-react";
-import { getProfilePreview } from "@/services/profileService";
+import { getProfilePreview } from "@/services/profile/profileService";
 
 interface ProfileHoverCardProps {
   children: ReactNode;

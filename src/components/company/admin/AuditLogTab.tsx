@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/common";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
-import type { AuditLogWithActor } from "@/services/companyAuditService";
+import type { AuditLogWithActor } from "@/services/company/companyAuditService";
 
 interface AuditLogTabProps {
   auditLog: AuditLogWithActor[];
