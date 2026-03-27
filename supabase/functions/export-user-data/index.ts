@@ -361,7 +361,7 @@ function buildActivityPubExport(user: any, d: any, supabaseUrl: string) {
     outbox: `${baseUrl}/functions/v1/outbox/${profile.username}`,
     followers: `${baseUrl}/functions/v1/followers/${profile.username}`,
     following: `${baseUrl}/functions/v1/following/${profile.username}`,
-    url: `https://nolto.social/@${profile.username}`,
+    url: `https://samverkan.se/@${profile.username}`,
     manuallyApprovesFollowers: false,
     discoverable: true,
     published: actor.created_at,
@@ -383,12 +383,12 @@ function buildActivityPubExport(user: any, d: any, supabaseUrl: string) {
   // outbox.json — OrderedCollection of Create activities
   const outboxItems = (d.posts || []).map((post: any) => ({
     type: "Create",
-    id: `https://nolto.social/activities/${post.id}`,
+    id: `https://samverkan.se/activities/${post.id}`,
     actor: actorUrl,
     published: post.created_at,
     object: {
       type: "Note",
-      id: `https://nolto.social/posts/${post.id}`,
+      id: `https://samverkan.se/posts/${post.id}`,
       content: post.content?.content || "",
       published: post.created_at,
       attributedTo: actorUrl,
@@ -401,12 +401,12 @@ function buildActivityPubExport(user: any, d: any, supabaseUrl: string) {
   // articles as Article objects
   const articleItems = (d.articles || []).map((a: any) => ({
     type: "Create",
-    id: `https://nolto.social/activities/article-${a.id}`,
+    id: `https://samverkan.se/activities/article-${a.id}`,
     actor: actorUrl,
     published: a.published_at || a.created_at,
     object: {
       type: "Article",
-      id: `https://nolto.social/articles/${a.slug || a.id}`,
+      id: `https://samverkan.se/articles/${a.slug || a.id}`,
       name: a.title,
       content: a.content,
       published: a.published_at || a.created_at,
@@ -420,12 +420,12 @@ function buildActivityPubExport(user: any, d: any, supabaseUrl: string) {
   // events as Event objects
   const eventItems = (d.events || []).map((e: any) => ({
     type: "Create",
-    id: `https://nolto.social/activities/event-${e.id}`,
+    id: `https://samverkan.se/activities/event-${e.id}`,
     actor: actorUrl,
     published: e.created_at,
     object: {
       type: "Event",
-      id: `https://nolto.social/events/${e.id}`,
+      id: `https://samverkan.se/events/${e.id}`,
       name: e.title,
       content: e.description || "",
       startTime: e.start_date,

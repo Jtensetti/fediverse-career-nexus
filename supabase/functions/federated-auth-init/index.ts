@@ -60,20 +60,20 @@ async function webfingerLookup(username: string, domain: string): Promise<WebFin
   }
 }
 
-// The canonical redirect URI — always www.nolto.social
-const CANONICAL_REDIRECT_URI = 'https://www.nolto.social/auth/callback';
+// The canonical redirect URI — always www.samverkan.se
+const CANONICAL_REDIRECT_URI = 'https://www.samverkan.se/auth/callback';
 
 // Register an OAuth client with a Mastodon-compatible instance
 // Mastodon allows multiple redirect URIs, so we can include both domains
 async function registerOAuthClient(domain: string, redirectUri: string): Promise<{ clientId: string; clientSecret: string } | null> {
   const appsUrl = `https://${domain}/api/v1/apps`;
   
-  // Always include the canonical www.nolto.social, the apex nolto.social,
+  // Always include the canonical www.samverkan.se, the apex samverkan.se,
   // and the lovable.app preview domain as valid redirect URIs
   const redirectUris = [
     CANONICAL_REDIRECT_URI,
     redirectUri,
-    'https://nolto.social/auth/callback',
+    'https://samverkan.se/auth/callback',
     'https://fediverse-career.lovable.app/auth/callback'
   ];
   
@@ -85,10 +85,10 @@ async function registerOAuthClient(domain: string, redirectUri: string): Promise
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        client_name: 'Nolto - Professional Fediverse Network',
+        client_name: 'Samverkan - Professional Fediverse Network',
         redirect_uris: uniqueUris,
         scopes: 'read',
-        website: 'https://nolto.social'
+        website: 'https://samverkan.se'
       })
     });
     
@@ -167,7 +167,7 @@ serve(async (req) => {
     let clientSecret: string;
     
     // List of known valid redirect domains - use existing client if it matches any
-    const validDomains = ['www.nolto.social', 'nolto.social', 'fediverse-career.lovable.app'];
+    const validDomains = ['www.samverkan.se', 'samverkan.se', 'fediverse-career.lovable.app'];
     const existingDomain = existingClient?.redirect_uri?.match(/https?:\/\/([^/]+)/)?.[1];
     const requestedDomain = redirectUri.match(/https?:\/\/([^/]+)/)?.[1];
     

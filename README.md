@@ -1,11 +1,11 @@
-# 🌐 Nolto — Federated Professional Network
+# 🌐 Samverkan — Federated Professional Network
 
-[![Codeberg](https://img.shields.io/badge/Codeberg-2185D0?logo=codeberg&logoColor=white)](https://codeberg.org/Tensetti/Nolto)
+[![Codeberg](https://img.shields.io/badge/Codeberg-2185D0?logo=codeberg&logoColor=white)](https://codeberg.org/Tensetti/Samverkan)
 [![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/Jtensetti/fediverse-career-nexus)
 
 A community-driven, federated professional networking platform for the open web.
 
-Built with ❤️ on [Lovable.dev](https://lovable.dev), **Nolto** combines the professional networking features of LinkedIn with the decentralized philosophy of the Fediverse.
+Built with ❤️ on [Lovable.dev](https://lovable.dev), **Samverkan** combines the professional networking features of LinkedIn with the decentralized philosophy of the Fediverse.
 
 > ✊ This is not just a job board — it's a declaration of independence from centralized platforms.
 
@@ -87,7 +87,7 @@ React (Vite) ──supabase-js──► Edge Functions (Deno)
 ---
 ## 🤖 About AI-assisted development
 
-Nolto is built with the help of AI.
+Samverkan is built with the help of AI.
 
 Much of the codebase is generated using an AI-assisted coding tool (Lovable.dev), based on explicit descriptions of system behavior, constraints, and architecture.
 
@@ -104,7 +104,7 @@ If AI-assisted development isn’t your thing, that’s fine — feel free to mo
 
 ```bash
 # 1. Clone & install (choose one)
-git clone https://codeberg.org/Tensetti/Nolto.git
+git clone https://codeberg.org/Tensetti/Samverkan.git
 # or
 git clone https://github.com/Jtensetti/fediverse-career-nexus.git
 
@@ -169,7 +169,7 @@ supabase/
 
 ## 🌍 Federation Guide
 
-Nolto implements the ActivityPub protocol for federation with other Fediverse instances (Mastodon, Pleroma, etc.).
+Samverkan implements the ActivityPub protocol for federation with other Fediverse instances (Mastodon, Pleroma, etc.).
 
 ### Endpoints
 - `/.well-known/webfinger` — WebFinger discovery
@@ -181,9 +181,9 @@ Nolto implements the ActivityPub protocol for federation with other Fediverse in
 - `/actor/:username/following` — Following collection
 
 ### WebFinger test calls
-- ✅ `/.well-known/webfinger?resource=acct:alice@nolto.social`
-- ❌ `/.well-known/webfinger?resource=acct:not-a-user@nolto.social` (should return 404)
-- ❌ `/.well-known/webfinger?resource=mailto:alice@nolto.social` (should return 400)
+- ✅ `/.well-known/webfinger?resource=acct:alice@samverkan.se`
+- ❌ `/.well-known/webfinger?resource=acct:not-a-user@samverkan.se` (should return 404)
+- ❌ `/.well-known/webfinger?resource=mailto:alice@samverkan.se` (should return 400)
 - ❌ `/.well-known/webfinger?resource=acct:alice@otherdomain.tld` (should return 400)
 
 ### Supported Activities

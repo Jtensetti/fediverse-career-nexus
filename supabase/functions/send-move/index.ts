@@ -115,7 +115,7 @@ serve(async (req) => {
     if (!alsoKnownAs.includes(localActorUrl)) {
       return new Response(
         JSON.stringify({ 
-          error: "Verification failed. The new account must list your Nolto account in its alsoKnownAs field.",
+          error: "Verification failed. The new account must list your Samverkan account in its alsoKnownAs field.",
           expected: localActorUrl,
           found: alsoKnownAs
         }),

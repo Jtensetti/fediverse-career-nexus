@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const NOLTO_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "nolto.social";
+const SAMVERKAN_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "samverkan.se";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -28,7 +28,7 @@ serve(async (req) => {
             {
               rel: "lrdd",
               type: "application/jrd+json",
-              template: `https://${NOLTO_DOMAIN}/.well-known/webfinger?resource={uri}`
+              template: `https://${SAMVERKAN_DOMAIN}/.well-known/webfinger?resource={uri}`
             }
           ]
         };
@@ -45,7 +45,7 @@ serve(async (req) => {
       // Default to XRD (XML) format
       const xrdResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
-  <Link rel="lrdd" type="application/jrd+json" template="https://${NOLTO_DOMAIN}/.well-known/webfinger?resource={uri}"/>
+  <Link rel="lrdd" type="application/jrd+json" template="https://${SAMVERKAN_DOMAIN}/.well-known/webfinger?resource={uri}"/>
 </XRD>`;
 
       return new Response(xrdResponse, {

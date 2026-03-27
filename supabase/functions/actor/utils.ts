@@ -309,11 +309,11 @@ export async function storeRemoteActorData(actorUri: string, actorData: any) {
   }
 }
 
-// Create actor object - use nolto.social domain for federation discoverability
+// Create actor object - use samverkan.se domain for federation discoverability
 export function createActorObject(profile: any, actor: any, domain: string, protocol: string) {
   // Use the production domain for actor URLs to ensure proper federation
-  const NOLTO_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "nolto.social";
-  const baseUrl = `https://${NOLTO_DOMAIN}`;
+  const SAMVERKAN_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "samverkan.se";
+  const baseUrl = `https://${SAMVERKAN_DOMAIN}`;
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? baseUrl;
   const actorUrl = `${baseUrl}/functions/v1/actor/${profile.username}`;
 

@@ -103,8 +103,8 @@ serve(async (req) => {
   try {
     logger.info({ traceId }, "Starting notification digest job");
 
-    const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
-    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Nolto <noreply@nolto.social>";
+    const siteUrl = Deno.env.get("SITE_URL") || "https://samverkan.se";
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Samverkan <noreply@samverkan.se>";
 
     // Find users with unread notifications older than 36 hours
     // who haven't received a digest email in the last 36 hours
@@ -298,7 +298,7 @@ serve(async (req) => {
           <!-- Header -->
           <tr>
             <td style="background-color: #1a1a1a; padding: 24px 32px;">
-              <h1 style="margin: 0; font-size: 22px; font-weight: 600; color: #ffffff;">Nolto</h1>
+              <h1 style="margin: 0; font-size: 22px; font-weight: 600; color: #ffffff;">Samverkan</h1>
             </td>
           </tr>
           
@@ -309,7 +309,7 @@ serve(async (req) => {
                 You have ${totalUnread} unread notification${totalUnread > 1 ? 's' : ''}${moreText}
               </h2>
               <p style="margin: 0 0 24px 0; font-size: 15px; color: #6a6a6a; line-height: 1.5;">
-                Here's what you've missed on Nolto:
+                Here's what you've missed on Samverkan:
               </p>
               
               <!-- Notifications List -->
@@ -335,7 +335,7 @@ serve(async (req) => {
           <tr>
             <td style="padding: 24px 32px; background-color: #fafafa; border-top: 1px solid #e5e5e5;">
               <p style="margin: 0 0 8px 0; font-size: 13px; color: #9a9a9a; text-align: center;">
-                You're receiving this because you have unread notifications on Nolto.
+                You're receiving this because you have unread notifications on Samverkan.
               </p>
               <p style="margin: 0; font-size: 13px; color: #9a9a9a; text-align: center;">
                 <a href="${siteUrl}/profile/edit" style="color: #6a6a6a; text-decoration: underline;">Manage email preferences</a>
@@ -354,7 +354,7 @@ serve(async (req) => {
         const { error: emailError } = await resend.emails.send({
           from: fromEmail,
           to: [userEmail],
-          subject: `You have ${totalUnread} unread notification${totalUnread > 1 ? 's' : ''} on Nolto`,
+          subject: `You have ${totalUnread} unread notification${totalUnread > 1 ? 's' : ''} on Samverkan`,
           html: emailHtml,
         });
 

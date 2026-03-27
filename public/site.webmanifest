@@ -1,6 +1,6 @@
 {
-  "name": "Nolto - Professional Social Network",
-  "short_name": "Nolto",
+  "name": "Samverkan - Professional Social Network",
+  "short_name": "Samverkan",
   "description": "A professional social network that runs on the ActivityPub federation protocol",
   "start_url": "/",
   "display": "standalone",

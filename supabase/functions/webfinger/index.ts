@@ -20,12 +20,12 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-// Use nolto.social domain for federation discoverability
-const NOLTO_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "nolto.social";
+// Use samverkan.se domain for federation discoverability
+const SAMVERKAN_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "samverkan.se";
 
 function getRequestHost(req: Request, url: URL) {
-  // Always return nolto.social for federation to work correctly
-  return NOLTO_DOMAIN;
+  // Always return samverkan.se for federation to work correctly
+  return SAMVERKAN_DOMAIN;
 }
 
 function getRequestProtocol(req: Request, url: URL) {
@@ -61,10 +61,10 @@ async function logRequestMetrics(
   }
 }
 
-// Create local actor object on-demand - always use nolto.social domain
+// Create local actor object on-demand - always use samverkan.se domain
 async function createLocalActorObject(profile: any, baseUrl: string) {
   // Ensure we always use the production domain for actor URLs
-  const productionBaseUrl = `https://${NOLTO_DOMAIN}`;
+  const productionBaseUrl = `https://${SAMVERKAN_DOMAIN}`;
   const actorUrl = `${productionBaseUrl}/functions/v1/actor/${profile.username}`;
   
   // Try to get the actual public key from the actors table

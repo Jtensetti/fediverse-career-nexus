@@ -157,19 +157,19 @@ serve(async (req) => {
     }
 
     // Send email via Resend
-    // Use nolto.social domain for production emails
-    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Nolto <noreply@nolto.social>";
+    // Use samverkan.se domain for production emails
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Samverkan <noreply@samverkan.se>";
     
     const { error: emailError } = await resend.emails.send({
       from: fromEmail,
       to: [email],
-      subject: "Your Nolto Password Reset Code",
+      subject: "Your Samverkan Password Reset Code",
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
           <h1 style="font-size: 24px; font-weight: 600; color: #1a1a1a; margin-bottom: 24px;">Reset Your Password</h1>
           
           <p style="font-size: 16px; color: #4a4a4a; line-height: 1.5; margin-bottom: 24px;">
-            Use this code to reset your Nolto password:
+            Use this code to reset your Samverkan password:
           </p>
           
           <div style="background: #f5f5f5; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 24px;">
@@ -187,7 +187,7 @@ serve(async (req) => {
           <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0;" />
           
           <p style="font-size: 12px; color: #9a9a9a;">
-            — The Nolto Team
+            — The Samverkan Team
           </p>
         </div>
       `,
