@@ -81,7 +81,7 @@ export default function CompanyAdmin() {
   }
 
   if (!company || !canManage) {
-    return <Navigate to={company ? `/company/${slug}` : "/companies"} replace />;
+    return <Navigate to={company ? `/organisation/${slug}` : "/organisationer"} replace />;
   }
 
   const handleVerify = async (employeeId: string, employeeName?: string) => {
