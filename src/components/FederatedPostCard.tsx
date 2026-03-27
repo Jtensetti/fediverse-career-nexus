@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import AvatarWithStatus from "@/components/common/AvatarWithStatus";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { Globe, MessageSquare, Repeat, MoreHorizontal, Edit, Trash2, Flag, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
