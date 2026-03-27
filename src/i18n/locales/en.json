@@ -575,7 +575,7 @@
       "current": "I currently work here",
       "description": "Description",
       "descriptionPlaceholder": "Describe your responsibilities",
-      "companyRequired": "Company is required",
+      "companyRequired": "Organisation is required",
       "titleRequired": "Title is required",
       "startDateRequired": "Start date is required",
       "position": "Position",
