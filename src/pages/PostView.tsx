@@ -82,7 +82,7 @@ export default function PostView() {
       }
       
       if (!postData) {
-        setError('Post not found');
+        setError('Inlägget hittades inte');
         setLoading(false);
         return;
       }
