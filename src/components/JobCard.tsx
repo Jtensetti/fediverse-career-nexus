@@ -50,7 +50,7 @@ const JobCard = ({ job }: JobCardProps) => {
     e.preventDefault();
     e.stopPropagation();
     setIsSaved(!isSaved);
-    toast.success(isSaved ? "Removed from saved jobs" : "Job saved!");
+    toast.success(isSaved ? "Borttagen från sparade jobb" : "Jobb sparat!");
   };
 
   return (
