@@ -379,9 +379,6 @@ export default function AuthPage() {
         <div className="max-w-md w-full space-y-8">
           {/* Logo and Branding */}
           <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Samverkan" className="w-16 h-16" />
-            </div>
             <h1 className="text-3xl font-bold text-foreground font-display">
               {t("auth.welcomeTitle", "Welcome to Samverkan")}
             </h1>
