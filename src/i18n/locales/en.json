@@ -566,8 +566,8 @@
     },
     "experience": {
       "title": "Experience",
-      "company": "Company",
-      "companyPlaceholder": "Company name",
+      "company": "Organisation",
+      "companyPlaceholder": "Organisation name",
       "jobTitle": "Job title",
       "jobTitlePlaceholder": "Your role",
       "startDate": "Start date",
