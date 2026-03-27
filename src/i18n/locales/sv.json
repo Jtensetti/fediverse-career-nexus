@@ -573,7 +573,7 @@
       "jobTitle": "Yrkestitel",
       "jobTitlePlaceholder": "t.ex. Projektledare",
       "companyPlaceholder": "t.ex. Kommun AB, Frilans, Egenföretagare",
-      "companyDomain": "Företagsdomän",
+      "companyDomain": "Organisationsdomän",
       "companyDomainPlaceholder": "t.ex. foretag.se",
       "locationPlaceholder": "t.ex. Stockholm",
       "pickDate": "Välj datum",
