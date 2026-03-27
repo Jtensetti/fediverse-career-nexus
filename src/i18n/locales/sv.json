@@ -1596,7 +1596,7 @@
     "helpsCandidate": "Hjälper kandidater att lita på din annons",
     "interviewPlaceholder": "t.ex. 3 rundor: telefonintervju, teknisk, slutintervju",
     "publishDescription": "Gör detta jobbannonsen synlig för kandidater direkt",
-    "companyValidation": "Företagsnamn krävs",
+    "companyValidation": "Organisationsnamn krävs",
     "locationValidation": "Plats krävs",
     "createJobPost": "Skapa jobbannons"
   },
