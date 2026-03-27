@@ -72,11 +72,11 @@ const NewsletterSubscribe = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Newsletter</CardTitle>
+        <CardTitle className="text-xl">Nyhetsbrev</CardTitle>
         <CardDescription>
           {isSubscribed 
-            ? "You're subscribed to receive updates about new articles." 
-            : "Subscribe to receive updates about new articles."}
+            ? "Du prenumererar på uppdateringar om nya artiklar." 
+            : "Prenumerera för att få uppdateringar om nya artiklar."}
         </CardDescription>
       </CardHeader>
       <CardContent>
