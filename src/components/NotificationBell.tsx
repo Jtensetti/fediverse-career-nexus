@@ -13,6 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { notificationService, Notification, NotificationType } from "@/services/notificationService";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
