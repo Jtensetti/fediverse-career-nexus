@@ -48,7 +48,7 @@ export default function CompanyEdit() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company', slug] });
       toast.success(t("companies.updateSuccess", "Company updated successfully"));
-      navigate(`/company/${slug}`);
+      navigate(`/organisation/${slug}`);
     },
     onError: (error: Error) => {
       toast.error(error.message || t("companies.updateError", "Failed to update company"));
