@@ -102,7 +102,7 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
                 {canManage && (
                   <>
                     <Button variant="outline" size="sm" asChild>
-                      <Link to={`/company/${company.slug}/admin`}>
+                      <Link to={`/organisation/${company.slug}/admin`}>
                         <Shield className="h-4 w-4 mr-2" />
                         {t("companyHeader.admin", "Admin")}
                       </Link>
