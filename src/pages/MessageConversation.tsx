@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
+import { sv } from 'date-fns/locale';
 import { Send, AlertCircle, Loader2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
