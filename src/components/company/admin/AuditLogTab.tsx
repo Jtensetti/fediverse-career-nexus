@@ -3,6 +3,7 @@ import { ScrollText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/common";
 import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 import type { AuditLogWithActor } from "@/services/companyAuditService";
 
 interface AuditLogTabProps {
