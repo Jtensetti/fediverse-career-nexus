@@ -36,15 +36,6 @@ const HeroWithScreenshot = () => {
             transition={{ duration: 0.6 }}
             className="text-center lg:text-left"
           >
-            {/* Logo */}
-            <motion.img 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-              alt="Samverkan" 
-              className="w-16 h-16 lg:w-20 lg:h-20 mx-auto lg:mx-0 mb-6 drop-shadow-lg" 
-            />
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold font-display mb-4 sm:mb-6 leading-[1.1] tracking-tight">
               {t("homepage.hero.title")}{" "}
