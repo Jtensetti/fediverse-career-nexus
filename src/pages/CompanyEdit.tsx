@@ -98,7 +98,7 @@ export default function CompanyEdit() {
             icon={Building2}
             title={t("companies.noAccess", "Access denied")}
             description={t("companies.noAccessDescription", "You don't have permission to edit this company")}
-            action={{ label: t("companies.viewCompany", "View Company"), link: `/company/${slug}` }}
+            action={{ label: t("companies.viewCompany", "View Company"), link: `/organisation/${slug}` }}
           />
         </main>
         <Footer />
