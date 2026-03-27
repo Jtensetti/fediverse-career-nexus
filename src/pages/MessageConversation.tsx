@@ -383,7 +383,7 @@ export default function MessageConversation() {
                           }}
                         />
                         <p className="text-xs opacity-70 mt-1">
-                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true, locale: sv })}
                         </p>
                       </div>
                       {/* Reactions moved OUTSIDE the bubble for better visibility */}
