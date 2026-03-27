@@ -922,7 +922,7 @@
     "rejectEmployeeTitle": "Avvisa anställningsanspråk?",
     "rejectEmployeeDesc": "Detta tar permanent bort {{name}}s anställningsanspråk. De måste skicka in ett nytt.",
     "removeRoleTitle": "Ta bort roll?",
-    "removeRoleDesc": "Detta tar bort {{name}}s åtkomst för att hantera denna företagssida. De kan läggas till igen senare.",
+    "removeRoleDesc": "Detta tar bort {{name}}s åtkomst för att hantera denna organisationssida. De kan läggas till igen senare.",
     "removeRole": "Ta bort roll",
     "noAdditionalRoles": "Inga ytterligare roller",
     "onlyOwnerAccess": "Bara ägaren har åtkomst just nu",
