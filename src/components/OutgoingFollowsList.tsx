@@ -91,10 +91,10 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Outgoing Follow Requests</CardTitle>
+          <CardTitle>Utgående följförfrågningar</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No follow requests sent yet.</p>
+          <p className="text-muted-foreground">Inga följförfrågningar skickade ännu.</p>
         </CardContent>
       </Card>
     );
