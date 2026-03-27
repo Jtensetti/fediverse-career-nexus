@@ -76,7 +76,7 @@ export default function PostView() {
 
       if (postError) {
         console.error('Error fetching post:', postError);
-        setError('Failed to load post');
+        setError('Kunde inte ladda inlägget');
         setLoading(false);
         return;
       }
