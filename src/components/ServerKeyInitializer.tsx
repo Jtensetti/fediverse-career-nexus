@@ -88,7 +88,7 @@ export default function ServerKeyInitializer() {
     } catch (error) {
       console.error("Error generating server key:", error);
       toast({
-        title: "Error",
+        title: "Fel",
         description: "Kunde inte generera servernyckel",
         variant: "destructive",
       });
