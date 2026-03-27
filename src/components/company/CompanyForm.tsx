@@ -154,7 +154,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.companyName", "Company Name")} *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Företagsnamn AB" {...field} />
+                    <Input placeholder="Organisationsnamn" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
