@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Globe, Link as LinkIcon, Bookmark, Building2, DollarSign, Clock, Users, TrendingUp, Plane } from "lucide-react";
 import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
 import { toast } from "sonner";
 import TransparencyScore from "@/components/TransparencyScore";
@@ -165,7 +166,7 @@ const JobView = () => {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>{t("jobView.posted")} {job.created_at ? format(new Date(job.created_at), "PPP") : ""}</span>
+              <span>{t("jobView.posted")} {job.created_at ? format(new Date(job.created_at), "PPP", { locale: sv }) : ""}</span>
             </div>
           </div>
           

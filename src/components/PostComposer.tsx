@@ -23,6 +23,7 @@ import { PollCreator, PollCreatorData } from "@/components/PollCreator";
 import { createPollObject } from "@/services/pollService";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 const MAX_CHARACTERS = 500;
@@ -414,7 +415,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-primary" />
                         <span>
-                          {t("posts.scheduledFor", "Scheduled for")} {scheduledDate && format(scheduledDate, 'PPP')} {scheduledTime && `at ${scheduledTime}`}
+                          {t("posts.scheduledFor", "Scheduled for")} {scheduledDate && format(scheduledDate, 'PPP', { locale: sv })} {scheduledTime && `kl ${scheduledTime}`}
                         </span>
                       </div>
                       <Button 

@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Event } from "@/services/eventService";
 
@@ -186,7 +187,7 @@ const EventForm = ({
                     <FormControl>
                       <Button variant="outline" className="w-full pl-3 text-left font-normal">
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "PPP") : <span>{t("eventFormLabels.pickDate")}</span>}
+                        {field.value ? format(field.value, "PPP", { locale: sv }) : <span>{t("eventFormLabels.pickDate")}</span>}
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
@@ -217,7 +218,7 @@ const EventForm = ({
                     <FormControl>
                       <Button variant="outline" className="w-full pl-3 text-left font-normal">
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "PPP") : <span>{t("eventFormLabels.pickDate")}</span>}
+                        {field.value ? format(field.value, "PPP", { locale: sv }) : <span>{t("eventFormLabels.pickDate")}</span>}
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
