@@ -71,12 +71,12 @@ const FinalCTA = () => {
               </Link>
             </Button>
             <Button
-              asChild
               size="lg"
               variant="outline"
               className="border-2 border-primary-foreground/60 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 font-semibold px-10 py-7 text-lg hover:scale-105 transition-all"
+              onClick={() => document.getElementById('live-feed')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              <Link to="/feed">{t("homepage.finalCta.exploreFirst")}</Link>
+              {t("homepage.finalCta.exploreFirst")}
             </Button>
           </div>
 

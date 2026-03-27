@@ -156,7 +156,7 @@ const Mission = () => {
                 variant="outline"
                 className="border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
               >
-                <Link to="/feed">Utforska plattformen</Link>
+                <Link to="/#live-feed">Utforska plattformen</Link>
               </Button>
             </div>
           </section>
