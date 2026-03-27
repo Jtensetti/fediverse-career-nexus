@@ -45,21 +45,21 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
         return (
           <Badge variant="secondary" className="flex items-center gap-1">
             <Clock size={12} />
-            Pending
+            Väntande
           </Badge>
         );
       case 'accepted':
         return (
           <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800">
             <UserCheck size={12} />
-            Accepted
+            Accepterad
           </Badge>
         );
       case 'rejected':
         return (
           <Badge variant="destructive" className="flex items-center gap-1">
             <UserX size={12} />
-            Rejected
+            Avvisad
           </Badge>
         );
     }
