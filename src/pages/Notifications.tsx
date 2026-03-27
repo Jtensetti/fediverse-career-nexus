@@ -302,7 +302,7 @@ export default function Notifications() {
                             {getNotificationText(notification)}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: sv })}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
