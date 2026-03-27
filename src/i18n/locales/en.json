@@ -1047,10 +1047,10 @@
   "companyFollow": {
     "follow": "Follow",
     "following": "Following",
-    "followSuccess": "Now following this company",
-    "unfollowSuccess": "Unfollowed company",
-    "followFailed": "Failed to follow company",
-    "unfollowFailed": "Failed to unfollow company"
+    "followSuccess": "Now following this organisation",
+    "unfollowSuccess": "Unfollowed organisation",
+    "followFailed": "Failed to follow organisation",
+    "unfollowFailed": "Failed to unfollow organisation"
   },
   "search": {
     "title": "Search",
