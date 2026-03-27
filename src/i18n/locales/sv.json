@@ -995,7 +995,7 @@
     "deleteTitle": "Radera inlägg?",
     "deleteDesc": "Denna åtgärd kan inte ångras. Inlägget raderas permanent.",
     "deleting": "Raderar...",
-    "company": "Företag"
+    "company": "Organisation"
   },
   "companyImage": {
     "invalidFile": "Ladda upp en bildfil",
