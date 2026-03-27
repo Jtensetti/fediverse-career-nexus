@@ -1653,7 +1653,7 @@
     "writeComment": "Skriv en kommentar...",
     "addComment": "Lägg till en kommentar...",
     "viewAllComments": "Visa alla {{count}} kommentarer",
-    "companyReply": "Företag",
+    "companyReply": "Organisation",
     "removeFromSaved": "Ta bort från sparade",
     "saveComment": "Spara kommentar",
     "commentUnavailable": "Kommentar ej tillgänglig"
