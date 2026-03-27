@@ -154,9 +154,9 @@ function App() {
                     {/* Redirects from old company URLs */}
                     <Route path="/companies" element={<Navigate to="/organisationer" replace />} />
                     <Route path="/companies/create" element={<Navigate to="/organisationer/skapa" replace />} />
-                    <Route path="/company/:slug" element={<Navigate to="/organisation/:slug" replace />} />
-                    <Route path="/company/:slug/edit" element={<Navigate to="/organisation/:slug/redigera" replace />} />
-                    <Route path="/company/:slug/admin" element={<Navigate to="/organisation/:slug/admin" replace />} />
+                    <Route path="/company/:slug" element={<CompanySlugRedirect />} />
+                    <Route path="/company/:slug/edit" element={<CompanySlugEditRedirect />} />
+                    <Route path="/company/:slug/admin" element={<CompanySlugAdminRedirect />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />
