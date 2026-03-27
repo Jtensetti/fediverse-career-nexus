@@ -34,6 +34,7 @@ export interface FeedRules {
   include_keywords?: string[];
   exclude_keywords?: string[];
   include_users?: string[];
+  include_companies?: string[];
   min_engagement?: number;
   language?: string[];
 }
