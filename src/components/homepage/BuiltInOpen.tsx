@@ -92,7 +92,7 @@ const BuiltInOpen = () => {
                   </Button>
                   <Button variant="outline" className="gap-2" asChild>
                     <a 
-                      href="https://github.com/nolto/nolto/blob/main/CONTRIBUTING.md" 
+                      href="https://codeberg.org/Tensetti/Samverkan/src/branch/main/CONTRIBUTING.md" 
                       target="_blank" 
                       rel="noopener noreferrer"
                     >
