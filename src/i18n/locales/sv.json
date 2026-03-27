@@ -965,9 +965,9 @@
     "settings": "Inställningar",
     "followers": "följare",
     "employees": "anställda",
-    "companySize": "företagsstorlek",
+    "companySize": "organisationsstorlek",
     "founded": "Grundat",
-    "verified": "Verifierat företag"
+    "verified": "Verifierad organisation"
   },
   "companyForm": {
     "basicInfo": "Grundläggande information",
