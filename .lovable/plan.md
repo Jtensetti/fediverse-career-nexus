@@ -1,36 +1,59 @@
 
 
-# Kalender på svenska + kvarvarande engelska strängar
+# Byt "Företag" → "Organisation" överallt, inklusive URL:er
 
-## Problem
-1. **Kalender (react-day-picker)** visar engelska veckodagar ("Su", "Mo"...) och börjar på söndag istället för måndag
-2. **"Posting to your feed"** i PostComposer — nyckeln `posts.postingToFeed` saknas i sv.json
-3. **"Fjärrarbete tillåtet"** borde vara **"Distansarbete tillåtet"** i sv.json
-4. **FormErrorSummary.tsx** har hårdkodad engelska: "Please fix the following error(s)"
-5. **ActionSheet** default cancelLabel = "Cancel"
-6. **MonthYearPicker** default placeholder = "Pick a date"
+## Sammanfattning
+Byta terminologi från "företag/company" till "organisation" i hela appen: URL:er, synlig text, i18n-nycklar och navigering. Databasens tabellnamn (companies, company_roles etc.) behålls oförändrade — det är bara den yttre ytan som ändras.
 
-## Åtgärder
+## Steg 1: Ändra URL-rutter i App.tsx
+- `/companies` → `/organisationer`
+- `/companies/create` → `/organisationer/skapa`
+- `/company/:slug` → `/organisation/:slug`
+- `/company/:slug/edit` → `/organisation/:slug/redigera`
+- `/company/:slug/admin` → `/organisation/:slug/admin`
+- Lägg till redirects från gamla URL:er för eventuella bokmärken
 
-### 1. Calendar.tsx — svenska locale + måndag först
-Importera `sv` från `date-fns/locale` (react-day-picker stödjer `locale`-prop) och sätt `weekStartsOn: 1`. Ändra `Calendar`-komponenten att skicka `locale={sv}` till DayPicker.
+## Steg 2: Uppdatera alla interna länkar (~10 filer)
+Alla `Link to=` och `navigate()` som pekar på `/companies` eller `/company/` måste uppdateras:
 
-### 2. sv.json — lägg till saknade nycklar
-- `posts.postingToFeed`: `"Publicerar i ditt flöde"`
-- Ändra `jobs.remoteAllowed`: `"Fjärrarbete tillåtet"` → `"Distansarbete tillåtet"`
+| Fil | Ändringar |
+|-----|-----------|
+| `Navbar.tsx` | href: `/companies` → `/organisationer` |
+| `CompanyCard.tsx` | `/company/${slug}` → `/organisation/${slug}` |
+| `CompanyHeader.tsx` | admin/edit-länkar |
+| `CompanyPostCard.tsx` | företagslänkar |
+| `CompanyCreate.tsx` | navigate + tillbaka-länk |
+| `CompanyEdit.tsx` | navigate + tillbaka-länk |
+| `CompanyAdmin.tsx` | navigate + tillbaka-länk |
+| `CompanyProfile.tsx` | "browse all"-länk |
+| `Companies.tsx` | create-länk |
+| `CommentPreview.tsx` | profilkoppling |
+| `FederatedPostCard.tsx` | företagslänkar |
 
-### 3. FormErrorSummary.tsx
-Byt `"Please fix the following error/errors:"` → `"Vänligen åtgärda följande fel:"`
+## Steg 3: Uppdatera sv.json — byt alla "företag"-strängar till "organisation"
+~40 strängar att ändra, t.ex.:
+- `nav.companies`: "Företag" → "Organisationer"
+- `companies.title`: "Företag" → "Organisationer"
+- `companies.subtitle`: "Upptäck och följ företag" → "Upptäck och följ organisationer"
+- `companyForm.companyName`: "Företagsnamn" → "Organisationsnamn"
+- `companyHeader.companySize`: "företagsstorlek" → "organisationsstorlek"
+- `companyForm.companyDetails`: "Företagsdetaljer" → "Organisationsdetaljer"
+- Alla liknande i `companyPost`, `companyImage`, `companyFollow`, `companyAdmin`, `jobForm` etc.
 
-### 4. ActionSheet — default cancelLabel
-Byt `cancelLabel = "Cancel"` → `cancelLabel = "Avbryt"`
+## Steg 4: Uppdatera en.json med engelska motsvarigheter
+Samma nycklar, men "Company" → "Organisation" på engelska.
 
-### 5. MonthYearPicker — default placeholder
-Byt `placeholder = "Pick a date"` → `placeholder = "Välj datum"`
+## Steg 5: Hårdkodade strängar
+- `CompanyCard.tsx`: "följare" (redan svensk men kontexten "företag" kan finnas)
+- `FederatedPostCard.tsx`: `postCard.companyPage` → behöver uppdateras i sv.json
+- `nav.companyPage` i sv.json: "Företagssida" → "Organisationssida"
 
 ---
 
-**Teknisk detalj**: react-day-picker v8 accepterar `locale`-prop direkt, som automatiskt översätter veckodagar och månadsnamn till svenska och sätter veckostart till måndag.
-
-**6 filer, ~15 ändringar. Ingen databasändring.**
+## Teknisk detalj
+- **Databas ändras INTE** — tabeller heter fortfarande `companies`, `company_roles` etc.
+- **Filnamn ändras INTE** — `CompanyCard.tsx`, `companyService.ts` etc. behåller sina namn
+- Bara URL-rutter (App.tsx) och synlig text (i18n + hårdkodade strängar) ändras
+- ~12 komponentfiler + 2 i18n-filer
+- Redirects från gamla URL:er för bakåtkompatibilitet
 
