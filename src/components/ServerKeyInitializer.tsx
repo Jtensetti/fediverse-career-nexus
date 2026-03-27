@@ -28,7 +28,7 @@ export default function ServerKeyInitializer() {
     } catch (error) {
       console.error("Error checking server key:", error);
       toast({
-        title: "Error",
+        title: "Fel",
         description: "Kunde inte kontrollera servernyckels status",
         variant: "destructive",
       });
