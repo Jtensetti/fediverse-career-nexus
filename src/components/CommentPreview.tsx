@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "re
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { MessageSquare, Bookmark } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -203,7 +204,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
                   <span className="text-[10px] text-primary font-medium">· {t("commentPreview.companyReply")}</span>
                 )}
                 <span className="text-[10px] text-muted-foreground">
-                  · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                  · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: sv })}
                 </span>
               </div>
               <p className="text-sm text-foreground/90 line-clamp-2">

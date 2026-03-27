@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
+import { sv } from 'date-fns/locale';
 
 import { Conversation, getConversations, getOtherParticipant } from '@/services/messageService';
 import { getReceivedMessageRequests, MessageRequest } from '@/services/messageRequestService';
@@ -218,7 +219,7 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
   // Get the last message time
   const { t } = useTranslation();
   const lastMessageTime = conversation.last_message_at 
-    ? formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })
+    ? formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true, locale: sv })
     : t("messages.noMessagesYet");
 
   if (isLoading) {

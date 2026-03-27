@@ -50,7 +50,7 @@ export default function PostView() {
   const loadPostWithReplies = async () => {
     // Validate postId before fetching
     if (!postId || postId === 'undefined' || postId === 'null' || postId.trim() === '') {
-      setError('Invalid post ID');
+      setError('Ogiltigt inläggs-ID');
       setLoading(false);
       return;
     }
@@ -76,13 +76,13 @@ export default function PostView() {
 
       if (postError) {
         console.error('Error fetching post:', postError);
-        setError('Failed to load post');
+        setError('Kunde inte ladda inlägget');
         setLoading(false);
         return;
       }
       
       if (!postData) {
-        setError('Post not found');
+        setError('Inlägget hittades inte');
         setLoading(false);
         return;
       }
@@ -163,7 +163,7 @@ export default function PostView() {
       const repliesData = await getPostReplies(postId);
       setReplies(repliesData);
     } catch (err) {
-      setError('Failed to load post');
+      setError('Kunde inte ladda inlägget');
     } finally {
       setLoading(false);
       

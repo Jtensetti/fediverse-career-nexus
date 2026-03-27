@@ -60,9 +60,9 @@ const NewsletterSubscribe = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Subscribe to our newsletter</CardTitle>
+          <CardTitle className="text-xl">Prenumerera på vårt nyhetsbrev</CardTitle>
           <CardDescription>
-            Please sign in to subscribe to our newsletter.
+            Logga in för att prenumerera på vårt nyhetsbrev.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -72,11 +72,11 @@ const NewsletterSubscribe = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Newsletter</CardTitle>
+        <CardTitle className="text-xl">Nyhetsbrev</CardTitle>
         <CardDescription>
           {isSubscribed 
-            ? "You're subscribed to receive updates about new articles." 
-            : "Subscribe to receive updates about new articles."}
+            ? "Du prenumererar på uppdateringar om nya artiklar." 
+            : "Prenumerera för att få uppdateringar om nya artiklar."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -84,7 +84,7 @@ const NewsletterSubscribe = () => {
           <div className="space-y-4">
             <div className="p-3 bg-green-50 text-green-700 rounded-md flex items-center gap-2">
               <Mail size={16} />
-              <span>You're subscribed with: {email}</span>
+              <span>Du prenumererar med: {email}</span>
             </div>
             <Button 
               variant="outline" 
@@ -92,7 +92,7 @@ const NewsletterSubscribe = () => {
               disabled={isLoading}
               className="w-full"
             >
-              {isLoading ? "Processing..." : "Unsubscribe"}
+              {isLoading ? "Bearbetar..." : "Avprenumerera"}
             </Button>
           </div>
         ) : (
@@ -100,14 +100,14 @@ const NewsletterSubscribe = () => {
             <div className="flex gap-2">
               <Input
                 type="email"
-                placeholder="your@email.com"
+                placeholder="din@epost.se"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading || !!userEmail}
               />
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Processing..." : "Subscribe"}
+                {isLoading ? "Bearbetar..." : "Prenumerera"}
               </Button>
             </div>
           </form>

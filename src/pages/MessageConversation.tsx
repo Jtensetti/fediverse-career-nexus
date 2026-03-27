@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
+import { sv } from 'date-fns/locale';
 import { Send, AlertCircle, Loader2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
@@ -242,7 +243,7 @@ export default function MessageConversation() {
               className="mt-4"
               onClick={() => navigate('/auth')}
             >
-              Sign In
+              Logga in
             </Button>
           </div>
         </div>
@@ -299,7 +300,7 @@ export default function MessageConversation() {
               className="mt-4"
               onClick={() => navigate('/messages')}
             >
-              Back to Messages
+              Tillbaka till meddelanden
             </Button>
           </div>
         </div>
@@ -332,7 +333,7 @@ export default function MessageConversation() {
               <div className="flex items-center gap-2">
                 <CardTitle>
                   {otherUser?.fullname || otherUser?.username || (
-                    <span className="text-muted-foreground">Loading...</span>
+                    <span className="text-muted-foreground">Laddar...</span>
                   )}
                 </CardTitle>
                 {isFederated && otherUser?.homeInstance && (
@@ -383,7 +384,7 @@ export default function MessageConversation() {
                           }}
                         />
                         <p className="text-xs opacity-70 mt-1">
-                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true, locale: sv })}
                         </p>
                       </div>
                       {/* Reactions moved OUTSIDE the bubble for better visibility */}

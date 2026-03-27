@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
 
   const publishedDate = post.published_at || post.created_at;
   const formattedDate = publishedDate 
-    ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true })
+    ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true, locale: sv })
     : '';
 
   const handleDelete = async () => {

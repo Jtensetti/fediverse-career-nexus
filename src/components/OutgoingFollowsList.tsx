@@ -6,6 +6,7 @@ import { Clock, UserCheck, UserX, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getOutgoingFollows, subscribeToOutgoingFollows, type OutgoingFollow } from "@/services/outgoingFollowsService";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 
 interface OutgoingFollowsListProps {
   actorId: string;
@@ -44,21 +45,21 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
         return (
           <Badge variant="secondary" className="flex items-center gap-1">
             <Clock size={12} />
-            Pending
+            Väntande
           </Badge>
         );
       case 'accepted':
         return (
           <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800">
             <UserCheck size={12} />
-            Accepted
+            Accepterad
           </Badge>
         );
       case 'rejected':
         return (
           <Badge variant="destructive" className="flex items-center gap-1">
             <UserX size={12} />
-            Rejected
+            Avvisad
           </Badge>
         );
     }
@@ -77,10 +78,10 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Outgoing Follow Requests</CardTitle>
+          <CardTitle>Utgående följförfrågningar</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Laddar...</p>
         </CardContent>
       </Card>
     );
@@ -90,10 +91,10 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Outgoing Follow Requests</CardTitle>
+          <CardTitle>Utgående följförfrågningar</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No follow requests sent yet.</p>
+          <p className="text-muted-foreground">Inga följförfrågningar skickade ännu.</p>
         </CardContent>
       </Card>
     );
@@ -102,7 +103,7 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Outgoing Follow Requests</CardTitle>
+        <CardTitle>Utgående följförfrågningar</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {follows.map((follow) => (
@@ -115,11 +116,11 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
                 {getStatusBadge(follow.status)}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                Sent {formatDistanceToNow(new Date(follow.created_at), { addSuffix: true })}
+                Skickad {formatDistanceToNow(new Date(follow.created_at), { addSuffix: true, locale: sv })}
                 {follow.status !== 'pending' && follow.updated_at !== follow.created_at && (
                   <span>
                     {' • '}
-                    {follow.status} {formatDistanceToNow(new Date(follow.updated_at), { addSuffix: true })}
+                    {follow.status === 'accepted' ? 'accepterad' : 'avvisad'} {formatDistanceToNow(new Date(follow.updated_at), { addSuffix: true, locale: sv })}
                   </span>
                 )}
               </p>

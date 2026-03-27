@@ -28,7 +28,7 @@ export default function ServerKeyInitializer() {
     } catch (error) {
       console.error("Error checking server key:", error);
       toast({
-        title: "Error",
+        title: "Fel",
         description: "Kunde inte kontrollera servernyckels status",
         variant: "destructive",
       });
@@ -81,14 +81,14 @@ export default function ServerKeyInitializer() {
       
       setKeyStatus("created");
       toast({
-        title: "Success",
+        title: "Klart",
         description: "Servernyckel genererades",
         variant: "default",
       });
     } catch (error) {
       console.error("Error generating server key:", error);
       toast({
-        title: "Error",
+        title: "Fel",
         description: "Kunde inte generera servernyckel",
         variant: "destructive",
       });
@@ -113,14 +113,14 @@ export default function ServerKeyInitializer() {
       
       setActorKeyStatus("ok");
       toast({
-        title: "Success",
+        title: "Klart",
         description: "Aktörnycklar genererades",
         variant: "default",
       });
     } catch (error) {
       console.error("Error generating actor keys:", error);
       toast({
-        title: "Error",
+        title: "Fel",
         description: "Kunde inte generera aktörnycklar",
         variant: "destructive",
       });

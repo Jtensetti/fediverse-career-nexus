@@ -6,6 +6,7 @@ import { Calendar, MapPin, Globe, Building2, DollarSign, Bookmark } from "lucide
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -30,15 +31,15 @@ const formatSalary = (min: number | null, max: number | null, currency: string |
     return `${currencySymbol}${min.toLocaleString()}+`;
   }
   
-  return `Up to ${currencySymbol}${max?.toLocaleString()}`;
+  return `Upp till ${currencySymbol}${max?.toLocaleString()}`;
 };
 
 const JobTypeLabels: Record<string, string> = {
-  full_time: "Full-time",
-  part_time: "Part-time",
-  contract: "Contract",
-  internship: "Internship",
-  temporary: "Temporary"
+  full_time: "Heltid",
+  part_time: "Deltid",
+  contract: "Kontrakt",
+  internship: "Praktik",
+  temporary: "Tillfällig"
 };
 
 const JobCard = ({ job }: JobCardProps) => {
@@ -49,7 +50,7 @@ const JobCard = ({ job }: JobCardProps) => {
     e.preventDefault();
     e.stopPropagation();
     setIsSaved(!isSaved);
-    toast.success(isSaved ? "Removed from saved jobs" : "Job saved!");
+    toast.success(isSaved ? "Borttagen från sparade jobb" : "Jobb sparat!");
   };
 
   return (
@@ -78,7 +79,7 @@ const JobCard = ({ job }: JobCardProps) => {
               size="icon" 
               className="shrink-0 h-8 w-8"
               onClick={handleSave}
-              aria-label={isSaved ? "Remove from saved" : "Save job"}
+              aria-label={isSaved ? "Ta bort från sparade" : "Spara jobb"}
             >
               <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-primary text-primary' : ''}`} />
             </Button>
@@ -92,7 +93,7 @@ const JobCard = ({ job }: JobCardProps) => {
             {job.remote_allowed && (
               <Badge variant="secondary" className="text-xs">
                 <Globe className="h-3 w-3 mr-1" />
-                Remote
+                Distans
               </Badge>
             )}
           </div>
@@ -104,7 +105,7 @@ const JobCard = ({ job }: JobCardProps) => {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
-              <span>Posted {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true }) : "recently"}</span>
+              <span>Publicerad {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: sv }) : "nyligen"}</span>
             </div>
           </div>
           
@@ -153,7 +154,7 @@ const JobCard = ({ job }: JobCardProps) => {
         </CardContent>
         <CardFooter className="pt-0">
           <Button asChild className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="outline">
-            <Link to={`/jobs/${job.id}`}>View Details</Link>
+            <Link to={`/jobs/${job.id}`}>Visa detaljer</Link>
           </Button>
         </CardFooter>
       </Card>

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -135,7 +136,7 @@ const ModerationLog = ({ isAdmin = false }: ModerationLogProps) => {
                 <TableCell>{action.target_user_id}</TableCell>
                 <TableCell>{action.reason}</TableCell>
                 <TableCell>{action.moderator_id}</TableCell>
-                <TableCell>{formatDistanceToNow(action.timestamp, { addSuffix: true })}</TableCell>
+                <TableCell>{formatDistanceToNow(action.timestamp, { addSuffix: true, locale: sv })}</TableCell>
               </TableRow>
             ))}
           </TableBody>
