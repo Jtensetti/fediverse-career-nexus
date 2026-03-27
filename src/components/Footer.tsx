@@ -86,7 +86,7 @@ const Footer = () => {
               </svg>
             </a>
             <a 
-              href="https://github.com/Jtensetti/fediverse-career-nexus" 
+              href="https://github.com/Jtensetti/fediverse-career-nexus"
               target="_blank" 
               rel="noopener"
               className="text-muted-foreground hover:text-secondary transition-colors"
