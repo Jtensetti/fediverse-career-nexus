@@ -3,6 +3,7 @@ import { Article } from "@/services/articleService";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { FileText, ArrowRight } from "lucide-react";
 import ArticleAuthors from "./ArticleAuthors";
 import { ShareButton } from "@/components/common";
