@@ -89,7 +89,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
         {options.map((option, index) => (
           <div key={index} className="flex items-center gap-2">
             <Input
-              placeholder={`Option ${index + 1}`}
+              placeholder={`Alternativ ${index + 1}`}
               value={option}
               onChange={(e) => updateOption(index, e.target.value)}
               className="flex-1"
