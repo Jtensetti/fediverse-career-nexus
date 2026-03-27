@@ -93,7 +93,7 @@ const JobCard = ({ job }: JobCardProps) => {
             {job.remote_allowed && (
               <Badge variant="secondary" className="text-xs">
                 <Globe className="h-3 w-3 mr-1" />
-                Remote
+                Distans
               </Badge>
             )}
           </div>
