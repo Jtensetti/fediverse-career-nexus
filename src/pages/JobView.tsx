@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Globe, Link as LinkIcon, Bookmark, Building2, DollarSign, Clock, Users, TrendingUp, Plane } from "lucide-react";
 import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
 import { toast } from "sonner";
 import TransparencyScore from "@/components/TransparencyScore";
