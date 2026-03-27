@@ -1,92 +1,59 @@
 
 
-# Codebase Restructuring for Open-Source Readability
+# Förbättra anpassade flöden (Custom Feeds)
 
 ## Problem
-The codebase has ~90 loose component files in `src/components/`, ~55 flat service files in `src/services/`, and ~60 flat page files in `src/pages/`. This makes it hard for new contributors to navigate. Some subdirectories exist (e.g. `company/`, `homepage/`, `moderation/`) but most files are dumped at the top level.
+1. Både "Skapa anpassat flöde" och "Hantera flöden" i filter-dropdownen pekar till `/settings/feeds` — men den sidan hanterar bara generella flödesinställningar (standardflöde, dolda ord, reposts). Det finns ingen UI för att skapa/redigera custom feeds.
+2. `FeedRules`-modellen har redan stöd för taggar, nyckelord och användare, men det saknas UI för att konfigurera dessa regler — och det saknas stöd för organisationer/företag.
 
-## Approach
-Group files into **domain-based subdirectories** with barrel `index.ts` exports. Only file locations and import paths change — zero logic, design, or behavior changes.
+## Plan
 
----
+### 1. Utöka FeedRules-typen
+Lägg till `include_companies?: string[]` i `FeedRules`-interfacet i `feedPreferencesService.ts` så att man kan filtrera på organisationer/företag.
 
-## 1. Reorganize `src/components/` into domain folders
+### 2. Skapa en CreateCustomFeed-dialog (ny komponent)
+**`src/components/social/CreateCustomFeedDialog.tsx`**
 
-Move the ~90 loose files into these subdirectories (existing folders kept as-is):
+En dialog/sheet som öppnas direkt från filter-dropdownen (istället för att navigera iväg). Innehåller:
+- **Namn** och valfri **beskrivning**
+- **Intressen/taggar** — multi-select med fritext-input (chips), använder befintliga `INTEREST_CATEGORIES` som förslag
+- **Organisationer** — sökbar autocomplete som söker i `companies`-tabellen
+- **Specifika personer** — sökbar autocomplete som söker i `public_profiles`
+- **Nyckelord** — fritext-chips (include/exclude)
 
-| Folder | Files moved in |
-|--------|---------------|
-| `articles/` | ArticleCard, ArticleCardReactions, ArticleAuthors, ArticleEditor, ArticlePreviewCard, ArticleReactions, UserArticlesList |
-| `posts/` | PostComposer, PostEditDialog, PostReplyDialog, PostReplyThread, UserPostsList, QuoteRepostDialog, QuotedPostPreview, QuoteCardGenerator, InlineReplyComposer, CommentEditDialog, CommentPreview |
-| `reactions/` | EnhancedCommentReactions, EnhancedPostReactions, MessageReactions, ReactionUsersPopover, StackedReactionDisplay |
-| `jobs/` | JobCard, JobForm, JobInquiryButton, JobSearchFilter |
-| `events/` | EventForm |
-| `federation/` | FederatedFeed, FederatedPostCard, FederationAnalytics, FederationFollowButton, FederationInfo, FederationMetricsOverview, FederationMetricsWidget, FediverseBadge, BatchedFederationStats, RemoteInstancesTable, ShardedQueueStats, HealthCheckStatus, OutgoingFollowsList, ServerKeyInitializer |
-| `messaging/` | MessageRequestCard, DMPrivacySettings |
-| `auth/` | MFAEnrollDialog, MFASettings, MFAVerifyDialog, SessionExpiryWarning, ConsentCheckbox |
-| `settings/` | AccountMigrationSection, DataExportSection, DeleteAccountSection, EmailNotificationPreferences, FreelancerSettings, NetworkVisibilityToggle, ProfileVisitsToggle, SectionVisibilityToggle |
-| `content/` | ContentGate, ContentWarningDisplay, ContentWarningInput, LinkPreview, PollCreator, PollDisplay, ImageCropDialog, ImageLightbox, CoverImageUpload, ProfileImageUpload, MarkdownEditor |
-| `layout/` | DashboardLayout, Navbar, Footer, MobileBottomNav, MobileSearch, SkipToContent, AlertBanner, AlertManager, AriaLiveRegion, GlobalSearch, LanguageSwitcher, ModeToggle, NotificationBell |
-| `social/` | FollowAuthorButton, ConnectionBadge, SkillEndorsements, RecommendationsSection, StarterPackCard, TransparencyScore, VerificationBadge, VerificationRequest, FreelancerBadge, ReferralWidget, ProfileViewsWidget, FeedSelector, SavedItemsList, NewsletterSubscribe, UserActivityList |
-| `admin/` | ActorModeration, DomainModeration, ModerationActionDialog, ModerationHeader, ModerationLog, AdminFixSecurityInvoker |
-| `legal/` | CodeOfConduct, InstanceGuidelines, FAQ, Features, Technology |
-| `forms/` | FormErrorSummary, InlineErrorBanner, IntroTemplateSelector, MonthYearPicker, CallToAction |
+Sparar via befintlig `createCustomFeed()` i feedPreferencesService.
 
-Each folder gets an `index.ts` barrel export.
+### 3. Skapa en ManageCustomFeeds-dialog (ny komponent)
+**`src/components/social/ManageCustomFeedsDialog.tsx`**
 
-## 2. Reorganize `src/services/` into domain folders
+Listar användarens custom feeds med möjlighet att:
+- Redigera (öppnar CreateCustomFeed i edit-läge)
+- Ta bort (med bekräftelse)
+- Ändra ordning (drag eller upp/ner-knappar)
 
-| Folder | Files |
-|--------|-------|
-| `articles/` | articleService, articleReactionsService |
-| `posts/` | postService, postBoostService, postReplyService, pollService |
-| `auth/` | authService, mfaService, accountService |
-| `federation/` | federationService, federationAnalyticsService, federationHealthService, federationMentionService, activityPubService, actorService, outgoingFollowsService |
-| `company/` | companyService, companyAuditService, companyEmployeeService, companyFollowService, companyImageService, companyPostService, companyRolesService |
-| `messaging/` | messageService, messageRequestService, jobMessagingService |
-| `profile/` | profileService, profileEditService, profileCVService, profileViewService, sectionVisibilityService |
-| `social/` | connectionsService, authorFollowService, endorsementService, recommendationService, referralService, starterPackService |
-| `moderation/` | moderationService, reportService, blockService |
-| `search/` | searchService, advancedSearchService |
-| `content/` | reactionsService, reactionUsersService, savedItemsService, linkedinImportService |
-| `misc/` | newsletterService, notificationService, feedPreferencesService, userActivityService, onboardingRecommendationService, freelancerService, batchDataService, eventService, jobPostsService |
+### 4. Uppdatera FeedSelector
+- "Skapa anpassat flöde" öppnar `CreateCustomFeedDialog` direkt (ingen navigation)
+- "Hantera flöden" öppnar `ManageCustomFeedsDialog` direkt
+- Uppdatera listan efter skapa/redigera/ta bort
 
-Each folder gets an `index.ts` re-exporting everything for backward compatibility.
+### 5. Uppdatera FederatedFeed-komponenten
+När ett custom feed är valt (feedType = custom feed id):
+- Läs flödets `rules` från state
+- Filtrera posts client-side baserat på reglerna: matcha taggar, nyckelord, specifika user_ids och company_ids
 
-## 3. Reorganize `src/pages/` into domain folders
-
-| Folder | Files |
-|--------|-------|
-| `articles/` | Articles, ArticleView, ArticleCreate, ArticleEdit, ArticleManage |
-| `auth/` | Auth, AuthCallback, AuthRecovery, ConfirmEmail |
-| `jobs/` | Jobs, JobView, JobCreate, JobEdit, JobManage |
-| `events/` | Events, EventView, EventCreate, EventEdit |
-| `company/` | Companies, CompanyProfile, CompanyCreate, CompanyEdit, CompanyAdmin |
-| `federation/` | FederatedFeed, FederationGuide, Instances, AdminFederationHealth, AdminFederationMetrics, AdminInstances, ActorInbox, ActorOutbox, ActorProfile |
-| `messaging/` | Messages, MessageConversation |
-| `profile/` | Profile, ProfileEdit, Followers, Following, Connections |
-| `social/` | StarterPacks, StarterPackView, StarterPackCreate, Freelancers, SavedItems |
-| `legal/` | PrivacyPolicy, TermsOfService, CodeOfConductPage, CookiesPage, InstanceGuidelines |
-| `info/` | Mission, Documentation, HelpCenter |
-| *(root)* | Index, Home, Search, FeedSettings, Moderation, ModerationDashboard, Notifications, PostView, NotFound |
-
-## 4. Update all import paths
-
-After moving files, update every `import` statement across the codebase to point to the new locations. Barrel `index.ts` files ensure that external imports can use folder paths.
-
-## 5. Add a CONTRIBUTING.md
-
-Create a short contributor guide explaining the folder structure, how to run the project, and coding conventions.
+### 6. Inga databasändringar behövs
+`custom_feeds`-tabellen finns redan med `rules` som JSONB. Vi utökar bara vad som läggs i `rules`.
 
 ---
 
-## What does NOT change
-- Zero logic, UI, or behavior changes
-- No database changes
-- No edge function changes
-- No design/styling changes
-- File contents stay identical — only locations and imports change
+## Teknisk detalj
 
-## Scope
-~150+ files moved, ~200+ import paths updated, ~20 new `index.ts` barrel files, 1 new `CONTRIBUTING.md`.
+**Filer som skapas:**
+- `src/components/social/CreateCustomFeedDialog.tsx` — dialog med formulär för namn, taggar, personer, organisationer, nyckelord
+- `src/components/social/ManageCustomFeedsDialog.tsx` — lista + redigera/ta bort
+
+**Filer som ändras:**
+- `src/services/misc/feedPreferencesService.ts` — lägg till `include_companies` i `FeedRules`
+- `src/components/social/FeedSelector.tsx` — byt `<a href>` till dialog-triggers, lägg till state för dialogerna
+- `src/components/federation/FederatedFeed.tsx` — client-side filtrering när custom feed är aktivt
 
