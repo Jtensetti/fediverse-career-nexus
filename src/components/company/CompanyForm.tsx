@@ -265,7 +265,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.industry", "Industry")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Teknik, Sjukvård, etc." {...field} />
+                    <Input placeholder="Teknik, sjukvård, etc." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
