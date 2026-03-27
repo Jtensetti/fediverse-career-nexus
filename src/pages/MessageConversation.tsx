@@ -299,7 +299,7 @@ export default function MessageConversation() {
               className="mt-4"
               onClick={() => navigate('/messages')}
             >
-              Back to Messages
+              Tillbaka till meddelanden
             </Button>
           </div>
         </div>
