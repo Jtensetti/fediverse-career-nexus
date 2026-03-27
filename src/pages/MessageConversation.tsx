@@ -242,7 +242,7 @@ export default function MessageConversation() {
               className="mt-4"
               onClick={() => navigate('/auth')}
             >
-              Sign In
+              Logga in
             </Button>
           </div>
         </div>
