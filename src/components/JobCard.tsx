@@ -105,7 +105,7 @@ const JobCard = ({ job }: JobCardProps) => {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
-              <span>Posted {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true }) : "recently"}</span>
+              <span>Publicerad {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: sv }) : "nyligen"}</span>
             </div>
           </div>
           
