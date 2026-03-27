@@ -53,7 +53,7 @@ const Footer = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-muted-foreground text-center md:text-left">
-            © {new Date().getFullYear()} Nolto. {t("footer.copyright", "Open source under the")}{" "}
+            © {new Date().getFullYear()} Samverkan. {t("footer.copyright", "Open source under the")}{" "}
             <a 
               href="https://opensource.org/licenses/MIT" 
               target="_blank" 
