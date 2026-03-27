@@ -37,9 +37,7 @@ const timeOptions = () => {
     for (let minute of [0, 30]) {
       const h = hour.toString().padStart(2, "0");
       const m = minute.toString().padStart(2, "0");
-      const period = hour < 12 ? "AM" : "PM";
-      const hour12 = hour % 12 === 0 ? 12 : hour % 12;
-      const label = `${hour12}:${m.toString().padStart(2, "0")} ${period}`;
+      const label = `${h}:${m}`;
       times.push({ value: `${h}:${m}`, label });
     }
   }
