@@ -1,6 +1,7 @@
 export * from "./federationService";
 export * from "./federationAnalyticsService";
-export * from "./federationHealthService";
+// federationHealthService re-exports selectively to avoid conflicts with federationService
+export { checkFederationHealth, getFederationHealthHistory } from "./federationHealthService";
 export * from "./federationMentionService";
 export * from "./activityPubService";
 export * from "./actorService";
