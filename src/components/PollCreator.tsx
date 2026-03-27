@@ -73,7 +73,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-medium">
           <BarChart3 className="h-4 w-4" />
-          Poll Options
+          Omröstningsalternativ
         </div>
         <Button
           variant="ghost"
