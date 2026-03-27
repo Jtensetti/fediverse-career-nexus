@@ -81,7 +81,7 @@ export default function ServerKeyInitializer() {
       
       setKeyStatus("created");
       toast({
-        title: "Success",
+        title: "Klart",
         description: "Servernyckel genererades",
         variant: "default",
       });
