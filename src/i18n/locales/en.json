@@ -585,8 +585,8 @@
       "update": "Update",
       "delete": "Delete",
       "loading": "Loading...",
-      "companyDomain": "Company domain",
-      "companyDomainPlaceholder": "company.com",
+      "companyDomain": "Organisation domain",
+      "companyDomainPlaceholder": "organisation.com",
       "locationPlaceholder": "e.g. Stockholm",
       "pickDate": "Pick a date",
       "noExperience": "No experience added yet"
