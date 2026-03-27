@@ -1259,7 +1259,7 @@
     "createJobPost": "Create Job Post",
     "cancel": "Cancel",
     "titleValidation": "Title must be at least 5 characters",
-    "companyValidation": "Company name is required",
+    "companyValidation": "Organisation name is required",
     "locationValidation": "Location is required",
     "descriptionValidation": "Description must be at least 20 characters",
     "salaryValidation": "Minimum salary must be less than maximum salary"
