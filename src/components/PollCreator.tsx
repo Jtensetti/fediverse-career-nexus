@@ -116,7 +116,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
             className="w-full"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add option
+            Lägg till alternativ
           </Button>
         )}
       </div>
