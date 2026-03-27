@@ -3539,7 +3539,6 @@ export type Database = {
           auth_type: string | null
           avatar_url: string | null
           bio: string | null
-          contact_email: string | null
           created_at: string | null
           freelancer_availability: string | null
           freelancer_rate: string | null
@@ -3560,7 +3559,6 @@ export type Database = {
           auth_type?: string | null
           avatar_url?: string | null
           bio?: string | null
-          contact_email?: never
           created_at?: string | null
           freelancer_availability?: string | null
           freelancer_rate?: string | null
@@ -3581,7 +3579,6 @@ export type Database = {
           auth_type?: string | null
           avatar_url?: string | null
           bio?: string | null
-          contact_email?: never
           created_at?: string | null
           freelancer_availability?: string | null
           freelancer_rate?: string | null
