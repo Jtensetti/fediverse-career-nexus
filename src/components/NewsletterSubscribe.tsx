@@ -100,7 +100,7 @@ const NewsletterSubscribe = () => {
             <div className="flex gap-2">
               <Input
                 type="email"
-                placeholder="your@email.com"
+                placeholder="din@epost.se"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
