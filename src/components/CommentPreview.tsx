@@ -197,7 +197,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
           <div className="flex-1 min-w-0">
             <div className="bg-muted/50 rounded-lg px-3 py-1.5">
               <div className="flex items-center gap-1.5">
-                <Link to={comment.company ? `/company/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`} className="text-xs font-medium hover:underline">
+                <Link to={comment.company ? `/organisation/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`} className="text-xs font-medium hover:underline">
                   {comment.author.fullname || comment.author.username || 'Unknown'}
                 </Link>
                 {comment.company && (
