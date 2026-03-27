@@ -148,7 +148,8 @@
     "selectDate": "Välj datum",
     "selectTime": "Välj tid",
     "done": "Klar",
-    "whatsOnMind": "Vad tänker du på?"
+    "whatsOnMind": "Vad tänker du på?",
+    "postingToFeed": "Publicerar i ditt flöde"
   },
   "reactions": {
     "react": "Reagera",
