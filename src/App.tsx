@@ -92,6 +92,20 @@ function JoinRedirect() {
   return <Navigate to={`/auth/signup?ref=${code}`} replace />;
 }
 
+// Redirect components for old company URLs
+function CompanySlugRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/organisation/${slug}`} replace />;
+}
+function CompanySlugEditRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/organisation/${slug}/redigera`} replace />;
+}
+function CompanySlugAdminRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/organisation/${slug}/admin`} replace />;
+}
+
 function App() {
   const toasterConfig = {
     position: "top-center" as const,
