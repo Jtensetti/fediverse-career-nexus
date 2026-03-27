@@ -92,7 +92,7 @@ const NewsletterSubscribe = () => {
               disabled={isLoading}
               className="w-full"
             >
-              {isLoading ? "Processing..." : "Unsubscribe"}
+              {isLoading ? "Bearbetar..." : "Avprenumerera"}
             </Button>
           </div>
         ) : (
