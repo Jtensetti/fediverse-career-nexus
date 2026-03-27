@@ -42,7 +42,7 @@ export default function Companies() {
         </div>
         {user && (
           <Button asChild>
-            <Link to="/companies/create">
+            <Link to="/organisationer/skapa">
               <Plus className="h-4 w-4 mr-2" />
               {t("companies.create")}
             </Link>
@@ -89,7 +89,7 @@ export default function Companies() {
           }
           action={
             user
-              ? { label: t("companies.create"), link: "/companies/create" }
+              ? { label: t("companies.create"), link: "/organisationer/skapa" }
               : { label: t("auth.signUp"), link: "/auth/signup" }
           }
           secondaryAction={

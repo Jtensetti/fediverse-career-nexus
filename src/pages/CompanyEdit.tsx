@@ -48,7 +48,7 @@ export default function CompanyEdit() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company', slug] });
       toast.success(t("companies.updateSuccess", "Company updated successfully"));
-      navigate(`/company/${slug}`);
+      navigate(`/organisation/${slug}`);
     },
     onError: (error: Error) => {
       toast.error(error.message || t("companies.updateError", "Failed to update company"));
@@ -81,7 +81,7 @@ export default function CompanyEdit() {
             icon={Building2}
             title={t("companies.notFound", "Company not found")}
             description={t("companies.notFoundDescription", "This company doesn't exist")}
-            action={{ label: t("companies.browseAll", "Browse Companies"), link: "/companies" }}
+            action={{ label: t("companies.browseAll", "Browse Companies"), link: "/organisationer" }}
           />
         </main>
         <Footer />
@@ -98,7 +98,7 @@ export default function CompanyEdit() {
             icon={Building2}
             title={t("companies.noAccess", "Access denied")}
             description={t("companies.noAccessDescription", "You don't have permission to edit this company")}
-            action={{ label: t("companies.viewCompany", "View Company"), link: `/company/${slug}` }}
+            action={{ label: t("companies.viewCompany", "View Company"), link: `/organisation/${slug}` }}
           />
         </main>
         <Footer />
@@ -116,7 +116,7 @@ export default function CompanyEdit() {
       <main className="flex-grow">
         <div className="container max-w-3xl mx-auto py-10 px-4 sm:px-6">
           <Button variant="ghost" asChild className="mb-4">
-            <Link to={`/company/${slug}`}>
+            <Link to={`/organisation/${slug}`}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t("common.back", "Back")}
             </Link>

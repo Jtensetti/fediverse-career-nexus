@@ -11,7 +11,7 @@ interface CompanyCardProps {
 
 export default function CompanyCard({ company }: CompanyCardProps) {
   return (
-    <Link to={`/company/${company.slug}`}>
+    <Link to={`/organisation/${company.slug}`}>
       <Card className="card-interactive h-full">
         <CardContent className="p-4">
           {/* Banner placeholder */}

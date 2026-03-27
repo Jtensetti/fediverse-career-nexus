@@ -89,7 +89,7 @@ export default function CompanyProfile() {
             icon={Building2}
             title={t("companies.notFound", "Company not found")}
             description={t("companies.notFoundDescription", "This company page doesn't exist or has been removed")}
-            action={{ label: t("companies.browseAll", "Browse Companies"), link: "/companies" }}
+            action={{ label: t("companies.browseAll", "Browse Companies"), link: "/organisationer" }}
           />
         </main>
         <Footer />

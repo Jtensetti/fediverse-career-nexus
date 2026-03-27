@@ -92,6 +92,20 @@ function JoinRedirect() {
   return <Navigate to={`/auth/signup?ref=${code}`} replace />;
 }
 
+// Redirect components for old company URLs
+function CompanySlugRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/organisation/${slug}`} replace />;
+}
+function CompanySlugEditRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/organisation/${slug}/redigera`} replace />;
+}
+function CompanySlugAdminRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/organisation/${slug}/admin`} replace />;
+}
+
 function App() {
   const toasterConfig = {
     position: "top-center" as const,
@@ -131,12 +145,18 @@ function App() {
                     <Route path="/settings/feeds" element={<ProtectedRoute><FeedSettings /></ProtectedRoute>} />
                     <Route path="/search" element={<Search />} />
                     <Route path="/freelancers" element={<Freelancers />} />
-                    {/* Company routes */}
-                    <Route path="/companies" element={<Companies />} />
-                    <Route path="/company/:slug" element={<CompanyProfile />} />
-                    <Route path="/companies/create" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
-                    <Route path="/company/:slug/edit" element={<ProtectedRoute><CompanyEdit /></ProtectedRoute>} />
-                    <Route path="/company/:slug/admin" element={<ProtectedRoute><CompanyAdmin /></ProtectedRoute>} />
+                    {/* Organisation routes */}
+                    <Route path="/organisationer" element={<Companies />} />
+                    <Route path="/organisation/:slug" element={<CompanyProfile />} />
+                    <Route path="/organisationer/skapa" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
+                    <Route path="/organisation/:slug/redigera" element={<ProtectedRoute><CompanyEdit /></ProtectedRoute>} />
+                    <Route path="/organisation/:slug/admin" element={<ProtectedRoute><CompanyAdmin /></ProtectedRoute>} />
+                    {/* Redirects from old company URLs */}
+                    <Route path="/companies" element={<Navigate to="/organisationer" replace />} />
+                    <Route path="/companies/create" element={<Navigate to="/organisationer/skapa" replace />} />
+                    <Route path="/company/:slug" element={<CompanySlugRedirect />} />
+                    <Route path="/company/:slug/edit" element={<CompanySlugEditRedirect />} />
+                    <Route path="/company/:slug/admin" element={<CompanySlugAdminRedirect />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />
