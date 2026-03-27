@@ -12,12 +12,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           <div className="col-span-1">
             <div className="flex items-center mb-4">
-              <img 
-                src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                alt="Nolto Mascot" 
-                className="w-12 h-12 mr-3"
-              />
-              <h3 className="text-lg font-bold text-primary">Nolto</h3>
+              <h3 className="text-lg font-bold text-primary">Samverkan</h3>
             </div>
             <p className="text-muted-foreground mb-4">
               {t("footer.tagline", "A professional social network built on the ActivityPub federation protocol.")}
