@@ -32,7 +32,7 @@ export default function CompanyCreate() {
       
       if (company) {
         toast.success(t("companies.createSuccess", "Company created successfully!"));
-        navigate(`/company/${company.slug}`);
+        navigate(`/organisation/${company.slug}`);
       }
     } catch (error: any) {
       console.error("Failed to create company:", error);
