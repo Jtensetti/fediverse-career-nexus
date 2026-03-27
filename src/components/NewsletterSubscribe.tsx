@@ -84,7 +84,7 @@ const NewsletterSubscribe = () => {
           <div className="space-y-4">
             <div className="p-3 bg-green-50 text-green-700 rounded-md flex items-center gap-2">
               <Mail size={16} />
-              <span>You're subscribed with: {email}</span>
+              <span>Du prenumererar med: {email}</span>
             </div>
             <Button 
               variant="outline" 
