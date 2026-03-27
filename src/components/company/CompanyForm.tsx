@@ -154,7 +154,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.companyName", "Company Name")} *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Företagsnamn AB" {...field} />
+                    <Input placeholder="Organisationsnamn" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -171,7 +171,7 @@ export default function CompanyForm({
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">/organisation/</span>
                       <Input 
-                        placeholder="foretagsnamn" 
+                        placeholder="organisationsnamn" 
                         {...field} 
                         disabled={isEdit}
                         className={isEdit ? "bg-muted" : ""}
@@ -224,7 +224,7 @@ export default function CompanyForm({
                   <FormLabel>{t("companyForm.about", "About")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Berätta om ditt företag..."
+                      placeholder="Berätta om din organisation..."
                       className="min-h-[120px]"
                       {...field} 
                     />
@@ -265,7 +265,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.industry", "Industry")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Teknik, Sjukvård, etc." {...field} />
+                    <Input placeholder="Teknik, sjukvård, etc." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
