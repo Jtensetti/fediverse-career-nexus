@@ -1,59 +1,59 @@
 
 
-# Byt "Företag" → "Organisation" överallt, inklusive URL:er
+# Fix 3 Security Issues
 
-## Sammanfattning
-Byta terminologi från "företag/company" till "organisation" i hela appen: URL:er, synlig text, i18n-nycklar och navigering. Databasens tabellnamn (companies, company_roles etc.) behålls oförändrade — det är bara den yttre ytan som ändras.
+## 1. `cv_sections` — public read without auth
+**Issue**: SELECT policy allows anyone (including unauthenticated) to read all CV sections.
+**Fix**: Replace the permissive `true` policy with `auth.uid() = user_id` so users can only read their own CV sections. Since `cv_sections` isn't used anywhere in frontend code currently, this won't break anything. If public profile viewing needs CV data later, a visibility-aware policy can be added.
 
-## Steg 1: Ändra URL-rutter i App.tsx
-- `/companies` → `/organisationer`
-- `/companies/create` → `/organisationer/skapa`
-- `/company/:slug` → `/organisation/:slug`
-- `/company/:slug/edit` → `/organisation/:slug/redigera`
-- `/company/:slug/admin` → `/organisation/:slug/admin`
-- Lägg till redirects från gamla URL:er för eventuella bokmärken
+**Migration**:
+```sql
+DROP POLICY IF EXISTS "Anyone can view cv sections" ON public.cv_sections;
+CREATE POLICY "Users can view own cv sections"
+  ON public.cv_sections FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+```
 
-## Steg 2: Uppdatera alla interna länkar (~10 filer)
-Alla `Link to=` och `navigate()` som pekar på `/companies` eller `/company/` måste uppdateras:
+## 2. `user_achievements` — unrestricted INSERT
+**Issue**: INSERT policy with `true` on public role lets anyone grant achievements to any user.
+**Fix**: Remove the permissive public INSERT policy and replace with a service-role-only approach. Since achievements should be granted by backend logic, restrict INSERT to authenticated users inserting their own rows (or remove client insert entirely).
 
-| Fil | Ändringar |
-|-----|-----------|
-| `Navbar.tsx` | href: `/companies` → `/organisationer` |
-| `CompanyCard.tsx` | `/company/${slug}` → `/organisation/${slug}` |
-| `CompanyHeader.tsx` | admin/edit-länkar |
-| `CompanyPostCard.tsx` | företagslänkar |
-| `CompanyCreate.tsx` | navigate + tillbaka-länk |
-| `CompanyEdit.tsx` | navigate + tillbaka-länk |
-| `CompanyAdmin.tsx` | navigate + tillbaka-länk |
-| `CompanyProfile.tsx` | "browse all"-länk |
-| `Companies.tsx` | create-länk |
-| `CommentPreview.tsx` | profilkoppling |
-| `FederatedPostCard.tsx` | företagslänkar |
+**Migration**:
+```sql
+DROP POLICY IF EXISTS "System can grant achievements" ON public.user_achievements;
+CREATE POLICY "Users can view own achievements"
+  ON public.user_achievements FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+```
+(Service role bypasses RLS, so backend/edge functions can still grant achievements.)
 
-## Steg 3: Uppdatera sv.json — byt alla "företag"-strängar till "organisation"
-~40 strängar att ändra, t.ex.:
-- `nav.companies`: "Företag" → "Organisationer"
-- `companies.title`: "Företag" → "Organisationer"
-- `companies.subtitle`: "Upptäck och följ företag" → "Upptäck och följ organisationer"
-- `companyForm.companyName`: "Företagsnamn" → "Organisationsnamn"
-- `companyHeader.companySize`: "företagsstorlek" → "organisationsstorlek"
-- `companyForm.companyDetails`: "Företagsdetaljer" → "Organisationsdetaljer"
-- Alla liknande i `companyPost`, `companyImage`, `companyFollow`, `companyAdmin`, `jobForm` etc.
+## 3. `remote_actors_cache` — public write access
+**Issue**: ALL policy with `true` on public role lets unauthenticated users write/delete cache entries.
+**Fix**: Split into read-only public policy + authenticated write. The client-side write in `actorService.ts` runs as an authenticated user, so an authenticated INSERT/UPDATE policy suffices. Edge functions use service role which bypasses RLS.
 
-## Steg 4: Uppdatera en.json med engelska motsvarigheter
-Samma nycklar, men "Company" → "Organisation" på engelska.
+**Migration**:
+```sql
+DROP POLICY IF EXISTS "Service can manage remote actors cache" ON public.remote_actors_cache;
 
-## Steg 5: Hårdkodade strängar
-- `CompanyCard.tsx`: "följare" (redan svensk men kontexten "företag" kan finnas)
-- `FederatedPostCard.tsx`: `postCard.companyPage` → behöver uppdateras i sv.json
-- `nav.companyPage` i sv.json: "Företagssida" → "Organisationssida"
+CREATE POLICY "Anyone can read remote actors cache"
+  ON public.remote_actors_cache FOR SELECT
+  TO public
+  USING (true);
+
+CREATE POLICY "Authenticated users can insert remote actors cache"
+  ON public.remote_actors_cache FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update remote actors cache"
+  ON public.remote_actors_cache FOR UPDATE
+  TO authenticated
+  USING (true);
+```
 
 ---
 
-## Teknisk detalj
-- **Databas ändras INTE** — tabeller heter fortfarande `companies`, `company_roles` etc.
-- **Filnamn ändras INTE** — `CompanyCard.tsx`, `companyService.ts` etc. behåller sina namn
-- Bara URL-rutter (App.tsx) och synlig text (i18n + hårdkodade strängar) ändras
-- ~12 komponentfiler + 2 i18n-filer
-- Redirects från gamla URL:er för bakåtkompatibilitet
+**No code changes needed** — only 1 database migration with policy updates. No functionality will break.
 
