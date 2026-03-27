@@ -187,7 +187,7 @@ const EventForm = ({
                     <FormControl>
                       <Button variant="outline" className="w-full pl-3 text-left font-normal">
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "PPP") : <span>{t("eventFormLabels.pickDate")}</span>}
+                        {field.value ? format(field.value, "PPP", { locale: sv }) : <span>{t("eventFormLabels.pickDate")}</span>}
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
