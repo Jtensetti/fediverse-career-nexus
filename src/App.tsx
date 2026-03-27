@@ -131,12 +131,18 @@ function App() {
                     <Route path="/settings/feeds" element={<ProtectedRoute><FeedSettings /></ProtectedRoute>} />
                     <Route path="/search" element={<Search />} />
                     <Route path="/freelancers" element={<Freelancers />} />
-                    {/* Company routes */}
-                    <Route path="/companies" element={<Companies />} />
-                    <Route path="/company/:slug" element={<CompanyProfile />} />
-                    <Route path="/companies/create" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
-                    <Route path="/company/:slug/edit" element={<ProtectedRoute><CompanyEdit /></ProtectedRoute>} />
-                    <Route path="/company/:slug/admin" element={<ProtectedRoute><CompanyAdmin /></ProtectedRoute>} />
+                    {/* Organisation routes */}
+                    <Route path="/organisationer" element={<Companies />} />
+                    <Route path="/organisation/:slug" element={<CompanyProfile />} />
+                    <Route path="/organisationer/skapa" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
+                    <Route path="/organisation/:slug/redigera" element={<ProtectedRoute><CompanyEdit /></ProtectedRoute>} />
+                    <Route path="/organisation/:slug/admin" element={<ProtectedRoute><CompanyAdmin /></ProtectedRoute>} />
+                    {/* Redirects from old company URLs */}
+                    <Route path="/companies" element={<Navigate to="/organisationer" replace />} />
+                    <Route path="/companies/create" element={<Navigate to="/organisationer/skapa" replace />} />
+                    <Route path="/company/:slug" element={<Navigate to="/organisation/:slug" replace />} />
+                    <Route path="/company/:slug/edit" element={<Navigate to="/organisation/:slug/redigera" replace />} />
+                    <Route path="/company/:slug/admin" element={<Navigate to="/organisation/:slug/admin" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />

@@ -89,7 +89,7 @@ export default function Companies() {
           }
           action={
             user
-              ? { label: t("companies.create"), link: "/companies/create" }
+              ? { label: t("companies.create"), link: "/organisationer/skapa" }
               : { label: t("auth.signUp"), link: "/auth/signup" }
           }
           secondaryAction={

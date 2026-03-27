@@ -212,7 +212,7 @@ export default function FederatedPostCard({
   // Get the profile link target
   const getProfileLink = () => {
     if (isCompanyPost) {
-      return `/company/${post.company!.slug}`;
+      return `/organisation/${post.company!.slug}`;
     }
     if (post.source === 'local') {
       return `/profile/${post.profile?.username || post.user_id}`;

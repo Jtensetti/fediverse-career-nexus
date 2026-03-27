@@ -116,7 +116,7 @@ export default function CompanyEdit() {
       <main className="flex-grow">
         <div className="container max-w-3xl mx-auto py-10 px-4 sm:px-6">
           <Button variant="ghost" asChild className="mb-4">
-            <Link to={`/company/${slug}`}>
+            <Link to={`/organisation/${slug}`}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t("common.back", "Back")}
             </Link>

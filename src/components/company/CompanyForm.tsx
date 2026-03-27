@@ -169,7 +169,7 @@ export default function CompanyForm({
                   <FormLabel>{t("companyForm.companyUrl", "Company URL")} *</FormLabel>
                   <FormControl>
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-sm">/company/</span>
+                      <span className="text-muted-foreground text-sm">/organisation/</span>
                       <Input 
                         placeholder="foretagsnamn" 
                         {...field} 

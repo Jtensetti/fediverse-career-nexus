@@ -108,7 +108,7 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
                       </Link>
                     </Button>
                     <Button variant="outline" size="sm" asChild>
-                      <Link to={`/company/${company.slug}/edit`}>
+                      <Link to={`/organisation/${company.slug}/redigera`}>
                         <Settings className="h-4 w-4 mr-2" />
                         {t("companyHeader.settings", "Settings")}
                       </Link>

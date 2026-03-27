@@ -79,7 +79,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
 
             <div className="flex-1 min-w-0">
               <Link 
-                to={`/company/${company?.slug}`}
+                to={`/organisation/${company?.slug}`}
                 className="font-semibold hover:underline truncate block"
               >
                 {company?.name || t("companyPost.company", "Company")}

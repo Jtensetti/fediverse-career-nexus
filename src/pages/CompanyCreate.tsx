@@ -53,7 +53,7 @@ export default function CompanyCreate() {
         <div className="container max-w-3xl mx-auto py-10 px-4 sm:px-6">
           <div className="mb-8">
             <Button variant="ghost" size="sm" asChild className="mb-4">
-              <Link to="/companies">
+              <Link to="/organisationer">
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 {t("companies.backToCompanies", "Back to Companies")}
               </Link>

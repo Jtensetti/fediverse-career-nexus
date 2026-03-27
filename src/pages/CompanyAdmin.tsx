@@ -136,7 +136,7 @@ export default function CompanyAdmin() {
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
             <Button variant="ghost" size="sm" asChild>
-              <Link to={`/company/${slug}`}>
+              <Link to={`/organisation/${slug}`}>
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 {t("common.back", "Back")}
               </Link>
