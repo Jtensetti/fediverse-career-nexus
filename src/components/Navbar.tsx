@@ -320,12 +320,7 @@ const Navbar = () => {
                 <SheetHeader className="p-6 border-b">
                   <SheetTitle>
                     <div className="flex items-center gap-2">
-                      <img 
-                        src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                        alt="Nolto" 
-                        className="w-8 h-8" 
-                      />
-                      <span className="font-display text-xl">Nolto</span>
+                      <span className="font-display text-xl">Samverkan</span>
                     </div>
                   </SheetTitle>
                   <SheetDescription className="sr-only">

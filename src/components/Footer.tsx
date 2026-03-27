@@ -68,7 +68,7 @@ const Footer = () => {
             <Link to="/privacy" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.privacy", "Privacy")}</Link>
             <Link to="/cookies" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.cookies", "Cookies")}</Link>
             <a 
-              href="https://codeberg.org/Tensetti/Nolto" 
+              href="https://codeberg.org/Tensetti/Samverkan" 
               target="_blank" 
               rel="noopener"
               className="text-muted-foreground hover:text-secondary transition-colors"
