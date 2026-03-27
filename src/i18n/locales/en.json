@@ -1570,7 +1570,7 @@
     "helpsCandidate": "Helps candidates trust your listing",
     "interviewPlaceholder": "e.g. 3 rounds: phone screen, technical, final",
     "publishDescription": "Make this job post visible to candidates right away",
-    "companyValidation": "Company name is required",
+    "companyValidation": "Organisation name is required",
     "locationValidation": "Location is required",
     "createJobPost": "Create Job Post"
   },
