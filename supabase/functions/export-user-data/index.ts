@@ -330,7 +330,7 @@ function buildGdprExport(user: any, d: any) {
     headers: {
       ...corsHeaders,
       "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename="nolto-data-export-${new Date().toISOString().split('T')[0]}.json"`
+      "Content-Disposition": `attachment; filename="samverkan-data-export-${new Date().toISOString().split('T')[0]}.json"`
     }
   });
 }
@@ -574,7 +574,7 @@ function buildActivityPubExport(user: any, d: any, supabaseUrl: string) {
     headers: {
       ...corsHeaders,
       "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename="nolto-activitypub-export-${new Date().toISOString().split('T')[0]}.json"`
+      "Content-Disposition": `attachment; filename="samverkan-activitypub-export-${new Date().toISOString().split('T')[0]}.json"`
     }
   });
 }

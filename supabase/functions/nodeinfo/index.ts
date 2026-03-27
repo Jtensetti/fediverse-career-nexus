@@ -94,7 +94,7 @@ serve(async (req) => {
       const nodeInfo = {
         version: "2.0",
         software: {
-          name: "nolto",
+          name: "samverkan",
           version: "1.0.0"
         },
         protocols: ["activitypub"],
