@@ -1555,7 +1555,7 @@
     "cancel": "Cancel",
     "submitting": "Submitting...",
     "titleValidation": "Title must be at least 5 characters",
-    "companyRequired": "Company name is required",
+    "companyRequired": "Organisation name is required",
     "locationRequired": "Location is required",
     "descriptionValidation": "Description must be at least 20 characters",
     "salaryValidation": "Minimum salary must be less than maximum salary",
