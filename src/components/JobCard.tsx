@@ -35,11 +35,11 @@ const formatSalary = (min: number | null, max: number | null, currency: string |
 };
 
 const JobTypeLabels: Record<string, string> = {
-  full_time: "Full-time",
-  part_time: "Part-time",
-  contract: "Contract",
-  internship: "Internship",
-  temporary: "Temporary"
+  full_time: "Heltid",
+  part_time: "Deltid",
+  contract: "Kontrakt",
+  internship: "Praktik",
+  temporary: "Tillfällig"
 };
 
 const JobCard = ({ job }: JobCardProps) => {
