@@ -1627,7 +1627,7 @@
     "writeComment": "Write a comment...",
     "addComment": "Add a comment...",
     "viewAllComments": "View all {{count}} comments",
-    "companyReply": "Company",
+    "companyReply": "Organisation",
     "removeFromSaved": "Remove from saved",
     "saveComment": "Save comment",
     "commentUnavailable": "Comment unavailable"
