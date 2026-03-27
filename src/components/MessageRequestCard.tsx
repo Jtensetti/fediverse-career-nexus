@@ -86,7 +86,7 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground flex-shrink-0">
-                  {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(request.created_at), { addSuffix: true, locale: sv })}
                 </span>
               </div>
 
