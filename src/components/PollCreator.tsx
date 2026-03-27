@@ -123,7 +123,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 space-y-2">
-          <Label className="text-xs text-muted-foreground">Duration</Label>
+          <Label className="text-xs text-muted-foreground">Varaktighet</Label>
           <Select
             value={durationMinutes.toString()}
             onValueChange={handleDurationChange}
