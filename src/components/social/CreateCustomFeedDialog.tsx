@@ -106,15 +106,15 @@ export default function CreateCustomFeedDialog({
       setUserSearching(true);
       const { data } = await supabase
         .from("profiles")
-        .select("id, display_name, username")
+        .select("id, fullname, username")
         .or(
-          `display_name.ilike.%${userSearch}%,username.ilike.%${userSearch}%`
+          `fullname.ilike.%${userSearch}%,username.ilike.%${userSearch}%`
         )
         .limit(5);
       setUserResults(
         (data || []).map((p) => ({
           id: p.id,
-          label: p.display_name || p.username || p.id,
+          label: p.fullname || p.username || p.id,
           sublabel: p.username ? `@${p.username}` : undefined,
         }))
       );
