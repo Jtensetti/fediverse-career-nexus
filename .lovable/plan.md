@@ -1,60 +1,92 @@
-# Completed: Rebrand Nolto → Samverkan
 
-All instances of "Nolto" replaced with "Samverkan" and domain "nolto.social" replaced with "samverkan.se" across ~70 files including frontend components, edge functions, i18n files, and config files. Elephant mascot logo removed from all locations.
 
-# Fix 3 Security Issues
+# Codebase Restructuring for Open-Source Readability
 
-## 1. `cv_sections` — public read without auth
-**Issue**: SELECT policy allows anyone (including unauthenticated) to read all CV sections.
-**Fix**: Replace the permissive `true` policy with `auth.uid() = user_id` so users can only read their own CV sections. Since `cv_sections` isn't used anywhere in frontend code currently, this won't break anything. If public profile viewing needs CV data later, a visibility-aware policy can be added.
+## Problem
+The codebase has ~90 loose component files in `src/components/`, ~55 flat service files in `src/services/`, and ~60 flat page files in `src/pages/`. This makes it hard for new contributors to navigate. Some subdirectories exist (e.g. `company/`, `homepage/`, `moderation/`) but most files are dumped at the top level.
 
-**Migration**:
-```sql
-DROP POLICY IF EXISTS "Anyone can view cv sections" ON public.cv_sections;
-CREATE POLICY "Users can view own cv sections"
-  ON public.cv_sections FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
-```
-
-## 2. `user_achievements` — unrestricted INSERT
-**Issue**: INSERT policy with `true` on public role lets anyone grant achievements to any user.
-**Fix**: Remove the permissive public INSERT policy and replace with a service-role-only approach. Since achievements should be granted by backend logic, restrict INSERT to authenticated users inserting their own rows (or remove client insert entirely).
-
-**Migration**:
-```sql
-DROP POLICY IF EXISTS "System can grant achievements" ON public.user_achievements;
-CREATE POLICY "Users can view own achievements"
-  ON public.user_achievements FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
-```
-(Service role bypasses RLS, so backend/edge functions can still grant achievements.)
-
-## 3. `remote_actors_cache` — public write access
-**Issue**: ALL policy with `true` on public role lets unauthenticated users write/delete cache entries.
-**Fix**: Split into read-only public policy + authenticated write. The client-side write in `actorService.ts` runs as an authenticated user, so an authenticated INSERT/UPDATE policy suffices. Edge functions use service role which bypasses RLS.
-
-**Migration**:
-```sql
-DROP POLICY IF EXISTS "Service can manage remote actors cache" ON public.remote_actors_cache;
-
-CREATE POLICY "Anyone can read remote actors cache"
-  ON public.remote_actors_cache FOR SELECT
-  TO public
-  USING (true);
-
-CREATE POLICY "Authenticated users can insert remote actors cache"
-  ON public.remote_actors_cache FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
-
-CREATE POLICY "Authenticated users can update remote actors cache"
-  ON public.remote_actors_cache FOR UPDATE
-  TO authenticated
-  USING (true);
-```
+## Approach
+Group files into **domain-based subdirectories** with barrel `index.ts` exports. Only file locations and import paths change — zero logic, design, or behavior changes.
 
 ---
 
-**No code changes needed** — only 1 database migration with policy updates. No functionality will break.
+## 1. Reorganize `src/components/` into domain folders
+
+Move the ~90 loose files into these subdirectories (existing folders kept as-is):
+
+| Folder | Files moved in |
+|--------|---------------|
+| `articles/` | ArticleCard, ArticleCardReactions, ArticleAuthors, ArticleEditor, ArticlePreviewCard, ArticleReactions, UserArticlesList |
+| `posts/` | PostComposer, PostEditDialog, PostReplyDialog, PostReplyThread, UserPostsList, QuoteRepostDialog, QuotedPostPreview, QuoteCardGenerator, InlineReplyComposer, CommentEditDialog, CommentPreview |
+| `reactions/` | EnhancedCommentReactions, EnhancedPostReactions, MessageReactions, ReactionUsersPopover, StackedReactionDisplay |
+| `jobs/` | JobCard, JobForm, JobInquiryButton, JobSearchFilter |
+| `events/` | EventForm |
+| `federation/` | FederatedFeed, FederatedPostCard, FederationAnalytics, FederationFollowButton, FederationInfo, FederationMetricsOverview, FederationMetricsWidget, FediverseBadge, BatchedFederationStats, RemoteInstancesTable, ShardedQueueStats, HealthCheckStatus, OutgoingFollowsList, ServerKeyInitializer |
+| `messaging/` | MessageRequestCard, DMPrivacySettings |
+| `auth/` | MFAEnrollDialog, MFASettings, MFAVerifyDialog, SessionExpiryWarning, ConsentCheckbox |
+| `settings/` | AccountMigrationSection, DataExportSection, DeleteAccountSection, EmailNotificationPreferences, FreelancerSettings, NetworkVisibilityToggle, ProfileVisitsToggle, SectionVisibilityToggle |
+| `content/` | ContentGate, ContentWarningDisplay, ContentWarningInput, LinkPreview, PollCreator, PollDisplay, ImageCropDialog, ImageLightbox, CoverImageUpload, ProfileImageUpload, MarkdownEditor |
+| `layout/` | DashboardLayout, Navbar, Footer, MobileBottomNav, MobileSearch, SkipToContent, AlertBanner, AlertManager, AriaLiveRegion, GlobalSearch, LanguageSwitcher, ModeToggle, NotificationBell |
+| `social/` | FollowAuthorButton, ConnectionBadge, SkillEndorsements, RecommendationsSection, StarterPackCard, TransparencyScore, VerificationBadge, VerificationRequest, FreelancerBadge, ReferralWidget, ProfileViewsWidget, FeedSelector, SavedItemsList, NewsletterSubscribe, UserActivityList |
+| `admin/` | ActorModeration, DomainModeration, ModerationActionDialog, ModerationHeader, ModerationLog, AdminFixSecurityInvoker |
+| `legal/` | CodeOfConduct, InstanceGuidelines, FAQ, Features, Technology |
+| `forms/` | FormErrorSummary, InlineErrorBanner, IntroTemplateSelector, MonthYearPicker, CallToAction |
+
+Each folder gets an `index.ts` barrel export.
+
+## 2. Reorganize `src/services/` into domain folders
+
+| Folder | Files |
+|--------|-------|
+| `articles/` | articleService, articleReactionsService |
+| `posts/` | postService, postBoostService, postReplyService, pollService |
+| `auth/` | authService, mfaService, accountService |
+| `federation/` | federationService, federationAnalyticsService, federationHealthService, federationMentionService, activityPubService, actorService, outgoingFollowsService |
+| `company/` | companyService, companyAuditService, companyEmployeeService, companyFollowService, companyImageService, companyPostService, companyRolesService |
+| `messaging/` | messageService, messageRequestService, jobMessagingService |
+| `profile/` | profileService, profileEditService, profileCVService, profileViewService, sectionVisibilityService |
+| `social/` | connectionsService, authorFollowService, endorsementService, recommendationService, referralService, starterPackService |
+| `moderation/` | moderationService, reportService, blockService |
+| `search/` | searchService, advancedSearchService |
+| `content/` | reactionsService, reactionUsersService, savedItemsService, linkedinImportService |
+| `misc/` | newsletterService, notificationService, feedPreferencesService, userActivityService, onboardingRecommendationService, freelancerService, batchDataService, eventService, jobPostsService |
+
+Each folder gets an `index.ts` re-exporting everything for backward compatibility.
+
+## 3. Reorganize `src/pages/` into domain folders
+
+| Folder | Files |
+|--------|-------|
+| `articles/` | Articles, ArticleView, ArticleCreate, ArticleEdit, ArticleManage |
+| `auth/` | Auth, AuthCallback, AuthRecovery, ConfirmEmail |
+| `jobs/` | Jobs, JobView, JobCreate, JobEdit, JobManage |
+| `events/` | Events, EventView, EventCreate, EventEdit |
+| `company/` | Companies, CompanyProfile, CompanyCreate, CompanyEdit, CompanyAdmin |
+| `federation/` | FederatedFeed, FederationGuide, Instances, AdminFederationHealth, AdminFederationMetrics, AdminInstances, ActorInbox, ActorOutbox, ActorProfile |
+| `messaging/` | Messages, MessageConversation |
+| `profile/` | Profile, ProfileEdit, Followers, Following, Connections |
+| `social/` | StarterPacks, StarterPackView, StarterPackCreate, Freelancers, SavedItems |
+| `legal/` | PrivacyPolicy, TermsOfService, CodeOfConductPage, CookiesPage, InstanceGuidelines |
+| `info/` | Mission, Documentation, HelpCenter |
+| *(root)* | Index, Home, Search, FeedSettings, Moderation, ModerationDashboard, Notifications, PostView, NotFound |
+
+## 4. Update all import paths
+
+After moving files, update every `import` statement across the codebase to point to the new locations. Barrel `index.ts` files ensure that external imports can use folder paths.
+
+## 5. Add a CONTRIBUTING.md
+
+Create a short contributor guide explaining the folder structure, how to run the project, and coding conventions.
+
+---
+
+## What does NOT change
+- Zero logic, UI, or behavior changes
+- No database changes
+- No edge function changes
+- No design/styling changes
+- File contents stay identical — only locations and imports change
+
+## Scope
+~150+ files moved, ~200+ import paths updated, ~20 new `index.ts` barrel files, 1 new `CONTRIBUTING.md`.
+
