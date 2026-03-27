@@ -113,8 +113,8 @@ interface EventCardProps {
 function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation();
   const eventDate = parseISO(event.start_date);
-  const formattedDate = format(eventDate, 'EEEE, MMMM d, yyyy');
-  const formattedTime = format(eventDate, 'h:mm a');
+  const formattedDate = format(eventDate, 'EEEE d MMMM yyyy', { locale: sv });
+  const formattedTime = format(eventDate, 'HH:mm');
   const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   
   return (

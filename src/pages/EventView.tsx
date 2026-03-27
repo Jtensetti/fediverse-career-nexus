@@ -148,9 +148,9 @@ export default function EventView() {
   const isCreator = session?.user?.id === event.user_id;
   const isPastEvent = new Date(event.end_date || event.start_date) < new Date();
 
-  const formattedDate = format(startDate, 'EEEE, MMMM d, yyyy');
-  const formattedStartTime = format(startDate, 'h:mm a');
-  const formattedEndTime = format(endDate, 'h:mm a');
+  const formattedDate = format(startDate, 'EEEE d MMMM yyyy', { locale: sv });
+  const formattedStartTime = format(startDate, 'HH:mm');
+  const formattedEndTime = format(endDate, 'HH:mm');
   const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return (

@@ -39,7 +39,7 @@ export default function AuditLogTab({ auditLog }: AuditLogTabProps) {
                 <span className="text-muted-foreground">{entry.action}</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                {format(new Date(entry.created_at), "PPp")}
+                {format(new Date(entry.created_at), "PPp", { locale: sv })}
               </p>
             </div>
           </CardContent>

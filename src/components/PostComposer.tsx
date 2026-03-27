@@ -415,7 +415,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       <div className="flex items-center gap-2 text-sm">
                         <CalendarIcon className="h-4 w-4 text-primary" />
                         <span>
-                          {t("posts.scheduledFor", "Scheduled for")} {scheduledDate && format(scheduledDate, 'PPP')} {scheduledTime && `at ${scheduledTime}`}
+                          {t("posts.scheduledFor", "Scheduled for")} {scheduledDate && format(scheduledDate, 'PPP', { locale: sv })} {scheduledTime && `kl ${scheduledTime}`}
                         </span>
                       </div>
                       <Button 

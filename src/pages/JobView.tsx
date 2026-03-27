@@ -166,7 +166,7 @@ const JobView = () => {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>{t("jobView.posted")} {job.created_at ? format(new Date(job.created_at), "PPP") : ""}</span>
+              <span>{t("jobView.posted")} {job.created_at ? format(new Date(job.created_at), "PPP", { locale: sv }) : ""}</span>
             </div>
           </div>
           
