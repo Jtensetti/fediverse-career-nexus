@@ -1002,9 +1002,9 @@
     "settings": "Settings",
     "followers": "followers",
     "employees": "employees",
-    "companySize": "company size",
+    "companySize": "organisation size",
     "founded": "Founded",
-    "verified": "Verified company"
+    "verified": "Verified organisation"
   },
   "companyForm": {
     "basicInfo": "Basic Information",
