@@ -148,7 +148,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
             onCheckedChange={handleMultipleChoiceChange}
           />
           <Label htmlFor="multiple-choice" className="text-sm cursor-pointer">
-            Multiple choice
+            Flerval
           </Label>
         </div>
       </div>
