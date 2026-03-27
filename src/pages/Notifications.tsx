@@ -249,9 +249,9 @@ export default function Notifications() {
           <CardContent>
             <Tabs value={filter} onValueChange={(v) => setFilter(v as 'all' | 'unread')}>
               <TabsList className="mb-4">
-                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="all">Alla</TabsTrigger>
                 <TabsTrigger value="unread">
-                  Unread
+                  Olästa
                   {unreadCount > 0 && (
                     <span className="ml-1 text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full">
                       {unreadCount}
