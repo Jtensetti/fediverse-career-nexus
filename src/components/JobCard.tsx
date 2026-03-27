@@ -79,7 +79,7 @@ const JobCard = ({ job }: JobCardProps) => {
               size="icon" 
               className="shrink-0 h-8 w-8"
               onClick={handleSave}
-              aria-label={isSaved ? "Remove from saved" : "Save job"}
+              aria-label={isSaved ? "Ta bort från sparade" : "Spara jobb"}
             >
               <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-primary text-primary' : ''}`} />
             </Button>
