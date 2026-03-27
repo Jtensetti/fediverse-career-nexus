@@ -33,7 +33,7 @@ const BuiltInOpen = () => {
                       <GitBranch className="h-8 w-8" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold">nolto/nolto</h3>
+                      <h3 className="text-xl font-bold">samverkan/samverkan</h3>
                       <p className="text-primary-foreground/80">
                         {t("openSource.repoDescription")}
                       </p>
