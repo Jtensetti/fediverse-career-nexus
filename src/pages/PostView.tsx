@@ -50,7 +50,7 @@ export default function PostView() {
   const loadPostWithReplies = async () => {
     // Validate postId before fetching
     if (!postId || postId === 'undefined' || postId === 'null' || postId.trim() === '') {
-      setError('Invalid post ID');
+      setError('Ogiltigt inläggs-ID');
       setLoading(false);
       return;
     }
