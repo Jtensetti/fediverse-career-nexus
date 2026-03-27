@@ -959,7 +959,7 @@
     "rejectEmployeeTitle": "Reject employee claim?",
     "rejectEmployeeDesc": "This will permanently remove {{name}}'s employment claim. They will need to submit a new claim.",
     "removeRoleTitle": "Remove role?",
-    "removeRoleDesc": "This will remove {{name}}'s access to manage this company page. They can be re-added later.",
+    "removeRoleDesc": "This will remove {{name}}'s access to manage this organisation page. They can be re-added later.",
     "removeRole": "Remove Role",
     "noAdditionalRoles": "No additional roles",
     "onlyOwnerAccess": "Only the owner currently has access",
