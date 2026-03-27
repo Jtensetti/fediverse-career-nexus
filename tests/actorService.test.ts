@@ -1,4 +1,4 @@
-import { createLocalActorObject } from '../src/services/actorService';
+import { createLocalActorObject } from '../src/services/federation/actorService';
 
 describe('createLocalActorObject', () => {
   it('creates a Person actor with expected fields', () => {

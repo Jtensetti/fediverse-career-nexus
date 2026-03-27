@@ -21,7 +21,7 @@ import {
 import { toast } from "sonner";
 import { ShieldCheck, ShieldOff, Loader2, CheckCircle } from "lucide-react";
 import { getMFAFactors, unenrollFactor, challengeAndVerify, MFAFactor } from "@/services/auth/mfaService";
-import MFAEnrollDialog from "../MFAEnrollDialog";
+import MFAEnrollDialog from "./MFAEnrollDialog";
 
 interface MFASettingsProps {
   isFederatedUser?: boolean;

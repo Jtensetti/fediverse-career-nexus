@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { REACTIONS, REACTION_CONFIG, ReactionKey } from "@/lib/reactions";
 import { getReplyReactions, toggleReplyReaction, ReactionCount } from "@/services/content/reactionsService";
-import StackedReactionDisplay from "../StackedReactionDisplay";
+import StackedReactionDisplay from "./StackedReactionDisplay";
 
 interface EnhancedCommentReactionsProps {
   replyId: string;

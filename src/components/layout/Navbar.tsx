@@ -20,9 +20,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/layout/ModeToggle";
-import { GlobalSearch } from "../GlobalSearch";
-import { MobileSearch } from "../MobileSearch";
-import { NotificationBell } from "../NotificationBell";
+import { GlobalSearch } from "./GlobalSearch";
+import { MobileSearch } from "./MobileSearch";
+import { NotificationBell } from "./NotificationBell";
 import { AlignJustify, LogIn, Settings, User, UserPlus, LogOut, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";

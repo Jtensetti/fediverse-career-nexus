@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import i18n from "@/i18n";
 import { ConnectionDegree } from "@/components/social/ConnectionBadge";
-import { notificationService } from "../notificationService";
+import { notificationService } from "../misc/notificationService";
 
 export interface NetworkConnection {
   id: string;           // User's profile ID (for messaging)

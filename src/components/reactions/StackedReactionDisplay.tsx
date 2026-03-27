@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { REACTION_CONFIG, ReactionKey } from "@/lib/reactions";
 import { ReactionCount } from "@/services/content/reactionsService";
-import ReactionUsersPopover from "../ReactionUsersPopover";
+import ReactionUsersPopover from "./ReactionUsersPopover";
 
 interface StackedReactionDisplayProps {
   reactions: ReactionCount[];

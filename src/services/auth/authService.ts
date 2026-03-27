@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ensureUserProfile } from "../profileService";
+import { ensureUserProfile } from "../profile/profileService";
 
 const isDev = import.meta.env.DEV;
 

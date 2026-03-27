@@ -19,23 +19,23 @@ import { deletePost } from "@/services/posts/postService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import BlockUserDialog from "../BlockUserDialog";
-import EnhancedPostReactions from "../EnhancedPostReactions";
-import QuoteRepostDialog from "../QuoteRepostDialog";
-import { QuotedPostPreview, RepostIndicator } from "../QuotedPostPreview";
-import ContentWarningDisplay from "../ContentWarningDisplay";
-import { LinkPreview, extractUrls } from "../LinkPreview";
+import EnhancedPostReactions from "../reactions/EnhancedPostReactions";
+import QuoteRepostDialog from "../posts/QuoteRepostDialog";
+import { QuotedPostPreview, RepostIndicator } from "../posts/QuotedPostPreview";
+import ContentWarningDisplay from "../content/ContentWarningDisplay";
+import { LinkPreview, extractUrls } from "../content/LinkPreview";
 import { linkifyWithMarkdown, smartTruncate, stripHtml } from "@/lib/linkify";
-import { PollDisplay } from "../PollDisplay";
+import { PollDisplay } from "../content/PollDisplay";
 import { isPoll } from "@/services/posts/pollService";
 import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federation/federationService";
 import type { BatchPostData } from "@/services/misc/batchDataService";
-import type { CommentPreviewHandle } from "../CommentPreview";
+import type { CommentPreviewHandle } from "../posts/CommentPreview";
 import { getSamverkanInstanceDomain } from "@/lib/federation";
-import ImageLightbox from "../ImageLightbox";
+import ImageLightbox from "../content/ImageLightbox";
 
 // Lazy load CommentPreview for performance
-const CommentPreview = lazy(() => import("../CommentPreview"));
+const CommentPreview = lazy(() => import("../posts/CommentPreview"));
 
 interface FederatedPostCardProps {
   post: FederatedPost;

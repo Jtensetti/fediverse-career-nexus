@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Heart, ThumbsUp, PartyPopper, Smile, Lightbulb, LucideIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ReactionKey } from "@/lib/reactions";
-import ReactionUsersPopover from "../ReactionUsersPopover";
+import ReactionUsersPopover from "../reactions/ReactionUsersPopover";
 
 interface ArticleReactionsProps {
   articleId: string;

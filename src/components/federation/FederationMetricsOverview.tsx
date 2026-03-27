@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BatchedFederationStats from "../BatchedFederationStats";
-import RemoteInstancesTable from "../RemoteInstancesTable";
-import ShardedQueueStats from "../ShardedQueueStats";
-import FederationAnalytics from "../FederationAnalytics";
+import BatchedFederationStats from "./BatchedFederationStats";
+import RemoteInstancesTable from "./RemoteInstancesTable";
+import ShardedQueueStats from "./ShardedQueueStats";
+import FederationAnalytics from "./FederationAnalytics";
 
 const FederationMetricsOverview = () => {
   const [activeTab, setActiveTab] = useState<string>("analytics");

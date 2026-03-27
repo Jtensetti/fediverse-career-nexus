@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { REACTIONS, REACTION_CONFIG, ReactionKey } from "@/lib/reactions";
 import { getPostReactions, togglePostReaction, ReactionCount } from "@/services/content/reactionsService";
-import StackedReactionDisplay from "../StackedReactionDisplay";
+import StackedReactionDisplay from "./StackedReactionDisplay";
 import type { BatchReactionCount } from "@/services/misc/batchDataService";
 
 interface EnhancedPostReactionsProps {

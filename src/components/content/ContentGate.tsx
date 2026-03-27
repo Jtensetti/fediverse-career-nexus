@@ -7,7 +7,7 @@ import { Lock, UserPlus, Users } from "lucide-react";
 import { getUserProfileByUsername } from "@/services/profile/profileService";
 import { getAuthorFollowerCount } from "@/services/social/authorFollowService";
 import { sendConnectionRequest } from "@/services/social/connectionsService";
-import FollowAuthorButton from "../FollowAuthorButton";
+import FollowAuthorButton from "../social/FollowAuthorButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";

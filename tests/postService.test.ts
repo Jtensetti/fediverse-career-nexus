@@ -1,4 +1,4 @@
-import { updatePost, deletePost } from '../src/services/postService';
+import { updatePost, deletePost } from '../src/services/posts/postService';
 import { supabase } from '../src/integrations/supabase/client';
 
 type SupabaseFromReturn = {

@@ -5,7 +5,7 @@ import { ImagePlus, X, Loader2, Crop, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ImageCropDialog } from "../ImageCropDialog";
+import { ImageCropDialog } from "./ImageCropDialog";
 
 interface CoverImageUploadProps {
   value?: string | null;

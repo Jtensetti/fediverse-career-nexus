@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { notificationService } from "../notificationService";
+import { notificationService } from "../misc/notificationService";
 
 export interface Endorsement {
   id: string;

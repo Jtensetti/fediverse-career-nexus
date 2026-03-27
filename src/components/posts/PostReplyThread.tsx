@@ -11,9 +11,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
-import InlineReplyComposer from "../InlineReplyComposer";
-import CommentEditDialog from "../CommentEditDialog";
-import { EnhancedCommentReactions } from "../EnhancedCommentReactions";
+import InlineReplyComposer from "./InlineReplyComposer";
+import CommentEditDialog from "./CommentEditDialog";
+import { EnhancedCommentReactions } from "../reactions/EnhancedCommentReactions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";

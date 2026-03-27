@@ -203,7 +203,7 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
     
     // Auto-post event announcement to feed
     try {
-      const { createPost } = await import('./postService');
+      const { createPost } = await import('../posts/postService');
       const eventDate = new Date(event.start_date);
       const formattedDate = eventDate.toLocaleDateString('en-US', { 
         weekday: 'long', 

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import FederatedPostCard from "../FederatedPostCard";
-import PostEditDialog from "../PostEditDialog";
+import FederatedPostCard from "../federation/FederatedPostCard";
+import PostEditDialog from "./PostEditDialog";
 import { getUserPosts, type UserPostWithMeta } from "@/services/posts/postService";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";

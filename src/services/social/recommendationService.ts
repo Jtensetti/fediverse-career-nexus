@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { notificationService } from "../notificationService";
+import { notificationService } from "../misc/notificationService";
 
 export type RecommendationStatus = 'pending' | 'approved' | 'rejected' | 'requested';
 export type RelationshipType = 'colleague' | 'manager' | 'direct_report' | 'client' | 'mentor' | 'other';

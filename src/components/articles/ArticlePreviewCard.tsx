@@ -5,8 +5,8 @@ import { Bookmark, Heart, MessageCircle, Repeat2, Share } from "lucide-react";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 import { Article } from "@/services/articles/articleService";
-import FollowAuthorButton from "../FollowAuthorButton";
-import ArticleCardReactions from "../ArticleCardReactions";
+import FollowAuthorButton from "../social/FollowAuthorButton";
+import ArticleCardReactions from "./ArticleCardReactions";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 

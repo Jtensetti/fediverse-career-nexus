@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Lock, Calendar } from "lucide-react";
 import { format } from "date-fns";
-import FollowAuthorButton from "../FollowAuthorButton";
+import FollowAuthorButton from "../social/FollowAuthorButton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserArticlesListProps {

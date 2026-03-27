@@ -13,8 +13,8 @@ import { getBatchReplyReactions, ReactionCount } from "@/services/content/reacti
 import { toggleSaveItem } from "@/services/content/savedItemsService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import InlineReplyComposer from "../InlineReplyComposer";
-import { EnhancedCommentReactions } from "../EnhancedCommentReactions";
+import InlineReplyComposer from "./InlineReplyComposer";
+import { EnhancedCommentReactions } from "../reactions/EnhancedCommentReactions";
 
 interface CompanyContext {
   id: string;

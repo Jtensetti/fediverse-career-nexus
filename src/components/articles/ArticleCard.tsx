@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import { FileText, ArrowRight } from "lucide-react";
-import ArticleAuthors from "../ArticleAuthors";
+import ArticleAuthors from "./ArticleAuthors";
 import { ShareButton } from "@/components/common";
 import { motion } from "framer-motion";
 

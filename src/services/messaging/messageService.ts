@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { notificationService } from "../notificationService";
+import { notificationService } from "../misc/notificationService";
 
 // Simple message interface matching our database schema
 export interface Message {

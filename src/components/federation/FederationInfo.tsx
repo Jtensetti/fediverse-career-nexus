@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import FederationFollowButton from "../FederationFollowButton";
+import FederationFollowButton from "./FederationFollowButton";
 import { getSamverkanInstanceDomain } from "@/lib/federation";
 
 interface FederationInfoProps {
