@@ -1,4 +1,6 @@
+# Completed: Rebrand Nolto → Samverkan
 
+All instances of "Nolto" replaced with "Samverkan" and domain "nolto.social" replaced with "samverkan.se" across ~70 files including frontend components, edge functions, i18n files, and config files. Elephant mascot logo removed from all locations.
 
 # Fix 3 Security Issues
 
@@ -56,4 +58,3 @@ CREATE POLICY "Authenticated users can update remote actors cache"
 ---
 
 **No code changes needed** — only 1 database migration with policy updates. No functionality will break.
-
