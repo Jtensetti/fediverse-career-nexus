@@ -120,8 +120,8 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
                   ) : (
                     <Check className="h-4 w-4" />
                   )}
-                  Accept
-                </Button>
+                    Acceptera
+                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -134,7 +134,7 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
                   ) : (
                     <X className="h-4 w-4" />
                   )}
-                  Decline
+                   Avböj
                 </Button>
               </div>
             </div>
