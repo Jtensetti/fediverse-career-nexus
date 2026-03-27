@@ -181,42 +181,40 @@ export default function Notifications() {
     
     switch (notification.type) {
       case 'connection_request':
-        return `${actorName} sent you a connection request`;
+        return `${actorName} skickade en kontaktförfrågan`;
       case 'connection_accepted':
-        return `${actorName} accepted your connection request`;
+        return `${actorName} accepterade din kontaktförfrågan`;
       case 'endorsement':
-        return `${actorName} ${notification.content || 'endorsed your skill'}`;
+        return `${actorName} ${notification.content || 'rekommenderade din kompetens'}`;
       case 'message':
-        return `${actorName} sent you a message`;
+        return `${actorName} skickade ett meddelande`;
       case 'follow':
-        return `${actorName} started following you`;
+        return `${actorName} började följa dig`;
       case 'like': {
-        // Distinguish between post and comment reactions
         const emoji = getReactionEmoji(contentData.reaction || 'love');
-        const targetType = notification.object_type === 'reply' ? 'comment' : 'post';
-        return `${actorName} reacted ${emoji} to your ${targetType}`;
+        const targetType = notification.object_type === 'reply' ? 'kommentar' : 'inlägg';
+        return `${actorName} reagerade ${emoji} på ditt ${targetType}`;
       }
       case 'boost':
-        return `${actorName} boosted your post`;
+        return `${actorName} delade ditt inlägg`;
       case 'reply': {
-        // Distinguish between reply to post vs reply to comment
-        const targetType = notification.object_type === 'reply' ? 'comment' : 'post';
-        return `${actorName} replied to your ${targetType}`;
+        const targetType = notification.object_type === 'reply' ? 'kommentar' : 'inlägg';
+        return `${actorName} svarade på ditt ${targetType}`;
       }
       case 'mention':
-        return `${actorName} mentioned you`;
+        return `${actorName} nämnde dig`;
       case 'recommendation_request':
-        return `${actorName} requested a recommendation`;
+        return `${actorName} begärde en rekommendation`;
       case 'recommendation_received':
-        return `${actorName} wrote you a recommendation`;
+        return `${actorName} skrev en rekommendation till dig`;
       case 'message_reaction': {
         const emoji = getReactionEmoji(contentData.reaction || 'love');
-        return `${actorName} reacted ${emoji} to your message`;
+        return `${actorName} reagerade ${emoji} på ditt meddelande`;
       }
       case 'article_published':
-        return `${actorName} published a new article`;
+        return `${actorName} publicerade en ny artikel`;
       default:
-        return notification.content || 'New notification';
+        return notification.content || 'Ny avisering';
     }
   };
 
