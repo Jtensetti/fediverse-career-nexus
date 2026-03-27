@@ -12,6 +12,7 @@ import { getSavedItems, unsaveItem, type SavedItem, type SavedItemType } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { SEOHead } from "@/components/common/SEOHead";
 
 export default function SavedItemsPage() {
