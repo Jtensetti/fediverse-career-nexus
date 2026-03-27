@@ -60,9 +60,9 @@ const NewsletterSubscribe = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Subscribe to our newsletter</CardTitle>
+          <CardTitle className="text-xl">Prenumerera på vårt nyhetsbrev</CardTitle>
           <CardDescription>
-            Please sign in to subscribe to our newsletter.
+            Logga in för att prenumerera på vårt nyhetsbrev.
           </CardDescription>
         </CardHeader>
       </Card>
