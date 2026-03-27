@@ -526,7 +526,8 @@
       "education": "Education",
       "skills": "Skills",
       "privacy": "Privacy",
-      "freelance": "Freelance"
+      "freelance": "Freelance",
+      "basicInfo": "Basic info"
     },
     "personalInfo": "Personal information",
     "displayName": "Display name",
@@ -576,7 +577,19 @@
       "descriptionPlaceholder": "Describe your responsibilities",
       "companyRequired": "Company is required",
       "titleRequired": "Title is required",
-      "startDateRequired": "Start date is required"
+      "startDateRequired": "Start date is required",
+      "position": "Position",
+      "currentRole": "Current role",
+      "add": "Add",
+      "save": "Save",
+      "update": "Update",
+      "delete": "Delete",
+      "loading": "Loading...",
+      "companyDomain": "Company domain",
+      "companyDomainPlaceholder": "company.com",
+      "locationPlaceholder": "e.g. Stockholm",
+      "pickDate": "Pick a date",
+      "noExperience": "No experience added yet"
     },
     "education": {
       "title": "Education",
@@ -590,13 +603,22 @@
       "endYear": "End year",
       "institutionRequired": "Institution is required",
       "degreeRequired": "Degree is required",
-      "startYearRequired": "Start year is required"
+      "startYearRequired": "Start year is required",
+      "add": "Add",
+      "save": "Save",
+      "update": "Update",
+      "delete": "Delete",
+      "loading": "Loading...",
+      "noEducation": "No education added yet"
     },
     "skills": {
       "title": "Skills",
       "addSkill": "Add skill",
       "placeholder": "Enter a skill",
-      "noSkills": "No skills added yet"
+      "noSkills": "No skills added yet",
+      "add": "Add",
+      "addButton": "Add skill",
+      "loading": "Loading..."
     },
     "privacy": {
       "title": "Privacy settings",
@@ -2048,7 +2070,27 @@
     "rate": "Rate",
     "services": "Services",
     "noFreelancers": "No freelancers found",
-    "viewProfile": "View profile"
+    "viewProfile": "View profile",
+    "openForWork": "Open for work",
+    "visibleToClients": "Visible to clients",
+    "notVisible": "Not visible",
+    "skills": "Skills",
+    "addSkill": "Add skill",
+    "noSkillsYet": "No skills added yet",
+    "ratePlaceholder": "e.g. 500 SEK/h",
+    "availability": "Availability",
+    "selectAvailability": "Select availability",
+    "fullTime": "Full-time",
+    "partTime": "Part-time",
+    "projectBased": "Project-based",
+    "notAvailable": "Not available",
+    "settingsSaved": "Settings saved",
+    "settingsError": "Could not save settings",
+    "dmSuggestion": "Enable direct messages so clients can reach you",
+    "openSettings": "Open settings",
+    "dmReminder": "DM reminder",
+    "dmReminderDesc": "Enable direct messages to receive inquiries",
+    "checkDmSettings": "Check DM settings"
   },
   "dataExport": {
     "title": "Export your data",
@@ -2056,6 +2098,20 @@
     "export": "Export",
     "exporting": "Exporting...",
     "success": "Export ready for download",
-    "error": "Export failed"
+    "error": "Export failed",
+    "gdprTitle": "GDPR export",
+    "gdprDescription": "Download all your personal data",
+    "activityPubTitle": "ActivityPub export",
+    "activityPubDescription": "Export your data in ActivityPub format",
+    "download": "Download",
+    "lastExport": "Last export",
+    "whatsIncluded": "What's included",
+    "includeProfile": "Profile data",
+    "includeExperience": "Experience",
+    "includePosts": "Posts",
+    "includeMessages": "Messages",
+    "includeConnections": "Connections",
+    "includeSaved": "Saved items",
+    "includeSettings": "Settings"
   }
 }
