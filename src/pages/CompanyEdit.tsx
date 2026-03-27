@@ -81,7 +81,7 @@ export default function CompanyEdit() {
             icon={Building2}
             title={t("companies.notFound", "Company not found")}
             description={t("companies.notFoundDescription", "This company doesn't exist")}
-            action={{ label: t("companies.browseAll", "Browse Companies"), link: "/companies" }}
+            action={{ label: t("companies.browseAll", "Browse Companies"), link: "/organisationer" }}
           />
         </main>
         <Footer />
