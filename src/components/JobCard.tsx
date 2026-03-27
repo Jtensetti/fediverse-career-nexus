@@ -6,6 +6,7 @@ import { Calendar, MapPin, Globe, Building2, DollarSign, Bookmark } from "lucide
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
