@@ -116,11 +116,11 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
                 {getStatusBadge(follow.status)}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                Sent {formatDistanceToNow(new Date(follow.created_at), { addSuffix: true })}
+                Skickad {formatDistanceToNow(new Date(follow.created_at), { addSuffix: true, locale: sv })}
                 {follow.status !== 'pending' && follow.updated_at !== follow.created_at && (
                   <span>
                     {' • '}
-                    {follow.status} {formatDistanceToNow(new Date(follow.updated_at), { addSuffix: true })}
+                    {follow.status === 'accepted' ? 'accepterad' : 'avvisad'} {formatDistanceToNow(new Date(follow.updated_at), { addSuffix: true, locale: sv })}
                   </span>
                 )}
               </p>
