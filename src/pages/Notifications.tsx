@@ -232,17 +232,17 @@ export default function Notifications() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
-              Notifications
+              Aviseringar
               {unreadCount > 0 && (
                 <span className="text-sm font-normal text-muted-foreground">
-                  ({unreadCount} unread)
+                  ({unreadCount} olästa)
                 </span>
               )}
             </CardTitle>
             {unreadCount > 0 && (
               <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
                 <Check className="h-4 w-4 mr-1" />
-                Mark all as read
+                Markera alla som lästa
               </Button>
             )}
           </CardHeader>
