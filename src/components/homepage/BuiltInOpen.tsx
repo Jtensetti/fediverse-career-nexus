@@ -81,7 +81,7 @@ const BuiltInOpen = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button variant="outline" className="gap-2" asChild>
                     <a 
-                      href="https://github.com/nolto/nolto" 
+                      href="https://codeberg.org/Tensetti/Samverkan" 
                       target="_blank" 
                       rel="noopener noreferrer"
                     >
