@@ -24,7 +24,7 @@ import JobView from "./pages/jobs/JobView";
 import JobCreate from "./pages/jobs/JobCreate";
 import JobEdit from "./pages/jobs/JobEdit";
 import JobManage from "./pages/jobs/JobManage";
-import FederatedFeedPage from "./components/federation/FederatedFeed";
+import FederatedFeedPage from "./pages/federation/FederatedFeed";
 import Auth from "./pages/auth/Auth";
 import AuthCallback from "./pages/auth/AuthCallback";
 import AuthRecovery from "./pages/auth/AuthRecovery";
