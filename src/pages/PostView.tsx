@@ -240,7 +240,7 @@ export default function PostView() {
     : 'Post';
   
   return (
-    <DashboardLayout title={postTitle || 'Inlägg'} description="Visa inlägg och svar på Nolto.">
+    <DashboardLayout title={postTitle || 'Inlägg'} description="Visa inlägg och svar på Samverkan.">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Link to="/feed">
           <Button variant="ghost" size="sm" className="mb-4">

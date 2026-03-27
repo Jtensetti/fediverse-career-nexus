@@ -33,7 +33,7 @@ const BuiltInOpen = () => {
                       <GitBranch className="h-8 w-8" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold">nolto/nolto</h3>
+                      <h3 className="text-xl font-bold">samverkan/samverkan</h3>
                       <p className="text-primary-foreground/80">
                         {t("openSource.repoDescription")}
                       </p>
@@ -81,7 +81,7 @@ const BuiltInOpen = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button variant="outline" className="gap-2" asChild>
                     <a 
-                      href="https://github.com/nolto/nolto" 
+                      href="https://codeberg.org/Tensetti/Samverkan" 
                       target="_blank" 
                       rel="noopener noreferrer"
                     >
@@ -92,7 +92,7 @@ const BuiltInOpen = () => {
                   </Button>
                   <Button variant="outline" className="gap-2" asChild>
                     <a 
-                      href="https://github.com/nolto/nolto/blob/main/CONTRIBUTING.md" 
+                      href="https://codeberg.org/Tensetti/Samverkan/src/branch/main/CONTRIBUTING.md" 
                       target="_blank" 
                       rel="noopener noreferrer"
                     >

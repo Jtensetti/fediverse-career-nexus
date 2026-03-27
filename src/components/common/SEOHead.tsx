@@ -15,7 +15,7 @@ interface SEOHeadProps {
 
 export function SEOHead({
   title,
-  description = "Nolto - The federated professional network. Connect with professionals across the Fediverse.",
+  description = "Samverkan - The federated professional network. Connect with professionals across the Fediverse.",
   image = "/og-image.png",
   url,
   type = "website",
@@ -27,7 +27,7 @@ export function SEOHead({
 }: SEOHeadProps) {
   const siteUrl = window.location.origin;
   const fullUrl = url || window.location.href;
-  const fullTitle = title.includes("Nolto") ? title : `${title} | Nolto`;
+  const fullTitle = title.includes("Samverkan") ? title : `${title} | Samverkan`;
 
   // Proxy external images to avoid hotlink protection issues when shared on other platforms
   const getProxiedImageUrl = (imageUrl: string) => {
@@ -63,7 +63,7 @@ export function SEOHead({
       <meta property="og:image" content={fullImage} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:type" content={type} />
-      <meta property="og:site_name" content="Nolto" />
+      <meta property="og:site_name" content="Samverkan" />
 
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />

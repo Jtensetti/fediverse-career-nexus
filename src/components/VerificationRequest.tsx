@@ -66,7 +66,7 @@ const VerificationRequest = ({ type, itemId, companyDomain }: VerificationReques
           Lägg till följande TXT-post i din domäns DNS-inställningar:
         </p>
         <div className="bg-muted p-2 rounded mt-2 flex justify-between items-center">
-          <code className="text-xs break-all">{`nolto-verify=${token}`}</code>
+          <code className="text-xs break-all">{`samverkan-verify=${token}`}</code>
           <Button 
             variant="ghost" 
             size="icon" 

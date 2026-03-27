@@ -53,7 +53,7 @@ const Features = () => {
             {t('features.heading', 'Funktioner byggda för offentlig sektor')}
           </h2>
           <p className="text-lg text-muted-foreground">
-            {t('features.subheading', 'Nolto kombinerar det bästa från professionella nätverk med säker, svensk-hostad teknik.')}
+            {t('features.subheading', 'Samverkan kombinerar det bästa från professionella nätverk med säker, svensk-hostad teknik.')}
           </p>
         </div>
 

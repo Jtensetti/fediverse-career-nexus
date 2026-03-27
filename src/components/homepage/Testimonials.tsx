@@ -8,21 +8,21 @@ const testimonials = [
     author: "Anna Lindström",
     role: "IT-chef, Göteborgs kommun",
     avatar: "AL",
-    instance: "nolto.se"
+    instance: "samverkan.se"
   },
   {
     quote: "Federationsmodellen innebär att vårt nätverk inte är inlåst i en plattform. Vi kan byta instans utan att förlora kontakter.",
     author: "Erik Johansson",
     role: "Digitaliseringsstrateg, Region Skåne",
     avatar: "EJ",
-    instance: "nolto.se"
+    instance: "samverkan.se"
   },
   {
     quote: "Transparent, öppen källkod och community-drivet. Det här är vad professionell nätverksbyggande borde ha varit från början.",
     author: "Maria Bergström",
     role: "Verksamhetsutvecklare, Arbetsförmedlingen",
     avatar: "MB",
-    instance: "nolto.se"
+    instance: "samverkan.se"
   }
 ];
 

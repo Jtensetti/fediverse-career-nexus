@@ -5,7 +5,7 @@ const CodeOfConduct = () => {
   return (
     <div className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
       <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-        Nolto är en professionell plattform. För att hålla Nolto öppet, respektfullt och välkomnande för alla 
+        Samverkan är en professionell plattform. För att hålla Samverkan öppet, respektfullt och välkomnande för alla 
         förväntar vi oss att samtliga användare följer dessa riktlinjer — både på denna instans och vid 
         interaktion med användare på andra instanser.
       </p>
@@ -61,7 +61,7 @@ const CodeOfConduct = () => {
           </div>
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-            <span className="text-muted-foreground">Använd inte Nolto för att hota, utpressa eller skada andra på något sätt.</span>
+            <span className="text-muted-foreground">Använd inte Samverkan för att hota, utpressa eller skada andra på något sätt.</span>
           </div>
         </div>
       </section>
@@ -80,7 +80,7 @@ const CodeOfConduct = () => {
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Respektera att Nolto är en offentlig, professionell miljö.</span>
+              <span className="text-muted-foreground">Respektera att Samverkan är en offentlig, professionell miljö.</span>
             </li>
           </ul>
         </div>
@@ -92,7 +92,7 @@ const CodeOfConduct = () => {
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
             <span className="text-muted-foreground">
-              Använd inte Nolto för olaglig verksamhet, inklusive bedrägeri, nätfiske eller spridning av 
+              Använd inte Samverkan för olaglig verksamhet, inklusive bedrägeri, nätfiske eller spridning av 
               skadligt innehåll.
             </span>
           </div>

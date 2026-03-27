@@ -226,7 +226,7 @@ export default function Notifications() {
 
   return (
     <DashboardLayout disableSEO>
-      <SEOHead title="Aviseringar" description="Dina aviseringar på Nolto." />
+      <SEOHead title="Aviseringar" description="Dina aviseringar på Samverkan." />
       <div className="container max-w-3xl mx-auto py-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">

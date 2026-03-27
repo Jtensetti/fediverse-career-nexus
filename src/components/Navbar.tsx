@@ -125,12 +125,7 @@ const Navbar = () => {
               "font-bold text-xl flex items-center gap-2 transition-colors",
               isHomePage && !scrolled ? 'text-primary-foreground' : 'text-primary'
             )}>
-              <img 
-                src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                alt="Nolto" 
-                className="w-8 h-8" 
-              />
-              <span className="font-display">Nolto</span>
+              <span className="font-display">Samverkan</span>
             </RouterLink>
             <div className="flex items-center gap-4">
               <ModeToggle />
@@ -160,14 +155,7 @@ const Navbar = () => {
               "font-bold text-xl flex items-center gap-2 transition-colors",
               isHomePage && !scrolled ? 'text-primary-foreground' : 'text-primary'
             )}>
-              <motion.img 
-                src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                alt="Nolto" 
-                className="w-8 h-8"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              />
-              <span className="font-display">Nolto</span>
+              <span className="font-display">Samverkan</span>
             </RouterLink>
             
             {isAuthenticated && (
@@ -332,12 +320,7 @@ const Navbar = () => {
                 <SheetHeader className="p-6 border-b">
                   <SheetTitle>
                     <div className="flex items-center gap-2">
-                      <img 
-                        src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                        alt="Nolto" 
-                        className="w-8 h-8" 
-                      />
-                      <span className="font-display text-xl">Nolto</span>
+                      <span className="font-display text-xl">Samverkan</span>
                     </div>
                   </SheetTitle>
                   <SheetDescription className="sr-only">

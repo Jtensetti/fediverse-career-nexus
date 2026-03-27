@@ -22,7 +22,7 @@ const Hero = ({
 }: HeroProps) => {
   return (
     <div className="relative bg-gradient-to-br from-primary to-secondary text-primary-foreground">
-      <div className="absolute inset-0 bg-[url('/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png')] bg-no-repeat bg-right-bottom opacity-10 bg-contain"></div>
+      <div className="absolute inset-0 opacity-10"></div>
       <div className="container mx-auto px-4 py-24 sm:py-32 relative z-10">
         <div className="max-w-3xl">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl font-display mb-6 animate-fade-in">

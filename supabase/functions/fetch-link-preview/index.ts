@@ -61,7 +61,7 @@ async function fetchWithTimeout(url: string, timeout = 5000): Promise<Response> 
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; LinkPreviewBot/1.0; +https://nolto.social)",
+        "User-Agent": "Mozilla/5.0 (compatible; LinkPreviewBot/1.0; +https://samverkan.se)",
         Accept: "text/html,application/xhtml+xml",
         "Accept-Language": "en-US,en;q=0.9",
       },

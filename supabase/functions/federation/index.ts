@@ -336,7 +336,7 @@ serve(async (req) => {
                     {
                       headers: {
                         "Accept": 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-                        "User-Agent": "Nolto-Federation/1.0 (+https://nolto.social)"
+                        "User-Agent": "Samverkan-Federation/1.0 (+https://samverkan.se)"
                       }
                     },
                     ACTOR_FETCH_TIMEOUT_MS

@@ -12,12 +12,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           <div className="col-span-1">
             <div className="flex items-center mb-4">
-              <img 
-                src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                alt="Nolto Mascot" 
-                className="w-12 h-12 mr-3"
-              />
-              <h3 className="text-lg font-bold text-primary">Nolto</h3>
+              <h3 className="text-lg font-bold text-primary">Samverkan</h3>
             </div>
             <p className="text-muted-foreground mb-4">
               {t("footer.tagline", "A professional social network built on the ActivityPub federation protocol.")}
@@ -58,7 +53,7 @@ const Footer = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-muted-foreground text-center md:text-left">
-            © {new Date().getFullYear()} Nolto. {t("footer.copyright", "Open source under the")}{" "}
+            © {new Date().getFullYear()} Samverkan. {t("footer.copyright", "Open source under the")}{" "}
             <a 
               href="https://opensource.org/licenses/MIT" 
               target="_blank" 
@@ -73,7 +68,7 @@ const Footer = () => {
             <Link to="/privacy" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.privacy", "Privacy")}</Link>
             <Link to="/cookies" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.cookies", "Cookies")}</Link>
             <a 
-              href="https://codeberg.org/Tensetti/Nolto" 
+              href="https://codeberg.org/Tensetti/Samverkan" 
               target="_blank" 
               rel="noopener"
               className="text-muted-foreground hover:text-secondary transition-colors"
@@ -91,7 +86,7 @@ const Footer = () => {
               </svg>
             </a>
             <a 
-              href="https://github.com/Jtensetti/fediverse-career-nexus" 
+              href="https://github.com/Jtensetti/fediverse-career-nexus"
               target="_blank" 
               rel="noopener"
               className="text-muted-foreground hover:text-secondary transition-colors"

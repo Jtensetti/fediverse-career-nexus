@@ -37,7 +37,7 @@ const Documentation = () => {
             
             <h3 className="text-xl font-semibold text-primary mb-4">{t("documentation.creatingAccount")}</h3>
             <ul className="space-y-2 mb-6">
-              <li>{t("documentation.creatingAccountSteps.0", "Visit Nolto and click 'Create Account'.")}</li>
+              <li>{t("documentation.creatingAccountSteps.0", "Visit Samverkan and click 'Create Account'.")}</li>
               <li>{t("documentation.creatingAccountSteps.1", "Fill in the registration form.")}</li>
               <li>{t("documentation.creatingAccountSteps.2", "Confirm your email and log in.")}</li>
               <li>{t("documentation.creatingAccountSteps.3", "Set up your profile with skills, experience, and what you're looking for.")}</li>

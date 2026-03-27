@@ -365,7 +365,7 @@ const ProfilePage = () => {
       {/* SEO Meta Tags for social sharing */}
       <SEOHead
         title={`${profile.displayName} (@${profile.username})`}
-        description={profile.headline || profile.bio || `${profile.displayName}s professionella profil på Nolto`}
+        description={profile.headline || profile.bio || `${profile.displayName}s professionella profil på Samverkan`}
         image={profile.avatarUrl || "/og-image.png"}
         url={`${window.location.origin}/profile/${profile.username}`}
         type="profile"
@@ -580,7 +580,7 @@ const ProfilePage = () => {
                   )}
                   <ShareButton
                     url={`${window.location.origin}/profile/${profile.username}`}
-                    title={`${profile.displayName} på Nolto`}
+                    title={`${profile.displayName} på Samverkan`}
                     description={profile.headline || profile.bio || undefined}
                     variant="outline"
                     size="icon"
@@ -595,7 +595,7 @@ const ProfilePage = () => {
                   </Button>
                   <ShareButton
                     url={`${window.location.origin}/profile/${profile.username}`}
-                    title={`${profile.displayName} på Nolto`}
+                    title={`${profile.displayName} på Samverkan`}
                     description={profile.headline || profile.bio || undefined}
                     variant="outline"
                     size="icon"

@@ -46,7 +46,7 @@ export default function CompanyCreate() {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title={t("companies.createTitle", "Create Company")}
-        description={t("companies.createDescription", "Create a company page on Nolto")}
+        description={t("companies.createDescription", "Create a company page on Samverkan")}
       />
       <Navbar />
       <main className="flex-grow">

@@ -43,7 +43,7 @@ serve(async (req) => {
     // Handle discovery endpoint - returns links to nodeinfo schemas
     // This handles both /.well-known/nodeinfo (if proxied) and /nodeinfo (direct call)
     if (path === "/.well-known/nodeinfo" || path === "/nodeinfo" || path === "/") {
-      const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
+      const siteUrl = Deno.env.get("SITE_URL") || "https://samverkan.se";
       const baseUrl = siteUrl.replace(/\/$/, "");
       
       const discoveryDocument = {
@@ -94,7 +94,7 @@ serve(async (req) => {
       const nodeInfo = {
         version: "2.0",
         software: {
-          name: "nolto",
+          name: "samverkan",
           version: "1.0.0"
         },
         protocols: ["activitypub"],
@@ -108,7 +108,7 @@ serve(async (req) => {
         },
         openRegistrations: true,
         metadata: {
-          nodeName: "Nolto Social",
+          nodeName: "Samverkan Social",
           nodeDescription: "A federated professional networking platform"
         }
       };

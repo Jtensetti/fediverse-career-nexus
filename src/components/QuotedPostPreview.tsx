@@ -25,7 +25,7 @@ interface QuotedPostPreviewProps {
   className?: string;
 }
 
-// Extract username from an actor URL like "https://nolto.social/functions/v1/actor/username"
+// Extract username from an actor URL like "https://samverkan.se/functions/v1/actor/username"
 function extractUsernameFromUrl(url: string): string | null {
   try {
     // Handle actor URLs like /actor/username or /users/username

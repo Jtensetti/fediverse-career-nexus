@@ -84,7 +84,7 @@ const FederationVisual = () => {
               />
             </svg>
 
-            {/* Center Instance (Nolto) */}
+            {/* Center Instance (Samverkan) */}
             <motion.div
               initial={{ scale: 0 }}
               whileInView={{ scale: 1 }}
@@ -94,7 +94,7 @@ const FederationVisual = () => {
             >
               <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary shadow-xl flex flex-col items-center justify-center text-primary-foreground border-4 border-background">
                 <Server className="h-8 w-8 mb-1" />
-                <span className="font-bold text-sm">Nolto</span>
+                <span className="font-bold text-sm">Samverkan</span>
                 <span className="text-xs opacity-80">{t("homepage.federation.youAreHere")}</span>
               </div>
             </motion.div>

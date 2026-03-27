@@ -16,11 +16,11 @@ const supabase = createClient(
 
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 const rawSiteUrl = Deno.env.get("SITE_URL") ?? "https://fediverse-career.lovable.app";
-// Ensure URL has https:// prefix and uses www.nolto.social canonical domain
+// Ensure URL has https:// prefix and uses www.samverkan.se canonical domain
 let siteUrl = rawSiteUrl.startsWith("http") ? rawSiteUrl : `https://${rawSiteUrl}`;
-// Force canonical www subdomain for nolto.social to prevent cross-origin session issues
-if (siteUrl.includes("nolto.social") && !siteUrl.includes("www.nolto.social")) {
-  siteUrl = siteUrl.replace("nolto.social", "www.nolto.social");
+// Force canonical www subdomain for samverkan.se to prevent cross-origin session issues
+if (siteUrl.includes("samverkan.se") && !siteUrl.includes("www.samverkan.se")) {
+  siteUrl = siteUrl.replace("samverkan.se", "www.samverkan.se");
 }
 
 const signupSchema = z.object({
@@ -99,22 +99,22 @@ serve(async (req) => {
       const resend = new Resend(resendApiKey);
       // Build URL parts separately to avoid quoted-printable encoding issues
       const confirmPath = `${siteUrl}/confirm-email`;
-      const fromEmail = "Nolto <noreply@nolto.social>";
+      const fromEmail = "Samverkan <noreply@samverkan.se>";
       
       try {
         await resend.emails.send({
           from: fromEmail,
           to: email,
-          subject: 'Confirm your Nolto account',
+          subject: 'Confirm your Samverkan account',
           text: `Hi${firstName ? ` ${firstName}` : ''},
 
-Thanks for signing up for Nolto, the federated professional network. Please confirm your email address to get started.
+Thanks for signing up for Samverkan, the federated professional network. Please confirm your email address to get started.
 
 Confirm your email: ${confirmPath}?token=${token}
 
-This link will expire in 24 hours. If you didn't create an account on Nolto, you can safely ignore this email.
+This link will expire in 24 hours. If you didn't create an account on Samverkan, you can safely ignore this email.
 
-Nolto - The federated professional network
+Samverkan - The federated professional network
 ${siteUrl}`,
           html: `<!DOCTYPE html>
 <html>
@@ -124,24 +124,24 @@ ${siteUrl}`,
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
 <div style="text-align: center; margin-bottom: 30px;">
-<h1 style="color: #1a1a1a; margin-bottom: 10px;">Welcome to Nolto!</h1>
+<h1 style="color: #1a1a1a; margin-bottom: 10px;">Welcome to Samverkan!</h1>
 </div>
 
 <p>Hi${firstName ? ` ${firstName}` : ''},</p>
 
-<p>Thanks for signing up for Nolto, the federated professional network. Please confirm your email address to get started.</p>
+<p>Thanks for signing up for Samverkan, the federated professional network. Please confirm your email address to get started.</p>
 
 <div style="text-align: center; margin: 30px 0;">
 <a href="${confirmPath}?token=${token}" style="background-color: #0066cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">Confirm Email Address</a>
 </div>
 
-<p style="font-size: 14px; color: #666;">This link will expire in 24 hours. If you didn't create an account on Nolto, you can safely ignore this email.</p>
+<p style="font-size: 14px; color: #666;">This link will expire in 24 hours. If you didn't create an account on Samverkan, you can safely ignore this email.</p>
 
 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
 
 <p style="font-size: 12px; color: #999; text-align: center;">
-Nolto - The federated professional network<br>
-<a href="${siteUrl}" style="color: #0066cc;">nolto.social</a>
+Samverkan - The federated professional network<br>
+<a href="${siteUrl}" style="color: #0066cc;">samverkan.se</a>
 </p>
 </body>
 </html>`

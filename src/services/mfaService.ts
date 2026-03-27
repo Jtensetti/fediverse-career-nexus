@@ -75,10 +75,10 @@ export const cleanupUnverifiedFactors = async (): Promise<void> => {
 /**
  * Start TOTP enrollment - returns QR code and secret
  * Cleans up any existing unverified factors first to prevent conflicts
- * @param issuer - The app name shown in authenticator (e.g., "Nolto")
+ * @param issuer - The app name shown in authenticator (e.g., "Samverkan")
  * @param friendlyName - Optional name for this factor
  */
-export const enrollTOTP = async (issuer: string = 'Nolto', friendlyName?: string): Promise<EnrollmentResult | null> => {
+export const enrollTOTP = async (issuer: string = 'Samverkan', friendlyName?: string): Promise<EnrollmentResult | null> => {
   // Clean up any existing unverified factors first
   await cleanupUnverifiedFactors();
 

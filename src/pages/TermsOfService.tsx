@@ -8,7 +8,7 @@ const TermsOfService = () => {
     {
       icon: Scale,
       title: "Juridiskt avtal",
-      description: "Dessa villkor utgör ett bindande avtal mellan dig och Nolto."
+      description: "Dessa villkor utgör ett bindande avtal mellan dig och Samverkan."
     },
     {
       icon: Users,
@@ -37,14 +37,14 @@ const TermsOfService = () => {
               Användarvillkor
             </h1>
             <p className="text-xl text-accent">
-              Juridiska villkor för användning av Nolto
+              Juridiska villkor för användning av Samverkan
             </p>
             <p className="text-lg text-primary-foreground/90 mt-4">
               <strong>Ikraftträdandedatum:</strong> 16 juni 2025
             </p>
             <p className="text-lg text-primary-foreground/90 mt-2">
-              Dessa användarvillkor utgör ett juridiskt bindande avtal mellan dig och Nolto, 
-              som reglerar din användning av Nolto-plattformen och tillhörande tjänster.
+              Dessa användarvillkor utgör ett juridiskt bindande avtal mellan dig och Samverkan, 
+              som reglerar din användning av Samverkan-plattformen och tillhörande tjänster.
             </p>
           </div>
         </div>
@@ -74,10 +74,10 @@ const TermsOfService = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">1. Definitioner</h2>
               <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong className="text-foreground">Nolto:</strong> Plattformen för professionellt nätverkande, jobbpublicering och intern kommunikation inom offentlig sektor, inklusive all kod, funktionalitet och tjänster.</li>
+                  <li><strong className="text-foreground">Samverkan:</strong> Plattformen för professionellt nätverkande, jobbpublicering och intern kommunikation inom offentlig sektor, inklusive all kod, funktionalitet och tjänster.</li>
                   <li><strong className="text-foreground">Användare:</strong> Varje person eller organisation som har åtkomst till, registrerar sig för eller använder tjänsten.</li>
                   <li><strong className="text-foreground">Innehåll:</strong> All information, data, text, bilder, filer, länkar eller annat material som publiceras, överförs eller på annat sätt görs tillgängligt via tjänsten.</li>
-                  <li><strong className="text-foreground">Samverkan:</strong> Processen där information utbyts mellan anslutna organisationer och instanser inom Nolto-nätverket.</li>
+                  <li><strong className="text-foreground">Samverkan:</strong> Processen där information utbyts mellan anslutna organisationer och instanser inom Samverkan-nätverket.</li>
                 </ul>
               </div>
             </section>
@@ -242,12 +242,12 @@ const TermsOfService = () => {
                 </p>
                 <div className="bg-muted/50 p-4 rounded-lg">
                   <p><strong>E-post:</strong> jtensetti@protonmail.com</p>
-                  <p><strong>Nolto-konto:</strong> JTensetti (@user_f33be7a8)</p>
+                  <p><strong>Samverkan-konto:</strong> JTensetti (@user_f33be7a8)</p>
                 </div>
                 <div className="bg-muted/50 p-4 rounded-lg mt-4">
                   <p>
                     <strong>Genom att använda denna tjänst godkänner du dessa användarvillkor.</strong><br />
-                    Tack för att du är en del av Nolto-nätverket.
+                    Tack för att du är en del av Samverkan-nätverket.
                   </p>
                 </div>
               </div>

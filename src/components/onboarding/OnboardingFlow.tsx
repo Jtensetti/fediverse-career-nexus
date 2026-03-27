@@ -232,11 +232,11 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               <div className="mx-auto mb-4">
                 <img 
                   src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-                  alt="Nolto" 
+                  alt="Samverkan" 
                   className="w-16 h-16" 
                 />
               </div>
-              <DialogTitle className="text-2xl">Välkommen till Nolto! 🎉</DialogTitle>
+              <DialogTitle className="text-2xl">Välkommen till Samverkan! 🎉</DialogTitle>
               <DialogDescription className="text-base mt-2">
                 Du är nu en del av det professionella nätverket för offentlig sektor.
                 Låt oss sätta upp din profil så att du kan börja samarbeta med kollegor.

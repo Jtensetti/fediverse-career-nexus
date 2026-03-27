@@ -162,7 +162,7 @@ serve(async (req) => {
     }
 
     // Always use the canonical redirect URI for token exchange to ensure consistency
-    const CANONICAL_REDIRECT_URI = 'https://www.nolto.social/auth/callback';
+    const CANONICAL_REDIRECT_URI = 'https://www.samverkan.se/auth/callback';
     const tokenRedirectUri = CANONICAL_REDIRECT_URI;
     console.log(`Using canonical redirect URI for token exchange: ${tokenRedirectUri}`);
     

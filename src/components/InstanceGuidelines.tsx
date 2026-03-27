@@ -20,7 +20,7 @@ const InstanceGuidelines = () => {
       points: [
         "Implementera modereringsprocesser för att förhindra missbruk, trakasserier, olagligt innehåll och spam.",
         "Utse moderatorer som kan hantera rapporter och upprätthålla regler snabbt och rättvist.",
-        "Ta bort eller blockera användare och innehåll som bryter mot dina regler, Noltos uppförandekod eller tillämpliga lagar.",
+        "Ta bort eller blockera användare och innehåll som bryter mot dina regler, Samverkans uppförandekod eller tillämpliga lagar.",
         "Svara på rapporter från användare och andra instansadministratörer inom rimlig tid."
       ]
     },
@@ -56,7 +56,7 @@ const InstanceGuidelines = () => {
       icon: Settings,
       title: "6. Tekniska krav", 
       points: [
-        "Håll din Nolto-programvara och beroenden uppdaterade med säkerhetspatchar.",
+        "Håll din Samverkan-programvara och beroenden uppdaterade med säkerhetspatchar.",
         "Underhåll regelbundna säkerhetskopior och katastrofåterställningsplaner.",
         "Övervaka din instans prestanda och tillgänglighet."
       ]
@@ -75,7 +75,7 @@ const InstanceGuidelines = () => {
   return (
     <div className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
       <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-        Att driva en Nolto-instans är ett ansvar. För att säkerställa nätverkets hälsa och skydda användare 
+        Att driva en Samverkan-instans är ett ansvar. För att säkerställa nätverkets hälsa och skydda användare 
         måste alla instansoperatörer följa dessa riktlinjer.
       </p>
 
@@ -103,13 +103,13 @@ const InstanceGuidelines = () => {
       <section className="bg-primary text-primary-foreground p-8 rounded-lg text-center">
         <h2 className="text-2xl font-bold mb-4">Åtagande att följa riktlinjerna</h2>
         <p className="text-lg mb-6 text-primary-foreground/90">
-          Genom att driva en Nolto-instans förbinder du dig att upprätthålla dessa riktlinjer. 
-          Underlåtenhet att göra det kan leda till defederation eller borttagning från Noltos offentliga instanslistor.
+          Genom att driva en Samverkan-instans förbinder du dig att upprätthålla dessa riktlinjer. 
+          Underlåtenhet att göra det kan leda till defederation eller borttagning från Samverkans offentliga instanslistor.
         </p>
         <p className="text-lg font-medium text-secondary mb-6">
           Om du har frågor eller behöver stöd, se{" "}
           <Link to="/documentation" className="underline hover:text-primary-foreground transition-colors">Dokumentationen</Link>, 
-          gå med i communityforumet eller kontakta Nolto-teamet.
+          gå med i communityforumet eller kontakta Samverkan-teamet.
         </p>
       </section>
     </div>

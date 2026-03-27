@@ -121,7 +121,7 @@ const MobilePreview = () => {
               Your Network in Your Pocket
             </h2>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              Access Nolto from any device. Install as a Progressive Web App for a native-like experience with offline support and push notifications.
+              Access Samverkan from any device. Install as a Progressive Web App for a native-like experience with offline support and push notifications.
             </p>
 
             <div className="space-y-4 mb-8">

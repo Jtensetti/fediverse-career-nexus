@@ -1,9 +1,9 @@
 /**
- * Cloudflare Worker for proxying ActivityPub federation requests from nolto.social
+ * Cloudflare Worker for proxying ActivityPub federation requests from samverkan.se
  * to Supabase Edge Functions.
  * 
  * This worker handles all federation-related endpoints that remote ActivityPub servers
- * will access when interacting with Nolto actors.
+ * will access when interacting with Samverkan actors.
  */
 
 // Paths that should be proxied to Supabase Edge Functions

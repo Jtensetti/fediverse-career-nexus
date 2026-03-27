@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const ONBOARDING_COMPLETE_KEY = "nolto-onboarding-complete";
+const ONBOARDING_COMPLETE_KEY = "samverkan-onboarding-complete";
 
 export const useOnboarding = () => {
   const { user } = useAuth();

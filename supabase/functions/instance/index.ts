@@ -68,16 +68,16 @@ serve(async (req) => {
       .select("id", { count: 'exact', head: true })
       .not('remote_actor_url', 'is', null);
 
-    const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
+    const siteUrl = Deno.env.get("SITE_URL") || "https://samverkan.se";
 
     // Build instance metadata (Mastodon-compatible format)
     const instanceData = {
       uri: siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, ""),
-      title: "Nolto Social",
+      title: "Samverkan Social",
       short_description: "A federated professional networking platform",
-      description: "Nolto is an open, federated professional networking platform that connects with the Fediverse.",
-      email: "admin@nolto.social",
-      version: "1.0.0 (compatible; Nolto)",
+      description: "Samverkan is an open, federated professional networking platform that connects with the Fediverse.",
+      email: "admin@samverkan.se",
+      version: "1.0.0 (compatible; Samverkan)",
       urls: {
         streaming_api: null
       },
