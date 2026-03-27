@@ -6,6 +6,7 @@ import { Clock, UserCheck, UserX, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getOutgoingFollows, subscribeToOutgoingFollows, type OutgoingFollow } from "@/services/outgoingFollowsService";
 import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 
 interface OutgoingFollowsListProps {
   actorId: string;
