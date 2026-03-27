@@ -16,6 +16,8 @@ function Calendar({
 }: CalendarProps) {
   return (
     <DayPicker
+      locale={sv}
+      weekStartsOn={1}
       showOutsideDays={showOutsideDays}
       className={cn("p-3 pointer-events-auto", className)}
       classNames={{

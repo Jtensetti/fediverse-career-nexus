@@ -60,7 +60,7 @@ export function FormErrorSummary({ errors, className = "" }: FormErrorSummaryPro
         <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
         <div className="flex-1">
           <h3 className="font-medium text-destructive mb-2">
-            Please fix the following {errorEntries.length === 1 ? "error" : "errors"}:
+            Vänligen åtgärda följande {errorEntries.length === 1 ? "fel" : "fel"}:
           </h3>
           <ul className="list-disc list-inside space-y-1 text-sm text-destructive/90">
             {errorEntries.map(([field, error]) => (

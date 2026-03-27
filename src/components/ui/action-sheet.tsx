@@ -28,7 +28,7 @@ const ActionSheet = ({
   trigger,
   title,
   options,
-  cancelLabel = "Cancel",
+  cancelLabel = "Avbryt",
 }: ActionSheetProps) => {
   const [open, setOpen] = React.useState(false);
 

@@ -22,7 +22,7 @@ const MONTHS = [
 export function MonthYearPicker({
   value,
   onChange,
-  placeholder = "Pick a date",
+  placeholder = "Välj datum",
   fromYear = 1960,
   toYear = new Date().getFullYear(),
   disabled = false,
