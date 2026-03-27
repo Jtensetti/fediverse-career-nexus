@@ -154,7 +154,7 @@ const JobCard = ({ job }: JobCardProps) => {
         </CardContent>
         <CardFooter className="pt-0">
           <Button asChild className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="outline">
-            <Link to={`/jobs/${job.id}`}>View Details</Link>
+            <Link to={`/jobs/${job.id}`}>Visa detaljer</Link>
           </Button>
         </CardFooter>
       </Card>

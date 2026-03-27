@@ -107,7 +107,7 @@ const NewsletterSubscribe = () => {
                 disabled={isLoading || !!userEmail}
               />
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Processing..." : "Subscribe"}
+                {isLoading ? "Bearbetar..." : "Prenumerera"}
               </Button>
             </div>
           </form>

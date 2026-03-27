@@ -163,7 +163,7 @@ export default function PostView() {
       const repliesData = await getPostReplies(postId);
       setReplies(repliesData);
     } catch (err) {
-      setError('Failed to load post');
+      setError('Kunde inte ladda inlägget');
     } finally {
       setLoading(false);
       

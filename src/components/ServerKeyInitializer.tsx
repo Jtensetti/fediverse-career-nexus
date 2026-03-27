@@ -120,7 +120,7 @@ export default function ServerKeyInitializer() {
     } catch (error) {
       console.error("Error generating actor keys:", error);
       toast({
-        title: "Error",
+        title: "Fel",
         description: "Kunde inte generera aktörnycklar",
         variant: "destructive",
       });
