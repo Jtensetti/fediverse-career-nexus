@@ -113,7 +113,7 @@ export default function ServerKeyInitializer() {
       
       setActorKeyStatus("ok");
       toast({
-        title: "Success",
+        title: "Klart",
         description: "Aktörnycklar genererades",
         variant: "default",
       });
