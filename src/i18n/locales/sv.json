@@ -1010,10 +1010,10 @@
   "companyFollow": {
     "follow": "Följ",
     "following": "Följer",
-    "followSuccess": "Följer nu detta företag",
-    "unfollowSuccess": "Slutade följa företag",
-    "followFailed": "Kunde inte följa företag",
-    "unfollowFailed": "Kunde inte sluta följa företag"
+    "followSuccess": "Följer nu denna organisation",
+    "unfollowSuccess": "Slutade följa organisation",
+    "followFailed": "Kunde inte följa organisation",
+    "unfollowFailed": "Kunde inte sluta följa organisation"
   },
   "search": {
     "title": "Sök",
