@@ -57,7 +57,7 @@ export default function QuoteCardGenerator({
 
       // Create download link
       const link = document.createElement('a');
-      link.download = `nolto-quote-${Date.now()}.png`;
+      link.download = `samverkan-quote-${Date.now()}.png`;
       link.href = dataUrl;
       link.click();
 
@@ -176,7 +176,7 @@ export default function QuoteCardGenerator({
                     >
                       <circle cx="12" cy="12" r="10" />
                     </svg>
-                    nolto.app
+                    samverkan.se
                   </div>
                 </div>
               </div>

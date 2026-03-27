@@ -18,7 +18,7 @@ const testimonials = [
     author: "Anna Lindström",
     role: "IT-chef, Göteborgs kommun",
     avatar: avatarSarah,
-    handle: "@anna@nolto.se",
+    handle: "@anna@samverkan.se",
     verified: true,
     featured: true,
   },
@@ -27,7 +27,7 @@ const testimonials = [
     author: "Erik Johansson",
     role: "Digitaliseringsstrateg, Region Skåne",
     avatar: avatarMarcus,
-    handle: "@erik@nolto.se",
+    handle: "@erik@samverkan.se",
     verified: true,
   },
   {
@@ -35,7 +35,7 @@ const testimonials = [
     author: "Maria Bergström",
     role: "Verksamhetsutvecklare, Arbetsförmedlingen",
     avatar: avatarPriya,
-    handle: "@maria@nolto.se",
+    handle: "@maria@samverkan.se",
     verified: false,
   },
   {
@@ -43,7 +43,7 @@ const testimonials = [
     author: "Johan Pettersson",
     role: "Systemarkitekt, Trafikverket",
     avatar: avatarJames,
-    handle: "@johan@nolto.se",
+    handle: "@johan@samverkan.se",
     verified: true,
   },
   {
@@ -51,7 +51,7 @@ const testimonials = [
     author: "Lina Svensson",
     role: "Informationssäkerhetsspecialist, SKR",
     avatar: avatarEmma,
-    handle: "@lina@nolto.se",
+    handle: "@lina@samverkan.se",
     verified: true,
   },
   {
@@ -59,7 +59,7 @@ const testimonials = [
     author: "Carlos Rivera",
     role: "Produktchef, Vinnova",
     avatar: avatarCarlos,
-    handle: "@carlos@nolto.se",
+    handle: "@carlos@samverkan.se",
     verified: false,
   },
 ];
