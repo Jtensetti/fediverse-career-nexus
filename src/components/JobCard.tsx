@@ -31,7 +31,7 @@ const formatSalary = (min: number | null, max: number | null, currency: string |
     return `${currencySymbol}${min.toLocaleString()}+`;
   }
   
-  return `Up to ${currencySymbol}${max?.toLocaleString()}`;
+  return `Upp till ${currencySymbol}${max?.toLocaleString()}`;
 };
 
 const JobTypeLabels: Record<string, string> = {
