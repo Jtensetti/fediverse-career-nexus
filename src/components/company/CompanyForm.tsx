@@ -171,7 +171,7 @@ export default function CompanyForm({
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">/organisation/</span>
                       <Input 
-                        placeholder="foretagsnamn" 
+                        placeholder="organisationsnamn" 
                         {...field} 
                         disabled={isEdit}
                         className={isEdit ? "bg-muted" : ""}
