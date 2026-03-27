@@ -20,6 +20,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import CreateCustomFeedDialog from "./CreateCustomFeedDialog";
+import ManageCustomFeedsDialog from "./ManageCustomFeedsDialog";
 
 export interface FeedSelectorProps {
   value: FeedType | string;
@@ -32,6 +34,8 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
   const { user } = useAuth();
   const [customFeeds, setCustomFeeds] = useState<CustomFeed[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
 
   // Check if user is federated (signed in via Fediverse)
   const { data: profile } = useQuery({
@@ -71,6 +75,10 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
     setIsLoading(false);
   };
 
+  const handleFeedsChanged = () => {
+    loadCustomFeeds();
+  };
+
   const selectedFeed = feedTabs.find(tab => tab.id === value);
   const selectedCustomFeed = customFeeds.find(f => f.id === value);
 
@@ -108,66 +116,83 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
 
       {/* Custom feeds dropdown */}
       {user && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant={selectedCustomFeed ? "secondary" : "ghost"} 
-              size="sm"
-              className={cn(
-                "gap-1.5",
-                selectedCustomFeed && "bg-primary/10 text-primary hover:bg-primary/20"
-              )}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Filter className="h-4 w-4" />
-              )}
-              {selectedCustomFeed ? (
-                <span className="hidden sm:inline max-w-24 truncate">{selectedCustomFeed.name}</span>
-              ) : (
-                <span className="hidden sm:inline">{t("feed.feeds", "Feeds")}</span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            {customFeeds.length > 0 ? (
-              <>
-                {customFeeds.map((feed) => (
-                  <DropdownMenuItem
-                    key={feed.id}
-                    onClick={() => onChange(feed.id)}
-                    className={cn(
-                      "gap-2 cursor-pointer",
-                      value === feed.id && "bg-accent"
-                    )}
-                  >
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate font-medium">{feed.name}</p>
-                      {feed.description && (
-                        <p className="text-xs text-muted-foreground truncate">{feed.description}</p>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant={selectedCustomFeed ? "secondary" : "ghost"} 
+                size="sm"
+                className={cn(
+                  "gap-1.5",
+                  selectedCustomFeed && "bg-primary/10 text-primary hover:bg-primary/20"
+                )}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Filter className="h-4 w-4" />
+                )}
+                {selectedCustomFeed ? (
+                  <span className="hidden sm:inline max-w-24 truncate">{selectedCustomFeed.name}</span>
+                ) : (
+                  <span className="hidden sm:inline">{t("feed.feeds", "Feeds")}</span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {customFeeds.length > 0 ? (
+                <>
+                  {customFeeds.map((feed) => (
+                    <DropdownMenuItem
+                      key={feed.id}
+                      onClick={() => onChange(feed.id)}
+                      className={cn(
+                        "gap-2 cursor-pointer",
+                        value === feed.id && "bg-accent"
                       )}
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-              </>
-            ) : null}
-            <DropdownMenuItem asChild className="gap-2 cursor-pointer">
-              <a href="/settings/feeds">
+                    >
+                      <Filter className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate font-medium">{feed.name}</p>
+                        {feed.description && (
+                          <p className="text-xs text-muted-foreground truncate">{feed.description}</p>
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                </>
+              ) : null}
+              <DropdownMenuItem
+                className="gap-2 cursor-pointer"
+                onClick={() => setCreateOpen(true)}
+              >
                 <Plus className="h-4 w-4" />
-                {t("feed.createCustomFeed", "Create custom feed")}
-              </a>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="gap-2 cursor-pointer">
-              <a href="/settings/feeds">
+                {t("feed.createCustomFeed", "Skapa anpassat flöde")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="gap-2 cursor-pointer"
+                onClick={() => setManageOpen(true)}
+              >
                 <Settings2 className="h-4 w-4" />
-                {t("feed.manageFeeds", "Manage feeds")}
-              </a>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                {t("feed.manageFeeds", "Hantera flöden")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <CreateCustomFeedDialog
+            open={createOpen}
+            onOpenChange={setCreateOpen}
+            onSaved={handleFeedsChanged}
+          />
+
+          <ManageCustomFeedsDialog
+            open={manageOpen}
+            onOpenChange={setManageOpen}
+            feeds={customFeeds}
+            onChanged={handleFeedsChanged}
+          />
+        </>
       )}
     </div>
   );
