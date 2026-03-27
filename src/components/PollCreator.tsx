@@ -73,7 +73,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-medium">
           <BarChart3 className="h-4 w-4" />
-          Poll Options
+          Omröstningsalternativ
         </div>
         <Button
           variant="ghost"
@@ -89,7 +89,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
         {options.map((option, index) => (
           <div key={index} className="flex items-center gap-2">
             <Input
-              placeholder={`Option ${index + 1}`}
+              placeholder={`Alternativ ${index + 1}`}
               value={option}
               onChange={(e) => updateOption(index, e.target.value)}
               className="flex-1"
@@ -116,14 +116,14 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
             className="w-full"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add option
+            Lägg till alternativ
           </Button>
         )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 space-y-2">
-          <Label className="text-xs text-muted-foreground">Duration</Label>
+          <Label className="text-xs text-muted-foreground">Varaktighet</Label>
           <Select
             value={durationMinutes.toString()}
             onValueChange={handleDurationChange}
@@ -148,7 +148,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
             onCheckedChange={handleMultipleChoiceChange}
           />
           <Label htmlFor="multiple-choice" className="text-sm cursor-pointer">
-            Multiple choice
+            Flerval
           </Label>
         </div>
       </div>
