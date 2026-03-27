@@ -14,7 +14,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getModerators, addModerator, removeModerator, searchUsers, Moderator } from "@/services/moderationService";
+import { getModerators, addModerator, removeModerator, searchUsers, Moderator } from "@/services/moderation/moderationService";
 
 interface ModeratorManagementProps { isAdmin: boolean; }
 

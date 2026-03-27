@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import CompanyFollowButton from "./CompanyFollowButton";
 import CompanyImageUpload from "./CompanyImageUpload";
-import type { Company } from "@/services/companyService";
-import type { CompanyRoleEnum } from "@/services/companyRolesService";
+import type { Company } from "@/services/company/companyService";
+import type { CompanyRoleEnum } from "@/services/company/companyRolesService";
 
 interface CompanyHeaderProps {
   company: Company;

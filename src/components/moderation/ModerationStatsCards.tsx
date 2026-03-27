@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Flag, Ban, Activity, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getModerationStats } from "@/services/moderationService";
+import { getModerationStats } from "@/services/moderation/moderationService";
 
 export function ModerationStatsCards() {
   const { data: stats, isLoading } = useQuery({

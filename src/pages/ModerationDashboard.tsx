@@ -28,21 +28,21 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SEOHead } from '@/components/common/SEOHead';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 import { useModerationAccess } from '@/hooks/useModerationAccess';
-import { getModerationStats } from '@/services/moderationService';
-import { getPendingReportsCount } from '@/services/reportService';
+import { getModerationStats } from '@/services/moderation/moderationService';
+import { getPendingReportsCount } from '@/services/moderation/reportService';
 
 // Lazy load heavy components
 import { lazy, Suspense } from 'react';
 const FlaggedContentList = lazy(() => import('@/components/moderation/FlaggedContentList').then(m => ({ default: m.FlaggedContentList })));
 const BannedUsersList = lazy(() => import('@/components/moderation/BannedUsersList').then(m => ({ default: m.BannedUsersList })));
 const UserLookup = lazy(() => import('@/components/moderation/UserLookup').then(m => ({ default: m.UserLookup })));
-const ModerationLog = lazy(() => import('@/components/ModerationLog'));
-const DomainModeration = lazy(() => import('@/components/DomainModeration'));
-const ActorModeration = lazy(() => import('@/components/ActorModeration'));
-const AlertManager = lazy(() => import('@/components/AlertManager').then(m => ({ default: m.AlertManager })));
+const ModerationLog = lazy(() => import('@/components/admin/ModerationLog'));
+const DomainModeration = lazy(() => import('@/components/admin/DomainModeration'));
+const ActorModeration = lazy(() => import('@/components/admin/ActorModeration'));
+const AlertManager = lazy(() => import('@/components/layout/AlertManager').then(m => ({ default: m.AlertManager })));
 
 function StatCard({ 
   label, 

@@ -2,8 +2,8 @@ import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { uploadCompanyImage, deleteCompanyImage } from "@/services/companyImageService";
-import { updateCompany } from "@/services/companyService";
+import { uploadCompanyImage, deleteCompanyImage } from "@/services/company/companyImageService";
+import { updateCompany } from "@/services/company/companyService";
 
 interface CompanyImageUploadProps {
   companyId: string;

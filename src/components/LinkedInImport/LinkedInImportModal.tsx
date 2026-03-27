@@ -8,7 +8,7 @@ import ConfirmStep from './ImportSteps/ConfirmStep';
 import {
   LinkedInImportData, ImportOptions, ImportResult,
   parseLinkedInExport, submitLinkedInImport,
-} from '@/services/linkedinImportService';
+} from '@/services/content/linkedinImportService';
 
 interface LinkedInImportModalProps {
   open: boolean;

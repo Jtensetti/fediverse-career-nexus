@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { INTEREST_CATEGORIES } from "@/services/onboardingRecommendationService";
+import { INTEREST_CATEGORIES } from "@/services/misc/onboardingRecommendationService";
 
 interface InterestSelectorProps {
   selectedInterests: string[];

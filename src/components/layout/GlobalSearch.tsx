@@ -1,0 +1,238 @@
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Search, User, Briefcase, FileText, Calendar, X, Loader2, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileHoverCard } from "@/components/common/ProfileHoverCard";
+import { searchService, SearchResult, SearchResults } from "@/services/search/searchService";
+import { cn } from "@/lib/utils";
+
+interface GlobalSearchProps {
+  autoFocus?: boolean;
+  onResultClick?: () => void;
+  fullWidth?: boolean;
+  inlineResults?: boolean; // For mobile layout - renders results inline instead of absolute dropdown
+  hideInputClear?: boolean; // Hide the X button in input (when sheet already has close button)
+}
+
+export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = false, inlineResults = false, hideInputClear = false }: GlobalSearchProps) {
+  const { t } = useTranslation();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResults | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  // Debounced search
+  useEffect(() => {
+    if (query.length < 1) {
+      setResults(null);
+      return;
+    }
+
+    setIsLoading(true);
+    const timeout = setTimeout(async () => {
+      const searchResults = await searchService.search(query);
+      setResults(searchResults);
+      setIsLoading(false);
+      setSelectedIndex(-1);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [query]);
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Keyboard navigation
+  const allResults = results
+    ? [...results.profiles, ...results.jobs, ...results.articles, ...results.events]
+    : [];
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isOpen || allResults.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev < allResults.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : allResults.length - 1));
+    } else if (e.key === "Enter" && selectedIndex >= 0) {
+      e.preventDefault();
+      const selected = allResults[selectedIndex];
+      navigate(selected.url);
+      setIsOpen(false);
+      setQuery("");
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
+
+  const handleResultClick = (result: SearchResult) => {
+    navigate(result.url);
+    setIsOpen(false);
+    setQuery("");
+    onResultClick?.();
+  };
+
+  const getIcon = (type: SearchResult['type']) => {
+    switch (type) {
+      case 'profile': return <User className="h-4 w-4" />;
+      case 'job': return <Briefcase className="h-4 w-4" />;
+      case 'article': return <FileText className="h-4 w-4" />;
+      case 'event': return <Calendar className="h-4 w-4" />;
+    }
+  };
+
+  const getTypeLabel = (type: SearchResult['type']) => {
+    switch (type) {
+      case 'profile': return t("globalSearch.people");
+      case 'job': return t("globalSearch.jobs");
+      case 'article': return t("globalSearch.articles");
+      case 'event': return t("globalSearch.events");
+    }
+  };
+
+  const renderSection = (items: SearchResult[], type: SearchResult['type']) => {
+    if (items.length === 0) return null;
+    
+    const startIndex = type === 'profile' ? 0 
+      : type === 'job' ? results!.profiles.length 
+      : type === 'article' ? results!.profiles.length + results!.jobs.length
+      : results!.profiles.length + results!.jobs.length + results!.articles.length;
+
+    return (
+      <div key={type}>
+        <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {getTypeLabel(type)}
+        </div>
+        {items.map((result, index) => {
+          const globalIndex = startIndex + index;
+          return (
+            <ProfileHoverCard 
+              username={type === 'profile' ? result.id : undefined}
+              disabled={type !== 'profile'}
+            >
+              <button
+                key={result.id}
+                onClick={() => handleResultClick(result)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2 hover:bg-accent transition-colors text-left",
+                  selectedIndex === globalIndex && "bg-accent"
+                )}
+              >
+                {type === 'profile' && result.imageUrl ? (
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={result.imageUrl} />
+                    <AvatarFallback>{result.title[0]}</AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                    {getIcon(type)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{result.title}</div>
+                  {result.subtitle && (
+                    <div className="text-sm text-muted-foreground truncate">{result.subtitle}</div>
+                  )}
+                </div>
+              </button>
+            </ProfileHoverCard>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <div ref={containerRef} className={cn("relative", fullWidth ? "w-full" : "w-full max-w-sm")}>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          onKeyDown={handleKeyDown}
+          placeholder={t("globalSearch.placeholder")}
+          className="pl-9 pr-9"
+          autoFocus={autoFocus}
+        />
+        {query && !hideInputClear && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+            onClick={() => {
+              setQuery("");
+              setResults(null);
+              inputRef.current?.focus();
+            }}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+
+      {isOpen && query.length >= 1 && (
+        <div className={cn(
+          "bg-popover border rounded-lg shadow-lg z-50 overflow-auto",
+          inlineResults 
+            ? "mt-2 max-h-[60vh]" // Inline: flows naturally, more height for mobile
+            : "absolute top-full left-0 right-0 mt-2 max-h-[400px]" // Dropdown: absolute positioned
+        )}>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : results && results.total > 0 ? (
+            <div className="py-2">
+              {renderSection(results.profiles, 'profile')}
+              {renderSection(results.jobs, 'job')}
+              {renderSection(results.articles, 'article')}
+              {renderSection(results.events, 'event')}
+            </div>
+          ) : (
+            <div className="py-8 text-center text-muted-foreground">
+              {t("globalSearch.noResults")} "{query}"
+            </div>
+          )}
+          
+          {/* Link to advanced search */}
+          <div className="border-t px-3 py-2">
+            <Link 
+              to={`/search?q=${encodeURIComponent(query)}`}
+              className="flex items-center justify-between text-sm text-primary hover:underline"
+              onClick={() => {
+                setIsOpen(false);
+                setQuery("");
+                onResultClick?.();
+              }}
+            >
+              <span>{t("globalSearch.advancedSearch")}</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

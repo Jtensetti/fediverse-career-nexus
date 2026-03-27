@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { banUser, searchUsers } from "@/services/moderationService";
+import { banUser, searchUsers } from "@/services/moderation/moderationService";
 
 interface UserBanDialogProps {
   open: boolean;

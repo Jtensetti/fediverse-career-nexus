@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EmptyState } from "@/components/common";
-import type { CompanyRoleWithProfile } from "@/services/companyRolesService";
+import type { CompanyRoleWithProfile } from "@/services/company/companyRolesService";
 import AddRoleForm from "./AddRoleForm";
 
 interface RolesTabProps {

@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import {
   ArrowLeft, Loader2, AlertCircle, User, Briefcase, GraduationCap, Sparkles, FileText, Check, ChevronDown, Info,
 } from 'lucide-react';
-import { LinkedInImportData, ImportOptions } from '@/services/linkedinImportService';
+import { LinkedInImportData, ImportOptions } from '@/services/content/linkedinImportService';
 import { useState } from 'react';
 
 interface PreviewStepProps {

@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { claimEmployment, type EmploymentType } from "@/services/companyEmployeeService";
+import { claimEmployment, type EmploymentType } from "@/services/company/companyEmployeeService";
 
 const employmentTypes: { value: EmploymentType; label: string }[] = [
   { value: "full_time", label: "Full-time" },

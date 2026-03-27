@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getFlaggedContent, updateReportStatus, deleteFlaggedContent, FlaggedContent } from "@/services/moderationService";
+import { getFlaggedContent, updateReportStatus, deleteFlaggedContent, FlaggedContent } from "@/services/moderation/moderationService";
 import { UserBanDialog } from "./UserBanDialog";
 
 const contentTypeLabels: Record<string, string> = {

@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { notificationService, Notification, NotificationType } from "@/services/notificationService";
+import { notificationService, Notification, NotificationType } from "@/services/misc/notificationService";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import { SEOHead } from "@/components/common/SEOHead";
 import { REACTION_EMOJIS, ReactionKey } from "@/lib/reactions";
 

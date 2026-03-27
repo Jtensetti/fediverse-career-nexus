@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserCheck, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { followCompany, unfollowCompany, isFollowingCompany } from "@/services/companyFollowService";
+import { followCompany, unfollowCompany, isFollowingCompany } from "@/services/company/companyFollowService";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 

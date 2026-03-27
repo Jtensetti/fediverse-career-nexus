@@ -1,0 +1,269 @@
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
+import { MessageSquare, Bookmark } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { getPostReplies, PostReply } from "@/services/posts/postReplyService";
+import { getBatchReplyReactions, ReactionCount } from "@/services/content/reactionsService";
+import { toggleSaveItem } from "@/services/content/savedItemsService";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import InlineReplyComposer from "../InlineReplyComposer";
+import { EnhancedCommentReactions } from "../EnhancedCommentReactions";
+
+interface CompanyContext {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+}
+
+interface CommentPreviewProps {
+  postId: string;
+  onCommentClick?: () => void;
+  maxComments?: number;
+  autoOpenComposer?: boolean;
+  onComposerOpened?: () => void;
+  companyContext?: CompanyContext;
+}
+
+export interface CommentPreviewHandle {
+  openComposer: () => void;
+}
+
+interface CommentWithState extends PostReply {
+  isSaved: boolean;
+  reactions?: ReactionCount[];
+}
+
+const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
+  ({ postId, onCommentClick, maxComments = 2, autoOpenComposer, onComposerOpened, companyContext }, ref) => {
+  const { t } = useTranslation();
+  const [comments, setComments] = useState<CommentWithState[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showReplyComposer, setShowReplyComposer] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+
+  useImperativeHandle(ref, () => ({
+    openComposer: () => {
+      if (!user) {
+        toast.error(t("commentPreview.signInToComment"));
+        return;
+      }
+      setShowReplyComposer(true);
+      setTimeout(() => {
+        composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }));
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting && !hasLoaded) setIsVisible(true); },
+      { rootMargin: '50px', threshold: 0.1 }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [hasLoaded]);
+
+  useEffect(() => {
+    if (isVisible && !hasLoaded) loadComments();
+  }, [isVisible, hasLoaded, postId]);
+
+  useEffect(() => {
+    if (autoOpenComposer && user) {
+      setShowReplyComposer(true);
+      onComposerOpened?.();
+      if (!hasLoaded) loadComments();
+      setTimeout(() => { composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+    }
+  }, [autoOpenComposer, user]);
+
+  const loadComments = async () => {
+    setIsLoading(true);
+    setHasLoaded(true);
+    try {
+      const replies = await getPostReplies(postId);
+      const topLevelReplies = replies.filter(r => !r.parent_reply_id);
+      setTotalCount(topLevelReplies.length);
+      const previewReplies = topLevelReplies.slice(0, maxComments);
+      const replyIds = previewReplies.map(r => r.id);
+      const reactionsMap = await getBatchReplyReactions(replyIds);
+      const commentsWithState = previewReplies.map(reply => ({
+        ...reply, isSaved: false, reactions: reactionsMap[reply.id] || undefined
+      }));
+      setComments(commentsWithState);
+    } catch (error) {
+      console.error('Error loading comment preview:', error);
+      setComments([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveComment = async (commentId: string) => {
+    if (!user) {
+      toast.error(t("commentPreview.signInToSave"));
+      return;
+    }
+    setComments(prev => prev.map(c => c.id === commentId ? { ...c, isSaved: !c.isSaved } : c));
+    const result = await toggleSaveItem("comment", commentId);
+    if (!result.success) {
+      setComments(prev => prev.map(c => c.id === commentId ? { ...c, isSaved: !c.isSaved } : c));
+      toast.error(t("commentPreview.failedToSave"));
+    } else {
+      toast.success(result.saved ? t("commentPreview.commentSaved") : t("commentPreview.removedFromSaved"));
+    }
+  };
+
+  const handleReplyCreated = () => {
+    setShowReplyComposer(false);
+    loadComments();
+  };
+
+  if (!isVisible && !hasLoaded) {
+    return (
+      <div ref={containerRef} className="pt-2 border-t border-border/50 min-h-[40px]" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+        <div className="h-8" />
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div ref={containerRef} className="space-y-2 pt-2 border-t border-border/50" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+        {[...Array(Math.min(maxComments, 2))].map((_, i) => (
+          <div key={i} className="flex gap-2 animate-pulse">
+            <div className="h-6 w-6 rounded-full bg-muted" />
+            <div className="flex-1">
+              <div className="h-3 w-24 bg-muted rounded mb-1" />
+              <div className="h-4 w-full bg-muted rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (comments.length === 0 && totalCount === 0) {
+    return (
+      <div ref={containerRef} className="pt-2 border-t border-border/50" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+        {showReplyComposer ? (
+          <div ref={composerRef}>
+            <InlineReplyComposer
+              postId={postId}
+              onReplyCreated={handleReplyCreated}
+              onCancel={() => setShowReplyComposer(false)}
+              placeholder={t("commentPreview.writeComment")}
+              autoFocus
+              companyContext={companyContext}
+            />
+          </div>
+        ) : (
+          <button
+            onClick={() => user ? setShowReplyComposer(true) : toast.error(t("commentPreview.signInToComment"))}
+            className="w-full text-left text-sm text-muted-foreground hover:text-foreground py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors"
+          >
+            {t("commentPreview.writeFirstComment")}
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="pt-2 border-t border-border/50 space-y-2" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+      {comments.map((comment) => (
+        <div key={comment.id} className="flex gap-2 group/comment">
+          <Link to={comment.company ? `/organisation/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`}>
+            <Avatar className="h-6 w-6 aspect-square flex-shrink-0">
+              {comment.author.avatar_url && <AvatarImage src={comment.author.avatar_url} />}
+              <AvatarFallback className="text-[10px] bg-muted">
+                {(comment.author.fullname || comment.author.username || 'U').charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+          <div className="flex-1 min-w-0">
+            <div className="bg-muted/50 rounded-lg px-3 py-1.5">
+              <div className="flex items-center gap-1.5">
+                <Link to={comment.company ? `/organisation/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`} className="text-xs font-medium hover:underline">
+                  {comment.author.fullname || comment.author.username || 'Unknown'}
+                </Link>
+                {comment.company && (
+                  <span className="text-[10px] text-primary font-medium">· {t("commentPreview.companyReply")}</span>
+                )}
+                <span className="text-[10px] text-muted-foreground">
+                  · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: sv })}
+                </span>
+              </div>
+              <p className="text-sm text-foreground/90 line-clamp-2">
+                {typeof comment.content === 'string' ? comment.content : t("commentPreview.commentUnavailable")}
+              </p>
+            </div>
+            <div className="flex items-center gap-1 mt-0.5 ml-1">
+              <EnhancedCommentReactions replyId={comment.id} className="scale-90 origin-left" initialReactions={comment.reactions} />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost" size="sm"
+                      className={cn("h-5 px-1.5 text-[10px] rounded-full", comment.isSaved ? "text-primary" : "text-muted-foreground hover:text-primary")}
+                      onClick={() => handleSaveComment(comment.id)}
+                    >
+                      <Bookmark className={cn("h-3 w-3", comment.isSaved && "fill-current")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{comment.isSaved ? t("commentPreview.removeFromSaved") : t("commentPreview.saveComment")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+        </div>
+      ))}
+      
+      {totalCount > maxComments && (
+        <Link to={`/post/${postId}`} className="block text-xs text-primary hover:underline pl-8" onClick={onCommentClick}>
+          {t("commentPreview.viewAllComments", { count: totalCount })}
+        </Link>
+      )}
+      
+      {showReplyComposer ? (
+        <div className="pt-1" ref={composerRef}>
+          <InlineReplyComposer
+            postId={postId}
+            onReplyCreated={handleReplyCreated}
+            onCancel={() => setShowReplyComposer(false)}
+            placeholder={t("commentPreview.writeComment")}
+            autoFocus
+            companyContext={companyContext}
+          />
+        </div>
+      ) : (
+        <button
+          onClick={() => user ? setShowReplyComposer(true) : toast.error(t("commentPreview.signInToComment"))}
+          className="w-full text-left text-xs text-muted-foreground hover:text-foreground py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-2"
+        >
+          <MessageSquare className="h-3 w-3" />
+          {t("commentPreview.addComment")}
+        </button>
+      )}
+    </div>
+  );
+});
+
+CommentPreview.displayName = 'CommentPreview';
+
+export default CommentPreview;

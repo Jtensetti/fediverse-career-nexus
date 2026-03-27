@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { toggleSaveItem, isItemSaved, SavedItemType } from "@/services/savedItemsService";
+import { toggleSaveItem, isItemSaved, SavedItemType } from "@/services/content/savedItemsService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";

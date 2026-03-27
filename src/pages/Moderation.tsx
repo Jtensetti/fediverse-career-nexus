@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import ModerationLog from "@/components/ModerationLog";
-import ModerationHeader from "@/components/ModerationHeader";
-import DomainModeration from "@/components/DomainModeration";
-import ActorModeration from "@/components/ActorModeration";
-import CodeOfConduct from "@/components/CodeOfConduct";
- import { AlertManager } from "@/components/AlertManager";
+import ModerationLog from "@/components/admin/ModerationLog";
+import ModerationHeader from "@/components/admin/ModerationHeader";
+import DomainModeration from "@/components/admin/DomainModeration";
+import ActorModeration from "@/components/admin/ActorModeration";
+import CodeOfConduct from "@/components/legal/CodeOfConduct";
+ import { AlertManager } from "@/components/layout/AlertManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { SEOHead } from "@/components/common/SEOHead";
@@ -19,8 +19,8 @@ import {
   UserLookup,
   ModerationStatsCards,
 } from "@/components/moderation";
-import { getPendingReportsCount } from "@/services/reportService";
-import { getModerationStats } from "@/services/moderationService";
+import { getPendingReportsCount } from "@/services/moderation/reportService";
+import { getModerationStats } from "@/services/moderation/moderationService";
 
 const Moderation = () => {
   const { t } = useTranslation();

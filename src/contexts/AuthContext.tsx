@@ -2,10 +2,10 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { createUserActor } from '@/services/actorService';
-import { ensureUserProfile } from '@/services/profileService';
-import { needsMFAVerification } from '@/services/mfaService';
-import MFAVerifyDialog from '@/components/MFAVerifyDialog';
+import { createUserActor } from '@/services/federation/actorService';
+import { ensureUserProfile } from '@/services/profile/profileService';
+import { needsMFAVerification } from '@/services/auth/mfaService';
+import MFAVerifyDialog from '@/components/auth/MFAVerifyDialog';
 
 interface AuthContextType {
   user: User | null;

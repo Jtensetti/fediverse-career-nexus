@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, FileArchive, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
-import { validateLinkedInZip } from '@/services/linkedinImportService';
+import { validateLinkedInZip } from '@/services/content/linkedinImportService';
 
 interface UploadStepProps {
   onFileSelected: (file: File) => void;

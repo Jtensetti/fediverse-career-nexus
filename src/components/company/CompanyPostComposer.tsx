@@ -10,11 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Image, X, Loader2, Send, ImagePlus, AlertTriangle, Building2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { compressImage, formatFileSize } from "@/lib/imageCompression";
-import { LinkPreview, extractUrls } from "@/components/LinkPreview";
-import ContentWarningInput from "@/components/ContentWarningInput";
-import { createCompanyPost, CreateCompanyPostData } from "@/services/companyPostService";
+import { LinkPreview, extractUrls } from "@/components/content/LinkPreview";
+import ContentWarningInput from "@/components/content/ContentWarningInput";
+import { createCompanyPost, CreateCompanyPostData } from "@/services/company/companyPostService";
 import { cn } from "@/lib/utils";
-import type { Company } from "@/services/companyService";
+import type { Company } from "@/services/company/companyService";
 
 const MAX_CHARACTERS = 500;
 

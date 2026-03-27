@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
-import { getCompanyIndustries, type CompanyFilters } from "@/services/companyService";
+import { getCompanyIndustries, type CompanyFilters } from "@/services/company/companyService";
 import type { Database } from "@/integrations/supabase/types";
 
 type CompanySize = Database['public']['Enums']['company_size'];
