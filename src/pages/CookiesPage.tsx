@@ -6,20 +6,20 @@ import { SEOHead } from "@/components/common/SEOHead";
 const CookiesPage = () => {
   return (
     <>
-      <SEOHead title="Cookies — Nolto" description="Information om hur Nolto använder cookies och liknande tekniker." />
+      <SEOHead title="Cookies — Samverkan" description="Information om hur Samverkan använder cookies och liknande tekniker." />
       <div className="min-h-screen flex flex-col bg-background">
         <div className="bg-primary text-primary-foreground py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Cookies</h1>
-              <h2 className="text-xl md:text-2xl font-medium text-accent">Hur Nolto använder cookies</h2>
+              <h2 className="text-xl md:text-2xl font-medium text-accent">Hur Samverkan använder cookies</h2>
             </div>
           </div>
         </div>
         <main className="flex-1 container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-              Nolto använder enbart strikt nödvändiga cookies. Vi använder inga reklam-, analys- eller spårningscookies. 
+              Samverkan använder enbart strikt nödvändiga cookies. Vi använder inga reklam-, analys- eller spårningscookies. 
               Därför behövs inget cookie-samtycke.
             </p>
 
@@ -73,7 +73,7 @@ const CookiesPage = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">Lokal lagring</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Nolto kan använda <strong className="text-foreground">localStorage</strong> i din webbläsare för att spara inställningar 
+                  Samverkan kan använda <strong className="text-foreground">localStorage</strong> i din webbläsare för att spara inställningar 
                   som tema (ljust/mörkt läge) och språkval. Dessa lagras lokalt på din enhet och skickas aldrig till våra servrar.
                 </p>
               </div>

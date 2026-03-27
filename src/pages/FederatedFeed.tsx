@@ -41,7 +41,7 @@ const FederatedFeedPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead title="Feed" description="Your personalized feed on Nolto - the federated professional network." />
+      <SEOHead title="Feed" description="Your personalized feed on Samverkan - the federated professional network." />
       <Navbar />
       
       {/* Onboarding Flow */}

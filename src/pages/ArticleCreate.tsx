@@ -157,7 +157,7 @@ const ArticleCreate = () => {
   if (isMobile && isEditing) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
-        <SEOHead title="Skapa ny artikel" description="Skriv och publicera en ny artikel på Nolto." />
+        <SEOHead title="Skapa ny artikel" description="Skriv och publicera en ny artikel på Samverkan." />
         
         <div className="flex items-center justify-between p-3 border-b border-border bg-background/95 backdrop-blur-sm">
           <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)} className="gap-2">
@@ -210,7 +210,7 @@ const ArticleCreate = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead title="Skapa ny artikel" description="Skriv och publicera en ny artikel på Nolto." />
+      <SEOHead title="Skapa ny artikel" description="Skriv och publicera en ny artikel på Samverkan." />
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8">

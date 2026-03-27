@@ -380,10 +380,10 @@ export default function AuthPage() {
           {/* Logo and Branding */}
           <div className="text-center">
             <div className="flex justify-center mb-4">
-              <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Nolto" className="w-16 h-16" />
+              <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Samverkan" className="w-16 h-16" />
             </div>
             <h1 className="text-3xl font-bold text-foreground font-display">
-              {t("auth.welcomeTitle", "Welcome to Nolto")}
+              {t("auth.welcomeTitle", "Welcome to Samverkan")}
             </h1>
             <p className="mt-2 text-muted-foreground">
               {t("auth.welcomeSubtitle", "The federated professional network that puts you in control")}
@@ -580,8 +580,8 @@ export default function AuthPage() {
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {username
-                          ? `@${username}@nolto.social`
-                          : t("auth.usernameHint", "Your @username@nolto.social handle")}
+                          ? `@${username}@samverkan.se`
+                          : t("auth.usernameHint", "Your @username@samverkan.se handle")}
                       </p>
                       {usernameAvailable === false && (
                         <p className="text-xs text-destructive mt-1">

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { getUserReferralCode, getReferralStats } from "@/services/referralService";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Use dynamic origin - will be nolto.social when accessed via custom domain
+// Use dynamic origin - will be samverkan.se when accessed via custom domain
 const getPublishedUrl = () => window.location.origin;
 
 export default function ReferralWidget() {

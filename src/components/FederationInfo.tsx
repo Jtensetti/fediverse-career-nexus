@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import FederationFollowButton from "./FederationFollowButton";
-import { getNoltoInstanceDomain } from "@/lib/federation";
+import { getSamverkanInstanceDomain } from "@/lib/federation";
 
 interface FederationInfoProps {
   username: string;
@@ -122,7 +122,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   }
   
   const isLocalUser = !actor?.home_instance || actor?.home_instance === 'local';
-  const domain = isLocalUser ? getNoltoInstanceDomain() : actor.home_instance;
+  const domain = isLocalUser ? getSamverkanInstanceDomain() : actor.home_instance;
   const federatedHandle = `@${username}@${domain}`;
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? window.location.origin;
   const remoteActorUri = `${supabaseUrl}/functions/v1/actor/${username}`;

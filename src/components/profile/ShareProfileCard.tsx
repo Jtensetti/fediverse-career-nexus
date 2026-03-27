@@ -35,7 +35,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
 
   const shareToTwitter = () => {
     window.open(
-      `https://twitter.com/intent/tweet?url=${encodeURIComponent(profileUrl)}&text=${encodeURIComponent(`Kolla in ${displayName}s profil på Nolto`)}`,
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(profileUrl)}&text=${encodeURIComponent(`Kolla in ${displayName}s profil på Samverkan`)}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -43,7 +43,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
 
   const shareToMastodon = () => {
     window.open(
-      `https://mastodon.social/share?text=${encodeURIComponent(`Kolla in ${displayName}s profil på Nolto ${profileUrl}`)}`,
+      `https://mastodon.social/share?text=${encodeURIComponent(`Kolla in ${displayName}s profil på Samverkan ${profileUrl}`)}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -51,7 +51,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
 
   const shareToBluesky = () => {
     window.open(
-      `https://bsky.app/intent/compose?text=${encodeURIComponent(`Kolla in ${displayName}s profil på Nolto ${profileUrl}`)}`,
+      `https://bsky.app/intent/compose?text=${encodeURIComponent(`Kolla in ${displayName}s profil på Samverkan ${profileUrl}`)}`,
       "_blank",
       "noopener,noreferrer"
     );

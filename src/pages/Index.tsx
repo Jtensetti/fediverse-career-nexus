@@ -36,7 +36,7 @@ export default function Index() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="Nolto - Det professionella nätverket för offentlig sektor"
+        title="Samverkan - Det professionella nätverket för offentlig sektor"
         description="Anslut er organisation till en säker plattform byggd för kommuner, regioner och myndigheter. Inga algoritmer, ingen dataförsäljning."
       />
       <Navbar />

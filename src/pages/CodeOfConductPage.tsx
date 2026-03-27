@@ -9,7 +9,7 @@ const CodeOfConductPage = () => {
     <>
       <SEOHead 
         title="Uppförandekod" 
-        description="Riktlinjer och normer för respektfull interaktion på Noltos professionella nätverk." 
+        description="Riktlinjer och normer för respektfull interaktion på Samverkans professionella nätverk." 
       />
       
       <div className="min-h-screen flex flex-col bg-background">

@@ -25,7 +25,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                nolto.social/feed
+                samverkan.se/feed
               </div>
             </div>
           </div>
@@ -145,7 +145,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                nolto.social/@anna
+                samverkan.se/@anna
               </div>
             </div>
           </div>
@@ -207,7 +207,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                nolto.social/jobb
+                samverkan.se/jobb
               </div>
             </div>
           </div>

@@ -7,7 +7,7 @@ const PrivacyPolicy = () => {
     {
       icon: Database,
       title: "Datakontroll",
-      description: "Dina uppgifter hanteras och skyddas av Nolto i enlighet med tillämplig lagstiftning.",
+      description: "Dina uppgifter hanteras och skyddas av Samverkan i enlighet med tillämplig lagstiftning.",
     },
     {
       icon: Users,
@@ -33,12 +33,12 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Integritetspolicy</h1>
-            <p className="text-xl text-accent">Hur Nolto hanterar dina personuppgifter</p>
+            <p className="text-xl text-accent">Hur Samverkan hanterar dina personuppgifter</p>
             <p className="text-lg text-primary-foreground/90 mt-4">
               <strong>Ikraftträdandedatum:</strong> 16 juni 2025
             </p>
             <p className="text-lg text-primary-foreground/90 mt-2">
-              Denna integritetspolicy förklarar hur Nolto hanterar dina personuppgifter. Vi är engagerade i att 
+              Denna integritetspolicy förklarar hur Samverkan hanterar dina personuppgifter. Vi är engagerade i att 
               skydda din integritet och säkerställa transparens kring vad som händer med dina uppgifter.
             </p>
           </div>
@@ -68,12 +68,12 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">1. Vem kontrollerar dina uppgifter</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Nolto är en plattform utvecklad med{" "}
+                  Samverkan är en plattform utvecklad med{" "}
                   <strong className="text-foreground">Lovable, ett utvecklingsverktyg registrerat i Sverige (EU)</strong>.
-                  När du registrerar dig lagras och hanteras dina uppgifter av Nolto-plattformen.
+                  När du registrerar dig lagras och hanteras dina uppgifter av Samverkan-plattformen.
                 </p>
                 <p>
-                  Nolto agerar som personuppgiftsansvarig enligt GDPR och ansvarar för att hantera dina uppgifter 
+                  Samverkan agerar som personuppgiftsansvarig enligt GDPR och ansvarar för att hantera dina uppgifter 
                   i enlighet med tillämplig lagstiftning.
                 </p>
                 <div className="bg-muted p-4 rounded-lg">
@@ -90,7 +90,7 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">2. Vilka uppgifter som samlas in</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Beroende på hur du använder Nolto kan följande uppgifter samlas in och behandlas:
+                  Beroende på hur du använder Samverkan kan följande uppgifter samlas in och behandlas:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
                   <li>
@@ -107,7 +107,7 @@ const PrivacyPolicy = () => {
                   </li>
                 </ul>
                 <p>
-                  Nolto kräver inte känsliga personuppgifter (t.ex. personnummer, hälsodata) om du inte frivilligt 
+                  Samverkan kräver inte känsliga personuppgifter (t.ex. personnummer, hälsodata) om du inte frivilligt 
                   tillhandahåller dem i din profil eller dina inlägg.
                 </p>
               </div>
@@ -177,7 +177,7 @@ const PrivacyPolicy = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">6. Datasäkerhet</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Nolto använder lämpliga tekniska och organisatoriska åtgärder för att skydda dina uppgifter 
+                  Samverkan använder lämpliga tekniska och organisatoriska åtgärder för att skydda dina uppgifter 
                   mot obehörig åtkomst, ändring eller förlust.
                 </p>
                 <p>
@@ -222,7 +222,7 @@ const PrivacyPolicy = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-primary mb-3">8.2 Typsnitt</h3>
                   <p className="mb-3">
-                    Nolto använder typsnitten Inter och Montserrat, som är egenvärdade på våra egna servrar. 
+                    Samverkan använder typsnitten Inter och Montserrat, som är egenvärdade på våra egna servrar. 
                     Inga förfrågningar görs till externa typsnittsleverantörer (som Google Fonts), vilket säkerställer 
                     att din IP-adress inte delas med tredje part för typsnittssyften.
                   </p>
@@ -230,7 +230,7 @@ const PrivacyPolicy = () => {
 
                 <div>
                   <h3 className="text-xl font-semibold text-primary mb-3">8.3 Vad vi inte använder</h3>
-                  <p>Nolto använder inte:</p>
+                  <p>Samverkan använder inte:</p>
                   <ul className="list-disc pl-6 space-y-2 mt-2">
                     <li>Reklam- eller marknadsföringscookies</li>
                     <li>Analysspårning (Google Analytics etc.)</li>
@@ -248,7 +248,7 @@ const PrivacyPolicy = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-primary mb-3">9.1 Plattformsleverantör</h3>
                   <p>
-                    Nolto är utvecklat med <strong className="text-foreground">Lovable</strong>, ett företag registrerat i{" "}
+                    Samverkan är utvecklat med <strong className="text-foreground">Lovable</strong>, ett företag registrerat i{" "}
                     <strong className="text-foreground">Sverige (EU)</strong>.
                   </p>
                 </div>
@@ -271,7 +271,7 @@ const PrivacyPolicy = () => {
 
                 <div>
                   <h3 className="text-xl font-semibold text-primary mb-3">9.3 Underbiträden</h3>
-                  <p className="mb-3">Följande tjänsteleverantörer behandlar data på uppdrag av Nolto:</p>
+                  <p className="mb-3">Följande tjänsteleverantörer behandlar data på uppdrag av Samverkan:</p>
                   <div className="overflow-x-auto">
                     <table className="min-w-full bg-card border border-border rounded-lg">
                       <thead className="bg-muted">
@@ -350,11 +350,11 @@ const PrivacyPolicy = () => {
                 </p>
                 <div className="bg-muted p-4 rounded-lg">
                   <p><strong className="text-foreground">E-post:</strong> jtensetti@protonmail.com</p>
-                  <p><strong className="text-foreground">Nolto-konto:</strong> JTensetti (@user_f33be7a8)</p>
+                  <p><strong className="text-foreground">Samverkan-konto:</strong> JTensetti (@user_f33be7a8)</p>
                 </div>
                 <div className="bg-muted p-4 rounded-lg mt-4">
                   <p>
-                    Denna policy gäller för Nolto-plattformen och syftar till att efterleva GDPR och andra 
+                    Denna policy gäller för Samverkan-plattformen och syftar till att efterleva GDPR och andra 
                     relevanta integritetslagar.
                   </p>
                 </div>

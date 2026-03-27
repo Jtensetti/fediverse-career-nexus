@@ -164,7 +164,7 @@ export default function QuoteCardGenerator({
                     </div>
                   </div>
 
-                  {/* Nolto branding */}
+                  {/* Samverkan branding */}
                   <div className={cn(
                     "flex items-center gap-1.5 text-xs font-medium",
                     isDarkMode ? "text-white/50" : "text-slate-400"

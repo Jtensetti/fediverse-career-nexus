@@ -39,7 +39,7 @@ const testimonials = [
     verified: false,
   },
   {
-    quote: "Jag hittade min nuvarande tjänst genom en kontakt på Nolto. Kvaliteten på samtalen här är miltals bättre än traditionella plattformar.",
+    quote: "Jag hittade min nuvarande tjänst genom en kontakt på Samverkan. Kvaliteten på samtalen här är miltals bättre än traditionella plattformar.",
     author: "Johan Pettersson",
     role: "Systemarkitekt, Trafikverket",
     avatar: avatarJames,
@@ -47,7 +47,7 @@ const testimonials = [
     verified: true,
   },
   {
-    quote: "Som någon som värdesätter integritet ger Nolto mig sinnesro. Ingen spårning, inga annonser, bara genuina professionella kontakter.",
+    quote: "Som någon som värdesätter integritet ger Samverkan mig sinnesro. Ingen spårning, inga annonser, bara genuina professionella kontakter.",
     author: "Lina Svensson",
     role: "Informationssäkerhetsspecialist, SKR",
     avatar: avatarEmma,

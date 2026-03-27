@@ -42,7 +42,7 @@ const HeroWithScreenshot = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
               src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" 
-              alt="Nolto" 
+              alt="Samverkan" 
               className="w-16 h-16 lg:w-20 lg:h-20 mx-auto lg:mx-0 mb-6 drop-shadow-lg" 
             />
             

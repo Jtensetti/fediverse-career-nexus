@@ -31,7 +31,7 @@ import DOMPurify from "dompurify";
 import type { FederatedPost } from "@/services/federationService";
 import type { BatchPostData } from "@/services/batchDataService";
 import type { CommentPreviewHandle } from "./CommentPreview";
-import { getNoltoInstanceDomain } from "@/lib/federation";
+import { getSamverkanInstanceDomain } from "@/lib/federation";
 import ImageLightbox from "./ImageLightbox";
 
 // Lazy load CommentPreview for performance
@@ -419,7 +419,7 @@ export default function FederatedPostCard({
                   {isCompanyPost
                     ? <Link to={`/company/${post.company!.slug}`} className="hover:underline">{t('postCard.companyPage')}</Link>
                     : <>@{getActorUsername()}{post.source === 'local'
-                        ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getNoltoInstanceDomain()}`
+                        ? `@${post.profile?.home_instance && post.profile.home_instance !== 'local' ? post.profile.home_instance : getSamverkanInstanceDomain()}`
                         : post.instance ? `@${post.instance}` : ''}</>
                   }
                 </div>

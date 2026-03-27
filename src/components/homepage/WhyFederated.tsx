@@ -5,12 +5,12 @@ const WhyFederated = () => {
   const { t } = useTranslation();
 
   const comparisons = [
-    { feature: t("homepage.comparison.feed"), linkedin: t("homepage.comparison.feedTraditional"), nolto: t("homepage.comparison.feedNolto") },
-    { feature: t("homepage.comparison.data"), linkedin: t("homepage.comparison.dataTraditional"), nolto: t("homepage.comparison.dataNolto") },
-    { feature: t("homepage.comparison.gdpr"), linkedin: t("homepage.comparison.gdprTraditional"), nolto: t("homepage.comparison.gdprNolto") },
-    { feature: t("homepage.comparison.hosting"), linkedin: t("homepage.comparison.hostingTraditional"), nolto: t("homepage.comparison.hostingNolto") },
-    { feature: t("homepage.comparison.interop"), linkedin: t("homepage.comparison.interopTraditional"), nolto: t("homepage.comparison.interopNolto") },
-    { feature: t("homepage.comparison.ads"), linkedin: t("homepage.comparison.adsTraditional"), nolto: t("homepage.comparison.adsNolto") },
+    { feature: t("homepage.comparison.feed"), linkedin: t("homepage.comparison.feedTraditional"), nolto: t("homepage.comparison.feedSamverkan") },
+    { feature: t("homepage.comparison.data"), linkedin: t("homepage.comparison.dataTraditional"), nolto: t("homepage.comparison.dataSamverkan") },
+    { feature: t("homepage.comparison.gdpr"), linkedin: t("homepage.comparison.gdprTraditional"), nolto: t("homepage.comparison.gdprSamverkan") },
+    { feature: t("homepage.comparison.hosting"), linkedin: t("homepage.comparison.hostingTraditional"), nolto: t("homepage.comparison.hostingSamverkan") },
+    { feature: t("homepage.comparison.interop"), linkedin: t("homepage.comparison.interopTraditional"), nolto: t("homepage.comparison.interopSamverkan") },
+    { feature: t("homepage.comparison.ads"), linkedin: t("homepage.comparison.adsTraditional"), nolto: t("homepage.comparison.adsSamverkan") },
   ];
 
   return (
@@ -34,7 +34,7 @@ const WhyFederated = () => {
                 {t("homepage.comparison.traditional")}
               </div>
               <div className="p-4 text-center font-semibold text-primary border-l bg-primary/5">
-                Nolto
+                Samverkan
               </div>
             </div>
 
@@ -70,7 +70,7 @@ const WhyFederated = () => {
                     </div>
                   </div>
                   <div className="p-3 bg-primary/5">
-                    <div className="text-xs text-primary mb-1 font-medium">Nolto</div>
+                    <div className="text-xs text-primary mb-1 font-medium">Samverkan</div>
                     <div className="flex items-center gap-2 text-sm text-primary">
                       <Check className="h-4 w-4 text-secondary shrink-0" />
                       <span>{row.nolto}</span>

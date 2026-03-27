@@ -10,7 +10,7 @@ const InstanceGuidelinesPage = () => {
 
   return (
     <>
-      <SEOHead title="Instansriktlinjer — Nolto" description="Riktlinjer för att driva en Nolto-instans inom det federerade nätverket." />
+      <SEOHead title="Instansriktlinjer — Samverkan" description="Riktlinjer för att driva en Samverkan-instans inom det federerade nätverket." />
       <div className="min-h-screen flex flex-col bg-background">
         <div className="bg-primary text-primary-foreground py-16">
           <div className="container mx-auto px-4">

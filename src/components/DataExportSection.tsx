@@ -46,8 +46,8 @@ export default function DataExportSection() {
       const a = document.createElement("a");
       a.href = url;
       a.download = format === "gdpr" 
-        ? `nolto-data-export-${new Date().toISOString().split('T')[0]}.json`
-        : `nolto-activitypub-export-${new Date().toISOString().split('T')[0]}.json`;
+        ? `samverkan-data-export-${new Date().toISOString().split('T')[0]}.json`
+        : `samverkan-activitypub-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

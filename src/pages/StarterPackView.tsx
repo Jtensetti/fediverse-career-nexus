@@ -99,7 +99,7 @@ const StarterPackView = () => {
                 <div><CardTitle className="text-2xl">{pack.name}</CardTitle>{pack.category && (<Badge variant="secondary" className="mt-1">{pack.category}</Badge>)}</div>
               </div>
               <div className="flex items-center gap-2">
-                <ShareButton url={`${window.location.origin}/packs/${pack.slug}`} title={`${pack.name} - Nolto`} />
+                <ShareButton url={`${window.location.origin}/packs/${pack.slug}`} title={`${pack.name} - Samverkan`} />
                 {user && (pack.isFollowed ? (
                   <Button variant="outline" onClick={handleUnfollowPack}><Check className="h-4 w-4 mr-2" />{t("followAuthor.following")}</Button>
                 ) : (

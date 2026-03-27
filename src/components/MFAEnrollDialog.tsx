@@ -54,8 +54,8 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
   const startEnrollment = async () => {
     setIsLoading(true);
     try {
-      // Use "Nolto" as the issuer - this appears in authenticator apps
-      const result = await enrollTOTP('Nolto');
+      // Use "Samverkan" as the issuer - this appears in authenticator apps
+      const result = await enrollTOTP('Samverkan');
       setEnrollment(result);
     } catch (error: any) {
       toast.error(error.message || t("mfa.enrollError", "Failed to start enrollment"));
@@ -156,7 +156,7 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
                   {t("mfa.openAuthenticator", "Open Authenticator App")}
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
-                  {t("mfa.openAuthenticatorHint", "This will add Nolto to your authenticator app automatically")}
+                  {t("mfa.openAuthenticatorHint", "This will add Samverkan to your authenticator app automatically")}
                 </p>
               </div>
             )}
