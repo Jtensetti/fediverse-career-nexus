@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
+import { sv } from 'date-fns/locale';
 import DOMPurify from 'dompurify';
 import {
   Calendar,
