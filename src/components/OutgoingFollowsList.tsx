@@ -78,10 +78,10 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Outgoing Follow Requests</CardTitle>
+          <CardTitle>Utgående följförfrågningar</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Laddar...</p>
         </CardContent>
       </Card>
     );
