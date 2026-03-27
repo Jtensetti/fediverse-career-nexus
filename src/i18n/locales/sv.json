@@ -943,22 +943,22 @@
     "roleRemoveFailed": "Kunde inte ta bort roll"
   },
   "companies": {
-    "title": "Företag",
-    "subtitle": "Upptäck och följ företag på Nolto",
-    "createTitle": "Skapa företag",
-    "createDescription": "Visa upp ditt företag och anslut till yrkesverksamma",
-    "createSuccess": "Företaget skapades!",
-    "createError": "Kunde inte skapa företag",
-    "create": "Skapa företag",
-    "noMatching": "Inga företag hittades",
-    "beFirst": "Bli först med att skapa en företagssida",
+    "title": "Organisationer",
+    "subtitle": "Upptäck och följ organisationer på Nolto",
+    "createTitle": "Skapa organisation",
+    "createDescription": "Visa upp din organisation och anslut till yrkesverksamma",
+    "createSuccess": "Organisationen skapades!",
+    "createError": "Kunde inte skapa organisation",
+    "create": "Skapa organisation",
+    "noMatching": "Inga organisationer hittades",
+    "beFirst": "Bli först med att skapa en organisationssida",
     "adjustFilters": "Försök justera dina sökfilter",
     "iWorkHere": "Jag jobbar här",
     "pendingVerification": "Ditt anställningsanspråk väntar på verifiering",
-    "pendingVerificationDescription": "En företagsadmin kommer att granska ditt anspråk.",
+    "pendingVerificationDescription": "En organisationsadmin kommer att granska ditt anspråk.",
     "noPeople": "Inga anställda listade",
     "noPeopleDescription": "Var först med att lägga till dig som anställd",
-    "backToCompanies": "Tillbaka till företag"
+    "backToCompanies": "Tillbaka till organisationer"
   },
   "companyHeader": {
     "admin": "Admin",
