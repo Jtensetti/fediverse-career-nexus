@@ -224,7 +224,7 @@ export default function CompanyForm({
                   <FormLabel>{t("companyForm.about", "About")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Berätta om ditt företag..."
+                      placeholder="Berätta om din organisation..."
                       className="min-h-[120px]"
                       {...field} 
                     />
