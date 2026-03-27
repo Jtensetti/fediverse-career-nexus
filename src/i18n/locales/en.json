@@ -1032,7 +1032,7 @@
     "deleteTitle": "Delete post?",
     "deleteDesc": "This action cannot be undone. The post will be permanently deleted.",
     "deleting": "Deleting...",
-    "company": "Company"
+    "company": "Organisation"
   },
   "companyImage": {
     "invalidFile": "Please upload an image file",
