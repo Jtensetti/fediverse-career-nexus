@@ -44,7 +44,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
 
   const publishedDate = post.published_at || post.created_at;
   const formattedDate = publishedDate 
-    ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true })
+    ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true, locale: sv })
     : '';
 
   const handleDelete = async () => {

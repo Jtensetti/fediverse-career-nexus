@@ -103,7 +103,7 @@ export default function OutgoingFollowsList({ actorId }: OutgoingFollowsListProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Outgoing Follow Requests</CardTitle>
+        <CardTitle>Utgående följförfrågningar</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {follows.map((follow) => (

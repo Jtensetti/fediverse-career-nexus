@@ -136,7 +136,7 @@ const ModerationLog = ({ isAdmin = false }: ModerationLogProps) => {
                 <TableCell>{action.target_user_id}</TableCell>
                 <TableCell>{action.reason}</TableCell>
                 <TableCell>{action.moderator_id}</TableCell>
-                <TableCell>{formatDistanceToNow(action.timestamp, { addSuffix: true })}</TableCell>
+                <TableCell>{formatDistanceToNow(action.timestamp, { addSuffix: true, locale: sv })}</TableCell>
               </TableRow>
             ))}
           </TableBody>

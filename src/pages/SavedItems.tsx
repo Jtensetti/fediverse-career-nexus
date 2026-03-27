@@ -135,7 +135,7 @@ export default function SavedItemsPage() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge variant="secondary" className="text-xs">{getItemLabel(item.item_type)}</Badge>
-                              <span className="text-xs text-muted-foreground">{t("savedItems.saved")} {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+                              <span className="text-xs text-muted-foreground">{t("savedItems.saved")} {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: sv })}</span>
                             </div>
                             <p className="text-sm font-medium truncate text-foreground group-hover:text-primary transition-colors">
                               {t("savedItems.view")} {getItemLabel(item.item_type).toLowerCase()}

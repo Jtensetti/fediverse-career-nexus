@@ -269,12 +269,12 @@ export default function Notifications() {
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Bell className="h-16 w-16 mb-4 opacity-20" />
                     <p className="text-lg">
-                      {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
+                      {filter === 'unread' ? 'Inga olästa aviseringar' : 'Inga aviseringar ännu'}
                     </p>
                     <p className="text-sm">
                       {filter === 'unread' 
-                        ? "You're all caught up!" 
-                        : "When you get notifications, they'll show up here"
+                        ? "Du är helt ikapp!" 
+                        : "När du får aviseringar visas de här"
                       }
                     </p>
                   </div>

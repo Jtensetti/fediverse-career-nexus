@@ -317,7 +317,7 @@ export function NotificationBell() {
                       {getNotificationText(notification)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: sv })}
                     </p>
                   </div>
                   <Button

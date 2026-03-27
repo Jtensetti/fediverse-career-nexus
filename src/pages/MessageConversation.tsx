@@ -332,7 +332,7 @@ export default function MessageConversation() {
               <div className="flex items-center gap-2">
                 <CardTitle>
                   {otherUser?.fullname || otherUser?.username || (
-                    <span className="text-muted-foreground">Loading...</span>
+                    <span className="text-muted-foreground">Laddar...</span>
                   )}
                 </CardTitle>
                 {isFederated && otherUser?.homeInstance && (

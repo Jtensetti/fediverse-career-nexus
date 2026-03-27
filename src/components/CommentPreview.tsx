@@ -204,7 +204,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
                   <span className="text-[10px] text-primary font-medium">· {t("commentPreview.companyReply")}</span>
                 )}
                 <span className="text-[10px] text-muted-foreground">
-                  · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                  · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: sv })}
                 </span>
               </div>
               <p className="text-sm text-foreground/90 line-clamp-2">

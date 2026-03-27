@@ -15,8 +15,8 @@ interface ArticleCardProps {
 
 const ArticleCard = ({ article }: ArticleCardProps) => {
   const publishDate = article.published_at 
-    ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true })
-    : formatDistanceToNow(new Date(article.created_at), { addSuffix: true });
+    ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true, locale: sv })
+    : formatDistanceToNow(new Date(article.created_at), { addSuffix: true, locale: sv });
 
   return (
     <motion.div

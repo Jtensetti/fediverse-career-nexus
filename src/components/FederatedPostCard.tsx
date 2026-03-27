@@ -238,7 +238,7 @@ export default function FederatedPostCard({
     if (!date) return '';
 
     try {
-      return formatDistanceToNow(new Date(date), { addSuffix: true });
+      return formatDistanceToNow(new Date(date), { addSuffix: true, locale: sv });
     } catch (e) {
       return '';
     }

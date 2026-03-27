@@ -148,17 +148,17 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Decline this request?
+              Avböj denna förfrågan?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {sender?.fullname || sender?.username} won't be able to send you another message request.
-              You can always connect with them later if you change your mind.
+              {sender?.fullname || sender?.username} kommer inte kunna skicka en ny meddelandeförfrågan.
+              Du kan alltid ansluta med dem senare om du ändrar dig.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
             <AlertDialogAction onClick={handleDecline} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Decline request
+              Avböj förfrågan
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
