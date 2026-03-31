@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/posts/postService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import BlockUserDialog from "../BlockUserDialog";
+import BlockUserDialog from "../moderation/BlockUserDialog";
 import EnhancedPostReactions from "../reactions/EnhancedPostReactions";
 import QuoteRepostDialog from "../posts/QuoteRepostDialog";
 import { QuotedPostPreview, RepostIndicator } from "../posts/QuotedPostPreview";
