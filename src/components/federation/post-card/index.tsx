@@ -148,8 +148,6 @@ export default function FederatedPostCard({
           publishedDate={(() => {
             if (!publishedAt) return '';
             try {
-              const { formatDistanceToNow } = require('date-fns');
-              const { sv } = require('date-fns/locale');
               return formatDistanceToNow(new Date(publishedAt), { addSuffix: true, locale: sv });
             } catch { return ''; }
           })()}
