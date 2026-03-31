@@ -50,7 +50,7 @@ import HelpCenter from "./pages/info/HelpCenter";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
 import CodeOfConductPage from "./pages/legal/CodeOfConductPage";
-import InstanceGuidelinesPage from "./components/legal/InstanceGuidelines";
+import InstanceGuidelinesPage from "./pages/legal/InstanceGuidelines";
 import CookiesPage from "./pages/legal/CookiesPage";
 import Instances from "./pages/federation/Instances";
 import AdminFederationHealth from "./pages/federation/AdminFederationHealth";
