@@ -42,7 +42,7 @@ import ArticleEdit from "./pages/articles/ArticleEdit";
 import Connections from "./pages/profile/Connections";
 import Messages from "./pages/messaging/Messages";
 import MessageConversation from "./pages/messaging/MessageConversation";
-import Notifications from "./pages/Notifications";
+import Notifications from "./pages/social/Notifications";
 import Mission from "./pages/info/Mission";
 import Documentation from "./pages/info/Documentation";
 import FederationGuide from "./pages/federation/FederationGuide";
