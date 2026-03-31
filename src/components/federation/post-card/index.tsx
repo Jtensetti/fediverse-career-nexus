@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { formatDistanceToNow } from "date-fns";
+import { sv } from "date-fns/locale";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/posts/postService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { linkifyWithMarkdown, smartTruncate, stripHtml } from "@/lib/linkify";
-import { extractUrls } from "@/components/content/LinkPreview";
-import { getRawContent, getActorName, getActorUsername, getAvatarUrl, getMediaAttachments } from "./postCardUtils";
 import PostCardHeader from "./PostCardHeader";
 import PostCardContent from "./PostCardContent";
 import PostCardActions from "./PostCardActions";
