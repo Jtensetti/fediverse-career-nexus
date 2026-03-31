@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import Home from "./Home";
-import UnauthenticatedHomepage from "@/components/UnauthenticatedHomepage";
+import UnauthenticatedHomepage from "@/components/homepage/UnauthenticatedHomepage";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { SEOHead } from "@/components/common";

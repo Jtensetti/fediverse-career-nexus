@@ -14,36 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      achievements: {
-        Row: {
-          category: string
-          created_at: string
-          description: string
-          icon: string
-          id: string
-          name: string
-          points: number
-        }
-        Insert: {
-          category?: string
-          created_at?: string
-          description: string
-          icon: string
-          id?: string
-          name: string
-          points?: number
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          description?: string
-          icon?: string
-          id?: string
-          name?: string
-          points?: number
-        }
-        Relationships: []
-      }
       activities: {
         Row: {
           actor_id: string | null
@@ -811,54 +781,6 @@ export type Database = {
         }
         Relationships: []
       }
-      cross_post_settings: {
-        Row: {
-          auto_crosspost: boolean | null
-          bluesky_handle: string | null
-          created_at: string | null
-          crosspost_scope: string | null
-          id: string
-          mastodon_handle: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          auto_crosspost?: boolean | null
-          bluesky_handle?: string | null
-          created_at?: string | null
-          crosspost_scope?: string | null
-          id?: string
-          mastodon_handle?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          auto_crosspost?: boolean | null
-          bluesky_handle?: string | null
-          created_at?: string | null
-          crosspost_scope?: string | null
-          id?: string
-          mastodon_handle?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cross_post_settings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cross_post_settings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       custom_feeds: {
         Row: {
           created_at: string | null
@@ -1011,38 +933,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
-      }
-      event_attendees: {
-        Row: {
-          created_at: string
-          event_id: string
-          id: string
-          status: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          event_id: string
-          id?: string
-          status?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          event_id?: string
-          id?: string
-          status?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "event_attendees_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       event_invitations: {
         Row: {
@@ -2076,95 +1966,6 @@ export type Database = {
           },
         ]
       }
-      post_boosts: {
-        Row: {
-          created_at: string
-          id: string
-          post_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          post_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          post_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_boosts_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "ap_objects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_boosts_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "federated_feed"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_boosts_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "federated_posts_with_moderation"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      post_reactions: {
-        Row: {
-          created_at: string
-          emoji: string
-          id: string
-          post_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          emoji: string
-          id?: string
-          post_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          emoji?: string
-          id?: string
-          post_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_reactions_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "ap_objects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_reactions_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "federated_feed"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_reactions_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "federated_posts_with_moderation"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       post_replies: {
         Row: {
           content: string
@@ -2297,11 +2098,8 @@ export type Database = {
           location: string | null
           phone: string | null
           profile_views: number | null
-          public_email: string | null
           remote_actor_url: string | null
           search_vector: unknown
-          show_email: boolean | null
-          trust_level: number | null
           updated_at: string
           username: string | null
           website: string | null
@@ -2328,11 +2126,8 @@ export type Database = {
           location?: string | null
           phone?: string | null
           profile_views?: number | null
-          public_email?: string | null
           remote_actor_url?: string | null
           search_vector?: unknown
-          show_email?: boolean | null
-          trust_level?: number | null
           updated_at?: string
           username?: string | null
           website?: string | null
@@ -2359,11 +2154,8 @@ export type Database = {
           location?: string | null
           phone?: string | null
           profile_views?: number | null
-          public_email?: string | null
           remote_actor_url?: string | null
           search_vector?: unknown
-          show_email?: boolean | null
-          trust_level?: number | null
           updated_at?: string
           username?: string | null
           website?: string | null
@@ -2618,45 +2410,6 @@ export type Database = {
         }
         Relationships: []
       }
-      security_incidents: {
-        Row: {
-          affected_users: number | null
-          description: string
-          id: string
-          incident_type: string
-          metadata: Json | null
-          remediation_steps: string | null
-          reported_at: string
-          reported_by: string | null
-          resolved_at: string | null
-          severity: string
-        }
-        Insert: {
-          affected_users?: number | null
-          description: string
-          id?: string
-          incident_type: string
-          metadata?: Json | null
-          remediation_steps?: string | null
-          reported_at?: string
-          reported_by?: string | null
-          resolved_at?: string | null
-          severity: string
-        }
-        Update: {
-          affected_users?: number | null
-          description?: string
-          id?: string
-          incident_type?: string
-          metadata?: Json | null
-          remediation_steps?: string | null
-          reported_at?: string
-          reported_by?: string | null
-          resolved_at?: string | null
-          severity?: string
-        }
-        Relationships: []
-      }
       server_keys: {
         Row: {
           created_at: string
@@ -2884,35 +2637,6 @@ export type Database = {
           },
         ]
       }
-      user_achievements: {
-        Row: {
-          achievement_id: string
-          id: string
-          unlocked_at: string
-          user_id: string
-        }
-        Insert: {
-          achievement_id: string
-          id?: string
-          unlocked_at?: string
-          user_id: string
-        }
-        Update: {
-          achievement_id?: string
-          id?: string
-          unlocked_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_achievements_achievement_id_fkey"
-            columns: ["achievement_id"]
-            isOneToOne: false
-            referencedRelation: "achievements"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_bans: {
         Row: {
           banned_by: string
@@ -3056,36 +2780,6 @@ export type Database = {
           user_id?: string
           version?: string
           withdrawn_at?: string | null
-        }
-        Relationships: []
-      }
-      user_cw_preferences: {
-        Row: {
-          always_show_cw_tags: string[] | null
-          auto_expand_cws: boolean | null
-          created_at: string | null
-          hidden_cw_tags: string[] | null
-          id: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          always_show_cw_tags?: string[] | null
-          auto_expand_cws?: boolean | null
-          created_at?: string | null
-          hidden_cw_tags?: string[] | null
-          id?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          always_show_cw_tags?: string[] | null
-          auto_expand_cws?: boolean | null
-          created_at?: string | null
-          hidden_cw_tags?: string[] | null
-          id?: string
-          updated_at?: string | null
-          user_id?: string
         }
         Relationships: []
       }
