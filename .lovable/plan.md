@@ -1,112 +1,72 @@
 
 
-# Spring Clean: Codebase & Database Cleanup
+# Codebase Cleanup & Refactoring
 
 ## Problem
-88 database tables, ~50 edge functions, and hundreds of component files have accumulated. Several tables, columns, files, pages, and edge functions are no longer referenced or serve no purpose. This makes the project harder to navigate for open-source contributors.
+Several files are oversized (700+ lines), one component is misplaced, App.tsx has an incorrect import and inconsistent formatting, and some loose pages could be better organized.
 
 ---
 
-## A. Dead Files to Delete
+## 1. Move misplaced file
 
-### Components (unused — no imports anywhere)
-| File | Reason |
-|------|--------|
-| `src/components/Hero.tsx` | Replaced by `HeroWithScreenshot`, zero imports |
-| `src/components/UnauthenticatedHomepage.tsx` | Shim re-export; update the one import in `Index.tsx` to point directly to `homepage/UnauthenticatedHomepage` |
-| `src/components/common/EnhancedReactions.tsx` | Zero imports outside its own file + barrel |
-| `src/components/common/FloatingActionButton.tsx` | Zero imports |
-| `src/components/common/FocusRing.tsx` | Zero imports |
-| `src/components/common/AnimatedButton.tsx` | Zero imports |
-| `src/components/common/AnimatedCard.tsx` | Zero imports |
-| `src/components/common/skeletons/ArticleCardSkeleton.tsx` | Zero imports |
-| `src/components/common/skeletons/ProfileSkeleton.tsx` | Zero imports |
-| `src/components/feed/FeedEmptyState.tsx` | Zero imports (entire `feed/` folder can go) |
-| `src/components/homepage/Testimonials.tsx` | Replaced by `EnhancedTestimonials`, zero imports |
-| `src/components/homepage/FeatureShowcase.tsx` | Zero imports |
-| `src/components/homepage/MobilePreview.tsx` | Zero imports |
-| `src/components/homepage/WhyFederated.tsx` | Zero imports |
-| `src/components/homepage/BuiltInOpen.tsx` | Zero imports |
-| `src/components/homepage/FederationExplainer.tsx` | Zero imports |
-| `src/components/homepage/EnhancedTestimonials.tsx` | Zero imports |
+**`src/components/BlockUserDialog.tsx`** → **`src/components/moderation/BlockUserDialog.tsx`**
 
-### Pages (unused — no route in App.tsx)
-| File | Reason |
-|------|--------|
-| `src/pages/Moderation.tsx` | Replaced by `ModerationDashboard.tsx`; no route, no import |
-| `src/pages/federation/ActorInbox.tsx` | No route in App.tsx |
-| `src/pages/federation/ActorOutbox.tsx` | No route in App.tsx |
-| `src/pages/federation/ActorProfile.tsx` | No route in App.tsx |
-| `src/pages/federation/AdminFederationMetrics.tsx` | No route in App.tsx |
+It's the only loose file in `src/components/` and belongs with the other moderation components. Update the one import in `FederatedPostCard.tsx` and the `moderation/index.ts` barrel.
 
-### Edge Functions (unused or one-time migration)
-| Function | Reason |
-|----------|--------|
-| `supabase/functions/migrate-legacy-messages/` | One-time migration script, no frontend calls |
-| `supabase/functions/create-jitsi-meeting/` | Zero references in frontend |
-| `supabase/functions/cloudflare/` | Contains a `cloudflare-worker.ts` — not a Supabase edge function, zero references |
-| `supabase/functions/fix-security-invoker/` | One-time admin utility, consider removing after confirming it's been run |
+## 2. Fix App.tsx import + clean up formatting
 
----
+- Line 53: Change `import InstanceGuidelinesPage from "./components/legal/InstanceGuidelines"` → `from "./pages/legal/InstanceGuidelines"`
+- Consolidate imports using barrel files where possible (e.g. group all `pages/jobs/*` into one import from `./pages/jobs`)
+- Fix inconsistent indentation (lines 160-167 use different indent level than surrounding routes)
 
-## B. Database Tables to Drop (unused)
+## 3. Split FederatedPostCard.tsx (712 lines)
 
-These tables exist in the database but have **zero references** in the frontend codebase and no/minimal edge function usage:
+Extract into focused sub-components in `src/components/federation/post-card/`:
 
-| Table | Reason |
-|-------|--------|
-| `achievements` | Zero frontend references; gamification never shipped |
-| `user_achievements` | Same — depends on `achievements` |
-| `cross_post_settings` | Zero references anywhere; cross-posting feature never built |
-| `event_attendees` | Only referenced in `export-user-data`; duplicate of `event_rsvps` which is the one actually used |
-| `post_reactions` | Zero frontend references; replaced by the generic `reactions` table |
-| `post_boosts` | Zero frontend references; boosts are handled via `ap_objects` type=Announce |
-| `security_incidents` | Zero references outside types.ts; incident tracking never implemented |
-| `user_cw_preferences` | Zero frontend references; content warning preferences never wired up |
+| New file | What it contains | ~Lines |
+|----------|-----------------|--------|
+| `PostCardHeader.tsx` | Avatar, name, date, instance badge, dropdown menu | ~120 |
+| `PostCardContent.tsx` | Content rendering, truncation, sanitization, media grid | ~150 |
+| `PostCardActions.tsx` | Boost, reply, share buttons + handlers | ~80 |
+| `PostCardDialogs.tsx` | Delete confirm, report, block, quote-repost dialogs | ~60 |
+| `postCardUtils.ts` | Helper functions: `getRawContent`, `getActorName`, `getAvatarUrl`, `getMediaAttachments`, `getModerationBanner` | ~120 |
+| `index.tsx` | Main component that composes the above (re-exports as default) | ~100 |
 
-### Database Columns to Consider Dropping (profiles table)
-| Column | Reason |
-|--------|--------|
-| `profiles.public_email` | Zero references; `contact_email` is used instead |
-| `profiles.show_email` | Zero references; visibility is controlled by view |
-| `profiles.trust_level` | Zero references; never implemented |
+Total: same code, just split into readable units. Zero behavior change.
 
-### Database Function to Drop
-| Function | Reason |
-|----------|--------|
-| `exec_sql(sql text)` | **Security risk** — allows arbitrary SQL execution. Zero frontend usage. Should be dropped immediately. |
+## 4. Extract StatCard from ModerationDashboard.tsx (523 lines)
+
+Move the inline `StatCard` component (lines 47-100) to `src/components/moderation/StatCard.tsx`. This is a self-contained presentational component that has no business living inside a page file.
+
+## 5. Move loose pages into subdirectories
+
+| File | Move to | Reason |
+|------|---------|--------|
+| `src/pages/Notifications.tsx` | `src/pages/social/Notifications.tsx` | Social feature |
+| `src/pages/PostView.tsx` | `src/pages/posts/PostView.tsx` | Post-related |
+| `src/pages/Search.tsx` | `src/pages/search/Search.tsx` | Standalone domain |
+| `src/pages/FeedSettings.tsx` | `src/pages/settings/FeedSettings.tsx` | Settings page |
+| `src/pages/ModerationDashboard.tsx` | `src/pages/moderation/ModerationDashboard.tsx` | Moderation domain |
+| `src/pages/NotFound.tsx` | Keep in place | It's a special route, fine at root |
+| `src/pages/Home.tsx` | Keep in place | Entry point, fine at root |
+| `src/pages/Index.tsx` | Keep in place | Entry point, fine at root |
+
+Update all imports in `App.tsx` accordingly. Create `index.ts` barrels for new directories.
 
 ---
 
-## C. Barrel Export Cleanup
+## What does NOT change
+- Zero logic, UI, or behavior changes
+- No database changes
+- No edge function changes
+- File contents stay identical — only locations, imports, and file splits change
 
-Update these `index.ts` files to remove exports of deleted files:
-- `src/components/common/index.ts` — remove `EnhancedReactions`, `FocusRing`, `AnimatedButton`, `AnimatedCard`
-- `src/components/common/skeletons/index.ts` — remove `ArticleCardSkeleton`, `ProfileSkeleton`
-- `src/pages/federation/index.ts` — remove `ActorInbox`, `ActorOutbox`, `ActorProfile`, `AdminFederationMetrics`
-
----
-
-## D. Import Path Cleanup
-
-- `src/pages/Index.tsx`: Change import from `@/components/UnauthenticatedHomepage` → `@/components/homepage/UnauthenticatedHomepage`
-- `src/App.tsx` line 53: Change `InstanceGuidelinesPage` import from `./components/legal/InstanceGuidelines` → `./pages/legal/InstanceGuidelines` (it imports a component where a page should be)
-
----
-
-## E. Scope & Safety
-
-- **Zero logic changes** — no behavior, UI, or design modifications
-- **Database migrations** for dropping tables/columns/functions (reversible with backups)
-- **Edge function deletions** are permanent but all are confirmed unused
-- File deletions are tracked in git history
-
----
-
-## Execution Order
-1. Database migration: drop `exec_sql` function (security priority)
-2. Database migration: drop unused tables and columns
-3. Delete dead component/page/edge-function files
-4. Update barrel exports and import paths
-5. Verify build passes (`tsc --noEmit` + `vite build`)
+## Execution order
+1. Move `BlockUserDialog.tsx` → `moderation/`, update imports
+2. Move loose pages into subdirectories, update App.tsx imports
+3. Fix App.tsx InstanceGuidelines import + clean up formatting
+4. Split `FederatedPostCard.tsx` into sub-components
+5. Extract `StatCard` from `ModerationDashboard.tsx`
+6. Update all barrel `index.ts` files
+7. Verify build passes
 
