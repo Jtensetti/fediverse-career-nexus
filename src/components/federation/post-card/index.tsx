@@ -9,6 +9,8 @@ import { deletePost } from "@/services/posts/postService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { linkifyWithMarkdown, smartTruncate, stripHtml } from "@/lib/linkify";
+import { extractUrls } from "@/components/content/LinkPreview";
+import { getRawContent, getActorName, getActorUsername, getAvatarUrl, getMediaAttachments } from "./postCardUtils";
 import PostCardHeader from "./PostCardHeader";
 import PostCardContent from "./PostCardContent";
 import PostCardActions from "./PostCardActions";
