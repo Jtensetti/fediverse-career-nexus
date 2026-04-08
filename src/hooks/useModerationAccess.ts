@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Only these usernames can access moderation features
-const ALLOWED_MODERATORS = ['jtensetti_mastodon'];
+const ALLOWED_MODERATORS = ['jonatan_tensetti', 'jtensetti_mastodon'];
 
 interface ModerationAccess {
   hasAccess: boolean;
