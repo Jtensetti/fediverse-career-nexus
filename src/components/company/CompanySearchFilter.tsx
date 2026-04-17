@@ -35,11 +35,6 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
   const [size, setSize] = useState<string>("");
   const [location, setLocation] = useState("");
 
-  const { data: industries = [] } = useQuery({
-    queryKey: ['companyIndustries'],
-    queryFn: getCompanyIndustries,
-    staleTime: 5 * 60 * 1000,
-  });
 
   useEffect(() => {
     const timer = setTimeout(() => {
