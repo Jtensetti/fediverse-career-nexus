@@ -54,8 +54,9 @@ async function getPublicKey(keyId: string): Promise<string | null> {
   }
 }
 
-// Verify HTTP signature with digest and date enforcement
-async function verifyRequestSignature(req: Request, body: string): Promise<boolean> {
+// Verify HTTP signature with digest and date enforcement.
+// Returns { ok: true, keyIdHost } on success, false on failure.
+async function verifyRequestSignature(req: Request, body: string): Promise<{ ok: true; keyIdHost: string } | false> {
   const signatureHeader = req.headers.get('Signature');
   const digestHeader = req.headers.get('Digest');
   const dateHeader = req.headers.get('Date');
