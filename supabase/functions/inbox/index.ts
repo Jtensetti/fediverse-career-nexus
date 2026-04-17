@@ -223,7 +223,7 @@ serve(async (req) => {
       );
     }
 
-    const sigResult = await verifyRequestSignature(req, bodyText);
+    const sigResult = await verifyRequestSignature(req, bodyText, { getPublicKey });
     if (!sigResult) {
       return new Response(
         JSON.stringify({ error: "Invalid signature" }),
