@@ -81,15 +81,46 @@ async function verifyRequestSignature(req: Request, body: string): Promise<boole
     return false;
   }
 
+  // Parse Signature header — split on first '=' only (signature value contains base64 padding)
   const params: Record<string, string> = {};
   for (const part of signatureHeader.split(',')) {
-    const [k, v] = part.trim().split('=');
-    params[k] = v.replace(/"/g, '');
+    const trimmed = part.trim();
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx === -1) continue;
+    const k = trimmed.substring(0, eqIdx).trim();
+    let v = trimmed.substring(eqIdx + 1).trim();
+    if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1);
+    params[k] = v;
   }
 
   const keyId = params['keyId'];
   const signatureB64 = params['signature'];
-  const headerNames = (params['headers'] || '').split(' ');
+  const headerNames = (params['headers'] || '(request-target) host date digest').split(' ');
+
+  if (!keyId || !signatureB64) {
+    console.error('Signature header missing keyId or signature');
+    return false;
+  }
+
+  // Replay protection: reject if we've seen this exact signature in the last 15 min
+  try {
+    const sigHash = await sha256Hex(signatureB64);
+    const { data: seen } = await supabaseClient
+      .from('federation_signature_cache')
+      .select('signature_hash')
+      .eq('signature_hash', sigHash)
+      .maybeSingle();
+    if (seen) {
+      console.error('Replay detected for signature');
+      return false;
+    }
+    await supabaseClient
+      .from('federation_signature_cache')
+      .insert({ signature_hash: sigHash })
+      .then(() => {}, () => {}); // best-effort
+  } catch (e) {
+    console.error('Replay-cache check failed (continuing):', e);
+  }
 
   const url = new URL(req.url);
   const headerValues: Record<string, string> = {
@@ -109,7 +140,7 @@ async function verifyRequestSignature(req: Request, body: string): Promise<boole
     return false;
   }
 
-  const keyBuffer = pemToBuffer(publicKeyPem.replace('PUBLIC KEY', 'PUBLIC KEY')); // reuse helper
+  const keyBuffer = pemToPublicKeyBuffer(publicKeyPem);
   const cryptoKey = await crypto.subtle.importKey(
     'spki',
     keyBuffer,
@@ -127,8 +158,16 @@ async function verifyRequestSignature(req: Request, body: string): Promise<boole
   );
   if (!verified) {
     console.error('Signature verification failed');
+    return false;
   }
-  return verified;
+
+  // Domain match: keyId host must match the actor's host (prevent cross-instance forgery)
+  return { ok: true, keyIdHost: new URL(keyId).hostname } as any;
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 // Check if a domain is blocked
