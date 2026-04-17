@@ -457,6 +457,13 @@ export default function ModerationDashboard() {
                 <AlertManager />
               </Suspense>
             </TabsContent>
+
+            {/* MFA Recovery Tab */}
+            <TabsContent value="mfa-recovery">
+              <Suspense fallback={<LoadingFallback />}>
+                <MfaRecoveryQueue />
+              </Suspense>
+            </TabsContent>
           </Tabs>
         </div>
       </main>
