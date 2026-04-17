@@ -361,16 +361,37 @@ async function handlePostOutbox(req: Request, actorId: string, username: string)
   }
 
   // Persist the inner object so it appears in our outbox GET feed.
+  // Notes get auto-queued by the `queue_post_for_federation` DB trigger; for
+  // other types (Like, Announce, Follow, Update, Delete) we must enqueue here.
+  const innerType = enrichedActivity.object?.type;
+  const isNote = innerType === "Note";
+
   if (enrichedActivity.object && typeof enrichedActivity.object === "object") {
     try {
       await supabaseClient.from("ap_objects").insert({
-        type: enrichedActivity.object.type || "Note",
+        type: innerType || "Note",
         attributed_to: actorId,
         content: enrichedActivity.object,
         published_at: enrichedActivity.object.published || new Date().toISOString(),
       });
     } catch (e) {
       console.error("Error persisting outbound object:", e);
+    }
+  }
+
+  // Federation queue insert for non-Note activities (Notes are handled by trigger).
+  if (!isNote) {
+    try {
+      const { data: partKey } = await supabaseClient.rpc("actor_id_to_partition_key", { actor_uuid: actorId });
+      await supabaseClient.from("federation_queue_partitioned").insert({
+        actor_id: actorId,
+        activity: enrichedActivity,
+        status: "pending",
+        partition_key: typeof partKey === "number" ? partKey : 0,
+        priority: enrichedActivity.type === "Delete" ? 8 : 5,
+      });
+    } catch (e) {
+      console.error("Error queueing C2S activity for federation:", e);
     }
   }
 
