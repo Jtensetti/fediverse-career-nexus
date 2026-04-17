@@ -1,67 +1,118 @@
 
 
-# MFA-återställning: Säkert admin-flöde
+## Hur hittar vi den "registrerade e-posten" idag?
 
-## 1. Översätt formuläret till svenska
+Tittar man i `admin-issue-mfa-recovery/index.ts` rad 91-104:
 
-`MFARecoveryDialog.tsx` använder redan `t()` med engelska fallback-strängar. Lägg till alla `mfa.recovery*`-nycklar i `sv.json` och `en.json` (1:1 paritet enligt projektets lokaliseringsregel).
+```ts
+let userId = request.user_id as string | null;
+if (!userId) {
+  // Look up by email via admin API (paged) — TAR BARA FÖRSTA 1000 ANVÄNDARNA
+  const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const match = list?.users?.find(u => u.email?.toLowerCase() === request.email.toLowerCase());
+  userId = match?.id ?? null;
+}
+```
 
-Berörda strängar:
-- `mfa.recoveryTitle` → "Begär kontoåterställning"
-- `mfa.recoveryDesc` → "Har du tappat åtkomsten till din autentiseringsapp? Berätta hur vi når dig så hjälper en administratör dig att återställa åtkomsten."
-- `mfa.recoveryEmail` → "Din e-post"
-- `mfa.recoveryUsername` → "Användarnamn (valfritt)"
-- `mfa.recoveryMessage` → "Ytterligare information (valfritt)"
-- `mfa.recoveryMessagePlaceholder`, `mfa.recoverySend`, `mfa.recoverySending`, `mfa.recoverySent`, `mfa.recoverySubmittedDesc`, `mfa.recoveryError`, `mfa.contactSupport`, `mfa.lostAccess`, m.fl.
+Med andra ord: vi har **tre möjliga matchningsvägar** redan i datan, men koden använder bara två av dem och en av dem skalar inte.
 
-Inga komponentändringar behövs — bara översättningsfilerna.
+### Vilka identifierare har vi faktiskt?
 
-## 2. Säkerhetsval: hur ska admin hjälpa användaren?
+För varje `mfa_recovery_requests`-rad finns:
+1. **`user_id`** — sätts om användaren var inloggad när formuläret skickades (sällsynt vid MFA-utlåsning, eftersom de fastnar *före* sessionen är klar). Oftast `null`.
+2. **`attempted_login_email`** — den **tysta** e-posten vi precis lade till, fångad direkt från `supabase.auth.getUser()` mitt i MFA-flödet. Detta är **kontots faktiska e-post** eftersom Supabase redan har validerat lösenordet innan MFA-steget.
+3. **`email`** — fritext från formuläret. Kan vara fel/skrivfel/scam.
+4. **`username`** — fritext från formuläret. Kan vara fel.
 
-### Hotmodell
-Den vanligaste attacken mot MFA-återställning är **social engineering** — en angripare mailar "support" och utger sig för att vara kontoägaren. Om admin bara klickar "återställ MFA" baserat på ett mail är hela MFA-skyddet borta. Det är detta vi måste skydda mot.
+## Problemet med nuvarande lookup
 
-### Jämförelse av alternativ
+- `listUsers({ perPage: 1000 })` → bryts vid 1001+ användare. Tyst bugg som växer med tiden.
+- Matchar bara på formulär-e-posten — om scammer skriver "offer@attacker.com" hittas ingen användare och flödet kraschar med `no_user_match`. Bra säkerhetsmässigt men dålig UX för riktiga ärenden där användaren skrivit fel adress.
+- Använder **inte** den säkra `attempted_login_email` som vi redan har.
 
-| Metod | Säkerhet mot scammer | Bevisar | Risk |
-|---|---|---|---|
-| **A. Admin nollställer MFA direkt** | Låg | Inget — admin litar på mailet | Hög: ett lurat mail räcker |
-| **B. Engångskod via e-post (6 siffror, 15 min)** | Medel | Kontroll över e-post | Låg: kräver också lösenord |
-| **C. Signerad engångslänk via e-post + lösenord** | Hög | E-post + lösenord + tidsgräns + signatur | Mycket låg |
+## Förslag: säker prioritetsordning
 
-**Rekommendation: C (signerad engångslänk)** — branschstandard (GitHub, Google). Kombinerar tre faktorer: något du har (mailen), något du vet (lösenordet), och en kryptografiskt signerad token med kort livslängd.
+Ändra `admin-issue-mfa-recovery` att slå upp `user_id` i denna ordning:
 
-### Säkerhetsegenskaper för flödet
+```text
+1. request.user_id              ← om satt, använd direkt (mest pålitligt)
+2. attempted_login_email        ← lösenord redan validerat → bevisat kontoägd
+3. username (om angivet)        ← slå upp i profiles.username → user_id
+4. email (formuläradressen)     ← sista utvägen, scam-kanal
+```
 
-1. **Admin godkänner ärendet i panelen** — admin nollställer aldrig MFA själv, utan utlöser ett *automatiserat* återställningsmail till **den e-post som är registrerad på kontot** (inte den fritextadress användaren skrev i formuläret — viktig skillnad mot scam).
-2. **Mail innehåller engångslänk** signerad med en serverhemlighet, giltig i 30 minuter, en användning.
-3. **Användaren måste först logga in med lösenord** på återställningssidan innan tokenen accepteras → bevisar lösenordskontroll.
-4. **Vid framgång**: alla MFA-faktorer för användaren tas bort, händelsen loggas i `moderation_log`, och en notis skickas till alla admins ("MFA återställd för användare X kl Y").
-5. **Kontot tvingas registrera ny MFA** vid nästa inloggning (befintligt beteende).
+Stegen 2 och 3 är **nya och säkrare** än dagens lookup. Steg 4 behålls som fallback men flaggas tydligt för admin.
 
-### Varför inte enbart admin-knapp?
-Om admin manuellt kan ta bort MFA blir admin själv en attackvektor (komprometterad admin = alla konton oskyddade, inget spår). Den signerade länken garanterar att även en lurad eller komprometterad admin **inte kan kringgå** att riktig kontoägare bevisar e-post + lösenord.
+### Varför är `attempted_login_email` säker?
 
-## 3. Implementation
+Den fångas av `MFAVerifyDialog` *efter* att Supabase har accepterat lösenordet (sessionen finns men är inte fullständig p.g.a. MFA-kravet). Den kan alltså inte fejkas av angripare som bara fyller i formuläret utan att kunna lösenordet — i så fall skulle fältet vara `null`.
 
-### Databas
-- Ny tabell `mfa_recovery_tokens`: `id`, `user_id`, `token_hash` (sha256, aldrig klartext), `expires_at`, `used_at`, `created_by_admin_id`, `created_at`. RLS: ingen klientåtkomst — endast service role.
-- Lägg till `resolved_by`, `resolved_at`, `resolution_notes` i `mfa_recovery_requests` (status finns redan).
+Vi visar redan match-statusen i admin-kön (✓ matchar / ⚠ matchar inte). Om `attempted_login_email` finns och visar grönt har vi i praktiken **bevis på lösenordskännedom innan vi ens skickar mailen**.
 
-### Edge functions (en ny + en ändrad)
-- **`admin-issue-mfa-recovery`** (verify_jwt = true): admin anropar denna med ett `request_id`. Funktionen kontrollerar att anroparen är admin (`is_admin` RPC), hämtar `user_id` från `mfa_recovery_requests`, slår upp användarens **registrerade e-post** via `auth.admin.getUserById`, genererar en kryptografisk token (32 bytes, base64url), sparar SHA-256-hash i `mfa_recovery_tokens`, och mailar länk till den registrerade e-posten via Lovable Emails (mall: `mfa-recovery`). Returnerar bara `{success: true}` — token visas aldrig för admin.
-- **`consume-mfa-recovery-token`** (verify_jwt = true, kräver inloggad användare): tar emot token från återställningssidan, slår upp via hash, kontrollerar `expires_at` + `used_at` + att `auth.uid()` matchar tokenens `user_id` (dvs. användaren har just loggat in med lösenord). Vid match: `auth.admin.mfa.deleteFactor` för alla användarens TOTP-faktorer, markerar token som använd, loggar i `moderation_log`.
+### Varför behöver vi fortfarande slå upp i `auth.users`?
 
-### App-mall (transactional email)
-- Ny mall `mfa-recovery.tsx` i `_shared/transactional-email-templates/`. Innehåll: "Hej, en administratör har initierat en MFA-återställning för ditt Samverkan-konto. Klicka på länken nedan inom 30 minuter och logga in med ditt lösenord för att slutföra." + tydlig "Var detta inte du? Kontakta oss"-sektion.
+För att hämta den *aktuella* registrerade e-posten (användaren kan ha bytt e-post efter att de skapade kontot). Vi använder `attempted_login_email` bara för att hitta `user_id`, sedan läser vi alltid mailadressen från `auth.admin.getUserById(userId)` — som idag.
 
-### Frontend
-- **Ny adminkomponent `MfaRecoveryQueue.tsx`** under en ny tabb "MFA-ärenden" i moderationspanelen. Visar lista över `mfa_recovery_requests` med status `pending`. För varje rad: knapp "Skicka återställningslänk" (anropar `admin-issue-mfa-recovery`), knapp "Avvisa". När admin trycker visas en bekräftelsedialog som påminner om att länken går till **kontots registrerade e-post**, inte adressen i formuläret.
-- **Ny publik sida `/aterstall-mfa?token=...`** (route i `App.tsx`): tvingar inloggning först (om ej inloggad → omdirigera till `/auth?redirect=...`). När inloggad anropas `consume-mfa-recovery-token`. Visar succé/fel-meddelande och knapp "Aktivera ny MFA".
-- **MFA-ärenden-tabb läggs till** i `ModerationDashboard.tsx` — synlig för både admin och moderator (men endast admin kan utfärda återställning, server-side enforced).
+## Implementation
+
+### 1. `admin-issue-mfa-recovery/index.ts`
+Ersätt `listUsers`-blocket med en ny privat hjälpare `resolveUserId(request)`:
+
+```ts
+async function resolveUserId(admin, request): Promise<string | null> {
+  if (request.user_id) return request.user_id;
+
+  // Try attempted_login_email first (silent capture, password-validated)
+  const candidates = [request.attempted_login_email, request.email]
+    .filter((e): e is string => !!e)
+    .map(e => e.toLowerCase());
+
+  for (const email of candidates) {
+    const { data } = await admin.rpc('get_user_id_by_email', { _email: email });
+    if (data) return data;
+  }
+
+  // Try username lookup
+  if (request.username) {
+    const { data } = await admin
+      .from('profiles')
+      .select('id')
+      .eq('username', request.username)
+      .maybeSingle();
+    if (data?.id) return data.id;
+  }
+
+  return null;
+}
+```
+
+### 2. Ny SQL-funktion `get_user_id_by_email`
+Liten security-definer-funktion som slår upp `auth.users` på e-post utan att behöva paginera:
+
+```sql
+CREATE OR REPLACE FUNCTION public.get_user_id_by_email(_email text)
+RETURNS uuid
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+  SELECT id FROM auth.users WHERE lower(email) = lower(_email) LIMIT 1;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_user_id_by_email(text) FROM public, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_user_id_by_email(text) TO service_role;
+```
+
+Endast service_role kan kalla — kan alltså bara nås från edge functions, inte från klienten.
+
+### 3. Audit-spår i `moderation_actions`
+När länken utfärdas, logga vilken matchningsväg som användes (`user_id` / `attempted_login_email` / `username` / `form_email`) så admin senare kan granska om något ärende matchades på en svagare signal.
+
+### 4. Ingen frontend-ändring
+Match-badgen i `MfaRecoveryQueue.tsx` är redan tillräcklig för admin att bedöma risk innan de trycker "Skicka återställningslänk".
 
 ## Vad ändras inte
-- Befintligt `MFARecoveryDialog`-flöde (användaren skickar in begäran) är oförändrat förutom svensk text.
-- Inga ändringar av MFA-inloggningsflödet, ingen befintlig route eller funktion påverkas.
-- Adminroller, RLS, `is_admin`/`is_moderator` RPC oförändrade.
+- Mailen går fortfarande **bara** till adressen från `auth.admin.getUserById` (kontots faktiska registrerade e-post).
+- Säkerhetsmodellen (e-post + lösenord + signerad token) är oförändrad.
+- Inga ändringar för användaren — bara säkrare och mer skalbar lookup på baksidan.
 
