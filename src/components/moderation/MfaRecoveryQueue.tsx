@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Loader2, Mail, ShieldCheck, X } from "lucide-react";
+import { Loader2, Mail, ShieldCheck, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { logger } from "@/lib/logger";
 
 type RecoveryRequest = {
@@ -29,6 +29,7 @@ type RecoveryRequest = {
   status: string;
   created_at: string;
   user_id: string | null;
+  attempted_login_email: string | null;
 };
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -50,7 +51,7 @@ export default function MfaRecoveryQueue() {
     queryFn: async (): Promise<RecoveryRequest[]> => {
       const { data, error } = await supabase
         .from("mfa_recovery_requests")
-        .select("id, email, username, message, status, created_at, user_id")
+        .select("id, email, username, message, status, created_at, user_id, attempted_login_email")
         .in("status", ["pending", "in_progress"])
         .order("created_at", { ascending: false })
         .limit(100);
