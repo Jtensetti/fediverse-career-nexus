@@ -1,14 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { encode as encodeBase64 } from "https://deno.land/std@0.167.0/encoding/base64.ts";
-import { 
-  signRequest, 
-  verifySignature, 
-  ensureActorHasKeys, 
-  signedFetch, 
+import {
+  signRequest,
+  ensureActorHasKeys,
+  signedFetch,
   fetchPublicKey,
-  pemToPublicKeyBuffer
+  verifyRequestSignature,
 } from "../_shared/http-signature.ts";
 
 const corsHeaders = {
@@ -54,122 +52,8 @@ async function getPublicKey(keyId: string): Promise<string | null> {
   }
 }
 
-// Verify HTTP signature with digest and date enforcement.
-// Returns { ok: true, keyIdHost } on success, false on failure.
-async function verifyRequestSignature(req: Request, body: string): Promise<{ ok: true; keyIdHost: string } | false> {
-  const signatureHeader = req.headers.get('Signature');
-  const digestHeader = req.headers.get('Digest');
-  const dateHeader = req.headers.get('Date');
-
-  if (!signatureHeader || !digestHeader || !dateHeader) {
-    console.error('Missing required signature headers');
-    return false;
-  }
-
-  // Check Date within 5 minutes
-  const requestTime = Date.parse(dateHeader);
-  if (isNaN(requestTime) || Math.abs(Date.now() - requestTime) > 5 * 60 * 1000) {
-    console.error('Date header out of range');
-    return false;
-  }
-
-  // Verify digest
-  const encoder = new TextEncoder();
-  const digestBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(body));
-  const expectedDigest = 'SHA-256=' + encodeBase64(new Uint8Array(digestBuffer));
-  if (expectedDigest !== digestHeader) {
-    console.error('Digest mismatch');
-    return false;
-  }
-
-  // Parse Signature header — split on first '=' only (signature value contains base64 padding)
-  const params: Record<string, string> = {};
-  for (const part of signatureHeader.split(',')) {
-    const trimmed = part.trim();
-    const eqIdx = trimmed.indexOf('=');
-    if (eqIdx === -1) continue;
-    const k = trimmed.substring(0, eqIdx).trim();
-    let v = trimmed.substring(eqIdx + 1).trim();
-    if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1);
-    params[k] = v;
-  }
-
-  const keyId = params['keyId'];
-  const signatureB64 = params['signature'];
-  const headerNames = (params['headers'] || '(request-target) host date digest').split(' ');
-
-  if (!keyId || !signatureB64) {
-    console.error('Signature header missing keyId or signature');
-    return false;
-  }
-
-  // Replay protection: reject if we've seen this exact signature in the last 15 min
-  try {
-    const sigHash = await sha256Hex(signatureB64);
-    const { data: seen } = await supabaseClient
-      .from('federation_signature_cache')
-      .select('signature_hash')
-      .eq('signature_hash', sigHash)
-      .maybeSingle();
-    if (seen) {
-      console.error('Replay detected for signature');
-      return false;
-    }
-    await supabaseClient
-      .from('federation_signature_cache')
-      .insert({ signature_hash: sigHash })
-      .then(() => {}, () => {}); // best-effort
-  } catch (e) {
-    console.error('Replay-cache check failed (continuing):', e);
-  }
-
-  const url = new URL(req.url);
-  const headerValues: Record<string, string> = {
-    '(request-target)': `${req.method.toLowerCase()} ${url.pathname}${url.search}`,
-    host: url.host,
-    date: dateHeader,
-    digest: digestHeader,
-  };
-
-  const stringToVerify = headerNames
-    .map((h) => `${h}: ${headerValues[h] ?? req.headers.get(h)}`)
-    .join('\n');
-
-  const publicKeyPem = await getPublicKey(keyId);
-  if (!publicKeyPem) {
-    console.error('Unable to retrieve public key for', keyId);
-    return false;
-  }
-
-  const keyBuffer = pemToPublicKeyBuffer(publicKeyPem);
-  const cryptoKey = await crypto.subtle.importKey(
-    'spki',
-    keyBuffer,
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['verify']
-  );
-
-  const signatureBytes = Uint8Array.from(atob(signatureB64), (c) => c.charCodeAt(0));
-  const verified = await crypto.subtle.verify(
-    'RSASSA-PKCS1-v1_5',
-    cryptoKey,
-    signatureBytes,
-    encoder.encode(stringToVerify)
-  );
-  if (!verified) {
-    console.error('Signature verification failed');
-    return false;
-  }
-
-  // Domain match: keyId host must match the actor's host (prevent cross-instance forgery)
-  return { ok: true, keyIdHost: new URL(keyId).hostname } as any;
-}
-
-async function sha256Hex(input: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
-}
+// Signature verification is provided by `_shared/http-signature.ts` (verifyRequestSignature).
+// Inbox callers pass the local getPublicKey resolver via opts.
 
 // Check if a domain is blocked
 async function isDomainBlocked(url: string): Promise<boolean> {
@@ -339,7 +223,7 @@ serve(async (req) => {
       );
     }
 
-    const sigResult = await verifyRequestSignature(req, bodyText);
+    const sigResult = await verifyRequestSignature(req, bodyText, { getPublicKey });
     if (!sigResult) {
       return new Response(
         JSON.stringify({ error: "Invalid signature" }),
