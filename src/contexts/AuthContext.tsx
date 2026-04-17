@@ -6,6 +6,10 @@ import { createUserActor } from '@/services/federation/actorService';
 import { ensureUserProfile } from '@/services/profile/profileService';
 import { needsMFAVerification } from '@/services/auth/mfaService';
 import MFAVerifyDialog from '@/components/auth/MFAVerifyDialog';
+import { logger } from '@/lib/logger';
+
+const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'default';
+const SETUP_CACHE_PREFIX = `user_setup_${PROJECT_ID}_`;
 
 interface AuthContextType {
   user: User | null;
@@ -20,9 +24,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Background user setup - non-blocking
 const setupUserInBackground = async (userId: string) => {
-  const cacheKey = `user_setup_${userId}`;
+  const cacheKey = `${SETUP_CACHE_PREFIX}${userId}`;
   const cachedSetup = localStorage.getItem(cacheKey);
-  
+
   // Cache valid for 5 minutes
   if (cachedSetup) {
     try {
@@ -34,32 +38,32 @@ const setupUserInBackground = async (userId: string) => {
       // Invalid cache, continue with setup
     }
   }
-  
+
   try {
     // Run profile and actor checks in PARALLEL
     const [profile, existingActor] = await Promise.all([
       ensureUserProfile(userId),
       supabase.from('public_actors').select('id').eq('user_id', userId).maybeSingle()
     ]);
-    
+
     if (!profile) {
-      console.error('AuthProvider: Failed to create/ensure profile');
+      logger.error('AuthProvider: Failed to create/ensure profile');
       return;
     }
-    
+
     // Create actor if needed
     if (!existingActor.data && !existingActor.error) {
       try {
         await createUserActor(userId);
       } catch (error) {
-        console.error('AuthProvider: Error creating actor:', error);
+        logger.error('AuthProvider: Error creating actor:', error);
       }
     }
-    
+
     // Update cache
     localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
   } catch (error) {
-    console.error('AuthProvider: Error in user setup:', error);
+    logger.error('AuthProvider: Error in user setup:', error);
   }
 };
 
@@ -105,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadingTimeoutId = setTimeout(() => {
       setLoading(prev => {
         if (prev) {
-          console.warn('AuthProvider: Loading timeout reached, forcing completion');
+          logger.error('AuthProvider: Loading timeout reached, forcing completion');
           return false;
         }
         return prev;
@@ -149,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setMfaPending(false);
           setMfaFactorId(null);
           setMfaDialogOpen(false);
-          // Clear all user setup caches
+          // Clear all user setup caches (any project scope)
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('user_setup_')) {
               localStorage.removeItem(key);
