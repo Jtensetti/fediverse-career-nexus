@@ -85,8 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     try {
       const mfaCheck = await needsMFAVerification();
-      console.log('AuthProvider: MFA check result:', mfaCheck);
-      
+      logger.debug('AuthProvider: MFA check result:', mfaCheck);
+
       if (mfaCheck.needed && mfaCheck.factorId) {
         setMfaPending(true);
         setMfaFactorId(mfaCheck.factorId);
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setMfaDialogOpen(false);
       }
     } catch (error) {
-      console.error('AuthProvider: Error checking MFA:', error);
+      logger.error('AuthProvider: Error checking MFA:', error);
       setMfaPending(false);
     }
   };
