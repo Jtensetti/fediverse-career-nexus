@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 import { RichTextToolbar, ToolbarAction } from "@/components/editor/RichTextToolbar";
-import { TipTapEditor } from "@/components/editor/TipTapEditor";
+import { TipTapEditor, type TipTapEditorHandle } from "@/components/editor/TipTapEditor";
 import { LinkInsertSheet } from "@/components/editor/LinkInsertSheet";
 import { cn } from "@/lib/utils";
 import { useArticleImageUpload } from "@/hooks/useArticleImageUpload";
@@ -28,11 +28,10 @@ export function ArticleEditor({
   const { keyboardHeight, isKeyboardOpen } = useKeyboardHeight();
   const { uploadImage, isUploading } = useArticleImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<TipTapEditorHandle>(null);
 
-  // Get editor commands from window
-  const getEditor = useCallback(() => {
-    return (window as any).__tiptapEditor;
-  }, []);
+  // Get editor commands from ref
+  const getEditor = useCallback(() => editorRef.current, []);
 
   // Handle toolbar actions
   const handleAction = useCallback(
