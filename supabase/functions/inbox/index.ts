@@ -1332,8 +1332,8 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
     const objectUrl = typeof object === 'string' ? object : object.id;
     const objectType = typeof object === 'object' ? object.type : null;
     
-    // Store the update activity
-    const { data, error } = await supabaseClient
+    // Audit trail
+    await supabaseClient
       .from("inbox_items")
       .insert({
         recipient_id: recipientId,
@@ -1341,18 +1341,12 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
         activity_type: "Update",
         object_type: objectType,
         content: activity
-      })
-      .select()
-      .single();
+      });
     
-    if (error) {
-      throw error;
-    }
-    
-    console.log(`Stored Update activity: ${data.id} for object ${objectUrl}`);
+    console.log(`Stored Update activity for object ${objectUrl}`);
     
     // If this is an actor update, refresh the cache
-    if (objectType === 'Person' || objectType === 'Service' || objectType === 'Application') {
+    if (objectType === 'Person' || objectType === 'Service' || objectType === 'Application' || objectType === 'Organization' || objectType === 'Group') {
       console.log(`Actor update received, refreshing cache for ${sender}`);
       await supabaseClient
         .from("remote_actors_cache")
@@ -1361,6 +1355,21 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
           actor_data: object,
           fetched_at: new Date().toISOString()
         });
+    } else if (typeof object === 'object' && objectUrl) {
+      // Object update (Note edited from Mastodon etc.) — sync into ap_objects so
+      // federated feed sees the latest content.
+      const localId = extractLocalObjectId(objectUrl);
+      if (localId) {
+        const { error: updErr } = await supabaseClient
+          .from("ap_objects")
+          .update({
+            content: object,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", localId);
+        if (updErr) console.warn("ap_objects update failed:", updErr);
+        else console.log(`Synced Update into ap_objects ${localId}`);
+      }
     }
   } catch (error) {
     console.error("Error handling Update activity:", error);
