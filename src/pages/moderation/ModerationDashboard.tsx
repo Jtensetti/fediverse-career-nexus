@@ -246,6 +246,10 @@ export default function ModerationDashboard() {
                   <Bell className="h-4 w-4" />
                   Varningar
                 </TabsTrigger>
+                <TabsTrigger value="mfa-recovery" className="gap-2">
+                  <Shield className="h-4 w-4" />
+                  MFA-ärenden
+                </TabsTrigger>
               </TabsList>
 
               <div className="relative w-full md:w-64">
