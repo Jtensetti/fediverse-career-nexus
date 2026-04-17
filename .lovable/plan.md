@@ -1,83 +1,106 @@
 
 
-# Hardening, Performance & Contributor Experience
+# Codebase Cleanup — No Platform Changes
 
-Goal: zero behavior, UI or platform changes. Only repo-level improvements, security policies, perf tweaks, and contributor docs/automation.
+Audit findings, all behavior-preserving fixes. Grouped by severity.
 
-## A. Security hardening (no behavior change)
+## 1. Critical: Broken / nonsensical patterns
 
-### A1. Lock down public storage bucket listing
-The Supabase linter flags 4 public buckets (`avatars`, `posts`, `article-covers`, `article-images`, `articles`, `company-assets`) where any client can `LIST` all files. Files served by direct URL still work; we just remove the broad `SELECT` on `storage.objects` and replace it with object-by-object access (public buckets remain publicly readable via CDN URL — listing is what gets blocked).
+### 1a. `Home.tsx` ↔ `Index.tsx` circular structure (BUG)
+- `App.tsx` routes `/` to `<Index>`. `Index.tsx` renders `<Home>` when authed. `Home.tsx` then renders `<Index>` when unauthed. Two pages bouncing into each other.
+- Net behavior is correct only by accident (the `useEffect` redirect in Home fires before render completes).
+- **Fix**: Delete `src/pages/Home.tsx`. Inline its only logic (redirect authed users to `/feed`) into `Index.tsx`. One source of truth for the `/` route.
 
-Migration: drop overly-broad `storage.objects SELECT USING (true)` policies and replace with policies that only allow authenticated users to list their own folder. Public read by URL is unaffected.
+### 1b. Broken `(window as any).supabase?.auth?.user()?.id` in `ArticleEdit.tsx:76`
+- This API does not exist on supabase-js v2. `window.supabase` is never assigned anywhere. `isPrimaryAuthor` is **always `false`**.
+- **Fix**: Use the auth context (`useAuth()`) properly. Compare against `user?.id`. This is a real bug masked as working code.
 
-### A2. Tighten remaining `USING (true)` write policies
-Audit the 5 flagged write policies (federated_sessions, remote_actors_cache, oauth_clients, etc.). Where the intent is "service role only", convert from `USING (true)` to `USING (auth.role() = 'service_role')` so the linter and any future audit reads correctly.
+### 1c. TipTap editor commands attached to `window` (`__tiptapEditor`)
+- `TipTapEditor.tsx` writes its command API to `window.__tiptapEditor`. `ArticleEditor.tsx` reads it back via `(window as any)`.
+- Bypasses React entirely, untyped, breaks SSR, breaks if two editors mount.
+- **Fix**: Lift commands via `forwardRef` + `useImperativeHandle`, or pass an `onReady(api)` callback. Same external behavior, type-safe, no globals.
 
-### A3. Document the two known accepted risks
-- `actors.private_key` client-side access — already tracked, marked as deferred architectural refactor. Add a `SECURITY.md` entry describing scope and mitigation so external contributors don't re-flag it.
-- Realtime channel authorization — platform limitation. Document in `SECURITY.md`.
+## 2. Duplicate files
 
-### A4. Remove hardcoded fallbacks for Supabase URL/anon key from `vite.config.ts`
-The `FALLBACKS` block hard-codes the project ref + anon key. These are public values, but baking them into the repo means forks accidentally point at our backend. Replace with a build-time error if env vars are missing. Same end-user behavior on lovable.app (env is always injected there).
+### 2a. Two `SkipToContent.tsx` (common/ + layout/)
+- Only `common/SkipToContent` is imported. `layout/SkipToContent.tsx` (and its barrel export) is dead.
+- The common one has hardcoded English `"Skip to main content"`; the layout one uses `t('accessibility.skipToContent')`. Per memory, Swedish-first with i18n.
+- **Fix**: Keep one file at `common/`, port the `useTranslation` version into it, delete `layout/SkipToContent.tsx` + its barrel export.
 
-## B. Performance (no UX change)
+### 2b. `src/components/ui/use-toast.ts` is a re-export shim
+- Just re-exports `@/hooks/use-toast`. Nothing imports the shim path.
+- **Fix**: Delete the shim file.
 
-### B1. Add Vite build optimizations
-- Enable `build.target: 'es2020'` and `build.cssMinify: true` (defaults are fine but pin them).
-- Add `manualChunks` for the largest vendor groups (`react`, `radix-ui`, `tiptap`, `recharts`) so initial JS payload drops without any code change.
+## 3. Type safety leaks (~70+ `as any`)
 
-### B2. React Query default tuning
-In the single `QueryClient` instance in `App.tsx`, set sensible defaults: `staleTime: 60_000`, `refetchOnWindowFocus: false`, `retry: 1`. Cuts redundant refetches across the app without changing any feature.
+### 3a. Schema-typed-table casts
+- Patterns like `.from("site_alerts" as any)` and `.from('linkedin_imports' as any)` mean these tables exist in DB but aren't in the generated `types.ts`. Either the table was added without a migration regen, or it's stale.
+- **Fix (no platform change)**: Verify each `as any` table actually exists; trigger types regeneration so the casts can be removed.
 
-### B3. Database indexes for hot paths
-Add indexes that don't exist yet but are obviously needed by current queries (verified via the function definitions seen — e.g. `ap_objects (type, attributed_to)`, `notifications (recipient_id, read, created_at desc)`, `federation_queue_partitioned (partition_key, status, priority)`). All non-blocking `CREATE INDEX IF NOT EXISTS`.
+### 3b. `(post.content as any)` repeated 6+ places
+- ActivityPub `content` JSONB is typed `Json` but always read as a structured object. Each call site re-asserts.
+- **Fix**: Define a single `APNoteContent` interface in `src/lib/federation.ts` + a typed parser `parseNoteContent(raw): APNoteContent`. Replace ~15 `as any` reads with one helper. Memory already mentions a robust-parsing pattern; this consolidates it.
 
-## C. Contributor experience
+### 3c. `Select onValueChange={v => setX(v as any)}`
+- 5 occurrences in admin/moderation forms. The setter type is wider than the `Select` value union.
+- **Fix**: Type the state as the proper union (`'pending' | 'approved' | 'rejected'`), drop the cast.
 
-### C1. Rewrite README.md
-Current README says "Nolto was an experimental … hosted instance shut down". This contradicts the live Samverkan platform. Replace with accurate Samverkan-focused README:
-- What it is (Swedish public-sector federated network)
-- Quick start (`npm i && npm run dev`)
-- Tech stack
-- Link to `CONTRIBUTING.md`, `SECURITY.md`, `docs/`
+## 4. Logging hygiene
 
-### C2. Add `SECURITY.md`
-Standard responsible-disclosure file: how to report vulnerabilities, scope, accepted risks (A3 items), supported versions.
+- 102 `console.*` calls across 16 files, mostly debug leftovers. Production bundles ship them.
+- **Fix**: Add a tiny `src/lib/logger.ts` (`debug` no-ops in prod, `error` always logs). Search-and-replace. Zero behavior change in prod, cleaner DevTools.
 
-### C3. Add `CODE_OF_CONDUCT.md`
-README links to it but the file doesn't exist. Add Contributor Covenant 2.1 (standard).
+## 5. Toast inconsistency
 
-### C4. Add `.github/` automation
-- `.github/workflows/ci.yml` — runs `npm ci`, `npm run lint` (tsc), `npm test` on PRs. Catches regressions for human contributors.
-- `.github/workflows/codeql.yml` — GitHub's free static analysis for JS/TS. Surfaces security findings directly in PRs.
-- `.github/PULL_REQUEST_TEMPLATE.md` — checklist (tests pass, no hardcoded secrets, RLS reviewed if touching DB).
-- `.github/ISSUE_TEMPLATE/bug_report.md` and `feature_request.md` — standard templates.
-- `.github/dependabot.yml` — weekly npm + github-actions update PRs.
+- 91 imports of `toast` from `sonner` directly, 16 from `@/hooks/use-toast` (the shadcn wrapper). Two parallel toast systems.
+- App.tsx already mounts only the `Toaster` from `@/components/ui/sonner`, so the shadcn `useToast` hook's toasts may not even render.
+- **Fix**: Pick one (sonner, since it's what App actually mounts). Migrate the 16 stragglers. Delete `hooks/use-toast.ts` + `components/ui/use-toast.ts` + `components/ui/toast.tsx` + `components/ui/toaster.tsx` if unused after migration.
 
-### C5. Expand `CONTRIBUTING.md`
-Already exists and is good. Add two short sections:
-- **Security**: link to `SECURITY.md`, never commit secrets, never bypass RLS.
-- **Database changes**: must include a migration; never edit `types.ts`.
+## 6. Oversized files (split, don't rewrite)
 
-### C6. Fix `index.html` metadata
-- Update `og:image` and `twitter:image` from `fediverse-career.lovable.app` → `www.samverkan.se`.
-- Update `twitter:site` from `@nolto_network` → remove or replace (Nolto is gone per memory).
-- Add `<html lang="sv">` since Swedish is the default per memory.
+| File | Lines | Split target |
+|------|------:|--------------|
+| `pages/profile/ProfileEdit.tsx` | 1200 | Already has tab-like sections — extract into `profile-edit/` sub-components per section (Basic, Experience, Education, Skills, Privacy). |
+| `pages/profile/Profile.tsx` | 996 | Extract tab panels (`ProfileAbout`, `ProfileExperience`, `ProfilePosts`, `ProfileArticles`). |
+| `services/messaging/messageService.ts` | 736 (23 exports) | Split into `messageQueries.ts` (read), `messageMutations.ts` (send/delete), `messageRealtime.ts` (subscriptions). |
+| `services/social/connectionsService.ts` | 660 (17 exports) | Split into `connectionRequests.ts`, `connectionQueries.ts`, `mutualConnections.ts`. |
+| `pages/auth/Auth.tsx` | 669 | Extract `LoginForm`, `SignupForm`, `PasswordResetForm`. |
+| `components/posts/PostComposer.tsx` | 610 | Extract `MediaUploader`, `PollComposer`, `ContentWarningField`. |
 
-## D. Execution order
-1. Migration: storage listing policies + tighten `USING (true)` writes + add indexes
-2. `vite.config.ts`: remove hardcoded fallbacks, add chunking
-3. `App.tsx`: React Query defaults
-4. `index.html`: metadata fixes
-5. Docs: rewrite README, add SECURITY.md, CODE_OF_CONDUCT.md, expand CONTRIBUTING.md
-6. `.github/`: CI, CodeQL, Dependabot, PR + issue templates
-7. Mark resolved security findings as fixed
-8. Verify `tsc --noEmit` passes
+Pure mechanical extraction — same component tree, same props in/out.
+
+## 7. App.tsx routing cleanup
+- Mixed indentation lines 160-167 (4-space inside 20-space block) — formatter pass.
+- 8 `Navigate` redirect routes for old `/company/*` URLs and typo aliases (`/job` → `/jobs`) — fine but worth a comment block grouping them as "Legacy redirects".
+
+## 8. Edge functions: dead code check
+48 edge functions present. Likely unused (need verification before deletion):
+- `middleware/` — not invoked by the proxy worker config.
+- `cache-manager/` — no client calls.
+- `analytics/` — superseded by `federation-coordinator` per recent migrations.
+
+**Fix**: Add a one-liner header comment to each edge function describing who calls it. Functions with no caller after a grep sweep get deleted in a follow-up (separate PR for safety).
+
+## 9. Tiny housekeeping
+- `vite.config.ts` `inlineLovableEnv` plugin can be removed — the build-time check + standard Vite env injection is sufficient now that fallbacks are gone. Remove the manual string-replacement plugin.
+- `.env.example` should mirror the 3 required vars.
+- Add `npm run typecheck` script (`tsc --noEmit`) and reference from `CONTRIBUTING.md`.
 
 ## What does NOT change
-- Zero UI changes, zero route changes, zero feature changes
-- No edge function logic changes
-- No data migrations (only policy + index DDL)
-- All public file URLs continue to work exactly as before
+- Zero UI/UX, zero routes, zero feature changes.
+- No DB migrations.
+- No edge function logic changes (only header comments + dead-function audit list).
+- All public URLs identical.
+
+## Execution order
+1. Fix critical bugs: Home/Index circular ref, ArticleEdit window.supabase, TipTap window globals.
+2. Delete duplicate files (SkipToContent, ui/use-toast.ts).
+3. Add `APNoteContent` type + parser; remove `content as any` casts.
+4. Type Select unions properly (remove form `as any`).
+5. Introduce `logger.ts`, replace `console.*`.
+6. Standardize on sonner toast; remove shadcn toast files if orphaned.
+7. Mechanical split of 6 oversized files.
+8. App.tsx formatter pass + comment grouping.
+9. Drop `inlineLovableEnv` plugin from vite.config.ts.
+10. Verify `tsc --noEmit` + `vite build` pass.
 
