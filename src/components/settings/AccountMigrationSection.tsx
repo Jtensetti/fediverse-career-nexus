@@ -247,6 +247,30 @@ export default function AccountMigrationSection() {
             </AlertDialog>
           </div>
         </div>
+
+        <div className="space-y-3 pt-4 border-t">
+          <Label>{t("migration.importFollows")}</Label>
+          <p className="text-sm text-muted-foreground">{t("migration.importFollowsDescription")}</p>
+          <div className="flex items-center gap-2">
+            <Input
+              type="file"
+              accept=".csv,text/csv"
+              disabled={isImporting}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleCsvUpload(file);
+                e.target.value = "";
+              }}
+            />
+            {isImporting && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            {!isImporting && <Upload className="h-4 w-4 text-muted-foreground" />}
+          </div>
+          {importResult && (
+            <p className="text-sm text-muted-foreground">
+              {t("migration.importResult", { queued: importResult.queued, skipped: importResult.skipped })}
+            </p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
