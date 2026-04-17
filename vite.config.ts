@@ -17,7 +17,6 @@ function parseDotEnvFile(filePath: string): Record<string, string> {
 
       const key = trimmed.slice(0, eq).trim();
       let value = trimmed.slice(eq + 1).trim();
-      // Strip surrounding quotes
       if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
         value = value.slice(1, -1);
       }
@@ -32,27 +31,31 @@ function parseDotEnvFile(filePath: string): Record<string, string> {
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // Lovable environments can sometimes miss inlining `import.meta.env`.
-  // We load env normally and also fall back to parsing the root `.env` file.
+  // Load env from process and the local .env file as a fallback (Lovable injects these automatically).
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const envFile = parseDotEnvFile(path.resolve(process.cwd(), ".env"));
 
-  // Last-resort fallbacks to keep the app from blank-screening if env injection fails.
-  // These values are public (URL + publishable key) and are already required client-side.
-  const FALLBACKS: Record<string, string> = {
-    VITE_SUPABASE_PROJECT_ID: "anknmcmqljejabxbeohv",
-    VITE_SUPABASE_URL: "https://anknmcmqljejabxbeohv.supabase.co",
-    VITE_SUPABASE_PUBLISHABLE_KEY:
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFua25tY21xbGplamFieGJlb2h2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0OTM5MTUsImV4cCI6MjA4MzA2OTkxNX0.IWsUxLhvANU4e9TDUuJ0lTHZda0yqYILU_4_rtJfnMU",
-  };
-
-  const get = (key: string) => env[key] ?? envFile[key] ?? process.env[key] ?? FALLBACKS[key];
+  const get = (key: string) => env[key] ?? envFile[key] ?? process.env[key];
 
   const resolved = {
     VITE_SUPABASE_URL: get("VITE_SUPABASE_URL"),
     VITE_SUPABASE_PUBLISHABLE_KEY: get("VITE_SUPABASE_PUBLISHABLE_KEY"),
     VITE_SUPABASE_PROJECT_ID: get("VITE_SUPABASE_PROJECT_ID"),
   };
+
+  // Build-time safety: forks/self-hosters must provide their own backend env vars.
+  // On Lovable hosting these are always injected, so this never trips in production.
+  if (mode !== "development") {
+    const missing = Object.entries(resolved)
+      .filter(([, v]) => !v)
+      .map(([k]) => k);
+    if (missing.length > 0) {
+      throw new Error(
+        `Missing required environment variables: ${missing.join(", ")}.\n` +
+          `Copy .env.example to .env and fill in your Supabase project values.`,
+      );
+    }
+  }
 
   // Hard replacement plugin: guarantees `import.meta.env.VITE_*` are inlined in ALL source modules
   // (including the auto-generated supabase client), even if env injection is flaky.
@@ -64,6 +67,7 @@ export default defineConfig(({ mode }) => {
 
       let out = code;
       for (const [k, v] of Object.entries(resolved)) {
+        if (v === undefined) continue;
         const needle = `import.meta.env.${k}`;
         if (out.includes(needle)) out = out.split(needle).join(JSON.stringify(v));
       }
@@ -84,7 +88,32 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    build: {
+      target: "es2020",
+      cssMinify: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            "vendor-react": ["react", "react-dom", "react-router-dom"],
+            "vendor-radix": [
+              "@radix-ui/react-dialog",
+              "@radix-ui/react-dropdown-menu",
+              "@radix-ui/react-popover",
+              "@radix-ui/react-tooltip",
+              "@radix-ui/react-tabs",
+              "@radix-ui/react-select",
+            ],
+            "vendor-tiptap": [
+              "@tiptap/react",
+              "@tiptap/starter-kit",
+              "@tiptap/extension-link",
+              "@tiptap/extension-image",
+            ],
+            "vendor-charts": ["recharts"],
+            "vendor-query": ["@tanstack/react-query"],
+          },
+        },
+      },
+    },
   };
 });
-
-
