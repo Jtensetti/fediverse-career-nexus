@@ -23,19 +23,19 @@
      }
    }, []);
  
-   const { data: alerts = [] } = useQuery({
-     queryKey: ["siteAlerts"],
-     queryFn: async () => {
-       const { data, error } = await supabase
-         .from("site_alerts" as any)
-         .select("*")
-         .eq("is_active", true)
-         .order("created_at", { ascending: false });
-       if (error) throw error;
-       return (data || []) as unknown as SiteAlert[];
-     },
-     refetchInterval: 60000, // Refresh every minute
-   });
+  const { data: alerts = [] } = useQuery({
+    queryKey: ["siteAlerts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("site_alerts")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as SiteAlert[];
+    },
+    refetchInterval: 60000, // Refresh every minute
+  });
  
    const handleDismiss = (alertId: string) => {
      const newDismissed = new Set(dismissedAlerts);

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,11 @@ const MarkdownEditor = ({
   label = "Content",
 }: MarkdownEditorProps) => {
   const [tab, setTab] = useState<"write" | "preview">("write");
+  const focusTimerRef = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (focusTimerRef.current !== null) window.clearTimeout(focusTimerRef.current);
+  }, []);
 
   const handleInsertMarkdown = (markdownType: string) => {
     let textToInsert = "";
@@ -66,7 +71,8 @@ const MarkdownEditor = ({
     onChange(newText);
     
     // Set focus back to textarea and set cursor position
-    setTimeout(() => {
+    if (focusTimerRef.current !== null) window.clearTimeout(focusTimerRef.current);
+    focusTimerRef.current = window.setTimeout(() => {
       textarea.focus();
       const newCursorPosition = selectionStart + textToInsert.length;
       textarea.setSelectionRange(newCursorPosition, newCursorPosition);

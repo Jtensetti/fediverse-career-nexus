@@ -3,8 +3,26 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
+
+export interface TipTapEditorHandle {
+  toggleBold: () => void;
+  toggleItalic: () => void;
+  toggleStrike: () => void;
+  setHeading: (level: 1 | 2 | 3 | 4 | 5) => void;
+  clearHeading: () => void;
+  toggleBlockquote: () => void;
+  toggleCodeBlock: () => void;
+  toggleBulletList: () => void;
+  toggleOrderedList: () => void;
+  setLink: (url: string) => void;
+  insertImage: (url: string, alt?: string) => void;
+  insertHorizontalRule: () => void;
+  undo: () => void;
+  hideKeyboard: () => void;
+  getSelectedText: () => string;
+}
 
 interface TipTapEditorProps {
   value: string;
@@ -16,15 +34,18 @@ interface TipTapEditorProps {
   onSelectionChange?: (hasSelection: boolean) => void;
 }
 
-export function TipTapEditor({
-  value,
-  onChange,
-  placeholder = "Skriv din artikel...",
-  className,
-  onFocus,
-  onBlur,
-  onSelectionChange,
-}: TipTapEditorProps) {
+export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(function TipTapEditor(
+  {
+    value,
+    onChange,
+    placeholder = "Skriv din artikel...",
+    className,
+    onFocus,
+    onBlur,
+    onSelectionChange,
+  },
+  ref
+) {
   const isUpdatingRef = useRef(false);
 
   const editor = useEditor({
@@ -86,7 +107,7 @@ export function TipTapEditor({
     }
   }, [value, editor]);
 
-  // Expose editor commands
+  // Expose editor commands via ref
   const toggleBold = useCallback(() => {
     editor?.chain().focus().toggleBold().run();
   }, [editor]);
@@ -147,50 +168,47 @@ export function TipTapEditor({
     editor?.commands.blur();
   }, [editor]);
 
-  // Attach commands to window for toolbar access
-  useEffect(() => {
-    if (editor) {
-      (window as any).__tiptapEditor = {
-        toggleBold,
-        toggleItalic,
-        toggleStrike,
-        setHeading,
-        clearHeading,
-        toggleBlockquote,
-        toggleCodeBlock,
-        toggleBulletList,
-        toggleOrderedList,
-        setLink,
-        insertImage,
-        insertHorizontalRule,
-        undo,
-        hideKeyboard,
-        getSelectedText: () => {
-          const { from, to } = editor.state.selection;
-          return editor.state.doc.textBetween(from, to, " ");
-        },
-      };
-    }
-    return () => {
-      delete (window as any).__tiptapEditor;
-    };
-  }, [
-    editor,
-    toggleBold,
-    toggleItalic,
-    toggleStrike,
-    setHeading,
-    clearHeading,
-    toggleBlockquote,
-    toggleCodeBlock,
-    toggleBulletList,
-    toggleOrderedList,
-    setLink,
-    insertImage,
-    insertHorizontalRule,
-    undo,
-    hideKeyboard,
-  ]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      toggleBold,
+      toggleItalic,
+      toggleStrike,
+      setHeading,
+      clearHeading,
+      toggleBlockquote,
+      toggleCodeBlock,
+      toggleBulletList,
+      toggleOrderedList,
+      setLink,
+      insertImage,
+      insertHorizontalRule,
+      undo,
+      hideKeyboard,
+      getSelectedText: () => {
+        if (!editor) return "";
+        const { from, to } = editor.state.selection;
+        return editor.state.doc.textBetween(from, to, " ");
+      },
+    }),
+    [
+      editor,
+      toggleBold,
+      toggleItalic,
+      toggleStrike,
+      setHeading,
+      clearHeading,
+      toggleBlockquote,
+      toggleCodeBlock,
+      toggleBulletList,
+      toggleOrderedList,
+      setLink,
+      insertImage,
+      insertHorizontalRule,
+      undo,
+      hideKeyboard,
+    ]
+  );
 
   return (
     <EditorContent
@@ -206,6 +224,6 @@ export function TipTapEditor({
       )}
     />
   );
-}
+});
 
 export default TipTapEditor;

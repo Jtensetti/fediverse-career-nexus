@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { logger } from "@/lib/logger";
 
 interface Props {
   children: ReactNode;
@@ -24,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    logger.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
   private handleRetry = () => {
@@ -32,6 +33,9 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   private handleReload = () => {
+    // Reset state first as a fallback in case the reload is blocked
+    // (some browsers / extensions intercept reload calls).
+    this.setState({ hasError: false, error: null });
     window.location.reload();
   };
 

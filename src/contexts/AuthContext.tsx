@@ -6,6 +6,10 @@ import { createUserActor } from '@/services/federation/actorService';
 import { ensureUserProfile } from '@/services/profile/profileService';
 import { needsMFAVerification } from '@/services/auth/mfaService';
 import MFAVerifyDialog from '@/components/auth/MFAVerifyDialog';
+import { logger } from '@/lib/logger';
+
+const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'default';
+const SETUP_CACHE_PREFIX = `user_setup_${PROJECT_ID}_`;
 
 interface AuthContextType {
   user: User | null;
@@ -20,9 +24,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Background user setup - non-blocking
 const setupUserInBackground = async (userId: string) => {
-  const cacheKey = `user_setup_${userId}`;
+  const cacheKey = `${SETUP_CACHE_PREFIX}${userId}`;
   const cachedSetup = localStorage.getItem(cacheKey);
-  
+
   // Cache valid for 5 minutes
   if (cachedSetup) {
     try {
@@ -34,32 +38,32 @@ const setupUserInBackground = async (userId: string) => {
       // Invalid cache, continue with setup
     }
   }
-  
+
   try {
     // Run profile and actor checks in PARALLEL
     const [profile, existingActor] = await Promise.all([
       ensureUserProfile(userId),
       supabase.from('public_actors').select('id').eq('user_id', userId).maybeSingle()
     ]);
-    
+
     if (!profile) {
-      console.error('AuthProvider: Failed to create/ensure profile');
+      logger.error('AuthProvider: Failed to create/ensure profile');
       return;
     }
-    
+
     // Create actor if needed
     if (!existingActor.data && !existingActor.error) {
       try {
         await createUserActor(userId);
       } catch (error) {
-        console.error('AuthProvider: Error creating actor:', error);
+        logger.error('AuthProvider: Error creating actor:', error);
       }
     }
-    
+
     // Update cache
     localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
   } catch (error) {
-    console.error('AuthProvider: Error in user setup:', error);
+    logger.error('AuthProvider: Error in user setup:', error);
   }
 };
 
@@ -81,8 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     try {
       const mfaCheck = await needsMFAVerification();
-      console.log('AuthProvider: MFA check result:', mfaCheck);
-      
+      logger.debug('AuthProvider: MFA check result:', mfaCheck);
+
       if (mfaCheck.needed && mfaCheck.factorId) {
         setMfaPending(true);
         setMfaFactorId(mfaCheck.factorId);
@@ -93,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setMfaDialogOpen(false);
       }
     } catch (error) {
-      console.error('AuthProvider: Error checking MFA:', error);
+      logger.error('AuthProvider: Error checking MFA:', error);
       setMfaPending(false);
     }
   };
@@ -105,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadingTimeoutId = setTimeout(() => {
       setLoading(prev => {
         if (prev) {
-          console.warn('AuthProvider: Loading timeout reached, forcing completion');
+          logger.error('AuthProvider: Loading timeout reached, forcing completion');
           return false;
         }
         return prev;
@@ -117,39 +121,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          console.error('AuthProvider: Error getting initial session:', error);
+          logger.error('AuthProvider: Error getting initial session:', error);
         } else {
           setSession(session);
           setUser(session?.user ?? null);
+          // Resolve MFA gate before unblocking the UI to remove the brief
+          // window where protected routes could render without verification.
+          if (session?.user) {
+            try {
+              await checkMFARequirement();
+            } catch (mfaError) {
+              logger.error('AuthProvider: Initial MFA check failed:', mfaError);
+            }
+          }
         }
       } catch (error) {
-        console.error('AuthProvider: Unexpected error getting session:', error);
+        logger.error('AuthProvider: Unexpected error getting session:', error);
       } finally {
         setLoading(false);
       }
     };
 
     getInitialSession();
-    
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
-        
+
         // Handle sign in - run setup in background (non-blocking)
         if (event === 'SIGNED_IN' && session?.user) {
           // Fire and forget - don't block the UI
           void setupUserInBackground(session.user.id);
+          // Resolve MFA gate before flipping loading to false on sign-in events.
+          try {
+            await checkMFARequirement();
+          } catch (mfaError) {
+            logger.error('AuthProvider: Sign-in MFA check failed:', mfaError);
+          }
         }
-        
+
+        setLoading(false);
+
         // Clear cache on sign out
         if (event === 'SIGNED_OUT') {
           setMfaPending(false);
           setMfaFactorId(null);
           setMfaDialogOpen(false);
-          // Clear all user setup caches
+          // Clear all user setup caches (any project scope)
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('user_setup_')) {
               localStorage.removeItem(key);
@@ -158,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     );
-    
+
     // Clear timeout on cleanup
     return () => {
       clearTimeout(loadingTimeoutId);
@@ -191,11 +211,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('AuthProvider: Error signing out:', error);
+        logger.error('AuthProvider: Error signing out:', error);
         throw error;
       }
     } catch (error) {
-      console.error('AuthProvider: Sign out failed:', error);
+      logger.error('AuthProvider: Sign out failed:', error);
       throw error;
     }
   };

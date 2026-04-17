@@ -4,6 +4,7 @@ import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadCompanyImage, deleteCompanyImage } from "@/services/company/companyImageService";
 import { updateCompany } from "@/services/company/companyService";
+import { logger } from "@/lib/logger";
 
 interface CompanyImageUploadProps {
   companyId: string;
@@ -49,9 +50,11 @@ export default function CompanyImageUpload({
       const field = type === "logo" ? "logo_url" : "banner_url";
       await updateCompany(companyId, { [field]: url });
 
-      // Delete old image if it existed
+      // Delete old image if it existed (best-effort; log if it fails so stale assets are visible)
       if (currentUrl) {
-        await deleteCompanyImage(currentUrl).catch(() => {});
+        await deleteCompanyImage(currentUrl).catch((err) => {
+          logger.warn("Failed to delete previous company image; may leave a stale asset:", err);
+        });
       }
 
       onUploaded(url);
@@ -60,7 +63,7 @@ export default function CompanyImageUpload({
         : t("companyImage.bannerUpdated", "Banner updated")
       );
     } catch (error: any) {
-      console.error("Upload failed:", error);
+      logger.error("Upload failed:", error);
       toast.error(error.message || t("companyImage.uploadFailed", "Failed to upload image"));
     } finally {
       setIsUploading(false);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import { Loader2, Copy, CheckCircle, ShieldCheck, Smartphone, QrCode } from "lucide-react";
+import DOMPurify from "dompurify";
 import { enrollTOTP, verifyEnrollment, EnrollmentResult } from "@/services/auth/mfaService";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -35,6 +36,20 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
   const [isVerifying, setIsVerifying] = useState(false);
   const [secretCopied, setSecretCopied] = useState(false);
   const [showQRCode, setShowQRCode] = useState(!isMobile);
+  const successTimerRef = useRef<number | null>(null);
+
+  // Cleanup any pending success timer on unmount
+  useEffect(() => () => {
+    if (successTimerRef.current !== null) {
+      window.clearTimeout(successTimerRef.current);
+    }
+  }, []);
+
+  // Sanitize the QR SVG returned by the auth service. Source is trusted, but
+  // sanitizing defends against a compromised dependency or proxy.
+  const sanitizedQrCode = enrollment?.totp.qr_code
+    ? DOMPurify.sanitize(enrollment.totp.qr_code, { USE_PROFILES: { svg: true, svgFilters: true } })
+    : "";
 
   // Start enrollment when dialog opens
   useEffect(() => {
@@ -74,10 +89,12 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
       setStep('success');
       toast.success(t("mfa.enrollSuccess", "Two-factor authentication enabled!"));
       // Short delay before closing
-      setTimeout(() => {
+      const successTimer = window.setTimeout(() => {
         onSuccess();
         onOpenChange(false);
       }, 1500);
+      // Best-effort: stash on window so re-renders don't lose handle (cleanup happens on unmount via effect)
+      successTimerRef.current = successTimer;
     } catch (error: any) {
       toast.error(error.message || t("mfa.verifyError", "Invalid code. Please try again."));
       setCode("");
@@ -176,11 +193,11 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
             )}
 
             {/* QR Code - always shown on desktop, toggleable on mobile */}
-            {showQRCode && enrollment?.totp.qr_code && (
+            {showQRCode && sanitizedQrCode && (
               <div className="flex flex-col items-center">
                 <div 
                   className="rounded-lg border bg-white p-4"
-                  dangerouslySetInnerHTML={{ __html: enrollment.totp.qr_code }}
+                  dangerouslySetInnerHTML={{ __html: sanitizedQrCode }}
                 />
               </div>
             )}

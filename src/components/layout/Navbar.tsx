@@ -25,6 +25,7 @@ import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
 import { AlignJustify, LogIn, Settings, User, UserPlus, LogOut, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useModerationAccess } from "@/hooks/useModerationAccess";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -57,24 +58,8 @@ const Navbar = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Check if user has moderation access (restricted to specific usernames)
-  const { data: moderationAccess } = useQuery({
-    queryKey: ['moderation-nav-access', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return false;
-      const { data: profile } = await supabase
-        .from('public_profiles')
-        .select('username')
-        .eq('id', user.id)
-        .single();
-      // Only jtensetti_mastodon can access moderation
-      return profile?.username === 'jtensetti_mastodon';
-    },
-    enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000,
-  });
-  
-  const isAdminOrModerator = moderationAccess === true;
+  // Moderation access via centralized hook (admin/moderator roles in DB)
+  const { hasAccess: isAdminOrModerator } = useModerationAccess();
 
   const handleLogout = async () => {
     try {
@@ -94,7 +79,7 @@ const Navbar = () => {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrolled]);
 

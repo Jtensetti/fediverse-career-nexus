@@ -61,11 +61,19 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
         return;
       }
       setShowReplyComposer(true);
-      setTimeout(() => {
+      const t1 = window.setTimeout(() => {
         composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
+      timeoutsRef.current.push(t1);
     }
   }));
+
+  // Track timeouts so we can clear them on unmount
+  const timeoutsRef = useRef<number[]>([]);
+  useEffect(() => () => {
+    timeoutsRef.current.forEach(id => window.clearTimeout(id));
+    timeoutsRef.current = [];
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -86,7 +94,8 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
       setShowReplyComposer(true);
       onComposerOpened?.();
       if (!hasLoaded) loadComments();
-      setTimeout(() => { composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+      const t1 = window.setTimeout(() => { composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+      timeoutsRef.current.push(t1);
     }
   }, [autoOpenComposer, user]);
 
