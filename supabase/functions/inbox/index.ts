@@ -520,13 +520,27 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       throw new Error("Follow activity missing actor field");
     }
     
+    // Look up local actor — including manually_approves_followers preference
+    const { data: localActor, error: localActorError } = await supabaseClient
+      .from("actors")
+      .select("preferred_username, manually_approves_followers")
+      .eq("id", recipientId)
+      .single();
+    
+    if (localActorError || !localActor) {
+      throw new Error(`Local actor not found: ${localActorError?.message}`);
+    }
+    
+    const requiresApproval = localActor.manually_approves_followers === true;
+    const followStatus = requiresApproval ? "pending" : "accepted";
+    
     // Store the follow relationship
     const { data: followData, error: followError } = await supabaseClient
       .from("actor_followers")
       .insert({
         local_actor_id: recipientId,
         follower_actor_url: followerActorUrl,
-        status: "accepted"
+        status: followStatus
       })
       .select()
       .single();
@@ -539,7 +553,30 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       throw followError;
     }
     
-    console.log(`Created follow relationship: ${followData.id}`);
+    console.log(`Created follow relationship: ${followData.id} (status=${followStatus})`);
+    
+    // Only auto-Accept if not requiring manual approval. Otherwise wait for owner action.
+    if (requiresApproval) {
+      console.log(`Follow request pending manual approval for ${recipientId}`);
+      // Notify the local user about the pending follow request
+      const { data: actorWithUser } = await supabaseClient
+        .from("actors")
+        .select("user_id")
+        .eq("id", recipientId)
+        .single();
+      if (actorWithUser?.user_id) {
+        await supabaseClient.from("notifications").insert({
+          type: "follow_request",
+          recipient_id: actorWithUser.user_id,
+          actor_id: null,
+          object_id: followerActorUrl,
+          object_type: "actor",
+          content: `${followerActorUrl} requests to follow you`,
+          read: false
+        });
+      }
+      return;
+    }
     
     // Update follower count
     await supabaseClient
@@ -549,25 +586,14 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       })
       .eq("id", recipientId);
     
-    // Get the local actor's username for the Accept activity
-    const { data: localActor, error: localActorError } = await supabaseClient
-      .from("actors")
-      .select("preferred_username")
-      .eq("id", recipientId)
-      .single();
-    
-    if (localActorError || !localActor) {
-      throw new Error(`Local actor not found: ${localActorError?.message}`);
-    }
-    
-    // Create Accept activity with proper targeting
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    // Build canonical Accept activity (samverkan.se URLs)
+    const { buildActorUrl, buildActivityId } = await import("../_shared/federation-urls.ts");
     const acceptActivity = {
       "@context": "https://www.w3.org/ns/activitystreams",
       "type": "Accept",
-      "id": `${supabaseUrl}/functions/v1/activities/${crypto.randomUUID()}`,
-      "actor": `${supabaseUrl}/functions/v1/actor/${localActor.preferred_username}`,
-      "to": followerActorUrl, // Explicitly target the follower's inbox
+      "id": buildActivityId(),
+      "actor": buildActorUrl(localActor.preferred_username),
+      "to": followerActorUrl,
       "object": activity,
       "published": new Date().toISOString()
     };
@@ -576,7 +602,7 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
     
     // Queue the Accept activity using the partitioned federation queue
     const { data: partitionKey, error: partitionError } = await supabaseClient
-      .rpc("actor_id_to_partition_key", { actor_id: recipientId });
+      .rpc("actor_id_to_partition_key", { actor_uuid: recipientId });
 
     if (partitionError || partitionKey === null) {
       console.error("Error determining partition:", partitionError);
