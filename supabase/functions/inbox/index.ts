@@ -444,34 +444,34 @@ serve(async (req) => {
 
     switch (activity.type) {
       case "Follow":
-        await handleFollowActivity(activity, actor.id, sender);
+        await handleFollowActivity(activity, actorIdForHandlers, sender);
         break;
       case "Accept":
-        await handleAcceptActivity(activity, actor.id, sender);
+        await handleAcceptActivity(activity, actorIdForHandlers, sender);
         break;
       case "Reject":
-        await handleRejectActivity(activity, actor.id, sender);
+        await handleRejectActivity(activity, actorIdForHandlers, sender);
         break;
       case "Undo":
-        await handleUndoActivity(activity, actor.id, sender);
+        await handleUndoActivity(activity, actorIdForHandlers, sender);
         break;
       case "Create":
-        await handleCreateActivity(activity, actor.id, sender);
+        await handleCreateActivity(activity, actorIdForHandlers, sender);
         break;
       case "Like":
-        await handleLikeActivity(activity, actor.id, sender);
+        await handleLikeActivity(activity, actorIdForHandlers, sender);
         break;
       case "Announce":
-        await handleAnnounceActivity(activity, actor.id, sender);
+        await handleAnnounceActivity(activity, actorIdForHandlers, sender);
         break;
       case "Delete":
-        await handleDeleteActivity(activity, actor.id, sender);
+        await handleDeleteActivity(activity, actorIdForHandlers, sender);
         break;
       case "Update":
-        await handleUpdateActivity(activity, actor.id, sender);
+        await handleUpdateActivity(activity, actorIdForHandlers, sender);
         break;
       case "Move":
-        await handleMoveActivity(activity, actor.id, sender);
+        await handleMoveActivity(activity, actorIdForHandlers, sender);
         break;
       default:
         console.log(`Unsupported activity type: ${activity.type}`);
@@ -479,7 +479,7 @@ serve(async (req) => {
         await supabaseClient
           .from("inbox_items")
           .insert({
-            recipient_id: actor.id,
+            recipient_id: actorIdForHandlers,
             sender: sender,
             activity_type: activity.type,
             content: activity
