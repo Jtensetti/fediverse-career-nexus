@@ -1,73 +1,81 @@
-# 🌐 Nolto — Federated Professional Network
+# Samverkan
 
-[![Codeberg](https://img.shields.io/badge/Codeberg-2185D0?logo=codeberg&logoColor=white)](https://codeberg.org/Tensetti/Nolto)
-[![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)](https://github.com/Jtensetti/fediverse-career-nexus)
+A federated professional network for the Swedish public sector — municipalities, regions, and government agencies. Built on ActivityPub, hosted in the EU, designed around privacy, accessibility, and a healthy collaborative culture.
 
-Nolto was an experimental federated professional networking platform built on ActivityPub.
-
-It combined profile-based networking, job listings, and long-form content with Fediverse interoperability. The public instance has been shut down, but the code remains available for transparency, learning, and further development.
+Live at **[www.samverkan.se](https://www.samverkan.se)**.
 
 ---
 
-## Project Status
+## What it is
 
-The hosted instance is permanently offline.
+Samverkan combines:
 
-Before shutdown, users were provided with:
-- A GDPR Article 20 structured data export
-- An ActivityPub-compatible export (including following list)
+- **CV-style profiles** with verifiable employment, education, and endorsements
+- **Organisation pages** for public-sector employers with role-based admin (owner / admin / editor)
+- **A federated feed** that interoperates with Mastodon and other ActivityPub servers
+- **Long-form articles, events, and a structured job board** focused on transparency
+- **Direct messaging** with end-to-end encryption support
+- **Granular privacy controls** (per-section visibility, federation opt-in, MFA)
 
-All hosted user data has been deleted.
-
----
-
-## Features (Implemented)
-
-- CV-style professional profiles
-- Skills, endorsements, and recommendations
-- Professional connections and messaging
-- Structured job board
-- Articles and events
-- ActivityPub federation (actors, inbox/outbox, follow flow)
-- WebFinger discovery
-- HTTP signature verification
-- Domain and actor moderation
+The platform is Swedish-first (`sv` default, English fallback) and hosted in Frankfurt (AWS `eu-central-1`) for GDPR data-residency.
 
 ---
 
-## Tech Stack
+## Tech stack
 
-- React 18 + TypeScript + Vite  
-- Tailwind CSS + shadcn/ui  
-- Supabase (Postgres + Edge Functions)  
-- ActivityPub + HTTP Signatures  
-- Supabase Auth  
-- TanStack Query  
+- **Frontend:** React 18 · Vite 5 · TypeScript · Tailwind · shadcn/ui · TanStack Query
+- **Backend:** Supabase (Postgres + RLS + Edge Functions on Deno)
+- **Federation:** ActivityPub · HTTP Signatures · WebFinger · NodeInfo
+- **Auth:** Email/password · OAuth (Google, Apple) · TOTP MFA · federated login
+- **Email:** Resend (sender: `noreply@samverkan.se`)
 
 ---
 
-## AI-Assisted Development
+## Quick start
 
-Parts of the codebase were developed using AI-assisted tooling.
+```bash
+git clone <your-fork-url>
+cd <repo>
+npm install
+cp .env.example .env   # fill in your own Supabase project values
+npm run dev
+```
 
-Architecture, data modeling, federation logic, and infrastructure decisions were manual.
+The dev server runs on `http://localhost:8080`.
 
-AI reduced implementation time. Responsibility remained human.
+You will need your own Supabase project — see [`docs/`](docs/) for schema notes and [`supabase/migrations/`](supabase/migrations/) for the full DDL history.
+
+### Running the test suite
+
+```bash
+npm run lint   # tsc + eslint
+npm test       # jest
+```
+
+---
+
+## Contributing
+
+Contributions are welcome. Before opening a PR:
+
+1. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) — coding conventions, branch flow, PR checklist.
+2. Read [`SECURITY.md`](SECURITY.md) — responsible disclosure and accepted-risk register.
+3. Read [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — expected behavior in the community.
+4. For database changes, always include a migration in `supabase/migrations/`. Never edit `src/integrations/supabase/types.ts` by hand.
+
+Issues and feature requests use the templates under [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/).
+
+---
+
+## Documentation
+
+- [`docs/openapi.yaml`](docs/openapi.yaml) — REST + ActivityPub endpoint contract
+- [`docs/`](docs/) — architecture notes
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+- [`SECURITY.md`](SECURITY.md)
 
 ---
 
 ## License
 
-This project is [MIT Licensed](LICENSE).
-
----
-
-## 🔗 Links
-
-- [Documentation](docs/)
-- [API Spec](docs/openapi.yaml)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-
----
-
-> To everyone who joined, tested, or supported the project in good faith, thank you. It meant more than you know.
+[MIT](LICENSE).

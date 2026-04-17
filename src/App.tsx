@@ -77,11 +77,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30000, // 30 seconds before data is considered stale
-      gcTime: 300000, // 5 minutes cache time (formerly cacheTime)
-      refetchOnMount: true, // Refetch when component mounts for fresh data
-      refetchOnWindowFocus: true, // Refetch when user returns to tab
-      retry: 1, // Only retry once on failure
+      staleTime: 60_000, // 1 minute before data is considered stale
+      gcTime: 300_000, // 5 minutes cache time
+      refetchOnMount: true,
+      refetchOnWindowFocus: false, // Avoid redundant refetches on tab focus
+      retry: 1,
     },
   },
 });
