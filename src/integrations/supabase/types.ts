@@ -1662,6 +1662,7 @@ export type Database = {
       mfa_recovery_requests: {
         Row: {
           admin_notes: string | null
+          attempted_login_email: string | null
           created_at: string
           email: string
           handled_at: string | null
@@ -1677,6 +1678,7 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          attempted_login_email?: string | null
           created_at?: string
           email: string
           handled_at?: string | null
@@ -1692,6 +1694,7 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          attempted_login_email?: string | null
           created_at?: string
           email?: string
           handled_at?: string | null
