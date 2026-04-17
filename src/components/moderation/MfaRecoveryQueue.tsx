@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Loader2, Mail, ShieldCheck, X } from "lucide-react";
+import { Loader2, Mail, ShieldCheck, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { logger } from "@/lib/logger";
 
 type RecoveryRequest = {
@@ -29,6 +29,7 @@ type RecoveryRequest = {
   status: string;
   created_at: string;
   user_id: string | null;
+  attempted_login_email: string | null;
 };
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -50,7 +51,7 @@ export default function MfaRecoveryQueue() {
     queryFn: async (): Promise<RecoveryRequest[]> => {
       const { data, error } = await supabase
         .from("mfa_recovery_requests")
-        .select("id, email, username, message, status, created_at, user_id")
+        .select("id, email, username, message, status, created_at, user_id, attempted_login_email")
         .in("status", ["pending", "in_progress"])
         .order("created_at", { ascending: false })
         .limit(100);
@@ -144,6 +145,32 @@ export default function MfaRecoveryQueue() {
               </div>
               {r.username && (
                 <p className="text-sm text-muted-foreground">@{r.username}</p>
+              )}
+              {r.attempted_login_email ? (
+                <div className="text-sm flex items-center gap-1.5 flex-wrap">
+                  <span className="text-muted-foreground">
+                    {t("mfa.recoveryAttemptedLogin", "Inloggningsförsök:")}
+                  </span>
+                  <span className="font-mono break-all">{r.attempted_login_email}</span>
+                  {r.attempted_login_email.toLowerCase() === r.email.toLowerCase() ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-primary">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      {t("mfa.recoveryEmailMatch", "matchar")}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs text-destructive">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      {t("mfa.recoveryEmailMismatch", "matchar inte formuläret")}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">
+                  {t(
+                    "mfa.recoveryNoAttemptedLogin",
+                    "Ingen tyst inloggningsuppgift fångades.",
+                  )}
+                </p>
               )}
               {r.message && (
                 <p className="text-sm whitespace-pre-wrap break-words">{r.message}</p>

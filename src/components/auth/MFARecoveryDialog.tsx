@@ -20,11 +20,18 @@ import { logger } from "@/lib/logger";
 interface MFARecoveryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * Silently captured: the email of the account that authenticated with
+   * password but failed/abandoned MFA. Sent to admins so they can verify
+   * whether the form email matches the account that tried to sign in.
+   */
+  attemptedLoginEmail?: string | null;
 }
 
 export default function MFARecoveryDialog({
   open,
   onOpenChange,
+  attemptedLoginEmail,
 }: MFARecoveryDialogProps) {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
@@ -46,6 +53,7 @@ export default function MFARecoveryDialog({
             email: email.trim(),
             username: username.trim() || undefined,
             message: message.trim() || undefined,
+            attempted_login_email: attemptedLoginEmail || undefined,
           },
         },
       );
