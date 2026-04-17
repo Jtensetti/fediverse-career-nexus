@@ -100,17 +100,27 @@ async function enrichActivity(item: any): Promise<any> {
     return null;
   }
   
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  // Look up actor's preferred_username so we can build canonical URLs.
+  // item.actor_id is a UUID — never use it as a username in federation payloads.
+  const { data: actorRow } = await supabaseClient
+    .from("actors")
+    .select("preferred_username")
+    .eq("id", item.actor_id)
+    .single();
   
-  // Build full Create activity
+  const username = actorRow?.preferred_username;
+  const fallbackActorUrl = username ? buildActorUrl(username) : null;
+  const followersUrl = username ? buildFollowersUrl(username) : null;
+  
+  // Build full Create activity using canonical samverkan.se URLs
   return {
     "@context": "https://www.w3.org/ns/activitystreams",
     type: "Create",
-    id: `${supabaseUrl}/functions/v1/activities/${apObject.id}`,
-    actor: apObject.content?.attributedTo || `${supabaseUrl}/functions/v1/actor/${item.actor_id}`,
+    id: buildActivityId(),
+    actor: apObject.content?.attributedTo || fallbackActorUrl,
     published: apObject.published_at || new Date().toISOString(),
     to: ["https://www.w3.org/ns/activitystreams#Public"],
-    cc: [`${supabaseUrl}/functions/v1/actor/${item.actor_id}/followers`],
+    cc: followersUrl ? [followersUrl] : [],
     object: apObject.content
   };
 }
