@@ -1440,44 +1440,94 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
             fetched_at: new Date().toISOString()
           });
         
-        // Update any local follows to point to new account
-        // First, find any author_follows pointing to the old account
-        const { data: localActors } = await supabaseClient
+        // Auto re-follow: every local actor that follows the OLD remote actor should
+        // start following the NEW one. We queue Follow activities to the new account.
+        const { data: oldRemoteActor } = await supabaseClient
           .from("actors")
-          .select("id, user_id")
-          .eq("user_id", recipientId);
+          .select("id")
+          .eq("remote_actor_url", oldAccountUrl)
+          .maybeSingle();
         
-        if (localActors && localActors.length > 0) {
-          // Create notification for the user about the migration
-          await supabaseClient
-            .from("notifications")
-            .insert({
+        if (oldRemoteActor?.id) {
+          const { data: localFollowers } = await supabaseClient
+            .from("outgoing_follows")
+            .select("local_actor_id")
+            .eq("remote_actor_url", oldAccountUrl)
+            .eq("status", "accepted");
+          
+          const { buildActorUrl, buildActivityId } = await import("../_shared/federation-urls.ts");
+          
+          for (const lf of localFollowers || []) {
+            const { data: la } = await supabaseClient
+              .from("actors")
+              .select("preferred_username")
+              .eq("id", lf.local_actor_id)
+              .single();
+            if (!la?.preferred_username) continue;
+            
+            const followActivity = {
+              "@context": "https://www.w3.org/ns/activitystreams",
+              "type": "Follow",
+              "id": buildActivityId(),
+              "actor": buildActorUrl(la.preferred_username),
+              "object": newAccountUrl
+            };
+            
+            const { data: pk } = await supabaseClient
+              .rpc("actor_id_to_partition_key", { actor_uuid: lf.local_actor_id });
+            
+            await supabaseClient.from("federation_queue_partitioned").insert({
+              actor_id: lf.local_actor_id,
+              activity: followActivity,
+              status: "pending",
+              partition_key: pk ?? 0,
+              priority: 7
+            });
+            
+            // Track the new outgoing follow
+            await supabaseClient.from("outgoing_follows").upsert({
+              local_actor_id: lf.local_actor_id,
+              remote_actor_url: newAccountUrl,
+              status: "pending"
+            }, { onConflict: "local_actor_id,remote_actor_url" });
+          }
+          
+          console.log(`Queued auto re-follow for ${(localFollowers || []).length} local followers`);
+          
+          // Notify the local users about the migration
+          const { data: usersToNotify } = await supabaseClient
+            .from("actors")
+            .select("user_id")
+            .in("id", (localFollowers || []).map((f: any) => f.local_actor_id));
+          
+          for (const u of usersToNotify || []) {
+            if (!u.user_id) continue;
+            await supabaseClient.from("notifications").insert({
               type: "account_moved",
-              recipient_id: recipientId,
+              recipient_id: u.user_id,
               actor_id: null,
               object_id: oldAccountUrl,
               object_type: "actor",
-              content: `${oldAccountUrl} has moved to ${newAccountUrl}`,
+              content: `${oldAccountUrl} has moved to ${newAccountUrl} — we re-followed automatically`,
               read: false
             });
-          
-          console.log(`Created notification for user about account migration`);
+          }
         }
         
-        // Update the old account cache to show it's moved
+        // Mark old account as moved in cache
+        const { data: oldCache } = await supabaseClient
+          .from("remote_actors_cache")
+          .select("actor_data")
+          .eq("actor_url", oldAccountUrl)
+          .maybeSingle();
+        
         await supabaseClient
           .from("remote_actors_cache")
-          .update({ 
-            actor_data: {
-              ...((await supabaseClient
-                .from("remote_actors_cache")
-                .select("actor_data")
-                .eq("actor_url", oldAccountUrl)
-                .single()).data?.actor_data || {}),
-              movedTo: newAccountUrl
-            }
-          })
-          .eq("actor_url", oldAccountUrl);
+          .upsert({
+            actor_url: oldAccountUrl,
+            actor_data: { ...(oldCache?.actor_data || {}), movedTo: newAccountUrl },
+            fetched_at: new Date().toISOString()
+          });
         
         console.log(`Successfully processed Move from ${oldAccountUrl} to ${newAccountUrl}`);
       }
@@ -1486,6 +1536,83 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
     }
   } catch (error) {
     console.error("Error handling Move activity:", error);
+    throw error;
+  }
+}
+
+// Handle incoming Flag (moderation report) from a remote instance
+async function handleFlagActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Flag (report) from ${sender}`);
+    
+    // Audit trail
+    await supabaseClient.from("inbox_items").insert({
+      recipient_id: recipientId,
+      sender,
+      activity_type: "Flag",
+      object_type: "Report",
+      content: activity
+    });
+    
+    // Extract reported objects (can be array or single)
+    const objects = Array.isArray(activity.object) ? activity.object : [activity.object];
+    const reason = typeof activity.content === "string" ? activity.content : "Federated report";
+    
+    for (const obj of objects) {
+      const objUrl = typeof obj === "string" ? obj : obj?.id;
+      if (!objUrl) continue;
+      
+      const localId = extractLocalObjectId(objUrl);
+      
+      await supabaseClient.from("content_reports").insert({
+        content_id: localId || objUrl,
+        content_type: localId ? "post" : "remote",
+        reason: "federated_flag",
+        details: `From ${sender}: ${reason}`,
+        reporter_id: null as any,
+        status: "pending"
+      });
+    }
+    
+    console.log(`Stored federated Flag with ${objects.length} target object(s)`);
+  } catch (error) {
+    console.error("Error handling Flag activity:", error);
+    throw error;
+  }
+}
+
+// Handle incoming Block — record so we don't deliver to the blocker
+async function handleBlockActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Block from ${sender}`);
+    
+    const target = typeof activity.object === "string" ? activity.object : activity.object?.id;
+    
+    await supabaseClient.from("inbox_items").insert({
+      recipient_id: recipientId,
+      sender,
+      activity_type: "Block",
+      object_type: "Actor",
+      content: activity
+    });
+    
+    if (target) {
+      // Remove the blocker from any local actor's follower list (they shouldn't receive our updates)
+      await supabaseClient
+        .from("actor_followers")
+        .delete()
+        .eq("follower_actor_url", sender);
+      
+      // Stop our outgoing follows toward the blocker
+      await supabaseClient
+        .from("outgoing_follows")
+        .delete()
+        .eq("remote_actor_url", sender);
+      
+      console.log(`Cleared follow relationships with blocker ${sender}`);
+    }
+  } catch (error) {
+    console.error("Error handling Block activity:", error);
     throw error;
   }
 }
