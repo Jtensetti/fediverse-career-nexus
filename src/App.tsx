@@ -29,6 +29,7 @@ import Auth from "./pages/auth/Auth";
 import AuthCallback from "./pages/auth/AuthCallback";
 import AuthRecovery from "./pages/auth/AuthRecovery";
 import ConfirmEmail from "./pages/auth/ConfirmEmail";
+import MfaRecover from "./pages/auth/MfaRecover";
 import Events from "./pages/events/Events";
 import EventCreate from "./pages/events/EventCreate";
 import EventView from "./pages/events/EventView";
