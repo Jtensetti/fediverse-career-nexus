@@ -12,6 +12,7 @@ interface RecoveryPayload {
   email?: string;
   username?: string;
   message?: string;
+  attempted_login_email?: string;
 }
 
 const isEmail = (v: string) =>
@@ -27,6 +28,11 @@ Deno.serve(async (req) => {
     const email = (body.email ?? "").trim().toLowerCase();
     const username = (body.username ?? "").trim().slice(0, 120) || null;
     const message = (body.message ?? "").trim().slice(0, 2000) || null;
+    const attemptedLoginEmailRaw = (body.attempted_login_email ?? "").trim().toLowerCase();
+    const attemptedLoginEmail =
+      attemptedLoginEmailRaw && isEmail(attemptedLoginEmailRaw)
+        ? attemptedLoginEmailRaw
+        : null;
 
     if (!email || !isEmail(email)) {
       return new Response(
@@ -76,6 +82,7 @@ Deno.serve(async (req) => {
         message,
         ip_address: ip,
         user_agent: userAgent,
+        attempted_login_email: attemptedLoginEmail,
       })
       .select("id, created_at")
       .single();
@@ -107,9 +114,19 @@ Deno.serve(async (req) => {
       const lovableKey = Deno.env.get("LOVABLE_API_KEY");
 
       if (adminEmails.length > 0 && resendKey && lovableKey) {
+        const emailsMatch =
+          attemptedLoginEmail !== null && attemptedLoginEmail === email;
+        const matchBadge = attemptedLoginEmail
+          ? emailsMatch
+            ? `<p style="color:#0a7a2f;"><strong>✓ Matchar:</strong> formuläret och inloggningsförsöket använder samma e-post.</p>`
+            : `<p style="color:#b00020;"><strong>⚠ Matchar inte:</strong> e-posten i formuläret skiljer sig från det senaste inloggningsförsöket.</p>`
+          : `<p style="color:#666;"><em>Ingen tyst inloggningsuppgift fångades (användaren öppnade kanske formuläret utan att först försöka logga in).</em></p>`;
+
         const html = `
           <h2>New MFA recovery request</h2>
-          <p><strong>From:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Form email:</strong> ${escapeHtml(email)}</p>
+          ${attemptedLoginEmail ? `<p><strong>Attempted login email (silent):</strong> ${escapeHtml(attemptedLoginEmail)}</p>` : ""}
+          ${matchBadge}
           ${username ? `<p><strong>Username:</strong> ${escapeHtml(username)}</p>` : ""}
           ${message ? `<p><strong>Message:</strong></p><blockquote>${escapeHtml(message).replace(/\n/g, "<br>")}</blockquote>` : ""}
           <p><strong>Submitted:</strong> ${inserted.created_at}</p>
