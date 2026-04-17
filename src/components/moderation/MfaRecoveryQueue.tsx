@@ -146,6 +146,32 @@ export default function MfaRecoveryQueue() {
               {r.username && (
                 <p className="text-sm text-muted-foreground">@{r.username}</p>
               )}
+              {r.attempted_login_email ? (
+                <div className="text-sm flex items-center gap-1.5 flex-wrap">
+                  <span className="text-muted-foreground">
+                    {t("mfa.recoveryAttemptedLogin", "Inloggningsförsök:")}
+                  </span>
+                  <span className="font-mono break-all">{r.attempted_login_email}</span>
+                  {r.attempted_login_email.toLowerCase() === r.email.toLowerCase() ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      {t("mfa.recoveryEmailMatch", "matchar")}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs text-destructive">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      {t("mfa.recoveryEmailMismatch", "matchar inte formuläret")}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground italic">
+                  {t(
+                    "mfa.recoveryNoAttemptedLogin",
+                    "Ingen tyst inloggningsuppgift fångades.",
+                  )}
+                </p>
+              )}
               {r.message && (
                 <p className="text-sm whitespace-pre-wrap break-words">{r.message}</p>
               )}
