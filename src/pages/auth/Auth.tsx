@@ -45,16 +45,49 @@ export default function AuthPage() {
   // Determine default tab based on URL path
   const defaultTab = location.pathname === "/auth/signup" ? "signup" : "signin";
 
-  // Capture referral code from URL or localStorage
+  // Capture referral code from URL or localStorage (24h expiry)
   useEffect(() => {
+    const REFERRAL_KEY = "referral_code";
+    const REFERRAL_TTL_MS = 24 * 60 * 60 * 1000;
     const params = new URLSearchParams(location.search);
     const ref = params.get("ref");
     if (ref) {
-      setRefCode(ref.toUpperCase());
-      localStorage.setItem("referral_code", ref.toUpperCase());
+      const code = ref.toUpperCase();
+      setRefCode(code);
+      localStorage.setItem(
+        REFERRAL_KEY,
+        JSON.stringify({ code, expiresAt: Date.now() + REFERRAL_TTL_MS })
+      );
     } else {
-      const stored = localStorage.getItem("referral_code");
-      if (stored) setRefCode(stored);
+      const stored = localStorage.getItem(REFERRAL_KEY);
+      if (!stored) return;
+      try {
+        // New format
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object" && parsed.code && parsed.expiresAt) {
+          if (Date.now() < parsed.expiresAt) {
+            setRefCode(parsed.code);
+          } else {
+            localStorage.removeItem(REFERRAL_KEY);
+          }
+          return;
+        }
+        // Legacy plain-string fallback — adopt and re-stamp with TTL
+        if (typeof parsed === "string" && parsed) {
+          setRefCode(parsed);
+          localStorage.setItem(
+            REFERRAL_KEY,
+            JSON.stringify({ code: parsed, expiresAt: Date.now() + REFERRAL_TTL_MS })
+          );
+        }
+      } catch {
+        // Legacy plain-string (not JSON) — adopt and re-stamp
+        setRefCode(stored);
+        localStorage.setItem(
+          REFERRAL_KEY,
+          JSON.stringify({ code: stored, expiresAt: Date.now() + REFERRAL_TTL_MS })
+        );
+      }
     }
   }, [location.search]);
 
