@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     // Load the request
     const { data: request, error: reqErr } = await admin
       .from("mfa_recovery_requests")
-      .select("id, user_id, email, status")
+      .select("id, user_id, email, username, attempted_login_email, status")
       .eq("id", request_id)
       .single();
 
@@ -98,18 +98,53 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Resolve the actual user_id from registered email if not stored
-    let userId = request.user_id as string | null;
-    if (!userId) {
-      // Look up by email via admin API (paged)
-      const { data: list } = await admin.auth.admin.listUsers({
-        page: 1,
-        perPage: 1000,
+    // Resolve user_id using a prioritized matching strategy
+    let userId: string | null = null;
+    let matchSource:
+      | "user_id"
+      | "attempted_login_email"
+      | "username"
+      | "form_email"
+      | null = null;
+
+    if (request.user_id) {
+      userId = request.user_id as string;
+      matchSource = "user_id";
+    }
+
+    // Try attempted_login_email (silent capture, password-validated)
+    if (!userId && request.attempted_login_email) {
+      const { data } = await admin.rpc("get_user_id_by_email", {
+        _email: String(request.attempted_login_email).toLowerCase(),
       });
-      const match = list?.users?.find(
-        (u) => u.email?.toLowerCase() === request.email.toLowerCase(),
-      );
-      userId = match?.id ?? null;
+      if (data) {
+        userId = data as unknown as string;
+        matchSource = "attempted_login_email";
+      }
+    }
+
+    // Try username lookup via profiles
+    if (!userId && request.username) {
+      const { data } = await admin
+        .from("profiles")
+        .select("id")
+        .eq("username", request.username)
+        .maybeSingle();
+      if (data?.id) {
+        userId = data.id as string;
+        matchSource = "username";
+      }
+    }
+
+    // Last resort: form email (weakest signal — could be scammer-supplied)
+    if (!userId && request.email) {
+      const { data } = await admin.rpc("get_user_id_by_email", {
+        _email: String(request.email).toLowerCase(),
+      });
+      if (data) {
+        userId = data as unknown as string;
+        matchSource = "form_email";
+      }
     }
 
     if (!userId) {
