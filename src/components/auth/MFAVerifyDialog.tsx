@@ -148,13 +148,19 @@ export default function MFAVerifyDialog({
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            {t("mfa.lostAccess", "Lost access to your authenticator?")} {" "}
-            <a href="/help" className="text-primary hover:underline">
+            {t("mfa.lostAccess", "Lost access to your authenticator?")}{" "}
+            <button
+              type="button"
+              onClick={() => setRecoveryOpen(true)}
+              className="text-primary hover:underline font-medium"
+            >
               {t("mfa.contactSupport", "Contact support")}
-            </a>
+            </button>
           </p>
         </div>
       </DialogContent>
+
+      <MFARecoveryDialog open={recoveryOpen} onOpenChange={setRecoveryOpen} />
     </Dialog>
   );
 }
