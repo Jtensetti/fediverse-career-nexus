@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,14 +9,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
-import { getCompanyIndustries, type CompanyFilters } from "@/services/company/companyService";
+import type { CompanyFilters } from "@/services/company/companyService";
+import { ORGANISATION_TYPES } from "./CompanyForm";
 import type { Database } from "@/integrations/supabase/types";
 
 type CompanySize = Database['public']['Enums']['company_size'];
 
-const companySizes: CompanySize[] = [
-  '1-10', '11-50', '51-200', '201-500', '501-1000',
-  '1001-5000', '5001-10000', '10000+'
+const companySizeOptions: { value: CompanySize; label: string }[] = [
+  { value: '1-10', label: '1–10' },
+  { value: '11-50', label: '11–50' },
+  { value: '51-200', label: '51–200' },
+  { value: '201-500', label: '201–1 000' },
+  { value: '1001-5000', label: '1 001–5 000' },
+  { value: '5001-10000', label: '5 001–20 000' },
+  { value: '10000+', label: '20 000+' },
 ];
 
 interface CompanySearchFilterProps {
@@ -72,28 +77,28 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
 
       <div className="flex flex-wrap gap-3">
         <Select value={industry} onValueChange={setIndustry}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Bransch" />
+          <SelectTrigger className="w-full sm:w-[220px]">
+            <SelectValue placeholder="Typ av organisation" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alla branscher</SelectItem>
-            {industries.map((ind) => (
-              <SelectItem key={ind} value={ind}>
-                {ind}
+            <SelectItem value="all">Alla typer</SelectItem>
+            {ORGANISATION_TYPES.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <Select value={size} onValueChange={setSize}>
-          <SelectTrigger className="w-full sm:w-[160px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Storlek" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alla storlekar</SelectItem>
-            {companySizes.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s} anställda
+            {companySizeOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label} anställda
               </SelectItem>
             ))}
           </SelectContent>
