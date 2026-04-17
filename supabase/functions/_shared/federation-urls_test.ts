@@ -16,8 +16,9 @@ Deno.test("normalizeDomain strips www and lowercases", () => {
 });
 
 Deno.test("isLocalDomain treats www-prefixed host as local", () => {
-  assert(isLocalDomain("samverkan.se"));
-  assert(isLocalDomain("www.samverkan.se"));
+  const local = getFederationDomain();
+  assert(isLocalDomain(local));
+  assert(isLocalDomain(`www.${local}`));
   assert(!isLocalDomain("mastodon.social"));
   assert(!isLocalDomain(null));
 });
