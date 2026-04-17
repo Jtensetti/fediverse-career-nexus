@@ -38,6 +38,7 @@ export default function MFAVerifyDialog({
   const [code, setCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
 
   // Reset state when dialog opens/closes
   useEffect(() => {
