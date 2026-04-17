@@ -1155,6 +1155,42 @@ async function handleDirectMessageActivity(activity: any, recipientActorId: stri
   }
 }
 
+// Resolve a remote actor URL to its local UUID, caching it as a remote actor row.
+async function resolveRemoteActorId(actorUrl: string): Promise<string | null> {
+  if (!actorUrl) return null;
+  const { data: existing } = await supabaseClient
+    .from("actors")
+    .select("id")
+    .eq("remote_actor_url", actorUrl)
+    .maybeSingle();
+  if (existing?.id) return existing.id;
+  // Insert a stub remote actor record so future references work
+  const { data: inserted, error } = await supabaseClient
+    .from("actors")
+    .insert({
+      remote_actor_url: actorUrl,
+      preferred_username: actorUrl.split("/").pop() || "unknown",
+      type: "Person",
+      is_remote: true,
+      status: "active"
+    })
+    .select("id")
+    .single();
+  if (error) {
+    console.warn("Failed to create remote actor stub:", error);
+    return null;
+  }
+  return inserted.id;
+}
+
+// Try to extract our local ap_objects UUID from an object URL like
+// https://samverkan.se/functions/v1/objects/<uuid> or any URL containing a UUID.
+function extractLocalObjectId(objectUrl: string): string | null {
+  if (!objectUrl) return null;
+  const m = objectUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  return m ? m[0] : null;
+}
+
 async function handleLikeActivity(activity: any, recipientId: string, sender: string) {
   try {
     console.log(`Processing Like activity from ${sender}`);
@@ -1164,8 +1200,8 @@ async function handleLikeActivity(activity: any, recipientId: string, sender: st
       throw new Error("Like activity missing object reference");
     }
     
-    // Store the like in inbox_items for processing
-    const { data, error } = await supabaseClient
+    // Store inbox audit row
+    await supabaseClient
       .from("inbox_items")
       .insert({
         recipient_id: recipientId,
@@ -1173,18 +1209,23 @@ async function handleLikeActivity(activity: any, recipientId: string, sender: st
         activity_type: "Like",
         object_type: "Note",
         content: activity
-      })
-      .select()
-      .single();
+      });
     
-    if (error) {
-      throw error;
+    // Persist as a Like ap_object so reaction counts / UIs see the boost-like
+    const remoteActorId = await resolveRemoteActorId(sender);
+    if (remoteActorId) {
+      await supabaseClient.from("ap_objects").insert({
+        type: "Like",
+        attributed_to: remoteActorId,
+        content: activity
+      });
     }
     
-    console.log(`Stored Like activity: ${data.id} for object ${objectUrl}`);
-    
-    // TODO: Optionally increment like count on the referenced object
-    // This would require parsing the objectUrl to find the local post
+    const localObjectId = extractLocalObjectId(objectUrl);
+    if (localObjectId) {
+      console.log(`Like targets local object ${localObjectId}`);
+    }
+    console.log(`Processed Like for ${objectUrl}`);
   } catch (error) {
     console.error("Error handling Like activity:", error);
     throw error;
@@ -1200,8 +1241,7 @@ async function handleAnnounceActivity(activity: any, recipientId: string, sender
       throw new Error("Announce activity missing object reference");
     }
     
-    // Store the boost/announce in inbox_items
-    const { data, error } = await supabaseClient
+    await supabaseClient
       .from("inbox_items")
       .insert({
         recipient_id: recipientId,
@@ -1209,17 +1249,19 @@ async function handleAnnounceActivity(activity: any, recipientId: string, sender
         activity_type: "Announce",
         object_type: "Note",
         content: activity
-      })
-      .select()
-      .single();
+      });
     
-    if (error) {
-      throw error;
+    // Persist Announce as ap_object so boost counts (get_batch_boost_counts) include it
+    const remoteActorId = await resolveRemoteActorId(sender);
+    if (remoteActorId) {
+      await supabaseClient.from("ap_objects").insert({
+        type: "Announce",
+        attributed_to: remoteActorId,
+        content: activity
+      });
     }
     
-    console.log(`Stored Announce activity: ${data.id} for object ${objectUrl}`);
-    
-    // TODO: Optionally increment boost count on the referenced object
+    console.log(`Processed Announce for ${objectUrl}`);
   } catch (error) {
     console.error("Error handling Announce activity:", error);
     throw error;
