@@ -1659,6 +1659,54 @@ export type Database = {
           },
         ]
       }
+      mfa_recovery_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          email: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          ip_address: string | null
+          message: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          email: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          ip_address?: string | null
+          message?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          email?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          ip_address?: string | null
+          message?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       moderation_actions: {
         Row: {
           created_at: string

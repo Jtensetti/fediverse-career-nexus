@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { challengeAndVerify } from "@/services/auth/mfaService";
+import MFARecoveryDialog from "./MFARecoveryDialog";
 
 interface MFAVerifyDialogProps {
   open: boolean;
@@ -37,6 +38,7 @@ export default function MFAVerifyDialog({
   const [code, setCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
 
   // Reset state when dialog opens/closes
   useEffect(() => {
@@ -146,13 +148,19 @@ export default function MFAVerifyDialog({
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            {t("mfa.lostAccess", "Lost access to your authenticator?")} {" "}
-            <a href="/help" className="text-primary hover:underline">
+            {t("mfa.lostAccess", "Lost access to your authenticator?")}{" "}
+            <button
+              type="button"
+              onClick={() => setRecoveryOpen(true)}
+              className="text-primary hover:underline font-medium"
+            >
               {t("mfa.contactSupport", "Contact support")}
-            </a>
+            </button>
           </p>
         </div>
       </DialogContent>
+
+      <MFARecoveryDialog open={recoveryOpen} onOpenChange={setRecoveryOpen} />
     </Dialog>
   );
 }

@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.migrate-legacy-messages]
 verify_jwt = false
+
+[functions.request-mfa-recovery]
+verify_jwt = false
