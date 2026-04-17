@@ -1,99 +1,67 @@
 
 
-# Bug Hunt — Stability & Safety Cleanup
+# MFA-återställning: Säkert admin-flöde
 
-Findings are real bugs or unsafe patterns I verified by reading the code. None of the fixes change platform behavior.
+## 1. Översätt formuläret till svenska
 
-## 1. Critical bugs (silent failure / privilege bypass risk)
+`MFARecoveryDialog.tsx` använder redan `t()` med engelska fallback-strängar. Lägg till alla `mfa.recovery*`-nycklar i `sv.json` och `en.json` (1:1 paritet enligt projektets lokaliseringsregel).
 
-### 1a. Hardcoded moderation gate in `Navbar.tsx`
-`src/components/layout/Navbar.tsx:60-77` checks `profile.username === 'jtensetti_mastodon'` to show the moderation nav link. We just refactored `useModerationAccess` to use the database `is_admin` / `is_moderator` RPCs — but the navbar still uses the old hardcoded username. So the new admin (`jonatan_tensetti`) won't see the moderation link in the nav even though they have full access. The page itself works; only the navigation entry is broken.
-- **Fix**: Replace the inline query with `useModerationAccess()`. One source of truth, matches the dashboard gate.
+Berörda strängar:
+- `mfa.recoveryTitle` → "Begär kontoåterställning"
+- `mfa.recoveryDesc` → "Har du tappat åtkomsten till din autentiseringsapp? Berätta hur vi når dig så hjälper en administratör dig att återställa åtkomsten."
+- `mfa.recoveryEmail` → "Din e-post"
+- `mfa.recoveryUsername` → "Användarnamn (valfritt)"
+- `mfa.recoveryMessage` → "Ytterligare information (valfritt)"
+- `mfa.recoveryMessagePlaceholder`, `mfa.recoverySend`, `mfa.recoverySending`, `mfa.recoverySent`, `mfa.recoverySubmittedDesc`, `mfa.recoveryError`, `mfa.contactSupport`, `mfa.lostAccess`, m.fl.
 
-### 1b. TipTap editor commands hung on `window.__tiptapEditor`
-`TipTapEditor.tsx:151` writes the command API to `window.__tiptapEditor`; `ArticleEditor.tsx:34` reads it back via `(window as any)`. Untyped, breaks if two editors mount, leaks across navigations. Was on the previous cleanup list but never executed.
-- **Fix**: Lift via `forwardRef` + `useImperativeHandle` (or `onReady(api)` callback). Same external behavior.
+Inga komponentändringar behövs — bara översättningsfilerna.
 
-### 1c. MFA check race in `AuthContext`
-`src/contexts/AuthContext.tsx` calls `checkMFARequirement()` from a separate `useEffect` watching `session?.user?.id`. Between sign-in and the MFA check resolving, the user can briefly access protected routes. Low risk in practice but nondeterministic.
-- **Fix**: Run MFA check inside the auth-state-change handler before flipping `loading` to false. Keeps the same UI (dialog) but removes the gap.
+## 2. Säkerhetsval: hur ska admin hjälpa användaren?
 
-### 1d. `setupUserInBackground` cache key has no instance scoping
-Stored in `localStorage` as `user_setup_<uuid>`. If a user signs in on one Samverkan instance, their cache persists across instances/forks pointed at different backends, causing skipped profile creation. Edge case but real.
-- **Fix**: Include `VITE_SUPABASE_PROJECT_ID` in the cache key.
+### Hotmodell
+Den vanligaste attacken mot MFA-återställning är **social engineering** — en angripare mailar "support" och utger sig för att vara kontoägaren. Om admin bara klickar "återställ MFA" baserat på ett mail är hela MFA-skyddet borta. Det är detta vi måste skydda mot.
 
-## 2. Unsafe `dangerouslySetInnerHTML` paths
+### Jämförelse av alternativ
 
-All HTML injection sites already pass through `DOMPurify` **except**:
+| Metod | Säkerhet mot scammer | Bevisar | Risk |
+|---|---|---|---|
+| **A. Admin nollställer MFA direkt** | Låg | Inget — admin litar på mailet | Hög: ett lurat mail räcker |
+| **B. Engångskod via e-post (6 siffror, 15 min)** | Medel | Kontroll över e-post | Låg: kräver också lösenord |
+| **C. Signerad engångslänk via e-post + lösenord** | Hög | E-post + lösenord + tidsgräns + signatur | Mycket låg |
 
-### 2a. `MFAEnrollDialog.tsx:181-184` — QR code SVG
-Renders `enrollment.totp.qr_code` (raw SVG string from supabase auth) directly. Source is trusted (Supabase API), but if the response is ever spoofed via a compromised dependency or proxy, this is XSS.
-- **Fix**: Sanitize with DOMPurify configured for SVG (`USE_PROFILES: { svg: true, svgFilters: true }`). No visible change.
+**Rekommendation: C (signerad engångslänk)** — branschstandard (GitHub, Google). Kombinerar tre faktorer: något du har (mailen), något du vet (lösenordet), och en kryptografiskt signerad token med kort livslängd.
 
-### 2b. `SimpleMarkdown.tsx:17-20` — depends on `linkify`
-Need to confirm `linkifyText` always returns sanitized HTML. If `linkify` ever passes through user-controlled `<` characters, this is XSS.
-- **Fix**: Wrap output in `DOMPurify.sanitize(rendered, { ALLOWED_TAGS: ['a','br','strong','em'] })`. Safe even if linkify changes.
+### Säkerhetsegenskaper för flödet
 
-### 2c. `chart.tsx:78` — shadcn-generated CSS
-This is a recharts theming pattern from shadcn. The values come from config we control, but it builds a `<style>` from interpolated strings. Add a comment + restrict to known color/CSS-variable formats so future contributors don't expand it carelessly.
+1. **Admin godkänner ärendet i panelen** — admin nollställer aldrig MFA själv, utan utlöser ett *automatiserat* återställningsmail till **den e-post som är registrerad på kontot** (inte den fritextadress användaren skrev i formuläret — viktig skillnad mot scam).
+2. **Mail innehåller engångslänk** signerad med en serverhemlighet, giltig i 30 minuter, en användning.
+3. **Användaren måste först logga in med lösenord** på återställningssidan innan tokenen accepteras → bevisar lösenordskontroll.
+4. **Vid framgång**: alla MFA-faktorer för användaren tas bort, händelsen loggas i `moderation_log`, och en notis skickas till alla admins ("MFA återställd för användare X kl Y").
+5. **Kontot tvingas registrera ny MFA** vid nästa inloggning (befintligt beteende).
 
-## 3. `as any` schema casts pointing at real tables
+### Varför inte enbart admin-knapp?
+Om admin manuellt kan ta bort MFA blir admin själv en attackvektor (komprometterad admin = alla konton oskyddade, inget spår). Den signerade länken garanterar att även en lurad eller komprometterad admin **inte kan kringgå** att riktig kontoägare bevisar e-post + lösenord.
 
-Several queries cast tables to `any`:
-- `site_alerts` (AlertBanner, AlertManager)
-- `linkedin_imports` (linkedinImportService)
-- `actorObject as any` in `actorService.ts` (JSON column — legitimate, leave a comment)
+## 3. Implementation
 
-These tables exist in the DB but are missing from `types.ts`. The `as any` defeats the entire reason for typed Supabase. Fix by triggering a types regen so the casts can come out. Zero behavior change.
+### Databas
+- Ny tabell `mfa_recovery_tokens`: `id`, `user_id`, `token_hash` (sha256, aldrig klartext), `expires_at`, `used_at`, `created_by_admin_id`, `created_at`. RLS: ingen klientåtkomst — endast service role.
+- Lägg till `resolved_by`, `resolved_at`, `resolution_notes` i `mfa_recovery_requests` (status finns redan).
 
-## 4. Tooling/defensive fixes
+### Edge functions (en ny + en ändrad)
+- **`admin-issue-mfa-recovery`** (verify_jwt = true): admin anropar denna med ett `request_id`. Funktionen kontrollerar att anroparen är admin (`is_admin` RPC), hämtar `user_id` från `mfa_recovery_requests`, slår upp användarens **registrerade e-post** via `auth.admin.getUserById`, genererar en kryptografisk token (32 bytes, base64url), sparar SHA-256-hash i `mfa_recovery_tokens`, och mailar länk till den registrerade e-posten via Lovable Emails (mall: `mfa-recovery`). Returnerar bara `{success: true}` — token visas aldrig för admin.
+- **`consume-mfa-recovery-token`** (verify_jwt = true, kräver inloggad användare): tar emot token från återställningssidan, slår upp via hash, kontrollerar `expires_at` + `used_at` + att `auth.uid()` matchar tokenens `user_id` (dvs. användaren har just loggat in med lösenord). Vid match: `auth.admin.mfa.deleteFactor` för alla användarens TOTP-faktorer, markerar token som använd, loggar i `moderation_log`.
 
-### 4a. Bare `useEffect` scroll listener allocates handler twice in StrictMode
-`Navbar.tsx:89-99` adds a passive scroll listener but doesn't pass `{ passive: true }`. Mobile scroll perf hit on long pages.
-- **Fix**: `addEventListener('scroll', handler, { passive: true })`.
+### App-mall (transactional email)
+- Ny mall `mfa-recovery.tsx` i `_shared/transactional-email-templates/`. Innehåll: "Hej, en administratör har initierat en MFA-återställning för ditt Samverkan-konto. Klicka på länken nedan inom 30 minuter och logga in med ditt lösenord för att slutföra." + tydlig "Var detta inte du? Kontakta oss"-sektion.
 
-### 4b. `AuthContext` 10-second loading timeout silently flips state
-If `getSession()` hangs, we force `loading=false` after 10s and the user lands on a public page as if signed out. Better than infinite spinner, but should also surface via the existing `logger.error`.
-- **Fix**: Replace `console.warn` with `logger.error` so production reports it. No UI change.
+### Frontend
+- **Ny adminkomponent `MfaRecoveryQueue.tsx`** under en ny tabb "MFA-ärenden" i moderationspanelen. Visar lista över `mfa_recovery_requests` med status `pending`. För varje rad: knapp "Skicka återställningslänk" (anropar `admin-issue-mfa-recovery`), knapp "Avvisa". När admin trycker visas en bekräftelsedialog som påminner om att länken går till **kontots registrerade e-post**, inte adressen i formuläret.
+- **Ny publik sida `/aterstall-mfa?token=...`** (route i `App.tsx`): tvingar inloggning först (om ej inloggad → omdirigera till `/auth?redirect=...`). När inloggad anropas `consume-mfa-recovery-token`. Visar succé/fel-meddelande och knapp "Aktivera ny MFA".
+- **MFA-ärenden-tabb läggs till** i `ModerationDashboard.tsx` — synlig för både admin och moderator (men endast admin kan utfärda återställning, server-side enforced).
 
-### 4c. `Auth.tsx` referral code lives forever in `localStorage`
-`localStorage.setItem("referral_code", ref)` is only cleared on successful signup. If the user abandons signup, the code persists across all future sessions on that device.
-- **Fix**: Add a 24h expiry stored alongside the code (`{code, expiresAt}` object). Behavior is identical for normal flows.
-
-### 4d. `setTimeout` cleanups missing in 5 places
-Searched 28 files; most clean up correctly. These don't:
-- `PostComposer.tsx:75` — focus timeout, not cleared on unmount
-- `MarkdownEditor.tsx:69` — focus restore, not cleared
-- `ArticleEditor.tsx:128` — blur timeout, not cleared
-- `CommentPreview.tsx:64,89` — scroll timeouts, not cleared
-- `AuthCallback.tsx:81` — navigate timeout, not cleared
-
-If the component unmounts before the timer fires, React warns and (in `AuthCallback`) you get a navigate-on-unmounted error.
-- **Fix**: Capture handle, clear in cleanup.
-
-## 5. Misc small risks
-
-- **`ErrorBoundary.handleReload`** uses `window.location.reload()` — fine, but doesn't clear the error state if the user clicks reload but reload is blocked (rare). Add `setState` reset as fallback.
-- **`SessionExpiryWarning`** stores `lastActivity` on every event. Throttle to once per 5s to cut writes.
-- **`CompanyImageUpload.tsx:54`** swallows delete failures silently with `.catch(() => {})`. At least log via `logger.warn` so we know when stale assets accumulate.
-
-## Out of scope (intentionally)
-- Edge function audit, dead-code removal — separate PR per previous plan.
-- Oversized file splits (ProfileEdit, messageService) — separate PR.
-- `localStorage` → secure backend storage migration — architectural, not a bug.
-
-## Execution order
-1. Navbar moderation gate → use `useModerationAccess`
-2. TipTap `window.__tiptapEditor` → forwardRef
-3. MFA check ordering in `AuthContext` + cache-key scoping
-4. Sanitize `MFAEnrollDialog` QR + `SimpleMarkdown` output
-5. Trigger types regen, drop `as any` on `site_alerts` / `linkedin_imports`
-6. `setTimeout` cleanups (5 files)
-7. Passive scroll listener, `logger` swap, throttle, referral expiry
-8. `tsc --noEmit` + manual smoke test on `/feed` and `/auth`
-
-## What does NOT change
-- No UI/UX changes, no routes, no features, no DB migrations, no edge function logic.
-- All sanitized output already renders identically.
-- Moderation access list is unchanged (still admin role + `is_moderator` RPC).
+## Vad ändras inte
+- Befintligt `MFARecoveryDialog`-flöde (användaren skickar in begäran) är oförändrat förutom svensk text.
+- Inga ändringar av MFA-inloggningsflödet, ingen befintlig route eller funktion påverkas.
+- Adminroller, RLS, `is_admin`/`is_moderator` RPC oförändrade.
 
