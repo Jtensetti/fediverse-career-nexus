@@ -66,3 +66,51 @@ export const getInstanceDomain = (
   }
   return getSamverkanInstanceDomain();
 };
+
+/* -------------------------------------------------------------------------- */
+/*  ActivityPub Note content parsing                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Shape of the `content` JSONB column on `ap_objects` once parsed.
+ * Real payloads vary (Create wrapper vs bare Note, string vs object refs),
+ * so all fields are optional. Use {@link parseNoteContent} to normalize.
+ */
+export interface APNoteContent {
+  type?: string;
+  content?: string;
+  inReplyTo?: string | { id?: string };
+  rootPost?: string | { id?: string };
+  quoteOf?: string | { id?: string };
+  object?: string | APNoteContent;
+  attachment?: Array<{ type?: string; url?: string; mediaType?: string; name?: string }>;
+  tag?: Array<{ type?: string; name?: string; href?: string }>;
+  summary?: string;
+  sensitive?: boolean;
+  published?: string;
+  url?: string;
+  // Permit unknown fields — ActivityPub payloads are open-world.
+  [key: string]: unknown;
+}
+
+/**
+ * Normalize a raw `ap_objects.content` value into an {@link APNoteContent}.
+ *
+ * Handles the common cases:
+ *  - `Create` activity wrapping a `Note` — unwrapped to the inner object.
+ *  - Bare `Note` objects — returned as-is.
+ *  - `null` / unexpected shapes — returned as `{}` so callers can use
+ *    optional chaining without try/catch.
+ *
+ * This consolidates the repeated `(post.content as any)` pattern that
+ * existed across the codebase.
+ */
+export const parseNoteContent = (raw: unknown): APNoteContent => {
+  if (!raw || typeof raw !== "object") return {};
+  const value = raw as APNoteContent;
+  if (value.type === "Create" && value.object && typeof value.object === "object") {
+    return value.object as APNoteContent;
+  }
+  return value;
+};
+

@@ -1,20 +1,25 @@
-
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import Home from "./Home";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import UnauthenticatedHomepage from "@/components/homepage/UnauthenticatedHomepage";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { SEOHead } from "@/components/common";
 
+/**
+ * Root route (`/`).
+ * - Authed users: redirected to /feed.
+ * - Unauthed users: see the marketing homepage.
+ */
 export default function Index() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Don't redirect automatically, let user choose when to sign in
-  }, [user]);
+    if (user) {
+      navigate("/feed", { replace: true });
+    }
+  }, [user, navigate]);
 
   if (loading) {
     return (
@@ -27,12 +32,11 @@ export default function Index() {
     );
   }
 
-  // If user is authenticated, show the main app
+  // Authed users will be redirected by the effect above; render nothing in the meantime.
   if (user) {
-    return <Home />;
+    return null;
   }
 
-  // If not authenticated, show the layout with Navbar, UnauthenticatedHomepage, and Footer
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
