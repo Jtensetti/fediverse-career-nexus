@@ -55,7 +55,12 @@ serve(async (req) => {
       return new Response(
         JSON.stringify(cachedActor),
         {
-          headers: { ...corsHeaders, "Content-Type": "application/activity+json" }
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/activity+json",
+            "Cache-Control": "public, max-age=300, s-maxage=300",
+            "Vary": "Accept",
+          }
         }
       );
     }
@@ -106,7 +111,12 @@ serve(async (req) => {
     return new Response(
       JSON.stringify(actorObject),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/activity+json" }
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/activity+json",
+          "Cache-Control": "public, max-age=300, s-maxage=300",
+          "Vary": "Accept",
+        }
       }
     );
   } catch (error) {
