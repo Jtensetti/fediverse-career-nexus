@@ -53,3 +53,9 @@ verify_jwt = false
 
 [functions.request-mfa-recovery]
 verify_jwt = false
+
+[functions.admin-issue-mfa-recovery]
+verify_jwt = true
+
+[functions.consume-mfa-recovery-token]
+verify_jwt = true

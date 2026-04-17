@@ -29,6 +29,7 @@ import Auth from "./pages/auth/Auth";
 import AuthCallback from "./pages/auth/AuthCallback";
 import AuthRecovery from "./pages/auth/AuthRecovery";
 import ConfirmEmail from "./pages/auth/ConfirmEmail";
+import MfaRecover from "./pages/auth/MfaRecover";
 import Events from "./pages/events/Events";
 import EventCreate from "./pages/events/EventCreate";
 import EventView from "./pages/events/EventView";
@@ -163,6 +164,7 @@ function App() {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/recovery" element={<AuthRecovery />} />
             <Route path="/confirm-email" element={<ConfirmEmail />} />
+            <Route path="/aterstall-mfa" element={<MfaRecover />} />
             {/* Referral join route - redirects to signup with ref param */}
             <Route path="/join/:code" element={<JoinRedirect />} />
                     <Route path="/jobs" element={<Jobs />} />
