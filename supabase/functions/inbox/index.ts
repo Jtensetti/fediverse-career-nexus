@@ -279,49 +279,44 @@ serve(async (req) => {
     // Log the request
     await logFederationRequest(remoteHost, "inbox", url.pathname);
     
-    if (pathParts.length !== 1) {
+    // Routing:
+    //   /functions/v1/inbox            -> sharedInbox (no specific recipient)
+    //   /functions/v1/inbox/<username> -> per-actor inbox
+    // pathParts here are everything after the function root, so 0 = sharedInbox, 1 = per-actor.
+    let recipientActorId: string | null = null;
+    let isSharedInbox = false;
+
+    if (pathParts.length === 0) {
+      isSharedInbox = true;
+    } else if (pathParts.length === 1) {
+      const username = pathParts[0];
+      const { data: profile } = await supabaseClient
+        .from("public_profiles")
+        .select("id, username")
+        .eq("username", username)
+        .single();
+      if (!profile) {
+        return new Response(
+          JSON.stringify({ error: "User not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const { data: actor } = await supabaseClient
+        .from("actors")
+        .select("id, user_id")
+        .eq("user_id", profile.id)
+        .single();
+      if (!actor) {
+        return new Response(
+          JSON.stringify({ error: "Actor not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      recipientActorId = actor.id;
+    } else {
       return new Response(
         JSON.stringify({ error: "Not found" }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
-    }
-
-    const username = pathParts[0];
-    
-    // Look up the actor
-    const { data: profile, error: profileError } = await supabaseClient
-      .from("public_profiles")
-      .select("id, username")
-      .eq("username", username)
-      .single();
-
-    if (profileError || !profile) {
-      return new Response(
-        JSON.stringify({ error: "User not found" }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
-    }
-
-    // Look up the actor
-    const { data: actor, error: actorError } = await supabaseClient
-      .from("actors")
-      .select("id, user_id")
-      .eq("user_id", profile.id)
-      .single();
-
-    if (actorError || !actor) {
-      return new Response(
-        JSON.stringify({ error: "Actor not found" }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -329,10 +324,7 @@ serve(async (req) => {
     if (req.method !== "POST") {
       return new Response(
         JSON.stringify({ error: "Method not allowed" }),
-        {
-          status: 405,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
+        { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -343,20 +335,15 @@ serve(async (req) => {
     } catch (_err) {
       return new Response(
         JSON.stringify({ error: "Invalid body" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (!(await verifyRequestSignature(req, bodyText))) {
+    const sigResult = await verifyRequestSignature(req, bodyText);
+    if (!sigResult) {
       return new Response(
         JSON.stringify({ error: "Invalid signature" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -367,30 +354,72 @@ serve(async (req) => {
     } catch (_error) {
       return new Response(
         JSON.stringify({ error: "Invalid JSON" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Persist raw activity for auditing
-    await supabaseClient.from('activities').insert({
-      actor_id: actor.id,
-      type: activity.type,
-      payload: activity
-    });
 
     // Validate the activity
     if (!activity.type || !activity.actor) {
       return new Response(
         JSON.stringify({ error: "Invalid activity" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // SECURITY: keyId host must match actor host (prevent cross-instance forgery)
+    try {
+      const actorHost = new URL(activity.actor).hostname;
+      if (actorHost !== sigResult.keyIdHost) {
+        console.error(`keyId/actor host mismatch: keyId=${sigResult.keyIdHost} actor=${actorHost}`);
+        return new Response(
+          JSON.stringify({ error: "keyId/actor host mismatch" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid actor URL" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // For sharedInbox: resolve recipient(s) from to/cc and fan-out to first matching local actor.
+    // (Mastodon delivers per-recipient; for our purposes we accept-and-process once.)
+    if (isSharedInbox) {
+      const audience: string[] = [
+        ...(Array.isArray(activity.to) ? activity.to : activity.to ? [activity.to] : []),
+        ...(Array.isArray(activity.cc) ? activity.cc : activity.cc ? [activity.cc] : []),
+      ];
+      // Try to find any local actor in the audience
+      for (const aud of audience) {
+        const m = aud.match(/\/functions\/v1\/actor\/([^/?#]+)/);
+        if (m) {
+          const { data: a } = await supabaseClient
+            .from("actors")
+            .select("id")
+            .eq("preferred_username", m[1])
+            .eq("is_remote", false)
+            .maybeSingle();
+          if (a) { recipientActorId = a.id; break; }
+        }
+      }
+      // If no specific recipient resolved, persist as a generic inbox item against
+      // a synthetic null — but our schema requires a recipient_id. Fall back to dropping.
+      if (!recipientActorId) {
+        console.log("sharedInbox activity with no resolvable local recipient, dropping");
+        return new Response(JSON.stringify({ success: true, note: "no local recipient" }), {
+          status: 202,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Persist raw activity for auditing
+    await supabaseClient.from('activities').insert({
+      actor_id: recipientActorId,
+      type: activity.type,
+      payload: activity
+    });
 
     // Moderation checks
     if (await isDomainBlocked(activity.actor)) {
@@ -411,7 +440,8 @@ serve(async (req) => {
 
     // Process the activity based on its type
     const sender = activity.actor;
-    
+    const actorIdForHandlers = recipientActorId!;
+
     switch (activity.type) {
       case "Follow":
         await handleFollowActivity(activity, actor.id, sender);
