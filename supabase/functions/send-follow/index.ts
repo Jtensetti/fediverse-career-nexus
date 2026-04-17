@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { signRequest, generateRsaKeyPair } from "../_shared/http-signature.ts";
+import { buildActorUrl, buildActivityId, buildKeyId } from "../_shared/federation-urls.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -58,33 +59,26 @@ async function fetchRemoteActor(actorUrl: string): Promise<any> {
   }
 }
 
-// Ensure actor has RSA keys
+// Atomic key generation via SQL function (prevents race conditions)
 async function ensureActorKeys(actorId: string): Promise<{ privateKey: string; publicKey: string }> {
   const { data: actor, error } = await supabaseClient
     .from("actors")
     .select("private_key, public_key")
     .eq("id", actorId)
     .single();
-  
   if (error) throw error;
-  
   if (actor.private_key && actor.public_key) {
     return { privateKey: actor.private_key, publicKey: actor.public_key };
   }
-  
-  // Generate new keys
-  console.log(`Generating RSA keys for actor ${actorId}`);
+  console.log(`Generating RSA keys for actor ${actorId} (atomic)`);
   const keyPair = await generateRsaKeyPair();
-  
-  await supabaseClient
-    .from("actors")
-    .update({
-      private_key: keyPair.privateKey,
-      public_key: keyPair.publicKey
-    })
-    .eq("id", actorId);
-  
-  return keyPair;
+  const { data: ensured, error: ensureErr } = await supabaseClient.rpc("ensure_actor_keys", {
+    actor_uuid: actorId,
+    new_private_key: keyPair.privateKey,
+    new_public_key: keyPair.publicKey,
+  });
+  if (ensureErr || !ensured?.[0]) throw ensureErr || new Error("ensure_actor_keys returned no rows");
+  return { privateKey: ensured[0].private_key, publicKey: ensured[0].public_key };
 }
 
 serve(async (req) => {
@@ -134,9 +128,10 @@ serve(async (req) => {
     // Ensure we have keys
     const { privateKey } = await ensureActorKeys(localActorId);
     
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const localActorUrl = `${supabaseUrl}/functions/v1/actor/${localActor.preferred_username}`;
-    const activityId = `${supabaseUrl}/functions/v1/activities/${crypto.randomUUID()}`;
+    // Always use canonical samverkan.se URLs (NOT supabase.co) so remote signature
+    // verification + key cache works correctly across the Fediverse.
+    const localActorUrl = buildActorUrl(localActor.preferred_username);
+    const activityId = buildActivityId();
     
     // Create the Follow activity
     const followActivity = {
@@ -161,8 +156,8 @@ serve(async (req) => {
       "Accept": "application/activity+json"
     });
     
-    // Add HTTP signature
-    const keyId = `${localActorUrl}#main-key`;
+    // Add HTTP signature using canonical keyId
+    const keyId = buildKeyId(localActor.preferred_username);
     await signRequest(inbox, "POST", headers, body, privateKey, keyId);
     
     // Send to remote inbox
