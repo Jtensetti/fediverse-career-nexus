@@ -1,106 +1,99 @@
 
 
-# Codebase Cleanup — No Platform Changes
+# Bug Hunt — Stability & Safety Cleanup
 
-Audit findings, all behavior-preserving fixes. Grouped by severity.
+Findings are real bugs or unsafe patterns I verified by reading the code. None of the fixes change platform behavior.
 
-## 1. Critical: Broken / nonsensical patterns
+## 1. Critical bugs (silent failure / privilege bypass risk)
 
-### 1a. `Home.tsx` ↔ `Index.tsx` circular structure (BUG)
-- `App.tsx` routes `/` to `<Index>`. `Index.tsx` renders `<Home>` when authed. `Home.tsx` then renders `<Index>` when unauthed. Two pages bouncing into each other.
-- Net behavior is correct only by accident (the `useEffect` redirect in Home fires before render completes).
-- **Fix**: Delete `src/pages/Home.tsx`. Inline its only logic (redirect authed users to `/feed`) into `Index.tsx`. One source of truth for the `/` route.
+### 1a. Hardcoded moderation gate in `Navbar.tsx`
+`src/components/layout/Navbar.tsx:60-77` checks `profile.username === 'jtensetti_mastodon'` to show the moderation nav link. We just refactored `useModerationAccess` to use the database `is_admin` / `is_moderator` RPCs — but the navbar still uses the old hardcoded username. So the new admin (`jonatan_tensetti`) won't see the moderation link in the nav even though they have full access. The page itself works; only the navigation entry is broken.
+- **Fix**: Replace the inline query with `useModerationAccess()`. One source of truth, matches the dashboard gate.
 
-### 1b. Broken `(window as any).supabase?.auth?.user()?.id` in `ArticleEdit.tsx:76`
-- This API does not exist on supabase-js v2. `window.supabase` is never assigned anywhere. `isPrimaryAuthor` is **always `false`**.
-- **Fix**: Use the auth context (`useAuth()`) properly. Compare against `user?.id`. This is a real bug masked as working code.
+### 1b. TipTap editor commands hung on `window.__tiptapEditor`
+`TipTapEditor.tsx:151` writes the command API to `window.__tiptapEditor`; `ArticleEditor.tsx:34` reads it back via `(window as any)`. Untyped, breaks if two editors mount, leaks across navigations. Was on the previous cleanup list but never executed.
+- **Fix**: Lift via `forwardRef` + `useImperativeHandle` (or `onReady(api)` callback). Same external behavior.
 
-### 1c. TipTap editor commands attached to `window` (`__tiptapEditor`)
-- `TipTapEditor.tsx` writes its command API to `window.__tiptapEditor`. `ArticleEditor.tsx` reads it back via `(window as any)`.
-- Bypasses React entirely, untyped, breaks SSR, breaks if two editors mount.
-- **Fix**: Lift commands via `forwardRef` + `useImperativeHandle`, or pass an `onReady(api)` callback. Same external behavior, type-safe, no globals.
+### 1c. MFA check race in `AuthContext`
+`src/contexts/AuthContext.tsx` calls `checkMFARequirement()` from a separate `useEffect` watching `session?.user?.id`. Between sign-in and the MFA check resolving, the user can briefly access protected routes. Low risk in practice but nondeterministic.
+- **Fix**: Run MFA check inside the auth-state-change handler before flipping `loading` to false. Keeps the same UI (dialog) but removes the gap.
 
-## 2. Duplicate files
+### 1d. `setupUserInBackground` cache key has no instance scoping
+Stored in `localStorage` as `user_setup_<uuid>`. If a user signs in on one Samverkan instance, their cache persists across instances/forks pointed at different backends, causing skipped profile creation. Edge case but real.
+- **Fix**: Include `VITE_SUPABASE_PROJECT_ID` in the cache key.
 
-### 2a. Two `SkipToContent.tsx` (common/ + layout/)
-- Only `common/SkipToContent` is imported. `layout/SkipToContent.tsx` (and its barrel export) is dead.
-- The common one has hardcoded English `"Skip to main content"`; the layout one uses `t('accessibility.skipToContent')`. Per memory, Swedish-first with i18n.
-- **Fix**: Keep one file at `common/`, port the `useTranslation` version into it, delete `layout/SkipToContent.tsx` + its barrel export.
+## 2. Unsafe `dangerouslySetInnerHTML` paths
 
-### 2b. `src/components/ui/use-toast.ts` is a re-export shim
-- Just re-exports `@/hooks/use-toast`. Nothing imports the shim path.
-- **Fix**: Delete the shim file.
+All HTML injection sites already pass through `DOMPurify` **except**:
 
-## 3. Type safety leaks (~70+ `as any`)
+### 2a. `MFAEnrollDialog.tsx:181-184` — QR code SVG
+Renders `enrollment.totp.qr_code` (raw SVG string from supabase auth) directly. Source is trusted (Supabase API), but if the response is ever spoofed via a compromised dependency or proxy, this is XSS.
+- **Fix**: Sanitize with DOMPurify configured for SVG (`USE_PROFILES: { svg: true, svgFilters: true }`). No visible change.
 
-### 3a. Schema-typed-table casts
-- Patterns like `.from("site_alerts" as any)` and `.from('linkedin_imports' as any)` mean these tables exist in DB but aren't in the generated `types.ts`. Either the table was added without a migration regen, or it's stale.
-- **Fix (no platform change)**: Verify each `as any` table actually exists; trigger types regeneration so the casts can be removed.
+### 2b. `SimpleMarkdown.tsx:17-20` — depends on `linkify`
+Need to confirm `linkifyText` always returns sanitized HTML. If `linkify` ever passes through user-controlled `<` characters, this is XSS.
+- **Fix**: Wrap output in `DOMPurify.sanitize(rendered, { ALLOWED_TAGS: ['a','br','strong','em'] })`. Safe even if linkify changes.
 
-### 3b. `(post.content as any)` repeated 6+ places
-- ActivityPub `content` JSONB is typed `Json` but always read as a structured object. Each call site re-asserts.
-- **Fix**: Define a single `APNoteContent` interface in `src/lib/federation.ts` + a typed parser `parseNoteContent(raw): APNoteContent`. Replace ~15 `as any` reads with one helper. Memory already mentions a robust-parsing pattern; this consolidates it.
+### 2c. `chart.tsx:78` — shadcn-generated CSS
+This is a recharts theming pattern from shadcn. The values come from config we control, but it builds a `<style>` from interpolated strings. Add a comment + restrict to known color/CSS-variable formats so future contributors don't expand it carelessly.
 
-### 3c. `Select onValueChange={v => setX(v as any)}`
-- 5 occurrences in admin/moderation forms. The setter type is wider than the `Select` value union.
-- **Fix**: Type the state as the proper union (`'pending' | 'approved' | 'rejected'`), drop the cast.
+## 3. `as any` schema casts pointing at real tables
 
-## 4. Logging hygiene
+Several queries cast tables to `any`:
+- `site_alerts` (AlertBanner, AlertManager)
+- `linkedin_imports` (linkedinImportService)
+- `actorObject as any` in `actorService.ts` (JSON column — legitimate, leave a comment)
 
-- 102 `console.*` calls across 16 files, mostly debug leftovers. Production bundles ship them.
-- **Fix**: Add a tiny `src/lib/logger.ts` (`debug` no-ops in prod, `error` always logs). Search-and-replace. Zero behavior change in prod, cleaner DevTools.
+These tables exist in the DB but are missing from `types.ts`. The `as any` defeats the entire reason for typed Supabase. Fix by triggering a types regen so the casts can come out. Zero behavior change.
 
-## 5. Toast inconsistency
+## 4. Tooling/defensive fixes
 
-- 91 imports of `toast` from `sonner` directly, 16 from `@/hooks/use-toast` (the shadcn wrapper). Two parallel toast systems.
-- App.tsx already mounts only the `Toaster` from `@/components/ui/sonner`, so the shadcn `useToast` hook's toasts may not even render.
-- **Fix**: Pick one (sonner, since it's what App actually mounts). Migrate the 16 stragglers. Delete `hooks/use-toast.ts` + `components/ui/use-toast.ts` + `components/ui/toast.tsx` + `components/ui/toaster.tsx` if unused after migration.
+### 4a. Bare `useEffect` scroll listener allocates handler twice in StrictMode
+`Navbar.tsx:89-99` adds a passive scroll listener but doesn't pass `{ passive: true }`. Mobile scroll perf hit on long pages.
+- **Fix**: `addEventListener('scroll', handler, { passive: true })`.
 
-## 6. Oversized files (split, don't rewrite)
+### 4b. `AuthContext` 10-second loading timeout silently flips state
+If `getSession()` hangs, we force `loading=false` after 10s and the user lands on a public page as if signed out. Better than infinite spinner, but should also surface via the existing `logger.error`.
+- **Fix**: Replace `console.warn` with `logger.error` so production reports it. No UI change.
 
-| File | Lines | Split target |
-|------|------:|--------------|
-| `pages/profile/ProfileEdit.tsx` | 1200 | Already has tab-like sections — extract into `profile-edit/` sub-components per section (Basic, Experience, Education, Skills, Privacy). |
-| `pages/profile/Profile.tsx` | 996 | Extract tab panels (`ProfileAbout`, `ProfileExperience`, `ProfilePosts`, `ProfileArticles`). |
-| `services/messaging/messageService.ts` | 736 (23 exports) | Split into `messageQueries.ts` (read), `messageMutations.ts` (send/delete), `messageRealtime.ts` (subscriptions). |
-| `services/social/connectionsService.ts` | 660 (17 exports) | Split into `connectionRequests.ts`, `connectionQueries.ts`, `mutualConnections.ts`. |
-| `pages/auth/Auth.tsx` | 669 | Extract `LoginForm`, `SignupForm`, `PasswordResetForm`. |
-| `components/posts/PostComposer.tsx` | 610 | Extract `MediaUploader`, `PollComposer`, `ContentWarningField`. |
+### 4c. `Auth.tsx` referral code lives forever in `localStorage`
+`localStorage.setItem("referral_code", ref)` is only cleared on successful signup. If the user abandons signup, the code persists across all future sessions on that device.
+- **Fix**: Add a 24h expiry stored alongside the code (`{code, expiresAt}` object). Behavior is identical for normal flows.
 
-Pure mechanical extraction — same component tree, same props in/out.
+### 4d. `setTimeout` cleanups missing in 5 places
+Searched 28 files; most clean up correctly. These don't:
+- `PostComposer.tsx:75` — focus timeout, not cleared on unmount
+- `MarkdownEditor.tsx:69` — focus restore, not cleared
+- `ArticleEditor.tsx:128` — blur timeout, not cleared
+- `CommentPreview.tsx:64,89` — scroll timeouts, not cleared
+- `AuthCallback.tsx:81` — navigate timeout, not cleared
 
-## 7. App.tsx routing cleanup
-- Mixed indentation lines 160-167 (4-space inside 20-space block) — formatter pass.
-- 8 `Navigate` redirect routes for old `/company/*` URLs and typo aliases (`/job` → `/jobs`) — fine but worth a comment block grouping them as "Legacy redirects".
+If the component unmounts before the timer fires, React warns and (in `AuthCallback`) you get a navigate-on-unmounted error.
+- **Fix**: Capture handle, clear in cleanup.
 
-## 8. Edge functions: dead code check
-48 edge functions present. Likely unused (need verification before deletion):
-- `middleware/` — not invoked by the proxy worker config.
-- `cache-manager/` — no client calls.
-- `analytics/` — superseded by `federation-coordinator` per recent migrations.
+## 5. Misc small risks
 
-**Fix**: Add a one-liner header comment to each edge function describing who calls it. Functions with no caller after a grep sweep get deleted in a follow-up (separate PR for safety).
+- **`ErrorBoundary.handleReload`** uses `window.location.reload()` — fine, but doesn't clear the error state if the user clicks reload but reload is blocked (rare). Add `setState` reset as fallback.
+- **`SessionExpiryWarning`** stores `lastActivity` on every event. Throttle to once per 5s to cut writes.
+- **`CompanyImageUpload.tsx:54`** swallows delete failures silently with `.catch(() => {})`. At least log via `logger.warn` so we know when stale assets accumulate.
 
-## 9. Tiny housekeeping
-- `vite.config.ts` `inlineLovableEnv` plugin can be removed — the build-time check + standard Vite env injection is sufficient now that fallbacks are gone. Remove the manual string-replacement plugin.
-- `.env.example` should mirror the 3 required vars.
-- Add `npm run typecheck` script (`tsc --noEmit`) and reference from `CONTRIBUTING.md`.
-
-## What does NOT change
-- Zero UI/UX, zero routes, zero feature changes.
-- No DB migrations.
-- No edge function logic changes (only header comments + dead-function audit list).
-- All public URLs identical.
+## Out of scope (intentionally)
+- Edge function audit, dead-code removal — separate PR per previous plan.
+- Oversized file splits (ProfileEdit, messageService) — separate PR.
+- `localStorage` → secure backend storage migration — architectural, not a bug.
 
 ## Execution order
-1. Fix critical bugs: Home/Index circular ref, ArticleEdit window.supabase, TipTap window globals.
-2. Delete duplicate files (SkipToContent, ui/use-toast.ts).
-3. Add `APNoteContent` type + parser; remove `content as any` casts.
-4. Type Select unions properly (remove form `as any`).
-5. Introduce `logger.ts`, replace `console.*`.
-6. Standardize on sonner toast; remove shadcn toast files if orphaned.
-7. Mechanical split of 6 oversized files.
-8. App.tsx formatter pass + comment grouping.
-9. Drop `inlineLovableEnv` plugin from vite.config.ts.
-10. Verify `tsc --noEmit` + `vite build` pass.
+1. Navbar moderation gate → use `useModerationAccess`
+2. TipTap `window.__tiptapEditor` → forwardRef
+3. MFA check ordering in `AuthContext` + cache-key scoping
+4. Sanitize `MFAEnrollDialog` QR + `SimpleMarkdown` output
+5. Trigger types regen, drop `as any` on `site_alerts` / `linkedin_imports`
+6. `setTimeout` cleanups (5 files)
+7. Passive scroll listener, `logger` swap, throttle, referral expiry
+8. `tsc --noEmit` + manual smoke test on `/feed` and `/auth`
+
+## What does NOT change
+- No UI/UX changes, no routes, no features, no DB migrations, no edge function logic.
+- All sanitized output already renders identically.
+- Moderation access list is unchanged (still admin role + `is_moderator` RPC).
 
