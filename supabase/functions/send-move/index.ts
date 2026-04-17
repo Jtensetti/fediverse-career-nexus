@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { signRequest } from "../_shared/http-signature.ts";
+import { buildActorUrl, buildActivityId, getFederationBaseUrl } from "../_shared/federation-urls.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -106,9 +107,8 @@ serve(async (req) => {
     }
 
     const newAccountData = await newAccountResponse.json();
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const baseUrl = supabaseUrl.replace('/functions/v1', '');
-    const localActorUrl = `${baseUrl}/${profile.username}`;
+    // Always use canonical federation URL (samverkan.se), not Supabase functions host
+    const localActorUrl = buildActorUrl(profile.username);
 
     // Verify alsoKnownAs on new account points to this account
     const alsoKnownAs = newAccountData.alsoKnownAs || [];
@@ -147,16 +147,27 @@ serve(async (req) => {
       console.error("Error fetching followers:", followersError);
     }
 
-    // Create Move activity
+    // Create Move activity (canonical URLs)
     const moveActivity = {
       "@context": "https://www.w3.org/ns/activitystreams",
       "type": "Move",
-      "id": `${supabaseUrl}/functions/v1/activities/${crypto.randomUUID()}`,
+      "id": buildActivityId(),
       "actor": localActorUrl,
       "object": localActorUrl,
       "target": new_account_url,
       "published": new Date().toISOString()
     };
+
+    // Compute partition via DB RPC (matches inbox); String.hashCode does not exist in JS.
+    let partitionKey = 0;
+    try {
+      const { data: pk } = await supabaseClient.rpc("actor_id_to_partition_key", {
+        actor_uuid: actor.id,
+      });
+      if (typeof pk === "number") partitionKey = pk;
+    } catch (e) {
+      console.warn("actor_id_to_partition_key RPC unavailable, defaulting to 0:", e);
+    }
 
     // Queue Move activity for each follower
     let queuedCount = 0;
@@ -171,7 +182,6 @@ serve(async (req) => {
 
         const inboxUrl = cachedActor?.actor_data?.inbox || `${follower.follower_actor_url}/inbox`;
 
-        // Queue the activity
         await supabaseClient
           .from("federation_queue_partitioned")
           .insert({
@@ -179,7 +189,7 @@ serve(async (req) => {
             activity: moveActivity,
             target_inbox: inboxUrl,
             status: "pending",
-            partition_key: Math.abs(actor.id.hashCode?.() || 0) % 16
+            partition_key: partitionKey
           });
 
         queuedCount++;
