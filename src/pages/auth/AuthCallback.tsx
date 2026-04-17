@@ -19,6 +19,9 @@ export default function AuthCallback() {
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
+    let navigateTimer: number | undefined;
+    let cancelled = false;
+
     const processCallback = async () => {
       const code = searchParams.get('code');
       const state = searchParams.get('state');
@@ -26,12 +29,14 @@ export default function AuthCallback() {
       const errorDescription = searchParams.get('error_description');
 
       if (error) {
+        if (cancelled) return;
         setStatus('error');
         setErrorMessage(errorDescription || `${error}`);
         return;
       }
 
       if (!code || !state) {
+        if (cancelled) return;
         setStatus('error');
         setErrorMessage(t("authCallback.invalidParams"));
         return;
@@ -55,6 +60,7 @@ export default function AuthCallback() {
           throw new Error(callbackError || t("authCallback.failed"));
         }
 
+        if (cancelled) return;
         setProfile(userProfile);
 
         if (auth?.token) {
@@ -70,25 +76,32 @@ export default function AuthCallback() {
           throw new Error(t("authCallback.failed"));
         }
 
+        if (cancelled) return;
         setStatus('success');
-        
+
         if (isNewUser) {
           toast.success(t("authCallback.welcome"));
         } else {
           toast.success(`${t("authCallback.welcome")} ${userProfile.fullname || userProfile.username}!`);
         }
 
-        setTimeout(() => {
-          navigate('/', { replace: true });
+        navigateTimer = window.setTimeout(() => {
+          if (!cancelled) navigate('/', { replace: true });
         }, 2000);
 
       } catch (error: any) {
+        if (cancelled) return;
         setStatus('error');
         setErrorMessage(error.message || t("authCallback.failed"));
       }
     };
 
     processCallback();
+
+    return () => {
+      cancelled = true;
+      if (navigateTimer !== undefined) window.clearTimeout(navigateTimer);
+    };
   }, [searchParams, navigate, t]);
 
   return (
