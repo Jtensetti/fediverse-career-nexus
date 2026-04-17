@@ -117,6 +117,7 @@ export type Database = {
           following_count: number | null
           id: string
           is_remote: boolean | null
+          manually_approves_followers: boolean
           moved_to: string | null
           preferred_username: string
           private_key: string | null
@@ -135,6 +136,7 @@ export type Database = {
           following_count?: number | null
           id?: string
           is_remote?: boolean | null
+          manually_approves_followers?: boolean
           moved_to?: string | null
           preferred_username: string
           private_key?: string | null
@@ -153,6 +155,7 @@ export type Database = {
           following_count?: number | null
           id?: string
           is_remote?: boolean | null
+          manually_approves_followers?: boolean
           moved_to?: string | null
           preferred_username?: string
           private_key?: string | null
@@ -1298,6 +1301,21 @@ export type Database = {
           request_path?: string | null
           timestamp?: string
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      federation_signature_cache: {
+        Row: {
+          created_at: string
+          signature_hash: string
+        }
+        Insert: {
+          created_at?: string
+          signature_hash: string
+        }
+        Update: {
+          created_at?: string
+          signature_hash?: string
         }
         Relationships: []
       }
@@ -3461,6 +3479,7 @@ export type Database = {
       }
       cleanup_expired_actor_cache: { Args: never; Returns: undefined }
       cleanup_expired_reset_codes: { Args: never; Returns: undefined }
+      cleanup_federation_signature_cache: { Args: never; Returns: undefined }
       create_federation_alert: {
         Args: {
           p_message: string
@@ -3483,6 +3502,17 @@ export type Database = {
         Returns: boolean
       }
       ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
+      ensure_actor_keys: {
+        Args: {
+          actor_uuid: string
+          new_private_key: string
+          new_public_key: string
+        }
+        Returns: {
+          private_key: string
+          public_key: string
+        }[]
+      }
       generate_referral_code: { Args: never; Returns: string }
       get_actor_private_key: { Args: { actor_uuid: string }; Returns: string }
       get_actor_private_key_service: {
