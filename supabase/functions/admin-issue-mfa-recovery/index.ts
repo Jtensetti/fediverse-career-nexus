@@ -271,7 +271,7 @@ Deno.serve(async (req) => {
       type: "mfa_recovery_link_issued",
       target_user_id: userId,
       moderator_id: callerId,
-      reason: `MFA recovery link issued for request ${request.id}`,
+      reason: `MFA recovery link issued for request ${request.id} (matched via: ${matchSource ?? "unknown"})`,
     });
 
     return new Response(JSON.stringify({ success: true }), {
