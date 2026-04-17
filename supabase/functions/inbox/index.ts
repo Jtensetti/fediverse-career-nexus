@@ -473,6 +473,12 @@ serve(async (req) => {
       case "Move":
         await handleMoveActivity(activity, actorIdForHandlers, sender);
         break;
+      case "Flag":
+        await handleFlagActivity(activity, actorIdForHandlers, sender);
+        break;
+      case "Block":
+        await handleBlockActivity(activity, actorIdForHandlers, sender);
+        break;
       default:
         console.log(`Unsupported activity type: ${activity.type}`);
         // Store unsupported activities for future reference
