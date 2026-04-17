@@ -1707,6 +1707,47 @@ export type Database = {
         }
         Relationships: []
       }
+      mfa_recovery_tokens: {
+        Row: {
+          created_at: string
+          created_by_admin_id: string | null
+          expires_at: string
+          id: string
+          request_id: string | null
+          token_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_admin_id?: string | null
+          expires_at: string
+          id?: string
+          request_id?: string | null
+          token_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by_admin_id?: string | null
+          expires_at?: string
+          id?: string
+          request_id?: string | null
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mfa_recovery_tokens_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mfa_recovery_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moderation_actions: {
         Row: {
           created_at: string
