@@ -11,14 +11,16 @@ export interface RecommendedUser {
 }
 
 export const INTEREST_CATEGORIES = [
-  { id: "design", label: "Design & UX", keywords: ["design", "designer", "ux", "ui", "product design", "graphic"] },
-  { id: "engineering", label: "Engineering", keywords: ["developer", "engineer", "software", "code", "programming"] },
-  { id: "ai", label: "AI & Machine Learning", keywords: ["ai", "ml", "machine learning", "data science", "artificial intelligence"] },
-  { id: "marketing", label: "Marketing & Growth", keywords: ["marketing", "growth", "brand", "content", "seo"] },
-  { id: "product", label: "Product Management", keywords: ["product manager", "pm", "product owner", "product"] },
-  { id: "climate", label: "Climate & Sustainability", keywords: ["sustainability", "climate", "green", "environmental"] },
-  { id: "startup", label: "Startups", keywords: ["founder", "entrepreneur", "startup", "ceo", "co-founder"] },
-  { id: "opensource", label: "Open Source", keywords: ["open source", "oss", "foss", "community"] },
+  { id: "samhallsplanering", label: "Samhällsplanering & infrastruktur", keywords: ["samhällsplanering", "stadsplanering", "infrastruktur", "trafik", "bygg", "plan- och bygglagen", "pbl"] },
+  { id: "socialtjanst", label: "Socialtjänst & omsorg", keywords: ["socialtjänst", "socialsekreterare", "omsorg", "äldreomsorg", "lss", "ifo", "barn och unga"] },
+  { id: "skola", label: "Skola & utbildning", keywords: ["skola", "rektor", "lärare", "förskola", "utbildning", "skolverket", "barn- och utbildning"] },
+  { id: "vard", label: "Hälso- & sjukvård", keywords: ["sjukvård", "vård", "hälso", "region", "vårdcentral", "sjuksköterska", "läkare"] },
+  { id: "digitalisering", label: "Digitalisering & e-förvaltning", keywords: ["digitalisering", "e-förvaltning", "it", "system", "digital", "tjänstedesign"] },
+  { id: "upphandling", label: "Upphandling & inköp", keywords: ["upphandling", "inköp", "lou", "loi", "avtal", "leverantör"] },
+  { id: "krisberedskap", label: "Säkerhet & krisberedskap", keywords: ["säkerhet", "krisberedskap", "civilförsvar", "msb", "totalförsvar", "informationssäkerhet"] },
+  { id: "hallbarhet", label: "Hållbarhet & klimat", keywords: ["hållbarhet", "klimat", "miljö", "agenda 2030", "miljöstrategi"] },
+  { id: "hr", label: "HR & kompetensförsörjning", keywords: ["hr", "personal", "kompetensförsörjning", "rekrytering", "arbetsmiljö"] },
+  { id: "ekonomi", label: "Ekonomi & styrning", keywords: ["ekonomi", "controller", "budget", "styrning", "redovisning", "kommunal ekonomi"] },
 ] as const;
 
 export async function getOnboardingRecommendations(params: {

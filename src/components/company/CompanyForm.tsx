@@ -29,10 +29,33 @@ import type { Database } from "@/integrations/supabase/types";
 
 type CompanySize = Database['public']['Enums']['company_size'];
 
-const companySizes: CompanySize[] = [
-  '1-10', '11-50', '51-200', '201-500', '501-1000',
-  '1001-5000', '5001-10000', '10000+'
+// Storleksspann anpassade för svensk offentlig sektor.
+// Mappar till befintliga enum-värden i DB (ingen schemaändring).
+const companySizeOptions: { value: CompanySize; label: string }[] = [
+  { value: '1-10', label: '1–10 anställda' },
+  { value: '11-50', label: '11–50 anställda' },
+  { value: '51-200', label: '51–200 anställda' },
+  { value: '201-500', label: '201–1 000 anställda' },
+  { value: '1001-5000', label: '1 001–5 000 anställda' },
+  { value: '5001-10000', label: '5 001–20 000 anställda' },
+  { value: '10000+', label: '20 000+ anställda' },
 ];
+
+// Strukturerade organisationstyper för svensk offentlig sektor.
+// Sparas som text i samma `industry`-kolumn (ingen schemaändring).
+export const ORGANISATION_TYPES = [
+  'Kommun',
+  'Region',
+  'Statlig myndighet',
+  'Statligt bolag',
+  'Kommunalt bolag',
+  'Förbund / samverkansorgan',
+  'Universitet & högskola',
+  'Folkhögskola',
+  'Civilsamhälle / ideell organisation',
+  'Privat leverantör till offentlig sektor',
+  'Annat',
+] as const;
 
 const companyFormSchema = z.object({
   name: z.string().min(2, "Company name must be at least 2 characters").max(100),
@@ -263,10 +286,24 @@ export default function CompanyForm({
               name="industry"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("companyForm.industry", "Industry")}</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Teknik, sjukvård, etc." {...field} />
-                  </FormControl>
+                  <FormLabel>{t("companyForm.organisationType", "Typ av organisation")}</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || undefined}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("companyForm.selectOrgType", "Välj typ av organisation")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {ORGANISATION_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -277,20 +314,20 @@ export default function CompanyForm({
               name="size"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("companyForm.companySize", "Company Size")}</FormLabel>
+                  <FormLabel>{t("companyForm.companySize", "Antal anställda")}</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     value={field.value || undefined}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={t("companyForm.selectSize", "Select size")} />
+                        <SelectValue placeholder={t("companyForm.selectSize", "Välj storlek")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {companySizes.map((size) => (
-                        <SelectItem key={size} value={size}>
-                          {size} {t("companyForm.employees", "employees")}
+                      {companySizeOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
                         </SelectItem>
                       ))}
                     </SelectContent>

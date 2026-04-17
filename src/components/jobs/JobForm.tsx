@@ -236,11 +236,14 @@ const JobForm = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="full-time">{t("jobFormLabels.fullTime")}</SelectItem>
-                    <SelectItem value="part-time">{t("jobFormLabels.partTime")}</SelectItem>
-                    <SelectItem value="contract">{t("jobFormLabels.contract")}</SelectItem>
-                    <SelectItem value="internship">{t("jobFormLabels.internship")}</SelectItem>
-                    <SelectItem value="temporary">{t("jobFormLabels.temporary")}</SelectItem>
+                    <SelectItem value="permanent">{t("jobFormLabels.permanent", "Tillsvidareanställning")}</SelectItem>
+                    <SelectItem value="substitute">{t("jobFormLabels.substitute", "Vikariat")}</SelectItem>
+                    <SelectItem value="fixed-term">{t("jobFormLabels.fixedTerm", "Allmän visstidsanställning")}</SelectItem>
+                    <SelectItem value="project">{t("jobFormLabels.project", "Projektanställning")}</SelectItem>
+                    <SelectItem value="consultant">{t("jobFormLabels.consultant", "Konsultuppdrag")}</SelectItem>
+                    <SelectItem value="part-time">{t("jobFormLabels.partTime", "Deltid")}</SelectItem>
+                    <SelectItem value="seasonal">{t("jobFormLabels.seasonal", "Säsongsanställning")}</SelectItem>
+                    <SelectItem value="internship">{t("jobFormLabels.internship", "Praktik / PRAO")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -285,11 +288,12 @@ const JobForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="entry">{t("jobFormLabels.entryLevel")}</SelectItem>
-                  <SelectItem value="mid">{t("jobFormLabels.midLevel")}</SelectItem>
-                  <SelectItem value="senior">{t("jobFormLabels.seniorLevel")}</SelectItem>
-                  <SelectItem value="lead">{t("jobFormLabels.leadPrincipal")}</SelectItem>
-                  <SelectItem value="executive">{t("jobFormLabels.executive")}</SelectItem>
+                  <SelectItem value="handlaggare">{t("jobFormLabels.handlaggare", "Handläggare")}</SelectItem>
+                  <SelectItem value="specialist">{t("jobFormLabels.specialistLevel", "Specialist / Strateg")}</SelectItem>
+                  <SelectItem value="teamleader">{t("jobFormLabels.teamLeader", "Gruppledare / Teamledare")}</SelectItem>
+                  <SelectItem value="enhetschef">{t("jobFormLabels.enhetschef", "Enhetschef")}</SelectItem>
+                  <SelectItem value="avdelningschef">{t("jobFormLabels.avdelningschef", "Avdelningschef")}</SelectItem>
+                  <SelectItem value="forvaltningschef">{t("jobFormLabels.forvaltningschef", "Förvaltnings- / Myndighetschef")}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -350,21 +354,12 @@ const JobForm = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("jobFormLabels.currency")}</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("jobFormLabels.selectCurrency")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="SEK">SEK - Svensk krona</SelectItem>
-                      <SelectItem value="EUR">EUR - Euro</SelectItem>
-                      <SelectItem value="USD">USD - US Dollar</SelectItem>
-                      <SelectItem value="GBP">GBP - Brittiskt pund</SelectItem>
-                      <SelectItem value="NOK">NOK - Norsk krona</SelectItem>
-                      <SelectItem value="DKK">DKK - Dansk krona</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input value="SEK - Svensk krona" readOnly disabled className="bg-muted" />
+                  </FormControl>
+                  <FormDescription>
+                    {t("jobFormLabels.currencyLockedSEK", "Löner anges i svenska kronor.")}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -488,26 +483,7 @@ const JobForm = ({
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="visa_sponsorship"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
-                <div>
-                  <FormLabel>{t("jobFormLabels.visaSponsorship")}</FormLabel>
-                  <FormDescription>
-                    {t("jobFormLabels.visaSponsorshipDesc")}
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch 
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          {/* Visumsponsring borttagen — sällan relevant inom svensk offentlig sektor. */}
         </div>
 
         <FormField
