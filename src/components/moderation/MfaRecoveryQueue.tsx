@@ -153,7 +153,7 @@ export default function MfaRecoveryQueue() {
                   </span>
                   <span className="font-mono break-all">{r.attempted_login_email}</span>
                   {r.attempted_login_email.toLowerCase() === r.email.toLowerCase() ? (
-                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                    <span className="inline-flex items-center gap-1 text-xs text-primary">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       {t("mfa.recoveryEmailMatch", "matchar")}
                     </span>
