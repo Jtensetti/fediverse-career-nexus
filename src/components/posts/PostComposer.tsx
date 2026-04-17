@@ -72,7 +72,8 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   // Focus textarea when dialog opens
   useEffect(() => {
     if (isOpen && textareaRef.current) {
-      setTimeout(() => textareaRef.current?.focus(), 100);
+      const id = window.setTimeout(() => textareaRef.current?.focus(), 100);
+      return () => window.clearTimeout(id);
     }
   }, [isOpen]);
 

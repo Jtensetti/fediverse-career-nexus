@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 import { RichTextToolbar, ToolbarAction } from "@/components/editor/RichTextToolbar";
@@ -120,14 +120,21 @@ export function ArticleEditor({
     [getEditor]
   );
 
+  const blurTimerRef = useRef<number | null>(null);
   const handleFocus = useCallback(() => {
     setIsFocused(true);
   }, []);
 
   const handleBlur = useCallback(() => {
-    setTimeout(() => {
+    if (blurTimerRef.current !== null) window.clearTimeout(blurTimerRef.current);
+    blurTimerRef.current = window.setTimeout(() => {
       setIsFocused(false);
     }, 150);
+  }, []);
+
+  // Cleanup pending blur timer on unmount
+  useEffect(() => () => {
+    if (blurTimerRef.current !== null) window.clearTimeout(blurTimerRef.current);
   }, []);
 
   const handleSelectionChange = useCallback((selected: boolean) => {

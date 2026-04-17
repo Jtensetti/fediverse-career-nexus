@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,15 +16,21 @@ import {
 const SESSION_WARNING_THRESHOLD = 2 * 60 * 1000;
 const DISMISS_COOLDOWN = 10 * 60 * 1000;
 const ACTIVITY_THRESHOLD = 2 * 60 * 1000;
+// Throttle activity writes — once per 5s is plenty to keep the freshness check accurate.
+const ACTIVITY_WRITE_THROTTLE_MS = 5_000;
 
 export default function SessionExpiryWarning() {
   const { session } = useAuth();
   const [showWarning, setShowWarning] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const lastActivityWriteRef = useRef(0);
 
   const updateLastActivity = useCallback(() => {
-    localStorage.setItem('lastActivity', Date.now().toString());
+    const now = Date.now();
+    if (now - lastActivityWriteRef.current < ACTIVITY_WRITE_THROTTLE_MS) return;
+    lastActivityWriteRef.current = now;
+    localStorage.setItem('lastActivity', now.toString());
   }, []);
 
   useEffect(() => {
