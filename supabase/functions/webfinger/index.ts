@@ -144,8 +144,9 @@ serve(async (req) => {
     }
 
     const username = acctMatch[1];
-    const domain = acctMatch[2].toLowerCase();
-    const currentDomain = requestHost.toLowerCase();
+    // Strip optional "www." so acct:user@www.samverkan.se matches acct:user@samverkan.se
+    const domain = acctMatch[2].toLowerCase().replace(/^www\./, "");
+    const currentDomain = requestHost.toLowerCase().replace(/^www\./, "");
 
     if (domain !== currentDomain) {
       await logRequestMetrics(remoteHost, "/.well-known/webfinger", startTime, false, 400, "Resource domain mismatch");
@@ -195,8 +196,10 @@ serve(async (req) => {
       );
     }
 
-    const actorId = `${baseUrl}/functions/v1/actor/${profile.username}`;
-    const profileUrl = `${baseUrl}/profile/${profile.username}`;
+    // Use canonical (non-www) base URL for federation identifiers
+    const canonicalBase = `https://${SAMVERKAN_DOMAIN.replace(/^www\./, "")}`;
+    const actorId = `${canonicalBase}/functions/v1/actor/${profile.username}`;
+    const profileUrl = `${canonicalBase}/profile/${profile.username}`;
     
     // Try to get actor from cache first
     let { data: cachedActor, error: cacheError } = await supabaseClient
@@ -295,19 +298,25 @@ serve(async (req) => {
       }
     }
 
-    // Construct WebFinger response
+    // Construct WebFinger response (Mastodon-compatible aliases + LD-JSON self link)
     const webfingerResponse = {
-      subject: resource,
+      subject: `acct:${profile.username}@${SAMVERKAN_DOMAIN.replace(/^www\./, "")}`,
+      aliases: [actorId, profileUrl],
       links: [
+        {
+          rel: "http://webfinger.net/rel/profile-page",
+          type: "text/html",
+          href: profileUrl
+        },
         {
           rel: "self",
           type: "application/activity+json",
           href: actorId
         },
         {
-          rel: "http://webfinger.net/rel/profile-page",
-          type: "text/html",
-          href: profileUrl
+          rel: "self",
+          type: 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+          href: actorId
         }
       ]
     };
