@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /functions/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /functions/
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +12,11 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# Block crawlers from federation infrastructure (these endpoints are
+# for ActivityPub clients, not search engines)
 User-agent: *
 Allow: /
+Disallow: /functions/
+Disallow: /api/
+
+Sitemap: https://samverkan.se/sitemap.xml
