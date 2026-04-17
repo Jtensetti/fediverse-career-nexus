@@ -186,6 +186,7 @@ export function ArticleEditor({
     )}>
       {/* TipTap Rich Text Editor */}
       <TipTapEditor
+        ref={editorRef}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
