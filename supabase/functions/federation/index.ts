@@ -328,10 +328,10 @@ serve(async (req) => {
             
             let inboxUrl: string;
             
-            if (supabaseUrl && recipientUri.startsWith(supabaseUrl)) {
-              // Local actor
-              const username = recipientUri.split('/').pop();
-              inboxUrl = `${supabaseUrl}/functions/v1/inbox/${username}`;
+            if (isLocalUrl(recipientUri)) {
+              // Local actor — recipient is on samverkan.se
+              const username = recipientUri.split('/').pop() || '';
+              inboxUrl = buildInboxUrl(username);
             } else {
               // Remote actor - fetch their actor document for inbox with timeout
               const { data: cached } = await supabaseClient
