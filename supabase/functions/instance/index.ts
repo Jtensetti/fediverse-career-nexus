@@ -73,10 +73,10 @@ serve(async (req) => {
     // Build instance metadata (Mastodon-compatible format)
     const instanceData = {
       uri: siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, ""),
-      title: "Samverkan Social",
-      short_description: "A federated professional networking platform",
-      description: "Samverkan is an open, federated professional networking platform that connects with the Fediverse.",
-      email: "admin@samverkan.se",
+      title: "Samverkan",
+      short_description: "Federerat professionellt nätverk för svensk offentlig sektor.",
+      description: "Samverkan är en öppen, federerad plattform för medarbetare i svensk offentlig sektor — kommuner, regioner och statliga myndigheter — som ansluter till Fediversen via ActivityPub.",
+      email: "kontakt@samverkan.se",
       version: "1.0.0 (compatible; Samverkan)",
       urls: {
         streaming_api: null
@@ -87,7 +87,7 @@ serve(async (req) => {
         domain_count: domainCount || 0
       },
       thumbnail: `${siteUrl}/og-image.png`,
-      languages: ["en"],
+      languages: ["sv", "en"],
       registrations: true,
       approval_required: false,
       invites_enabled: true,
@@ -102,7 +102,13 @@ serve(async (req) => {
         }
       },
       contact_account: null,
-      rules: []
+      rules: [
+        { id: "1", text: "Var saklig och respektfull. Innehåll ska främja samverkan inom svensk offentlig sektor." },
+        { id: "2", text: "Inga personuppgifter, sekretessbelagda uppgifter eller diarienummer som inte får spridas offentligt." },
+        { id: "3", text: "Inga partipolitiska kampanjer eller kommersiell reklam som inte är yrkesrelevant." },
+        { id: "4", text: "Trakasserier, hot eller hatpropaganda är förbjudet och leder till avstängning." },
+        { id: "5", text: "Följ GDPR och svensk lag i allt innehåll och all interaktion." }
+      ]
     };
 
     // Store in cache

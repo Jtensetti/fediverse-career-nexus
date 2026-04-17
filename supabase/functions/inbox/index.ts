@@ -473,6 +473,12 @@ serve(async (req) => {
       case "Move":
         await handleMoveActivity(activity, actorIdForHandlers, sender);
         break;
+      case "Flag":
+        await handleFlagActivity(activity, actorIdForHandlers, sender);
+        break;
+      case "Block":
+        await handleBlockActivity(activity, actorIdForHandlers, sender);
+        break;
       default:
         console.log(`Unsupported activity type: ${activity.type}`);
         // Store unsupported activities for future reference
@@ -514,13 +520,27 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       throw new Error("Follow activity missing actor field");
     }
     
+    // Look up local actor — including manually_approves_followers preference
+    const { data: localActor, error: localActorError } = await supabaseClient
+      .from("actors")
+      .select("preferred_username, manually_approves_followers")
+      .eq("id", recipientId)
+      .single();
+    
+    if (localActorError || !localActor) {
+      throw new Error(`Local actor not found: ${localActorError?.message}`);
+    }
+    
+    const requiresApproval = localActor.manually_approves_followers === true;
+    const followStatus = requiresApproval ? "pending" : "accepted";
+    
     // Store the follow relationship
     const { data: followData, error: followError } = await supabaseClient
       .from("actor_followers")
       .insert({
         local_actor_id: recipientId,
         follower_actor_url: followerActorUrl,
-        status: "accepted"
+        status: followStatus
       })
       .select()
       .single();
@@ -533,7 +553,30 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       throw followError;
     }
     
-    console.log(`Created follow relationship: ${followData.id}`);
+    console.log(`Created follow relationship: ${followData.id} (status=${followStatus})`);
+    
+    // Only auto-Accept if not requiring manual approval. Otherwise wait for owner action.
+    if (requiresApproval) {
+      console.log(`Follow request pending manual approval for ${recipientId}`);
+      // Notify the local user about the pending follow request
+      const { data: actorWithUser } = await supabaseClient
+        .from("actors")
+        .select("user_id")
+        .eq("id", recipientId)
+        .single();
+      if (actorWithUser?.user_id) {
+        await supabaseClient.from("notifications").insert({
+          type: "follow_request",
+          recipient_id: actorWithUser.user_id,
+          actor_id: null,
+          object_id: followerActorUrl,
+          object_type: "actor",
+          content: `${followerActorUrl} requests to follow you`,
+          read: false
+        });
+      }
+      return;
+    }
     
     // Update follower count
     await supabaseClient
@@ -543,25 +586,14 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       })
       .eq("id", recipientId);
     
-    // Get the local actor's username for the Accept activity
-    const { data: localActor, error: localActorError } = await supabaseClient
-      .from("actors")
-      .select("preferred_username")
-      .eq("id", recipientId)
-      .single();
-    
-    if (localActorError || !localActor) {
-      throw new Error(`Local actor not found: ${localActorError?.message}`);
-    }
-    
-    // Create Accept activity with proper targeting
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    // Build canonical Accept activity (samverkan.se URLs)
+    const { buildActorUrl, buildActivityId } = await import("../_shared/federation-urls.ts");
     const acceptActivity = {
       "@context": "https://www.w3.org/ns/activitystreams",
       "type": "Accept",
-      "id": `${supabaseUrl}/functions/v1/activities/${crypto.randomUUID()}`,
-      "actor": `${supabaseUrl}/functions/v1/actor/${localActor.preferred_username}`,
-      "to": followerActorUrl, // Explicitly target the follower's inbox
+      "id": buildActivityId(),
+      "actor": buildActorUrl(localActor.preferred_username),
+      "to": followerActorUrl,
       "object": activity,
       "published": new Date().toISOString()
     };
@@ -570,7 +602,7 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
     
     // Queue the Accept activity using the partitioned federation queue
     const { data: partitionKey, error: partitionError } = await supabaseClient
-      .rpc("actor_id_to_partition_key", { actor_id: recipientId });
+      .rpc("actor_id_to_partition_key", { actor_uuid: recipientId });
 
     if (partitionError || partitionKey === null) {
       console.error("Error determining partition:", partitionError);
@@ -1123,6 +1155,42 @@ async function handleDirectMessageActivity(activity: any, recipientActorId: stri
   }
 }
 
+// Resolve a remote actor URL to its local UUID, caching it as a remote actor row.
+async function resolveRemoteActorId(actorUrl: string): Promise<string | null> {
+  if (!actorUrl) return null;
+  const { data: existing } = await supabaseClient
+    .from("actors")
+    .select("id")
+    .eq("remote_actor_url", actorUrl)
+    .maybeSingle();
+  if (existing?.id) return existing.id;
+  // Insert a stub remote actor record so future references work
+  const { data: inserted, error } = await supabaseClient
+    .from("actors")
+    .insert({
+      remote_actor_url: actorUrl,
+      preferred_username: actorUrl.split("/").pop() || "unknown",
+      type: "Person",
+      is_remote: true,
+      status: "active"
+    })
+    .select("id")
+    .single();
+  if (error) {
+    console.warn("Failed to create remote actor stub:", error);
+    return null;
+  }
+  return inserted.id;
+}
+
+// Try to extract our local ap_objects UUID from an object URL like
+// https://samverkan.se/functions/v1/objects/<uuid> or any URL containing a UUID.
+function extractLocalObjectId(objectUrl: string): string | null {
+  if (!objectUrl) return null;
+  const m = objectUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  return m ? m[0] : null;
+}
+
 async function handleLikeActivity(activity: any, recipientId: string, sender: string) {
   try {
     console.log(`Processing Like activity from ${sender}`);
@@ -1132,8 +1200,8 @@ async function handleLikeActivity(activity: any, recipientId: string, sender: st
       throw new Error("Like activity missing object reference");
     }
     
-    // Store the like in inbox_items for processing
-    const { data, error } = await supabaseClient
+    // Store inbox audit row
+    await supabaseClient
       .from("inbox_items")
       .insert({
         recipient_id: recipientId,
@@ -1141,18 +1209,23 @@ async function handleLikeActivity(activity: any, recipientId: string, sender: st
         activity_type: "Like",
         object_type: "Note",
         content: activity
-      })
-      .select()
-      .single();
+      });
     
-    if (error) {
-      throw error;
+    // Persist as a Like ap_object so reaction counts / UIs see the boost-like
+    const remoteActorId = await resolveRemoteActorId(sender);
+    if (remoteActorId) {
+      await supabaseClient.from("ap_objects").insert({
+        type: "Like",
+        attributed_to: remoteActorId,
+        content: activity
+      });
     }
     
-    console.log(`Stored Like activity: ${data.id} for object ${objectUrl}`);
-    
-    // TODO: Optionally increment like count on the referenced object
-    // This would require parsing the objectUrl to find the local post
+    const localObjectId = extractLocalObjectId(objectUrl);
+    if (localObjectId) {
+      console.log(`Like targets local object ${localObjectId}`);
+    }
+    console.log(`Processed Like for ${objectUrl}`);
   } catch (error) {
     console.error("Error handling Like activity:", error);
     throw error;
@@ -1168,8 +1241,7 @@ async function handleAnnounceActivity(activity: any, recipientId: string, sender
       throw new Error("Announce activity missing object reference");
     }
     
-    // Store the boost/announce in inbox_items
-    const { data, error } = await supabaseClient
+    await supabaseClient
       .from("inbox_items")
       .insert({
         recipient_id: recipientId,
@@ -1177,17 +1249,19 @@ async function handleAnnounceActivity(activity: any, recipientId: string, sender
         activity_type: "Announce",
         object_type: "Note",
         content: activity
-      })
-      .select()
-      .single();
+      });
     
-    if (error) {
-      throw error;
+    // Persist Announce as ap_object so boost counts (get_batch_boost_counts) include it
+    const remoteActorId = await resolveRemoteActorId(sender);
+    if (remoteActorId) {
+      await supabaseClient.from("ap_objects").insert({
+        type: "Announce",
+        attributed_to: remoteActorId,
+        content: activity
+      });
     }
     
-    console.log(`Stored Announce activity: ${data.id} for object ${objectUrl}`);
-    
-    // TODO: Optionally increment boost count on the referenced object
+    console.log(`Processed Announce for ${objectUrl}`);
   } catch (error) {
     console.error("Error handling Announce activity:", error);
     throw error;
@@ -1258,8 +1332,8 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
     const objectUrl = typeof object === 'string' ? object : object.id;
     const objectType = typeof object === 'object' ? object.type : null;
     
-    // Store the update activity
-    const { data, error } = await supabaseClient
+    // Audit trail
+    await supabaseClient
       .from("inbox_items")
       .insert({
         recipient_id: recipientId,
@@ -1267,18 +1341,12 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
         activity_type: "Update",
         object_type: objectType,
         content: activity
-      })
-      .select()
-      .single();
+      });
     
-    if (error) {
-      throw error;
-    }
-    
-    console.log(`Stored Update activity: ${data.id} for object ${objectUrl}`);
+    console.log(`Stored Update activity for object ${objectUrl}`);
     
     // If this is an actor update, refresh the cache
-    if (objectType === 'Person' || objectType === 'Service' || objectType === 'Application') {
+    if (objectType === 'Person' || objectType === 'Service' || objectType === 'Application' || objectType === 'Organization' || objectType === 'Group') {
       console.log(`Actor update received, refreshing cache for ${sender}`);
       await supabaseClient
         .from("remote_actors_cache")
@@ -1287,6 +1355,21 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
           actor_data: object,
           fetched_at: new Date().toISOString()
         });
+    } else if (typeof object === 'object' && objectUrl) {
+      // Object update (Note edited from Mastodon etc.) — sync into ap_objects so
+      // federated feed sees the latest content.
+      const localId = extractLocalObjectId(objectUrl);
+      if (localId) {
+        const { error: updErr } = await supabaseClient
+          .from("ap_objects")
+          .update({
+            content: object,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", localId);
+        if (updErr) console.warn("ap_objects update failed:", updErr);
+        else console.log(`Synced Update into ap_objects ${localId}`);
+      }
     }
   } catch (error) {
     console.error("Error handling Update activity:", error);
@@ -1357,44 +1440,94 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
             fetched_at: new Date().toISOString()
           });
         
-        // Update any local follows to point to new account
-        // First, find any author_follows pointing to the old account
-        const { data: localActors } = await supabaseClient
+        // Auto re-follow: every local actor that follows the OLD remote actor should
+        // start following the NEW one. We queue Follow activities to the new account.
+        const { data: oldRemoteActor } = await supabaseClient
           .from("actors")
-          .select("id, user_id")
-          .eq("user_id", recipientId);
+          .select("id")
+          .eq("remote_actor_url", oldAccountUrl)
+          .maybeSingle();
         
-        if (localActors && localActors.length > 0) {
-          // Create notification for the user about the migration
-          await supabaseClient
-            .from("notifications")
-            .insert({
+        if (oldRemoteActor?.id) {
+          const { data: localFollowers } = await supabaseClient
+            .from("outgoing_follows")
+            .select("local_actor_id")
+            .eq("remote_actor_url", oldAccountUrl)
+            .eq("status", "accepted");
+          
+          const { buildActorUrl, buildActivityId } = await import("../_shared/federation-urls.ts");
+          
+          for (const lf of localFollowers || []) {
+            const { data: la } = await supabaseClient
+              .from("actors")
+              .select("preferred_username")
+              .eq("id", lf.local_actor_id)
+              .single();
+            if (!la?.preferred_username) continue;
+            
+            const followActivity = {
+              "@context": "https://www.w3.org/ns/activitystreams",
+              "type": "Follow",
+              "id": buildActivityId(),
+              "actor": buildActorUrl(la.preferred_username),
+              "object": newAccountUrl
+            };
+            
+            const { data: pk } = await supabaseClient
+              .rpc("actor_id_to_partition_key", { actor_uuid: lf.local_actor_id });
+            
+            await supabaseClient.from("federation_queue_partitioned").insert({
+              actor_id: lf.local_actor_id,
+              activity: followActivity,
+              status: "pending",
+              partition_key: pk ?? 0,
+              priority: 7
+            });
+            
+            // Track the new outgoing follow
+            await supabaseClient.from("outgoing_follows").upsert({
+              local_actor_id: lf.local_actor_id,
+              remote_actor_url: newAccountUrl,
+              status: "pending"
+            }, { onConflict: "local_actor_id,remote_actor_url" });
+          }
+          
+          console.log(`Queued auto re-follow for ${(localFollowers || []).length} local followers`);
+          
+          // Notify the local users about the migration
+          const { data: usersToNotify } = await supabaseClient
+            .from("actors")
+            .select("user_id")
+            .in("id", (localFollowers || []).map((f: any) => f.local_actor_id));
+          
+          for (const u of usersToNotify || []) {
+            if (!u.user_id) continue;
+            await supabaseClient.from("notifications").insert({
               type: "account_moved",
-              recipient_id: recipientId,
+              recipient_id: u.user_id,
               actor_id: null,
               object_id: oldAccountUrl,
               object_type: "actor",
-              content: `${oldAccountUrl} has moved to ${newAccountUrl}`,
+              content: `${oldAccountUrl} has moved to ${newAccountUrl} — we re-followed automatically`,
               read: false
             });
-          
-          console.log(`Created notification for user about account migration`);
+          }
         }
         
-        // Update the old account cache to show it's moved
+        // Mark old account as moved in cache
+        const { data: oldCache } = await supabaseClient
+          .from("remote_actors_cache")
+          .select("actor_data")
+          .eq("actor_url", oldAccountUrl)
+          .maybeSingle();
+        
         await supabaseClient
           .from("remote_actors_cache")
-          .update({ 
-            actor_data: {
-              ...((await supabaseClient
-                .from("remote_actors_cache")
-                .select("actor_data")
-                .eq("actor_url", oldAccountUrl)
-                .single()).data?.actor_data || {}),
-              movedTo: newAccountUrl
-            }
-          })
-          .eq("actor_url", oldAccountUrl);
+          .upsert({
+            actor_url: oldAccountUrl,
+            actor_data: { ...(oldCache?.actor_data || {}), movedTo: newAccountUrl },
+            fetched_at: new Date().toISOString()
+          });
         
         console.log(`Successfully processed Move from ${oldAccountUrl} to ${newAccountUrl}`);
       }
@@ -1403,6 +1536,83 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
     }
   } catch (error) {
     console.error("Error handling Move activity:", error);
+    throw error;
+  }
+}
+
+// Handle incoming Flag (moderation report) from a remote instance
+async function handleFlagActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Flag (report) from ${sender}`);
+    
+    // Audit trail
+    await supabaseClient.from("inbox_items").insert({
+      recipient_id: recipientId,
+      sender,
+      activity_type: "Flag",
+      object_type: "Report",
+      content: activity
+    });
+    
+    // Extract reported objects (can be array or single)
+    const objects = Array.isArray(activity.object) ? activity.object : [activity.object];
+    const reason = typeof activity.content === "string" ? activity.content : "Federated report";
+    
+    for (const obj of objects) {
+      const objUrl = typeof obj === "string" ? obj : obj?.id;
+      if (!objUrl) continue;
+      
+      const localId = extractLocalObjectId(objUrl);
+      
+      await supabaseClient.from("content_reports").insert({
+        content_id: localId || objUrl,
+        content_type: localId ? "post" : "remote",
+        reason: "federated_flag",
+        details: `From ${sender}: ${reason}`,
+        reporter_id: null as any,
+        status: "pending"
+      });
+    }
+    
+    console.log(`Stored federated Flag with ${objects.length} target object(s)`);
+  } catch (error) {
+    console.error("Error handling Flag activity:", error);
+    throw error;
+  }
+}
+
+// Handle incoming Block — record so we don't deliver to the blocker
+async function handleBlockActivity(activity: any, recipientId: string, sender: string) {
+  try {
+    console.log(`Processing Block from ${sender}`);
+    
+    const target = typeof activity.object === "string" ? activity.object : activity.object?.id;
+    
+    await supabaseClient.from("inbox_items").insert({
+      recipient_id: recipientId,
+      sender,
+      activity_type: "Block",
+      object_type: "Actor",
+      content: activity
+    });
+    
+    if (target) {
+      // Remove the blocker from any local actor's follower list (they shouldn't receive our updates)
+      await supabaseClient
+        .from("actor_followers")
+        .delete()
+        .eq("follower_actor_url", sender);
+      
+      // Stop our outgoing follows toward the blocker
+      await supabaseClient
+        .from("outgoing_follows")
+        .delete()
+        .eq("remote_actor_url", sender);
+      
+      console.log(`Cleared follow relationships with blocker ${sender}`);
+    }
+  } catch (error) {
+    console.error("Error handling Block activity:", error);
     throw error;
   }
 }

@@ -90,26 +90,54 @@ serve(async (req) => {
         .select("id", { count: 'exact', head: true })
         .eq("type", "Note");
 
-      // Build the NodeInfo 2.0 response
+      // Active user counts (last 30d / 180d) — best-effort using updated_at on profiles
+      const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const halfYearAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
+      const { count: activeMonthCount } = await supabaseClient
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .gte("updated_at", monthAgo);
+      const { count: activeHalfyearCount } = await supabaseClient
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .gte("updated_at", halfYearAgo);
+      const { count: localCommentsCount } = await supabaseClient
+        .from("ap_objects")
+        .select("id", { count: "exact", head: true })
+        .eq("type", "Note")
+        .not("content->>inReplyTo", "is", null);
+
+      // Build the NodeInfo 2.0 response (full spec)
       const nodeInfo = {
         version: "2.0",
         software: {
           name: "samverkan",
-          version: "1.0.0"
+          version: "1.0.0",
+          repository: "https://github.com/samverkan/samverkan"
         },
         protocols: ["activitypub"],
+        services: {
+          inbound: [],
+          outbound: []
+        },
         usage: {
           users: {
             total: userCount || 0,
-            activeMonth: userCount || 0,
-            activeHalfyear: userCount || 0
+            activeMonth: activeMonthCount || 0,
+            activeHalfyear: activeHalfyearCount || 0
           },
-          localPosts: postCount || 0
+          localPosts: postCount || 0,
+          localComments: localCommentsCount || 0
         },
         openRegistrations: true,
         metadata: {
-          nodeName: "Samverkan Social",
-          nodeDescription: "A federated professional networking platform"
+          nodeName: "Samverkan",
+          nodeDescription: "Federerat professionellt nätverk för svensk offentlig sektor",
+          maintainer: {
+            name: "Samverkan",
+            email: "kontakt@samverkan.se"
+          },
+          langs: ["sv", "en"]
         }
       };
 
