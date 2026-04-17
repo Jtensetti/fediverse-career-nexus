@@ -1736,7 +1736,12 @@
     "aliasRemoveFailed": "Failed to remove alternative account",
     "migrationInitiated": "Account migration initiated! Your contacts will be notified.",
     "migrationFailed": "Failed to initiate migration",
-    "mustBeLoggedIn": "You must be logged in"
+    "mustBeLoggedIn": "You must be logged in",
+    "importFollows": "Import follows (CSV)",
+    "importFollowsDescription": "Upload a CSV export from Mastodon or another Fediverse organization to automatically follow the same people from Samverkan.",
+    "importSuccess": "{{count}} follows queued for import",
+    "importFailed": "Failed to import the CSV file",
+    "importResult": "Queued: {{queued}} · Skipped: {{skipped}}"
   },
   "remoteInstances": {
     "errorLoading": "Error loading data",

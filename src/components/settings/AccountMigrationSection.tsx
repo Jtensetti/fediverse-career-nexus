@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowRightLeft, Plus, Trash, Loader2, AlertTriangle, ExternalLink } from "lucide-react";
+import { ArrowRightLeft, Plus, Trash, Loader2, AlertTriangle, ExternalLink, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -19,6 +19,8 @@ export default function AccountMigrationSection() {
   const [isSaving, setIsSaving] = useState(false);
   const [isMigrating, setIsMigrating] = useState(false);
   const [actorId, setActorId] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ queued: number; skipped: number } | null>(null);
 
   useEffect(() => {
     fetchActorData();
@@ -115,6 +117,25 @@ export default function AccountMigrationSection() {
       toast.error(error.message || t("migration.migrationFailed"));
     } finally {
       setIsMigrating(false);
+    }
+  };
+
+  const handleCsvUpload = async (file: File) => {
+    setIsImporting(true);
+    setImportResult(null);
+    try {
+      const csv = await file.text();
+      const { data, error } = await supabase.functions.invoke("import-follows-csv", {
+        body: { csv },
+      });
+      if (error) throw error;
+      setImportResult({ queued: data.queued ?? 0, skipped: data.skipped ?? 0 });
+      toast.success(t("migration.importSuccess", { count: data.queued ?? 0 }));
+    } catch (err: any) {
+      console.error("CSV import error:", err);
+      toast.error(err.message || t("migration.importFailed"));
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -225,6 +246,30 @@ export default function AccountMigrationSection() {
               </AlertDialogContent>
             </AlertDialog>
           </div>
+        </div>
+
+        <div className="space-y-3 pt-4 border-t">
+          <Label>{t("migration.importFollows")}</Label>
+          <p className="text-sm text-muted-foreground">{t("migration.importFollowsDescription")}</p>
+          <div className="flex items-center gap-2">
+            <Input
+              type="file"
+              accept=".csv,text/csv"
+              disabled={isImporting}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleCsvUpload(file);
+                e.target.value = "";
+              }}
+            />
+            {isImporting && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            {!isImporting && <Upload className="h-4 w-4 text-muted-foreground" />}
+          </div>
+          {importResult && (
+            <p className="text-sm text-muted-foreground">
+              {t("migration.importResult", { queued: importResult.queued, skipped: importResult.skipped })}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

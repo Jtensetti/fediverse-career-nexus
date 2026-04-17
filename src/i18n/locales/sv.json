@@ -1762,7 +1762,12 @@
     "aliasRemoveFailed": "Kunde inte ta bort alternativt konto",
     "migrationInitiated": "Kontoöverflyttning påbörjad! Dina kontakter kommer att notifieras.",
     "migrationFailed": "Kunde inte påbörja överflyttning",
-    "mustBeLoggedIn": "Du måste vara inloggad"
+    "mustBeLoggedIn": "Du måste vara inloggad",
+    "importFollows": "Importera följningar (CSV)",
+    "importFollowsDescription": "Ladda upp en CSV-export från Mastodon eller annan Fediverse-organisation för att automatiskt börja följa samma personer från Samverkan.",
+    "importSuccess": "{{count}} följningar köades för import",
+    "importFailed": "Kunde inte importera CSV-filen",
+    "importResult": "Köade: {{queued}} · Hoppade över: {{skipped}}"
   },
   "remoteInstances": {
     "errorLoading": "Fel vid laddning av data",
