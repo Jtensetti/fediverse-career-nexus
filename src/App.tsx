@@ -164,6 +164,7 @@ function App() {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/recovery" element={<AuthRecovery />} />
             <Route path="/confirm-email" element={<ConfirmEmail />} />
+            <Route path="/aterstall-mfa" element={<MfaRecover />} />
             {/* Referral join route - redirects to signup with ref param */}
             <Route path="/join/:code" element={<JoinRedirect />} />
                     <Route path="/jobs" element={<Jobs />} />
