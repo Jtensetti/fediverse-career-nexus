@@ -121,33 +121,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          console.error('AuthProvider: Error getting initial session:', error);
+          logger.error('AuthProvider: Error getting initial session:', error);
         } else {
           setSession(session);
           setUser(session?.user ?? null);
+          // Resolve MFA gate before unblocking the UI to remove the brief
+          // window where protected routes could render without verification.
+          if (session?.user) {
+            try {
+              await checkMFARequirement();
+            } catch (mfaError) {
+              logger.error('AuthProvider: Initial MFA check failed:', mfaError);
+            }
+          }
         }
       } catch (error) {
-        console.error('AuthProvider: Unexpected error getting session:', error);
+        logger.error('AuthProvider: Unexpected error getting session:', error);
       } finally {
         setLoading(false);
       }
     };
 
     getInitialSession();
-    
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
-        
+
         // Handle sign in - run setup in background (non-blocking)
         if (event === 'SIGNED_IN' && session?.user) {
           // Fire and forget - don't block the UI
           void setupUserInBackground(session.user.id);
+          // Resolve MFA gate before flipping loading to false on sign-in events.
+          try {
+            await checkMFARequirement();
+          } catch (mfaError) {
+            logger.error('AuthProvider: Sign-in MFA check failed:', mfaError);
+          }
         }
-        
+
+        setLoading(false);
+
         // Clear cache on sign out
         if (event === 'SIGNED_OUT') {
           setMfaPending(false);
@@ -162,7 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     );
-    
+
     // Clear timeout on cleanup
     return () => {
       clearTimeout(loadingTimeoutId);
@@ -195,11 +211,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('AuthProvider: Error signing out:', error);
+        logger.error('AuthProvider: Error signing out:', error);
         throw error;
       }
     } catch (error) {
-      console.error('AuthProvider: Sign out failed:', error);
+      logger.error('AuthProvider: Sign out failed:', error);
       throw error;
     }
   };
