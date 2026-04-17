@@ -3,7 +3,6 @@ export { default as Navbar } from "./Navbar";
 export { default as Footer } from "./Footer";
 export { default as MobileBottomNav } from "./MobileBottomNav";
 export * from "./MobileSearch";
-export { default as SkipToContent } from "./SkipToContent";
 export * from "./AlertBanner";
 export * from "./AlertManager";
 export { default as AriaLiveRegion } from "./AriaLiveRegion";
