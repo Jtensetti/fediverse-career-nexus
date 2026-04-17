@@ -18,7 +18,8 @@
     "saving": "Saving...",
     "saveChanges": "Save changes",
     "saved": "Saved",
-    "optional": "Optional"
+    "optional": "Optional",
+    "close": "Close"
   },
   "accessibility": {
     "skipToContent": "Skip to content",
