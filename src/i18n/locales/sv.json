@@ -18,7 +18,8 @@
     "saving": "Sparar...",
     "saveChanges": "Spara ändringar",
     "saved": "Sparat",
-    "optional": "valfritt"
+    "optional": "valfritt",
+    "close": "Stäng"
   },
   "accessibility": {
     "skipToContent": "Hoppa till innehåll",
