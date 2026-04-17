@@ -193,11 +193,11 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
             )}
 
             {/* QR Code - always shown on desktop, toggleable on mobile */}
-            {showQRCode && enrollment?.totp.qr_code && (
+            {showQRCode && sanitizedQrCode && (
               <div className="flex flex-col items-center">
                 <div 
                   className="rounded-lg border bg-white p-4"
-                  dangerouslySetInnerHTML={{ __html: enrollment.totp.qr_code }}
+                  dangerouslySetInnerHTML={{ __html: sanitizedQrCode }}
                 />
               </div>
             )}
