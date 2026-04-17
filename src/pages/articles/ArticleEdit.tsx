@@ -25,6 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,7 @@ const ArticleEdit = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [article, setArticle] = useState<ArticleFormData>({
@@ -73,7 +75,7 @@ const ArticleEdit = () => {
   });
 
   const isPrimaryAuthor = authors.some(
-    author => author.is_primary && author.user_id === (window as any).supabase?.auth?.user()?.id
+    author => author.is_primary && author.user_id === user?.id
   );
 
   useEffect(() => {
