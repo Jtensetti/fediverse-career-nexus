@@ -1,118 +1,104 @@
 
 
-## Hur hittar vi den "registrerade e-posten" idag?
+# Anpassningar för svensk offentlig sektor
 
-Tittar man i `admin-issue-mfa-recovery/index.ts` rad 91-104:
+Jag har gått igenom plattformen. Den är redan långt på väg (svenska som default, "Organisationer" istället för "Företag", testimonials från kommuner, transparens-fokus). Nedan är **små, kirurgiska förändringar** som tydligt signalerar "myndighet/kommun/region" utan att riva upp arkitekturen.
 
-```ts
-let userId = request.user_id as string | null;
-if (!userId) {
-  // Look up by email via admin API (paged) — TAR BARA FÖRSTA 1000 ANVÄNDARNA
-  const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  const match = list?.users?.find(u => u.email?.toLowerCase() === request.email.toLowerCase());
-  userId = match?.id ?? null;
-}
-```
+## Vad jag hittade som inte riktigt passar
 
-Med andra ord: vi har **tre möjliga matchningsvägar** redan i datan, men koden använder bara två av dem och en av dem skalar inte.
+1. **Branschväljaren för organisationer** är ett fritextfält med hint "Teknik, sjukvård, etc." → privatsektor-doft. Inga förslag som matchar offentlig sektor.
+2. **Företagsstorlek** är 1–10, 11–50, …, 10 000+ → tänkt för bolag. En kommun har ~500–10 000 anställda men identifierar sig som "kommun", inte "501–1000".
+3. **Onboarding-intressen** (`INTEREST_CATEGORIES`): Design, Engineering, AI, Startups, Open Source… inget om upphandling, samhällsplanering, socialtjänst, e-förvaltning.
+4. **Jobbformulär**: fält som `visa_sponsorship` (visumstöd) och valutaval USD/EUR/GBP är märkliga för en svensk kommun. SEK är default men de andra alternativen syns ändå.
+5. **Jobbtyp**: "full-time / part-time / contract / internship" → saknar svenska offentliga anställningsformer (tillsvidare, vikariat, projektanställning, allmän visstid, konsultuppdrag, praktik/PRAO).
+6. **Erfarenhetsnivåer**: "junior / mid / senior / executive" → offentlig sektor pratar oftare i termer av handläggare, specialist, enhetschef, avdelningschef, förvaltningschef.
+7. **Frilansprofil-rubrik** ("Frilanskatalog") signalerar gig-ekonomi. För offentlig sektor är "Konsulter & uppdragstagare" mer rätt språk (men funktionen kan behållas).
+8. **Verifieringsbadge** har bara generisk "verifierad" — ingen särskild markering för "verifierad myndighet/kommun/region", trots att det är just det förtroende offentlig sektor behöver.
+9. **Starter packs-kategorier** är "community / industry / topic / region" — saknar "förvaltning" / "samhällsområde".
 
-### Vilka identifierare har vi faktiskt?
+## Förslag (minimal-invasiva, ingen schemaändring krävs)
 
-För varje `mfa_recovery_requests`-rad finns:
-1. **`user_id`** — sätts om användaren var inloggad när formuläret skickades (sällsynt vid MFA-utlåsning, eftersom de fastnar *före* sessionen är klar). Oftast `null`.
-2. **`attempted_login_email`** — den **tysta** e-posten vi precis lade till, fångad direkt från `supabase.auth.getUser()` mitt i MFA-flödet. Detta är **kontots faktiska e-post** eftersom Supabase redan har validerat lösenordet innan MFA-steget.
-3. **`email`** — fritext från formuläret. Kan vara fel/skrivfel/scam.
-4. **`username`** — fritext från formuläret. Kan vara fel.
+### 1. Strukturerad organisationstyp istället för fritextbransch
+Byt fritext-`industry` mot en **dropdown med svenska offentliga organisationstyper**, men spara fortfarande som text i samma `industry`-kolumn (ingen DB-migration). Förslag på alternativ:
 
-## Problemet med nuvarande lookup
+- Kommun
+- Region
+- Statlig myndighet
+- Statligt bolag
+- Kommunalt bolag
+- Förbund / samverkansorgan
+- Universitet & högskola
+- Folkhögskola
+- Civilsamhälle / ideell organisation
+- Privat leverantör till offentlig sektor
+- Annat
 
-- `listUsers({ perPage: 1000 })` → bryts vid 1001+ användare. Tyst bugg som växer med tiden.
-- Matchar bara på formulär-e-posten — om scammer skriver "offer@attacker.com" hittas ingen användare och flödet kraschar med `no_user_match`. Bra säkerhetsmässigt men dålig UX för riktiga ärenden där användaren skrivit fel adress.
-- Använder **inte** den säkra `attempted_login_email` som vi redan har.
+`CompanySearchFilter` får samma lista som filtervärden → riktigt användbar filtrering.
 
-## Förslag: säker prioritetsordning
+### 2. Antal anställda anpassat efter offentlig verksamhet
+Ersätt `companySizes`-arrayen i `CompanyForm` med spann som är meningsfulla för myndigheter/kommuner: `1–10`, `11–50`, `51–200`, `201–1000`, `1001–5000`, `5001–20 000`, `20 000+`. Sparas som samma `company_size`-enum-strängar — vi använder befintliga värden (`1-10`, `11-50`, `51-200`, `201-500` mappas till `201–1000`, etc.). Jag väljer mappning som inte kräver enum-ändring.
 
-Ändra `admin-issue-mfa-recovery` att slå upp `user_id` i denna ordning:
+> Kräver ingen DB-ändring: vi bara ändrar etiketterna och vilka enum-värden som visas.
 
-```text
-1. request.user_id              ← om satt, använd direkt (mest pålitligt)
-2. attempted_login_email        ← lösenord redan validerat → bevisat kontoägd
-3. username (om angivet)        ← slå upp i profiles.username → user_id
-4. email (formuläradressen)     ← sista utvägen, scam-kanal
-```
+### 3. Onboarding-intressen för offentlig sektor
+Byt `INTEREST_CATEGORIES` till områden som speglar offentlig verksamhet. Behåll `id`-formatet så `keywords`-matchningen funkar:
 
-Stegen 2 och 3 är **nya och säkrare** än dagens lookup. Steg 4 behålls som fallback men flaggas tydligt för admin.
+- Samhällsplanering & infrastruktur
+- Socialtjänst & omsorg
+- Skola & utbildning
+- Hälso- & sjukvård
+- Digitalisering & e-förvaltning
+- Upphandling & inköp
+- Säkerhet & krisberedskap
+- Hållbarhet & klimat
+- HR & kompetensförsörjning
+- Ekonomi & styrning
 
-### Varför är `attempted_login_email` säker?
+Varje med svenska sökord (t.ex. `["upphandling", "inköp", "loi", "lou"]`).
 
-Den fångas av `MFAVerifyDialog` *efter* att Supabase har accepterat lösenordet (sessionen finns men är inte fullständig p.g.a. MFA-kravet). Den kan alltså inte fejkas av angripare som bara fyller i formuläret utan att kunna lösenordet — i så fall skulle fältet vara `null`.
+### 4. Jobbannonser: anpassa fältuppsättning
+- **Ta bort** `visa_sponsorship` (eller dölj — sällan relevant inom svensk offentlig sektor som inte själv migrerar utländsk arbetskraft via egen sponsring).
+- **Lås valuta** till SEK i UI (fältet finns kvar i DB för bakåtkompatibilitet, men dropdown visar bara SEK).
+- **Anställningstyper**: ersätt med svenska offentliga: *tillsvidare, vikariat, allmän visstid, projektanställning, konsultuppdrag, praktik/PRAO, säsongsanställning*.
+- **Erfarenhetsnivåer**: ersätt med *handläggare, specialist, gruppledare/teamledare, enhetschef, avdelningschef, förvaltnings-/myndighetschef*.
+- **Nytt valfritt fält "Diarienummer / Referens"** (lagras i befintliga `description` eller via prefix i titeln — **ingen schemaändring**, bara ett UI-fält som auto-prependerar "Dnr: XXX-YYY · " i titel eller läggs först i description).
 
-Vi visar redan match-statusen i admin-kön (✓ matchar / ⚠ matchar inte). Om `attempted_login_email` finns och visar grönt har vi i praktiken **bevis på lösenordskännedom innan vi ens skickar mailen**.
+### 5. Verifieringsbadge för offentlig aktör
+Lägg till en visuell variant av `VerificationBadge` med text "Verifierad myndighet" / "Verifierad kommun" / "Verifierad region" baserat på `companies.industry` när `verified_at` är satt. Ingen ny kolumn behövs — vi härleder texten från typen.
 
-### Varför behöver vi fortfarande slå upp i `auth.users`?
+### 6. Språk- & terminologi-justeringar i `sv.json`/`en.json`
+Småjusteringar med stor effekt — håller 1:1-paritet:
 
-För att hämta den *aktuella* registrerade e-posten (användaren kan ha bytt e-post efter att de skapade kontot). Vi använder `attempted_login_email` bara för att hitta `user_id`, sedan läser vi alltid mailadressen från `auth.admin.getUserById(userId)` — som idag.
+- "Frilansare" → "Konsulter & uppdragstagare" (rubriker; URL `/freelancers` kvar för bakåtkompatibilitet)
+- "Skills" på profil → "Kompetenser & sakområden"
+- "Branding" / "Tagline" på org-form → "Verksamhetsidé"
+- "Jobb" → behåll, men subtitel: "Lediga tjänster inom svensk offentlig sektor"
+- "Posts" / "Inlägg" — komplettera tooltips för formell ton ("Dela ett yrkesinlägg")
 
-## Implementation
+### 7. Starter pack-kategorier
+Lägg till två kategorier i `categoryColors`-mappen + locale: **"förvaltning"** (för t.ex. "Sveriges socialchefer") och **"samhällsområde"** (för t.ex. "Skolutveckling Sverige"). Befintliga packs påverkas inte.
 
-### 1. `admin-issue-mfa-recovery/index.ts`
-Ersätt `listUsers`-blocket med en ny privat hjälpare `resolveUserId(request)`:
+### 8. Profilrubrik-mall för offentlig sektor (litet plus)
+I `ProfileEdit` lägg till en knapp "Använd förvaltningsmall" som föreslår format "*[Roll] · [Förvaltning] · [Kommun/Myndighet]*", t.ex. "Enhetschef · Socialförvaltningen · Lunds kommun". Bara en ifyllningshjälp — ingen ny logik.
 
-```ts
-async function resolveUserId(admin, request): Promise<string | null> {
-  if (request.user_id) return request.user_id;
+## Vad jag medvetet INTE rör
+- Ingen ändring av databasschema, RLS, edge functions eller federation.
+- Ingen ändring av routing (`/organisationer`, `/jobs`, `/freelancers` består).
+- Ingen ändring av Fediverse-protokollet (jobb skickas fortfarande som ActivityPub `Article`).
+- Ingen ändring av MFA/auth/säkerhet.
+- Ingen ändring av befintliga starter packs, postar, eller företagsdata.
 
-  // Try attempted_login_email first (silent capture, password-validated)
-  const candidates = [request.attempted_login_email, request.email]
-    .filter((e): e is string => !!e)
-    .map(e => e.toLowerCase());
+## Filer som påverkas (uppskattning)
 
-  for (const email of candidates) {
-    const { data } = await admin.rpc('get_user_id_by_email', { _email: email });
-    if (data) return data;
-  }
+- `src/services/misc/onboardingRecommendationService.ts` — INTEREST_CATEGORIES
+- `src/components/company/CompanyForm.tsx` — industry dropdown, sizes
+- `src/components/company/CompanySearchFilter.tsx` — industry-filter blir dropdown
+- `src/components/jobs/JobForm.tsx` — anställningstyper, valuta-lock, ta bort visa
+- `src/services/misc/jobPostsService.ts` — typdefinitioner för nya enum-strängar (bara TS, sparas som text)
+- `src/components/social/VerificationBadge.tsx` — variant för myndighet/kommun/region
+- `src/components/social/StarterPackCard.tsx` — två nya färger för kategorier
+- `src/i18n/locales/sv.json` + `en.json` — terminologi och nya nycklar (1:1-paritet)
+- `src/components/profile/ProfileEdit*` — valfri mallknapp
 
-  // Try username lookup
-  if (request.username) {
-    const { data } = await admin
-      .from('profiles')
-      .select('id')
-      .eq('username', request.username)
-      .maybeSingle();
-    if (data?.id) return data.id;
-  }
-
-  return null;
-}
-```
-
-### 2. Ny SQL-funktion `get_user_id_by_email`
-Liten security-definer-funktion som slår upp `auth.users` på e-post utan att behöva paginera:
-
-```sql
-CREATE OR REPLACE FUNCTION public.get_user_id_by_email(_email text)
-RETURNS uuid
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public, auth
-AS $$
-  SELECT id FROM auth.users WHERE lower(email) = lower(_email) LIMIT 1;
-$$;
-
-REVOKE ALL ON FUNCTION public.get_user_id_by_email(text) FROM public, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.get_user_id_by_email(text) TO service_role;
-```
-
-Endast service_role kan kalla — kan alltså bara nås från edge functions, inte från klienten.
-
-### 3. Audit-spår i `moderation_actions`
-När länken utfärdas, logga vilken matchningsväg som användes (`user_id` / `attempted_login_email` / `username` / `form_email`) så admin senare kan granska om något ärende matchades på en svagare signal.
-
-### 4. Ingen frontend-ändring
-Match-badgen i `MfaRecoveryQueue.tsx` är redan tillräcklig för admin att bedöma risk innan de trycker "Skicka återställningslänk".
-
-## Vad ändras inte
-- Mailen går fortfarande **bara** till adressen från `auth.admin.getUserById` (kontots faktiska registrerade e-post).
-- Säkerhetsmodellen (e-post + lösenord + signerad token) är oförändrad.
-- Inga ändringar för användaren — bara säkrare och mer skalbar lookup på baksidan.
+Allt är bakåtkompatibelt — gamla data fortsätter fungera, nya formulär ger den offentliga känslan.
 
