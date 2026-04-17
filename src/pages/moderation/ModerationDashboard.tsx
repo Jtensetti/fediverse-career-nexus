@@ -43,6 +43,7 @@ const ModerationLog = lazy(() => import('@/components/admin/ModerationLog'));
 const DomainModeration = lazy(() => import('@/components/admin/DomainModeration'));
 const ActorModeration = lazy(() => import('@/components/admin/ActorModeration'));
 const AlertManager = lazy(() => import('@/components/layout/AlertManager').then(m => ({ default: m.AlertManager })));
+const MfaRecoveryQueue = lazy(() => import('@/components/moderation/MfaRecoveryQueue'));
 
 import StatCard from '@/components/moderation/StatCard';
 
