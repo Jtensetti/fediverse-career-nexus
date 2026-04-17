@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { challengeAndVerify } from "@/services/auth/mfaService";
 import MFARecoveryDialog from "./MFARecoveryDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MFAVerifyDialogProps {
   open: boolean;
@@ -39,12 +40,18 @@ export default function MFAVerifyDialog({
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recoveryOpen, setRecoveryOpen] = useState(false);
+  const [attemptedEmail, setAttemptedEmail] = useState<string | null>(null);
 
-  // Reset state when dialog opens/closes
+  // Reset state when dialog opens/closes; capture the attempted login email silently
   useEffect(() => {
     if (open) {
       setCode("");
       setError(null);
+      // Capture the email of the user who just authenticated with password
+      // but hasn't completed MFA yet — useful for admin verification.
+      supabase.auth.getUser().then(({ data }) => {
+        setAttemptedEmail(data.user?.email ?? null);
+      }).catch(() => setAttemptedEmail(null));
     }
   }, [open]);
 
@@ -160,7 +167,11 @@ export default function MFAVerifyDialog({
         </div>
       </DialogContent>
 
-      <MFARecoveryDialog open={recoveryOpen} onOpenChange={setRecoveryOpen} />
+      <MFARecoveryDialog
+        open={recoveryOpen}
+        onOpenChange={setRecoveryOpen}
+        attemptedLoginEmail={attemptedEmail}
+      />
     </Dialog>
   );
 }
