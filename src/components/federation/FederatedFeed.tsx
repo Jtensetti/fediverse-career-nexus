@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFederatedFeed, fetchRemoteHomeTimeline, type FederatedPost, type FeedType } from "@/services/federation/federationService";
 import { getBatchPostData, BatchPostData } from "@/services/misc/batchDataService";
@@ -32,6 +33,7 @@ const findScrollableParent = (el: HTMLElement | null): HTMLElement | null => {
 };
 
 export default function FederatedFeed({ limit = 10, className = "", sourceFilter = "following", feedType = "following" }: FederatedFeedProps) {
+  const { t } = useTranslation();
   const [allPosts, setAllPosts] = useState<FederatedPost[]>([]);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -301,9 +303,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   if (error) {
     return (
       <div className={`p-6 text-center ${className}`}>
-        <p className="text-destructive mb-2">Fel vid laddning av federerade inlägg</p>
+        <p className="text-destructive mb-2">{t("feed.errorLoading")}</p>
         <Button onClick={() => refetch()} variant="outline">
-          Try Again
+          {t("feed.tryAgain")}
         </Button>
       </div>
     );
@@ -318,7 +320,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
         {effectiveFeedType === 'federated' && tokenExpired && (
           <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-sm text-destructive">
             <Globe className="h-4 w-4" />
-            <span>Your {remoteInstance} session has expired. Please re-authenticate to see remote posts.</span>
+            <span>{t("feed.sessionExpired", { instance: remoteInstance })}</span>
           </div>
         )}
         
@@ -326,7 +328,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
         {effectiveFeedType === 'federated' && remoteInstance && !tokenExpired && remotePosts.length > 0 && (
           <div className="mb-4 p-3 bg-muted/50 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
             <Globe className="h-4 w-4" />
-            <span>Including {remotePosts.length} posts from your {remoteInstance} timeline</span>
+            <span>{t("feed.includingRemote", { count: remotePosts.length, instance: remoteInstance })}</span>
           </div>
         )}
         
@@ -334,7 +336,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
         {effectiveFeedType === 'federated' && remoteError && !tokenExpired && (
           <div className="mb-4 p-3 bg-muted/30 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
             <Globe className="h-4 w-4" />
-            <span>Could not fetch from {remoteInstance}: {remoteError}</span>
+            <span>{t("feed.couldNotFetch", { instance: remoteInstance, error: remoteError })}</span>
           </div>
         )}
         
@@ -343,7 +345,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
             {effectiveFeedType === 'federated' && remoteLoading && (
               <div className="p-3 bg-muted/30 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Hämtar inlägg från din Fediverse-instans...</span>
+                <span>{t("feed.fetchingRemote")}</span>
               </div>
             )}
             {[...Array(3)].map((_, i) => (
@@ -367,7 +369,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
                 {isFetching ? (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Laddar fler inlägg...</span>
+                    <span>{t("feed.loadingMore")}</span>
                   </div>
                 ) : (
                   <Button 
@@ -376,7 +378,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
                     onClick={loadMore}
                     className="text-muted-foreground"
                   >
-                    Load more
+                    {t("feed.loadMore")}
                   </Button>
                 )}
               </div>

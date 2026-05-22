@@ -179,7 +179,15 @@
     "federatedDesc": "Lokalt + fjärrföljda",
     "feeds": "Flöden",
     "createCustomFeed": "Skapa anpassat flöde",
-    "manageFeeds": "Hantera flöden"
+    "manageFeeds": "Hantera flöden",
+    "errorLoading": "Fel vid laddning av federerade inlägg",
+    "tryAgain": "Försök igen",
+    "loadMore": "Ladda fler",
+    "loadingMore": "Laddar fler inlägg...",
+    "sessionExpired": "Din session på {{instance}} har gått ut. Logga in igen för att se fjärrinlägg.",
+    "includingRemote": "Inklusive {{count}} inlägg från din tidslinje på {{instance}}",
+    "couldNotFetch": "Kunde inte hämta från {{instance}}: {{error}}",
+    "fetchingRemote": "Hämtar inlägg från din Fediverse-instans..."
   },
   "comments": {
     "writeReply": "Skriv ett svar...",
