@@ -178,7 +178,15 @@
     "federatedDesc": "Local + remote follows",
     "feeds": "Feeds",
     "createCustomFeed": "Create custom feed",
-    "manageFeeds": "Manage feeds"
+    "manageFeeds": "Manage feeds",
+    "errorLoading": "Error loading federated posts",
+    "tryAgain": "Try again",
+    "loadMore": "Load more",
+    "loadingMore": "Loading more posts...",
+    "sessionExpired": "Your {{instance}} session has expired. Please re-authenticate to see remote posts.",
+    "includingRemote": "Including {{count}} posts from your {{instance}} timeline",
+    "couldNotFetch": "Could not fetch from {{instance}}: {{error}}",
+    "fetchingRemote": "Fetching posts from your Fediverse instance..."
   },
   "comments": {
     "writeReply": "Write a reply...",
