@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
+import i18n from "@/i18n";
 
 interface Props {
   children: ReactNode;
@@ -45,6 +46,10 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      // i18n.t works outside the React tree — safe inside a class component
+      // that may render before hooks-based providers are mounted.
+      const t = (key: string) => i18n.t(key);
+
       return (
         <div className="flex items-center justify-center min-h-[400px] p-4">
           <Card className="max-w-md w-full">
@@ -52,11 +57,11 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
                 <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
-              <CardTitle>Something went wrong</CardTitle>
+              <CardTitle>{t("errorBoundary.title")}</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-muted-foreground mb-4">
-                We encountered an unexpected error. This has been logged and we'll look into it.
+                {t("errorBoundary.description")}
               </p>
               {process.env.NODE_ENV === "development" && this.state.error && (
                 <pre className="mt-4 p-4 bg-muted rounded-md text-left text-xs overflow-auto max-h-32">
@@ -67,10 +72,10 @@ export class ErrorBoundary extends Component<Props, State> {
             <CardFooter className="flex gap-2 justify-center">
               <Button variant="outline" onClick={this.handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Try again
+                {t("errorBoundary.tryAgain")}
               </Button>
               <Button onClick={this.handleReload}>
-                Reload page
+                {t("errorBoundary.reload")}
               </Button>
             </CardFooter>
           </Card>
@@ -83,3 +88,4 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
+

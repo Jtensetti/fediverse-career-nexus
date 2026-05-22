@@ -21,6 +21,13 @@
     "optional": "valfritt",
     "close": "Stäng"
   },
+  "errorBoundary": {
+    "title": "Något gick fel",
+    "description": "Ett oväntat fel uppstod. Vi har loggat det och tittar på saken.",
+    "tryAgain": "Försök igen",
+    "reload": "Ladda om sidan"
+  },
+
   "accessibility": {
     "skipToContent": "Hoppa till innehåll",
     "darkMode": "Växla mörkt läge",
