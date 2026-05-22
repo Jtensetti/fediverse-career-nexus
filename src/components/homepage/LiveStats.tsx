@@ -42,14 +42,43 @@ const LiveStats = () => {
   useEffect(() => {
     fetchStats();
 
-    // Use interval instead of realtime to reduce WebSocket overhead
-    // Stats don't need to be real-time - refresh every 60 seconds
-    const interval = setInterval(fetchStats, 60000);
+    // Stats don't need to be real-time. Poll every 5 minutes, and skip
+    // polling entirely while the tab is hidden to avoid wasted DB hits.
+    const REFRESH_MS = 5 * 60 * 1000;
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const start = () => {
+      if (interval) return;
+      interval = setInterval(() => {
+        if (!document.hidden) fetchStats();
+      }, REFRESH_MS);
+    };
+    const stop = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        // Refresh once on tab focus, then resume polling.
+        fetchStats();
+        start();
+      }
+    };
+
+    start();
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
-      clearInterval(interval);
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [fetchStats]);
+
 
   // Smart stats: Only show items with positive values, or show "growing" message if all zeros
   const allStatItems = [
