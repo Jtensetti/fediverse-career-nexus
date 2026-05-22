@@ -1,155 +1,136 @@
 
+# Helhetsöversyn av Samverkan
 
-# Federation, WebFinger & ActivityPub: produktionsplan
+Tre spår: **prestanda**, **UX-polering**, **federation utan Cloudflare Worker**. Plockade utifrån faktisk kod (App.tsx 362 rader med 60+ eager-importerade routes, Navbar 439 rader, Vite-config med manualChunks men ingen route-splitting, edge-funktioner som loggar synkront i request path m.m.).
 
-Jag har granskat hela federationsstacken (webfinger, host-meta, nodeinfo, actor, inbox, outbox, followers, following, send-follow, send-move, federation-coordinator/worker, lookup-remote-actor, jwks, http-signature). Det finns mycket bra på plats — HTTP-signaturer, RSA-nycklar, sharedInbox-batchning, exponentiell backoff, partitionerad kö, alsoKnownAs/Move-stöd, Tombstone vid Delete. Men det finns **konkreta produktionsblockerare** och **specifikationsbrott** som måste åtgärdas innan publik produktion.
+---
 
-## A. Kritiska problem (måste fixas innan produktion)
+## Spår A — Prestanda
 
-### A1. Actor-URLer pekar på Supabase-hostnamn istället för samverkan.se
-I `outbox/index.ts`, `send-follow/index.ts`, `send-move/index.ts` och `federation/index.ts` byggs `actor`, `id`, `keyId` och `activityId` med `Deno.env.get("SUPABASE_URL")`. Det ger URLer som `https://anknmcmqljejabxbeohv.supabase.co/functions/v1/actor/foo` — men `webfinger`/`actor`-svaren refererar `https://samverkan.se/...`. **Detta bryter HTTP-signaturverifiering** hos Mastodon/Pleroma eftersom `keyId` och `actor`-domain inte matchar och deras nyckel-cache slår fel.
+### A1. Route-based code splitting (största vinsten)
+`src/App.tsx` importerar **alla** ~60 sidor synkront. Initial bundle innehåller Tiptap-editor, recharts, react-day-picker, jszip osv. även för en oinloggad besökare på `/`.
 
-**Fix:** Centralisera till en `getFederationBaseUrl()` (alltid `https://samverkan.se`) i `_shared/`, och använd den i ALLA federerande funktioner. SUPABASE_URL får aldrig läcka in i utgående aktivitets-JSON.
+**Åtgärd:**
+- Konvertera alla route-importer till `React.lazy(() => import(...))` och wrap `<Routes>` i `<Suspense fallback={...}>`.
+- Behåll `Index`, `Auth`, `NotFound` som eager (kritiska).
+- Förväntad effekt: initial JS-bundle minskar uppskattningsvis 60–70 % (Tiptap ensamt är ~250 kB gzip).
 
-### A2. WebFinger förkastar förfrågningar med fel domän-jämförelse
-`webfinger/index.ts` rad 116-159: `getRequestHost()` tvingar alltid `SAMVERKAN_DOMAIN`, men `acctMatch[2]` (det användaren anger) jämförs sedan mot `requestHost`. Om någon frågar efter `acct:user@www.samverkan.se` (som är canonical UI-domän) → mismatch → 400. Mastodon ignorerar `www.`-prefix.
+### A2. Lazy-load tunga sub-komponenter
+- `TipTapEditor` används bara i `ArticleEditor` och `EventForm` → redan kandidat för dynamic import inom resp. sida.
+- `recharts` används bara i `AdminFederationHealth` → flytta från `vendor-charts` manual-chunk till lazy import.
+- `html-to-image` används bara i delningskort → lazy.
+- `jszip` används bara i export-flöden → lazy.
 
-**Fix:** Acceptera både `samverkan.se` OCH `www.samverkan.se` som giltiga domäner. Normalisera bort `www.` före jämförelse.
+### A3. Homepage onödiga DB-anrop
+Network-loggen visar att hemsidan kör **4 separata HEAD-counts** + `home_instance`-query + `site_alerts` + `federated_feed` + `job_posts` (vissa duplicerade). `LiveStats` polar var 60:e sekund även när användaren inte ser den.
 
-### A3. WebFinger saknar `rel="http://webfinger.net/rel/profile-page"` med korrekt URL
-`profileUrl = ${baseUrl}/profile/${profile.username}` — men app-routen är troligen `/profile/:username` på `www.samverkan.se`, inte på Supabase-funktionsdomänen. Behöver verifieras + lägga till `rel="self"` med `application/ld+json; profile="..."` (krav för LD-JSON-kompatibla servrar).
+**Åtgärd:**
+- Konsolidera stats till en RPC `get_homepage_stats()` som returnerar allt i ett anrop.
+- Pausa pollingen när `document.hidden` (IntersectionObserver eller Page Visibility API).
+- Dedupa: `home_instance`-querien körs två gånger per minut — flytta till `staleTime: 5min` i react-query.
 
-### A4. `host-meta` i `public/.well-known/host-meta` pekar på **nolto.social** (gammalt varumärke)
-Hårdkodad rad: `template="https://nolto.social/.well-known/webfinger?resource={uri}"`. Fediversen kommer aldrig hitta tillbaka till samverkan.se via host-meta.
+### A4. Bilder & fonts
+- Lägg till `loading="lazy"` + explicit `width`/`height` på alla `<img>` (CLS-fix). Audit av `AppScreenshot`, `FederationVisual`, organisations-banners.
+- Preload LCP-bilden på `/` (hero-screenshot) via `<link rel="preload" as="image">` i `index.html`.
+- Bekräfta att fonts (Inter, Montserrat) lazy-laddas med `font-display: swap` (kollas i `index.css`).
 
-**Fix:** Ta bort den statiska filen (edge-funktionen `host-meta` redan svarar korrekt via `_redirects`). Annars ändra till `samverkan.se`.
+### A5. Edge-funktioner: ta bort blockerande loggning
+`webfinger/index.ts` (och flera andra) gör `await supabaseClient.from("federation_request_logs").insert(...)` **i request path**. Externa servrar betalar latensen.
 
-### A5. Inkonsekventa fallback-URLer i `federation/index.ts`
-- Rad 102-107 (enrichActivity): `actor: ...attributedTo || ${supabaseUrl}/functions/v1/actor/${item.actor_id}` — men `item.actor_id` är ett **UUID**, inte ett username. Skapar trasiga aktör-URLer i utgående aktiviteter.
-- Rad 314-317: jämför `recipientUri.startsWith(supabaseUrl)` för att avgöra "lokal" — men efter A1-fix kommer lokala URLer börja med `samverkan.se`, inte SUPABASE_URL.
+**Åtgärd:** wrap i `EdgeRuntime.waitUntil(...)` (Deno Deploy stödjer det) eller fire-and-forget `void promise.catch(...)`.
 
-**Fix:** Slå alltid upp `actor.preferred_username` från DB, jämför mot `samverkan.se`-prefix.
+### A6. React Query defaults
+`refetchOnMount: true` är aggressivt för många mount-tunga sidor (Profile, Feed). Sätt per-query `staleTime` där datan är stabil (profile, organisations-metadata) och behåll default endast för feed/notifications.
 
-### A6. Outbox använder ej Deno.openKv stabilt + saknar HTTP-signaturverifiering på POST
-- Rad 12: `await Deno.openKv()` — fungerar inte på alla Supabase Edge runtime-versioner (resten av kodbasen har migrerat till `memoryCache`). Risk för cold-start-fel.
-- Outbox POST verifierar bara JWT (lokal användare). Det är korrekt för C2S, men många klienter förväntar sig att kunna POST:a aktiviteter signerade — minst dokumentera att vi är JWT-only för outbox C2S.
+---
 
-**Fix:** Migrera outbox till samma in-memory-cache som webfinger/instance/nodeinfo.
+## Spår B — UX-polering
 
-### A7. Inbox-handler missar flera kritiska aktivitetstyper / spec-brott
-Genomgång av `handleCreateActivity` m.fl.:
-- **Inga inkommande replikering till `ap_objects`** för inkommande Likes/Announces — de hamnar bara i `inbox_items`. Boost/like-räkning på lokala inlägg uppdateras aldrig (TODO-kommentarer rad 1084 och 1120).
-- **Update-aktivitet** (rad 1179) lagrar bara i `inbox_items` — uppdaterar inte motsvarande `ap_objects`-rad → redigerade inlägg från Mastodon visas aldrig som uppdaterade i federerade flödet.
-- **`Flag`-aktivitet (moderationsrapport från fjärrserver)** stöds inte alls. Kritiskt för en seriös instans.
-- **`Block`-aktivitet** stöds inte (Mastodon skickar dessa).
-- **Follow-handler skapar `actor_followers` utan att kolla om sender är blockerad i `blocked_actors`** — vänta, det görs faktiskt via `isActorBlocked` rad 364, bra. Men `manuallyApprovesFollowers` respekteras inte — alltid auto-Accept.
+### B1. Navbar (439 rader)
+Filen är monolitisk: search, language switcher, theme toggle, notifications, user menu, mobile menu. Inga separata komponenter.
 
-**Fix:** 
-- Lägg till hanterare för `Flag`, `Block`, korrekt `Update` (uppdatera ap_objects), och korrekt Like/Announce-räkning på lokala objekt.
-- Lägg till stöd för `manuallyApprovesFollowers` (hämta från `actors.manually_approves_followers` om kolumn finns; annars false).
+**Åtgärd:**
+- Splittra i `NavbarDesktop`, `NavbarMobile`, `NavbarUserMenu`, `NavbarPublicLinks`.
+- Audit av menyetiketter — flera dropdowns har ikon-only-knappar utan `aria-label` (kontrolleras).
+- Mobil: bekräfta att MobileBottomNav + hamburger-meny inte överlappar i scope (idag finns båda — risk för dubbla nav-paradigmer).
 
-### A8. Signaturverifiering har bugg + säkerhetslucka
-`inbox/index.ts` rad 84-88:
-```
-for (const part of signatureHeader.split(',')) {
-  const [k, v] = part.trim().split('=');
-  ...
+### B2. CTA-tydlighet på hemsidan
+Hero har "Kom igång gratis" + "Utforska plattformen". Andra knappen scrollar till `#live-feed` men ser ut som en primär CTA. Ändra variant till `outline`/`ghost` och förtydliga texten ("Se exempelflöde ↓").
+
+### B3. Tomma tillstånd
+- `federated_feed` returnerar `[]` för oinloggad hemsida → komponenten visar antagligen tom låda. Lägg till en "Inga publika inlägg ännu — bli först" placeholder.
+- `JobsList` med ett enda test-jobb ("testtertwe") på produktion → flagga: rensa eller dölj sektion när jobben är < 2.
+
+### B4. Loading-states
+`Index` visar bara "Loading..." i 100% av viewport medan auth-check pågår. Skeleton av navbar + hero gör övergången mindre ryckig.
+
+### B5. Felmeddelanden & toasts
+- Audit av alla `toast.error(...)` — många är på engelska trots Swedish-first-policyn. Kör genom `t()`.
+- ErrorBoundary visar engelsk text ("Something went wrong"). Lokalisera.
+
+### B6. Formulärflöden
+- `ProfileEdit`, `CompanyEdit`, `EventForm`, `JobForm` — bekräfta att alla har: inline-fel, FormErrorSummary överst, disabled submit under pending, optimistic feedback. Snabb genomgång och åtgärd där det saknas.
+
+### B7. Sökning
+`GlobalSearch` + `MobileSearch` (Sheet) — bekräfta att `Escape` stänger, att resultatklick navigerar, att tom-state är hjälpsam. Lägg till sökhistorik (localStorage, max 5).
+
+### B8. Onboarding
+`OnboardingFlow` + `ProfileCompleteness` — kort audit av om stegen reflekterar "Organisation" istället för "Company" enligt minne. Och: visa en persistent badge i navbar tills profilen är ≥ 80 %.
+
+---
+
+## Spår C — Federation utan Cloudflare Worker
+
+**Kort svar: nej, inte fullt ut, om du vill behålla handles `@user@samverkan.se` OCH ha UI:t på Lovable-hostingen.** Anledningen: Lovable hostar statiska builds utan edge-rewrites (`_redirects`/`vercel.json`/Workers ignoreras). Mastodon kräver att `https://samverkan.se/.well-known/webfinger?resource=acct:user@samverkan.se` svarar från `samverkan.se` självt — inte en CNAME till Supabase, eftersom TLS-certet och Host-headern måste matcha.
+
+### Alternativ utvärderade
+
+**Alternativ 1 — Behåll CF Worker (status quo, rekommenderat)**
+Workern är ~50 rader. Den är gratis (Cloudflare Free), under 1 ms latens, redan deployad. Att eliminera den ger ingen verklig vinst.
+
+**Alternativ 2 — Byt hosting till Vercel/Netlify**
+Vercel `rewrites` i `vercel.json` (filen finns redan i repo!) kan göra exakt samma sak som Workern:
+```json
+{
+  "rewrites": [
+    { "source": "/.well-known/:path*", "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/:path*" },
+    { "source": "/actor/:path*", "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/actor/:path*" }
+  ]
 }
 ```
-Detta bryts om signaturen själv innehåller `=` (vanligt — base64-padding). `split('=', 2)`-bugg → felaktig signaturparsning för många servrar.
+Detta tar bort CF Worker men kräver migration från Lovable-publish till Vercel. **Inte trivialt** — du tappar Lovables Cloud-publish-flöde.
 
-Dessutom finns **två separata signaturverifierings-implementationer** (`inbox/index.ts` lokalt + `_shared/http-signature.ts`). Inbox använder den lokala, vilken **inte verifierar att `keyId`-domänen matchar `actor`-domänen** → man kan teoretiskt signera en Note "från" `@alice@server-a` med en nyckel registrerad på `server-b`.
+**Alternativ 3 — Subdomän-federation: `@user@fed.samverkan.se`**
+Peka `fed.samverkan.se` direkt på Supabase Edge Functions (CNAME). Hela federation kör där, UI på `www.samverkan.se`. **Nackdel:** handles blir fula och du måste migrera alla befintliga federerade följare (`Move`-aktiviteter), invalidera Mastodon-cachar. Stor migration för marginell vinst.
 
-**Fix:**
-- Använd `_shared/verifySignature` överallt (en sanning).
-- Parsa Signature med korrekt regex eller `split('=')` på första `=`.
-- Jämför `URL(keyId).hostname === URL(activity.actor).hostname` innan acceptans.
-- Lägg till replay-skydd: cacha signature/digest-par i 10 min → avvisa dubbletter.
+**Alternativ 4 — Supabase Custom Domain** (Pro-plan-feature)
+Pekar `samverkan.se` direkt på Supabase. Men då kan UI inte ligga på samma domän. Skulle kräva flytt av UI till `app.samverkan.se` och 301 från apex. **Större brand-tapp**.
 
-### A9. Migration (Move) är ofullständig
-- `send-move/index.ts` rad 182: `Math.abs(actor.id.hashCode?.() || 0) % 16` — `String.prototype.hashCode` finns INTE i JS. Alla Move-aktiviteter hamnar i partition 0, eller kraschar. Måste använda `actor_id_to_partition_key` RPC istället (samma som inbox redan gör).
-- Inkommande `Move` (rad 1228 i inbox) verifierar `alsoKnownAs` på nya kontot (bra), men **flyttar inte lokala följningar automatiskt** — TODO på rad 1290-1296 är bara en notifikation. För att uppfylla användarförväntan från Mastodon ska lokala användare som följer den gamla aktören automatiskt börja följa nya.
-- Klient-UI (`AccountMigrationSection.tsx`) saknar **inkommande migration** ("Importera följare från ditt gamla konto") — Mastodon erbjuder detta via CSV-import. Behövs för full paritet.
+**Alternativ 5 — Host-meta + WebFinger-redirect via `index.html`**
+Mastodon honorerar **inte** HTML-meta-redirects för WebFinger. Funkar inte.
 
-**Fix:**
-- Använd RPC för partition.
-- Implementera auto-re-follow av nya aktören för alla lokala följare när Move tas emot.
-- Lägg till CSV-import-flöde "Migrera till Samverkan".
+### Rekommendation
+Behåll CF Worker. **Men:** dokumentera den ordentligt och versionskontrollera koden i repo (`infra/cloudflare-worker/` med wrangler.toml) så den inte är ett dolt black box. Lägg till en healthcheck i `/admin/federation-health` som pingar `https://samverkan.se/.well-known/webfinger?resource=acct:test@samverkan.se` och larmar om Workern går ner.
 
-### A10. Nyckelhantering har race condition
-Tre olika ställen genererar RSA-nycklar (`outbox`, `send-follow`, `_shared/ensureActorHasKeys`). Om två requests landar samtidigt på en nyckellös aktör → båda genererar, sista vinner, första nyckelns signaturer blir ogiltiga.
+Om du **absolut** vill bort från CF: migrera till **Vercel** (Alternativ 2). Allt annat är sämre.
 
-**Fix:** Centralisera nyckelgenerering till **en** SQL-funktion `ensure_actor_keys(actor_uuid)` med `FOR UPDATE`-lås, anropas via RPC från alla edge functions. Detaljer i implementationen: använd advisory lock + INSERT...ON CONFLICT.
+---
 
-## B. Spec-/kompatibilitetsbrister mot Mastodon/Pleroma
+## Föreslagen ordning
 
-### B1. Saknade endpoints
-- **`/api/v1/instance`** (Mastodon-kompatibel) finns som `instance`-funktion men exponeras inte via en standardväg. Lägg till rewrite `/api/v1/instance → instance` så Mastodon-klienter kan upptäcka oss.
-- **`/.well-known/oauth-authorization-server`** saknas. Krävs för att Mastodon-appar ska kunna autentisera mot oss.
-- **`/api/v1/apps`** (OAuth-klientregistrering) saknas. Utan detta kan Tusky/Ivory/Elk inte logga in.
-- **`/api/v2/search`** saknas. Utan detta kan ingen söka efter `@user@samverkan.se` från andra Mastodon-klienter.
+1. **A1 + A2** (route splitting + lazy tunga komponenter) — största prestandavinsten, låg risk. 1 PR.
+2. **A3 + A5** (DB-anrop på homepage + edge-loggning fire-and-forget) — märkbar latens-minskning. 1 PR.
+3. **B1 + B2 + B5** (Navbar-split, hero-CTA-hierarki, lokalisera toasts/errors) — synlig UX-vinst. 1 PR.
+4. **A4 + B3 + B4** (bilder/CLS + tomma tillstånd + skeletons) — polering. 1 PR.
+5. **B6 + B7 + B8** (formulär-audit, sök-polering, onboarding-badge) — kvalitetsdetaljer. 1 PR.
+6. **C — Federation-doc** (versionskontrollera Worker, lägg till healthcheck) — operations-hygien. 1 PR.
 
-### B2. NodeInfo saknar standardfält
-`nodeinfo/index.ts` rad 94-114 saknar:
-- `services: { inbound: [], outbound: [] }` (krav i spec 2.0)
-- `usage.localComments`
-- `metadata.maintainer`, `metadata.langs`
-- `software.repository` (peka på source om öppen källkod)
+**Inte med i scope:** byte av hosting (C2), domänarkitektur-ändringar (C3/C4), bredare refaktor av services-lagret.
 
-### B3. Instance-endpoint är på engelska, säger fel saker
-`instance/index.ts` rad 76-79: titel/beskrivning på engelska + `email: "admin@samverkan.se"` (finns den mailen? Måste verifieras eller bytas till `kontakt@`). Lägg till `rules`-array, `languages: ["sv", "en"]`, `contact_account` med admin-handle.
+---
 
-### B4. `endpoints.sharedInbox` returneras men `/inbox` (utan username) finns inte som rutt
-`actor/utils.ts` rad 401: `sharedInbox: ${baseUrl}/functions/v1/inbox` — men inbox-funktionen kräver `pathParts.length === 1` (en username i pathen). Mastodon kommer POSTa till sharedInbox och få 404. **Stort problem** — minskar leveranseffektivitet drastiskt och kraschar batchad leverans.
+## Frågor innan jag börjar
 
-**Fix:** Lägg till sharedInbox-fallback i inbox-handler: om ingen username, processa aktiviteten utan en specifik mottagar-aktör (fan-out till alla lokala recipients i `to`/`cc`).
-
-### B5. Outbox returnerar inte aktiviteter — bara objekt
-Rad 296: `formattedActivities = activities.map(activity => activity.content)` — men `ap_objects.content` är **objektet** (Note), inte den omslutande Create-aktiviteten. Mastodon förväntar sig `{type: "Create", object: {...Note}}`-strukturer i orderedItems.
-
-### B6. Followers/Following kollektioner är ofullständiga
-- `following/index.ts` baseras på `federation_queue_partitioned` (köhistorik) istället för en riktig `outgoing_follows`-tabell som finns. → Felaktig data.
-- Båda saknar `summary`-fält (Mastodon-kompatibilitet).
-- `id` använder `${baseUrl}/${username}/followers` — men actor säger `${baseUrl}/functions/v1/followers/${username}`. ID-mismatch → Mastodon kan vägra läsa kollektionen.
-
-## C. Förslag till plan (prioriterad)
-
-### Fas 1 — produktionsblockerande (måste före publik launch)
-1. Skapa `_shared/federation-urls.ts` med `getFederationBaseUrl()`, `buildActorUrl(username)`, `buildActivityId()`, `buildObjectId()`. Refaktorera `outbox`, `send-follow`, `send-move`, `federation/index.ts`, `inbox/index.ts` att enbart använda dessa. (A1, A5)
-2. Ta bort `public/.well-known/host-meta` (statisk fil med nolto.social). (A4)
-3. Fixa WebFinger www-normalisering. (A2)
-4. Implementera sharedInbox-rutt i inbox-funktionen (utan username). (B4)
-5. Fixa signature-parser-bugg + använd `_shared/verifySignature` överallt + lägg till keyId/actor domain-match + replay-cache. (A8)
-6. Konsolidera nyckelgenerering till SQL-funktion med advisory lock. (A10)
-7. Fixa `send-move` partition-bug. (A9 första punkten)
-8. Migrera `outbox` från `Deno.openKv` till in-memory cache. (A6)
-9. Fixa `outbox` GET → returnera korrekta Create-wrapper. (B5)
-10. Fixa followers/following collection IDs + `following` att läsa från `outgoing_follows` istället för köhistorik. (B6)
-
-### Fas 2 — kompatibilitet & bra upplevelse
-11. Lägg till sharedInbox-rutt fan-out till lokala mottagare i `to`/`cc`. (B4)
-12. Implementera `Flag`, `Block`, korrekt `Update` (synkar `ap_objects`), Like/Announce-räkning. (A7)
-13. Stöd för `manuallyApprovesFollowers` i Follow-handler. (A7)
-14. Auto-re-follow vid inkommande Move. (A9 andra punkten)
-15. Komplettera NodeInfo med `services`, `metadata.maintainer`, `metadata.langs`. (B2)
-16. Översätt `instance`-endpoint till sv/en, lägg till `rules` och `contact_account`. (B3)
-
-### Fas 3 — Mastodon-klientkompatibilitet (gör Samverkan användbar från Tusky/Elk/Ivory)
-17. Skapa `oauth-authorization-server`-endpoint + rewrite. (B1)
-18. Skapa minimal `mastodon-api`-edge function som svarar på `/api/v1/instance`, `/api/v1/apps`, `/api/v2/search` (åtminstone hash- och account-search). (B1)
-19. CSV-import för "Migrera TILL Samverkan" (importera följande-listan från Mastodon-export). (A9 tredje punkten)
-
-### Fas 4 — observabilitet & tester
-20. Lägg till "Federation Health" check-knapp på `/admin/federation/health` som kör en self-test: WebFinger lookup mot oss själva, fetch egen actor, verifiera signatur, posta till egen sharedInbox. Synligt rött/grönt.
-21. Skriv Deno-tester för `_shared/http-signature.ts` och `_shared/federation-urls.ts`.
-
-## Vad detta INTE rör
-- Befintlig auth/MFA — orört.
-- Befintlig schema/RLS — endast en ny SQL-funktion (`ensure_actor_keys`) och eventuellt `manually_approves_followers`-kolumn på `actors` om den saknas.
-- Federationskön och delivery-arkitektur (sharded queue, backoff) — fortsätter som idag, bara enriched-payload-fixar.
-- UI för slutanvändare oförändrat förutom (1) ny "Federation Health"-vy och (2) CSV-import för migration.
-
-## Risker
-- **A1 (URL-fixet) är breaking för befintliga remote-cachar** hos Mastodon-instanser som följer oss. Vi måste samtidigt sätta upp HTTP 301-redirect från `supabase.co/functions/v1/actor/*` till `samverkan.se/functions/v1/actor/*` så remote följare kan upptäcka oss på nya URLen. För att vara helt rigorös: skicka ut ett `Update Person`-aktivitet för varje lokal aktör efter migrationen så cachar invalideras.
-- Eventuellt finns det redan följande/följare på den gamla URL-formen — kör en migration som uppdaterar `actor_followers.follower_actor_url` om de pekar på vår supabase.co-domän (osannolikt men värt att kolla).
-
+1. Får jag köra spår A i föreslagen ordning utan ytterligare avstämning, eller vill du godkänna PR-vis?
+2. Federation: nöjd med "behåll Worker, dokumentera den"? Eller vill du på allvar utreda Vercel-flytt?
+3. Finns det specifika sidor/flöden du **vet** känns sega eller oklara som jag bör prioritera?

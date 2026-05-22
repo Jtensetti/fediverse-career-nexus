@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 
 import {
   BrowserRouter,
@@ -16,64 +16,68 @@ import { ErrorBoundary, SkipToContent } from "@/components/common";
 import SessionExpiryWarning from "@/components/auth/SessionExpiryWarning";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { AlertBanner } from "@/components/layout/AlertBanner";
-import Index from "./pages/Index";
-import Profile from "./pages/profile/Profile";
-import ProfileEdit from "./pages/profile/ProfileEdit";
-import Jobs from "./pages/jobs/Jobs";
-import JobView from "./pages/jobs/JobView";
-import JobCreate from "./pages/jobs/JobCreate";
-import JobEdit from "./pages/jobs/JobEdit";
-import JobManage from "./pages/jobs/JobManage";
-import FederatedFeedPage from "./pages/federation/FederatedFeed";
-import Auth from "./pages/auth/Auth";
-import AuthCallback from "./pages/auth/AuthCallback";
-import AuthRecovery from "./pages/auth/AuthRecovery";
-import ConfirmEmail from "./pages/auth/ConfirmEmail";
-import MfaRecover from "./pages/auth/MfaRecover";
-import Events from "./pages/events/Events";
-import EventCreate from "./pages/events/EventCreate";
-import EventView from "./pages/events/EventView";
-import EventEdit from "./pages/events/EventEdit";
-import NotFound from "./pages/NotFound";
-import Articles from "./pages/articles/Articles";
-import ArticleView from "./pages/articles/ArticleView";
-import ArticleCreate from "./pages/articles/ArticleCreate";
-import ArticleManage from "./pages/articles/ArticleManage";
-import ArticleEdit from "./pages/articles/ArticleEdit";
-import Connections from "./pages/profile/Connections";
-import Messages from "./pages/messaging/Messages";
-import MessageConversation from "./pages/messaging/MessageConversation";
-import Notifications from "./pages/social/Notifications";
-import Mission from "./pages/info/Mission";
-import Documentation from "./pages/info/Documentation";
-import FederationGuide from "./pages/federation/FederationGuide";
-import HelpCenter from "./pages/info/HelpCenter";
-import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
-import TermsOfService from "./pages/legal/TermsOfService";
-import CodeOfConductPage from "./pages/legal/CodeOfConductPage";
-import InstanceGuidelinesPage from "./pages/legal/InstanceGuidelines";
-import CookiesPage from "./pages/legal/CookiesPage";
-import Instances from "./pages/federation/Instances";
-import AdminFederationHealth from "./pages/federation/AdminFederationHealth";
-import AdminInstances from "./pages/federation/AdminInstances";
-import ModerationDashboard from "./pages/moderation/ModerationDashboard";
-import PostView from "./pages/posts/PostView";
-import SavedItemsPage from "./pages/social/SavedItems";
-import StarterPacks from "./pages/social/StarterPacks";
-import StarterPackView from "./pages/social/StarterPackView";
-import StarterPackCreate from "./pages/social/StarterPackCreate";
-import FeedSettings from "./pages/settings/FeedSettings";
-import Search from "./pages/search/Search";
-import Freelancers from "./pages/social/Freelancers";
-import Followers from "./pages/profile/Followers";
-import Following from "./pages/profile/Following";
-import Companies from "./pages/company/Companies";
-import CompanyProfile from "./pages/company/CompanyProfile";
-import CompanyCreate from "./pages/company/CompanyCreate";
-import CompanyEdit from "./pages/company/CompanyEdit";
-import CompanyAdmin from "./pages/company/CompanyAdmin";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+
+// Eager-loaded critical routes (landing, auth, 404)
+import Index from "./pages/Index";
+import Auth from "./pages/auth/Auth";
+import NotFound from "./pages/NotFound";
+
+// Lazy-loaded routes — split into per-route chunks
+const Profile = lazy(() => import("./pages/profile/Profile"));
+const ProfileEdit = lazy(() => import("./pages/profile/ProfileEdit"));
+const Jobs = lazy(() => import("./pages/jobs/Jobs"));
+const JobView = lazy(() => import("./pages/jobs/JobView"));
+const JobCreate = lazy(() => import("./pages/jobs/JobCreate"));
+const JobEdit = lazy(() => import("./pages/jobs/JobEdit"));
+const JobManage = lazy(() => import("./pages/jobs/JobManage"));
+const FederatedFeedPage = lazy(() => import("./pages/federation/FederatedFeed"));
+const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
+const AuthRecovery = lazy(() => import("./pages/auth/AuthRecovery"));
+const ConfirmEmail = lazy(() => import("./pages/auth/ConfirmEmail"));
+const MfaRecover = lazy(() => import("./pages/auth/MfaRecover"));
+const Events = lazy(() => import("./pages/events/Events"));
+const EventCreate = lazy(() => import("./pages/events/EventCreate"));
+const EventView = lazy(() => import("./pages/events/EventView"));
+const EventEdit = lazy(() => import("./pages/events/EventEdit"));
+const Articles = lazy(() => import("./pages/articles/Articles"));
+const ArticleView = lazy(() => import("./pages/articles/ArticleView"));
+const ArticleCreate = lazy(() => import("./pages/articles/ArticleCreate"));
+const ArticleManage = lazy(() => import("./pages/articles/ArticleManage"));
+const ArticleEdit = lazy(() => import("./pages/articles/ArticleEdit"));
+const Connections = lazy(() => import("./pages/profile/Connections"));
+const Messages = lazy(() => import("./pages/messaging/Messages"));
+const MessageConversation = lazy(() => import("./pages/messaging/MessageConversation"));
+const Notifications = lazy(() => import("./pages/social/Notifications"));
+const Mission = lazy(() => import("./pages/info/Mission"));
+const Documentation = lazy(() => import("./pages/info/Documentation"));
+const FederationGuide = lazy(() => import("./pages/federation/FederationGuide"));
+const HelpCenter = lazy(() => import("./pages/info/HelpCenter"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
+const CodeOfConductPage = lazy(() => import("./pages/legal/CodeOfConductPage"));
+const InstanceGuidelinesPage = lazy(() => import("./pages/legal/InstanceGuidelines"));
+const CookiesPage = lazy(() => import("./pages/legal/CookiesPage"));
+const Instances = lazy(() => import("./pages/federation/Instances"));
+const AdminFederationHealth = lazy(() => import("./pages/federation/AdminFederationHealth"));
+const AdminInstances = lazy(() => import("./pages/federation/AdminInstances"));
+const ModerationDashboard = lazy(() => import("./pages/moderation/ModerationDashboard"));
+const PostView = lazy(() => import("./pages/posts/PostView"));
+const SavedItemsPage = lazy(() => import("./pages/social/SavedItems"));
+const StarterPacks = lazy(() => import("./pages/social/StarterPacks"));
+const StarterPackView = lazy(() => import("./pages/social/StarterPackView"));
+const StarterPackCreate = lazy(() => import("./pages/social/StarterPackCreate"));
+const FeedSettings = lazy(() => import("./pages/settings/FeedSettings"));
+const Search = lazy(() => import("./pages/search/Search"));
+const Freelancers = lazy(() => import("./pages/social/Freelancers"));
+const Followers = lazy(() => import("./pages/profile/Followers"));
+const Following = lazy(() => import("./pages/profile/Following"));
+const Companies = lazy(() => import("./pages/company/Companies"));
+const CompanyProfile = lazy(() => import("./pages/company/CompanyProfile"));
+const CompanyCreate = lazy(() => import("./pages/company/CompanyCreate"));
+const CompanyEdit = lazy(() => import("./pages/company/CompanyEdit"));
+const CompanyAdmin = lazy(() => import("./pages/company/CompanyAdmin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -107,6 +111,17 @@ function CompanySlugAdminRedirect() {
   return <Navigate to={`/organisation/${slug}/admin`} replace />;
 }
 
+function RouteFallback() {
+  return (
+    <div className="min-h-[40vh] flex items-center justify-center">
+      <div
+        className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+        aria-label="Laddar sida"
+      />
+    </div>
+  );
+}
+
 function App() {
   const toasterConfig = {
     position: "top-center" as const,
@@ -127,6 +142,7 @@ function App() {
                 <SessionExpiryWarning />
                 <AlertBanner />
                 <main id="main-content">
+                  <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     {/* Public routes */}
                     <Route path="/" element={<Index />} />
@@ -326,6 +342,7 @@ function App() {
                     {/* Catch-all for 404 */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </Suspense>
                 </main>
                 <MobileBottomNav />
                 </AuthProvider>
@@ -346,7 +363,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Laddar...</p>
         </div>
       </div>
     );
