@@ -656,7 +656,7 @@
     },
     "trustBadges": {
       "gdpr": "Data Protection",
-      "gdprShort": "Secure",
+      "gdprShort": "GDPR",
       "swedishData": "Swedish Data Storage",
       "swedishDataShort": "Swedish Data",
       "secureLogin": "Secure Login",
