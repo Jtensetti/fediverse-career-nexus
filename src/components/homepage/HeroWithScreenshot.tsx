@@ -67,13 +67,14 @@ const HeroWithScreenshot = () => {
               </Button>
               <Button
                 size="lg"
-                variant="outline"
-                className="border-2 border-primary-foreground/80 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 font-semibold px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
+                variant="ghost"
+                className="text-primary-foreground/90 hover:bg-primary-foreground/10 hover:text-primary-foreground font-medium px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg w-full sm:w-auto"
                 onClick={() => document.getElementById('live-feed')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 {t("homepage.hero.exploreFeed")}
               </Button>
+
             </div>
 
             {/* Live Stats */}

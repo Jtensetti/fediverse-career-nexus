@@ -21,6 +21,13 @@
     "optional": "Optional",
     "close": "Close"
   },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. It has been logged and we'll look into it.",
+    "tryAgain": "Try again",
+    "reload": "Reload page"
+  },
+
   "accessibility": {
     "skipToContent": "Skip to content",
     "darkMode": "Toggle dark mode",
