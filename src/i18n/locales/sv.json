@@ -663,7 +663,7 @@
     },
     "trustBadges": {
       "gdpr": "Datasäkrad",
-      "gdprShort": "Säker",
+      "gdprShort": "GDPR",
       "swedishData": "Svensk datalagring",
       "swedishDataShort": "Svensk data",
       "secureLogin": "Säker inloggning",
