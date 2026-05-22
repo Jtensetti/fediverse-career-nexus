@@ -32,34 +32,40 @@ function getRequestProtocol(req: Request, url: URL) {
   return "https";
 }
 
-// Log federation request metrics
-async function logRequestMetrics(
-  remoteHost: string, 
-  endpoint: string, 
-  startTime: number, 
-  success: boolean, 
-  statusCode?: number, 
+// Log federation request metrics (fire-and-forget: never blocks the response).
+function logRequestMetrics(
+  remoteHost: string,
+  endpoint: string,
+  startTime: number,
+  success: boolean,
+  statusCode?: number,
   errorMessage?: string
 ) {
   const endTime = performance.now();
   const responseTimeMs = Math.round(endTime - startTime);
-  
-  try {
-    await supabaseClient
-      .from("federation_request_logs")
-      .insert({
-        remote_host: remoteHost,
-        endpoint,
-        success,
-        response_time_ms: responseTimeMs,
-        status_code: statusCode,
-        error_message: errorMessage
-      });
-  } catch (error) {
-    console.error("Failed to log request metrics:", error);
-    // Non-blocking - we don't want metrics logging to break functionality
+
+  const insertPromise = supabaseClient
+    .from("federation_request_logs")
+    .insert({
+      remote_host: remoteHost,
+      endpoint,
+      success,
+      response_time_ms: responseTimeMs,
+      status_code: statusCode,
+      error_message: errorMessage,
+    })
+    .then(({ error }) => {
+      if (error) console.error("Failed to log request metrics:", error);
+    });
+
+  const runtime = (globalThis as any).EdgeRuntime;
+  if (runtime && typeof runtime.waitUntil === "function") {
+    runtime.waitUntil(insertPromise);
+  } else {
+    void insertPromise;
   }
 }
+
 
 // Create local actor object on-demand - always use samverkan.se domain
 async function createLocalActorObject(profile: any, baseUrl: string) {

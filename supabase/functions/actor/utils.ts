@@ -18,34 +18,41 @@ export const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Log federation request metrics
-export async function logRequestMetrics(
-  remoteHost: string, 
-  endpoint: string, 
-  startTime: number, 
-  success: boolean, 
-  statusCode?: number, 
+// Log federation request metrics (fire-and-forget: never blocks the response).
+export function logRequestMetrics(
+  remoteHost: string,
+  endpoint: string,
+  startTime: number,
+  success: boolean,
+  statusCode?: number,
   errorMessage?: string
 ) {
   const endTime = performance.now();
   const responseTimeMs = Math.round(endTime - startTime);
-  
-  try {
-    await supabaseClient
-      .from("federation_request_logs")
-      .insert({
-        remote_host: remoteHost,
-        endpoint,
-        success,
-        response_time_ms: responseTimeMs,
-        status_code: statusCode,
-        error_message: errorMessage
-      });
-  } catch (error) {
-    console.error("Failed to log request metrics:", error);
-    // Non-blocking - we don't want metrics logging to break functionality
+
+  const insertPromise = supabaseClient
+    .from("federation_request_logs")
+    .insert({
+      remote_host: remoteHost,
+      endpoint,
+      success,
+      response_time_ms: responseTimeMs,
+      status_code: statusCode,
+      error_message: errorMessage,
+    })
+    .then(({ error }) => {
+      if (error) console.error("Failed to log request metrics:", error);
+    });
+
+  // Prefer waitUntil so the platform finishes the write after the response is sent.
+  const runtime = (globalThis as any).EdgeRuntime;
+  if (runtime && typeof runtime.waitUntil === "function") {
+    runtime.waitUntil(insertPromise);
+  } else {
+    void insertPromise;
   }
 }
+
 
 // Get actor from cache
 export async function getActorFromCache(username: string) {

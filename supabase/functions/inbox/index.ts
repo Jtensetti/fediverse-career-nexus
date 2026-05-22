@@ -231,17 +231,28 @@ async function checkRateLimit(remoteHost: string): Promise<boolean> {
   return (count || 0) < RATE_LIMIT_MAX_REQUESTS;
 }
 
-// Log federation request
-async function logFederationRequest(remoteHost: string, endpoint: string, requestPath: string) {
-  await supabaseClient
+// Log federation request (fire-and-forget: never blocks the inbox response).
+function logFederationRequest(remoteHost: string, endpoint: string, requestPath: string) {
+  const insertPromise = supabaseClient
     .from("federation_request_logs")
     .insert({
       remote_host: remoteHost,
       endpoint,
       request_path: requestPath,
-      request_id: crypto.randomUUID()
+      request_id: crypto.randomUUID(),
+    })
+    .then(({ error }) => {
+      if (error) console.error("Failed to log federation request:", error);
     });
+
+  const runtime = (globalThis as any).EdgeRuntime;
+  if (runtime && typeof runtime.waitUntil === "function") {
+    runtime.waitUntil(insertPromise);
+  } else {
+    void insertPromise;
+  }
 }
+
 
 serve(async (req) => {
   // Handle CORS preflight requests
