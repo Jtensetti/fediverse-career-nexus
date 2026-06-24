@@ -102,7 +102,7 @@
     "createPassword": "Create a password"
   },
   "footer": {
-    "tagline": "A secure professional platform for the public sector.",
+    "tagline": "The federated alternative to LinkedIn.",
     "about": "About",
     "ourMission": "Our Mission",
     "team": "Team",
@@ -445,7 +445,7 @@
     "copied": "Referral link copied!",
     "copyFailed": "Failed to copy link",
     "shareTitle": "Join me on Nolto",
-    "shareText": "Join the secure professional platform for the public sector!"
+    "shareText": "Join the federated alternative to LinkedIn!"
   },
   "suggestions": {
     "title": "Suggested for You",
@@ -456,7 +456,7 @@
     "connectWithPeers": "Connect with peers",
     "buildNetwork": "Build your professional network",
     "postJob": "Post a job",
-    "reachProfessionals": "Reach professionals across the public sector",
+    "reachProfessionals": "Reach professionals across the federated network",
     "createEvent": "Create an event",
     "hostMeetups": "Host meetings and networking events",
     "doIt": "Do it"
@@ -470,8 +470,8 @@
   "openSource": {
     "badge": "Open Source",
     "title": "Built in the Open",
-    "description": "Every line of code is public. Every decision is documented. Transparency builds trust — especially in the public sector.",
-    "repoDescription": "The professional platform for the public sector",
+    "description": "Every line of code is public. Every decision is documented. Transparency builds trust.",
+    "repoDescription": "The federated alternative to LinkedIn",
     "mitLicense": "MIT License",
     "contributorsWelcome": "Contributors Welcome",
     "securityAudited": "Security Audited",
@@ -485,12 +485,12 @@
   },
   "featureShowcase": {
     "title": "Everything You Need for Professional Networking",
-    "subtitle": "All the tools of a modern professional network — secure and built for the public sector",
+    "subtitle": "All the tools of a modern professional network — open, federated and ad-free",
     "professionalProfiles": "Professional Profiles",
     "profilesDesc": "Skills, experience, and endorsements — gathered for the entire organization",
     "portableIdentity": "Secure data export",
     "jobBoard": "Recruitment",
-    "jobDesc": "Find and post positions within the public sector",
+    "jobDesc": "Find and post positions across the federated network",
     "crossInstanceListings": "Cross-organization listings",
     "events": "Events",
     "eventsDesc": "Professional meetings with built-in video conferencing",
@@ -650,7 +650,7 @@
     "hero": {
       "title": "The Professional Network",
       "titleAccent": "for the Public Sector",
-      "description": "Connect employees, share knowledge and recruit — on a secure platform built for municipalities, regions and government agencies.",
+      "description": "Connect employees, share knowledge and recruit — on an open, federated platform you control.",
       "getStarted": "Get Started Free",
       "exploreFeed": "Explore the Platform"
     },
@@ -683,7 +683,7 @@
     "jobs": {
       "subtitle": "Career Opportunities",
       "title": "Positions in the Public Sector",
-      "description": "Transparent roles from municipalities, regions and government agencies",
+      "description": "Transparent roles from organizations across the federated network",
       "browseAll": "Browse All Positions"
     },
     "features": {
@@ -712,34 +712,34 @@
     "federation": {
       "subtitle": "How Collaboration Works",
       "title": "One Platform, Unlimited Collaboration",
-      "description": "Connect your organization and collaborate with municipalities, regions and government agencies — on a shared, secure platform.",
+      "description": "Connect your organization and collaborate with teams across the federated network — on an open, shared platform.",
       "step1Title": "Create Your Profile",
       "step1Desc": "Sign up and build your professional identity",
       "step2Title": "Connect Your Organization",
-      "step2Desc": "Link your municipality, region or agency",
+      "step2Desc": "Link your organization",
       "step3Title": "Collaborate Broadly",
       "step3Desc": "Network and share knowledge across organizational boundaries",
       "youAreHere": "Your org",
       "dataPortability": "Data Export",
       "dataPortabilityDesc": "Export all data in a standardized format",
       "universalReach": "Broad Collaboration",
-      "universalReachDesc": "Collaborate with organizations across the public sector",
+      "universalReachDesc": "Collaborate with organizations across the federated network",
       "yourChoice": "Your Control",
       "yourChoiceDesc": "You decide what data is shared and with whom"
     },
     "faq": {
       "title": "Frequently Asked Questions",
-      "description": "Everything you need to know about Nolto for the public sector",
+      "description": "Everything you need to know about Nolto",
       "q1": "How do you handle data protection?",
       "a1": "Nolto stores all data in the EU, uses no third-party trackers and all users can export or delete their data at any time. We comply with applicable data protection legislation and have agreements with all sub-processors.",
       "q2": "How is Nolto different from LinkedIn?",
-      "a2": "Nolto is built specifically for the public sector with Swedish hosting and no ads or data selling. Unlike LinkedIn, there are no algorithms manipulating your feed and you retain full control of your data.",
+      "a2": "Nolto is a federated alternative to LinkedIn — no ads, no data selling and no algorithms manipulating your feed. You keep full control of your data and can take it with you anywhere.",
       "q3": "Can we self-host Nolto?",
       "a3": "Yes! Nolto is open source under the MIT license. You can run your own instance within your organization or use our managed service. All instances can collaborate with each other.",
       "q4": "How is personal data handled?",
       "a4": "All data is stored encrypted in the EU. Users have full control of their data with the ability to export and delete. We never sell data and use no tracking cookies.",
       "q5": "Does it work with other organizations?",
-      "a5": "Absolutely. Nolto is built on open standards that enable collaboration across organizational boundaries. Municipalities, regions and government agencies can easily connect their instances.",
+      "a5": "Absolutely. Nolto is built on open ActivityPub standards — organizations of all kinds can connect their instances and collaborate across boundaries.",
       "q6": "What does it cost?",
       "a6": "Nolto is free to use as open source. We also offer managed services with support and SLA for organizations that want a turnkey solution. Contact us for a quote."
     },
@@ -747,7 +747,7 @@
       "badge": "Connect your organization",
       "title": "Ready to Modernize Your",
       "titleAccent": "Internal Communication?",
-      "description": "Connect your organization to a secure platform built for the public sector. No ads, no tracking, full control.",
+      "description": "Connect your organization to a federated alternative to LinkedIn. No ads, no tracking, full control.",
       "createAccount": "Create Free Account",
       "exploreFirst": "Explore First",
       "freeForever": "Free Forever",
@@ -765,7 +765,7 @@
       "description": "Join organizations that have chosen a secure, Swedish platform"
     },
     "featuredIn": {
-      "tagline": "Built for public sector requirements on security and accessibility",
+      "tagline": "Built on open standards — for professionals who value freedom",
       "gdprCompliant": "Data Protection",
       "gdprDesc": "EU legislation compliant",
       "swedishHosting": "Swedish Hosting",
@@ -804,13 +804,13 @@
     },
     "onboarding": {
       "title": "Get Started in 3 Steps",
-      "subtitle": "Easy to get started — whether you're a municipality, region or government agency",
+      "subtitle": "Easy to get started — regardless of industry or team",
       "step1": "Create Your Profile",
       "step1Desc": "Sign up and build your professional identity",
       "step2": "Connect Your Organization",
       "step2Desc": "Invite colleagues and create your organization account",
       "step3": "Start Collaborating",
-      "step3Desc": "Share knowledge and network across the public sector"
+      "step3Desc": "Share knowledge and network across the federated network"
     }
   },
   "articles": {
@@ -829,7 +829,7 @@
   },
   "jobs": {
     "title": "Job Listings",
-    "subtitle": "Find your next opportunity on Nolto. Browse transparent job listings from public sector organizations.",
+    "subtitle": "Find your next opportunity on Nolto. Browse transparent job listings from organizations across the federated network.",
     "manage": "Manage My Job Posts",
     "searchPlaceholder": "Search job title, organisation, or keywords...",
     "jobType": "Job Type",
@@ -845,7 +845,7 @@
     "noMatching": "No matching jobs found",
     "adjustFilters": "Try adjusting your filters to discover more opportunities.",
     "beFirst": "Be the first to post a job!",
-    "reachProfessionals": "Reach professionals across the public sector. Post transparent job listings.",
+    "reachProfessionals": "Reach professionals across the federated network. Post transparent job listings.",
     "postJob": "Post a Job",
     "signUpToPost": "Sign up to post",
     "clearFilters": "Clear filters"
@@ -1465,13 +1465,13 @@
   },
   "appScreenshot": {
     "post1Author": "Anna Lindberg",
-    "post1Instance": "@kommun.se",
+    "post1Instance": "@tech.social",
     "post1Content": "Just shipped a major update to our internal knowledge platform! 🚀 The collaboration model is now live.",
     "post2Author": "Erik Johansson",
-    "post2Instance": "@region.se",
+    "post2Instance": "@design.social",
     "post2Content": "Looking for a systems developer to join our team. Flexible work model, hybrid. Get in touch!",
     "notification": "New connection",
-    "notificationFrom": "from region.se",
+    "notificationFrom": "from design.social",
     "connectionRequest": "Connection request",
     "connectionPending": "3 pending",
     "profileTitle": "Anna Lindberg",

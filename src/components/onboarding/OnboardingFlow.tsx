@@ -238,7 +238,7 @@ const OnboardingFlow = ({ open, onComplete }: OnboardingFlowProps) => {
               </div>
               <DialogTitle className="text-2xl">Välkommen till Nolto! 🎉</DialogTitle>
               <DialogDescription className="text-base mt-2">
-                Du är nu en del av det professionella nätverket för offentlig sektor.
+                Du är nu en del av det federerade alternativet till LinkedIn.
                 Låt oss sätta upp din profil så att du kan börja samarbeta med kollegor.
               </DialogDescription>
             </DialogHeader>

@@ -40,8 +40,8 @@ export default function Index() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="Nolto - Det professionella nätverket för offentlig sektor"
-        description="Anslut er organisation till en säker plattform byggd för kommuner, regioner och myndigheter. Inga algoritmer, ingen dataförsäljning."
+        title="Nolto — Det federerade alternativet till LinkedIn"
+        description="Anslut till ett federerat alternativ till LinkedIn. Inga algoritmer, inga annonser, ingen dataförsäljning."
       />
       <Navbar />
       <main className="flex-grow">

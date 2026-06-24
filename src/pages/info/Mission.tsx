@@ -11,7 +11,7 @@ const Mission = () => {
     <div className="min-h-screen bg-background">
       <SEOHead 
         title="Vårt uppdrag | Nolto" 
-        description="Nolto är en säker, GDPR-kompatibel professionell plattform byggd för kommuner, regioner och myndigheter." 
+        description="Nolto är ett federerat alternativ till LinkedIn — öppet, GDPR-kompatibelt och utan annonser." 
       />
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-16">
@@ -21,7 +21,7 @@ const Mission = () => {
               Vårt uppdrag
             </h1>
             <h2 className="text-xl md:text-2xl font-medium text-accent">
-              Professionellt nätverkande för offentlig sektor
+              Det federerade alternativet till LinkedIn
             </h2>
           </div>
         </div>
@@ -31,16 +31,16 @@ const Mission = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto prose prose-lg">
           <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-            Nolto är en säker, GDPR-kompatibel plattform för professionellt nätverkande — byggd specifikt för kommuner, regioner och myndigheter. Vi tror att offentlig sektor förtjänar moderna verktyg för intern kommunikation, rekrytering och kunskapsdelning — utan att kompromissa med datasäkerhet.
+            Nolto är ett federerat alternativ till LinkedIn — en öppen, GDPR-kompatibel plattform för professionellt nätverkande. Vi tror att alla yrkesverksamma förtjänar moderna verktyg för kommunikation, rekrytering och kunskapsdelning — utan algoritmer, annonser eller dataförsäljning.
           </p>
 
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-primary mb-6">Varför Nolto?</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Dagens professionella nätverk är byggda för den privata sektorn och finansieras genom reklam och dataförsäljning. Det passar inte offentlig sektor, där GDPR-efterlevnad, transparens och digital suveränitet är grundläggande krav.
+              Dagens professionella nätverk finansieras genom reklam och dataförsäljning, och låser in dig i en enda plattform. Det betyder algoritmer som styr vad du ser, ingen kontroll över din data och inget val om du vill byta.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              Nolto är annorlunda. Vi erbjuder en plattform som möter offentlig sektors unika behov:
+              Nolto är annorlunda. Vi erbjuder en federerad plattform med några grundprinciper:
             </p>
             
             <div className="bg-muted p-6 rounded-lg mb-8">
@@ -54,7 +54,7 @@ const Mission = () => {
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
                   <div>
-                    <strong className="text-primary">Nolto över gränser:</strong> Nätverka och dela kunskap med kollegor i andra kommuner, regioner och myndigheter.
+                    <strong className="text-primary">Nolto över gränser:</strong> Nätverka och dela kunskap med kollegor i hela det federerade nätverket — oavsett vilken instans de använder.
                   </div>
                 </li>
                 <li className="flex items-start">
@@ -77,7 +77,7 @@ const Mission = () => {
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-                  <span className="text-muted-foreground">Kommuner, regioner och myndigheter kan dela jobbannonser, evenemang och kunskap med varandra.</span>
+                  <span className="text-muted-foreground">Organisationer kan dela jobbannonser, evenemang och kunskap över hela det federerade nätverket.</span>
                 </li>
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-4 flex-shrink-0"></div>
@@ -112,17 +112,17 @@ const Mission = () => {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-primary mb-6">Vad vi vill förändra</h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              Nolto är inte bara ett internt verktyg — det är ett steg mot digital suveränitet för offentlig sektor. Vi vill:
+              Nolto är inte bara ännu ett professionellt nätverk — det är ett steg mot digital suveränitet för alla yrkesverksamma. Vi vill:
             </p>
             
             <div className="space-y-4 mb-8">
               <div className="flex items-start">
                 <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-                <span className="text-muted-foreground">Ge offentlig sektor moderna verktyg för intern kommunikation och rekrytering utan att kompromissa med datasäkerhet.</span>
+                <span className="text-muted-foreground">Ge yrkesverksamma moderna verktyg för kommunikation och rekrytering utan att kompromissa med datasäkerhet eller integritet.</span>
               </div>
               <div className="flex items-start">
                 <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-                <span className="text-muted-foreground">Möjliggöra nolto mellan kommuner, regioner och myndigheter på en gemensam, säker plattform.</span>
+                <span className="text-muted-foreground">Möjliggöra samverkan mellan organisationer på en gemensam, öppen plattform.</span>
               </div>
               <div className="flex items-start">
                 <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
@@ -134,10 +134,10 @@ const Mission = () => {
           <section className="bg-primary text-primary-foreground p-8 rounded-lg text-center">
             <h2 className="text-2xl font-bold mb-4">Anslut er organisation</h2>
             <p className="text-lg mb-6 text-primary-foreground/90">
-              Oavsett om ni söker nya medarbetare, vill dela kunskap eller bygga professionella nätverk inom offentlig sektor — Nolto är byggt för er.
+              Oavsett om ni söker nya medarbetare, vill dela kunskap eller bygga ett professionellt nätverk fritt från Big Tech — Nolto är byggt för er.
             </p>
             <p className="text-lg font-medium text-accent mb-6">
-              Tillsammans moderniserar vi professionellt nätverkande i offentlig sektor.
+              Tillsammans bygger vi ett öppet, federerat alternativ till LinkedIn.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
