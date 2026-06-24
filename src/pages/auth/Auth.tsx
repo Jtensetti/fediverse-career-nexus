@@ -412,6 +412,7 @@ export default function AuthPage() {
         <div className="max-w-md w-full space-y-8">
           {/* Logo and Branding */}
           <div className="text-center">
+            <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Nolto" className="mx-auto h-16 w-16 mb-4" />
             <h1 className="text-3xl font-bold text-foreground font-display">
               {t("auth.welcomeTitle", "Welcome to Nolto")}
             </h1>

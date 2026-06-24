@@ -110,6 +110,7 @@ const Navbar = () => {
               "font-bold text-xl flex items-center gap-2 transition-colors",
               isHomePage && !scrolled ? 'text-primary-foreground' : 'text-primary'
             )}>
+              <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Nolto" className="h-8 w-8" />
               <span className="font-display">Nolto</span>
             </RouterLink>
             <div className="flex items-center gap-4">
@@ -140,6 +141,7 @@ const Navbar = () => {
               "font-bold text-xl flex items-center gap-2 transition-colors",
               isHomePage && !scrolled ? 'text-primary-foreground' : 'text-primary'
             )}>
+              <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Nolto" className="h-8 w-8" />
               <span className="font-display">Nolto</span>
             </RouterLink>
             
@@ -305,6 +307,7 @@ const Navbar = () => {
                 <SheetHeader className="p-6 border-b">
                   <SheetTitle>
                     <div className="flex items-center gap-2">
+                      <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Nolto" className="h-8 w-8" />
                       <span className="font-display text-xl">Nolto</span>
                     </div>
                   </SheetTitle>
