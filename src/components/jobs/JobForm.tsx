@@ -483,7 +483,7 @@ const JobForm = ({
             />
           </div>
 
-          {/* Visumsponsring borttagen — sällan relevant inom svensk offentlig sektor. */}
+          {/* Visumsponsring borttagen — hanteras hellre direkt mellan kandidat och arbetsgivare. */}
         </div>
 
         <FormField

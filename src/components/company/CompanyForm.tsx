@@ -29,7 +29,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type CompanySize = Database['public']['Enums']['company_size'];
 
-// Storleksspann anpassade för svensk offentlig sektor.
+// Storleksspann för organisationer av olika storlekar.
 // Mappar till befintliga enum-värden i DB (ingen schemaändring).
 const companySizeOptions: { value: CompanySize; label: string }[] = [
   { value: '1-10', label: '1–10 anställda' },
@@ -41,7 +41,7 @@ const companySizeOptions: { value: CompanySize; label: string }[] = [
   { value: '10000+', label: '20 000+ anställda' },
 ];
 
-// Strukturerade organisationstyper för svensk offentlig sektor.
+// Strukturerade organisationstyper.
 // Sparas som text i samma `industry`-kolumn (ingen schemaändring).
 export const ORGANISATION_TYPES = [
   'Kommun',
@@ -53,7 +53,7 @@ export const ORGANISATION_TYPES = [
   'Universitet & högskola',
   'Folkhögskola',
   'Civilsamhälle / ideell organisation',
-  'Privat leverantör till offentlig sektor',
+  'Konsultbolag',
   'Annat',
 ] as const;
 
