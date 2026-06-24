@@ -4,7 +4,7 @@ import { ArrowLeft, Network, Users, Shield, Zap } from "lucide-react";
 
 const FederationGuide = () => {
   const examples = [
-    { text: "Du ansluter dig via din kommun och kan samverka med kollegor från andra kommuner, regioner eller myndigheter." },
+    { text: "Du ansluter dig via en instans och kan samverka med kollegor från alla andra instanser i det federerade nätverket." },
     { text: "Om din organisation vill ha en egen Nolto-instans med egna regler kan ni starta en — och fortfarande samverka med alla andra." },
     { text: "En kollega publicerar en tjänst på sin organisations Nolto-instans. Den dyker upp i sökresultat för användare i hela nätverket." },
   ];

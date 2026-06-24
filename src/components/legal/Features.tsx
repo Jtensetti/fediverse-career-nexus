@@ -21,7 +21,7 @@ const Features = () => {
     {
       icon: <Users size={28} className="text-secondary" />,
       title: t('features.connections.title', 'Meningsfulla kontakter'),
-      description: t('features.connections.desc', 'Bygg ett nätverk av genuina kontakter inom och mellan organisationer i offentlig sektor.')
+      description: t('features.connections.desc', 'Bygg ett nätverk av genuina kontakter i hela det federerade nätverket — utan algoritmer.')
     },
     {
       icon: <MessageSquare size={28} className="text-secondary" />,
@@ -50,7 +50,7 @@ const Features = () => {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 text-primary">
-            {t('features.heading', 'Funktioner byggda för offentlig sektor')}
+            {t('features.heading', 'Funktioner byggda för proffs som värdesätter frihet')}
           </h2>
           <p className="text-lg text-muted-foreground">
             {t('features.subheading', 'Nolto kombinerar det bästa från professionella nätverk med säker, svensk-hostad teknik.')}

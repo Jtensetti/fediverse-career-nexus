@@ -168,7 +168,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             </div>
 
             <p className="text-sm text-foreground mt-4">
-              Arbetar med digital transformation inom offentlig sektor. Brinner för tillgänglighet och e-tjänster.
+              Bygger öppna verktyg för det federerade nätverket. Brinner för digital frihet och fri programvara.
             </p>
 
             <div className="flex flex-wrap gap-2 mt-4">

@@ -74,7 +74,7 @@ const TermsOfService = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">1. Definitioner</h2>
               <div className="space-y-4 text-muted-foreground">
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong className="text-foreground">Nolto:</strong> Plattformen för professionellt nätverkande, jobbpublicering och intern kommunikation inom offentlig sektor, inklusive all kod, funktionalitet och tjänster.</li>
+                  <li><strong className="text-foreground">Nolto:</strong> Den federerade plattformen för professionellt nätverkande, jobbpublicering och kommunikation, inklusive all kod, funktionalitet och tjänster.</li>
                   <li><strong className="text-foreground">Användare:</strong> Varje person eller organisation som har åtkomst till, registrerar sig för eller använder tjänsten.</li>
                   <li><strong className="text-foreground">Innehåll:</strong> All information, data, text, bilder, filer, länkar eller annat material som publiceras, överförs eller på annat sätt görs tillgängligt via tjänsten.</li>
                   <li><strong className="text-foreground">Nolto:</strong> Processen där information utbyts mellan anslutna organisationer och instanser inom Nolto-nätverket.</li>
