@@ -11,7 +11,8 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           <div className="col-span-1">
-            <div className="flex items-center mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Nolto" className="h-10 w-10" />
               <h3 className="text-lg font-bold text-primary">Nolto</h3>
             </div>
             <p className="text-muted-foreground mb-4">
