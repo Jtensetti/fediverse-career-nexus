@@ -20,12 +20,12 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-// Use samverkan.se domain for federation discoverability
-const SAMVERKAN_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "samverkan.se";
+// Use nolto.social domain for federation discoverability
+const NOLTO_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "nolto.social";
 
 function getRequestHost(req: Request, url: URL) {
-  // Always return samverkan.se for federation to work correctly
-  return SAMVERKAN_DOMAIN;
+  // Always return nolto.social for federation to work correctly
+  return NOLTO_DOMAIN;
 }
 
 function getRequestProtocol(req: Request, url: URL) {
@@ -67,10 +67,10 @@ function logRequestMetrics(
 }
 
 
-// Create local actor object on-demand - always use samverkan.se domain
+// Create local actor object on-demand - always use nolto.social domain
 async function createLocalActorObject(profile: any, baseUrl: string) {
   // Ensure we always use the production domain for actor URLs
-  const productionBaseUrl = `https://${SAMVERKAN_DOMAIN}`;
+  const productionBaseUrl = `https://${NOLTO_DOMAIN}`;
   const actorUrl = `${productionBaseUrl}/functions/v1/actor/${profile.username}`;
   
   // Try to get the actual public key from the actors table
@@ -150,7 +150,7 @@ serve(async (req) => {
     }
 
     const username = acctMatch[1];
-    // Strip optional "www." so acct:user@www.samverkan.se matches acct:user@samverkan.se
+    // Strip optional "www." so acct:user@www.nolto.social matches acct:user@nolto.social
     const domain = acctMatch[2].toLowerCase().replace(/^www\./, "");
     const currentDomain = requestHost.toLowerCase().replace(/^www\./, "");
 
@@ -203,7 +203,7 @@ serve(async (req) => {
     }
 
     // Use canonical (non-www) base URL for federation identifiers
-    const canonicalBase = `https://${SAMVERKAN_DOMAIN.replace(/^www\./, "")}`;
+    const canonicalBase = `https://${NOLTO_DOMAIN.replace(/^www\./, "")}`;
     const actorId = `${canonicalBase}/functions/v1/actor/${profile.username}`;
     const profileUrl = `${canonicalBase}/profile/${profile.username}`;
     
@@ -306,7 +306,7 @@ serve(async (req) => {
 
     // Construct WebFinger response (Mastodon-compatible aliases + LD-JSON self link)
     const webfingerResponse = {
-      subject: `acct:${profile.username}@${SAMVERKAN_DOMAIN.replace(/^www\./, "")}`,
+      subject: `acct:${profile.username}@${NOLTO_DOMAIN.replace(/^www\./, "")}`,
       aliases: [actorId, profileUrl],
       links: [
         {

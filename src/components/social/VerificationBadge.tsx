@@ -23,7 +23,7 @@ function getVerifiedLabelForOrgType(orgType?: string | null): string | null {
   if (t.includes("statlig myndighet")) return "Verifierad myndighet";
   if (t.includes("statligt bolag")) return "Verifierat statligt bolag";
   if (t.includes("kommunalt bolag")) return "Verifierat kommunalt bolag";
-  if (t.includes("förbund") || t.includes("samverkansorgan")) return "Verifierat samverkansorgan";
+  if (t.includes("förbund") || t.includes("noltosorgan")) return "Verifierat noltosorgan";
   if (t.includes("universitet") || t.includes("högskola")) return "Verifierat lärosäte";
   if (t.includes("folkhögskola")) return "Verifierad folkhögskola";
   if (t.includes("civilsamhälle") || t.includes("ideell")) return "Verifierad ideell organisation";
@@ -46,7 +46,7 @@ const VerificationBadge = ({ status, organisationType, className }: Verification
           label: orgLabel ?? t('verification.verified'),
           variant: "outline",
           tooltipText: orgLabel
-            ? `${orgLabel} – identitet bekräftad av Samverkan.`
+            ? `${orgLabel} – identitet bekräftad av Nolto.`
             : t('verification.verifiedTooltip')
         };
       }

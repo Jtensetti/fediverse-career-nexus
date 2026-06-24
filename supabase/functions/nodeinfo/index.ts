@@ -43,7 +43,7 @@ serve(async (req) => {
     // Handle discovery endpoint - returns links to nodeinfo schemas
     // This handles both /.well-known/nodeinfo (if proxied) and /nodeinfo (direct call)
     if (path === "/.well-known/nodeinfo" || path === "/nodeinfo" || path === "/") {
-      const siteUrl = Deno.env.get("SITE_URL") || "https://samverkan.se";
+      const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
       const baseUrl = siteUrl.replace(/\/$/, "");
       
       const discoveryDocument = {
@@ -111,9 +111,9 @@ serve(async (req) => {
       const nodeInfo = {
         version: "2.0",
         software: {
-          name: "samverkan",
+          name: "nolto",
           version: "1.0.0",
-          repository: "https://github.com/samverkan/samverkan"
+          repository: "https://github.com/nolto/nolto"
         },
         protocols: ["activitypub"],
         services: {
@@ -131,11 +131,11 @@ serve(async (req) => {
         },
         openRegistrations: true,
         metadata: {
-          nodeName: "Samverkan",
+          nodeName: "Nolto",
           nodeDescription: "Federerat professionellt nätverk för svensk offentlig sektor",
           maintainer: {
-            name: "Samverkan",
-            email: "kontakt@samverkan.se"
+            name: "Nolto",
+            email: "kontakt@nolto.social"
           },
           langs: ["sv", "en"]
         }

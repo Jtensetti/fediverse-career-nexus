@@ -101,7 +101,7 @@ export default function CompanyProfile() {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title={company.name}
-        description={company.tagline || company.description || `${company.name} on Samverkan`}
+        description={company.tagline || company.description || `${company.name} on Nolto`}
       />
       <Navbar />
       <main className="flex-grow">

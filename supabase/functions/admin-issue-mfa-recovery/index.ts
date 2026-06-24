@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
       .eq("id", request.id);
 
     // Send email (best-effort but report back if email truly fails)
-    const siteUrl = Deno.env.get("SITE_URL") ?? "https://www.samverkan.se";
+    const siteUrl = Deno.env.get("SITE_URL") ?? "https://www.nolto.social";
     const link = `${siteUrl}/aterstall-mfa?token=${encodeURIComponent(token)}`;
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
         <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
           <h2 style="color:#1a1a1a">Återställ tvåfaktorsautentisering</h2>
           <p>Hej,</p>
-          <p>En administratör har initierat en återställning av tvåfaktorsautentisering för ditt Samverkan-konto.</p>
+          <p>En administratör har initierat en återställning av tvåfaktorsautentisering för ditt Nolto-konto.</p>
           <p>Klicka på knappen nedan inom <strong>30 minuter</strong>. Du kommer behöva logga in med ditt lösenord för att slutföra återställningen.</p>
           <p style="margin:24px 0">
             <a href="${escapeHtml(link)}"
@@ -228,7 +228,7 @@ Deno.serve(async (req) => {
           <hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0">
           <p style="color:#666;font-size:13px">
             <strong>Var detta inte du?</strong> Ignorera detta mail och kontakta support omedelbart på
-            <a href="mailto:support@samverkan.se">support@samverkan.se</a>. Din MFA förblir aktiv tills länken används.
+            <a href="mailto:support@nolto.social">support@nolto.social</a>. Din MFA förblir aktiv tills länken används.
           </p>
         </div>
       `;
@@ -243,9 +243,9 @@ Deno.serve(async (req) => {
             "X-Connection-Api-Key": resendKey,
           },
           body: JSON.stringify({
-            from: "Samverkan Support <noreply@samverkan.se>",
+            from: "Nolto Support <noreply@nolto.social>",
             to: [registeredEmail],
-            subject: "Återställ tvåfaktorsautentisering på Samverkan",
+            subject: "Återställ tvåfaktorsautentisering på Nolto",
             html,
           }),
         },

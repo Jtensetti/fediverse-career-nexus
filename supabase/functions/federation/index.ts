@@ -112,7 +112,7 @@ async function enrichActivity(item: any): Promise<any> {
   const fallbackActorUrl = username ? buildActorUrl(username) : null;
   const followersUrl = username ? buildFollowersUrl(username) : null;
   
-  // Build full Create activity using canonical samverkan.se URLs
+  // Build full Create activity using canonical nolto.social URLs
   return {
     "@context": "https://www.w3.org/ns/activitystreams",
     type: "Create",
@@ -329,7 +329,7 @@ serve(async (req) => {
             let inboxUrl: string;
             
             if (isLocalUrl(recipientUri)) {
-              // Local actor — recipient is on samverkan.se
+              // Local actor — recipient is on nolto.social
               const username = recipientUri.split('/').pop() || '';
               inboxUrl = buildInboxUrl(username);
             } else {
@@ -353,7 +353,7 @@ serve(async (req) => {
                     {
                       headers: {
                         "Accept": 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-                        "User-Agent": "Samverkan-Federation/1.0 (+https://samverkan.se)"
+                        "User-Agent": "Nolto-Federation/1.0 (+https://nolto.social)"
                       }
                     },
                     ACTOR_FETCH_TIMEOUT_MS

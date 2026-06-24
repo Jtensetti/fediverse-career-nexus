@@ -1,7 +1,7 @@
 /**
  * Import a Mastodon-format follows CSV ("Account address,Show boosts,...")
  * and queue Follow activities for each entry. Used by the "Migrate TO
- * Samverkan" flow so users moving from another instance can rebuild
+ * Nolto" flow so users moving from another instance can rebuild
  * their following list automatically.
  */
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";

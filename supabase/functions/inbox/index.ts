@@ -597,7 +597,7 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       })
       .eq("id", recipientId);
     
-    // Build canonical Accept activity (samverkan.se URLs)
+    // Build canonical Accept activity (nolto.social URLs)
     const { buildActorUrl, buildActivityId } = await import("../_shared/federation-urls.ts");
     const acceptActivity = {
       "@context": "https://www.w3.org/ns/activitystreams",
@@ -1195,7 +1195,7 @@ async function resolveRemoteActorId(actorUrl: string): Promise<string | null> {
 }
 
 // Try to extract our local ap_objects UUID from an object URL like
-// https://samverkan.se/functions/v1/objects/<uuid> or any URL containing a UUID.
+// https://nolto.social/functions/v1/objects/<uuid> or any URL containing a UUID.
 function extractLocalObjectId(objectUrl: string): string | null {
   if (!objectUrl) return null;
   const m = objectUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);

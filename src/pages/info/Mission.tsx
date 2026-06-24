@@ -10,8 +10,8 @@ const Mission = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead 
-        title="Vårt uppdrag | Samverkan" 
-        description="Samverkan är en säker, GDPR-kompatibel professionell plattform byggd för kommuner, regioner och myndigheter." 
+        title="Vårt uppdrag | Nolto" 
+        description="Nolto är en säker, GDPR-kompatibel professionell plattform byggd för kommuner, regioner och myndigheter." 
       />
       {/* Header */}
       <div className="bg-primary text-primary-foreground py-16">
@@ -31,16 +31,16 @@ const Mission = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto prose prose-lg">
           <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-            Samverkan är en säker, GDPR-kompatibel plattform för professionellt nätverkande — byggd specifikt för kommuner, regioner och myndigheter. Vi tror att offentlig sektor förtjänar moderna verktyg för intern kommunikation, rekrytering och kunskapsdelning — utan att kompromissa med datasäkerhet.
+            Nolto är en säker, GDPR-kompatibel plattform för professionellt nätverkande — byggd specifikt för kommuner, regioner och myndigheter. Vi tror att offentlig sektor förtjänar moderna verktyg för intern kommunikation, rekrytering och kunskapsdelning — utan att kompromissa med datasäkerhet.
           </p>
 
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-6">Varför Samverkan?</h2>
+            <h2 className="text-2xl font-bold text-primary mb-6">Varför Nolto?</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
               Dagens professionella nätverk är byggda för den privata sektorn och finansieras genom reklam och dataförsäljning. Det passar inte offentlig sektor, där GDPR-efterlevnad, transparens och digital suveränitet är grundläggande krav.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              Samverkan är annorlunda. Vi erbjuder en plattform som möter offentlig sektors unika behov:
+              Nolto är annorlunda. Vi erbjuder en plattform som möter offentlig sektors unika behov:
             </p>
             
             <div className="bg-muted p-6 rounded-lg mb-8">
@@ -54,7 +54,7 @@ const Mission = () => {
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
                   <div>
-                    <strong className="text-primary">Samverkan över gränser:</strong> Nätverka och dela kunskap med kollegor i andra kommuner, regioner och myndigheter.
+                    <strong className="text-primary">Nolto över gränser:</strong> Nätverka och dela kunskap med kollegor i andra kommuner, regioner och myndigheter.
                   </div>
                 </li>
                 <li className="flex items-start">
@@ -70,7 +70,7 @@ const Mission = () => {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-primary mb-6">Hur fungerar det?</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Samverkan bygger på öppna standarder som möjliggör säker samverkan mellan organisationer. Det innebär att:
+              Nolto bygger på öppna standarder som möjliggör säker nolto mellan organisationer. Det innebär att:
             </p>
             
             <div className="bg-primary/5 p-6 rounded-lg mb-8">
@@ -103,7 +103,7 @@ const Mission = () => {
                 <p className="text-muted-foreground text-sm">Öppen källkod som kan granskas av alla. Inga dolda agendor.</p>
               </div>
               <div className="text-center p-6 border rounded-lg">
-                <h3 className="font-semibold text-primary mb-3">Samverkan</h3>
+                <h3 className="font-semibold text-primary mb-3">Nolto</h3>
                 <p className="text-muted-foreground text-sm">Öppna standarder som möjliggör samarbete över organisationsgränser.</p>
               </div>
             </div>
@@ -112,7 +112,7 @@ const Mission = () => {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-primary mb-6">Vad vi vill förändra</h2>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              Samverkan är inte bara ett internt verktyg — det är ett steg mot digital suveränitet för offentlig sektor. Vi vill:
+              Nolto är inte bara ett internt verktyg — det är ett steg mot digital suveränitet för offentlig sektor. Vi vill:
             </p>
             
             <div className="space-y-4 mb-8">
@@ -122,7 +122,7 @@ const Mission = () => {
               </div>
               <div className="flex items-start">
                 <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-                <span className="text-muted-foreground">Möjliggöra samverkan mellan kommuner, regioner och myndigheter på en gemensam, säker plattform.</span>
+                <span className="text-muted-foreground">Möjliggöra nolto mellan kommuner, regioner och myndigheter på en gemensam, säker plattform.</span>
               </div>
               <div className="flex items-start">
                 <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
@@ -134,7 +134,7 @@ const Mission = () => {
           <section className="bg-primary text-primary-foreground p-8 rounded-lg text-center">
             <h2 className="text-2xl font-bold mb-4">Anslut er organisation</h2>
             <p className="text-lg mb-6 text-primary-foreground/90">
-              Oavsett om ni söker nya medarbetare, vill dela kunskap eller bygga professionella nätverk inom offentlig sektor — Samverkan är byggt för er.
+              Oavsett om ni söker nya medarbetare, vill dela kunskap eller bygga professionella nätverk inom offentlig sektor — Nolto är byggt för er.
             </p>
             <p className="text-lg font-medium text-accent mb-6">
               Tillsammans moderniserar vi professionellt nätverkande i offentlig sektor.

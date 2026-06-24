@@ -1,16 +1,16 @@
 # Security Policy
 
-Thank you for helping keep Samverkan and its users safe.
+Thank you for helping keep Nolto and its users safe.
 
 ## Supported versions
 
-Only the `main` branch deployed at **www.samverkan.se** is actively maintained. Forks are the responsibility of their maintainers.
+Only the `main` branch deployed at **www.nolto.social** is actively maintained. Forks are the responsibility of their maintainers.
 
 ## Reporting a vulnerability
 
 **Please do not open public GitHub issues for security vulnerabilities.**
 
-Instead, email **security@samverkan.se** with:
+Instead, email **security@nolto.social** with:
 
 - A description of the issue and its potential impact
 - Steps to reproduce (proof-of-concept code, screenshots, HTTP requests)
@@ -28,7 +28,7 @@ We do not currently run a paid bug-bounty program but we deeply appreciate respo
 
 In scope:
 
-- The Samverkan web application at `www.samverkan.se`
+- The Nolto web application at `www.nolto.social`
 - The federation endpoints (`/.well-known/*`, `/actor/*`, `/inbox`, `/outbox`)
 - The Supabase Edge Functions in `supabase/functions/`
 - Authentication, authorization, and session handling

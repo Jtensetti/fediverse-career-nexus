@@ -1,6 +1,6 @@
-# Contributing to Samverkan
+# Contributing to Nolto
 
-Thank you for your interest in contributing to Samverkan — a federated, open-source professional networking platform.
+Thank you for your interest in contributing to Nolto — a federated, open-source professional networking platform.
 
 ## Getting Started
 

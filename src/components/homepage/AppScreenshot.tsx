@@ -25,7 +25,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                samverkan.se/feed
+                nolto.social/feed
               </div>
             </div>
           </div>
@@ -45,7 +45,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
                     <span className="text-xs text-muted-foreground">Göteborgs kommun</span>
                   </div>
                   <p className="text-sm text-foreground mt-1">
-                    Vi har lanserat vår nya digitala medborgarportal! 🚀 Samverkan med andra kommuner fungerar nu smidigt.
+                    Vi har lanserat vår nya digitala medborgarportal! 🚀 Nolto med andra kommuner fungerar nu smidigt.
                   </p>
                   <div className="flex items-center gap-4 mt-3 text-muted-foreground">
                     <button className="flex items-center gap-1 text-xs hover:text-secondary transition-colors">
@@ -145,7 +145,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                samverkan.se/@anna
+                nolto.social/@anna
               </div>
             </div>
           </div>
@@ -207,7 +207,7 @@ const AppScreenshot = ({ variant = "feed", className = "" }: AppScreenshotProps)
             <div className="flex-1 mx-4">
               <div className="bg-background rounded-md px-3 py-1 text-xs text-muted-foreground flex items-center gap-2">
                 <span className="text-secondary">🔒</span>
-                samverkan.se/jobb
+                nolto.social/jobb
               </div>
             </div>
           </div>

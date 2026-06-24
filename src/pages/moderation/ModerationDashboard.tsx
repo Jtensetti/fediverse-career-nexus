@@ -236,7 +236,7 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="federation" className="gap-2">
                   <Globe className="h-4 w-4" />
-                  Samverkan
+                  Nolto
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="gap-2">
                   <Eye className="h-4 w-4" />
@@ -422,7 +422,7 @@ export default function ModerationDashboard() {
                       <Server className="h-5 w-5 text-muted-foreground" />
                       <div>
                         <p className="font-medium">Instanshantering</p>
-                        <p className="text-sm text-muted-foreground">Visa begränsade instanser och samverkanshälsa</p>
+                        <p className="text-sm text-muted-foreground">Visa begränsade instanser och noltoshälsa</p>
                       </div>
                     </div>
                     <Button onClick={() => navigate('/admin/instances')} variant="outline">

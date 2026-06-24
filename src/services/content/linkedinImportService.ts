@@ -2,15 +2,15 @@ import JSZip from 'jszip';
 import { parseCSV, parseLinkedInDate, parseLinkedInYear, cleanText, getFlexibleColumn } from '@/lib/csvParser';
 import { supabase } from '@/integrations/supabase/client';
 
-// Samverkan data types for import
-export interface SamverkanProfile {
+// Nolto data types for import
+export interface NoltoProfile {
   fullname: string;
   headline: string;
   bio: string;
   location: string;
 }
 
-export interface SamverkanExperience {
+export interface NoltoExperience {
   title: string;
   company: string;
   description: string;
@@ -20,7 +20,7 @@ export interface SamverkanExperience {
   is_current_role: boolean;
 }
 
-export interface SamverkanEducation {
+export interface NoltoEducation {
   institution: string;
   degree: string;
   field: string;
@@ -28,11 +28,11 @@ export interface SamverkanEducation {
   end_year: number | null;
 }
 
-export interface SamverkanSkill {
+export interface NoltoSkill {
   name: string;
 }
 
-export interface SamverkanArticle {
+export interface NoltoArticle {
   title: string;
   content: string;
   excerpt: string;
@@ -50,11 +50,11 @@ export interface ImportDebugInfo {
 }
 
 export interface LinkedInImportData {
-  profile: SamverkanProfile | null;
-  experiences: SamverkanExperience[];
-  education: SamverkanEducation[];
-  skills: SamverkanSkill[];
-  articles: SamverkanArticle[];
+  profile: NoltoProfile | null;
+  experiences: NoltoExperience[];
+  education: NoltoEducation[];
+  skills: NoltoSkill[];
+  articles: NoltoArticle[];
   rawFiles: string[];
   debug: ImportDebugInfo;
 }
