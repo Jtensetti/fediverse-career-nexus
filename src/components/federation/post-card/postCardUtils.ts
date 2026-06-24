@@ -1,6 +1,6 @@
 import DOMPurify from "dompurify";
 import { getProxiedMediaUrl } from "@/services/federation/federationService";
-import { getSamverkanInstanceDomain } from "@/lib/federation";
+import { getNoltoInstanceDomain } from "@/lib/federation";
 import type { FederatedPost } from "@/services/federation/federationService";
 
 /** Extract raw content from different ActivityPub formats, sanitized */
@@ -74,7 +74,7 @@ export function getInstanceSuffix(post: FederatedPost): string {
   if (post.company) return '';
   if (post.source === 'local') {
     const homeInstance = post.profile?.home_instance;
-    return `@${homeInstance && homeInstance !== 'local' ? homeInstance : getSamverkanInstanceDomain()}`;
+    return `@${homeInstance && homeInstance !== 'local' ? homeInstance : getNoltoInstanceDomain()}`;
   }
   return post.instance ? `@${post.instance}` : '';
 }

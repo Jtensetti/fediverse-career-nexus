@@ -5,7 +5,7 @@ const CodeOfConduct = () => {
   return (
     <div className="max-w-4xl mx-auto prose prose-lg dark:prose-invert">
       <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-        Samverkan är en professionell plattform. För att hålla Samverkan öppet, respektfullt och välkomnande för alla 
+        Nolto är en professionell plattform. För att hålla Nolto öppet, respektfullt och välkomnande för alla 
         förväntar vi oss att samtliga användare följer dessa riktlinjer — både på denna instans och vid 
         interaktion med användare på andra instanser.
       </p>
@@ -61,7 +61,7 @@ const CodeOfConduct = () => {
           </div>
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-            <span className="text-muted-foreground">Använd inte Samverkan för att hota, utpressa eller skada andra på något sätt.</span>
+            <span className="text-muted-foreground">Använd inte Nolto för att hota, utpressa eller skada andra på något sätt.</span>
           </div>
         </div>
       </section>
@@ -80,7 +80,7 @@ const CodeOfConduct = () => {
             </li>
             <li className="flex items-start">
               <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
-              <span className="text-muted-foreground">Respektera att Samverkan är en offentlig, professionell miljö.</span>
+              <span className="text-muted-foreground">Respektera att Nolto är en offentlig, professionell miljö.</span>
             </li>
           </ul>
         </div>
@@ -92,7 +92,7 @@ const CodeOfConduct = () => {
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
             <span className="text-muted-foreground">
-              Använd inte Samverkan för olaglig verksamhet, inklusive bedrägeri, nätfiske eller spridning av 
+              Använd inte Nolto för olaglig verksamhet, inklusive bedrägeri, nätfiske eller spridning av 
               skadligt innehåll.
             </span>
           </div>
@@ -123,12 +123,12 @@ const CodeOfConduct = () => {
       </section>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-bold text-primary mb-6">7. Samverkansregler</h2>
+        <h2 className="text-2xl font-bold text-primary mb-6">7. Noltosregler</h2>
         <div className="space-y-4 mb-8">
           <div className="flex items-start">
             <div className="w-2 h-2 bg-secondary rounded-full mt-2 mr-4 flex-shrink-0"></div>
             <span className="text-muted-foreground">
-              Kom ihåg att ditt beteende kan påverka din instans och dess samverkan med andra.
+              Kom ihåg att ditt beteende kan påverka din instans och dess nolto med andra.
             </span>
           </div>
           <div className="flex items-start">

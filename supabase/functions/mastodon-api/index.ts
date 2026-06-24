@@ -11,7 +11,7 @@
  *
  * Routing is path-based so a single edge function backs all three.
  * Web client URLs are rewritten via _redirects so that, e.g.,
- * `samverkan.se/api/v1/apps` proxies here.
+ * `nolto.social/api/v1/apps` proxies here.
  */
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
@@ -76,13 +76,13 @@ async function handleInstance(): Promise<Response> {
 
   return json({
     uri: domain,
-    title: "Samverkan",
+    title: "Nolto",
     short_description:
       "Det professionella nätverket för svensk offentlig sektor.",
     description:
-      "Samverkan är ett federerat professionellt nätverk för anställda inom myndigheter, kommuner och regioner i Sverige.",
-    email: "kontakt@samverkan.se",
-    version: "4.2.0 (compatible; Samverkan 1.0)",
+      "Nolto är ett federerat professionellt nätverk för anställda inom myndigheter, kommuner och regioner i Sverige.",
+    email: "kontakt@nolto.social",
+    version: "4.2.0 (compatible; Nolto 1.0)",
     urls: { streaming_api: `wss://${domain}` },
     stats: {
       user_count: userCount,

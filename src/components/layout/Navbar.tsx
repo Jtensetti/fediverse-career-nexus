@@ -110,7 +110,7 @@ const Navbar = () => {
               "font-bold text-xl flex items-center gap-2 transition-colors",
               isHomePage && !scrolled ? 'text-primary-foreground' : 'text-primary'
             )}>
-              <span className="font-display">Samverkan</span>
+              <span className="font-display">Nolto</span>
             </RouterLink>
             <div className="flex items-center gap-4">
               <ModeToggle />
@@ -140,7 +140,7 @@ const Navbar = () => {
               "font-bold text-xl flex items-center gap-2 transition-colors",
               isHomePage && !scrolled ? 'text-primary-foreground' : 'text-primary'
             )}>
-              <span className="font-display">Samverkan</span>
+              <span className="font-display">Nolto</span>
             </RouterLink>
             
             {isAuthenticated && (
@@ -305,7 +305,7 @@ const Navbar = () => {
                 <SheetHeader className="p-6 border-b">
                   <SheetTitle>
                     <div className="flex items-center gap-2">
-                      <span className="font-display text-xl">Samverkan</span>
+                      <span className="font-display text-xl">Nolto</span>
                     </div>
                   </SheetTitle>
                   <SheetDescription className="sr-only">

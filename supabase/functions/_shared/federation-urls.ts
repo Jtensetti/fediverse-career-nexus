@@ -7,9 +7,9 @@
  * verification across the Fediverse.
  */
 
-const FALLBACK_DOMAIN = "samverkan.se";
+const FALLBACK_DOMAIN = "nolto.social";
 
-/** The canonical federation base URL, e.g. "https://samverkan.se" */
+/** The canonical federation base URL, e.g. "https://nolto.social" */
 export function getFederationBaseUrl(): string {
   const raw = Deno.env.get("SITE_URL") || Deno.env.get("FEDERATION_DOMAIN");
   if (raw) {
@@ -19,12 +19,12 @@ export function getFederationBaseUrl(): string {
   return `https://${FALLBACK_DOMAIN}`;
 }
 
-/** The canonical federation hostname, e.g. "samverkan.se" (no www, no protocol). */
+/** The canonical federation hostname, e.g. "nolto.social" (no www, no protocol). */
 export function getFederationDomain(): string {
   return getFederationBaseUrl().replace(/^https?:\/\//, "");
 }
 
-/** Strip "www." prefix if present so "www.samverkan.se" matches "samverkan.se". */
+/** Strip "www." prefix if present so "www.nolto.social" matches "nolto.social". */
 export function normalizeDomain(host: string): string {
   return host.toLowerCase().replace(/^www\./, "");
 }
@@ -45,7 +45,7 @@ export function isLocalUrl(url: string | null | undefined): boolean {
   }
 }
 
-/** Build a canonical actor URL: https://samverkan.se/functions/v1/actor/<username> */
+/** Build a canonical actor URL: https://nolto.social/functions/v1/actor/<username> */
 export function buildActorUrl(username: string): string {
   return `${getFederationBaseUrl()}/functions/v1/actor/${username}`;
 }

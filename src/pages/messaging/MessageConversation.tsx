@@ -317,7 +317,7 @@ export default function MessageConversation() {
     <div className="min-h-screen flex flex-col">
       <SEOHead 
         title={`Chat with ${conversationTitle}`} 
-        description="Private conversation on Samverkan." 
+        description="Private conversation on Nolto." 
       />
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">

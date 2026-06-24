@@ -107,7 +107,7 @@ serve(async (req) => {
     }
 
     const newAccountData = await newAccountResponse.json();
-    // Always use canonical federation URL (samverkan.se), not Supabase functions host
+    // Always use canonical federation URL (nolto.social), not Supabase functions host
     const localActorUrl = buildActorUrl(profile.username);
 
     // Verify alsoKnownAs on new account points to this account
@@ -115,7 +115,7 @@ serve(async (req) => {
     if (!alsoKnownAs.includes(localActorUrl)) {
       return new Response(
         JSON.stringify({ 
-          error: "Verification failed. The new account must list your Samverkan account in its alsoKnownAs field.",
+          error: "Verification failed. The new account must list your Nolto account in its alsoKnownAs field.",
           expected: localActorUrl,
           found: alsoKnownAs
         }),

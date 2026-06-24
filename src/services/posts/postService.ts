@@ -484,7 +484,7 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
           } : undefined,
           author: {
             username: preferredUsername || 'user',
-            fullname: profile.fullname || preferredUsername || 'Samverkan User',
+            fullname: profile.fullname || preferredUsername || 'Nolto User',
             avatar_url: profile.avatar_url || undefined,
           },
         } as UserPostWithMeta;
@@ -506,7 +506,7 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
         image_url: note?.image,
         author: {
           username: preferredUsername || 'user',
-          fullname: profile.fullname || preferredUsername || 'Samverkan User',
+          fullname: profile.fullname || preferredUsername || 'Nolto User',
           avatar_url: profile.avatar_url || undefined,
         },
       };

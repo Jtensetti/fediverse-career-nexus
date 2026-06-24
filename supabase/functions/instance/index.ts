@@ -68,16 +68,16 @@ serve(async (req) => {
       .select("id", { count: 'exact', head: true })
       .not('remote_actor_url', 'is', null);
 
-    const siteUrl = Deno.env.get("SITE_URL") || "https://samverkan.se";
+    const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
 
     // Build instance metadata (Mastodon-compatible format)
     const instanceData = {
       uri: siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, ""),
-      title: "Samverkan",
+      title: "Nolto",
       short_description: "Federerat professionellt nätverk för svensk offentlig sektor.",
-      description: "Samverkan är en öppen, federerad plattform för medarbetare i svensk offentlig sektor — kommuner, regioner och statliga myndigheter — som ansluter till Fediversen via ActivityPub.",
-      email: "kontakt@samverkan.se",
-      version: "1.0.0 (compatible; Samverkan)",
+      description: "Nolto är en öppen, federerad plattform för medarbetare i svensk offentlig sektor — kommuner, regioner och statliga myndigheter — som ansluter till Fediversen via ActivityPub.",
+      email: "kontakt@nolto.social",
+      version: "1.0.0 (compatible; Nolto)",
       urls: {
         streaming_api: null
       },
@@ -103,7 +103,7 @@ serve(async (req) => {
       },
       contact_account: null,
       rules: [
-        { id: "1", text: "Var saklig och respektfull. Innehåll ska främja samverkan inom svensk offentlig sektor." },
+        { id: "1", text: "Var saklig och respektfull. Innehåll ska främja nolto inom svensk offentlig sektor." },
         { id: "2", text: "Inga personuppgifter, sekretessbelagda uppgifter eller diarienummer som inte får spridas offentligt." },
         { id: "3", text: "Inga partipolitiska kampanjer eller kommersiell reklam som inte är yrkesrelevant." },
         { id: "4", text: "Trakasserier, hot eller hatpropaganda är förbjudet och leder till avstängning." },

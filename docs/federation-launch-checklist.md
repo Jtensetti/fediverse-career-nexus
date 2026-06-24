@@ -1,23 +1,23 @@
 # Federation Pre-Launch Checklist
 
-A pragmatic checklist to verify Samverkan is fully Fediverse-ready before
+A pragmatic checklist to verify Nolto is fully Fediverse-ready before
 opening signups in production.
 
 ## 1. DNS & Domain
 
-- [ ] `samverkan.se` resolves to the Lovable/Vercel deployment
-- [ ] `www.samverkan.se` resolves to the same origin (or 301 redirects to apex)
+- [ ] `nolto.social` resolves to the Lovable/Vercel deployment
+- [ ] `www.nolto.social` resolves to the same origin (or 301 redirects to apex)
 - [ ] HTTPS valid certificate covering both apex and `www`
-- [ ] `SITE_URL` secret is set to `https://samverkan.se`
+- [ ] `SITE_URL` secret is set to `https://nolto.social`
 
 ## 2. Discovery Endpoints (must return 200 publicly)
 
 ```
-curl -sI https://samverkan.se/.well-known/webfinger?resource=acct:test@samverkan.se
-curl -sI https://samverkan.se/.well-known/nodeinfo
-curl -sI https://samverkan.se/.well-known/host-meta
-curl -sI https://samverkan.se/.well-known/oauth-authorization-server
-curl -sI https://samverkan.se/nodeinfo/2.0
+curl -sI https://nolto.social/.well-known/webfinger?resource=acct:test@nolto.social
+curl -sI https://nolto.social/.well-known/nodeinfo
+curl -sI https://nolto.social/.well-known/host-meta
+curl -sI https://nolto.social/.well-known/oauth-authorization-server
+curl -sI https://nolto.social/nodeinfo/2.0
 ```
 
 All should return `200 OK` with appropriate `Content-Type`.
@@ -25,23 +25,23 @@ All should return `200 OK` with appropriate `Content-Type`.
 ## 3. Actor Object
 
 ```
-curl -H "Accept: application/activity+json" https://samverkan.se/functions/v1/actor/<username>
+curl -H "Accept: application/activity+json" https://nolto.social/functions/v1/actor/<username>
 ```
 
 Verify the response includes:
-- [ ] `id` is `https://samverkan.se/functions/v1/actor/<username>` (NOT supabase.co)
-- [ ] `inbox`, `outbox`, `followers`, `following` are all `samverkan.se` URLs
+- [ ] `id` is `https://nolto.social/functions/v1/actor/<username>` (NOT supabase.co)
+- [ ] `inbox`, `outbox`, `followers`, `following` are all `nolto.social` URLs
 - [ ] `publicKey.publicKeyPem` contains a valid PEM
-- [ ] `endpoints.sharedInbox` is `https://samverkan.se/functions/v1/inbox`
+- [ ] `endpoints.sharedInbox` is `https://nolto.social/functions/v1/inbox`
 
 ## 4. WebFinger Round-Trip
 
-From an external Mastodon instance, search for `@<username>@samverkan.se`.
+From an external Mastodon instance, search for `@<username>@nolto.social`.
 The profile should resolve and be followable.
 
 ## 5. Federation Smoke Tests
 
-- [ ] Follow a Mastodon account from Samverkan → confirm follower appears
+- [ ] Follow a Mastodon account from Nolto → confirm follower appears
 - [ ] Be followed by a Mastodon account → confirm follower stored
 - [ ] Post locally → confirm it appears on the Mastodon follower's timeline
 - [ ] Receive a like/boost/reply from Mastodon → confirm notification

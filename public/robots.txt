@@ -19,4 +19,4 @@ Allow: /
 Disallow: /functions/
 Disallow: /api/
 
-Sitemap: https://samverkan.se/sitemap.xml
+Sitemap: https://nolto.social/sitemap.xml

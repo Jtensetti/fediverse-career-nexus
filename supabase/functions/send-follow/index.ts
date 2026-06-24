@@ -128,7 +128,7 @@ serve(async (req) => {
     // Ensure we have keys
     const { privateKey } = await ensureActorKeys(localActorId);
     
-    // Always use canonical samverkan.se URLs (NOT supabase.co) so remote signature
+    // Always use canonical nolto.social URLs (NOT supabase.co) so remote signature
     // verification + key cache works correctly across the Fediverse.
     const localActorUrl = buildActorUrl(localActor.preferred_username);
     const activityId = buildActivityId();

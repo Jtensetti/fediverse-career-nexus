@@ -57,7 +57,7 @@ const FreelancersPage = () => {
     <DashboardLayout>
       <SEOHead
         title={t("freelancers.pageTitle", "Find Freelancers")}
-        description={t("freelancers.pageDescription", "Discover talented freelancers available for hire on Samverkan.")}
+        description={t("freelancers.pageDescription", "Discover talented freelancers available for hire on Nolto.")}
       />
 
       <div className="max-w-6xl mx-auto">

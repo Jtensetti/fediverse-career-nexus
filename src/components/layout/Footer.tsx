@@ -12,7 +12,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           <div className="col-span-1">
             <div className="flex items-center mb-4">
-              <h3 className="text-lg font-bold text-primary">Samverkan</h3>
+              <h3 className="text-lg font-bold text-primary">Nolto</h3>
             </div>
             <p className="text-muted-foreground mb-4">
               {t("footer.tagline", "A professional social network built on the ActivityPub federation protocol.")}
@@ -53,7 +53,7 @@ const Footer = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm text-muted-foreground text-center md:text-left">
-            © {new Date().getFullYear()} Samverkan. {t("footer.copyright", "Open source under the")}{" "}
+            © {new Date().getFullYear()} Nolto. {t("footer.copyright", "Open source under the")}{" "}
             <a 
               href="https://opensource.org/licenses/MIT" 
               target="_blank" 
@@ -68,7 +68,7 @@ const Footer = () => {
             <Link to="/privacy" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.privacy", "Privacy")}</Link>
             <Link to="/cookies" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.cookies", "Cookies")}</Link>
             <a 
-              href="https://codeberg.org/Tensetti/Samverkan" 
+              href="https://codeberg.org/Tensetti/Nolto" 
               target="_blank" 
               rel="noopener"
               className="text-muted-foreground hover:text-secondary transition-colors"

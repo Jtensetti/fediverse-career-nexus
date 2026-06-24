@@ -83,7 +83,7 @@ const Instances = () => {
     <>
       <SEOHead 
         title="Anslutna instanser" 
-        description="Utforska nätverket av anslutna instanser som samverkar med Samverkan." 
+        description="Utforska nätverket av anslutna instanser som samverkar med Nolto." 
       />
 
       <div className="min-h-screen flex flex-col bg-background">
@@ -98,7 +98,7 @@ const Instances = () => {
                 Anslutet nätverk
               </h1>
               <p className="text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-8">
-                Samverkan samverkar med instanser inom nätverket. 
+                Nolto samverkar med instanser inom nätverket. 
                 Ditt professionella nätverk sträcker sig bortom en enskild plattform.
               </p>
               
@@ -109,7 +109,7 @@ const Instances = () => {
                 </div>
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <Shield className="h-4 w-4" />
-                  <span>Säker samverkan</span>
+                  <span>Säker nolto</span>
                 </div>
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <CheckCircle className="h-4 w-4" />
@@ -205,7 +205,7 @@ const Instances = () => {
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Shield className="h-4 w-4" />
-                            <span>Kompatibel samverkan</span>
+                            <span>Kompatibel nolto</span>
                           </div>
                         </div>
                         <Button 
@@ -239,15 +239,15 @@ const Instances = () => {
                   Anslut din organisation
                 </h2>
                 <p className="text-muted-foreground mb-8">
-                  Kompatibla organisationer kan ansluta till Samverkan-nätverket. 
+                  Kompatibla organisationer kan ansluta till Nolto-nätverket. 
                   Följ användare och anslutningen upprättas automatiskt.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild>
-                    <Link to="/auth/signup">Gå med i Samverkan</Link>
+                    <Link to="/auth/signup">Gå med i Nolto</Link>
                   </Button>
                   <Button variant="outline" asChild>
-                    <Link to="/federation">Läs mer om samverkan</Link>
+                    <Link to="/federation">Läs mer om nolto</Link>
                   </Button>
                 </div>
               </div>

@@ -1,14 +1,14 @@
-# Samverkan
+# Nolto
 
 A federated professional network for the Swedish public sector — municipalities, regions, and government agencies. Built on ActivityPub, hosted in the EU, designed around privacy, accessibility, and a healthy collaborative culture.
 
-Live at **[www.samverkan.se](https://www.samverkan.se)**.
+Live at **[www.nolto.social](https://www.nolto.social)**.
 
 ---
 
 ## What it is
 
-Samverkan combines:
+Nolto combines:
 
 - **CV-style profiles** with verifiable employment, education, and endorsements
 - **Organisation pages** for public-sector employers with role-based admin (owner / admin / editor)
@@ -27,7 +27,7 @@ The platform is Swedish-first (`sv` default, English fallback) and hosted in Fra
 - **Backend:** Supabase (Postgres + RLS + Edge Functions on Deno)
 - **Federation:** ActivityPub · HTTP Signatures · WebFinger · NodeInfo
 - **Auth:** Email/password · OAuth (Google, Apple) · TOTP MFA · federated login
-- **Email:** Resend (sender: `noreply@samverkan.se`)
+- **Email:** Resend (sender: `noreply@nolto.social`)
 
 ---
 

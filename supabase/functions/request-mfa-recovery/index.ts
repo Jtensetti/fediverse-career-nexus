@@ -143,10 +143,10 @@ Deno.serve(async (req) => {
             "X-Connection-Api-Key": resendKey,
           },
           body: JSON.stringify({
-            from: "Samverkan Support <noreply@samverkan.se>",
+            from: "Nolto Support <noreply@nolto.social>",
             to: adminEmails,
             reply_to: email,
-            subject: `[Samverkan] MFA recovery request from ${email}`,
+            subject: `[Nolto] MFA recovery request from ${email}`,
             html,
           }),
         });
