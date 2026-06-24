@@ -649,7 +649,7 @@
   "homepage": {
     "hero": {
       "title": "The Professional Network",
-      "titleAccent": "for the Public Sector",
+      "titleAccent": "without Big Tech",
       "description": "Connect employees, share knowledge and recruit — on an open, federated platform you control.",
       "getStarted": "Get Started Free",
       "exploreFeed": "Explore the Platform"
@@ -682,7 +682,7 @@
     },
     "jobs": {
       "subtitle": "Career Opportunities",
-      "title": "Positions in the Public Sector",
+      "title": "Transparent Positions",
       "description": "Transparent roles from organizations across the federated network",
       "browseAll": "Browse All Positions"
     },
@@ -696,13 +696,13 @@
       "noTracking": "No tracking or invasive analytics",
       "fastExperience": "Fast, distraction-free experience",
       "exploreFeed": "Explore the Feed",
-      "profileTitle": "Professional Profiles for the Public Sector",
+      "profileTitle": "Professional Profiles Without Big Tech",
       "profileDesc": "Create a professional profile owned by your organization. Skills, experience and endorsements — all in one place.",
       "verifiedCredentials": "Verified credentials and skill endorsements",
       "dataExport": "Easy and secure data export",
       "yourRules": "Your organization, your rules",
       "createProfile": "Create Your Profile",
-      "jobsTitle": "Transparent Hiring in the Public Sector",
+      "jobsTitle": "Transparent Hiring — Without Algorithms",
       "jobsDesc": "Post and find positions with transparent details. Salary ranges, remote work and direct contact without middlemen.",
       "salaryRanges": "Salary ranges on every listing",
       "directConnections": "Direct contact, no middlemen",
@@ -761,7 +761,7 @@
       "dismiss": "Dismiss"
     },
     "testimonials": {
-      "title": "Trusted by Public Sector Organizations",
+      "title": "Trusted Organizations on Nolto",
       "description": "Join organizations that have chosen a secure, Swedish platform"
     },
     "featuredIn": {
@@ -776,8 +776,8 @@
       "openStandardDesc": "Interoperable",
       "accessible": "Accessible",
       "accessibleDesc": "WCAG compliant",
-      "publicSector": "Public Sector",
-      "publicSectorDesc": "Tailored"
+      "publicSector": "Federated",
+      "publicSectorDesc": "Open standard"
     },
     "comparison": {
       "title": "Why Choose Nolto?",
@@ -1120,7 +1120,7 @@
     "locationLabel": "Location",
     "locationPlaceholder": "e.g. Stockholm, London",
     "worksAt": "Works at",
-    "worksAtPlaceholder": "e.g. Municipality, Region",
+    "worksAtPlaceholder": "e.g. Acme Corp, Studio Lumen",
     "studiedAt": "Studied at",
     "studiedAtPlaceholder": "e.g. KTH, MIT",
     "instance": "Organization",
