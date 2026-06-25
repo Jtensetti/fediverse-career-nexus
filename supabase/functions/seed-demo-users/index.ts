@@ -259,7 +259,7 @@ async function seed() {
     await supabase.from("user_settings").upsert({ user_id: uid, theme: "system", show_network_connections: true }, { onConflict: "user_id" });
 
     // actor (no real keys – federation outbound will skip these demo users)
-    const { error: actorErr } = await supabase.from("actors").upsert({
+    const { error: actorErr } = await supabase.from("actors").insert({
       user_id: uid,
       preferred_username: username,
       type: "Person",
@@ -267,7 +267,7 @@ async function seed() {
       is_remote: false,
       private_key: "demo-seed",
       public_key: "demo-seed",
-    }, { onConflict: "user_id,preferred_username" as any });
+    });
     if (actorErr) log.push(`actor ${username}: ${actorErr.message}`);
 
     created.push({ id: uid, username, fullname, companySlug, title, city, isFreelancer });
