@@ -515,6 +515,32 @@ async function seed() {
   return log;
 }
 
+async function cleanup() {
+  const log: string[] = [];
+  // Companies first (cascades to ap_objects, articles, employees, followers, jobs.company_id)
+  const slugs = companyData.map(c => c.slug);
+  const { error: companyErr } = await supabase.from("companies").delete().in("slug", slugs);
+  if (companyErr) log.push(`companies delete: ${companyErr.message}`);
+
+  // List all auth users with our demo email domain and delete them.
+  // Cascades through profiles → actors → ap_objects → reactions → connections → experiences → education → skills → articles → job_posts.
+  let page = 1;
+  let total = 0;
+  for (;;) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) { log.push(`listUsers: ${error.message}`); break; }
+    const targets = (data?.users ?? []).filter(u => u.email?.endsWith("@demo.nolto.local"));
+    for (const u of targets) {
+      const { error: delErr } = await supabase.auth.admin.deleteUser(u.id);
+      if (delErr) log.push(`del ${u.email}: ${delErr.message}`); else total++;
+    }
+    if ((data?.users ?? []).length < 200) break;
+    page++;
+  }
+  log.push(`auth users deleted: ${total}`);
+  return log;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
   const secret = req.headers.get("x-seed-secret");
@@ -522,8 +548,19 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { ...cors, "content-type": "application/json" } });
   }
   try {
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action") ?? "seed";
+    if (action === "clean") {
+      const log = await cleanup();
+      return new Response(JSON.stringify({ ok: true, action, log }, null, 2), { headers: { ...cors, "content-type": "application/json" } });
+    }
+    if (action === "reset") {
+      const cleanLog = await cleanup();
+      const seedLog = await seed();
+      return new Response(JSON.stringify({ ok: true, action, cleanLog, seedLog }, null, 2), { headers: { ...cors, "content-type": "application/json" } });
+    }
     const log = await seed();
-    return new Response(JSON.stringify({ ok: true, log }, null, 2), { headers: { ...cors, "content-type": "application/json" } });
+    return new Response(JSON.stringify({ ok: true, action, log }, null, 2), { headers: { ...cors, "content-type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e), stack: (e as Error).stack }), { status: 500, headers: { ...cors, "content-type": "application/json" } });
   }
