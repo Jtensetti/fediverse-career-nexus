@@ -99,8 +99,8 @@ const companyData = [
   { name: "Granit Mobility", slug: "granit-mobility", industry: "Greentech", size: "51-200", tagline: "Elektrifierar tunga transporter", desc: "Vi bygger laddinfrastruktur för lastbilar och bussar i Norden. Säte i Göteborg, fabrik i Skellefteå." },
   { name: "Lagom Health", slug: "lagom-health", industry: "Healthtech", size: "11-50", tagline: "Digital primärvård utan brus", desc: "Vi tror att vården ska vara enkel, mänsklig och tillgänglig. Helt utan reklam." },
   { name: "Tinda Pay", slug: "tinda-pay", industry: "Fintech", size: "51-200", tagline: "Betalningar för småföretagare", desc: "Open banking på riktigt. Vi bygger för enskilda firmor och småbolag som glömts bort av de stora aktörerna." },
-  { name: "Skogen Studios", slug: "skogen-studios", industry: "Spelutveckling", size: "2-10", tagline: "Mysiga spel med svensk själ", desc: "En liten indie-studio i Umeå. Vårt nästa spel släpps i höst." },
-  { name: "Brevik & Co", slug: "brevik-och-co", industry: "Design", size: "2-10", tagline: "Brand och digital design", desc: "Vi hjälper små och medelstora företag att hitta sin röst – visuellt och verbalt." },
+  { name: "Skogen Studios", slug: "skogen-studios", industry: "Spelutveckling", size: "1-10", tagline: "Mysiga spel med svensk själ", desc: "En liten indie-studio i Umeå. Vårt nästa spel släpps i höst." },
+  { name: "Brevik & Co", slug: "brevik-och-co", industry: "Design", size: "1-10", tagline: "Brand och digital design", desc: "Vi hjälper små och medelstora företag att hitta sin röst – visuellt och verbalt." },
   { name: "Öresund Analytics", slug: "oresund-analytics", industry: "SaaS", size: "11-50", tagline: "BI för moderna team", desc: "Självbetjäningsanalys ovanpå din data warehouse. Bygger på öppna standarder." },
 ];
 
