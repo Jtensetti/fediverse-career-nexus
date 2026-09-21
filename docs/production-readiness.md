@@ -1,6 +1,32 @@
 # Nolto production readiness — 21 September 2026
 
-This branch is a release candidate, not a certification that the live service is production ready. The implementation and local checks below are complete. Deployment, a real Mastodon round trip, the production database inventory and the operator's legal details remain release gates.
+This branch is a release candidate, not a certification that the live service is production ready. The implementation and local checks below are complete. The existing Lovable Cloud backend is now identified and a read-only production preflight has run. Deployment, a staging migration rehearsal, a real Mastodon round trip and the operator's legal details remain release gates.
+
+## Verified Lovable Cloud backend
+
+Verified on 21 September 2026 through the owner's authenticated Lovable connection:
+
+| Resource | Verified value |
+| --- | --- |
+| Lovable project | [fediverse-career-newest](https://lovable.dev/projects/aaae6ed4-598c-43d7-b7d3-0c838ee77f5b) |
+| Cloud status | Enabled; Supabase stack |
+| Backend project ref | `anknmcmqljejabxbeohv`, confirmed by the project's `supabase/config.toml` |
+| GitHub repository | `Jtensetti/fediverse-career-nexus` |
+| Lovable source revision | `7b9df22372e44c38b21107df89f6e07106d06728`, also the observed GitHub `main` head |
+| Release candidate | [Draft PR #54](https://github.com/Jtensetti/fediverse-career-nexus/pull/54), not merged or deployed |
+
+Lovable Cloud uses Supabase's open-source foundation but is managed through Lovable. The owner's separate Supabase connection lists the historical Frikopplad project and an unrelated game project; its access denial for this Cloud backend was not evidence that the backend had been deleted. Continue in the existing Cloud project. A replacement Supabase project or a database-provider migration is unnecessary. See [Lovable Cloud](https://docs.lovable.dev/features/cloud).
+
+`scripts/inspect-production.sql` is a repeatable read-only preflight for the Lovable database connector or Cloud SQL editor. It returns counts and schema/privilege metadata without selecting personal details, signing keys or tokens. Its verified result was:
+
+- 51 auth users: 50 match both the boolean `seeded: true` marker and the reserved `@demo.nolto.local` domain; 1 account is outside the cleanup target set and must be preserved.
+- 50 actors belong to those demo users. There are 8 companies in total; this count alone does not qualify them for deletion. Company provenance and non-demo contributions still need the cleanup script's checks.
+- No duplicate case-insensitive profile usernames, duplicate local actors, profile/actor username mismatches, or incomplete local key pairs were found. All required relations and the partition-key function exist. This checks specific preconditions, not full migration compatibility or key validity.
+- The delivery ledger, one-time OAuth state and verified remote-identity tables do not exist yet. The production-readiness migration has not been applied.
+- Both client roles have a SELECT grant on the actor private-key column, and seven sensitive routines have client EXECUTE grants. These are privilege findings; RLS and function bodies also affect effective access. No signing-key values were read. Apply the coordinated key-access hardening below before launch.
+- The federation queue contains 21 rows, all marked `processed` at inspection time.
+
+Git's merge check found no conflicts with the two newer Lovable commits on `main`; they add preview auth storage and regenerate client types. No merge or production mutation was performed during this preflight.
 
 ## Identity and interoperability
 
@@ -27,9 +53,9 @@ Reference behavior: [Mastodon WebFinger](https://docs.joinmastodon.org/spec/webf
 
 ## Deploy in this order
 
-1. Back up the exact project `anknmcmqljejabxbeohv`; inventory real and seeded accounts. Neither connected Supabase project in the editing session was this project. No live database mutation, function deployment, domain edit or data deletion was performed.
+1. Work in the existing Lovable project above and back up its exact backend `anknmcmqljejabxbeohv`. Re-run `scripts/inspect-production.sql` and refresh the cleanup inventory before changes. Verify a restorable backup, including the retained account and signing identities; neither GitHub history nor the SQL counts are a data backup. Lovable's [Cloud export](https://docs.lovable.dev/features/advanced-settings#export-lovable-cloud-data) excludes storage files, Edge Function code and secrets, and does not provide usable migrated passwords. Confirm the actual restore procedure and protect the separate assets. No live database mutation, function deployment, domain edit or data deletion has been performed in this work.
 2. Rehearse `20260921164838_nolto_identity_and_federation_security.sql` against a staging copy. It aborts on duplicate case-insensitive handles or multiple local actors per user. Reconcile these explicitly; do not silently merge federated identities. The repository's older migration history was not replayed from scratch.
-3. Take a maintenance window and apply the migration and matching function versions together. Keep registrations and federation paused during the transition. Ordinary clients lose access to signing keys and privileged signing/queue RPCs. Test both anonymous and authenticated roles against the actual schema, including existing policies and views.
+3. Take a maintenance window and apply the migration and matching function versions together through the existing Lovable Cloud environment. Keep registrations and federation paused during the transition. Ordinary clients lose access to signing keys and privileged signing/queue RPCs. Test both anonymous and authenticated roles against the actual schema, including existing policies and views. Git sync or a successful frontend publish alone does not verify SQL migration or function deployment. Lovable manages [Edge Function deployment](https://docs.lovable.dev/features/edge-functions); verify the deployed versions and invocation results in Cloud.
 4. Deploy the changed functions: `webfinger actor inbox outbox objects activities followers following host-meta nodeinfo create-user-actor send-follow send-move federation federated-auth-init federated-auth-callback sync-federated-profile auth-signup auth-confirm-email import-follows-csv send-dm request-mfa-recovery admin-issue-mfa-recovery seed-demo-users generate-actor-keys follower-batch-processor key-manager`. The last four are **410 tombstones** so an already-deployed seed, key-export or legacy worker endpoint is actually retired. Merely deleting local source would leave it live.
 5. Set `FEDERATION_DOMAIN=nolto.social`, `SITE_URL=<actual HTTPS UI origin>`, a strong existing-compatible `TOKEN_ENCRYPTION_KEY`, and the email provider secret. Retain Supabase's own project URL/service key on the server only. Add the exact UI callback `/auth/callback` and email redirect to Supabase's allowlist. PKCE support is available in Mastodon 4.3+; test the minimum supported version.
 6. Route `nolto.social/.well-known/webfinger` and the canonical `/functions/v1/…` federation endpoints to the backend **before** a website redirect or SPA fallback. `vercel.json` and `public/_redirects` cover hosts that support external rewrites. If the UI remains on a different domain behind Cloudflare, use `deploy/nolto-gateway.mjs` with `SUPABASE_ORIGIN=https://anknmcmqljejabxbeohv.supabase.co` and `SITE_ORIGIN=<UI origin>`. Remove/precede conflicting Cloudflare redirect rules. The Worker is supplied but not deployed.
@@ -45,6 +71,8 @@ OAuth associations now use a server-only identity table. Existing legacy Mastodo
 ## Remove seeded data
 
 The seed function and fabricated marketing profiles/posts are removed. The cleanup is deliberately separate from the schema migration.
+
+The production preflight above has identified the 50 marked demo accounts without deleting anything. This does not yet produce the cleanup script's complete manifest. The script below requires server-side admin credentials in the authorized runtime; the Lovable SQL connection does not supply those credentials. Do not export server credentials into frontend code to run it.
 
 ```sh
 # Supply credentials via your existing secret manager / environment; do not commit them.
