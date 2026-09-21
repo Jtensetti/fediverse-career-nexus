@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 // Common headers to be used by all endpoints
 const corsHeaders = {
@@ -42,15 +41,15 @@ interface HealthCheckResult {
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Generate a unique trace ID for this request
   const traceId = crypto.randomUUID();
-  
+
   // Set CORS headers and add trace ID
-  const headers = { 
-    ...corsHeaders, 
+  const headers = {
+    ...corsHeaders,
     "Content-Type": "application/json",
-    "X-Trace-ID": traceId 
+    "X-Trace-ID": traceId
   };
 
   // Handle CORS preflight requests
@@ -75,58 +74,58 @@ serve(async (req) => {
       }
     }
   };
-  
+
   try {
     logger.debug({ traceId }, "Starting health check");
-    
+
     // Check 1: Database connectivity - use a simple query to test
     try {
       const { data, error } = await supabaseClient.rpc('version');
-      
+
       const endTime = performance.now();
       const latency = Math.round(endTime - startTime);
-      
+
       if (error) {
         throw error;
       }
-      
+
       healthCheck.checks.database = {
         status: latency < 500 ? "pass" : "warn",
         latency_ms: latency,
         message: latency < 500 ? "Database responding normally" : "Database response time slow"
       };
-      
+
       logger.debug({ latency, traceId }, "Database check completed");
     } catch (error) {
-      logger.error({ error: error.message, traceId }, "Database check failed");
+      logger.error({ error: (error instanceof Error ? error.message : "Request failed"), traceId }, "Database check failed");
       healthCheck.checks.database = {
         status: "fail",
         latency_ms: Math.round(performance.now() - startTime),
-        message: `Database error: ${error.message}`
+        message: `Database error: ${(error instanceof Error ? error.message : "Request failed")}`
       };
       healthCheck.status = "unhealthy";
     }
-    
+
     // Check 2: Queue depth - check pending items in federation queue
     try {
       const { data: queueStats, error: queueError } = await supabaseClient
         .from('federation_queue_stats')
         .select('*');
-        
+
       if (queueError) {
         throw queueError;
       }
-      
+
       const totalPending = queueStats?.reduce((total, stat) => {
         return total + (stat.pending_count || 0);
       }, 0) || 0;
-      
+
       const queueThresholdWarning = 500;
       const queueThresholdError = 1000;
-      
+
       let queueStatus: "pass" | "warn" | "fail" = "pass";
       let queueMessage = "Queue depth normal";
-      
+
       if (totalPending > queueThresholdError) {
         queueStatus = "fail";
         queueMessage = `Queue depth critical: ${totalPending} pending items`;
@@ -134,57 +133,57 @@ serve(async (req) => {
         queueStatus = "warn";
         queueMessage = `Queue depth high: ${totalPending} pending items`;
       }
-      
+
       healthCheck.checks.queue = {
         status: queueStatus,
         pending_count: totalPending,
         max_allowed: queueThresholdError,
         message: queueMessage
       };
-      
+
       logger.debug({ pending_count: totalPending, traceId }, "Queue check completed");
-      
+
       // Update overall status if queue is in warning state
       if (queueStatus === "fail" && healthCheck.status === "healthy") {
         healthCheck.status = "unhealthy";
       } else if (queueStatus === "warn" && healthCheck.status === "healthy") {
         healthCheck.status = "degraded";
       }
-      
+
     } catch (error) {
-      logger.error({ error: error.message, traceId }, "Queue check failed");
+      logger.error({ error: (error instanceof Error ? error.message : "Request failed"), traceId }, "Queue check failed");
       healthCheck.checks.queue = {
         status: "fail",
         pending_count: 0,
         max_allowed: 1000,
-        message: `Queue check error: ${error.message}`
+        message: `Queue check error: ${(error instanceof Error ? error.message : "Request failed")}`
       };
       healthCheck.status = "unhealthy";
     }
-    
-    logger.info({ 
+
+    logger.info({
       health_status: healthCheck.status,
       db_status: healthCheck.checks.database.status,
       queue_status: healthCheck.checks.queue.status,
       traceId
     }, "Health check completed");
-    
+
     // Return appropriate HTTP status code based on health status
-    const httpStatus = 
+    const httpStatus =
       healthCheck.status === "healthy" ? 200 :
       healthCheck.status === "degraded" ? 200 : 503;
-    
+
     return new Response(
       JSON.stringify(healthCheck),
-      { 
+      {
         status: httpStatus,
-        headers 
+        headers
       }
     );
-    
+
   } catch (error) {
-    logger.error({ error: error.message, stack: error.stack, traceId }, "Health check failed");
-    
+    logger.error({ error: (error instanceof Error ? error.message : "Request failed"), stack: (error instanceof Error ? error.stack : undefined), traceId }, "Health check failed");
+
     return new Response(
       JSON.stringify({
         status: "unhealthy",
@@ -192,9 +191,9 @@ serve(async (req) => {
         message: "Internal server error",
         traceId
       }),
-      { 
+      {
         status: 500,
-        headers 
+        headers
       }
     );
   }

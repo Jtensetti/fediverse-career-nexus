@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import i18n from "@/i18n";
 import { ConnectionDegree } from "@/components/social/ConnectionBadge";
-import { notificationService } from "../misc/notificationService";
 
 export interface NetworkConnection {
   id: string;           // User's profile ID (for messaging)
@@ -31,7 +30,7 @@ export interface NetworkSuggestion {
 export const getUserConnections = async (targetUserId?: string): Promise<NetworkConnection[]> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     // Use provided targetUserId or fall back to current user
     const userId = targetUserId || user?.id;
     if (!userId) return [];
@@ -151,7 +150,7 @@ const getSimpleSuggestions = async (userId: string): Promise<NetworkSuggestion[]
     .in("status", ["accepted", "pending"]);
 
   const connectedUserIds = new Set<string>();
-  
+
   if (connections) {
     connections.forEach(conn => {
       if (conn.user_id === userId) {
@@ -241,35 +240,8 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
 
     const rejected = rows.find((r: any) => r.status === "rejected");
     if (rejected) {
-      const { data: updated, error: updateError } = await supabase
-        .from("user_connections")
-        .update({
-          user_id: user.id,
-          connected_user_id: userId,
-          status: "pending",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", rejected.id)
-        .select()
-        .single();
-
-      if (updateError) throw updateError;
-
-      try {
-        await notificationService.createNotification({
-          type: 'connection_request',
-          recipientId: userId,
-          actorId: user.id,
-          content: 'sent you a connection request',
-          objectId: updated.id,
-          objectType: 'connection'
-        });
-      } catch (notifError) {
-        console.warn('Failed to create connection notification:', notifError);
-      }
-
-      toast.success(i18n.t("toasts.connectionRequestSent"));
-      return true;
+      toast.info('Den tidigare förfrågan avslogs. Mottagaren kan ta initiativ till en ny kontakt.');
+      return false;
     }
 
     // Create the connection request
@@ -286,18 +258,6 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
     if (error) throw error;
 
     // Create notification for the recipient
-    try {
-      await notificationService.createNotification({
-        type: 'connection_request',
-        recipientId: userId,
-        actorId: user.id,
-        content: 'sent you a connection request',
-        objectId: data.id,
-        objectType: 'connection'
-      });
-    } catch (notifError) {
-      console.warn('Failed to create connection notification:', notifError);
-    }
 
     toast.success(i18n.t("toasts.connectionRequestSent"));
     return true;
@@ -324,7 +284,7 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
 
     const { error } = await supabase
       .from("user_connections")
-      .update({ 
+      .update({
         status: "accepted",
         updated_at: new Date().toISOString()
       })
@@ -348,24 +308,13 @@ export const acceptConnectionRequest = async (connectionId: string): Promise<boo
         'create_mutual_connection_follows',
         { user_a: user.id, user_b: connection.user_id }
       );
-      
+
       if (followError) {
         console.warn('Failed to create mutual follows:', followError);
       }
 
       // Notify the original requester that their request was accepted
-      try {
-        await notificationService.createNotification({
-          type: 'connection_accepted',
-          recipientId: connection.user_id,
-          actorId: user.id,
-          content: 'accepted your connection request',
-          objectId: connectionId,
-          objectType: 'connection'
-        });
-      } catch (notifError) {
-        console.warn('Failed to create acceptance notification:', notifError);
-      }
+
     }
 
     toast.success(i18n.t("toasts.connectionAccepted"));
@@ -420,8 +369,8 @@ export const removeConnection = async (connectionId: string): Promise<boolean> =
 
     // Remove mutual follows where source is 'connection' (preserves manual follows)
     if (connection) {
-      const otherId = connection.user_id === user.id 
-        ? connection.connected_user_id 
+      const otherId = connection.user_id === user.id
+        ? connection.connected_user_id
         : connection.user_id;
 
       await supabase
@@ -482,9 +431,9 @@ export const getPendingConnectionRequests = async (): Promise<PendingConnectionR
 
     return requests.map(request => {
       const profile = profileMap.get(request.user_id);
-      
+
       if (!profile) return null;
-      
+
       return {
         id: request.id,
         username: profile.username || "",
@@ -596,15 +545,15 @@ export const getConnectionDegree = async (targetUserId: string): Promise<Connect
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
     if (user.id === targetUserId) return 0 as ConnectionDegree;
-    
+
     const { data, error } = await supabase
-      .rpc('get_connection_degree', { 
-        source_user_id: user.id, 
-        target_user_id: targetUserId 
+      .rpc('get_connection_degree', {
+        source_user_id: user.id,
+        target_user_id: targetUserId
       });
-    
+
     if (error) throw error;
-    
+
     return (data <= 3 ? data as ConnectionDegree : null);
   } catch (error) {
     console.error('Error getting connection degree:', error);
@@ -617,15 +566,15 @@ export const getProfileVisibilitySettings = async (): Promise<boolean> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
-    
+
     const { data, error } = await supabase
       .from('user_settings')
       .select('show_network_connections')
       .eq('user_id', user.id)
       .single();
-    
+
     if (error) throw error;
-    
+
     return data?.show_network_connections ?? true;
   } catch (error) {
     console.error('Error fetching network visibility settings:', error);
@@ -638,19 +587,19 @@ export const updateProfileVisibilitySettings = async (showNetworkConnections: bo
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
-    
+
     const { error } = await supabase
       .from('user_settings')
-      .update({ 
+      .update({
         show_network_connections: showNetworkConnections,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id);
-    
+
     if (error) throw error;
-    
+
     toast.success(i18n.t(showNetworkConnections ? "toasts.networkNowVisible" : "toasts.networkNowHidden"));
-    
+
     return true;
   } catch (error) {
     console.error('Error updating network visibility settings:', error);

@@ -49,7 +49,7 @@ export default function OnboardingFlow({ open, onComplete }: Props) {
   const finish = async (enable: boolean) => {
     setBusy(true); setError("");
     try {
-      if (!await createUserActor(user!.id, enable)) throw new Error(t("onboardingFlow.federationError"));
+      if (enable && !await createUserActor(user!.id, true)) throw new Error(t("onboardingFlow.federationError"));
       await onComplete();
     } catch (e) { setError(e instanceof Error ? e.message : t("onboardingFlow.saveError")); }
     finally { setBusy(false); }

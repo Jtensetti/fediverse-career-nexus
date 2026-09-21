@@ -1,3 +1,4 @@
+import { postHandler, requireAdmin } from "../_shared/user-auth.ts";
 import { sendEmail } from "../_shared/email.ts";
 import { getSiteUrl } from "../_shared/federation-urls.ts";
 // Caller: src/components/moderation/MfaRecoveryQueue.tsx (admin only)
@@ -36,7 +37,8 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-Deno.serve(async (req) => {
+Deno.serve(postHandler(async (req) => {
+  await requireAdmin(req);
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -229,7 +231,7 @@ Deno.serve(async (req) => {
           <hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0">
           <p style="color:#666;font-size:13px">
             <strong>Var detta inte du?</strong> Ignorera detta mail och kontakta support omedelbart på
-            <a href="mailto:support@nolto.social">support@nolto.social</a>. Din MFA förblir aktiv tills länken används.
+            <a href="mailto:jtensetti@protonmail.com">jtensetti@protonmail.com</a>. Din MFA förblir aktiv tills länken används.
           </p>
         </div>
       `;
@@ -270,4 +272,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

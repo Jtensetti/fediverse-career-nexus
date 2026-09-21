@@ -71,8 +71,7 @@ export async function toggleReaction(
   targetId: string,
   reaction: ReactionKey
 ): Promise<ToggleReactionResult> {
-  console.log('🎯 toggleReaction called:', { targetType, targetId, reaction });
-  
+
   try {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -81,8 +80,6 @@ export async function toggleReaction(
       toast.error("Logga in för att reagera");
       return { success: false, action: 'error', reaction };
     }
-    
-    console.log('👤 toggleReaction: User authenticated:', user.id);
 
     // Check for existing reaction
     const { data: existing, error: fetchError } = await supabase
@@ -113,7 +110,6 @@ export async function toggleReaction(
           return { success: false, action: 'error', reaction };
         }
 
-        console.log('✅ toggleReaction: Reaction removed successfully');
         return { success: true, action: 'removed', reaction };
       } else {
         // Different reaction - switch it
@@ -128,7 +124,6 @@ export async function toggleReaction(
           return { success: false, action: 'error', reaction };
         }
 
-        console.log('✅ toggleReaction: Reaction switched successfully');
         return { success: true, action: 'switched', reaction };
       }
     } else {
@@ -147,8 +142,6 @@ export async function toggleReaction(
         toast.error("Kunde inte lägga till reaktion");
         return { success: false, action: 'error', reaction };
       }
-      
-      console.log('✅ toggleReaction: Reaction added successfully');
 
       // Create notification for the content owner
       try {
@@ -184,10 +177,10 @@ export async function toggleReaction(
               .eq('id', replyData.attributed_to)
               .maybeSingle();
             ownerId = actor?.user_id || null;
-            
+
             // Extract rootPost for navigation to parent post
             const content = replyData.content as any;
-            parentId = content?.rootPost || content?.content?.rootPost || 
+            parentId = content?.rootPost || content?.content?.rootPost ||
                        content?.inReplyTo || content?.content?.inReplyTo || null;
           }
         }
@@ -200,9 +193,9 @@ export async function toggleReaction(
             actor_id: user.id,
             object_id: targetType === 'reply' && parentId ? targetId : targetId,
             object_type: targetType,
-            content: JSON.stringify({ 
+            content: JSON.stringify({
               parentId: parentId || undefined, // Used for navigating to parent post
-              reaction: reaction 
+              reaction: reaction
             }),
           });
         }
@@ -224,9 +217,9 @@ export async function toggleReaction(
 export const getPostReactions = (postId: string) => getReactions('post', postId);
 export const getReplyReactions = (replyId: string) => getReactions('reply', replyId);
 export const getMessageReactions = (messageId: string) => getReactions('message', messageId);
-export const togglePostReaction = (postId: string, reaction: ReactionKey) => 
+export const togglePostReaction = (postId: string, reaction: ReactionKey) =>
   toggleReaction('post', postId, reaction);
-export const toggleReplyReaction = (replyId: string, reaction: ReactionKey) => 
+export const toggleReplyReaction = (replyId: string, reaction: ReactionKey) =>
   toggleReaction('reply', replyId, reaction);
 
 interface MessageReactionContext {
@@ -236,12 +229,11 @@ interface MessageReactionContext {
 
 // Special function for message reactions that handles notifications properly
 export async function toggleMessageReaction(
-  messageId: string, 
+  messageId: string,
   reaction: ReactionKey,
   context?: MessageReactionContext
 ): Promise<ToggleReactionResult> {
-  console.log('🎯 toggleMessageReaction called:', { messageId, reaction, context });
-  
+
   try {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -280,7 +272,6 @@ export async function toggleMessageReaction(
           return { success: false, action: 'error', reaction };
         }
 
-        console.log('✅ Message reaction removed successfully');
         return { success: true, action: 'removed', reaction };
       } else {
         // Different reaction - switch it
@@ -295,7 +286,6 @@ export async function toggleMessageReaction(
           return { success: false, action: 'error', reaction };
         }
 
-        console.log('✅ Message reaction switched successfully');
         return { success: true, action: 'switched', reaction };
       }
     } else {
@@ -315,13 +305,11 @@ export async function toggleMessageReaction(
         return { success: false, action: 'error', reaction };
       }
 
-      console.log('✅ Message reaction added successfully');
-
       // Create notification for the message sender (if we have context)
       // The sender is the one who should be notified when someone reacts
       try {
         const messageOwnerId = context?.senderId;
-        
+
         if (messageOwnerId && messageOwnerId !== user.id) {
           await supabase.from('notifications').insert({
             type: 'message_reaction',
@@ -329,12 +317,12 @@ export async function toggleMessageReaction(
             actor_id: user.id,
             object_id: messageId,
             object_type: 'message',
-            content: JSON.stringify({ 
+            content: JSON.stringify({
               reaction,
               conversationWith: context?.recipientId === user.id ? context?.senderId : context?.recipientId
             }),
           });
-          console.log('✅ Notification created for message reaction');
+
         }
       } catch (notifError) {
         // Don't fail the reaction if notification fails
@@ -373,13 +361,13 @@ export async function getBatchReplyReactions(
 
     // Build result map
     const result: Record<string, ReactionCount[]> = {};
-    
+
     replyIds.forEach(replyId => {
       const counts: Record<ReactionKey, { count: number; hasReacted: boolean }> = {} as any;
       REACTIONS.forEach(r => {
         counts[r] = { count: 0, hasReacted: false };
       });
-      
+
       reactions?.filter(r => r.target_id === replyId).forEach(r => {
         const key = r.reaction as ReactionKey;
         if (counts[key]) {
@@ -389,7 +377,7 @@ export async function getBatchReplyReactions(
           }
         }
       });
-      
+
       result[replyId] = REACTIONS.map(r => ({
         reaction: r,
         count: counts[r].count,

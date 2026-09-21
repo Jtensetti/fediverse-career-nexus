@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { workerHandler } from "../_shared/user-auth.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,7 +15,7 @@ const supabaseClient = createClient(
 const PAST_EVENT_RETENTION_DAYS = 90; // Archive events older than 90 days
 const NOTIFY_HOSTS_OF_NEW_RSVPS = true;
 
-serve(async (req) => {
+Deno.serve(workerHandler(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -140,4 +140,4 @@ serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}));

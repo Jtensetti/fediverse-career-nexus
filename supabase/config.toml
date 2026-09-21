@@ -1,36 +1,77 @@
+# Each endpoint verifies sessions, worker credentials or HTTP signatures itself, or is explicitly public.
+# Gateway legacy JWT verification would reject modern Auth JWTs before those checks.
 project_id = "anknmcmqljejabxbeohv"
 
-[functions.federated-auth-init]
-verify_jwt = false
-
-[functions.federated-auth-callback]
-verify_jwt = false
-
-[functions.sync-federated-profile]
-verify_jwt = true
-
-[functions.send-follow]
-verify_jwt = false
-
-[functions.send-dm]
-verify_jwt = false
-
-[functions.encrypt-message]
-verify_jwt = false
-
-[functions.webfinger]
+[functions.activities]
 verify_jwt = false
 
 [functions.actor]
 verify_jwt = false
 
-[functions.nodeinfo]
+[functions.admin-issue-mfa-recovery]
 verify_jwt = false
 
-[functions.inbox]
+[functions.analytics]
 verify_jwt = false
 
-[functions.outbox]
+[functions.auth-confirm-email]
+verify_jwt = false
+
+[functions.auth-login]
+verify_jwt = false
+
+[functions.auth-signup]
+verify_jwt = false
+
+[functions.cache-manager]
+verify_jwt = false
+
+[functions.cleanup-scheduler]
+verify_jwt = false
+
+[functions.company-create]
+verify_jwt = false
+
+[functions.consume-mfa-recovery-token]
+verify_jwt = false
+
+[functions.create-user-actor]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
+[functions.encrypt-message]
+verify_jwt = false
+
+[functions.event-scheduler]
+verify_jwt = false
+
+[functions.export-user-data]
+verify_jwt = false
+
+[functions.federated-auth-callback]
+verify_jwt = false
+
+[functions.federated-auth-init]
+verify_jwt = false
+
+[functions.federation]
+verify_jwt = false
+
+[functions.federation-coordinator]
+verify_jwt = false
+
+[functions.federation-rate-limits]
+verify_jwt = false
+
+[functions.fetch-home-timeline]
+verify_jwt = false
+
+[functions.fetch-link-preview]
+verify_jwt = false
+
+[functions.follower-batch-processor]
 verify_jwt = false
 
 [functions.followers]
@@ -39,35 +80,96 @@ verify_jwt = false
 [functions.following]
 verify_jwt = false
 
-[functions.host-meta]
-verify_jwt = false
-
 [functions.generate-actor-keys]
 verify_jwt = false
 
-[functions.send-notification-digest]
+[functions.healthz]
+verify_jwt = false
+
+[functions.host-meta]
+verify_jwt = false
+
+[functions.import-follows-csv]
+verify_jwt = false
+
+[functions.inbox]
+verify_jwt = false
+
+[functions.instance]
+verify_jwt = false
+
+[functions.jwks]
+verify_jwt = false
+
+[functions.key-manager]
+verify_jwt = false
+
+[functions.lookup-remote-actor]
+verify_jwt = false
+
+[functions.mastodon-api]
+verify_jwt = false
+
+[functions.me]
+verify_jwt = false
+
+[functions.middleware]
 verify_jwt = false
 
 [functions.migrate-legacy-messages]
 verify_jwt = false
 
-[functions.request-mfa-recovery]
+[functions.moderation]
+verify_jwt = false
+entrypoint = "./functions/moderation/manage.ts"
+
+[functions.nodeinfo]
 verify_jwt = false
 
-[functions.admin-issue-mfa-recovery]
-verify_jwt = true
-
-[functions.consume-mfa-recovery-token]
-verify_jwt = true
-
-[functions.seed-demo-users]
+[functions.oauth-authorization-server]
 verify_jwt = false
-
-[functions.create-user-actor]
-verify_jwt = true
 
 [functions.objects]
 verify_jwt = false
 
-[functions.activities]
+[functions.outbox]
+verify_jwt = false
+
+[functions.profile]
+verify_jwt = false
+
+[functions.proxy-media]
+verify_jwt = false
+
+[functions.request-mfa-recovery]
+verify_jwt = false
+
+[functions.seed-demo-users]
+verify_jwt = false
+
+[functions.send-dm]
+verify_jwt = false
+
+[functions.send-follow]
+verify_jwt = false
+
+[functions.send-move]
+verify_jwt = false
+
+[functions.send-newsletter]
+verify_jwt = false
+
+[functions.send-notification-digest]
+verify_jwt = false
+
+[functions.send-password-reset]
+verify_jwt = false
+
+[functions.sync-federated-profile]
+verify_jwt = false
+
+[functions.verify-reset-code]
+verify_jwt = false
+
+[functions.webfinger]
 verify_jwt = false

@@ -57,7 +57,9 @@ SELECT jsonb_build_object(
     'partition_function_present', to_regprocedure('public.actor_id_to_partition_key(uuid)') IS NOT NULL,
     'delivery_ledger_present', to_regclass('public.federation_deliveries') IS NOT NULL,
     'oauth_states_present', to_regclass('public.federated_oauth_states') IS NOT NULL,
-    'oauth_identity_bindings_present', to_regclass('public.federated_identities') IS NOT NULL
+    'oauth_identity_bindings_present', to_regclass('public.federated_identities') IS NOT NULL,
+    'session_assurance_function_present', to_regprocedure('public.current_session_is_verified()') IS NOT NULL,
+    'retired_usernames_present', to_regclass('public.retired_usernames') IS NOT NULL
   ),
   'key_access', jsonb_build_object(
     'anon_has_column_privilege', has_column_privilege('anon', 'public.actors', 'private_key', 'SELECT'),
@@ -65,6 +67,14 @@ SELECT jsonb_build_object(
     'client_executable_sensitive_routines', (SELECT coalesce(jsonb_agg(signature ORDER BY signature), '[]'::jsonb)
       FROM protected_routines WHERE has_function_privilege('anon', oid, 'EXECUTE')
         OR has_function_privilege('authenticated', oid, 'EXECUTE'))
+  ),
+  'account_preconditions', jsonb_build_object(
+    'company_roles_without_users', (SELECT count(*) FROM public.company_roles r
+      WHERE NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id=r.user_id)),
+    'messages_total', (SELECT count(*) FROM public.messages),
+    'legacy_plaintext_messages', (SELECT count(*) FROM public.messages WHERE is_encrypted IS DISTINCT FROM true),
+    'verified_session_policies', (SELECT count(*) FROM pg_policies
+      WHERE policyname='Verified live session' AND schemaname IN ('public','storage'))
   ),
   'federation_queue', (SELECT coalesce(jsonb_object_agg(status, jobs), '{}'::jsonb) FROM queue_counts)
 ) AS preflight;

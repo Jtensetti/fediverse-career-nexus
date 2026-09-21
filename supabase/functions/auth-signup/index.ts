@@ -1,3 +1,4 @@
+import { HttpError, requestBody } from "../_shared/user-auth.ts";
 import { getSiteUrl } from "../_shared/federation-urls.ts";
 import { USERNAME_PATTERN, RESERVED_USERNAMES, escapeHtml } from "../_shared/actor-document.ts";
 import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
@@ -7,7 +8,7 @@ import { z } from "npm:zod@3.25.76";
 const emailSchema = z.string().trim().toLowerCase().email().max(320);
 const signupSchema = z.object({
   email: emailSchema,
-  password: z.string().min(6).max(128),
+  password: z.string().min(12).max(128),
   firstName: z.string().trim().min(1).max(50),
   lastName: z.string().trim().min(1).max(50),
   username: z.string().trim().toLowerCase().regex(USERNAME_PATTERN).refine(name => !RESERVED_USERNAMES.has(name)),
@@ -20,7 +21,7 @@ Deno.serve(async (req) => {
   if (!apiKey) return jsonResponse({ error: "Email confirmation is temporarily unavailable" }, 503);
   const db = serviceClient();
   try {
-    const body = await req.json();
+    const body = await requestBody(req, 8192);
     const resend = body?.action === "resend";
     const parsed = (resend ? z.object({ email: emailSchema }) : signupSchema).safeParse(body);
     if (!parsed.success) return jsonResponse({ error: "Validation error" }, 422);
@@ -60,6 +61,7 @@ Deno.serve(async (req) => {
     }
     return jsonResponse(resend ? { success: true } : { success: true, userId, emailSent: true });
   } catch (error) {
+    if (error instanceof HttpError) return jsonResponse({ error: error.message }, error.status);
     console.error("Email signup failed", error);
     return jsonResponse({ error: "Could not complete the request. Try resending the confirmation email." }, 500);
   }

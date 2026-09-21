@@ -1,3 +1,4 @@
+import { HttpError, requireUser } from "../_shared/user-auth.ts";
 import { serviceClient, jsonResponse, federationHeaders } from "../_shared/local-actor.ts";
 import { getSiteUrl } from "../_shared/federation-urls.ts";
 import { remoteUrl, remoteFetch, readJson } from "../_shared/remote-fetch.ts";
@@ -17,10 +18,7 @@ Deno.serve(async (req) => {
     const db = serviceClient();
     let linkUserId: string | null = null;
     if (link === true) {
-      const token = req.headers.get("Authorization")?.match(/^Bearer (.+)$/i)?.[1];
-      if (!token) return jsonResponse({ error: "Sign in to Nolto before linking an account" }, 401);
-      const { data: { user }, error: authError } = await db.auth.getUser(token);
-      if (authError || !user) return jsonResponse({ error: "Invalid Nolto session" }, 401);
+      const { user } = await requireUser(req);
       linkUserId = user.id;
     }
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
@@ -57,6 +55,7 @@ Deno.serve(async (req) => {
     }
     return jsonResponse({ authorizationUrl: authUrl.href, state, domain, username });
   } catch (error) {
+    if (error instanceof HttpError) return jsonResponse({ error: error.message }, error.status);
     console.error("Federated sign-in could not start", error);
     return jsonResponse({ error: "Could not start sign-in. Check that the server supports the Mastodon OAuth API." }, 502);
   }

@@ -20,19 +20,14 @@ export const checkUsernameAvailability = async (username: string): Promise<boole
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { data, error } = await supabase
-      .from("public_profiles")
-      .select("id")
-      .eq("username", username.toLowerCase())
-      .neq("id", user.id)
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("is_username_available", { candidate: username.trim().toLowerCase() });
 
     if (error) {
       console.error("Error checking username availability:", error);
       return false;
     }
 
-    return !data; // Available if no matching profile found
+    return data === true;
   } catch (error) {
     console.error("Error checking username:", error);
     return false;
@@ -56,7 +51,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     const updateData: Record<string, any> = {
       updated_at: new Date().toISOString()
     };
-    
+
     if (profileData.username !== undefined) updateData.username = profileData.username.toLowerCase();
     if (profileData.fullname !== undefined) updateData.fullname = profileData.fullname;
     if (profileData.headline !== undefined) updateData.headline = profileData.headline;

@@ -37,7 +37,7 @@ export default function AuthPage() {
   }>({});
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, session, loading, mfaPending } = useAuth();
 
   // Determine default tab based on URL path
   const defaultTab = location.pathname === "/auth/signup" ? "signup" : "signin";
@@ -88,12 +88,15 @@ export default function AuthPage() {
     }
   }, [location.search]);
 
+  const requestedReturn = location.state?.returnTo;
+  const returnTo = typeof requestedReturn === "string" && /^\/(?![\\/])/.test(requestedReturn) && !requestedReturn.startsWith("/auth") ? requestedReturn : "/feed";
+
   // Redirect if already authenticated
   useEffect(() => {
-    if (user) {
-      navigate("/", { replace: true });
+    if (user || (!loading && session && mfaPending && returnTo.startsWith("/aterstall-mfa?"))) {
+      navigate(returnTo, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, session, loading, mfaPending, navigate, returnTo]);
 
   // Name validation helper - relaxed to support diverse naming conventions
   const validateName = (name: string, field: string): string | null => {
@@ -115,7 +118,7 @@ export default function AuthPage() {
   // Real-time field validation
   const validateField = (field: 'firstName' | 'lastName' | 'email' | 'password', value: string) => {
     let error: string | undefined;
-    
+
     if (field === 'firstName' || field === 'lastName') {
       const validationError = validateName(value, field === 'firstName' ? t("auth.firstName") : t("auth.lastName"));
       error = validationError || undefined;
@@ -124,11 +127,11 @@ export default function AuthPage() {
         error = t("auth.invalidEmailFormat", "Please enter a valid email address");
       }
     } else if (field === 'password') {
-      if (value && value.length < 6) {
-        error = t("auth.passwordTooShort", "Password must be at least 6 characters");
+      if (value && value.length < 12) {
+        error = t("auth.passwordTooShort", "Password must be at least 12 characters");
       }
     }
-    
+
     setFieldErrors(prev => ({ ...prev, [field]: error }));
     return !error;
   };
@@ -144,6 +147,9 @@ export default function AuthPage() {
 
   // Check username availability (debounced)
   useEffect(() => {
+    let active = true;
+    setUsernameAvailable(null);
+    setCheckingUsername(false);
     if (!username || username.length < 3 || validateUsername(username)) {
       setUsernameAvailable(null);
       return;
@@ -152,21 +158,16 @@ export default function AuthPage() {
     const timeout = setTimeout(async () => {
       setCheckingUsername(true);
       try {
-        const { data, error } = await supabase
-          .from("public_profiles")
-          .select("id")
-          .eq("username", username.toLowerCase())
-          .maybeSingle();
-
-        setUsernameAvailable(error ? null : !data);
+        const { data, error } = await supabase.rpc("is_username_available", { candidate: username.trim().toLowerCase() });
+        if (active) setUsernameAvailable(error ? null : data === true);
       } catch {
-        setUsernameAvailable(null);
+        if (active) setUsernameAvailable(null);
       } finally {
-        setCheckingUsername(false);
+        if (active) setCheckingUsername(false);
       }
     }, 500);
 
-    return () => clearTimeout(timeout);
+    return () => { active = false; clearTimeout(timeout); };
   }, [username]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -210,7 +211,7 @@ export default function AuthPage() {
     }
 
     // Validate password length
-    if (password.length < 6) {
+    if (password.length < 12) {
       setFieldErrors(prev => ({ ...prev, password: t("toasts.passwordTooShort") }));
       toast.error(t("toasts.passwordTooShort"));
       return;
@@ -625,9 +626,9 @@ export default function AuthPage() {
                           }
                         }}
                         onBlur={() => validateField('password', password)}
-                        placeholder={t("auth.createPassword", "Create a password (min 6 characters)")}
+                        placeholder={t("auth.createPassword", "Create a password (min 12 characters)")}
                         required
-                        minLength={6}
+                        minLength={12}
                         className={fieldErrors.password ? "border-destructive" : ""}
                       />
                       {fieldErrors.password && (

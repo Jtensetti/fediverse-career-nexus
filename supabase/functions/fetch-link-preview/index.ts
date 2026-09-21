@@ -1,3 +1,5 @@
+import { remoteUrl, remoteFetch, readBody } from "../_shared/remote-fetch.ts";
+import { postHandler, requestBody, requireUser } from "../_shared/user-auth.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -20,7 +22,7 @@ function extractMetaContent(html: string, patterns: RegExp[]): string | undefine
   for (const pattern of patterns) {
     const match = html.match(pattern);
     if (match?.[1]) {
-      return decodeHTMLEntities(match[1].trim());
+      return decodeHTMLEntities(match[1].trim()).slice(0, 1000);
     }
   }
   return undefined;
@@ -40,47 +42,18 @@ function decodeHTMLEntities(text: string): string {
 
 function resolveUrl(base: string, relative: string | undefined): string | undefined {
   if (!relative) return undefined;
-  if (relative.startsWith("http://") || relative.startsWith("https://")) {
-    return relative;
-  }
-  if (relative.startsWith("//")) {
-    return `https:${relative}`;
-  }
-  try {
-    return new URL(relative, base).href;
-  } catch {
-    return undefined;
-  }
+  try { return remoteUrl(new URL(relative, base).href).href; } catch { return undefined; }
 }
 
-async function fetchWithTimeout(url: string, timeout = 5000): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; LinkPreviewBot/1.0; +https://nolto.social)",
-        Accept: "text/html,application/xhtml+xml",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
-      redirect: "follow",
-    });
-    return response;
-  } finally {
-    clearTimeout(id);
-  }
-}
-
-Deno.serve(async (req) => {
+Deno.serve(postHandler(async (req) => {
+  await requireUser(req);
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { url } = await req.json();
+    const { url } = await requestBody(req, 4096);
 
     if (!url || typeof url !== "string") {
       return new Response(JSON.stringify({ success: false, error: "URL is required" }), {
@@ -92,7 +65,7 @@ Deno.serve(async (req) => {
     // Validate URL
     let parsedUrl: URL;
     try {
-      parsedUrl = new URL(url);
+      parsedUrl = remoteUrl(url);
       if (!["http:", "https:"].includes(parsedUrl.protocol)) {
         throw new Error("Invalid protocol");
       }
@@ -108,18 +81,15 @@ Deno.serve(async (req) => {
     // Check cache
     const cached = cache.get(url);
     if (cached && cached.expires > Date.now()) {
-      console.log("Cache hit for:", url);
       return new Response(JSON.stringify({ success: true, data: cached.data }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log("Fetching preview for:", url);
-
     // Fetch the page
     let html: string;
     try {
-      const response = await fetchWithTimeout(url);
+      const response = await remoteFetch(url, { headers: { Accept: "text/html,application/xhtml+xml", "User-Agent": "NoltoLinkPreview/1.0 (+https://nolto.social)" } });
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -134,9 +104,9 @@ Deno.serve(async (req) => {
         });
       }
 
-      html = await response.text();
+      html = await readBody(response, 512 * 1024);
     } catch (error) {
-      console.error("Fetch error:", error);
+
       // Return basic info on fetch failure
       const data: LinkPreviewData = { url, domain };
       return new Response(JSON.stringify({ success: true, data }), {
@@ -212,9 +182,8 @@ Deno.serve(async (req) => {
     };
 
     // Cache the result
+    if (cache.size >= 200) cache.delete(cache.keys().next().value!);
     cache.set(url, { data, expires: Date.now() + CACHE_TTL });
-
-    console.log("Preview extracted:", { url, title: data.title, hasImage: !!data.image });
 
     return new Response(JSON.stringify({ success: true, data }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -226,4 +195,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

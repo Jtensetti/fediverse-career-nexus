@@ -17,6 +17,7 @@ export default function DMPrivacySettings({ className }: DMPrivacySettingsProps)
   const { user } = useAuth();
   const [privacy, setPrivacy] = useState<DMPrivacy>('connections');
   const [isLoading, setIsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchPrivacy = async () => {
@@ -29,11 +30,12 @@ export default function DMPrivacySettings({ className }: DMPrivacySettingsProps)
   }, [user]);
 
   const handleChange = async (value: DMPrivacy) => {
-    if (!user) return;
-    setPrivacy(value);
-    const { error } = await supabase.from('profiles').update({ dm_privacy: value }).eq('id', user.id);
+    if (!user || saving) return;
+    setSaving(true);
+    const { error } = await supabase.from('profiles').update({ dm_privacy: value }).eq('id', user.id).select("dm_privacy").single();
+    setSaving(false);
     if (error) toast.error(t('dmPrivacy.updateFailed'));
-    else toast.success(t('dmPrivacy.updated'));
+    else { setPrivacy(value); toast.success(t('dmPrivacy.updated')); }
   };
 
   const options = [
@@ -56,7 +58,7 @@ export default function DMPrivacySettings({ className }: DMPrivacySettingsProps)
     <Card className={className}>
       <CardHeader><CardTitle className="text-lg">{t('dmPrivacy.title')}</CardTitle><CardDescription>{t('dmPrivacy.description')}</CardDescription></CardHeader>
       <CardContent>
-        <RadioGroup value={privacy} onValueChange={(v) => handleChange(v as DMPrivacy)}>
+        <RadioGroup disabled={saving} value={privacy} onValueChange={(v) => handleChange(v as DMPrivacy)}>
           <div className="space-y-3">
             {options.map((option) => {
               const Icon = option.icon;

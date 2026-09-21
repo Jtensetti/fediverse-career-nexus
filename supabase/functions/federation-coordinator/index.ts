@@ -1,7 +1,7 @@
+import { adminHandler } from "../_shared/user-auth.ts";
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { z } from "npm:zod@3.25.76";
 
 // Common headers to be used by all endpoints
 const corsHeaders = {
@@ -27,10 +27,10 @@ function validateRequest<T>(
       // Clone the request to read the body
       const clonedReq = req.clone();
       const body = await clonedReq.json().catch(() => ({}));
-      
+
       // Validate the request body against the schema
       const result = schema.safeParse(body);
-      
+
       if (!result.success) {
         // Return validation errors
         const errorResponse = {
@@ -41,30 +41,30 @@ function validateRequest<T>(
             message: err.message
           }))
         };
-        
+
         return new Response(
           JSON.stringify(errorResponse),
-          { 
-            status: 422, 
+          {
+            status: 422,
             headers: { ...corsHeaders, "Content-Type": "application/json" }
           }
         );
       }
-      
+
       // Call the handler with validated data
       return handler(req, result.data);
     } catch (error) {
       console.error("Error processing request:", error);
-      
+
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           error: "Invalid request format",
-          message: error.message
+          message: (error instanceof Error ? error.message : "Request failed")
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }
@@ -109,20 +109,20 @@ type CoordinatorRequest = z.infer<typeof coordinatorSchema>;
 async function invokeWorker(partition: number, logger: any) {
   try {
     logger.debug({ partition }, `Invoking worker for partition ${partition}`);
-    
+
     const response = await supabaseClient.functions.invoke("federation", {
       body: { partition }
     });
-    
+
     if (response.error) {
       logger.error({ partition, error: response.error.message }, `Error invoking worker for partition ${partition}`);
     } else {
       logger.info(
-        { partition, itemsProcessed: response.data?.itemsCount || 0 }, 
+        { partition, itemsProcessed: response.data?.itemsCount || 0 },
         `Worker completed for partition ${partition}`
       );
     }
-    
+
     return {
       partition,
       success: !response.error,
@@ -131,14 +131,14 @@ async function invokeWorker(partition: number, logger: any) {
     };
   } catch (error) {
     logger.error(
-      { partition, error: error.message, stack: error.stack }, 
+      { partition, error: (error instanceof Error ? error.message : "Request failed"), stack: (error instanceof Error ? error.stack : undefined) },
       `Error invoking worker for partition ${partition}`
     );
-    
+
     return {
       partition,
       success: false,
-      message: `Error: ${error.message}`,
+      message: `Error: ${(error instanceof Error ? error.message : "Request failed")}`,
       itemsProcessed: 0
     };
   }
@@ -148,56 +148,56 @@ async function invokeWorker(partition: number, logger: any) {
 const handleCoordinator = async (req: Request, data: CoordinatorRequest): Promise<Response> => {
   const startTime = performance.now();
   const logger = createRequestLogger(req, "federation-coordinator");
-  
+
   logRequest(logger, req);
-  
+
   try {
     logger.info("Federation coordinator starting");
-    
+
     // Get queue stats for each partition
     const { data: queueStats, error: statsError } = await supabaseClient
       .from('federation_queue_stats')
       .select('*');
-    
+
     if (statsError) {
       logger.error({ error: statsError.message }, "Failed to get queue stats");
       throw new Error(`Failed to get queue stats: ${statsError.message}`);
     }
-    
+
     logger.debug({ queueStats }, "Queue stats retrieved");
-    
+
     // Launch workers in parallel, one per partition
     const workerPromises = [];
     for (let i = 0; i < NUM_PARTITIONS; i++) {
       workerPromises.push(invokeWorker(i, logger));
     }
-    
+
     // Wait for all workers to complete
     const results = await Promise.all(workerPromises);
-    
+
     logger.info({ results }, "All workers completed");
-    
+
     logResponse(logger, 200, startTime);
-    
+
     return new Response(
       JSON.stringify({
         success: true,
         message: "Federation coordinator completed successfully",
         results
       }),
-      { 
+      {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
   } catch (error) {
-    logger.error({ error: error.message, stack: error.stack }, "Error in federation coordinator");
-    
+    logger.error({ error: (error instanceof Error ? error.message : "Request failed"), stack: (error instanceof Error ? error.stack : undefined) }, "Error in federation coordinator");
+
     logResponse(logger, 500, startTime);
-    
+
     return new Response(
-      JSON.stringify({ error: "Internal server error", details: error.message }),
-      { 
+      JSON.stringify({ error: "Internal server error", details: (error instanceof Error ? error.message : "Request failed") }),
+      {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
@@ -206,4 +206,4 @@ const handleCoordinator = async (req: Request, data: CoordinatorRequest): Promis
 };
 
 // Apply validation middleware
-serve(validateRequest(handleCoordinator, coordinatorSchema));
+Deno.serve(adminHandler(validateRequest(handleCoordinator, coordinatorSchema)));

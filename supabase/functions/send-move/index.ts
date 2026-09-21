@@ -1,7 +1,8 @@
+import { userHandler } from "../_shared/user-auth.ts";
 import { serviceClient, federationHeaders, jsonResponse } from "../_shared/local-actor.ts";
 import { buildActorUrl, buildActivityId } from "../_shared/federation-urls.ts";
 import { fetchActorDocument } from "../_shared/remote-fetch.ts";
-Deno.serve(async req => {
+Deno.serve(userHandler(async req => {
   if (req.method === "OPTIONS") return new Response(null, { headers: { ...federationHeaders, "Access-Control-Allow-Methods": "POST, OPTIONS" } });
   if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
   const token = req.headers.get("Authorization")?.match(/^Bearer (.+)$/i)?.[1];
@@ -24,4 +25,4 @@ Deno.serve(async req => {
     if (moveError) throw moveError;
     return jsonResponse({ success: true, queued: true, movedTo: target.id }, 202);
   } catch (error) { console.error("Account move failed", error); return jsonResponse({ error: "Could not start the move. Check the destination and alias." }, 409); }
-});
+}));

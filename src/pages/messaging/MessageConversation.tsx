@@ -7,9 +7,11 @@ import { Send, AlertCircle, Loader2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  getConversationWithMessages, 
-  sendMessage, 
+import {
+  getConversationWithMessages,
+  getMessagePage,
+  ConversationWithMessages,
+  sendMessage,
   Message,
   subscribeToMessages,
   getOtherParticipant,
@@ -23,12 +25,12 @@ import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
+import {
+  Card,
+  CardContent,
+  CardHeader,
   CardTitle,
-  CardFooter 
+  CardFooter
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
@@ -52,10 +54,11 @@ export default function MessageConversation() {
   const isNearBottomRef = useRef(true);
   const hasInitialScrolled = useRef(false);
   const queryClient = useQueryClient();
+  const [loadingOlder, setLoadingOlder] = useState(false);
 
   // Fetch conversation and messages
   const { data, isLoading, error } = useQuery({
-    queryKey: ['conversation', conversationId],
+    queryKey: ['conversation', currentUserId, conversationId],
     queryFn: () => conversationId ? getConversationWithMessages(conversationId) : null,
     enabled: !!conversationId && !!currentUserId
   });
@@ -95,12 +98,12 @@ export default function MessageConversation() {
 
     const handleNewMessage = (message: Message) => {
       // Update query cache with the new message
-      queryClient.setQueryData(['conversation', conversationId], (oldData: any) => {
+      queryClient.setQueryData(['conversation', currentUserId, conversationId], (oldData: ConversationWithMessages | undefined) => {
         if (!oldData) return oldData;
-        
+
         return {
           ...oldData,
-          messages: [...oldData.messages, message]
+          messages: [...oldData.messages.filter(item => item.id !== message.id), message]
         };
       });
 
@@ -140,7 +143,7 @@ export default function MessageConversation() {
         const messageResult = await canMessageUser(conversationId);
         setCanMessage(messageResult.can_message);
         setIsFederated(messageResult.is_federated);
-        
+
         // Load user profile
         if (data?.conversation) {
           const user = await getOtherParticipant(data.conversation, currentUserId);
@@ -170,7 +173,8 @@ export default function MessageConversation() {
       if (!conversationId) throw new Error('No conversation ID');
       return sendMessage(conversationId, messageContent);
     },
-    onSuccess: () => {
+    onSuccess: (message) => {
+      queryClient.setQueryData(['conversation', currentUserId, conversationId], (previous: ConversationWithMessages | undefined) => previous ? { ...previous, messages: [...previous.messages.filter(item => item.id !== message.id), message] } : previous);
       setNewMessage('');
       // Reset textarea height
       if (textareaRef.current) {
@@ -190,6 +194,20 @@ export default function MessageConversation() {
       });
     }
   });
+
+  async function loadOlder() {
+    if (!conversationId || !data?.next || loadingOlder) return;
+    setLoadingOlder(true);
+    try {
+      const page = await getMessagePage(conversationId, data.next);
+      queryClient.setQueryData(['conversation', currentUserId, conversationId], (previous: ConversationWithMessages | undefined) => previous ? {
+        ...previous, next: page.next,
+        messages: [...page.messages, ...previous.messages.filter(message => !page.messages.some(item => item.id === message.id))],
+      } : previous);
+    } catch {
+      toast({ title: 'Kunde inte läsa äldre meddelanden', variant: 'destructive' });
+    } finally { setLoadingOlder(false); }
+  }
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,8 +256,8 @@ export default function MessageConversation() {
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center">
             <p>Logga in för att visa dina meddelanden</p>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="mt-4"
               onClick={() => navigate('/auth')}
             >
@@ -295,8 +313,8 @@ export default function MessageConversation() {
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center py-8">
             <p className="text-red-500">Fel vid laddning av konversation</p>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="mt-4"
               onClick={() => navigate('/messages')}
             >
@@ -312,12 +330,12 @@ export default function MessageConversation() {
   const { messages } = data;
 
   const conversationTitle = otherUser?.fullname || otherUser?.username || 'Messages';
-  
+
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead 
-        title={`Chat with ${conversationTitle}`} 
-        description="Private conversation on Nolto." 
+      <SEOHead
+        title={`Chat with ${conversationTitle}`}
+        description="Private conversation on Nolto."
       />
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
@@ -342,13 +360,14 @@ export default function MessageConversation() {
               </div>
             </div>
           </CardHeader>
-          
-          <CardContent 
+
+          <CardContent
             ref={messagesContainerRef}
             onScroll={checkIfNearBottom}
             className="flex-grow overflow-y-auto p-4"
           >
             <div className="space-y-4">
+              {data.next && <Button variant="outline" onClick={loadOlder} disabled={loadingOlder}>{loadingOlder ? "Laddar…" : "Visa äldre meddelanden"}</Button>}
               {messages.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-muted-foreground">Inga meddelanden ännu</p>
@@ -358,22 +377,22 @@ export default function MessageConversation() {
                 messages.map((message) => {
                   const isOwnMessage = message.sender_id === currentUserId;
                   return (
-                    <div 
-                      key={message.id} 
+                    <div
+                      key={message.id}
                       className={`group flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
                     >
-                      <div 
+                      <div
                         className={`max-w-[70%] p-3 rounded-lg
-                          ${isOwnMessage 
-                            ? 'bg-primary text-primary-foreground' 
+                          ${isOwnMessage
+                            ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
                           }
                         `}
                       >
-                        <p 
+                        <p
                           className="break-words whitespace-pre-wrap"
-                          dangerouslySetInnerHTML={{ 
-                            __html: renderMessageContent(message.content) 
+                          dangerouslySetInnerHTML={{
+                            __html: renderMessageContent(message.content)
                           }}
                           onClick={(e) => {
                             // Prevent navigation when clicking links
@@ -388,8 +407,8 @@ export default function MessageConversation() {
                         </p>
                       </div>
                       {/* Reactions moved OUTSIDE the bubble for better visibility */}
-                      <MessageReactions 
-                        messageId={message.id} 
+                      <MessageReactions
+                        messageId={message.id}
                         isOwnMessage={isOwnMessage}
                         recipientId={message.recipient_id}
                         senderId={message.sender_id}
@@ -402,12 +421,12 @@ export default function MessageConversation() {
               <div ref={messagesEndRef} />
             </div>
           </CardContent>
-          
+
           <CardFooter className="border-t p-4">
             {canMessage === false ? (
               <div className="w-full flex items-center justify-center gap-2 text-muted-foreground py-2">
                 <AlertCircle className="h-4 w-4" />
-                <span>Ni måste vara anslutna för att skicka meddelanden</span>
+                <span>{isFederated ? "Privata meddelanden till andra servrar stöds inte ännu." : "Du kan inte skicka meddelanden till den här personen. Kontrollera er anslutning och era integritetsinställningar."}</span>
               </div>
             ) : (
               <form onSubmit={handleSendMessage} className="w-full">
@@ -421,10 +440,12 @@ export default function MessageConversation() {
                     className="flex-grow min-h-[40px] max-h-[150px] resize-none py-2"
                     disabled={canMessage === null}
                     rows={1}
+                    maxLength={10000}
                   />
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     size="icon"
+                    aria-label="Skicka meddelande"
                     className="h-10 w-10 flex-shrink-0"
                     disabled={!newMessage.trim() || sendMessageMutation.isPending || canMessage !== true}
                   >

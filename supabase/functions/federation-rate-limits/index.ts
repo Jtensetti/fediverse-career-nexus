@@ -1,5 +1,6 @@
+import { adminHandler } from "../_shared/user-auth.ts";
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0';
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.89.0';
 
 // Define CORS headers for browser access
 const corsHeaders = {
@@ -9,10 +10,10 @@ const corsHeaders = {
 };
 
 // Handle rate limit status for a given host
-async function getRateLimitStatus(supabase, host, windowMinutes = 10) {
+async function getRateLimitStatus(supabase: SupabaseClient, host: string, windowMinutes = 10) {
   // Calculate window start time
   const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString();
-  
+
   try {
     // Get count of requests within window
     const { count, error: countError } = await supabase
@@ -20,12 +21,12 @@ async function getRateLimitStatus(supabase, host, windowMinutes = 10) {
       .select('*', { count: 'exact', head: true })
       .eq('remote_host', host)
       .gte('timestamp', windowStart);
-    
+
     if (countError) {
       console.error('Error checking rate limit:', countError);
       throw countError;
     }
-    
+
     // Get recent requests for detailed view
     const { data, error } = await supabase
       .from('federation_request_logs')
@@ -34,12 +35,12 @@ async function getRateLimitStatus(supabase, host, windowMinutes = 10) {
       .gte('timestamp', windowStart)
       .order('timestamp', { ascending: false })
       .limit(50);
-    
+
     if (error) {
       console.error('Error fetching request logs:', error);
       throw error;
     }
-    
+
     return {
       count: count || 0,
       requests: data
@@ -51,18 +52,18 @@ async function getRateLimitStatus(supabase, host, windowMinutes = 10) {
 }
 
 // Clear rate limit logs for a host
-async function clearRateLimitLogs(supabase, host) {
+async function clearRateLimitLogs(supabase: SupabaseClient, host: string) {
   try {
     const { error } = await supabase
       .from('federation_request_logs')
       .delete()
       .eq('remote_host', host);
-    
+
     if (error) {
       console.error('Error clearing rate limit logs:', error);
       throw error;
     }
-    
+
     return { success: true };
   } catch (error) {
     console.error('Error in clearing logs:', error);
@@ -71,20 +72,20 @@ async function clearRateLimitLogs(supabase, host) {
 }
 
 // Get rate limited hosts that exceed threshold
-async function getRateLimitedHosts(supabase, requestThreshold, windowMinutes = 10) {
+async function getRateLimitedHosts(supabase: SupabaseClient, requestThreshold: number, windowMinutes = 10) {
   try {
     const { data, error } = await supabase.rpc('get_rate_limited_hosts', {
       window_start: new Date(Date.now() - windowMinutes * 60 * 1000).toISOString(),
       request_threshold: requestThreshold
     });
-    
+
     if (error) {
       console.error('Error fetching rate limited hosts:', error);
       throw error;
     }
-    
+
     return {
-      hosts: data.map(item => ({
+      hosts: (data || []).map((item: { remote_host: string; request_count: number; latest_request: string }) => ({
         remote_host: item.remote_host,
         request_count: item.request_count,
         latest_request: item.latest_request
@@ -96,7 +97,7 @@ async function getRateLimitedHosts(supabase, requestThreshold, windowMinutes = 1
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(adminHandler(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -118,12 +119,12 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
+
     // Parse request body
     const { action, host, windowMinutes, requestThreshold } = await req.json();
-    
+
     let result;
-    
+
     // Check if user has admin or moderator permissions
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -132,17 +133,17 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
+
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
+
     // Check if user is admin or moderator (for sensitive operations)
     const { data: roleData } = await supabase
       .from('user_roles')
@@ -150,16 +151,16 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id)
       .in('role', ['admin', 'moderator'])
       .single();
-    
+
     const isAuthorized = roleData !== null;
-    
+
     // Handle different actions
     switch (action) {
       case 'getStatus':
         // Allow status check for any authenticated user
         result = await getRateLimitStatus(supabase, host, windowMinutes);
         break;
-        
+
       case 'clearLogs':
         // Only allow admins/moderators to clear logs
         if (!isAuthorized) {
@@ -170,7 +171,7 @@ Deno.serve(async (req) => {
         }
         result = await clearRateLimitLogs(supabase, host);
         break;
-        
+
       case 'getLimitedHosts':
         // Only allow admins/moderators to view all rate limited hosts
         if (!isAuthorized) {
@@ -181,14 +182,14 @@ Deno.serve(async (req) => {
         }
         result = await getRateLimitedHosts(supabase, requestThreshold, windowMinutes);
         break;
-        
+
       default:
         return new Response(JSON.stringify({ error: 'Invalid action' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
-    
+
     // Return successful response with results
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -196,9 +197,9 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('Error processing request:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error', details: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error', details: (error instanceof Error ? error.message : "Request failed") }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-});
+}));

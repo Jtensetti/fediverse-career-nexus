@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getFederatedFeed, fetchRemoteHomeTimeline, type FederatedPost, type FeedType } from "@/services/federation/federationService";
+import { getFederatedFeed, type FederatedPost, type FeedType } from "@/services/federation/federationService";
 import { getBatchPostData, BatchPostData } from "@/services/misc/batchDataService";
 import FederatedPostCard from "./FederatedPostCard";
 import PostEditDialog from "../posts/PostEditDialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, MessageSquare, Globe } from "lucide-react";
+import { Loader2, MessageSquare } from "lucide-react";
 import { PostSkeleton } from "../common/skeletons";
 import EmptyState from "../common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,13 +41,9 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
   const [editOpen, setEditOpen] = useState(false);
   const [batchData, setBatchData] = useState<Map<string, BatchPostData>>(new Map());
   const [batchDataLoading, setBatchDataLoading] = useState(false);
-  const [remoteInstance, setRemoteInstance] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
-  
-  // Track retry attempt for empty results
-  const [hasRetried, setHasRetried] = useState(false);
-  
+
   // Track which post IDs we've already fetched batch data for to prevent redundant calls
   const fetchedPostIds = useRef<Set<string>>(new Set());
   
@@ -56,11 +52,8 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     (sourceFilter === 'local' ? 'local' : 
      sourceFilter === 'federated' ? 'federated' : 'following');
 
-  // IMPORTANT: the backend over-fetches 3x for the "following" feed to compensate for filtering.
-  // That means our *offset step* must also be 3x, otherwise we will repeatedly re-fetch overlapping
-  // ranges (creating duplicates and prematurely disabling pagination).
-  const offsetStep = effectiveFeedType === 'following' ? limit * 3 : limit;
-  
+  const offsetStep = limit;
+
   // Refs for infinite scroll
   const isFetchingRef = useRef(false);
   const loadMoreLockRef = useRef(false);
@@ -75,24 +68,6 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     enabled: !authLoading, // Wait for auth to resolve before querying
   });
 
-  // Fetch remote posts for federated feed
-  const { data: remoteData, isLoading: remoteLoading } = useQuery({
-    queryKey: ['remoteHomeTimeline', limit],
-    queryFn: async () => {
-      const result = await fetchRemoteHomeTimeline(limit);
-      if (result.instance) {
-        setRemoteInstance(result.instance);
-      }
-      return result;
-    },
-    staleTime: 60000, // Cache for 1 minute
-    enabled: effectiveFeedType === 'federated' && !!user,
-  });
-  
-  const remotePosts = remoteData?.posts || [];
-  const remoteError = remoteData?.error;
-  const tokenExpired = remoteData?.tokenExpired;
-  
   // Keep refs in sync with state
   isFetchingRef.current = isFetching;
   
@@ -111,20 +86,7 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     setBatchData(new Map());
     fetchedPostIds.current.clear();
     loadMoreLockRef.current = false;
-    setHasRetried(false); // Reset retry flag on feed type change
-  }, [effectiveFeedType]);
-  
-  // Automatic retry on unexpected empty results
-  useEffect(() => {
-    // Only retry if: query completed, returned empty, first page, and haven't retried yet
-    if (!isLoading && !isFetching && posts?.length === 0 && !hasRetried && offset === 0 && !authLoading) {
-      setHasRetried(true);
-      const timer = setTimeout(() => {
-        refetch();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, isFetching, posts, hasRetried, offset, refetch, authLoading]);
+  }, [effectiveFeedType, user?.id]);
   
   // Memoized batch data fetcher
   const fetchBatchData = useCallback(async (postIds: string[]) => {
@@ -146,86 +108,13 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     }
   }, [user?.id]);
 
-  // Process new posts when they arrive (merge local and remote for federated feed)
-  // Use a ref to track previous posts to prevent unnecessary re-renders
-  const prevPostsRef = useRef<string>("");
-  const prevRemotePostsRef = useRef<string>("");
-  
   useEffect(() => {
-    // During pagination, react-query can temporarily set `posts` to `undefined` while loading
-    // the next page. We must NOT treat that as an empty result, otherwise we incorrectly
-    // disable pagination and hide the sentinel.
-    if (posts === undefined) return;
+    if (!posts) return;
+    setAllPosts(current => offset === 0 ? posts : [...new Map([...current, ...posts].map(post => [post.id, post])).values()]);
+    setHasMore(posts.length === limit);
+    if (posts.length) void fetchBatchData(posts.map(post => post.id));
+  }, [posts, offset, limit, fetchBatchData]);
 
-    // Create a stable key to compare posts
-    const postsKey = posts ? posts.map(p => p.id).join(',') : '';
-    const remotePostsKey = remotePosts ? remotePosts.map(p => p.id).join(',') : '';
-    
-    // Skip if nothing changed
-    if (postsKey === prevPostsRef.current && remotePostsKey === prevRemotePostsRef.current) {
-      return;
-    }
-    
-    prevPostsRef.current = postsKey;
-    prevRemotePostsRef.current = remotePostsKey;
-    
-    // Combine local posts with remote posts for federated feed
-    let combinedPosts: FederatedPost[] = [];
-    
-    if (effectiveFeedType === 'federated') {
-      // Merge local and remote posts, sort by date
-      const localPosts = posts || [];
-      const remotePostsList = remotePosts || [];
-      
-      combinedPosts = [...localPosts, ...remotePostsList].sort((a, b) => {
-        const dateA = new Date(a.published_at || a.created_at).getTime();
-        const dateB = new Date(b.published_at || b.created_at).getTime();
-        return dateB - dateA;
-      });
-    } else {
-      combinedPosts = posts || [];
-    }
-    
-    if (combinedPosts.length === 0) {
-      if (offset === 0) {
-        setAllPosts([]);
-        // Keep hasMore true on initial load to allow retry/refresh
-        // Only disable hasMore if we're paginating and got nothing
-        setBatchDataLoading(false);
-      } else {
-        // Got no posts on a paginated request - no more to load
-        setHasMore(false);
-      }
-      return;
-    }
-    
-    setAllPosts(currentPosts => {
-      if (offset === 0) {
-        return combinedPosts;
-      }
-      
-      const existingIds = new Set(currentPosts.map(p => p.id));
-      const newPosts = combinedPosts.filter(p => !existingIds.has(p.id));
-      
-      if (newPosts.length === 0) {
-        // No new unique posts - we've exhausted the feed
-        setHasMore(false);
-        return currentPosts;
-      }
-      return [...currentPosts, ...newPosts];
-    });
-
-    // We rely solely on the "no new unique posts" check above to disable hasMore.
-    // This ensures pagination continues until we genuinely run out of posts,
-    // regardless of feed type (following, local, or federated).
-    
-    // Only fetch batch data for local posts (remote posts don't have local IDs)
-    const localPostIds = (posts || []).map(p => p.id);
-    if (localPostIds.length > 0) {
-      fetchBatchData(localPostIds);
-    }
-  }, [posts, remotePosts, offset, limit, fetchBatchData, effectiveFeedType]);
-  
   // Load more function - guarded against double calls
   const loadMore = useCallback(() => {
     if (loadMoreLockRef.current || isFetchingRef.current || !hasMore) return;
@@ -296,7 +185,6 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     fetchedPostIds.current.clear();
     loadMoreLockRef.current = false;
     await queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
-    await queryClient.invalidateQueries({ queryKey: ['remoteHomeTimeline'] });
     await refetch();
   }, [queryClient, refetch]);
   
@@ -311,43 +199,13 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
     );
   }
   
-  const showInitialLoading = ((isLoading || (effectiveFeedType === 'federated' && remoteLoading)) && offset === 0) || (offset === 0 && batchDataLoading && allPosts.length > 0 && batchData.size === 0);
+  const showInitialLoading = (isLoading && offset === 0) || (offset === 0 && batchDataLoading && allPosts.length > 0 && batchData.size === 0);
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh}>
       <div className={className}>
-        {/* Show token expired warning for federated feed */}
-        {effectiveFeedType === 'federated' && tokenExpired && (
-          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-sm text-destructive">
-            <Globe className="h-4 w-4" />
-            <span>{t("feed.sessionExpired", { instance: remoteInstance })}</span>
-          </div>
-        )}
-        
-        {/* Show remote instance indicator for federated feed */}
-        {effectiveFeedType === 'federated' && remoteInstance && !tokenExpired && remotePosts.length > 0 && (
-          <div className="mb-4 p-3 bg-muted/50 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
-            <Globe className="h-4 w-4" />
-            <span>{t("feed.includingRemote", { count: remotePosts.length, instance: remoteInstance })}</span>
-          </div>
-        )}
-        
-        {/* Show remote error if any (not token expired) */}
-        {effectiveFeedType === 'federated' && remoteError && !tokenExpired && (
-          <div className="mb-4 p-3 bg-muted/30 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
-            <Globe className="h-4 w-4" />
-            <span>{t("feed.couldNotFetch", { instance: remoteInstance, error: remoteError })}</span>
-          </div>
-        )}
-        
         {showInitialLoading && allPosts.length === 0 ? (
           <div className="space-y-4">
-            {effectiveFeedType === 'federated' && remoteLoading && (
-              <div className="p-3 bg-muted/30 rounded-lg flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{t("feed.fetchingRemote")}</span>
-              </div>
-            )}
             {[...Array(3)].map((_, i) => (
               <PostSkeleton key={i} />
             ))}
@@ -402,7 +260,6 @@ export default function FederatedFeed({ limit = 10, className = "", sourceFilter
             action={{
               label: "Uppdatera",
               onClick: () => {
-                setHasRetried(false);
                 refetch();
               }
             }}

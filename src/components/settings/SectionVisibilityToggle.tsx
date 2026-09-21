@@ -25,7 +25,7 @@ const VISIBILITY_OPTIONS: { value: SectionVisibility; icon: typeof Globe; labelK
 ];
 
 export default function SectionVisibilityToggle({ section, currentVisibility, onChanged }: SectionVisibilityToggleProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [updating, setUpdating] = useState(false);
 
   const current = VISIBILITY_OPTIONS.find(o => o.value === currentVisibility) || VISIBILITY_OPTIONS[0];
@@ -50,6 +50,7 @@ export default function SectionVisibilityToggle({ section, currentVisibility, on
                 size="icon"
                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
                 disabled={updating}
+                aria-label={t("visibility.whoCanSee")}
               >
                 {updating ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -62,7 +63,8 @@ export default function SectionVisibilityToggle({ section, currentVisibility, on
           <TooltipContent side="top">
             <p className="text-xs">{t('visibility.whoCanSee', 'Who can see this section')}</p>
           </TooltipContent>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-64">
+            {(section === 'activity' || section === 'articles') && <p className="px-2 py-2 text-xs text-muted-foreground">{i18n.language.startsWith('sv') ? 'Styr visningen i profilen. Publicerade inlägg och artiklar är fortfarande offentliga via sina egna länkar och i flöden.' : 'Controls display on your profile. Published posts and articles remain public through their own links and feeds.'}</p>}
             {VISIBILITY_OPTIONS.map(opt => {
               const Icon = opt.icon;
               return (

@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { notificationService } from "../misc/notificationService";
 
 // Simple message interface matching our database schema
 export interface Message {
@@ -65,6 +64,7 @@ export interface MessageContent {
 export interface ConversationWithMessages {
   conversation: Conversation;
   messages: Message[];
+  next: MessageCursor | null;
 }
 
 export interface ParticipantInfo {
@@ -231,64 +231,19 @@ export async function getConversation(partnerId: string): Promise<Conversation |
  * Get messages with a specific user
  * Uses edge function for decryption of encrypted messages
  */
+export interface MessageCursor { id: string; created_at: string }
+export interface MessagePage { messages: Message[]; next: MessageCursor | null }
+
+export async function getMessagePage(partnerId: string, before?: MessageCursor): Promise<MessagePage> {
+  const { data, error } = await supabase.functions.invoke('encrypt-message', {
+    body: { action: 'decrypt-batch', partnerId, before }
+  });
+  if (error || data?.error || !Array.isArray(data?.messages)) throw new Error('Kunde inte läsa meddelanden');
+  return data as MessagePage;
+}
+
 export async function getMessages(partnerId: string): Promise<Message[]> {
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      toast.error('Du måste vara inloggad för att visa meddelanden');
-      return [];
-    }
-
-    const userId = sessionData.session.user.id;
-
-    // Fetch messages first
-    const { data: messages, error } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${userId},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${userId})`)
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      console.error('Error fetching messages:', error);
-      toast.error('Kunde inte ladda meddelanden');
-      return [];
-    }
-
-    // Check if any messages need decryption
-    const hasEncrypted = messages?.some(m => m.is_encrypted && m.encrypted_content);
-    
-    if (!hasEncrypted) {
-      return (messages || []) as Message[];
-    }
-
-    // Use edge function to decrypt messages
-    try {
-      const { data: decryptedData, error: decryptError } = await supabase.functions.invoke('encrypt-message', {
-        body: { action: 'decrypt-batch', partnerId }
-      });
-
-      if (decryptError) {
-        console.error('Error decrypting messages:', decryptError);
-        // Fall back to returning messages as-is (with encrypted content masked)
-        return (messages || []).map(m => ({
-          ...m,
-          content: m.is_encrypted ? '[Encrypted message]' : m.content
-        })) as Message[];
-      }
-
-      return (decryptedData?.messages || messages || []) as Message[];
-    } catch (decryptErr) {
-      console.error('Decryption failed:', decryptErr);
-      return (messages || []).map(m => ({
-        ...m,
-        content: m.is_encrypted ? '[Encrypted message]' : m.content
-      })) as Message[];
-    }
-  } catch (error) {
-    console.error('Error in getMessages:', error);
-    toast.error('Kunde inte ladda meddelanden');
-    return [];
-  }
+  return (await getMessagePage(partnerId)).messages;
 }
 
 /**
@@ -298,12 +253,12 @@ export async function areUsersConnected(userId1: string, userId2: string): Promi
   try {
     const { data, error } = await supabase
       .rpc('are_users_connected', { user1: userId1, user2: userId2 });
-    
+
     if (error) {
       console.error('Error checking connection status:', error);
       return false;
     }
-    
+
     return data === true;
   } catch (error) {
     console.error('Error in areUsersConnected:', error);
@@ -314,145 +269,12 @@ export async function areUsersConnected(userId1: string, userId2: string): Promi
 /**
  * Send a message to a user (handles both local and federated)
  */
-export async function sendMessage(recipientId: string, content: string): Promise<Message | null> {
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      toast.error('Du måste vara inloggad för att skicka meddelanden');
-      return null;
-    }
-
-    const senderId = sessionData.session.user.id;
-
-    // Check messaging capability using new RPC
-    const canMessageResult = await canMessageUser(recipientId);
-
-    if (!canMessageResult.can_message) {
-      if (canMessageResult.reason === 'not_connected') {
-        toast.error('Du kan bara skicka meddelanden till användare du är ansluten till');
-      } else if (canMessageResult.reason === 'cannot_message_self') {
-        toast.error('Du kan inte skicka meddelanden till dig själv');
-      } else {
-        toast.error('Kan inte skicka meddelande till denna användare');
-      }
-      return null;
-    }
-
-    // If federated, call edge function
-    if (canMessageResult.is_federated && canMessageResult.remote_actor_url) {
-      return await sendFederatedMessage(recipientId, content, canMessageResult.remote_actor_url);
-    }
-
-    // Encrypt the message content before storing
-    let encryptedContent: string | null = null;
-    let isEncrypted = false;
-    
-    try {
-      const { data: encryptData, error: encryptError } = await supabase.functions.invoke('encrypt-message', {
-        body: { action: 'encrypt', content }
-      });
-      
-      if (encryptError) {
-        console.error('Encryption error:', encryptError);
-      } else if (encryptData?.encryptedContent) {
-        encryptedContent = encryptData.encryptedContent;
-        isEncrypted = true;
-        console.log('Message encrypted successfully');
-      } else {
-        console.error('Encryption returned no data:', encryptData);
-      }
-    } catch (encryptErr) {
-      console.error('Message encryption failed:', encryptErr);
-    }
-
-    // Local message - insert with encryption
-    const { data, error } = await supabase
-      .from('messages')
-      .insert({
-        sender_id: senderId,
-        recipient_id: recipientId,
-        content: isEncrypted ? '' : content, // Store empty content if encrypted
-        encrypted_content: encryptedContent,
-        is_encrypted: isEncrypted,
-        is_federated: false,
-        delivery_status: 'local'
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error sending message:', error);
-      // Check if it's an RLS violation (not connected)
-      if (error.code === '42501' || error.message.includes('row-level security')) {
-        toast.error('Du kan bara skicka meddelanden till användare du är ansluten till');
-      } else {
-        toast.error('Kunde inte skicka meddelande');
-      }
-      return null;
-    }
-    
-    // Return with decrypted content for immediate display
-    const returnData = { ...data, content } as Message;
-
-    // Create notification for the recipient
-    try {
-      await notificationService.createNotification({
-        type: 'message',
-        recipientId: recipientId,
-        actorId: senderId,
-        content: content.length > 100 ? content.substring(0, 100) + '...' : content,
-        objectId: data.id,
-        objectType: 'message'
-      });
-    } catch (notifError) {
-      console.error('Failed to create message notification:', notifError);
-    }
-
-    return returnData;
-  } catch (error) {
-    console.error('Error in sendMessage:', error);
-    toast.error('Kunde inte skicka meddelande');
-    return null;
-  }
-}
-
-/**
- * Send a federated message via edge function
- */
-async function sendFederatedMessage(
-  recipientId: string,
-  content: string,
-  remoteActorUrl: string
-): Promise<Message | null> {
-  try {
-    const { data, error } = await supabase.functions.invoke('send-dm', {
-      body: { recipientId, content, remoteActorUrl }
-    });
-
-    if (error) {
-      console.error('Error sending federated message:', error);
-      toast.error('Kunde inte skicka meddelande till federerad användare');
-      return null;
-    }
-
-    if (data.error) {
-      console.error('Federated message error:', data.error);
-      if (data.message) {
-        // Message was stored but delivery failed
-        toast.warning('Meddelande sparat men leverans till fjärrserver misslyckades');
-        return data.message as Message;
-      }
-      toast.error('Kunde inte leverera meddelande');
-      return null;
-    }
-
-    toast.success('Meddelande skickat till federerad användare');
-    return data.message as Message;
-  } catch (error) {
-    console.error('Error in sendFederatedMessage:', error);
-    toast.error('Kunde inte skicka federerat meddelande');
-    return null;
-  }
+export async function sendMessage(recipientId: string, content: string): Promise<Message> {
+  const { data, error } = await supabase.functions.invoke('encrypt-message', {
+    body: { action: 'send', partnerId: recipientId, content }
+  });
+  if (error || data?.error || !data?.message) throw new Error('Kunde inte skicka meddelandet');
+  return data.message as Message;
 }
 
 /**
@@ -484,7 +306,7 @@ export function subscribeToMessages(
   onMessage: (message: Message) => void
 ): { unsubscribe: () => void } {
   const channelId = `messages:${partnerId}`;
-  
+
   // Unsubscribe from existing channel if any
   if (activeSubscriptions[channelId]) {
     supabase.removeChannel(activeSubscriptions[channelId]);
@@ -501,17 +323,17 @@ export function subscribeToMessages(
     if (!message.is_encrypted || !message.encrypted_content) {
       return message;
     }
-    
+
     try {
       const { data, error } = await supabase.functions.invoke('encrypt-message', {
         body: { action: 'decrypt', messageId: message.id }
       });
-      
+
       if (error || !data?.content) {
         console.error('Failed to decrypt real-time message:', error);
         return { ...message, content: '[Encrypted message]' };
       }
-      
+
       return { ...message, content: data.content };
     } catch (err) {
       console.error('Decryption error for real-time message:', err);
@@ -531,10 +353,10 @@ export function subscribeToMessages(
       async (payload) => {
         const message = payload.new as Message;
         // Only process messages for this conversation
-        const isRelevant = 
+        const isRelevant =
           (message.sender_id === partnerId && message.recipient_id === currentUserId) ||
           (message.sender_id === currentUserId && message.recipient_id === partnerId);
-        
+
         if (isRelevant) {
           // Decrypt encrypted messages before passing to callback
           const decryptedMessage = await decryptSingleMessage(message);
@@ -600,16 +422,15 @@ export async function getConversationWithMessages(partnerId: string): Promise<Co
   try {
     const conversation = await getConversation(partnerId);
     if (!conversation) return null;
-    
-    const messages = await getMessages(partnerId);
-    
+
+    const page = await getMessagePage(partnerId);
+
     return {
       conversation,
-      messages
+      ...page
     };
-  } catch (error) {
-    console.error('Error in getConversationWithMessages:', error);
-    return null;
+  } catch {
+    throw new Error('Kunde inte läsa konversationen');
   }
 }
 
@@ -630,7 +451,7 @@ export function unsubscribeFromMessages(channelId: string): void {
 export async function getOtherParticipant(conversation: Conversation, currentUserId: string): Promise<ParticipantInfo | null> {
   try {
     const partnerId = conversation.id;
-    
+
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!partnerId || !uuidRegex.test(partnerId)) {

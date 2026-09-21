@@ -1,6 +1,5 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,7 +29,7 @@ function setCache(key: string, data: unknown): void {
   memoryCache.set(key, { data, expiresAt: Date.now() + CACHE_TTL });
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -40,7 +39,7 @@ serve(async (req) => {
     // Try to get from cache first
     const cacheKey = "instance_metadata";
     const cachedData = getCached(cacheKey);
-    
+
     if (cachedData) {
       console.log(`Cache hit for instance metadata`);
       return new Response(

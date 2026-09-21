@@ -1,3 +1,4 @@
+import { userHandler } from "../_shared/user-auth.ts";
 /**
  * Import a Mastodon-format follows CSV ("Account address,Show boosts,...")
  * and queue Follow activities for each entry. Used by the "Migrate TO
@@ -45,7 +46,7 @@ function parseCsv(text: string): Row[] {
   return rows;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(userHandler(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -116,4 +117,4 @@ Deno.serve(async (req) => {
     skipped,
     errors: errors.length > 0 ? errors : undefined,
   });
-});
+}));

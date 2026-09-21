@@ -86,9 +86,9 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
     // Use RPC function to properly filter by JSON fields
     // PostgREST .or() doesn't support JSON operators, so we use a database function
     const { data: replies, error } = await supabase
-      .rpc('get_post_replies', { 
+      .rpc('get_post_replies', {
         post_id: postId,
-        max_replies: 50 
+        max_replies: 50
       });
 
     if (error) {
@@ -110,10 +110,10 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
 
       if (profiles) {
         profilesMap = Object.fromEntries(
-          profiles.map(p => [p.id, { 
-            fullname: p.fullname || undefined, 
-            username: p.username || undefined, 
-            avatar_url: p.avatar_url || undefined 
+          profiles.map(p => [p.id, {
+            fullname: p.fullname || undefined,
+            username: p.username || undefined,
+            avatar_url: p.avatar_url || undefined
           }])
         );
       }
@@ -137,7 +137,7 @@ export const getPostReplies = async (postId: string): Promise<PostReply[]> => {
       const content = reply.content as any;
       const profile = reply.actor_user_id ? profilesMap[reply.actor_user_id] : undefined;
       const company = reply.company_id ? companiesMap[reply.company_id] : undefined;
-      
+
       // Determine parent_reply_id: if inReplyTo is NOT the main post, it's a parent reply
       const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
       const parentReplyId = inReplyTo && inReplyTo !== postId ? inReplyTo : null;
@@ -178,16 +178,16 @@ async function getCommentOwner(commentId: string): Promise<string | null> {
     .select('attributed_to')
     .eq('id', commentId)
     .single();
-  
+
   if (!data?.attributed_to) return null;
-  
+
   // Get the user_id from the actor via safe public view (actors table is RLS-restricted)
   const { data: actor } = await supabase
     .from('public_actors')
     .select('user_id')
     .eq('id', data.attributed_to)
     .maybeSingle();
-  
+
   return actor?.user_id || null;
 }
 
@@ -213,11 +213,11 @@ export async function updatePostReply(commentId: string, content: string): Promi
   }
 
   const currentContent = currentData.content as Record<string, unknown>;
-  
+
   // Safely extract existing inner content - handle corrupt structures
   let innerContent: Record<string, string | Record<string, unknown>> = {};
   const rawInner = currentContent.content;
-  
+
   if (rawInner !== null && typeof rawInner === 'object' && !Array.isArray(rawInner)) {
     const inner = rawInner as Record<string, unknown>;
     // Only preserve valid fields, ignore char-map keys like "0", "1", etc.
@@ -228,7 +228,7 @@ export async function updatePostReply(commentId: string, content: string): Promi
       }
     }
   }
-  
+
   // Build clean updated content structure with explicit type casting for Json compatibility
   const updatedInner = {
     ...innerContent,
@@ -236,7 +236,7 @@ export async function updatePostReply(commentId: string, content: string): Promi
     content: content, // Plain text - always a string
     updated: new Date().toISOString()
   };
-  
+
   const updatedContent = {
     ...currentContent,
     content: updatedInner
@@ -244,7 +244,7 @@ export async function updatePostReply(commentId: string, content: string): Promi
 
   const { error } = await supabase
     .from('ap_objects')
-    .update({ 
+    .update({
       content: updatedContent as unknown as Record<string, never>,
       updated_at: new Date().toISOString()
     })
@@ -274,14 +274,14 @@ export async function deletePostReply(commentId: string): Promise<void> {
 
 // Create a reply to a post (or to another reply), optionally as a company
 export async function createPostReply(
-  postId: string, 
-  content: string, 
+  postId: string,
+  content: string,
   parentReplyId?: string,
   companyId?: string
 ): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) {
       toast.error('Du måste vara inloggad för att svara');
       return false;
@@ -424,12 +424,12 @@ export async function createPostReply(
             .maybeSingle();
 
           // Don't notify yourself, and don't double-notify if same as post author
-          const postAuthorId = postData?.attributed_to ? 
-            (await supabase.from('public_actors').select('user_id').eq('id', postData.attributed_to).maybeSingle())?.data?.user_id 
+          const postAuthorId = postData?.attributed_to ?
+            (await supabase.from('public_actors').select('user_id').eq('id', postData.attributed_to).maybeSingle())?.data?.user_id
             : null;
-            
-          if (commentActor?.user_id && 
-              commentActor.user_id !== user.id && 
+
+          if (commentActor?.user_id &&
+              commentActor.user_id !== user.id &&
               commentActor.user_id !== postAuthorId) {
             await supabase.from('notifications').insert({
               type: 'reply',
@@ -446,7 +446,7 @@ export async function createPostReply(
       // 3. Handle @mentions - create notifications for mentioned users
       const mentions = extractMentions(content);
       if (mentions.length > 0) {
-        console.log('📣 Processing mentions in reply:', mentions);
+
         for (const username of mentions) {
           try {
             // Look up user by username
@@ -455,7 +455,7 @@ export async function createPostReply(
               .select('id')
               .eq('username', username)
               .single();
-            
+
             if (mentionedUser && mentionedUser.id !== user.id) {
               // Create mention notification - link to the post with the reply highlighted
               await supabase.from('notifications').insert({
@@ -464,12 +464,12 @@ export async function createPostReply(
                 actor_id: user.id,
                 object_id: postId, // Navigate to the parent post
                 object_type: 'post',
-                content: JSON.stringify({ 
+                content: JSON.stringify({
                   preview: content.substring(0, 100),
                   highlightReply: replyId // Include the reply ID for scrolling
                 })
               });
-              console.log('✅ Mention notification created for:', username);
+
             }
           } catch (mentionError) {
             console.warn('⚠️ Could not create mention notification for:', username, mentionError);

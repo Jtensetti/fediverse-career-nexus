@@ -1,8 +1,9 @@
+import { userHandler } from "../_shared/user-auth.ts";
 import { generateRsaKeyPair } from "../_shared/http-signature.ts";
 import { buildActorUrl } from "../_shared/federation-urls.ts";
 import { serviceClient, jsonResponse, federationHeaders } from "../_shared/local-actor.ts";
 
-Deno.serve(async (req) => {
+Deno.serve(userHandler(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: { ...federationHeaders, "Access-Control-Allow-Methods": "POST, OPTIONS" } });
   if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
   const token = req.headers.get("Authorization")?.match(/^Bearer (.+)$/i)?.[1];
@@ -26,4 +27,4 @@ Deno.serve(async (req) => {
     console.error("Actor provisioning failed", error);
     return jsonResponse({ error: "Could not enable federation. Check your username and account status." }, 409);
   }
-});
+}));

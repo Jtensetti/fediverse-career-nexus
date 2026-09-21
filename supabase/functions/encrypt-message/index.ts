@@ -1,159 +1,73 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { encryptMessage, decryptMessage } from "../_shared/message-encryption.ts";
+import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
+import { HttpError, postHandler, requestBody, requireUser, uuid } from "../_shared/user-auth.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const columns = "id,sender_id,recipient_id,content,read_at,created_at,is_encrypted,encrypted_content,is_federated,delivery_status";
 
-const supabaseClient = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
-
-serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+async function readable(message: Record<string, any>) {
+  const { encrypted_content, ...result } = message;
+  if (message.is_encrypted) {
+    if (!encrypted_content) throw new Error("Encrypted message has no ciphertext");
+    result.content = await decryptMessage(encrypted_content);
   }
+  return result;
+}
 
-  try {
-    // Authenticate user
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+Deno.serve(postHandler(async req => {
+  const { user, client } = await requireUser(req);
+  const { action, messageId, content, partnerId, before, jobConversationId } = await requestBody(req);
+  if (action === "send") {
+    const recipient = uuid(partnerId, "partnerId");
+    if (typeof content !== "string" || !content.trim() || new TextEncoder().encode(content).length > 10000) {
+      throw new HttpError(400, "A message must contain between 1 and 10000 bytes");
     }
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const { data: permission, error } = await client.rpc("can_message_user", { p_sender_id: user.id, p_recipient_id: recipient });
+    if (error) throw error;
+    if (!permission?.can_message || permission.is_federated) throw new HttpError(403, "Messaging is not permitted");
+    let conversation: string | null = null;
+    if (jobConversationId !== undefined) {
+      conversation = uuid(jobConversationId, "jobConversationId");
+      const { data, error } = await client.from("job_conversations").select("applicant_id,poster_id").eq("id", conversation).maybeSingle();
+      if (error) throw error;
+      if (!data || !((data.applicant_id === user.id && data.poster_id === recipient) || (data.poster_id === user.id && data.applicant_id === recipient))) throw new HttpError(403, "Invalid job conversation");
     }
-
-    const body = await req.json();
-    const { action, messageId, content, partnerId } = body;
-
-    if (action === "encrypt") {
-      // Encrypt a message content (used when sending)
-      if (!content) {
-        return new Response(
-          JSON.stringify({ error: "Missing content" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const encryptedContent = await encryptMessage(content);
-      
-      return new Response(
-        JSON.stringify({ encryptedContent }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (action === "decrypt") {
-      // Decrypt a single message by ID
-      if (!messageId) {
-        return new Response(
-          JSON.stringify({ error: "Missing messageId" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Fetch the message and verify the user has access
-      const { data: message, error: fetchError } = await supabaseClient
-        .from("messages")
-        .select("*")
-        .eq("id", messageId)
-        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
-        .single();
-
-      if (fetchError || !message) {
-        return new Response(
-          JSON.stringify({ error: "Message not found or access denied" }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // If not encrypted, return as-is
-      if (!message.is_encrypted || !message.encrypted_content) {
-        return new Response(
-          JSON.stringify({ content: message.content }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Decrypt the content
-      const decryptedContent = await decryptMessage(message.encrypted_content);
-      
-      return new Response(
-        JSON.stringify({ content: decryptedContent }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (action === "decrypt-batch") {
-      // Decrypt multiple messages for a conversation
-      if (!partnerId) {
-        return new Response(
-          JSON.stringify({ error: "Missing partnerId" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Fetch messages between the user and partner
-      const { data: messages, error: fetchError } = await supabaseClient
-        .from("messages")
-        .select("*")
-        .or(`and(sender_id.eq.${user.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user.id})`)
-        .order("created_at", { ascending: true });
-
-      if (fetchError) {
-        return new Response(
-          JSON.stringify({ error: "Failed to fetch messages" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Decrypt each encrypted message
-      const decryptedMessages = await Promise.all(
-        (messages || []).map(async (msg) => {
-          if (msg.is_encrypted && msg.encrypted_content) {
-            try {
-              const decryptedContent = await decryptMessage(msg.encrypted_content);
-              return { ...msg, content: decryptedContent };
-            } catch (error) {
-              console.error(`Failed to decrypt message ${msg.id}:`, error);
-              return { ...msg, content: "[Decryption failed]" };
-            }
-          }
-          return msg;
-        })
-      );
-
-      return new Response(
-        JSON.stringify({ messages: decryptedMessages }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    return new Response(
-      JSON.stringify({ error: "Invalid action" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-
-  } catch (error) {
-    console.error("Error in encrypt-message:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    // Encryption failure aborts delivery. Never fall back to storing plaintext.
+    const encrypted = await encryptMessage(content);
+    const { data: message, error: insertError } = await serviceClient().from("messages").insert({
+      sender_id: user.id, recipient_id: recipient, content: "", encrypted_content: encrypted,
+      is_encrypted: true, is_federated: false, delivery_status: "local", job_conversation_id: conversation,
+    }).select(columns).single();
+    if (insertError) throw insertError;
+    return jsonResponse({ message: await readable(message) }, 201);
   }
-});
+  if (action === "decrypt") {
+    const id = uuid(messageId, "messageId");
+    // User-scoped RLS is an independent boundary, in addition to validated filters.
+    const { data, error } = await client.from("messages").select(columns).eq("id", id)
+      .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`).maybeSingle();
+    if (error) throw error;
+    if (!data) throw new HttpError(404, "Message not found");
+    return jsonResponse({ content: (await readable(data)).content });
+  }
+  if (action === "decrypt-batch") {
+    const partner = uuid(partnerId, "partnerId");
+    let query = client.from("messages").select(columns)
+      .or(`and(sender_id.eq.${user.id},recipient_id.eq.${partner}),and(sender_id.eq.${partner},recipient_id.eq.${user.id})`)
+      .order("created_at", { ascending: false }).order("id", { ascending: false }).limit(51);
+    if (before !== undefined) {
+      if (!before || typeof before !== "object" || Array.isArray(before)) throw new HttpError(400, "Invalid cursor");
+      const cursor = before as Record<string, unknown>;
+      const id = uuid(cursor.id, "cursor id");
+      const at = cursor.created_at;
+      if (typeof at !== "string" || !/^\d{4}-\d{2}-\d{2}T[\d:.]+(?:Z|[+-]\d{2}:\d{2})$/.test(at) || !Number.isFinite(Date.parse(at))) throw new HttpError(400, "Invalid cursor date");
+      query = query.or(`created_at.lt.${at},and(created_at.eq.${at},id.lt.${id})`);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    const page = (data || []).slice(0, 50);
+    const last = page.at(-1);
+    const next = (data?.length || 0) > 50 && last ? { id: last.id, created_at: last.created_at } : null;
+    return jsonResponse({ messages: (await Promise.all(page.map(readable))).reverse(), next });
+  }
+  throw new HttpError(400, "Unsupported message action");
+}));

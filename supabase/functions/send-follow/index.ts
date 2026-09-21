@@ -1,3 +1,4 @@
+import { userHandler } from "../_shared/user-auth.ts";
 import { serviceClient, jsonResponse, federationHeaders } from "../_shared/local-actor.ts";
 import { buildActorUrl, buildActivityId } from "../_shared/federation-urls.ts";
 import { fetchActorDocument, remoteFetch, readJson, remoteUrl } from "../_shared/remote-fetch.ts";
@@ -16,7 +17,7 @@ async function resolveAccount(acct: string): Promise<string> {
   return remoteUrl(link.href).href;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(userHandler(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: { ...federationHeaders, "Access-Control-Allow-Methods": "POST, OPTIONS" } });
   if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
   const token = req.headers.get("Authorization")?.match(/^Bearer (.+)$/i)?.[1];
@@ -73,4 +74,4 @@ Deno.serve(async (req) => {
     console.error("Follow request failed", error);
     return jsonResponse({ error: "Could not send the follow request. Check the account address and retry." }, 502);
   }
-});
+}));

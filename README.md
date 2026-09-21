@@ -26,9 +26,9 @@ The platform is Swedish-first (`sv` default, English fallback). Confirm actual h
 ## Tech stack
 
 - **Frontend:** React 18 · Vite 6.4 · TypeScript · Tailwind · shadcn/ui · TanStack Query
-- **Backend:** Supabase (Postgres + RLS + Edge Functions on Deno)
+- **Backend:** Lovable Cloud (Supabase/Postgres, Auth, RLS, Storage and Deno Edge Functions)
 - **Federation:** ActivityPub · HTTP Signatures · WebFinger · NodeInfo
-- **Auth:** Email/password · OAuth (Google, Apple) · TOTP MFA · federated login
+- **Auth:** Email/password · TOTP MFA · Mastodon sign-in/linking; other OAuth providers require explicit deployment configuration
 - **Email:** Resend (sender: `noreply@nolto.social`)
 
 ---

@@ -1,118 +1,45 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
-import { createLogger } from "../_shared/logger.ts";
+import { federationHeaders, jsonResponse } from "../_shared/local-actor.ts";
+import { remoteFetch, remoteUrl } from "../_shared/remote-fetch.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const MAX_BYTES = 5 * 1024 * 1024;
+const imageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
 
-serve(async (req) => {
-  // Generate a unique trace ID for this request
-  const traceId = crypto.randomUUID();
-  const logger = createLogger("proxy-media", traceId);
-  
-  // Add trace ID to headers
-  const headers = {
-    ...corsHeaders,
-    "X-Trace-ID": traceId
-  };
-
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers });
-  }
-
+Deno.serve(async req => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: federationHeaders });
+  if (req.method !== "GET" && req.method !== "HEAD") return jsonResponse({ error: "Method not allowed" }, 405);
   try {
-    // Log the incoming request
-    logger.debug({ method: req.method, url: req.url, traceId }, "Received proxy-media request");
-    
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
-    
-    if (!supabaseUrl || !supabaseKey) {
-      logger.error({ traceId }, "Missing required environment variables: SUPABASE_URL or SUPABASE_ANON_KEY");
-      return new Response(JSON.stringify({ 
-        error: "Server configuration error", 
-        traceId 
-      }), {
-        status: 500,
-        headers: { ...headers, "Content-Type": "application/json" }
-      });
+    const input = new URL(req.url).searchParams.get("url");
+    if (!input || input.length > 2048) return jsonResponse({ error: "Invalid URL" }, 400);
+    const url = remoteUrl(input);
+    const response = await remoteFetch(url.href, { headers: { Accept: [...imageTypes].join(",") } });
+    const type = response.headers.get("content-type")?.split(";")[0].trim().toLowerCase();
+    if (!response.ok || !type || !imageTypes.has(type)) {
+      await response.body?.cancel();
+      return jsonResponse({ error: "Image unavailable" }, 422);
     }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Get URL from request
-    const url = new URL(req.url);
-    const mediaUrl = url.searchParams.get("url");
-
-    if (!mediaUrl) {
-      logger.warn({ traceId }, "No URL provided in request");
-      return new Response(JSON.stringify({ 
-        error: "No URL provided", 
-        traceId 
-      }), {
-        status: 400,
-        headers: { ...headers, "Content-Type": "application/json" }
-      });
+    if (Number(response.headers.get("content-length")) > MAX_BYTES) {
+      await response.body?.cancel();
+      return jsonResponse({ error: "Image too large" }, 413);
     }
-
-    // Fetch the remote media
-    logger.debug({ mediaUrl, traceId }, "Fetching remote media");
-    const response = await fetch(mediaUrl);
-    
-    if (!response.ok) {
-      logger.error({ 
-        mediaUrl, 
-        statusCode: response.status, 
-        statusText: response.statusText,
-        traceId 
-      }, "Failed to fetch media");
-      
-      return new Response(JSON.stringify({ 
-        error: "Failed to fetch media", 
-        traceId 
-      }), {
-        status: response.status,
-        headers: { ...headers, "Content-Type": "application/json" }
-      });
-    }
-
-    // Get content type and data
-    const contentType = response.headers.get("content-type") || "application/octet-stream";
-    const data = await response.arrayBuffer();
-    
-    logger.info({ 
-      mediaUrl, 
-      contentType, 
-      size: data.byteLength,
-      traceId 
-    }, "Successfully proxied media");
-
-    // Return the media with appropriate headers
-    return new Response(data, {
-      status: 200,
-      headers: {
-        ...headers,
-        "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400" // Cache for 24 hours
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("No image body");
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > MAX_BYTES) return jsonResponse({ error: "Image too large" }, 413);
+        chunks.push(value);
       }
-    });
-  } catch (error) {
-    logger.error({ 
-      error: error.message, 
-      stack: error.stack,
-      traceId 
-    }, "Error proxying media");
-    
-    return new Response(JSON.stringify({ 
-      error: "Internal server error", 
-      traceId 
-    }), {
-      status: 500,
-      headers: { ...headers, "Content-Type": "application/json" }
-    });
-  }
+    } finally { await reader.cancel(); }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+    return new Response(req.method === "HEAD" ? null : bytes, { headers: {
+      ...federationHeaders, "Content-Type": type, "Cache-Control": "public, max-age=3600",
+      "Content-Security-Policy": "default-src 'none'; sandbox", "Referrer-Policy": "no-referrer",
+    } });
+  } catch { return jsonResponse({ error: "Image unavailable" }, 422); }
 });

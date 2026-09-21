@@ -13,7 +13,7 @@ export default function LegalDocument({ kind, embedded = false }: { kind: LegalK
     <section><h2>{sv ? "Kontakt" : "Contact"}</h2><p><a href={`mailto:${legalContact}`}>{legalContact}</a></p></section>
   </article>;
   if (embedded) return content;
-  return <main className="container max-w-3xl px-4 py-10 sm:py-16">
+  return <div className="container max-w-3xl px-4 py-10 sm:py-16">
     <SEOHead title={doc.title} description={doc.intro} />
     <Link to="/" className="text-sm underline">← {sv ? "Till startsidan" : "Back to home"}</Link>
     <header className="my-8 space-y-3"><h1 className="text-3xl font-bold">{doc.title}</h1><p className="text-lg text-muted-foreground">{doc.intro}</p><p className="text-sm text-muted-foreground">{sv ? "Senast reviderad" : "Last revised"}: 2026-09-21</p></header>
@@ -22,5 +22,5 @@ export default function LegalDocument({ kind, embedded = false }: { kind: LegalK
     </nav>
     {content}
     <p className="mt-10 text-sm"><Link className="underline" to="/federation">{sv ? "Så fungerar Nolto och Mastodon" : "How Nolto and Mastodon work together"}</Link></p>
-  </main>;
+  </div>;
 }

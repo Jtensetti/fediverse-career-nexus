@@ -39,104 +39,6 @@ export interface FederatedPost {
 
 export type FeedType = "following" | "local" | "federated";
 
-// Fetch remote home timeline from user's federated instance (not stored in DB)
-export const fetchRemoteHomeTimeline = async (
-  limit: number = 20,
-  maxId?: string
-): Promise<{
-  posts: FederatedPost[];
-  nextMaxId: string | null;
-  instance: string | null;
-  error?: string;
-  tokenExpired?: boolean;
-}> => {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      return { posts: [], nextMaxId: null, instance: null };
-    }
-
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    let url = `${supabaseUrl}/functions/v1/fetch-home-timeline?limit=${limit}`;
-    if (maxId) {
-      url += `&max_id=${maxId}`;
-    }
-
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      console.error("Failed to fetch remote timeline:", response.status);
-      return { posts: [], nextMaxId: null, instance: null, error: `HTTP ${response.status}` };
-    }
-
-    const data = await response.json();
-    return {
-      posts: data.posts || [],
-      nextMaxId: data.next_max_id || null,
-      instance: data.instance || null,
-      error: data.error,
-      tokenExpired: data.token_expired,
-    };
-  } catch (error) {
-    console.error("Error fetching remote home timeline:", error);
-    return { posts: [], nextMaxId: null, instance: null, error: String(error) };
-  }
-};
-
-// Get IDs of users the current user follows (connections + author follows)
-const getFollowedUserIds = async (userId: string): Promise<string[]> => {
-  const followedIds: Set<string> = new Set();
-
-  // Get connections (accepted)
-  const { data: connections } = await supabase
-    .from("user_connections")
-    .select("user_id, connected_user_id")
-    .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
-    .eq("status", "accepted");
-
-  if (connections) {
-    connections.forEach((c) => {
-      const otherId = c.user_id === userId ? c.connected_user_id : c.user_id;
-      followedIds.add(otherId);
-    });
-  }
-
-  // Get author follows
-  const { data: authorFollows } = await supabase
-    .from("author_follows")
-    .select("author_id")
-    .eq("follower_id", userId);
-
-  if (authorFollows) {
-    authorFollows.forEach((f) => followedIds.add(f.author_id));
-  }
-
-  return Array.from(followedIds);
-};
-
-// Get IDs of remote users the current user follows (users with home_instance set)
-const getRemoteFollowedUserIds = async (userId: string): Promise<string[]> => {
-  const followedIds = await getFollowedUserIds(userId);
-
-  if (followedIds.length === 0) return [];
-
-  // Check which of these users are remote (have home_instance set)
-  const { data: remoteProfiles } = await supabase
-    .from("public_profiles")
-    .select("id")
-    .in("id", followedIds)
-    .not("home_instance", "is", null);
-
-  return remoteProfiles?.map((p) => p.id) || [];
-};
-
 export const getFederatedFeed = async (
   limit: number = 20,
   offset: number = 0,
@@ -144,67 +46,25 @@ export const getFederatedFeed = async (
   userId?: string
 ): Promise<FederatedPost[]> => {
   try {
-    console.log("🌐 Fetching federated feed with limit:", limit, "offset:", offset, "feedType:", feedType);
 
-    // For "following" feed, get the list of followed user IDs first
-    let followedUserIds: string[] = [];
-    if (feedType === "following" && userId) {
-      followedUserIds = await getFollowedUserIds(userId);
-      // Always include user's own posts in the following feed
-      followedUserIds.push(userId);
-      console.log("👥 Following feed - followed user IDs:", followedUserIds.length);
-
-      if (followedUserIds.length === 1) {
-        console.log("📭 User follows no one, returning own posts only");
-      }
-    }
-
-    // Build the query based on feed type - we need to filter at the database level!
-    // Note: We no longer join to actors via FK since actors table has restrictive RLS
-    // Instead, we fetch attributed_to (actor ID) and resolve user data via public views
-    let query = supabase.from("federated_feed").select(
-      `
-        id,
-        content,
-        published_at,
-        source,
-        type,
-        attributed_to,
-        company_id
-      `
-    );
-
-    // Apply feed-specific filters at the database level
-    if (feedType === "local") {
-      // Local feed: all local posts, exclude Announce to avoid duplication
-      query = query.eq("source", "local").neq("type", "Announce");
-      console.log("📊 Local feed - filtering at DB level");
-    } else if (feedType === "federated") {
-      // Federated feed: all local posts (remote posts merged separately)
-      query = query.eq("source", "local");
-      console.log("📊 Federated feed - filtering at DB level");
-    }
-    // Note: 'following' feed can't easily filter at DB level without RPC,
-    // so we need to fetch more and filter client-side
-
-    // For 'following' feed, fetch more to have enough after filtering
-    const fetchLimit = feedType === "following" ? limit * 3 : limit;
-
-    query = query.order("published_at", { ascending: false }).range(offset, offset + fetchLimit - 1);
+    if (feedType === "following" && !userId) return [];
+    let publicQuery = supabase.from("federated_feed")
+      .select("id,content,published_at,source,type,attributed_to,company_id");
+    if (feedType === "local") publicQuery = publicQuery.eq("source", "local").neq("type", "Announce");
+    const query = feedType === "following"
+      ? supabase.rpc("get_following_feed", { p_limit: limit, p_offset: offset })
+      : publicQuery.order("published_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + limit - 1);
 
     const { data: apObjects, error: apError } = await query;
 
     if (apError) {
-      console.error("Error fetching from federated_feed:", apError);
-      return [];
+      throw apError;
     }
 
     if (!apObjects || apObjects.length === 0) {
-      console.log("No federated content found");
+
       return [];
     }
-
-    console.log("📊 Raw federated objects:", apObjects.length, "feedType:", feedType);
 
     // Get actor data from public_actors view (bypasses RLS)
     const actorIds = [...new Set(apObjects.map((obj: any) => obj.attributed_to).filter(Boolean))];
@@ -231,28 +91,11 @@ export const getFederatedFeed = async (
       actors: actorsMap[obj.attributed_to] || null,
     }));
 
-    // For 'following' feed, filter client-side (need to do this after fetch)
-    let filteredObjects = enrichedObjects;
-
-    if (feedType === "following" && userId) {
-      console.log("👥 Following feed - filtering against", followedUserIds.length, "user IDs");
-      filteredObjects = enrichedObjects.filter((obj: any) => {
-        const actorUserId = obj.actors?.user_id;
-        const isIncluded = actorUserId && followedUserIds.includes(actorUserId);
-        return isIncluded;
-      });
-      // Limit to requested amount after filtering
-      filteredObjects = filteredObjects.slice(0, limit);
-      console.log("📊 After following filter:", filteredObjects.length, "posts");
-    }
-
-    console.log("📊 Final filtered objects:", filteredObjects.length);
+    const filteredObjects = enrichedObjects;
 
     const userIds = filteredObjects
       .map((obj: any) => obj.actors?.user_id)
       .filter((id: string | undefined): id is string => !!id);
-
-    console.log("👥 User IDs found:", userIds);
 
     let profilesMap: Record<
       string,
@@ -270,8 +113,6 @@ export const getFederatedFeed = async (
         .from("public_profiles")
         .select("id, username, fullname, avatar_url, home_instance, is_freelancer")
         .in("id", userIds);
-
-      console.log("📝 Profiles fetched:", profiles?.length, "error:", profileError);
 
       if (profiles) {
         profilesMap = Object.fromEntries(
@@ -341,20 +182,14 @@ export const getFederatedFeed = async (
       };
     });
 
-    console.log("✅ Transformed federated posts:", federatedPosts.length);
-
     return federatedPosts;
   } catch (error) {
-    console.error("Error fetching federated feed:", error);
-    return [];
+    throw error;
   }
 };
 
 export const federateActivity = async (activity: any) => {
   try {
-    console.log("🌐 Federating activity:", activity.type);
-
-    console.log("Activity to federate:", activity);
 
     const { data, error } = await supabase
       .from("ap_objects")
@@ -371,7 +206,6 @@ export const federateActivity = async (activity: any) => {
       throw error;
     }
 
-    console.log("✅ Activity federated successfully");
     return data;
   } catch (error) {
     console.error("Error federating activity:", error);

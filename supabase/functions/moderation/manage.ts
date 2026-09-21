@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { HttpError, requireAdmin } from "../_shared/user-auth.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,33 +11,17 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Missing token" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
-  const token = auth.substring(7);
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) {
-    return new Response(JSON.stringify({ error: "Invalid token" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-  }
-
-  const { data: isAdmin } = await supabase.rpc('is_admin', { user_id: user.id });
-  if (!isAdmin) {
-    return new Response(JSON.stringify({ error: "Forbidden" }), {
-      status: 403,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
+  try {
+    await requireAdmin(req);
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error instanceof HttpError ? error.message : "Authentication unavailable" }), {
+      status: error instanceof HttpError ? error.status : 503,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 

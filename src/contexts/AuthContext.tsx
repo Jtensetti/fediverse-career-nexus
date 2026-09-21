@@ -3,7 +3,10 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { needsMFAVerification } from "@/services/auth/mfaService";
 import MFAVerifyDialog from "@/components/auth/MFAVerifyDialog";
+import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AuthContextType {
   user: User | null;
@@ -14,13 +17,18 @@ interface AuthContextType {
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
+  const previousUser = useRef<string | null>(null);
   const { t } = useTranslation();
+  const location = useLocation();
+  const recoveringMfa = location.pathname === "/aterstall-mfa";
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [mfaPending, setMfaPending] = useState(false);
   const [factorId, setFactorId] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const generation = useRef(0);
+  const verifiedUser = useRef<string | null>(null);
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -29,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = nextSession ? await needsMFAVerification() : { needed: false };
       if (version !== generation.current) return;
+      verifiedUser.current = !result.needed ? nextSession?.user.id || null : null;
       setSession(nextSession);
       setFactorId(result.factorId || null);
       setMfaPending(result.needed);
@@ -42,11 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     // Auth callbacks must be synchronous: calling auth APIs while its lock is held can deadlock.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      const nextUser = nextSession?.user.id || null;
+      if (nextUser !== previousUser.current) {
+        queryClient.clear();
+        previousUser.current = nextUser;
+      }
       const version = ++generation.current;
-      setLoading(true);
+      const refresh = event === "TOKEN_REFRESHED" && nextUser !== null && verifiedUser.current === nextUser;
+      if (!refresh) { setLoading(true); setMfaPending(!!nextSession); }
       setSession(nextSession);
-      setMfaPending(!!nextSession);
       clearTimeout(timer);
       timer = setTimeout(() => { void verifySession(nextSession, version); }, 0);
     });
@@ -60,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {session && <button className="underline" onClick={() => void signOut()}>{t("auth.signOut")}</button>}
     </div>}
 
-    {factorId && <MFAVerifyDialog open={mfaPending} onOpenChange={open => { if (!open) void signOut(); }} factorId={factorId}
+    {factorId && !recoveringMfa && <MFAVerifyDialog open={mfaPending} onOpenChange={open => { if (!open) void signOut(); }} factorId={factorId}
       onSuccess={() => { setLoading(true); void verifySession(session, ++generation.current); }} onCancel={signOut} />}
   </AuthContext.Provider>;
 }

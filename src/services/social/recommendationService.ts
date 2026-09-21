@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { notificationService } from "../misc/notificationService";
 
 export type RecommendationStatus = 'pending' | 'approved' | 'rejected' | 'requested';
 export type RelationshipType = 'colleague' | 'manager' | 'direct_report' | 'client' | 'mentor' | 'other';
@@ -34,7 +33,7 @@ async function enrichWithProfiles(recommendations: any[], profileField: 'recomme
   if (recommendations.length === 0) return [];
 
   const userIds = [...new Set(recommendations.map(r => r[profileField]).filter(Boolean))];
-  
+
   if (userIds.length === 0) {
     return recommendations as Recommendation[];
   }
@@ -128,14 +127,6 @@ export const recommendationService = {
     }
 
     // Notify the recipient
-    await notificationService.createNotification({
-      type: 'recommendation_received',
-      recipientId: params.recipientId,
-      actorId: user.id,
-      content: 'wrote you a recommendation',
-      objectType: 'profile',
-      objectId: params.recipientId,
-    });
 
     return { success: true };
   },
@@ -158,15 +149,8 @@ export const recommendationService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    // Just send a notification - the actual recommendation will be written by the other user
-    await notificationService.createNotification({
-      type: 'recommendation_request',
-      recipientId: userId,
-      actorId: user.id,
-      content: 'requested a recommendation from you',
-      objectType: 'profile',
-      objectId: user.id,
-    });
+    const { data, error } = await supabase.rpc('request_recommendation', { recipient: userId });
+    if (error || data !== true) return false;
 
     return true;
   },

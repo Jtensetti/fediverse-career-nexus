@@ -1,3 +1,4 @@
+import { HttpError, requireUser } from "../_shared/user-auth.ts";
 import { remoteFetch, readJson } from "../_shared/remote-fetch.ts";
 import { tokenHash, OAUTH_SCOPES } from "../_shared/oauth.ts";
 import { getSiteUrl } from "../_shared/federation-urls.ts";
@@ -30,15 +31,15 @@ interface MastodonAccount {
 
 // Exchange authorization code for access token
 async function exchangeCodeForToken(
-  domain: string, 
-  code: string, 
-  clientId: string, 
+  domain: string,
+  code: string,
+  clientId: string,
   clientSecret: string,
   redirectUri: string,
   codeVerifier: string
 ): Promise<{ accessToken: string; refreshToken?: string; expiresIn?: number } | null> {
   const tokenUrl = `https://${domain}/oauth/token`;
-  
+
   try {
     const response = await remoteFetch(tokenUrl, {
       method: 'POST',
@@ -53,12 +54,12 @@ async function exchangeCodeForToken(
         code_verifier: codeVerifier
       })
     });
-    
+
     if (!response.ok) {
       console.error(`Token exchange failed: ${response.status}`);
       return null;
     }
-    
+
     const data = await readJson(response);
     return {
       accessToken: data.access_token,
@@ -74,17 +75,17 @@ async function exchangeCodeForToken(
 // Verify the user's credentials with the remote instance
 async function verifyCredentials(domain: string, accessToken: string): Promise<MastodonAccount | null> {
   const verifyUrl = `https://${domain}/api/v1/accounts/verify_credentials`;
-  
+
   try {
     const response = await remoteFetch(verifyUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-    
+
     if (!response.ok) {
       console.error(`Verify credentials failed: ${response.status}`);
       return null;
     }
-    
+
     return await readJson(response);
   } catch (error) {
     console.error('Verify credentials error:', error);
@@ -119,7 +120,7 @@ Deno.serve(async (req) => {
 
   try {
     const { code, state, redirectUri } = await req.json();
-    
+
     if (!code || !state) {
       return new Response(JSON.stringify({ error: 'Code and state are required' }), {
         status: 400,
@@ -189,9 +190,8 @@ Deno.serve(async (req) => {
       .select("user_id").eq("instance_domain", domain).eq("remote_account_id", String(account.id)).maybeSingle();
     if (lookupError) throw lookupError;
     if (stateData.link_user_id) {
-      const bearer = req.headers.get("Authorization")?.match(/^Bearer (.+)$/i)?.[1];
-      const { data: { user }, error } = await supabase.auth.getUser(bearer || "");
-      if (error || !user || user.id !== stateData.link_user_id) throw new Error("Original Nolto session is required to link accounts");
+      const { user } = await requireUser(req);
+      if (user.id !== stateData.link_user_id) throw new Error("Original Nolto session is required to link accounts");
       if (identity && identity.user_id !== user.id) throw new Error("Mastodon account is already linked to a different Nolto account");
     }
     let profileId: string;
@@ -204,7 +204,7 @@ Deno.serve(async (req) => {
 
       // Generate a unique username
       let username = generateUsername(account, domain);
-      
+
       // Check if username exists and add suffix if needed
       const { data: usernameCheck } = await supabase
         .from('public_profiles')
@@ -263,12 +263,12 @@ Deno.serve(async (req) => {
     }
     // Encrypt tokens using AES-GCM
     const encryptedAccessToken = await encryptToken(tokenResult.accessToken);
-    const encryptedRefreshToken = tokenResult.refreshToken 
-      ? await encryptToken(tokenResult.refreshToken) 
+    const encryptedRefreshToken = tokenResult.refreshToken
+      ? await encryptToken(tokenResult.refreshToken)
       : null;
 
     // Store/update the federated session with encrypted tokens
-    const tokenExpiry = tokenResult.expiresIn 
+    const tokenExpiry = tokenResult.expiresIn
       ? new Date(Date.now() + tokenResult.expiresIn * 1000).toISOString()
       : null;
 
@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
     const magicLinkUrl = new URL(sessionData.properties.action_link);
     const token = magicLinkUrl.searchParams.get('token_hash') || magicLinkUrl.searchParams.get('token');
     const tokenType = magicLinkUrl.searchParams.get('type');
-    
+
     if (!token) {
       console.error('Authentication token missing from generated link');
       return new Response(JSON.stringify({ error: 'Failed to generate authentication token' }), {
@@ -348,6 +348,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
+    if (error instanceof HttpError) return new Response(JSON.stringify({ error: error.message }), { status: error.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     console.error('Federated auth callback error:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
