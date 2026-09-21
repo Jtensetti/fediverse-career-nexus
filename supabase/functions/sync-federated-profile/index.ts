@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { remoteFetch, readJson } from "../_shared/remote-fetch.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { decryptToken } from "../_shared/token-encryption.ts";
 
 const corsHeaders = {
@@ -34,7 +34,7 @@ async function fetchRemoteAccount(domain: string, accessToken: string): Promise<
   const verifyUrl = `https://${domain}/api/v1/accounts/verify_credentials`;
   
   try {
-    const response = await fetch(verifyUrl, {
+    const response = await remoteFetch(verifyUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
     
@@ -43,14 +43,14 @@ async function fetchRemoteAccount(domain: string, accessToken: string): Promise<
       return null;
     }
     
-    return await response.json();
+    return await readJson(response);
   } catch (error) {
     console.error('Fetch remote account error:', error);
     return null;
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -137,6 +137,9 @@ serve(async (req) => {
       });
     }
 
+    const { data: identity, error: identityError } = await supabase.from("federated_identities").select("user_id")
+      .eq("instance_domain", session.remote_instance).eq("remote_account_id", String(remoteAccount.id)).eq("user_id", user.id).maybeSingle();
+    if (identityError || !identity) throw new Error("Remote account is not linked to this Nolto account");
     // Update the local profile with remote data
     const { error: updateError } = await supabase
       .from('profiles')

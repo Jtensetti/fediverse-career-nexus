@@ -1,7 +1,9 @@
+import { sendEmail } from "../_shared/email.ts";
+import { getSiteUrl } from "../_shared/federation-urls.ts";
 // Caller: src/components/moderation/MfaRecoveryQueue.tsx (admin only)
 // Generates a single-use signed token, stores its hash, and emails a
 // recovery link to the user's REGISTERED email (not the form email).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -205,13 +207,12 @@ Deno.serve(async (req) => {
       .eq("id", request.id);
 
     // Send email (best-effort but report back if email truly fails)
-    const siteUrl = Deno.env.get("SITE_URL") ?? "https://www.nolto.social";
+    const siteUrl = getSiteUrl();
     const link = `${siteUrl}/aterstall-mfa?token=${encodeURIComponent(token)}`;
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
 
-    if (resendKey && lovableKey) {
+    if (resendKey) {
       const html = `
         <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
           <h2 style="color:#1a1a1a">Återställ tvåfaktorsautentisering</h2>
@@ -233,37 +234,21 @@ Deno.serve(async (req) => {
         </div>
       `;
 
-      const emailRes = await fetch(
-        "https://connector-gateway.lovable.dev/resend/emails",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${lovableKey}`,
-            "X-Connection-Api-Key": resendKey,
-          },
-          body: JSON.stringify({
-            from: "Nolto Support <noreply@nolto.social>",
-            to: [registeredEmail],
-            subject: "Återställ tvåfaktorsautentisering på Nolto",
-            html,
-          }),
-        },
-      );
-
-      if (!emailRes.ok) {
-        const txt = await emailRes.text();
-        console.error("Email send failed:", emailRes.status, txt);
-        return new Response(
-          JSON.stringify({ error: "email_failed" }),
-          {
-            status: 502,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
+      try {
+        await sendEmail(resendKey, {
+          from: "Nolto Support <noreply@nolto.social>", to: registeredEmail,
+          subject: "Återställ tvåfaktorsautentisering på Nolto", html,
+        });
+      } catch (error) {
+        console.error("Recovery email failed", error);
+        return new Response(JSON.stringify({ error: "email_failed" }), {
+          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     } else {
-      console.warn("Email keys missing — token created but not emailed");
+      return new Response(JSON.stringify({ error: "email_unavailable" }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Audit log

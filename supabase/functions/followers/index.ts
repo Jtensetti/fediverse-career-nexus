@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { buildFollowersUrl } from "../_shared/federation-urls.ts";
 
 const corsHeaders = {
@@ -7,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "GET") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
@@ -45,6 +44,7 @@ serve(async (req) => {
       .from("actors")
       .select("id, preferred_username, status, follower_count")
       .eq("preferred_username", username)
+      .eq("is_remote", false)
       .single();
     if (actorError || !actor) {
       return new Response(JSON.stringify({ error: "Actor not found" }), {
@@ -52,7 +52,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (actor.status === "disabled") {
+    if (actor.status !== "active") {
       return new Response(JSON.stringify({ error: "Federation disabled" }), {
         status: 410,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

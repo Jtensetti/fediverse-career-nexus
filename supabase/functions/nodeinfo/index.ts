@@ -1,6 +1,6 @@
+import { functionPath, getFederationBaseUrl } from "../_shared/federation-urls.ts";
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,7 +30,7 @@ function setCache(key: string, data: unknown): void {
   memoryCache.set(key, { data, expiresAt: Date.now() + CACHE_TTL });
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -38,12 +38,12 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const path = url.pathname;
+    const path = "/" + (functionPath(url, "nodeinfo") || []).join("/");
 
     // Handle discovery endpoint - returns links to nodeinfo schemas
     // This handles both /.well-known/nodeinfo (if proxied) and /nodeinfo (direct call)
     if (path === "/.well-known/nodeinfo" || path === "/nodeinfo" || path === "/") {
-      const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
+      const siteUrl = getFederationBaseUrl();
       const baseUrl = siteUrl.replace(/\/$/, "");
       
       const discoveryDocument = {

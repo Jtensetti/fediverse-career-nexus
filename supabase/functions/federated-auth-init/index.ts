@@ -1,266 +1,63 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { serviceClient, jsonResponse, federationHeaders } from "../_shared/local-actor.ts";
+import { getSiteUrl } from "../_shared/federation-urls.ts";
+import { remoteUrl, remoteFetch, readJson } from "../_shared/remote-fetch.ts";
+import { OAUTH_SCOPES, randomToken, tokenHash, pkceChallenge } from "../_shared/oauth.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
-
-interface WebFingerLink {
-  rel: string;
-  type?: string;
-  href?: string;
-  template?: string;
-}
-
-interface WebFingerResponse {
-  subject: string;
-  aliases?: string[];
-  links: WebFingerLink[];
-}
-
-// Parse a Fediverse handle like @user@mastodon.social
-function parseHandle(handle: string): { username: string; domain: string } | null {
-  // Remove leading @ if present
-  const cleanHandle = handle.startsWith('@') ? handle.slice(1) : handle;
-  const parts = cleanHandle.split('@');
-  
-  if (parts.length !== 2) return null;
-  
-  const [username, domain] = parts;
-  if (!username || !domain) return null;
-  
-  return { username, domain };
-}
-
-// Perform WebFinger lookup to discover the actor
-async function webfingerLookup(username: string, domain: string): Promise<WebFingerResponse | null> {
-  const webfingerUrl = `https://${domain}/.well-known/webfinger?resource=acct:${username}@${domain}`;
-  
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: { ...federationHeaders, "Access-Control-Allow-Methods": "POST, OPTIONS" } });
+  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
   try {
-    const response = await fetch(webfingerUrl, {
-      headers: { 'Accept': 'application/jrd+json, application/json' }
+    const { handle, redirectUri, link = false } = await req.json();
+    const callback = `${getSiteUrl()}/auth/callback`;
+    if (redirectUri !== callback) return jsonResponse({ error: `Start sign-in at ${getSiteUrl()} to keep your session on the same site.` }, 400);
+    const parsed = typeof handle === "string" ? /^@?([a-zA-Z0-9_]+)@([^\s/@]+)$/.exec(handle.trim()) : null;
+    if (!parsed) return jsonResponse({ error: "Use username@server" }, 400);
+    const username = parsed[1];
+    const domain = remoteUrl(`https://${parsed[2]}`).hostname;
+    const db = serviceClient();
+    let linkUserId: string | null = null;
+    if (link === true) {
+      const token = req.headers.get("Authorization")?.match(/^Bearer (.+)$/i)?.[1];
+      if (!token) return jsonResponse({ error: "Sign in to Nolto before linking an account" }, 401);
+      const { data: { user }, error: authError } = await db.auth.getUser(token);
+      if (authError || !user) return jsonResponse({ error: "Invalid Nolto session" }, 401);
+      linkUserId = user.id;
+    }
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+    const { count, error: limitError } = await db.from("auth_request_logs").select("id", { count: "exact", head: true })
+      .eq("ip", ip).eq("endpoint", "federated-auth").gte("timestamp", new Date(Date.now() - 60000).toISOString());
+    if (limitError) throw limitError;
+    if ((count || 0) >= 10) return jsonResponse({ error: "Too many sign-in attempts. Try again shortly." }, 429);
+    await db.from("auth_request_logs").insert({ ip, endpoint: "federated-auth" });
+    const { data: existing, error } = await db.from("oauth_clients").select("*").eq("instance_domain", domain).maybeSingle();
+    if (error) throw error;
+    let client = existing;
+    if (!client || client.redirect_uri !== callback || client.scopes !== OAUTH_SCOPES) {
+      const app = await readJson(await remoteFetch(`https://${domain}/api/v1/apps`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ client_name: "Nolto", redirect_uris: callback, scopes: OAUTH_SCOPES, website: getSiteUrl() }),
+      }));
+      if (!app.client_id || !app.client_secret) throw new Error("OAuth registration failed");
+      const record = { instance_domain: domain, client_id: app.client_id, client_secret: app.client_secret, redirect_uri: callback, scopes: OAUTH_SCOPES };
+      const { error: saveError } = await db.from("oauth_clients").upsert(record, { onConflict: "instance_domain" });
+      if (saveError) throw saveError;
+      client = record;
+    }
+    const state = randomToken();
+    const verifier = randomToken();
+    await db.from("federated_oauth_states").delete().lt("expires_at", new Date().toISOString());
+    const { error: stateError } = await db.from("federated_oauth_states").insert({
+      state_hash: await tokenHash(state), link_user_id: linkUserId, instance_domain: domain, redirect_uri: callback, code_verifier: verifier, username,
     });
-    
-    if (!response.ok) {
-      console.error(`WebFinger lookup failed: ${response.status}`);
-      return null;
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('WebFinger lookup error:', error);
-    return null;
-  }
-}
-
-// The canonical redirect URI — always www.nolto.social
-const CANONICAL_REDIRECT_URI = 'https://www.nolto.social/auth/callback';
-
-// Register an OAuth client with a Mastodon-compatible instance
-// Mastodon allows multiple redirect URIs, so we can include both domains
-async function registerOAuthClient(domain: string, redirectUri: string): Promise<{ clientId: string; clientSecret: string } | null> {
-  const appsUrl = `https://${domain}/api/v1/apps`;
-  
-  // Always include the canonical www.nolto.social, the apex nolto.social,
-  // and the lovable.app preview domain as valid redirect URIs
-  const redirectUris = [
-    CANONICAL_REDIRECT_URI,
-    redirectUri,
-    'https://nolto.social/auth/callback',
-    'https://fediverse-career.lovable.app/auth/callback'
-  ];
-  
-  // Deduplicate and join with newlines (Mastodon format for multiple URIs)
-  const uniqueUris = [...new Set(redirectUris)].join('\n');
-  
-  try {
-    const response = await fetch(appsUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_name: 'Nolto - Professional Fediverse Network',
-        redirect_uris: uniqueUris,
-        scopes: 'read',
-        website: 'https://nolto.social'
-      })
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`OAuth registration failed: ${response.status} - ${errorText}`);
-      return null;
-    }
-    
-    const data = await response.json();
-    return {
-      clientId: data.client_id,
-      clientSecret: data.client_secret
-    };
-  } catch (error) {
-    console.error('OAuth registration error:', error);
-    return null;
-  }
-}
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-  }
-
-  try {
-    const { handle, redirectUri } = await req.json();
-    
-    if (!handle || !redirectUri) {
-      return new Response(JSON.stringify({ error: 'Handle and redirectUri are required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Parse the Fediverse handle
-    const parsed = parseHandle(handle);
-    if (!parsed) {
-      return new Response(JSON.stringify({ error: 'Invalid Fediverse handle format. Use @username@instance.social' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const { username, domain } = parsed;
-    console.log(`Initiating federated auth for ${username}@${domain}`);
-
-    // Verify the user exists via WebFinger
-    const webfinger = await webfingerLookup(username, domain);
-    if (!webfinger) {
-      return new Response(JSON.stringify({ error: `Could not find user @${username}@${domain}. Please check the handle and try again.` }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Find the ActivityPub profile URL
-    const actorLink = webfinger.links.find(l => l.rel === 'self' && l.type === 'application/activity+json');
-    const actorUrl = actorLink?.href;
-
-    // Check if we already have an OAuth client for this instance
-    const { data: existingClient } = await supabase
-      .from('oauth_clients')
-      .select('*')
-      .eq('instance_domain', domain)
-      .single();
-
-    let clientId: string;
-    let clientSecret: string;
-    
-    // List of known valid redirect domains - use existing client if it matches any
-    const validDomains = ['www.nolto.social', 'nolto.social', 'fediverse-career.lovable.app'];
-    const existingDomain = existingClient?.redirect_uri?.match(/https?:\/\/([^/]+)/)?.[1];
-    const requestedDomain = redirectUri.match(/https?:\/\/([^/]+)/)?.[1];
-    
-    // Use existing client if both the existing and requested URIs are from our known domains
-    const canReuseClient = existingClient && 
-      validDomains.some(d => existingDomain === d) && 
-      validDomains.some(d => requestedDomain === d);
-
-    if (canReuseClient) {
-      console.log(`Using existing OAuth client for ${domain} (compatible redirect URI)`);
-      clientId = existingClient.client_id;
-      clientSecret = existingClient.client_secret;
-      
-      // Always store the canonical redirect URI
-      if (existingClient.redirect_uri !== CANONICAL_REDIRECT_URI) {
-        await supabase
-          .from('oauth_clients')
-          .update({ redirect_uri: CANONICAL_REDIRECT_URI })
-          .eq('instance_domain', domain);
-      }
-    } else {
-      // Need to register a new OAuth client
-      console.log(`Registering new OAuth client for ${domain}`);
-      
-      const registration = await registerOAuthClient(domain, redirectUri);
-      
-      if (!registration) {
-        return new Response(JSON.stringify({ 
-          error: `Could not register with ${domain}. This instance may not support OAuth login.` 
-        }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-
-      // Store the client credentials
-      // Always store the canonical redirect URI
-      const { error: insertError } = await supabase
-        .from('oauth_clients')
-        .insert({
-          instance_domain: domain,
-          client_id: registration.clientId,
-          client_secret: registration.clientSecret,
-          redirect_uri: CANONICAL_REDIRECT_URI,
-          scopes: 'read'
-        });
-
-      if (insertError) {
-        console.error('Failed to store OAuth client:', insertError);
-      }
-
-      clientId = registration.clientId;
-      clientSecret = registration.clientSecret;
-    }
-
-    // Generate a state parameter for CSRF protection
-    const state = crypto.randomUUID();
-
-    // Store the state temporarily (could use a dedicated table, but we'll encode it)
-    const stateData = btoa(JSON.stringify({
-      domain,
-      username,
-      actorUrl,
-      redirectUri,
-      timestamp: Date.now()
-    }));
-
-    // Build the authorization URL
+    if (stateError) throw stateError;
     const authUrl = new URL(`https://${domain}/oauth/authorize`);
-    authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('scope', 'read');
-    authUrl.searchParams.set('redirect_uri', CANONICAL_REDIRECT_URI);
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('state', stateData);
-
-    console.log(`Generated auth URL for ${domain}`);
-
-    return new Response(JSON.stringify({
-      authorizationUrl: authUrl.toString(),
-      state: stateData,
-      domain,
-      username,
-      actorUrl
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-
+    for (const [key, value] of Object.entries({ client_id: client.client_id, scope: OAUTH_SCOPES,
+      redirect_uri: callback, response_type: "code", state, code_challenge: await pkceChallenge(verifier), code_challenge_method: "S256" })) {
+      authUrl.searchParams.set(key, value as string);
+    }
+    return jsonResponse({ authorizationUrl: authUrl.href, state, domain, username });
   } catch (error) {
-    console.error('Federated auth init error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    console.error("Federated sign-in could not start", error);
+    return jsonResponse({ error: "Could not start sign-in. Check that the server supports the Mastodon OAuth API." }, 502);
   }
 });

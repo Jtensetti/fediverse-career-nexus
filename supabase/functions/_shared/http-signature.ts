@@ -4,8 +4,10 @@
  * following the HTTP Signatures spec for ActivityPub
  */
 
-import { encode as encodeBase64 } from "https://deno.land/std@0.167.0/encoding/base64.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { buildKeyId, getFederationBaseUrl } from "./federation-urls.ts";
+import { remoteFetch, fetchActorDocument } from "./remote-fetch.ts";
+const encodeBase64 = (buffer: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...(buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer))));
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 // Helper function to convert PEM to ArrayBuffer for private keys
 export function pemToPrivateKeyBuffer(pem: string): ArrayBuffer {
@@ -18,7 +20,7 @@ export function pemToPrivateKeyBuffer(pem: string): ArrayBuffer {
     atob(base64)
       .split('')
       .map(c => c.charCodeAt(0))
-  );
+  ).buffer;
 }
 
 // Helper function to convert PEM to ArrayBuffer for public keys
@@ -32,7 +34,7 @@ export function pemToPublicKeyBuffer(pem: string): ArrayBuffer {
     atob(base64)
       .split('')
       .map(c => c.charCodeAt(0))
-  );
+  ).buffer;
 }
 
 /**
@@ -176,28 +178,25 @@ export async function verifySignature(
     return false;
   }
 
-  // Parse signature header
-  const params: Record<string, string> = {};
-  for (const part of signatureHeader.split(',')) {
-    const [k, v] = part.trim().split('=');
-    params[k] = v.replace(/"/g, '');
-  }
-
-  const keyId = params['keyId'];
-  const signatureB64 = params['signature'];
-  const headerNames = (params['headers'] || '').split(' ');
+  const params = parseSignatureHeader(signatureHeader);
+  if (!params) return false;
+  const keyId = params.keyId;
+  const signatureB64 = params.signature;
+  const headerNames = params.headers.toLowerCase().split(/\s+/);
+  if (["(request-target)", "host", "date", "digest"].some(h => !headerNames.includes(h)) ||
+      new Set(headerNames).size !== headerNames.length) return false;
+  if (params.algorithm && !["rsa-sha256", "hs2019"].includes(params.algorithm)) return false;
 
   const url = new URL(req.url);
   const headerValues: Record<string, string> = {
     '(request-target)': `${req.method.toLowerCase()} ${url.pathname}${url.search}`,
-    host: url.host,
+    // The backend sees a Supabase host after proxying. Do not trust forwarded headers.
+    host: new URL(getFederationBaseUrl()).host,
     date: dateHeader,
     digest: digestHeader,
   };
-
-  const stringToVerify = headerNames
-    .map((h) => `${h}: ${headerValues[h] ?? req.headers.get(h)}`)
-    .join('\n');
+  if (headerNames.some(h => !(h in headerValues) && !req.headers.has(h))) return false;
+  const stringToVerify = headerNames.map(h => `${h}: ${headerValues[h] ?? req.headers.get(h)}`).join('\n');
 
   const publicKeyPem = await getPublicKey(keyId);
   if (!publicKeyPem) {
@@ -255,6 +254,7 @@ export async function ensureActorHasKeys(actorId: string): Promise<{
       .from("actors")
       .select("id, private_key, public_key, preferred_username")
       .eq("id", actorId)
+      .eq("is_remote", false).eq("status", "active")
       .single();
     
     if (actorError || !actor) {
@@ -262,38 +262,16 @@ export async function ensureActorHasKeys(actorId: string): Promise<{
       return null;
     }
     
-    // If keys exist, return them
     if (actor.private_key && actor.public_key) {
-      const keyId = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}#main-key`;
-      return {
-        keyId,
-        privateKey: actor.private_key
-      };
+      return { keyId: buildKeyId(actor.preferred_username), privateKey: actor.private_key };
     }
-    
-    // Generate new keys
-    console.log(`Generating RSA keys for actor ${actor.preferred_username}`);
-    const { privateKey, publicKey } = await generateRsaKeyPair();
-    
-    // Store the keys
-    const { error: updateError } = await supabase
-      .from("actors")
-      .update({
-        private_key: privateKey,
-        public_key: publicKey
-      })
-      .eq("id", actorId);
-    
-    if (updateError) {
-      console.error("Error storing generated keys:", updateError);
-      return null;
-    }
-    
-    const keyId = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}#main-key`;
-    return {
-      keyId,
-      privateKey
-    };
+    const pair = await generateRsaKeyPair();
+    const { data, error } = await supabase.rpc("ensure_actor_keys", {
+      actor_uuid: actorId, new_private_key: pair.privateKey, new_public_key: pair.publicKey,
+    });
+    if (error || !data?.[0]) throw error || new Error("Could not provision signing keys");
+    return { keyId: buildKeyId(actor.preferred_username), privateKey: data[0].private_key };
+
   } catch (error) {
     console.error("Error in ensureActorHasKeys:", error);
     return null;
@@ -343,7 +321,7 @@ export async function signedFetch(
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
   
   try {
-    const response = await fetch(url, {
+    const response = await remoteFetch(url, {
       ...options,
       headers,
       signal: controller.signal
@@ -357,54 +335,24 @@ export async function signedFetch(
 /**
  * Get public key for a given keyId by fetching the actor profile
  */
-export async function fetchPublicKey(keyId: string): Promise<string | null> {
-  const actorUrl = keyId.split('#')[0];
-  
+export async function fetchPublicKey(keyId: string, expectedActor?: string): Promise<string | null> {
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    
-    if (!supabaseUrl || !supabaseKey) {
-      return null;
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    // Try cache first
-    const { data: cached, error } = await supabase
-      .from('remote_actors_cache')
-      .select('actor_data')
-      .eq('actor_url', actorUrl)
-      .single();
+    const actorUrl = keyId.split('#')[0];
+    if (expectedActor && actorUrl !== expectedActor) return null;
+    const data = await fetchActorDocument(actorUrl);
+    const key = data.publicKey;
+    if (key?.id !== keyId || key?.owner !== data.id || (expectedActor && key.owner !== expectedActor)) return null;
+    return typeof key.publicKeyPem === "string" ? key.publicKeyPem : null;
+  } catch { return null; }
+}
 
-    if (!error && cached?.actor_data?.publicKey?.publicKeyPem) {
-      return cached.actor_data.publicKey.publicKeyPem as string;
-    }
-
-    // Fallback to fetch actor profile
-    const res = await fetch(actorUrl, {
-      headers: { 
-        Accept: 'application/activity+json, application/ld+json',
-        'User-Agent': 'ActivityPub-Federation/1.0 (Bondy)'
-      }
-    });
-    
-    if (!res.ok) return null;
-    
-    const actorData = await res.json();
-
-    // Cache the fetched actor
-    await supabase
-      .from('remote_actors_cache')
-      .upsert({
-        actor_url: actorUrl,
-        actor_data: actorData,
-        fetched_at: new Date().toISOString()
-      });
-
-    return actorData.publicKey?.publicKeyPem || null;
-  } catch (_e) {
-    console.error('Error fetching public key:', _e);
-    return null;
+export function parseSignatureHeader(header: string): Record<string, string> | null {
+  const params: Record<string, string> = {};
+  for (const part of header.split(',')) {
+    const match = /^\s*([a-zA-Z]+)="([^"]+)"\s*$/.exec(part);
+    if (!match || params[match[1]]) return null;
+    params[match[1]] = match[2];
   }
+  if (!params.keyId || !params.signature || !params.headers) return null;
+  return params;
 }

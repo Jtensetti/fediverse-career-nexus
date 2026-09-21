@@ -62,3 +62,12 @@ verify_jwt = true
 
 [functions.seed-demo-users]
 verify_jwt = false
+
+[functions.create-user-actor]
+verify_jwt = true
+
+[functions.objects]
+verify_jwt = false
+
+[functions.activities]
+verify_jwt = false

@@ -100,7 +100,7 @@ export async function decryptToken(encryptedToken: string): Promise<string> {
       }
       return decoded;
     } catch {
-      throw new Error('Failed to decrypt token: ' + error.message);
+      throw new Error('Failed to decrypt token: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }
 }

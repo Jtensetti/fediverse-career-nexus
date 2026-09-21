@@ -4,8 +4,7 @@
  * Nolto" flow so users moving from another instance can rebuild
  * their following list automatically.
  */
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,7 +45,7 @@ function parseCsv(text: string): Row[] {
   return rows;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -70,10 +69,10 @@ serve(async (req) => {
   }
   if (!csv.trim()) return json({ error: "Empty CSV" }, 400);
 
-  const rows = parseCsv(csv);
+  const rows = [...new Map(parseCsv(csv).map(row => [row.acct.toLowerCase(), row])).values()];
   if (rows.length === 0) return json({ error: "No valid rows found" }, 400);
-  if (rows.length > 5000) {
-    return json({ error: "Too many rows (max 5000)" }, 413);
+  if (rows.length > 20) {
+    return json({ error: "Import at most 20 accounts per batch" }, 413);
   }
 
   // Find the user's local actor
