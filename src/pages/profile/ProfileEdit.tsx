@@ -1,3 +1,4 @@
+import MastodonConnection from "@/components/settings/MastodonConnection";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -1160,7 +1161,7 @@ const ProfileEditPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <MFASettings isFederatedUser={profile?.auth_type === 'federated'} />
+                <MFASettings />
                 
                 <Separator />
                 
@@ -1185,6 +1186,7 @@ const ProfileEditPage = () => {
             
             <DataExportSection />
             
+            <MastodonConnection />
             <AccountMigrationSection />
             
             <DeleteAccountSection />

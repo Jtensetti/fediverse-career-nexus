@@ -356,9 +356,9 @@ function App() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, mfaPending } = useAuth();
 
-  if (loading) {
+  if (loading || mfaPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

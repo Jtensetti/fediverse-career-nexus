@@ -44,7 +44,6 @@ export const getOutgoingFollowStatus = async (actorId: string, remoteActorUrl: s
 // Send a Follow activity to a remote actor
 export const followRemoteActor = async (localActorId: string, remoteActorUrl: string): Promise<{ success: boolean; error?: string }> => {
   try {
-    console.log(`🌐 Following remote actor: ${remoteActorUrl}`);
     
     const { data, error } = await supabase.functions.invoke('send-follow', {
       body: {
@@ -59,7 +58,6 @@ export const followRemoteActor = async (localActorId: string, remoteActorUrl: st
       return { success: false, error: error.message };
     }
     
-    console.log('✅ Follow request sent:', data);
     return { success: true };
   } catch (error) {
     console.error('Error following remote actor:', error);
@@ -70,7 +68,6 @@ export const followRemoteActor = async (localActorId: string, remoteActorUrl: st
 // Send an Undo Follow activity to a remote actor
 export const unfollowRemoteActor = async (localActorId: string, remoteActorUrl: string): Promise<{ success: boolean; error?: string }> => {
   try {
-    console.log(`🌐 Unfollowing remote actor: ${remoteActorUrl}`);
     
     const { data, error } = await supabase.functions.invoke('send-follow', {
       body: {
@@ -85,7 +82,6 @@ export const unfollowRemoteActor = async (localActorId: string, remoteActorUrl: 
       return { success: false, error: error.message };
     }
     
-    console.log('✅ Unfollow request sent:', data);
     return { success: true };
   } catch (error) {
     console.error('Error unfollowing remote actor:', error);

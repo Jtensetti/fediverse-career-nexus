@@ -14,8 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/social/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import { SEOHead } from "@/components/common/SEOHead";
-import MFAVerifyDialog from "@/components/auth/MFAVerifyDialog";
-import { needsMFAVerification } from "@/services/auth/mfaService";
+import ResendConfirmation from "@/components/auth/ResendConfirmation";
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -30,8 +29,6 @@ export default function AuthPage() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [fediHandle, setFediHandle] = useState("");
   const [refCode, setRefCode] = useState<string | null>(null);
-  const [mfaRequired, setMfaRequired] = useState(false);
-  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{
     firstName?: string;
     lastName?: string;
@@ -109,7 +106,7 @@ export default function AuthPage() {
       return t("auth.nameTooLong");
     }
     // Allow letters (including international), spaces, hyphens, apostrophes, and periods (for initials)
-    if (!/^[a-zA-ZÀ-ÿ\s\-'.]+$/.test(trimmed)) {
+    if (!/^[\p{L}\p{M}\s\-'.]+$/u.test(trimmed)) {
       return t("auth.nameInvalidChars");
     }
     return null;
@@ -121,7 +118,6 @@ export default function AuthPage() {
     
     if (field === 'firstName' || field === 'lastName') {
       const validationError = validateName(value, field === 'firstName' ? t("auth.firstName") : t("auth.lastName"));
-      error = validationError || undefined;
       error = validationError || undefined;
     } else if (field === 'email') {
       if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
@@ -139,9 +135,10 @@ export default function AuthPage() {
 
   // Username validation
   const validateUsername = (value: string): string | null => {
-    if (value.length > 0 && value.length < 3) return t("auth.usernameMinChars");
-    if (value.length > 20) return t("auth.usernameMaxChars");
+    if (value.length < 3) return t("auth.usernameMinChars");
+    if (value.length > 30) return t("auth.usernameMaxChars");
     if (!/^[a-z0-9_]*$/.test(value)) return t("auth.usernameCharsOnly");
+    if (["admin","administrator","support","security","nolto","root","system","moderator"].includes(value)) return t("auth.usernameTaken");
     return null;
   };
 
@@ -155,13 +152,13 @@ export default function AuthPage() {
     const timeout = setTimeout(async () => {
       setCheckingUsername(true);
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("public_profiles")
           .select("id")
           .eq("username", username.toLowerCase())
           .maybeSingle();
 
-        setUsernameAvailable(!data);
+        setUsernameAvailable(error ? null : !data);
       } catch {
         setUsernameAvailable(null);
       } finally {
@@ -225,10 +222,10 @@ export default function AuthPage() {
       const trimmedFirstName = firstName.trim();
       const trimmedLastName = lastName.trim();
       const fullname = `${trimmedFirstName} ${trimmedLastName}`;
-      const preferredUsername = username.trim().toLowerCase() || null;
+      const preferredUsername = username.trim().toLowerCase();
 
       // Validate username if provided
-      if (preferredUsername) {
+      {
         const usernameError = validateUsername(preferredUsername);
         if (usernameError) {
           toast.error(`Username: ${usernameError}`);
@@ -272,7 +269,8 @@ export default function AuthPage() {
         }
       }
 
-      toast.success(t("toasts.checkEmail"));
+      if (data?.emailSent === false) toast.warning(t("auth.confirmationDeliveryFailed"));
+      else toast.success(t("toasts.checkEmail"));
       // Clear the form
       setFirstName("");
       setLastName("");
@@ -304,40 +302,12 @@ export default function AuthPage() {
         throw error;
       }
 
-      if (data.user) {
-        // Check if MFA verification is needed
-        const mfaCheck = await needsMFAVerification();
-        
-        if (mfaCheck.needed && mfaCheck.factorId) {
-          // Show MFA verification dialog
-          setMfaFactorId(mfaCheck.factorId);
-          setMfaRequired(true);
-          setIsLoading(false);
-          return;
-        }
-        
-        toast.success(t("toasts.signedInSuccess"));
-        navigate("/");
-      }
+      // AuthProvider owns the single MFA challenge and releases user only after verification.
     } catch (error: any) {
       toast.error(error.message || t("toasts.failedSignIn", "Failed to sign in"));
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleMFASuccess = () => {
-    setMfaRequired(false);
-    setMfaFactorId(null);
-    toast.success(t("toasts.signedInSuccess"));
-    navigate("/");
-  };
-
-  const handleMFACancel = async () => {
-    // Sign out since they cancelled MFA
-    await supabase.auth.signOut();
-    setMfaRequired(false);
-    setMfaFactorId(null);
   };
 
   const handleFederatedLogin = async (e: React.FormEvent) => {
@@ -379,6 +349,7 @@ export default function AuthPage() {
       if (authorizationUrl) {
         // Store state in session storage for callback verification
         sessionStorage.setItem("federated_auth_redirect", redirectUri);
+        sessionStorage.setItem("federated_auth_state", response.data.state);
         // Redirect to the remote instance for authorization
         window.location.href = authorizationUrl;
       }
@@ -596,7 +567,7 @@ export default function AuthPage() {
                             setUsername(val);
                           }}
                           placeholder={t("auth.usernamePlaceholder")}
-                          maxLength={20}
+                          maxLength={30}
                           className="pr-9"
                         />
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -672,6 +643,7 @@ export default function AuthPage() {
                 </CardContent>
               </TabsContent>
             </Tabs>
+            <CardContent className="pt-2"><ResendConfirmation /></CardContent>
           </Card>
 
           {/* Footer note */}
@@ -688,16 +660,6 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* MFA Verification Dialog */}
-      {mfaFactorId && (
-        <MFAVerifyDialog
-          open={mfaRequired}
-          onOpenChange={setMfaRequired}
-          factorId={mfaFactorId}
-          onSuccess={handleMFASuccess}
-          onCancel={handleMFACancel}
-        />
-      )}
     </div>
   );
 }

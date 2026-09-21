@@ -1,3 +1,5 @@
+import { createUserActor } from "@/services/federation/actorService";
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ExternalLink, Key, Globe2, Copy, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -7,8 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import FederationFollowButton from "./FederationFollowButton";
-import { getNoltoInstanceDomain } from "@/lib/federation";
+import { getNoltoInstanceDomain, getLocalActorUrl, getWebFingerUrl } from "@/lib/federation";
 
 interface FederationInfoProps {
   username: string;
@@ -19,8 +20,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
   const [loading, setLoading] = useState<boolean>(true);
   const [updating, setUpdating] = useState<boolean>(false);
   const [actor, setActor] = useState<any>(null);
-  const [currentUserActor, setCurrentUserActor] = useState<any>(null);
-  const [federationEnabled, setFederationEnabled] = useState<boolean>(true);
+  const [federationEnabled, setFederationEnabled] = useState<boolean>(false);
   const [copied, setCopied] = useState(false);
   const [lookupInstance, setLookupInstance] = useState("mastodon.social");
   const { toast } = useToast();
@@ -30,12 +30,11 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
       try {
         setLoading(true);
         
-        const { data: session } = await supabase.auth.getSession();
         
         const { data, error } = await supabase
           .from("public_actors")
           .select("*")
-          .eq("preferred_username", username)
+          .eq("preferred_username", username).eq("is_remote", false)
           .single();
         
         if (error) {
@@ -46,23 +45,6 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
         setActor(data);
         setFederationEnabled(data?.status === "active");
         
-        if (session?.session?.user) {
-          const { data: currentUserProfile } = await supabase
-            .from("public_profiles")
-            .select("username")
-            .eq("id", session.session.user.id)
-            .single();
-            
-          if (currentUserProfile) {
-            const { data: currentUserActorData } = await supabase
-              .from("public_actors")
-              .select("*")
-              .eq("preferred_username", currentUserProfile.username)
-              .single();
-              
-            setCurrentUserActor(currentUserActorData);
-          }
-        }
       } catch (error) {
         console.error("Error:", error);
       } finally {
@@ -81,10 +63,9 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
     try {
       setUpdating(true);
       
-      const { error } = await supabase
-        .from("actors")
-        .update({ status: enabled ? "active" : "disabled" })
-        .eq("id", actor.id);
+      const { error } = enabled
+        ? await createUserActor(actor.user_id).then(ok => ({ error: ok ? null : new Error("Kunde inte aktivera federation") }))
+        : await supabase.from("actors").update({ status: "disabled" }).eq("id", actor.id);
       
       if (error) {
         toast({
@@ -98,7 +79,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
       setFederationEnabled(enabled);
       toast({
         title: `Federation ${enabled ? "aktiverad" : "inaktiverad"}`,
-        description: `Din profil är nu ${enabled ? "synlig för" : "dold från"} andra Fediverse-instanser.`,
+        description: enabled ? "Din offentliga profil kan hittas från andra servrar." : "Nya federationsleveranser stoppas. Kopior på andra servrar kan finnas kvar.",
         variant: "default"
       });
     } catch (error) {
@@ -121,11 +102,10 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
     return null;
   }
   
-  const isLocalUser = !actor?.home_instance || actor?.home_instance === 'local';
+  const isLocalUser = !actor.is_remote;
   const domain = isLocalUser ? getNoltoInstanceDomain() : actor.home_instance;
   const federatedHandle = `@${username}@${domain}`;
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? window.location.origin;
-  const remoteActorUri = `${supabaseUrl}/functions/v1/actor/${username}`;
+  const remoteActorUri = getLocalActorUrl(username);
   const normalizedLookupInstance = lookupInstance
     .trim()
     .replace(/^https?:\/\//, "")
@@ -195,6 +175,8 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
             </div>
           </div>
 
+          <p className="text-sm text-muted-foreground">Adressen är inte en e-postadress. När den publicerats kan användarnamnet inte bytas utan kontoflytt.</p>
+          <p className="flex flex-wrap gap-4 text-sm"><Link className="underline" to="/federation">Så fungerar federation</Link><a className="underline" href={getWebFingerUrl(username)} target="_blank" rel="noopener noreferrer">WebFinger</a><a className="underline" href={remoteActorUri} target="_blank" rel="noopener noreferrer">ActivityPub-profil</a></p>
           <div className="flex flex-col space-y-2">
             <Label className="text-sm text-muted-foreground">Hitta din profil på en annan instans</Label>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -230,15 +212,7 @@ export default function FederationInfo({ username, isOwnProfile }: FederationInf
             </div>
           )}
           
-          {!isOwnProfile && currentUserActor && (
-            <div className="mt-4 pt-4 border-t">
-              <FederationFollowButton
-                remoteActorUri={remoteActorUri}
-                localActorId={currentUserActor.id}
-                disabled={!currentUserActor || currentUserActor.status !== "active"}
-              />
-            </div>
-          )}
+
         </div>
       </CardContent>
     </Card>

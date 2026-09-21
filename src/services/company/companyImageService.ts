@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuidv4 } from "uuid";
 
 const BUCKET = "company-assets";
 
@@ -13,7 +12,7 @@ export async function uploadCompanyImage(
   type: "logo" | "banner"
 ): Promise<string> {
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const filePath = `${companyId}/${type}-${uuidv4()}.${ext}`;
+  const filePath = `${companyId}/${type}-${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)

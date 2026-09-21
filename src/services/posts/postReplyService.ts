@@ -1,3 +1,4 @@
+import { getOrCreateLocalActor } from "@/services/federation/actorService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractMentions } from "@/lib/linkify";
@@ -286,47 +287,8 @@ export async function createPostReply(
       return false;
     }
 
-    // Get user's actor
-    let { data: actor } = await supabase
-      .from('actors')
-      .select('id, preferred_username')
-      .eq('user_id', user.id)
-      .single();
+    const actor = await getOrCreateLocalActor(user.id);
     let profile: { username?: string; fullname?: string } | null = null;
-
-    if (!actor) {
-      // Attempt to create actor automatically
-      const { data: profileData } = await supabase
-        .from('public_profiles')
-        .select('username, fullname')
-        .eq('id', user.id)
-        .single();
-
-      profile = profileData as typeof profile;
-
-      if (!profile?.username) {
-        toast.error('Actor not found');
-        return false;
-      }
-
-      const { data: newActor, error: createError } = await supabase
-        .from('actors')
-        .insert({
-          user_id: user.id,
-          preferred_username: profile.username,
-          type: 'Person',
-          status: 'active'
-        })
-        .select('id, preferred_username')
-        .single();
-
-      if (createError || !newActor) {
-        toast.error('Aktör hittades inte');
-        return false;
-      }
-
-      actor = newActor;
-    }
 
     if (!profile) {
       const { data: profileData } = await supabase

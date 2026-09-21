@@ -1,3 +1,4 @@
+import { getOrCreateLocalActor } from "@/services/federation/actorService";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -67,30 +68,7 @@ export default function QuoteRepostDialog({
     setIsSubmitting(true);
 
     try {
-      // Get or create actor
-      let { data: actor } = await supabase
-        .from('actors')
-        .select('id, preferred_username')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!actor) {
-        const { data: newActor, error: createError } = await supabase
-          .from('actors')
-          .insert({
-            user_id: user.id,
-            preferred_username: profile?.username || user.email?.split('@')[0] || 'user',
-            type: 'Person',
-            status: 'active'
-          })
-          .select('id, preferred_username')
-          .single();
-
-        if (createError || !newActor) {
-          throw new Error("Kunde inte skapa aktör");
-        }
-        actor = newActor;
-      }
+      const actor = await getOrCreateLocalActor(user.id);
 
       const quoteRepostActivity = {
         type: 'Announce',

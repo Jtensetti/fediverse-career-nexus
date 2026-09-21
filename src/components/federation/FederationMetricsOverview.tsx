@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BatchedFederationStats from "./BatchedFederationStats";
 import RemoteInstancesTable from "./RemoteInstancesTable";
 import ShardedQueueStats from "./ShardedQueueStats";
 import FederationAnalytics from "./FederationAnalytics";
@@ -23,11 +22,10 @@ const FederationMetricsOverview = () => {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="mb-4 grid grid-cols-4 md:grid-cols-4">
+          <TabsList className="mb-4 grid grid-cols-3">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="instances">Instances</TabsTrigger>
             <TabsTrigger value="queues">Queues</TabsTrigger>
-            <TabsTrigger value="batches">Batches</TabsTrigger>
           </TabsList>
           
           <TabsContent value="analytics" className="space-y-4">
@@ -42,9 +40,6 @@ const FederationMetricsOverview = () => {
             <ShardedQueueStats />
           </TabsContent>
           
-          <TabsContent value="batches" className="space-y-4">
-            <BatchedFederationStats />
-          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>

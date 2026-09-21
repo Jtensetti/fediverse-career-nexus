@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/common/SEOHead";
+import ResendConfirmation from "@/components/auth/ResendConfirmation";
 
 type ConfirmationStatus = "loading" | "success" | "error" | "expired";
 
@@ -33,8 +34,9 @@ const ConfirmEmail = () => {
         });
 
         if (error) {
-          setStatus("error");
-          setErrorMessage(error.message || t("confirmEmail.failed"));
+          const detail = await error.context?.json?.().catch(() => null);
+          setStatus(detail?.error === "Token expired" ? "expired" : "error");
+          setErrorMessage(t("confirmEmail.failed"));
           return;
         }
 
@@ -120,6 +122,7 @@ const ConfirmEmail = () => {
               <Button variant="outline" onClick={() => navigate("/")} className="w-full">
                 {t("confirmEmail.returnHome")}
               </Button>
+              <ResendConfirmation />
             </>
           )}
         </CardContent>

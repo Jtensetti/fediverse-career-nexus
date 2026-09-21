@@ -19,11 +19,11 @@ const FAQ = () => {
     },
     {
       question: "How does Nolto protect my privacy?",
-      answer: "Nolto implements several privacy measures: your data stays on your chosen instance rather than a central corporate database, you control who sees your connection graph, profile views only show named individuals who opt-in to be visible, and we use end-to-end encryption for direct messages where possible."
+      answer: "Nolto implements several privacy measures: your account is managed by your chosen instance; public federated content is copied to other servers, you control who sees your connection graph, profile views only show named individuals who opt-in to be visible, and messages are processed by the server and are not end-to-end encrypted."
     },
     {
       question: "Can I migrate my profile to a different instance?",
-      answer: "Yes, Nolto is designed with account portability in mind. You'll be able to export your profile data, connections, and content, and import them to another Nolto instance. Your connections and content relationships will be maintained across the move."
+      answer: "You can export data and request follower migration using ActivityPub Move. Receiving servers decide whether to honor the move. Posts and private messages are not migrated automatically."
     },
     {
       question: "How is content moderation handled?",
@@ -31,7 +31,7 @@ const FAQ = () => {
     },
     {
       question: "Can I follow Nolto users from Mastodon?",
-      answer: "Yes! Nolto is fully compatible with Mastodon and other ActivityPub servers. You can follow Nolto profiles from your Mastodon account, and Nolto users can follow you back."
+      answer: "Nolto uses WebFinger and ActivityPub to support discovery, follows and public posts with Mastodon. It does not implement every Mastodon feature. You can follow Nolto profiles from your Mastodon account, and Nolto users can follow you back."
     }
   ];
 
