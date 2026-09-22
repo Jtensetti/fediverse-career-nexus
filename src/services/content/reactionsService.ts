@@ -16,6 +16,16 @@ export interface ToggleReactionResult {
 
 type TargetType = 'post' | 'reply' | 'message';
 
+export async function getFederatedLikeCounts(ids: string[]): Promise<Map<string, number>> {
+  const result = new Map<string, number>();
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const { data, error } = await supabase.rpc('get_federated_like_counts', { p_ids: ids.slice(offset, offset + 100) });
+    if (error) throw error;
+    for (const row of data || []) result.set(row.target_id, Number(row.like_count));
+  }
+  return result;
+}
+
 // Get reactions for a target (post or reply)
 export async function getReactions(
   targetType: TargetType,
@@ -54,6 +64,7 @@ export async function getReactions(
       }
     });
 
+    if (targetType !== 'message') counts.love.count += (await getFederatedLikeCounts([targetId])).get(targetId) || 0;
     return REACTIONS.map(r => ({
       reaction: r,
       count: counts[r].count,
@@ -346,6 +357,7 @@ export async function getBatchReplyReactions(
 
   try {
     const { data: { user } } = await supabase.auth.getUser();
+    const remoteCounts = await getFederatedLikeCounts(replyIds);
     const userId = user?.id;
 
     const { data: reactions, error } = await supabase
@@ -378,6 +390,7 @@ export async function getBatchReplyReactions(
         }
       });
 
+      counts.love.count += remoteCounts.get(replyId) || 0;
       result[replyId] = REACTIONS.map(r => ({
         reaction: r,
         count: counts[r].count,

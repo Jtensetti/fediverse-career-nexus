@@ -1,0 +1,42 @@
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { profileShareRequest, selectedProfile, type ProfileField } from '@/lib/profileSharing';
+import { getOwnProfileForSharing } from '@/services/profile/profileSharingService';
+
+const labels: Record<ProfileField, string> = { name: 'Namn', headline: 'Yrkesrubrik', location: 'Ort', bio: 'Presentation', profileUrl: 'Profiladress', handle: 'Nolto-adress', email: 'E-post', phone: 'Telefon', website: 'Webbplats', experience: 'Arbetslivserfarenhet', education: 'Utbildning', skills: 'Kompetenser' };
+export default function ShareProfile() {
+  const { user, loading } = useAuth();
+  const request = useMemo(() => { try { return profileShareRequest(window.location.search); } catch { return null; } }, []);
+  const [selected, setSelected] = useState(new Set<ProfileField>(['name', 'headline', 'profileUrl']));
+  const [sent, setSent] = useState(false);
+  const profile = useQuery({ queryKey: ['own-profile-sharing', user?.id], queryFn: getOwnProfileForSharing, enabled: !!user && !!request, retry: false });
+  const send = (cancelled = false) => {
+    if (!request || !window.opener || (!cancelled && (!user || !profile.data))) return;
+    window.opener.postMessage({ type: 'nolto:profile', version: 1, request: request.request, cancelled,
+      ...(!cancelled && { profile: selectedProfile(profile.data!, request.fields, selected) }) }, request.origin);
+    setSent(true); window.close();
+  };
+  return <main className="min-h-screen bg-background px-5 py-8"><div className="mx-auto max-w-lg space-y-6">
+    <a href="/" className="font-display text-2xl text-primary">Nolto</a>
+    <h1 className="text-2xl font-semibold">Välj vad du vill dela</h1>
+    {!request || !window.opener ? <p role="alert">Öppna delningen med Nolto-knappen på sidan där du vill fylla i ett formulär.</p>
+      : sent ? <p role="status">Klart. Du kan stänga det här fönstret.</p>
+      : <>
+        <div className="rounded-xl border bg-muted/30 p-4"><p className="text-sm text-muted-foreground">Mottagare</p><p className="break-all font-semibold">{request.origin}</p></div>
+        <p className="text-sm text-muted-foreground">Bara de uppgifter du markerar skickas när du trycker på Dela. Mottagaren kan spara dem. Du behöver fortfarande kontrollera och skicka formuläret på deras sida.</p>
+        {loading ? <p role="status">Kontrollerar inloggningen…</p> : !user ? <div className="space-y-3"><Button asChild><a href="/auth" target="_blank" rel="noopener noreferrer">Logga in på Nolto</a></Button><p className="text-sm">Logga in i den nya fliken och återvänd sedan hit.</p></div>
+          : profile.isPending ? <p role="status">Hämtar din profil…</p>
+          : profile.isError ? <><p role="alert">{profile.error.message}</p><Button variant="outline" onClick={() => void profile.refetch()}>Försök igen</Button></>
+          : <div className="space-y-4">{request.fields.map(field => {
+            const value = profile.data?.[field];
+            const preview = Array.isArray(value) ? value.map(item => typeof item === 'string' ? item : [item.title || item.degree, item.company || item.institution, item.start_date || item.start_year, item.end_date || item.end_year].filter(Boolean).join(' · ')).join('\n') : value;
+            return <div key={field} className="flex gap-3 rounded-lg border p-4"><Checkbox id={`share-${field}`} checked={selected.has(field)} disabled={!preview} onCheckedChange={checked => setSelected(previous => { const next = new Set(previous); if (checked) next.add(field); else next.delete(field); return next; })} /><div className="min-w-0"><Label htmlFor={`share-${field}`}>{labels[field]}</Label><p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">{preview || 'Inte ifyllt'}</p></div></div>;
+          })}</div>}
+        <div className="flex gap-3"><Button variant="outline" onClick={() => send(true)}>Avbryt</Button><Button disabled={!profile.data || !user || !request.fields.some(field => selected.has(field) && profile.data?.[field])} onClick={() => send()}>Dela valda uppgifter</Button></div>
+      </>}
+  </div></main>;
+}

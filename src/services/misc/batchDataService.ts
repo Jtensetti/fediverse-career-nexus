@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { ReactionKey, REACTIONS } from "@/lib/reactions";
+import { getFederatedLikeCounts } from '@/services/content/reactionsService';
 
 export interface BatchReactionCount {
   reaction: ReactionKey;
@@ -35,7 +36,7 @@ export async function getBatchPostData(
 
   try {
     // Run all independent queries in PARALLEL for maximum performance
-    const [reactionsResult, boostCountsResult, replyCountsResult, actorResult] = await Promise.all([
+    const [reactionsResult, boostCountsResult, replyCountsResult, actorResult, remoteCounts] = await Promise.all([
       // Batch fetch reactions
       supabase
         .from('reactions')
@@ -49,7 +50,8 @@ export async function getBatchPostData(
       // User's actor ID (only if logged in) - use public_actors view
       userId 
         ? supabase.from('public_actors').select('id').eq('user_id', userId).maybeSingle()
-        : Promise.resolve({ data: null, error: null })
+        : Promise.resolve({ data: null, error: null }),
+      getFederatedLikeCounts(postIds),
     ]);
 
     // Process reactions
@@ -67,6 +69,11 @@ export async function getBatchPostData(
           }
         }
       });
+    }
+
+    for (const [id, count] of remoteCounts) {
+      const love = result.get(id)?.reactions.find(reaction => reaction.reaction === 'love');
+      if (love) love.count += count;
     }
 
     // Process boost counts
@@ -143,6 +150,11 @@ export async function getBatchReactions(
   });
 
   try {
+    const remoteCounts = await getFederatedLikeCounts(postIds);
+    for (const [id, count] of remoteCounts) {
+      const love = result.get(id)?.find(reaction => reaction.reaction === 'love');
+      if (love) love.count += count;
+    }
     const { data: reactions } = await supabase
       .from('reactions')
       .select('target_id, reaction, user_id')

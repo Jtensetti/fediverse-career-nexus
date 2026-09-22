@@ -1,0 +1,11 @@
+name = "nolto-federation-gateway"
+main = "nolto-gateway.mjs"
+compatibility_date = "2026-09-22"
+workers_dev = false
+routes = [
+  { pattern = "nolto.social/.well-known/*", zone_name = "nolto.social" },
+  { pattern = "nolto.social/functions/v1/*", zone_name = "nolto.social" }
+]
+
+[vars]
+SUPABASE_ORIGIN = "https://anknmcmqljejabxbeohv.supabase.co"

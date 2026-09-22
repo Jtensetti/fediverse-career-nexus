@@ -3946,6 +3946,14 @@ export type Database = {
       }
     }
     Functions: {
+      begin_post_image_upload: { Args: Record<PropertyKey, never>; Returns: { id: string; storage_path: string }[] }
+      complete_post_image_upload: { Args: { p_id: string }; Returns: undefined }
+      discard_post_image_upload: { Args: { p_id: string }; Returns: undefined }
+
+      get_federated_like_counts: {
+        Args: { p_ids: string[] }
+        Returns: { target_id: string; like_count: number }[]
+      }
       actor_id_to_partition_key: {
         Args: { actor_uuid: string }
         Returns: number

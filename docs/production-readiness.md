@@ -49,4 +49,25 @@ Account exports fail above their configured size/row limits and require assisted
 
 ## Federation routing
 
-Keep `FEDERATION_DOMAIN=nolto.social` stable. `SITE_URL` may point to another web origin without changing account identity. When the UI is on a separate origin, `deploy/nolto-gateway.mjs` proxies discovery and ActivityPub paths before redirecting other requests. Set its `SUPABASE_ORIGIN` and `SITE_ORIGIN`; do not point the latter back to the gateway itself. Installing and verifying this gateway remains an operational task.
+Keep `FEDERATION_DOMAIN=nolto.social` stable. The gateway in `deploy/nolto-gateway.mjs` is configured as a Worker Route on the existing domain, with `SUPABASE_ORIGIN` for the backend. It forwards discovery and ActivityPub requests and lets other requests continue to the existing website. Installing and verifying this gateway remains an operational task.
+
+## Federation routing on the hosted nolto.social domain
+
+The 2026-09-22 production probes returned 404 for WebFinger and the SPA HTML for the canonical actor URL. The backend WebFinger endpoint resolves the real local handle correctly. Lovable's static hosting does not apply the repository's `_redirects`, Vercel rewrites or Caddy configuration. A backend deployment alone cannot fix this routing.
+
+`deploy/wrangler.toml` and `deploy/nolto-gateway.mjs` are ready for a Cloudflare Worker Route on the existing proxied domain. With an authenticated Cloudflare account that controls the `nolto.social` zone:
+
+```sh
+npx wrangler deploy --config deploy/wrangler.toml
+node scripts/check-federation.mjs jonatan_tensetti@nolto.social
+```
+
+The Worker only intercepts discovery and `/functions/v1/` paths; the rest goes to the existing origin without changing the browser's canonical origin. This keeps OAuth callbacks and browser-bound state on nolto.social. Signed inbox request bodies and Signature/Digest headers are preserved; untrusted forwarded-host input is dropped. No Supabase service key belongs in the Worker. The repo's connected tools do not currently have access to that Cloudflare zone, so this routing has not been deployed.
+
+Do not report Mastodon compatibility until the public-domain probe passes and a signed Follow / Accept / Note / reply / Like / Undo exchange is exercised with a real peer. WebFinger is discovery, not a login protocol. Logging into a Mastodon client as a Nolto account additionally requires the Mastodon client API and OAuth server; their endpoints currently return 410. A Nolto AT Protocol account usable in Bluesky requires PDS hosting and domain-handle provisioning. Bluesky sign-in establishes identity in Nolto; it does not by itself publish posts or bridge likes between protocols.
+
+## Prepared post images and profile import
+
+Post composers compress to JPEG, at most 1920 pixels per dimension and 500 KiB, then upload immediately on selection. The storage path starts with the authenticated owner's UUID. Original files are never uploaded if compression fails. Publication attaches a ready upload in the same database transaction; retry uses the same post ID. The private media gateway only releases published, visible content. Unattached uploads expire after 24 hours and the existing privacy worker removes them; discarded uploads become eligible immediately. Remote media remains a linked/proxied resource with no copy in Storage, although delivery consumes bandwidth.
+
+The profile-import guide is `/integrations`, linked from `/hosting`. `public/embed/nolto-profile.js` requests explicit, one-time consent in `/share-profile`. The recipient origin, popup source and random request ID are checked. Only selected fields are sent, without any session credentials. See `docs/profile-import.md` for the contract.

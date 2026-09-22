@@ -1,6 +1,10 @@
-import { isPublicAddress, remoteUrl } from './remote-fetch.ts';
+import { isPublicAddress, remoteUrl, readBody } from './remote-fetch.ts';
 import { AtprotoTransportError } from './atproto-diagnostics.ts';
 import { pinnedHttpResponse } from './pinned-http-response.ts';
+
+export function managedAtprotoHost(hostname: string): boolean {
+  return hostname === 'bsky.social' || hostname === 'plc.directory' || hostname.endsWith('.host.bsky.network');
+}
 
 /** Use stable Deno TCP/TLS APIs. Older node:https polyfills internally call
  * fetch and ignore servername on an IP URL; the newer TCP proxy API is absent
@@ -30,6 +34,19 @@ export async function atprotoFetch(input: string | URL | Request, init?: Request
     if (addresses.some(address => !isPublicAddress(address))) throw new AtprotoTransportError('public-address', url.hostname);
     controller.signal.throwIfAborted();
     try {
+      // These service domains are operated by Bluesky/PLC, never taken from an
+      // arbitrary user's handle. The Edge fetch service supports their HTTPS
+      // transport where raw outbound TLS is reset. Unknown PDS/issuer domains
+      // must use the pinned socket below; there is no generic fetch fallback.
+      if (managedAtprotoHost(url.hostname)) {
+        const response = await fetch(request, { redirect: 'error', signal: controller.signal });
+        if ([204, 205, 304].includes(response.status)) {
+          await response.body?.cancel();
+          return new Response(null, { status: response.status, headers: response.headers });
+        }
+        try { return new Response(await readBody(response, 2 * 1024 * 1024), { status: response.status, headers: response.headers }); }
+        catch (error) { throw new AtprotoTransportError('response-body', url.hostname, error); }
+      }
       const tcp = await Deno.connect({ hostname: addresses[0], port: 443, transport: 'tcp' });
       connection = tcp;
       if (controller.signal.aborted) { close(); controller.signal.throwIfAborted(); }

@@ -4,7 +4,8 @@ import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
 import { signedFetch } from "../_shared/http-signature.ts";
 import { fetchActorDocument } from "../_shared/remote-fetch.ts";
 import { buildActorUrl, buildFollowersUrl, getFederationBaseUrl, isLocalUrl } from "../_shared/federation-urls.ts";
-import { CONTEXT, PUBLIC, localObject } from "../_shared/local-content.ts";
+import { CONTEXT, PUBLIC, localObject, isPublic } from "../_shared/local-content.ts";
+import { resolveReplyAddress, reactionActivity } from '../_shared/federated-interactions.ts';
 
 type QueueOrder = { created_at: string; id: string };
 
@@ -50,9 +51,20 @@ Deno.serve(async (req) => {
             if (error) throw error;
             if (!current || current.deleted_at || current.moderation_status !== 'published') throw new Error('Content is not published');
           }
+          if (activity.interaction === 'reaction') {
+            if (activity.type === 'Like') {
+              const { data: visible, error } = await db.rpc('privacy_object_is_active', { p_object_id: activity.snapshot.target_id });
+              if (error) throw error;
+              if (!visible) throw new Error('Reaction target is no longer public');
+              const { data: target, error: targetError } = await db.from('ap_objects').select('content').eq('id', activity.snapshot.target_id).maybeSingle();
+              if (targetError) throw targetError;
+              if (!target || !isPublic(target.content)) throw new Error('Reaction target is no longer public');
+            }
+            activity = reactionActivity(actor.preferred_username, activity.snapshot, activity.type === 'Undo');
+          }
           if (activity.needs_enrichment) {
             if (!activity.snapshot) throw new Error("Legacy queue item has no snapshot; reconcile before retrying");
-            const object = localObject(activity.snapshot, actor.preferred_username);
+            const object = localObject(await resolveReplyAddress(db, activity.snapshot), actor.preferred_username);
             const kind = activity.type;
             activity = { "@context": CONTEXT, type: kind,
               id: `${getFederationBaseUrl()}/functions/v1/activities/${kind === "Create" ? activity.object_id : activity.activity_id}`,

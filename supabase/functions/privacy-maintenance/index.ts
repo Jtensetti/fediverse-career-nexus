@@ -8,7 +8,7 @@ Deno.serve(workerHandler(async () => {
   const { data: lease, error: leaseError } = await db.rpc('claim_privacy_worker');
   if (leaseError) throw leaseError;
   if (!lease) return jsonResponse({ busy: true });
-  const result = { archived: 0, hidden_content: 0, purged: 0, deferred: 0, failed: 0 };
+  const result = { archived: 0, hidden_content: 0, purged: 0, discarded_images: 0, deferred: 0, failed: 0 };
   // Each API call is bounded. Stop starting work well before the two-minute lease expires.
   const hasTime = () => Date.now() - started < 40000;
   try {
@@ -101,6 +101,18 @@ Deno.serve(workerHandler(async () => {
         if (attempted) throw attempted;
         try { await archiveDeletedMedia(file); result.archived++; }
         catch { result.failed++; }
+      }
+    }
+    if (hasTime()) {
+      const { data: images, error } = await db.rpc('claim_post_image_cleanup', { p_limit: 10 });
+      if (error) throw error;
+      for (const image of images || []) {
+        if (!hasTime()) break;
+        const { error: removed } = await db.storage.from('posts').remove([image.storage_path]);
+        if (removed) { result.failed++; continue; }
+        const { error: finished } = await db.rpc('finish_post_image_cleanup', { p_id: image.id });
+        if (finished) throw finished;
+        result.discarded_images++;
       }
     }
     if (hasTime()) {

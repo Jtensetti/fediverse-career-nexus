@@ -59,6 +59,8 @@ const MessageConversation = lazy(() => import("./pages/messaging/MessageConversa
 const Notifications = lazy(() => import("./pages/social/Notifications"));
 const Mission = lazy(() => import("./pages/info/Mission"));
 const Documentation = lazy(() => import("./pages/info/Documentation"));
+const Integrations = lazy(() => import("./pages/info/Integrations"));
+const ShareProfile = lazy(() => import("./pages/auth/ShareProfile"));
 const Hosting = lazy(() => import("./pages/info/Hosting"));
 const FederationGuide = lazy(() => import("./pages/federation/FederationGuide"));
 const HelpCenter = lazy(() => import("./pages/info/HelpCenter"));
@@ -162,6 +164,8 @@ function App() {
                     <Route path="/mission" element={<Mission />} />
                     <Route path="/documentation" element={<Documentation />} />
                     <Route path="/hosting" element={<Hosting />} />
+                    <Route path="/integrations" element={<Integrations />} />
+                    <Route path="/share-profile" element={<ShareProfile />} />
                     <Route path="/help" element={<HelpCenter />} />
                     <Route path="/federation" element={<FederationGuide />} />
                     <Route path="/conversation-guide" element={<ConversationGuide />} />

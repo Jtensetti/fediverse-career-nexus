@@ -1,5 +1,5 @@
 import { notifyPublication } from '@/services/moderation/publicationStatus';
-import { publicMediaUrl } from "@/lib/media";
+import type { UploadedPostImage } from "@/lib/imageDraft";
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -8,7 +8,8 @@ import type { FederatedPost } from "@/services/federation/federationService";
 export interface CreateCompanyPostData {
   companyId: string;
   content: string;
-  imageFile?: File;
+  image?: UploadedPostImage;
+  postId?: string;
   imageAltText?: string;
   contentWarning?: string;
 }
@@ -55,31 +56,11 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       return null;
     }
 
-    // Handle image upload if provided
-    let imageUrl: string | null = null;
-    if (postData.imageFile) {
-      const fileExt = postData.imageFile.name.split('.').pop();
-      const fileName = `${postData.companyId}-${Date.now()}.${fileExt}`;
-      const filePath = `company-posts/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('posts')
-        .upload(filePath, postData.imageFile);
-
-      if (uploadError) {
-        console.error('Image upload error:', uploadError);
-        toast.error("Failed to upload image");
-        return null;
-      }
-
-      const publicUrl = publicMediaUrl('posts', filePath);
-
-      imageUrl = publicUrl;
-    }
+    const imageUrl = postData.image?.url;
 
     // Create company post as a local Note (no federation actor yet)
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const postId = crypto.randomUUID();
+    const postId = postData.postId || crypto.randomUUID();
 
     const noteObject = {
       type: 'Note',
@@ -89,7 +70,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       to: ['https://www.w3.org/ns/activitystreams#Public'],
       attachment: imageUrl ? [{
         type: 'Image',
-        mediaType: postData.imageFile?.type || 'image/jpeg',
+        mediaType: postData.image?.mediaType || 'image/jpeg',
         url: imageUrl,
         name: postData.imageAltText || ''
       }] : undefined,
@@ -121,6 +102,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
     const { data: post, error: postError } = await supabase
       .from('ap_objects')
       .insert({
+        id: postId,
         type: 'Create',
         content: createActivity as any,
         company_id: postData.companyId,
@@ -131,6 +113,8 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       .single();
 
     if (postError) {
+      const { data: existing } = await supabase.from('ap_objects').select('id,moderation_status').eq('id', postId).eq('company_id', postData.companyId).maybeSingle();
+      if (existing) { notifyPublication(existing.moderation_status || 'published', 'Inlägget skapades!'); return existing.id; }
       console.error('Post creation error:', postError);
       toast.error("Failed to create post");
       return null;

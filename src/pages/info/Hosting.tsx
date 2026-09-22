@@ -32,6 +32,12 @@ export default function Hosting() {
           <Button asChild variant="outline"><a href={repository}>{sv ? "Öppna källkoden" : "View the source"}<ArrowRight className="ml-2 h-4 w-4" /></a></Button>
         </section>
       </div>
+      <section className="mt-8 rounded-2xl border bg-card p-8">
+        <Code2 className="mb-5 h-7 w-7 text-primary" aria-hidden="true" />
+        <h2 className="text-2xl">{sv ? 'Lägg till en Nolto-knapp' : 'Add a Nolto button'}</h2>
+        <p className="my-5 max-w-2xl leading-relaxed text-muted-foreground">{sv ? 'Låt kandidater fylla ert ansökningsformulär med sin Nolto-profil. De väljer själva vilka uppgifter som delas. Kopiera några rader kod för att komma igång.' : 'Let candidates fill your application form from their Nolto profile. They choose which details to share. Copy a few lines of code to get started.'}</p>
+        <Button asChild variant="outline"><Link to="/integrations">{sv ? 'Hämta knapp och instruktioner' : 'Get the button and instructions'}<ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+      </section>
       <section className="my-12 max-w-3xl border-l-4 border-secondary pl-6">
         <h2 className="text-xl">{sv ? "Vad behövs för en egen server?" : "What does your own server need?"}</h2>
         <p className="mt-4 leading-relaxed text-muted-foreground">{sv ? "Docker-paketet innehåller webbappen och dess proxy. Databas, inloggning, lagring, e-post och bakgrundsjobb behöver sättas upp separat. En komplett nyinstallation av hela Nolto är ännu inte verifierad. Guiden beskriver vad som återstår." : "The Docker package contains the web app and its proxy. Database, authentication, storage, email and background jobs need separate setup. A complete fresh installation of Nolto has not yet been verified. The guide explains the remaining steps."}</p>

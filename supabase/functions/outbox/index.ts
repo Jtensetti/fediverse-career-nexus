@@ -1,6 +1,7 @@
 import { buildOutboxUrl, functionPath } from "../_shared/federation-urls.ts";
 import { serviceClient, loadLocalActor, jsonResponse, federationHeaders } from "../_shared/local-actor.ts";
 import { localCreate, CONTEXT } from "../_shared/local-content.ts";
+import { resolveReplyAddress } from '../_shared/federated-interactions.ts';
 export async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return new Response(null, { headers: federationHeaders });
   if (!["GET", "HEAD"].includes(req.method)) return jsonResponse({ error: "This outbox supports server federation discovery. Publish using Nolto." }, 405);
@@ -20,7 +21,7 @@ export async function handler(req: Request): Promise<Response> {
     if (error) throw error;
     const body = page ? {
       "@context": CONTEXT, id: `${base}?page=${page}`, type: "OrderedCollectionPage", partOf: base,
-      orderedItems: (data || []).map(row => localCreate(row, username)),
+      orderedItems: await Promise.all((data || []).map(async row => localCreate(await resolveReplyAddress(db, row), username))),
       ...(page > 1 ? { prev: `${base}?page=${page - 1}` } : {}),
       ...(page * 20 < (count || 0) ? { next: `${base}?page=${page + 1}` } : {}),
     } : { "@context": CONTEXT, id: base, type: "OrderedCollection", totalItems: count, first: `${base}?page=1` };

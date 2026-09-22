@@ -1,5 +1,5 @@
 import { useContentCheck } from '@/hooks/useContentCheck';
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Image, X, Loader2, Send, ImagePlus, Building2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { compressImage, formatFileSize } from "@/lib/imageCompression";
+import { formatFileSize } from "@/lib/imageCompression";
+import { usePostImageDraft } from "@/hooks/usePostImageDraft";
+import { ImageUploadStatus } from "@/components/posts/ImageUploadStatus";
 import { LinkPreview, extractUrls } from "@/components/content/LinkPreview";
 import ContentWarningInput from "@/components/content/ContentWarningInput";
 import { createCompanyPost, CreateCompanyPostData } from "@/services/company/companyPostService";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Company } from "@/services/company/companyService";
 
@@ -28,11 +31,12 @@ export default function CompanyPostComposer({ company, className = "" }: Company
   const { t } = useTranslation();
   const contentCheck = useContentCheck();
   const [postContent, setPostContent] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const imageDraft = usePostImageDraft();
+  const imagePreview = imageDraft.preview;
+  const [postId, setPostId] = useState(() => crypto.randomUUID());
+  const [preparingPost, setPreparingPost] = useState(false);
   const [imageAltText, setImageAltText] = useState<string>("");
-  const [isCompressing, setIsCompressing] = useState(false);
-  const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
+  const compressionInfo = imageDraft.compressedSize && imageDraft.file ? { original: imageDraft.file.size, compressed: imageDraft.compressedSize } : null;
   const [dismissedUrls, setDismissedUrls] = useState<Set<string>>(new Set());
   const [contentWarning, setContentWarning] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -49,17 +53,6 @@ export default function CompanyPostComposer({ company, className = "" }: Company
     setDismissedUrls(prev => new Set([...prev, url]));
   };
 
-  // Generate image preview
-  useEffect(() => {
-    if (selectedImage) {
-      const url = URL.createObjectURL(selectedImage);
-      setImagePreview(url);
-      return () => URL.revokeObjectURL(url);
-    } else {
-      setImagePreview(null);
-    }
-  }, [selectedImage]);
-
   const createPostMutation = useMutation({
     mutationFn: (postData: CreateCompanyPostData) => createCompanyPost(postData),
     onSuccess: (postId) => {
@@ -72,43 +65,17 @@ export default function CompanyPostComposer({ company, className = "" }: Company
 
   const resetForm = () => {
     setPostContent("");
-    setSelectedImage(null);
-    setImagePreview(null);
+    imageDraft.clear();
+    setPostId(crypto.randomUUID());
     setImageAltText("");
-    setCompressionInfo(null);
     setDismissedUrls(new Set());
     setContentWarning("");
   };
 
-  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        return;
-      }
-      
-      setIsCompressing(true);
-      try {
-        const originalSize = file.size;
-        const compressedFile = await compressImage(file, {
-          maxWidth: 1920,
-          maxHeight: 1920,
-          quality: 0.8,
-          maxSizeKB: 500
-        });
-        
-        setSelectedImage(compressedFile);
-        setCompressionInfo({
-          original: originalSize,
-          compressed: compressedFile.size
-        });
-      } catch (error) {
-        console.error('Compression failed, using original:', error);
-        setSelectedImage(file);
-      } finally {
-        setIsCompressing(false);
-      }
-    }
+    event.target.value = '';
+    if (file) imageDraft.select(file);
   };
 
   const handlePost = async () => {
@@ -116,17 +83,22 @@ export default function CompanyPostComposer({ company, className = "" }: Company
       return;
     }
 
-    if (!await contentCheck.check([postContent, contentWarning, imageAltText].join('\n'))) return;
-    createPostMutation.mutate({
-      companyId: company.id,
-      content: postContent.trim(),
-      imageFile: selectedImage || undefined,
-      imageAltText: imageAltText.trim() || undefined,
-      contentWarning: contentWarning.trim() || undefined,
-    });
+    setPreparingPost(true);
+    try {
+      if (!await contentCheck.check([postContent, contentWarning, imageAltText].join('\n'))) return;
+      createPostMutation.mutate({
+        companyId: company.id,
+        content: postContent.trim(),
+        image: await imageDraft.ready(),
+        postId,
+        imageAltText: imageAltText.trim() || undefined,
+        contentWarning: contentWarning.trim() || undefined,
+      });
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Kunde inte förbereda bilden.'); }
+    finally { setPreparingPost(false); }
   };
 
-  const isLoading = createPostMutation.isPending || contentCheck.checking;
+  const isLoading = createPostMutation.isPending || contentCheck.checking || preparingPost;
   const characterCount = postContent.length;
   const isOverLimit = characterCount > MAX_CHARACTERS;
   const characterPercentage = Math.min((characterCount / MAX_CHARACTERS) * 100, 100);
@@ -204,9 +176,8 @@ export default function CompanyPostComposer({ company, className = "" }: Company
                       size="icon"
                       className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80"
                       onClick={() => {
-                        setSelectedImage(null);
+                        imageDraft.clear();
                         setImageAltText("");
-                        setCompressionInfo(null);
                       }}
                       disabled={isLoading}
                     >
@@ -238,15 +209,9 @@ export default function CompanyPostComposer({ company, className = "" }: Company
               )}
             </AnimatePresence>
 
-            {/* Compressing indicator */}
-            {isCompressing && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t("posts.optimizingImage", "Optimizing image...")}
-              </div>
-            )}
+            <ImageUploadStatus draft={imageDraft} retry={imageDraft.retry} />
 
-            {/* Link Preview */}
+                {/* Link Preview */}
             <AnimatePresence>
               {detectedUrls.length > 0 && (
                 <motion.div
@@ -287,7 +252,7 @@ export default function CompanyPostComposer({ company, className = "" }: Company
                   size="icon"
                   className="h-9 w-9"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading || isCompressing}
+                  disabled={isLoading}
                 >
                   <Image className="h-5 w-5 text-muted-foreground" />
                 </Button>

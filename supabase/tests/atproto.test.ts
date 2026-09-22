@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert';
 import { pinnedHttpResponse } from '../functions/_shared/pinned-http-response.ts';
 import publishedMetadata from '../../public/oauth-client-metadata.json' with { type: 'json' };
 import { atprotoHandle, atprotoMetadata, atprotoCallbackParams, browserProof } from '../functions/_shared/atproto-policy.ts';
-import { atprotoFetch } from '../functions/_shared/atproto-fetch.ts';
+import { atprotoFetch, managedAtprotoHost } from '../functions/_shared/atproto-fetch.ts';
 import { createAtprotoClient } from '../functions/_shared/atproto-client.ts';
 import { atprotoFailureDetails, AtprotoTransportError } from '../functions/_shared/atproto-diagnostics.ts';
 
@@ -51,6 +51,21 @@ Deno.test('pinned response decoder handles chunks and rejects truncation, redire
     'HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\n\r\n{}',
     'HTTP/1.1 200 OK\r\n\r\n' + 'x'.repeat(2 * 1024 * 1024 + 1),
   ]) assert.throws(() => parse(raw));
+});
+
+Deno.test('native Edge fetch is restricted to managed service domains and rejects unsafe DNS', async () => {
+  const originals = { dns: Deno.resolveDns, fetch: globalThis.fetch };
+  let addresses = ['8.8.8.8'], calls = 0;
+  for (const host of ['bsky.social', 'plc.directory', 'morel.us-east.host.bsky.network']) assert.equal(managedAtprotoHost(host), true);
+  for (const host of ['bsky.social.evil.example', 'evilbsky.social', 'plc.directory.evil.example', 'host.bsky.network.evil.example', 'custom-pds.example']) assert.equal(managedAtprotoHost(host), false);
+  try {
+    Deno.resolveDns = (() => Promise.resolve(addresses)) as unknown as typeof Deno.resolveDns;
+    globalThis.fetch = ((input: Request, init: RequestInit) => { calls++; assert.equal(new URL(input.url).hostname, 'bsky.social'); assert.equal(init.redirect, 'error'); assert.ok(init.signal); return Promise.resolve(new Response('{}')); }) as typeof fetch;
+    assert.equal(await (await atprotoFetch('https://bsky.social/.well-known/oauth-authorization-server')).text(), '{}');
+    addresses = ['127.0.0.1'];
+    await assert.rejects(() => atprotoFetch('https://bsky.social/.well-known/oauth-authorization-server'));
+    assert.equal(calls, 1);
+  } finally { Deno.resolveDns = originals.dns; globalThis.fetch = originals.fetch; }
 });
 
 Deno.test('OAuth diagnostics retain the failing stage without exposing wrapped request secrets', () => {

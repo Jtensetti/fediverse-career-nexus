@@ -1,13 +1,12 @@
-/** Cloudflare Worker for nolto.social when the web UI lives on a separate origin.
- * Set SUPABASE_ORIGIN and SITE_ORIGIN in Worker environment variables.
+/** Cloudflare Worker for nolto.social on the existing proxied nolto.social DNS record.
+ * Set SUPABASE_ORIGIN. Routes and defaults are in wrangler.toml.
  * Install on nolto.social/* ahead of any redirect rule. See docs/production-readiness.md.
  */
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const backend = new URL(env.SUPABASE_ORIGIN);
-    const site = new URL(env.SITE_ORIGIN);
-    if (backend.protocol !== "https:" || site.protocol !== "https:" || site.origin === url.origin) {
+    if (backend.protocol !== "https:" || backend.origin === url.origin || backend.username || backend.password) {
       return new Response("Invalid gateway configuration", { status: 503 });
     }
     const discovery = {
@@ -25,6 +24,8 @@ export default {
       headers.delete("x-forwarded-host");
       return fetch(target, { method: request.method, headers, body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body, redirect: "manual" });
     }
-    return Response.redirect(new URL(url.pathname + url.search, site.origin), 302);
+    // A Worker Route forwards unmatched requests to the existing origin. Keep
+    // the canonical browser origin for OAuth state, storage and callbacks.
+    return fetch(request);
   },
 };
