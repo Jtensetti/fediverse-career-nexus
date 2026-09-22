@@ -112,7 +112,7 @@ const ArticleView = () => {
   const authorInitials = authorName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   const previewContent = article.excerpt || article.content.substring(0, 500);
-  const showFullContent = hasAccess || accessLoading;
+  const showFullContent = !!hasAccess && !accessLoading;
 
   return (
     <div className="min-h-screen flex flex-col">
