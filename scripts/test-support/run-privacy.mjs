@@ -21,6 +21,10 @@ try {
     './post-notification-assertions.sql',
     '../../supabase/migrations/20260922124130_personal_feeds.sql',
     './personal-feed-assertions.sql',
+    '../../supabase/migrations/20260922141011_considerate_moderation.sql',
+    './considerate-moderation-assertions.sql',
+    '../../supabase/migrations/20260922142915_atproto_sign_in.sql',
+    './atproto-assertions.sql',
   ]) {
     try {
       if (path !== './cloud-schema.sql') await db.exec('SET check_function_bodies = true');

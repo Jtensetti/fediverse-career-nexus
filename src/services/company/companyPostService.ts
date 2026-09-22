@@ -1,3 +1,4 @@
+import { notifyPublication } from '@/services/moderation/publicationStatus';
 import { publicMediaUrl } from "@/lib/media";
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { supabase } from "@/lib/supabase";
@@ -126,7 +127,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
         published_at: new Date().toISOString(),
         content_warning: postData.contentWarning || null,
       })
-      .select('id')
+      .select('id,moderation_status')
       .single();
 
     if (postError) {
@@ -141,7 +142,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       .update({ last_post_at: new Date().toISOString() })
       .eq('id', postData.companyId);
 
-    toast.success("Post created successfully!");
+    notifyPublication(post.moderation_status, "Inlägget skapades!");
     return post.id;
 
   } catch (error) {
@@ -159,6 +160,7 @@ export async function getCompanyPosts(companyId: string, limit = 20, offset = 0)
     .from('ap_objects')
     .select('id, content, created_at, published_at, type, content_warning, company_id')
     .eq('company_id', companyId)
+    .eq('moderation_status', 'published')
     .in('type', ['Create', 'Note'])
     .order('published_at', { ascending: false })
     .range(offset, offset + limit - 1);

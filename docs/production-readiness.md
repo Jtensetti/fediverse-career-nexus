@@ -18,6 +18,8 @@ The five security/privacy migrations through `20260922065026` were applied and r
 
 The authorized demo cleanup removed 50 seeded accounts, eight demo companies and 519 unreferenced files. One real account remains. The private pre-cleanup database backup exists but has not been restore-tested and does not include the deleted media. `scripts/cleanup-demo-data.mjs` is an explicit inventory/apply tool, not a recurring deletion job.
 
+The moderation and AT Protocol identity migrations `20260922141011` and `20260922142915` were applied and recorded on 22 September. Their isolated regressions cover hidden content, author/moderator boundaries, approval, re-edits, notifications, media access, identity ownership, one-time OAuth state and expiring locks. Hosted OAuth sign-in still requires the activation checks in [moderation and AT Protocol](moderation-and-atproto.md).
+
 ## Release procedure
 
 1. Confirm the exact backend reference and current schema. Make a restorable backup of the database, files and required secrets before a schema or storage change.

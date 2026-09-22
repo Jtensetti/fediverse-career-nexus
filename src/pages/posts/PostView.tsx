@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,6 +18,8 @@ export default function PostView() {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [moderationStatus, setModerationStatus] = useState('published');
   const queryClient = useQueryClient();
   const highlightReplyId = searchParams.get('highlight');
   
@@ -69,7 +72,8 @@ export default function PostView() {
           created_at,
           published_at,
           attributed_to,
-          company_id
+          company_id,
+          moderation_status
         `)
         .eq('id', postId)
         .maybeSingle();
@@ -87,16 +91,18 @@ export default function PostView() {
         return;
       }
 
+      setModerationStatus(postData.moderation_status);
+
       // Check if this is a reply (has inReplyTo or rootPost in content)
       const content = postData.content as any;
       const rootPost = content?.rootPost || content?.content?.rootPost;
       const inReplyTo = content?.inReplyTo || content?.content?.inReplyTo;
       
       // If this is a reply, redirect to the parent post with highlight
-      if (rootPost && rootPost !== postId) {
+      if (postData.moderation_status === 'published' && rootPost && rootPost !== postId) {
         navigate(`/post/${rootPost}?highlight=${postId}`, { replace: true });
         return;
-      } else if (inReplyTo && inReplyTo !== postId && !rootPost) {
+      } else if (postData.moderation_status === 'published' && inReplyTo && inReplyTo !== postId && !rootPost) {
         navigate(`/post/${inReplyTo}?highlight=${postId}`, { replace: true });
         return;
       }
@@ -249,6 +255,10 @@ export default function PostView() {
           </Button>
         </Link>
 
+        {moderationStatus !== 'published' && <div role="status" className="mb-4 rounded-lg border p-4">
+          <p className="font-medium">{t(`contentCare.${moderationStatus}`)}</p>
+          <Link className="text-sm text-primary underline" to="/my-reviews">{t('contentCare.myReviews')}</Link>
+        </div>}
         {/* Main Post - show full content and hide inline comments (shown below instead) */}
         <FederatedPostCard 
           post={post} 
@@ -259,14 +269,14 @@ export default function PostView() {
         />
 
         {/* Reply Composer */}
-        <div className="mt-4 mb-6">
+        {moderationStatus === 'published' && <div className="mt-4 mb-6">
           <InlineReplyComposer 
             postId={post.id} 
             onReplyCreated={handleReplyCreated}
             placeholder="Skriv ett svar..."
             companyContext={post.company}
           />
-        </div>
+        </div>}
 
         {/* Replies Section */}
         {replies.length > 0 && (

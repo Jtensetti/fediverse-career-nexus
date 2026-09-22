@@ -1,3 +1,5 @@
+import ContentReviewQueue from '@/components/moderation/ContentReviewQueue';
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -95,6 +97,7 @@ function LoadingFallback() {
 
 export default function ModerationDashboard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { hasAccess, isAdmin, loading: accessLoading } = useModerationAccess();
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -212,6 +215,7 @@ export default function ModerationDashboard() {
                   <Activity className="h-4 w-4" />
                   Översikt
                 </TabsTrigger>
+                <TabsTrigger value="content-review">{t("contentCare.queueTitle")}</TabsTrigger>
                 <TabsTrigger value="reports" className="gap-2">
                   <Flag className="h-4 w-4" />
                   Rapporter
@@ -323,6 +327,7 @@ export default function ModerationDashboard() {
             </TabsContent>
 
             {/* Reports Tab */}
+            <TabsContent value="content-review"><ContentReviewQueue /></TabsContent>
             <TabsContent value="reports">
               <Card>
                 <CardHeader>

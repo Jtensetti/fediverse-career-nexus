@@ -1,3 +1,4 @@
+import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -7,11 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Image, PenTool, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send, ImagePlus, BarChart3 } from "lucide-react";
+import { Image, PenTool, Calendar as CalendarIcon, X, Loader2, Send, ImagePlus, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profile/profileService";
@@ -22,8 +21,6 @@ import ContentWarningInput from "@/components/content/ContentWarningInput";
 import { PollCreator, PollCreatorData } from "@/components/content/PollCreator";
 import { createPollObject } from "@/services/posts/pollService";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { sv } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 const MAX_CHARACTERS = 500;
@@ -34,6 +31,7 @@ interface PostComposerProps {
 
 export default function PostComposer({ className = "" }: PostComposerProps) {
   const { t } = useTranslation();
+  const contentCheck = useContentCheck();
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -41,9 +39,6 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const [imageAltText, setImageAltText] = useState<string>("");
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
-  const [scheduledDate, setScheduledDate] = useState<Date>();
-  const [scheduledTime, setScheduledTime] = useState<string>("");
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [dismissedUrls, setDismissedUrls] = useState<Set<string>>(new Set());
   const [contentWarning, setContentWarning] = useState<string>("");
   const [pollData, setPollData] = useState<PollCreatorData | null>(null);
@@ -90,8 +85,8 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
 
   const createPostMutation = useMutation({
     mutationFn: (postData: CreatePostData) => createPost(postData),
-    onSuccess: () => {
-      toast.success(t("posts.postCreated", "Post created successfully!"));
+    onSuccess: (success) => {
+      if (!success) return;
       resetForm();
       setIsOpen(false);
       queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
@@ -108,9 +103,6 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     setImagePreview(null);
     setImageAltText("");
     setCompressionInfo(null);
-    setScheduledDate(undefined);
-    setScheduledTime("");
-    setShowDatePicker(false);
     setDismissedUrls(new Set());
     setContentWarning("");
     setPollData(null);
@@ -153,7 +145,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     }
   };
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!postContent.trim() && !showPollCreator) {
       toast.error(t("posts.enterContent", "Please enter some content for your post"));
       return;
@@ -188,38 +180,8 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
       finalPostData.pollData = pollObject;
     }
 
+    if (!await contentCheck.check([postContent, contentWarning, imageAltText, ...(pollData?.options || [])].join('\n'))) return;
     createPostMutation.mutate(finalPostData);
-  };
-
-  const handleScheduledPost = () => {
-    if (!postContent.trim()) {
-      toast.error(t("posts.enterContent", "Please enter some content for your post"));
-      return;
-    }
-
-    if (!scheduledDate || !scheduledTime) {
-      toast.error(t("posts.selectDateTime", "Please select a date and time for scheduling"));
-      return;
-    }
-
-    const [hours, minutes] = scheduledTime.split(':').map(Number);
-    const scheduledDateTime = new Date(scheduledDate);
-    scheduledDateTime.setHours(hours, minutes, 0, 0);
-
-    if (scheduledDateTime <= new Date()) {
-      toast.error(t("posts.scheduleFuture", "Scheduled time must be in the future"));
-      return;
-    }
-
-    const postData: CreatePostData = {
-      content: postContent.trim(),
-      imageFile: selectedImage || undefined,
-      imageAltText: imageAltText.trim() || undefined,
-      contentWarning: contentWarning.trim() || undefined,
-      scheduledFor: scheduledDateTime,
-    };
-
-    createPostMutation.mutate(postData);
   };
 
   const handleWriteArticle = () => {
@@ -239,7 +201,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
       .slice(0, 2);
   };
 
-  const isLoading = createPostMutation.isPending;
+  const isLoading = createPostMutation.isPending || contentCheck.checking;
   const characterCount = postContent.length;
   const isOverLimit = characterCount > MAX_CHARACTERS;
   const characterPercentage = Math.min((characterCount / MAX_CHARACTERS) * 100, 100);
@@ -264,7 +226,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                 <span className="text-muted-foreground flex-1">{t("posts.whatsOnMind", "What's on your mind?")}</span>
               </motion.div>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden p-0">
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden p-0">
               <DialogHeader className="p-6 pb-0">
                 <DialogTitle className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
@@ -404,36 +366,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                   )}
                 </AnimatePresence>
 
-                {/* Scheduled Info */}
-                <AnimatePresence>
-                  {(scheduledDate || scheduledTime) && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/10"
-                    >
-                      <div className="flex items-center gap-2 text-sm">
-                        <CalendarIcon className="h-4 w-4 text-primary" />
-                        <span>
-                          {t("posts.scheduledFor", "Scheduled for")} {scheduledDate && format(scheduledDate, 'PPP', { locale: sv })} {scheduledTime && `kl ${scheduledTime}`}
-                        </span>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => {
-                          setScheduledDate(undefined);
-                          setScheduledTime("");
-                          setShowDatePicker(false);
-                        }}
-                        disabled={isLoading}
-                      >
-                        {t("posts.remove", "Remove")}
-                      </Button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+
               </div>
               
               {/* Footer */}
@@ -469,48 +402,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     >
                       <BarChart3 className="h-5 w-5" />
                     </Button>
-                    <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
-                          disabled={isLoading}
-                        >
-                          <CalendarIcon className="h-5 w-5" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-4" align="start">
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="scheduled-date" className="text-sm font-medium">{t("posts.selectDate", "Select Date")}</Label>
-                            <Calendar
-                              mode="single"
-                              selected={scheduledDate}
-                              onSelect={setScheduledDate}
-                              disabled={(date) => date <= new Date()}
-                              className="rounded-md border mt-2"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="scheduled-time" className="text-sm font-medium">{t("posts.selectTime", "Select Time")}</Label>
-                            <Input
-                              id="scheduled-time"
-                              type="time"
-                              value={scheduledTime}
-                              onChange={(e) => setScheduledTime(e.target.value)}
-                              className="mt-2"
-                            />
-                          </div>
-                          <Button 
-                            onClick={() => setShowDatePicker(false)}
-                            className="w-full"
-                          >
-                            {t("posts.done", "Done")}
-                          </Button>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+
                   </div>
                   
                   <div className="flex items-center gap-3">
@@ -553,16 +445,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                       )}
                     </div>
                     
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleScheduledPost}
-                      disabled={!postContent.trim() || isLoading || isOverLimit}
-                      className="gap-1"
-                    >
-                      <ChevronDown className="h-3 w-3" />
-                      {t("posts.schedule", "Schedule")}
-                    </Button>
+
                     
                     <Button
                       onClick={handlePost}
@@ -583,6 +466,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                 </div>
               </div>
             </DialogContent>
+      {contentCheck.dialog}
           </Dialog>
           
           <div className="mt-4 grid grid-cols-2 gap-2">

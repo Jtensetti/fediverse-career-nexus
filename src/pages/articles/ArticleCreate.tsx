@@ -1,3 +1,4 @@
+import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -43,6 +44,7 @@ type ValidationErrors = Partial<Record<keyof ArticleFormData, string>>;
 
 const ArticleCreate = () => {
   const navigate = useNavigate();
+  const contentCheck = useContentCheck();
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -134,6 +136,7 @@ const ArticleCreate = () => {
       return;
     }
 
+    if (article.published && !await contentCheck.check([article.title, article.content, article.excerpt || ''].join('\n'))) return;
     setIsSubmitting(true);
 
     try {
@@ -145,7 +148,6 @@ const ArticleCreate = () => {
             .update({ cover_image_url: coverImageUrl })
             .eq('id', articleResult.id);
         }
-        toast.success("Artikeln skapades!");
         navigate("/articles/manage");
       }
     } finally {
@@ -157,6 +159,7 @@ const ArticleCreate = () => {
   if (isMobile && isEditing) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        {contentCheck.dialog}
         <SEOHead title="Skapa ny artikel" description="Skriv och publicera en ny artikel på Nolto." />
         
         <div className="flex items-center justify-between p-3 border-b border-border bg-background/95 backdrop-blur-sm">
@@ -198,7 +201,7 @@ const ArticleCreate = () => {
               />
               <Label htmlFor="published-mobile" className="text-sm">Publicera direkt</Label>
             </div>
-            <Button size="sm" onClick={handleSubmit} disabled={isSubmitting}>
+            <Button size="sm" onClick={handleSubmit} disabled={isSubmitting || contentCheck.checking}>
               <Save className="h-4 w-4 mr-1" />
               {isSubmitting ? "..." : "Spara"}
             </Button>
@@ -212,6 +215,7 @@ const ArticleCreate = () => {
     <div className="min-h-screen flex flex-col">
       <SEOHead title="Skapa ny artikel" description="Skriv och publicera en ny artikel på Nolto." />
       <Navbar />
+      {contentCheck.dialog}
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className={isMobile ? "w-full" : "max-w-3xl mx-auto"}>
@@ -325,7 +329,7 @@ const ArticleCreate = () => {
                 </div>
                 
                 <div className="pt-4 flex justify-end">
-                  <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
+                  <Button type="submit" disabled={isSubmitting || contentCheck.checking} className="flex items-center gap-2">
                     <Save size={16} />
                     {isSubmitting ? "Sparar..." : "Spara artikel"}
                   </Button>

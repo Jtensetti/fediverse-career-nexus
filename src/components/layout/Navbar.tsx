@@ -78,6 +78,7 @@ function MemberNavbar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild><Link to="/profile"><UserRound className="mr-2 h-4 w-4" />{t("nav.profile")}</Link></DropdownMenuItem>
             <DropdownMenuItem asChild><Link to="/profile/edit"><Settings className="mr-2 h-4 w-4" />{t("common.settings")}</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild><Link to="/my-reviews">{t("contentCare.myReviews")}</Link></DropdownMenuItem>
             {hasAccess && <><DropdownMenuItem asChild><Link to="/moderation">{t("nav.moderation")}</Link></DropdownMenuItem><DropdownMenuItem asChild><Link to="/admin/instances">{t("nav.instanceManagement")}</Link></DropdownMenuItem></>}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => void logout()} className="text-destructive"><LogOut className="mr-2 h-4 w-4" />{t("auth.logout")}</DropdownMenuItem>
@@ -90,6 +91,7 @@ function MemberNavbar() {
             <nav className="mt-6 flex flex-col gap-1">
               {links.map(link => <NavLink key={link.to} to={link.to} onClick={() => setOpen(false)} className={({ isActive }) => `rounded-lg px-4 py-3 text-sm ${isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}>{link.label}</NavLink>)}
               <Link to="/profile/edit" onClick={() => setOpen(false)} className="mt-3 border-t px-4 py-3 text-sm">{t("common.settings")}</Link>
+              <Link to="/my-reviews" onClick={() => setOpen(false)} className="px-4 py-3 text-sm">{t("contentCare.myReviews")}</Link>
               <button onClick={() => void logout()} className="px-4 py-3 text-left text-sm text-destructive">{t("auth.logout")}</button>
             </nav>
             <div className="mt-4"><ModeToggle /></div>

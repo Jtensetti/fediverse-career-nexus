@@ -59,6 +59,7 @@ const Footer = () => {
               <div className="col-span-2 sm:col-span-1">
                 <h3 className="text-sm font-semibold text-primary mb-4">{t("footer.legal", "Legal")}</h3>
                 <ul className="space-y-3">
+                  <li><Link to="/conversation-guide" className="text-muted-foreground hover:text-secondary">{t("contentCare.guideTitle")}</Link></li>
                   <li><Link to="/privacy" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.privacyPolicy", "Privacy Policy")}</Link></li>
                   <li><Link to="/terms" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.termsOfService", "Terms of Service")}</Link></li>
                   <li><Link to="/code-of-conduct" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.codeOfConduct", "Code of Conduct")}</Link></li>

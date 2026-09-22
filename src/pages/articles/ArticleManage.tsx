@@ -51,7 +51,7 @@ const ArticleManage = () => {
     if (activeTab === 'drafts') {
       return matchesSearchQuery && !article.published;
     } else if (activeTab === 'published') {
-      return matchesSearchQuery && article.published;
+      return matchesSearchQuery && article.published && article.moderation_status === 'published';
     }
     
     // Show all articles that match search query
@@ -157,7 +157,7 @@ const ArticleManage = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          {article.published ? (
+                          {article.moderation_status !== 'published' ? <Link to="/my-reviews"><Badge variant="outline">{article.moderation_status === 'pending' ? 'Väntar på granskning' : 'Ej godkänd'}</Badge></Link> : article.published ? (
                             <Badge variant="default" className="bg-green-500">Publicerad</Badge>
                           ) : (
                             <Badge variant="outline">Utkast</Badge>
@@ -207,7 +207,7 @@ const ArticleManage = () => {
                           <span className="font-medium block truncate">{article.title}</span>
                         )}
                       </div>
-                      {article.published ? (
+                      {article.moderation_status !== 'published' ? <Link to="/my-reviews"><Badge variant="outline">{article.moderation_status === 'pending' ? 'Väntar på granskning' : 'Ej godkänd'}</Badge></Link> : article.published ? (
                         <Badge variant="default" className="bg-green-500 flex-shrink-0">Publicerad</Badge>
                       ) : (
                         <Badge variant="outline" className="flex-shrink-0">Utkast</Badge>

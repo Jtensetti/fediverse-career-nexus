@@ -27,6 +27,12 @@ Deno.serve(postHandler(async req => {
       .in(key, actorIds).order("id").range(from, to), 50000, consumePage) : [];
   }
   const skillIds = records.skills.map(row => row.id);
+  const identity = await client.from('atproto_identities').select('did,user_id,created_at').eq('user_id', user.id);
+  if (identity.error) throw identity.error;
+  records.atproto_identities = identity.data;
+  consumePage(identity.data);
+  records.content_review_decisions = await collectPages((from, to) => client.rpc('get_own_review_decisions', {}, { count: 'exact' })
+    .lte('created_at', startedAt).order('id').range(from, to), 50000, consumePage);
   records.skill_endorsements = await collectPages((from, to) => client.from("skill_endorsements").select("*", { count: "exact" })
     .or(`endorser_id.eq.${user.id}${skillIds.length ? `,skill_id.in.(${skillIds.join(",")})` : ""}`).order("id").range(from, to), 50000, consumePage);
   for (const message of records.messages) {

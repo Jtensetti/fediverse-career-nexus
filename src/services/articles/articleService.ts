@@ -1,3 +1,4 @@
+import { notifyPublication } from '@/services/moderation/publicationStatus';
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 
 import { supabase } from "@/lib/supabase";
@@ -11,6 +12,7 @@ export interface Article {
   excerpt: string | null;
   slug: string;
   published: boolean;
+  moderation_status: string;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -41,6 +43,7 @@ export const getUserPublishedArticles = async (userId: string): Promise<Article[
       .select('*')
       .eq('user_id', userId)
       .eq('published', true)
+      .eq('moderation_status', 'published')
       .order('published_at', { ascending: false });
 
     if (error) {
@@ -122,7 +125,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
       // Don't fail the whole operation, the article was created
     }
     
-    toast.success(i18n.t('toasts.articleCreated'));
+    notifyPublication(data.moderation_status, i18n.t('toasts.articleCreated'));
     return normalizeArticle(data);
   } catch (error) {
     console.error('Error creating article:', error);
@@ -149,7 +152,7 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
       return null;
     }
     
-    toast.success(i18n.t('toasts.articleUpdated'));
+    notifyPublication(data.moderation_status, i18n.t('toasts.articleUpdated'));
     return normalizeArticle(data);
   } catch (error) {
     console.error('Error updating article:', error);
@@ -224,6 +227,7 @@ export const getPublishedArticles = async (): Promise<Article[]> => {
       .from('articles')
       .select('*')
       .eq('published', true)
+      .eq('moderation_status', 'published')
       .order('published_at', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
     

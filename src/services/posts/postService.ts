@@ -1,3 +1,4 @@
+import { notifyPublication } from '@/services/moderation/publicationStatus';
 import { publicMediaUrl } from "@/lib/media";
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { getLocalActorUrl, getNoltoInstanceDomain } from "@/lib/federation";
@@ -11,7 +12,6 @@ export interface CreatePostData {
   imageFile?: File;
   imageAltText?: string;
   contentWarning?: string;
-  scheduledFor?: Date;
   pollData?: Record<string, unknown>;
 }
 
@@ -165,7 +165,6 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     } catch (mentionError) {
       // Log but don't block the post - NO DATABASE WRITE
       console.warn('Mention resolution failed', {
-        contentPreview: postData.content.substring(0, 50),
         error: mentionError instanceof Error ? mentionError.message : 'Unknown error'
       });
       // Continue without federated mentions - post still works locally
@@ -191,7 +190,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       content_warning: postData.contentWarning || null,
     };
 
-    const { error: postError } = await supabase
+    const { data: savedPost, error: postError } = await supabase
       .from('ap_objects')
       .insert(postObject)
       .select()
@@ -205,7 +204,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
     // A database trigger queues federation in the same transaction as this insert.
 
-    toast.success("Inlägget skapades!");
+    notifyPublication(savedPost.moderation_status, "Inlägget skapades!");
     return true;
 
   } catch (error) {
@@ -271,17 +270,17 @@ export const updatePost = async (postId: string, updates: { content: string }): 
       };
     }
 
-    const { error: updateError } = await supabase
+    const { data: savedPost, error: updateError } = await supabase
       .from('ap_objects')
       .update({ content: updatedContent })
-      .eq('id', postId);
+      .eq('id', postId).select('moderation_status').single();
 
     if (updateError) {
       console.error('Error updating post:', updateError);
       throw new Error(`Failed to update post: ${updateError.message}`);
     }
 
-    toast.success('Inlägget uppdaterades!');
+    notifyPublication(savedPost.moderation_status, 'Inlägget uppdaterades!');
   } catch (error) {
     console.error('Error updating post:', error);
     throw error;

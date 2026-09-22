@@ -1,3 +1,4 @@
+import { useContentCheck } from '@/hooks/useContentCheck';
 
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -46,6 +47,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const ArticleEdit = () => {
   const navigate = useNavigate();
+  const contentCheck = useContentCheck();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -126,6 +128,7 @@ const ArticleEdit = () => {
       return;
     }
     
+    if (article.published && !await contentCheck.check([article.title, article.content, article.excerpt || ''].join('\n'))) return;
     setIsSubmitting(true);
     
     try {
@@ -137,7 +140,6 @@ const ArticleEdit = () => {
             .update({ cover_image_url: coverImageUrl })
             .eq('id', id);
         }
-        toast.success("Artikeln uppdaterades!");
         queryClient.invalidateQueries({ queryKey: ['article', id] });
         queryClient.invalidateQueries({ queryKey: ['user-articles'] });
         navigate("/articles/manage");
@@ -184,6 +186,7 @@ const ArticleEdit = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
+      {contentCheck.dialog}
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <p>Laddar artikel...</p>
@@ -198,6 +201,7 @@ const ArticleEdit = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
+      {contentCheck.dialog}
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold mb-4">Artikeln hittades inte</h2>
@@ -215,6 +219,7 @@ const ArticleEdit = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+      {contentCheck.dialog}
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
@@ -430,7 +435,7 @@ const ArticleEdit = () => {
                 </div>
                 
                 <div className="pt-4 flex justify-end">
-                  <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
+                  <Button type="submit" disabled={isSubmitting || contentCheck.checking} className="flex items-center gap-2">
                     <Save size={16} />
                     {isSubmitting ? "Sparar..." : "Uppdatera artikel"}
                   </Button>

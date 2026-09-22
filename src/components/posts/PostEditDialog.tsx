@@ -1,3 +1,4 @@
+import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +19,7 @@ interface PostEditDialogProps {
 
 export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: PostEditDialogProps) {
   const [content, setContent] = useState("");
+  const contentCheck = useContentCheck();
   const [loading, setLoading] = useState(false);
 
   const postIsPoll = useMemo(() => {
@@ -48,11 +50,11 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
   const handleSave = async () => {
     if (!post) return;
     
+    if (!await contentCheck.check(content)) return;
     setLoading(true);
     
     try {
       await updatePost(post.id, { content });
-      toast.success("Inlägget uppdaterat");
       onUpdated();
       onOpenChange(false);
     } catch (err: any) {
@@ -64,7 +66,7 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{postIsPoll ? "Redigera omröstning" : "Redigera inlägg"}</DialogTitle>
         </DialogHeader>
@@ -74,7 +76,7 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
             onChange={(e) => setContent(e.target.value)}
             placeholder={postIsPoll ? "Redigera din omröstningsfråga..." : "Vad tänker du på?"}
             className="min-h-[150px] resize-none"
-            disabled={loading}
+            disabled={contentCheck.checking || loading}
           />
           
           {postIsPoll && (
@@ -88,15 +90,16 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
           )}
           
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={contentCheck.checking || loading}>
               Avbryt
             </Button>
-            <Button onClick={handleSave} disabled={loading || !content.trim()}>
+            <Button onClick={handleSave} disabled={contentCheck.checking || loading || !content.trim()}>
               {loading ? "Sparar..." : "Spara ändringar"}
             </Button>
           </div>
         </div>
       </DialogContent>
+      {contentCheck.dialog}
     </Dialog>
   );
 }
