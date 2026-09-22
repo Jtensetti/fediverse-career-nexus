@@ -121,7 +121,7 @@ verify_jwt = false
 
 [functions.moderation]
 verify_jwt = false
-entrypoint = "./functions/moderation/manage.ts"
+entrypoint = "./moderation/manage.ts"
 
 [functions.nodeinfo]
 verify_jwt = false
@@ -142,9 +142,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.request-mfa-recovery]
-verify_jwt = false
-
-[functions.seed-demo-users]
 verify_jwt = false
 
 [functions.send-dm]
@@ -176,16 +173,12 @@ verify_jwt = false
 
 [functions.message-keys]
 verify_jwt = false
-entrypoint = "./functions/message-keys/index.ts"
 
 [functions.request-deletion]
 verify_jwt = false
-entrypoint = "./functions/request-deletion/index.ts"
 
 [functions.public-media]
 verify_jwt = false
-entrypoint = "./functions/public-media/index.ts"
 
 [functions.privacy-maintenance]
 verify_jwt = false
-entrypoint = "./functions/privacy-maintenance/index.ts"
