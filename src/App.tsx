@@ -35,6 +35,9 @@ const JobCreate = lazy(() => import("./pages/jobs/JobCreate"));
 const JobEdit = lazy(() => import("./pages/jobs/JobEdit"));
 const JobManage = lazy(() => import("./pages/jobs/JobManage"));
 const FederatedFeedPage = lazy(() => import("./pages/federation/FederatedFeed"));
+const ConversationGuide = lazy(() => import('./pages/legal/ConversationGuide'));
+const MyContentReviews = lazy(() => import('./pages/moderation/MyContentReviews'));
+const AtprotoCallback = lazy(() => import('./pages/auth/AtprotoCallback'));
 const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
 const AuthRecovery = lazy(() => import("./pages/auth/AuthRecovery"));
 const UpdatePassword = lazy(() => import("./pages/auth/UpdatePassword"));
@@ -160,6 +163,8 @@ function App() {
                     <Route path="/hosting" element={<Hosting />} />
                     <Route path="/help" element={<HelpCenter />} />
                     <Route path="/federation" element={<FederationGuide />} />
+                    <Route path="/conversation-guide" element={<ConversationGuide />} />
+                    <Route path="/my-reviews" element={<ProtectedRoute><MyContentReviews /></ProtectedRoute>} />
                     <Route path="/privacy" element={<PrivacyPolicy />} />
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
@@ -187,6 +192,7 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />
+            <Route path="/auth/atproto/callback" element={<AtprotoCallback />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/recovery" element={<AuthRecovery />} />
             <Route path="/auth/update-password" element={<UpdatePassword />} />

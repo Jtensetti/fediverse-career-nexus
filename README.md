@@ -6,6 +6,8 @@ Flödena sorteras med nyast först. Du kan skapa privata flöden med utvalda per
 
 Konton har adressen `användarnamn@nolto.social`. Den används av WebFinger och ActivityPub; den är ingen e-postadress. Mastodon-koppling och federerade följningar finns i koden. Fullständig kontosynkronisering och stöd för alla Mastodon-klienter finns inte.
 
+Skrivpåminnelser hjälper till vid personangrepp. Vissa uttryckliga hot och uppmaningar till våld hålls undan för mänsklig granskning. Reglerna är begränsade till svenska och engelska; anmälningar behövs också. Bluesky-inloggning via AT Protocol finns bakom en serverinställning och innebär ingen synkronisering av innehåll.
+
 ## Kör lokalt
 
 Använd Node 24.15+ inom version 24, eller Node 22.22.2+ inom version 22.
@@ -38,6 +40,7 @@ CI kontrollerar även beroenden, databasbehörigheter, migreringar, Docker-bygge
 - [Installera med Docker](docs/self-hosting.md). Containern innehåller webbappen; backend behövs separat.
 - [Kvar inför lansering](docs/production-readiness.md) och [kontrollera federation](docs/federation-launch-checklist.md).
 - [Integritet, meddelanden och radering](docs/privacy-and-deletion.md).
+- [Moderering och Bluesky-inloggning](docs/moderation-and-atproto.md).
 - [Mobilappen](docs/mobile.md). En grund för en separat native-app, ännu ingen färdig appbutiksversion.
 - [Funktionsgenomgång och källor](docs/feature-review.md).
 - [Rapportera säkerhetsproblem](SECURITY.md).

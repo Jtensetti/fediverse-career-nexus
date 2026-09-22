@@ -1,3 +1,4 @@
+import { notifyPublication } from '@/services/moderation/publicationStatus';
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { getOrCreateLocalActor } from "@/services/federation/actorService";
 import { supabase } from "@/lib/supabase";
@@ -242,15 +243,16 @@ export async function updatePostReply(commentId: string, content: string): Promi
     content: updatedInner
   } as Record<string, unknown>;
 
-  const { error } = await supabase
+  const { data: savedReply, error } = await supabase
     .from('ap_objects')
     .update({
       content: updatedContent as unknown as Record<string, never>,
       updated_at: new Date().toISOString()
     })
-    .eq('id', commentId);
+    .eq('id', commentId).select('moderation_status').single();
 
   if (error) throw new Error('Failed to update comment');
+  notifyPublication(savedReply.moderation_status, 'Kommentaren uppdaterades');
 }
 
 // Delete a comment/reply
@@ -280,14 +282,16 @@ export async function createPostReply(
       return false;
     }
     await getOrCreateLocalActor(user.id);
-    const { error } = await supabase.rpc('create_post_reply', {
+    const { data: replyId, error } = await supabase.rpc('create_post_reply', {
       p_post_id: postId,
       p_content: content,
       p_parent_reply_id: parentReplyId,
       p_company_id: companyId,
     });
     if (error) throw error;
-    toast.success('Svar postat!');
+    const { data: savedReply, error: readError } = await supabase.from('ap_objects').select('moderation_status').eq('id', replyId).single();
+    if (readError) { toast.info('Svaret har sparats. Ladda om för att se dess status.'); return true; }
+    notifyPublication(savedReply.moderation_status, 'Svar postat!');
     return true;
   } catch {
     toast.error('Svaret kunde inte publiceras. Kontrollera att inlägget finns kvar och att du har behörighet.');

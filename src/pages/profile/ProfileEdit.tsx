@@ -1,3 +1,4 @@
+import BlueskySignIn from '@/components/auth/BlueskySignIn';
 import MastodonConnection from "@/components/settings/MastodonConnection";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -1173,6 +1174,7 @@ const ProfileEditPage = () => {
             <DataExportSection />
 
             <MastodonConnection />
+            <BlueskySignIn link />
             <AccountMigrationSection />
 
             <DeleteAccountSection />

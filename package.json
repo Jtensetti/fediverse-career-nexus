@@ -9,8 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "npm run check:types",
     "preview": "vite preview",
-    "test": "node --experimental-strip-types --test scripts/*.test.mjs && deno test --config deno.json --allow-env=FEDERATION_DOMAIN,SITE_URL supabase/tests",
-    "test:deno": "deno test --config deno.json --allow-env=FEDERATION_DOMAIN,SITE_URL supabase/tests",
+    "test": "node --experimental-strip-types --test scripts/*.test.mjs && deno test --config deno.json --allow-env=FEDERATION_DOMAIN,SITE_URL,TOKEN_ENCRYPTION_KEY,NODE_V8_COVERAGE,UNDICI_NO_FG,UNDICI_NO_WASM_SIMD,JEST_WORKER_ID supabase/tests",
+    "test:deno": "deno test --config deno.json --allow-env=FEDERATION_DOMAIN,SITE_URL,TOKEN_ENCRYPTION_KEY,NODE_V8_COVERAGE,UNDICI_NO_FG,UNDICI_NO_WASM_SIMD,JEST_WORKER_ID supabase/tests",
     "check:federation": "node scripts/check-federation.mjs",
     "check:edge": "node scripts/check-edge-functions.mjs",
     "check:types": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit",
@@ -73,6 +73,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@atproto/oauth-client-node": "0.5.7",
     "@tailwindcss/typography": "0.5.15",
     "@types/node": "22.7.9",
     "@types/papaparse": "5.5.2",

@@ -1,3 +1,4 @@
+import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Send, X, Building2, User } from "lucide-react";
@@ -41,6 +42,7 @@ export default function InlineReplyComposer({
 }: InlineReplyComposerProps) {
   const { t } = useTranslation();
   const [content, setContent] = useState("");
+  const contentCheck = useContentCheck();
   const [loading, setLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [replyAsCompany, setReplyAsCompany] = useState(false);
@@ -70,6 +72,7 @@ export default function InlineReplyComposer({
       return;
     }
 
+    if (!await contentCheck.check(content)) return;
     setLoading(true);
     try {
       const success = await createPostReply(
@@ -125,6 +128,7 @@ export default function InlineReplyComposer({
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
     >
+      {contentCheck.dialog}
       {/* Company toggle indicator */}
       {replyAsCompany && companyContext && (
         <div className="flex items-center gap-1.5 px-3 pt-2 text-xs text-primary font-medium">
@@ -148,7 +152,7 @@ export default function InlineReplyComposer({
           "min-h-[40px] border-0 focus-visible:ring-0 resize-none transition-all",
           showExpanded ? "min-h-[80px]" : ""
         )}
-        disabled={loading}
+        disabled={contentCheck.checking || loading}
         maxLength={MAX_REPLY_LENGTH + 50}
       />
 
@@ -160,7 +164,7 @@ export default function InlineReplyComposer({
                 variant="ghost"
                 size="sm"
                 onClick={handleCancel}
-                disabled={loading}
+                disabled={contentCheck.checking || loading}
                 className="h-7 px-2"
               >
                 <X className="h-4 w-4 mr-1" />
@@ -211,7 +215,7 @@ export default function InlineReplyComposer({
           <Button
             size="sm"
             onClick={handleSubmit}
-            disabled={loading || !content.trim() || isOverLimit}
+            disabled={contentCheck.checking || loading || !content.trim() || isOverLimit}
             className="h-7 px-3 gap-1"
           >
             {loading ? (

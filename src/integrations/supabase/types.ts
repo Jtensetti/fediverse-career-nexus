@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      atproto_identities: {
+        Row: { did: string; user_id: string; created_at: string }
+        Insert: { did: string; user_id: string; created_at?: string }
+        Update: { did?: string; user_id?: string }
+        Relationships: []
+      }
+      content_review_decisions: {
+        Row: { id: string; content_kind: string; content_id: string; revision: string; actor_id: string | null; action: string; explanation: string; created_at: string }
+        Insert: { id?: string; content_kind: string; content_id: string; revision: string; actor_id?: string | null; action: string; explanation: string; created_at?: string }
+        Update: { action?: string; explanation?: string }
+        Relationships: []
+      }
       activities: {
         Row: {
           actor_id: string | null
@@ -189,6 +201,9 @@ export type Database = {
       }
       ap_objects: {
         Row: {
+          moderation_status: string
+          moderation_revision: string
+          moderation_reason: string | null
           attributed_to: string | null
           company_id: string | null
           content: Json | null
@@ -202,6 +217,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          moderation_status?: string
+          moderation_revision?: string
+          moderation_reason?: string | null
           attributed_to?: string | null
           company_id?: string | null
           content?: Json | null
@@ -215,6 +233,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          moderation_status?: string
+          moderation_revision?: string
+          moderation_reason?: string | null
           attributed_to?: string | null
           company_id?: string | null
           content?: Json | null
@@ -327,6 +348,9 @@ export type Database = {
       }
       articles: {
         Row: {
+          moderation_status: string
+          moderation_revision: string
+          moderation_reason: string | null
           company_id: string | null
           content: string
           cover_image_url: string | null
@@ -344,6 +368,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          moderation_status?: string
+          moderation_revision?: string
+          moderation_reason?: string | null
           company_id?: string | null
           content: string
           cover_image_url?: string | null
@@ -361,6 +388,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          moderation_status?: string
+          moderation_revision?: string
+          moderation_reason?: string | null
           company_id?: string | null
           content?: string
           cover_image_url?: string | null
@@ -2386,6 +2416,9 @@ export type Database = {
       }
       post_replies: {
         Row: {
+          moderation_status: string
+          moderation_revision: string
+          moderation_reason: string | null
           content: string
           created_at: string
           deleted_at: string | null
@@ -2395,6 +2428,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          moderation_status?: string
+          moderation_revision?: string
+          moderation_reason?: string | null
           content: string
           created_at?: string
           deleted_at?: string | null
@@ -2404,6 +2440,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          moderation_status?: string
+          moderation_revision?: string
+          moderation_reason?: string | null
           content?: string
           created_at?: string
           deleted_at?: string | null
@@ -3825,6 +3864,15 @@ export type Database = {
       }
     }
     Functions: {
+      assess_public_text: { Args: { p_text: string }; Returns: Json }
+      get_content_review_queue: {
+        Args: { p_own?: boolean; p_offset?: number }
+        Returns: { content_kind: string; content_id: string; revision: string; status: string; reason: string | null; body: string; created_at: string; can_edit: boolean }[]
+      }
+      decide_content_review: {
+        Args: { p_kind: string; p_id: string; p_revision: string; p_action: string; p_explanation: string }
+        Returns: undefined
+      }
       create_post_reply: {
         Args: {
           p_post_id: string

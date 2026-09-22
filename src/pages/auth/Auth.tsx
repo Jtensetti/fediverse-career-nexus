@@ -1,3 +1,4 @@
+import BlueskySignIn from '@/components/auth/BlueskySignIn';
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -455,6 +456,7 @@ export default function AuthPage() {
               </div>
             </div>
 
+            <BlueskySignIn />
             <Tabs defaultValue={defaultTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mx-6 mt-4" style={{ width: "calc(100% - 48px)" }}>
                 <TabsTrigger value="signin">{t("auth.signIn", "Sign In")}</TabsTrigger>

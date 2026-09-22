@@ -46,9 +46,9 @@ Deno.serve(async (req) => {
               actor: buildActorUrl(actor.preferred_username), object: { id: buildActorUrl(actor.preferred_username), type: 'Tombstone' },
               to: [PUBLIC], cc: [buildFollowersUrl(actor.preferred_username)] };
           } else if (activity.needs_enrichment && ['Create', 'Update'].includes(activity.type)) {
-            const { data: current, error } = await db.from('ap_objects').select('id,deleted_at').eq('id', activity.object_id).maybeSingle();
+            const { data: current, error } = await db.from('ap_objects').select('id,deleted_at,moderation_status').eq('id', activity.object_id).maybeSingle();
             if (error) throw error;
-            if (!current || current.deleted_at) throw new Error('Content has been removed');
+            if (!current || current.deleted_at || current.moderation_status !== 'published') throw new Error('Content is not published');
           }
           if (activity.needs_enrichment) {
             if (!activity.snapshot) throw new Error("Legacy queue item has no snapshot; reconcile before retrying");

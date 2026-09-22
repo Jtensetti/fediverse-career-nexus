@@ -1,3 +1,4 @@
+import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +26,7 @@ interface CompanyPostComposerProps {
 
 export default function CompanyPostComposer({ company, className = "" }: CompanyPostComposerProps) {
   const { t } = useTranslation();
+  const contentCheck = useContentCheck();
   const [postContent, setPostContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -109,11 +111,12 @@ export default function CompanyPostComposer({ company, className = "" }: Company
     }
   };
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!postContent.trim()) {
       return;
     }
 
+    if (!await contentCheck.check([postContent, contentWarning, imageAltText].join('\n'))) return;
     createPostMutation.mutate({
       companyId: company.id,
       content: postContent.trim(),
@@ -123,7 +126,7 @@ export default function CompanyPostComposer({ company, className = "" }: Company
     });
   };
 
-  const isLoading = createPostMutation.isPending;
+  const isLoading = createPostMutation.isPending || contentCheck.checking;
   const characterCount = postContent.length;
   const isOverLimit = characterCount > MAX_CHARACTERS;
   const characterPercentage = Math.min((characterCount / MAX_CHARACTERS) * 100, 100);
@@ -131,6 +134,7 @@ export default function CompanyPostComposer({ company, className = "" }: Company
   return (
     <Card className={cn("", className)}>
       <CardContent className="pt-6">
+        {contentCheck.dialog}
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={company.logo_url || undefined} alt={company.name} />

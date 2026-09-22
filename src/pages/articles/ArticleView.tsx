@@ -27,7 +27,7 @@ const ArticleView = () => {
   const { t } = useTranslation();
   
   const { data: article, isLoading, isError } = useQuery({
-    queryKey: ['article', slug],
+    queryKey: ['article', slug, user?.id],
     queryFn: () => getArticleBySlug(slug || ''),
     enabled: !!slug,
   });
@@ -132,6 +132,10 @@ const ArticleView = () => {
             {t('articleView.backToArticles')}
           </Link>
           
+          {article.moderation_status !== 'published' && <div role="status" className="mb-4 rounded-lg border p-4">
+            <p>{t(article.moderation_status === 'pending' ? 'contentCare.pending' : 'contentCare.rejected')}</p>
+            <Link className="text-primary underline" to="/my-reviews">{t('contentCare.myReviews')}</Link>
+          </div>}
           <article className="prose prose-sm sm:prose max-w-none dark:prose-invert overflow-x-hidden">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 break-words">{article.title}</h1>
             
@@ -176,7 +180,7 @@ const ArticleView = () => {
             )}
           </article>
           
-          {showFullContent && (
+          {showFullContent && article.moderation_status === 'published' && (
             <div className="my-8 p-4 border rounded-md bg-background/50">
               <h3 className="text-lg font-medium mb-2">{t('articleView.reactions')}</h3>
               <ArticleReactions articleId={article.id} />
