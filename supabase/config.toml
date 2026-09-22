@@ -121,7 +121,6 @@ verify_jwt = false
 
 [functions.moderation]
 verify_jwt = false
-entrypoint = "./moderation/manage.ts"
 
 [functions.nodeinfo]
 verify_jwt = false
