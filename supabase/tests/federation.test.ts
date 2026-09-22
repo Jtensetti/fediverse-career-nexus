@@ -14,6 +14,21 @@ Deno.test("UI relocation does not change a published Nolto identity", () => {
   assert.equal(getFederationBaseUrl(), "https://nolto.social");
   assert.equal(buildActorUrl("alice"), "https://nolto.social/functions/v1/actor/alice");
 });
+Deno.test("site origins accept a hostname as HTTPS but reject credentials, paths, ports and cleartext", () => {
+  const previous = Deno.env.get('SITE_URL');
+  try {
+    for (const value of ['nolto.social', ' https://nolto.social/ ']) {
+      Deno.env.set('SITE_URL', value);
+      assert.equal(getSiteUrl(), 'https://nolto.social');
+    }
+    Deno.env.set('SITE_URL', 'www.nolto.social');
+    assert.equal(getSiteUrl(), 'https://www.nolto.social');
+    for (const value of ['http://nolto.social', 'https://name:password@nolto.social', 'nolto.social/path', 'nolto.social:8443', 'nolto.social?query=1', 'nolto.social#fragment']) {
+      Deno.env.set('SITE_URL', value);
+      assert.throws(() => getSiteUrl());
+    }
+  } finally { if (previous === undefined) Deno.env.delete('SITE_URL'); else Deno.env.set('SITE_URL', previous); }
+});
 Deno.test("WebFinger resolves local handles, actor IDs and profile aliases", () => {
   for (const resource of ["acct:Alice@NOLTO.SOCIAL", "acct:alice@www.nolto.social", "https://nolto.social/@alice", "https://nolto.social/profile/alice", buildActorUrl("alice")]) assert.equal(parseLocalResource(resource), "alice");
 });

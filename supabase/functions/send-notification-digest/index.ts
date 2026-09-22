@@ -1,4 +1,5 @@
 import { workerHandler } from "../_shared/user-auth.ts";
+import { getSiteUrl } from "../_shared/federation-urls.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { sendEmail } from "../_shared/email.ts";
 import { createLogger } from "../_shared/logger.ts";
@@ -101,7 +102,7 @@ Deno.serve(workerHandler(async (req) => {
   try {
     logger.info({ traceId }, "Starting notification digest job");
 
-    const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
+    const siteUrl = getSiteUrl();
     const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Nolto <noreply@nolto.social>";
 
     // Find users with unread notifications older than 36 hours
