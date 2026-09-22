@@ -1,7 +1,5 @@
 import { strict as assert } from 'node:assert';
-import https from 'node:https';
-import { PassThrough } from 'node:stream';
-import type { IncomingMessage, ClientRequest } from 'node:http';
+import { pinnedHttpResponse } from '../functions/_shared/pinned-http-response.ts';
 import publishedMetadata from '../../public/oauth-client-metadata.json' with { type: 'json' };
 import { atprotoHandle, atprotoMetadata, atprotoCallbackParams, browserProof } from '../functions/_shared/atproto-policy.ts';
 import { atprotoFetch } from '../functions/_shared/atproto-fetch.ts';
@@ -23,35 +21,36 @@ Deno.test('AT Protocol login requests identity only and rejects unsafe discovery
   for (const iss of ['http://example.com', 'https://localhost', 'https://example.com/path']) assert.throws(() => atprotoCallbackParams({ state: 'state', code: 'code', iss }));
 });
 
-Deno.test('OAuth transport pins the checked IP, authenticates the hostname and bounds responses', async () => {
-  const originals = { dns: Deno.resolveDns, request: https.request };
-  let addresses = ['8.8.8.8'], connections = 0, body = '{}', status = 200;
+Deno.test('OAuth transport pins TCP to a checked IP and TLS to the original hostname', async () => {
+  const originals = { dns: Deno.resolveDns, connect: Deno.connect, tls: Deno.startTls };
+  let addresses = ['8.8.8.8'], connections = 0, offset = 0, written = '';
+  const response = new TextEncoder().encode('HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}');
+  const socket = { close() {}, write: (bytes: Uint8Array) => { written += new TextDecoder().decode(bytes); return Promise.resolve(bytes.length); },
+    read: (bytes: Uint8Array) => { const chunk = response.subarray(offset, offset + bytes.length); offset += chunk.length; bytes.set(chunk); return Promise.resolve(chunk.length || null); } };
   try {
     Deno.resolveDns = (() => Promise.resolve(addresses)) as unknown as typeof Deno.resolveDns;
-    https.request = ((options: https.RequestOptions, callback: (response: IncomingMessage) => void) => {
-      connections++;
-      assert.equal(options.hostname, '8.8.8.8'); assert.equal(options.servername, 'oauth.example.com');
-      assert.equal(options.rejectUnauthorized, true); assert.equal(options.agent, false);
-      assert.equal(options.path, '/token'); assert.equal((options.headers as Record<string, string>).host, 'oauth.example.com');
-      assert.ok(options.signal); assert.ok(options.checkServerIdentity);
-      const outgoing = new PassThrough();
-      outgoing.on('finish', () => {
-        const incoming = Object.assign(new PassThrough(), { statusCode: status, rawHeaders: ['content-type', 'application/json'] });
-        callback(incoming as unknown as IncomingMessage);
-        incoming.end(body);
-      });
-      return outgoing as unknown as ClientRequest;
-    }) as typeof https.request;
+    Deno.connect = ((options: Deno.ConnectOptions) => { connections++; assert.equal(options.hostname, '8.8.8.8'); assert.equal(options.port, 443); return Promise.resolve(socket); }) as unknown as typeof Deno.connect;
+    Deno.startTls = ((tcp: Deno.Conn, options: Deno.StartTlsOptions) => { assert.equal(tcp, socket); assert.deepEqual(options, { hostname: 'oauth.example.com', alpnProtocols: ['http/1.1'] }); return Promise.resolve(socket); }) as unknown as typeof Deno.startTls;
     assert.equal(await (await atprotoFetch('https://oauth.example.com/token')).text(), '{}');
+    assert.match(written, /host: oauth.example.com/); assert.match(written, /connection: close/);
     addresses = ['8.8.8.8', '127.0.0.1'];
     await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), (error: unknown) => error instanceof AtprotoTransportError && error.stage === 'public-address');
     assert.equal(connections, 1);
-    addresses = ['8.8.8.8']; body = 'x'.repeat(2 * 1024 * 1024 + 1);
-    await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), (error: unknown) => error instanceof AtprotoTransportError && error.stage === 'response-body');
-    body = ''; status = 302;
-    await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), (error: unknown) => error instanceof AtprotoTransportError && error.stage === 'https');
-    assert.equal(connections, 3);
-  } finally { Deno.resolveDns = originals.dns; https.request = originals.request; }
+  } finally { Deno.resolveDns = originals.dns; Deno.connect = originals.connect; Deno.startTls = originals.tls; }
+});
+
+Deno.test('pinned response decoder handles chunks and rejects truncation, redirects and ambiguous framing', async () => {
+  const parse = (raw: string) => pinnedHttpResponse(new TextEncoder().encode(raw), 'GET');
+  assert.equal(await parse('HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n1\r\n{\r\n1\r\n}\r\n0\r\n\r\n').text(), '{}');
+  assert.equal(await parse('HTTP/1.1 200 OK\r\n\r\n{}').text(), '{}');
+  for (const raw of [
+    'HTTP/1.1 302 Found\r\nLocation: https://other.example.com/\r\n\r\n',
+    'HTTP/1.1 200 OK\r\nContent-Length: 3\r\n\r\n{}',
+    'HTTP/1.1 200 OK\r\nContent-Length: 2\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n',
+    'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n4\r\n{}\r\n0\r\n\r\n',
+    'HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\n\r\n{}',
+    'HTTP/1.1 200 OK\r\n\r\n' + 'x'.repeat(2 * 1024 * 1024 + 1),
+  ]) assert.throws(() => parse(raw));
 });
 
 Deno.test('OAuth diagnostics retain the failing stage without exposing wrapped request secrets', () => {
