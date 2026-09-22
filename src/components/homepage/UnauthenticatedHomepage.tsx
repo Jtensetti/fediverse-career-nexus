@@ -10,6 +10,9 @@ export default function UnauthenticatedHomepage() {
   const sv = i18n.language.startsWith("sv");
   return <div className="nolto-home">
     <section className="home-hero">
+      <div className="home-hero-landscape" aria-hidden="true">
+        <PublicArtwork placement="header" />
+      </div>
       <div className="home-container home-hero-copy">
         <div className="home-intro">
           <p className="home-eyebrow">{sv ? "DITT PROFESSIONELLA NÄTVERK" : "YOUR PROFESSIONAL NETWORK"}</p>
@@ -22,7 +25,6 @@ export default function UnauthenticatedHomepage() {
           <p className="home-footnote">{sv ? "Titta in. Du behöver inget konto för att läsa." : "Take a look. You don’t need an account to read."}</p>
         </div>
       </div>
-      <PublicArtwork placement="header" />
     </section>
 
     <div className="home-values home-container" aria-label={sv ? "Det Nolto står för" : "What Nolto stands for"}>

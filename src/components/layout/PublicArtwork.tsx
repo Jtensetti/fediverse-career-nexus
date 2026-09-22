@@ -9,7 +9,7 @@ export default function PublicArtwork({ placement }: PublicArtworkProps) {
     <img
       src={`/brand/${placement}.svg`}
       width="2048"
-      height={placement === "header" ? 516 : 512}
+      height={placement === "header" ? 516 : 508}
       alt=""
       aria-hidden="true"
       draggable={false}

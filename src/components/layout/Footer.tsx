@@ -11,22 +11,30 @@ const Footer = () => {
   const sv = i18n.language.startsWith("sv");
   const { user, loading } = useAuth();
   const isPublic = !loading && !user;
+  const brand = (
+    <>
+      <div className="site-footer-wordmark flex items-center gap-2 mb-4">
+        {!isPublic && <img src="/brand/mascot.webp" alt="" width="40" height="40" className="h-10 w-10 object-contain" />}
+        <h3 className="text-lg font-bold text-primary">Nolto</h3>
+      </div>
+      <p className="text-muted-foreground mb-4">
+        {t("footer.tagline", "A professional social network built on the ActivityPub federation protocol.")}
+      </p>
+    </>
+  );
 
   return (
     <footer className={`site-footer${isPublic ? " site-footer-public" : ""}`}>
-      {isPublic && <PublicArtwork placement="footer" />}
+      {isPublic && <>
+        <div className="site-footer-landscape" aria-hidden="true">
+          <div className="site-footer-artwork"><PublicArtwork placement="footer" /></div>
+        </div>
+        <div className="site-footer-intro">{brand}</div>
+      </>}
       <div className="site-footer-links">
         <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <img src="/brand/mascot.webp" alt="" width="40" height="40" className="h-10 w-10 object-contain" />
-                <h3 className="text-lg font-bold text-primary">Nolto</h3>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                {t("footer.tagline", "A professional social network built on the ActivityPub federation protocol.")}
-              </p>
-            </div>
+          <div className={isPublic ? "site-footer-public-nav" : "grid md:grid-cols-4 gap-8"}>
+            {!isPublic && <div className="col-span-1">{brand}</div>}
 
             <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-8">
               <div>
