@@ -29,7 +29,7 @@ export function brokeredPreviewStorage() {
     : (dev ? ['https://lovable.dev', 'http://localhost:3000'] : ['https://lovable.dev']);
   const RESULT = 'lovable-preview-auth:result';
   const TIMEOUT = 2000;
-  const newId = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const newId = () => crypto.randomUUID();
 
   const request = (type: string, key: string, value?: string): Promise<{ ok: boolean; value?: string | null } | null> =>
     new Promise((resolve) => {
@@ -44,7 +44,7 @@ export function brokeredPreviewStorage() {
         resolve(r);
       };
       const onMessage = (e: MessageEvent) => {
-        if (editorOrigins.indexOf(e.origin) < 0) return;
+        if (e.source !== window.parent || editorOrigins.indexOf(e.origin) < 0) return;
         const d = e.data;
         if (d && d.type === RESULT && d.requestId === requestId) finish(d);
       };

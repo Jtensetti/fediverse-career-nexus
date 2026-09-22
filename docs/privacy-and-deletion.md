@@ -1,6 +1,6 @@
 # Privacy, encrypted messages and deletion
 
-Updated 22 September 2026. The privacy migrations, existing backend functions, private Storage policies and authenticated minute scheduler are deployed in the existing Lovable Cloud project. The scoped moderator endpoint and matching frontend are the final publication step. See the production-readiness runbook for completed operations and outstanding acceptance checks.
+Updated 22 September 2026. The privacy migrations, existing backend functions, private Storage policies and authenticated minute scheduler are deployed in the existing Lovable Cloud project. The scoped moderator endpoint is deployed and rejects unauthenticated requests with HTTP 401. The matching frontend is published after the final CI checks. See the production-readiness runbook for completed operations and outstanding acceptance checks.
 
 ## What is protected
 
@@ -52,7 +52,7 @@ The shared logger records an allowlist of numeric/boolean operational metrics, n
 
 ## Coordinated rollout
 
-1. Verify a restorable backup and a staging Cloud environment with actual Auth, Storage and PostgREST. Rehearse the two 21 September security migrations first, then `20260922041529_nolto_private_messages_and_minimisation.sql` , `20260922041921_nolto_deletion_retention.sql` and `20260922065026_nolto_reported_deletion_review.sql`. The local PostgreSQL fixtures contain schema and synthetic test records only. Do not apply them to Cloud.
+1. Verify a restorable backup and a staging Cloud environment with actual Auth, Storage and PostgREST. Rehearse the two 21 September security migrations first, then `20260922041529_nolto_private_messages_and_minimisation.sql`, `20260922041921_nolto_deletion_retention.sql` and `20260922065026_nolto_reported_deletion_review.sql`. The local PostgreSQL fixtures contain schema and synthetic test records only. Do not apply them to Cloud.
 2. Provision a **new independent random** `RETENTION_ENCRYPTION_KEY` of at least 32 characters through server secret storage. Preserve the existing token/message encryption secret. Back up secrets separately from database/files with restricted access. The owner installed this independent secret during the 22 September rollout; the backend validated its presence and minimum length without returning the value.
 3. Use a maintenance window. Apply the migrations, deploy all matching functions and frontend together. The new functions are `message-keys`, `request-deletion`, `public-media`, `privacy-maintenance` and `review-deleted-content`; existing messaging, deletion, federation, digest, export and logging handlers change too. Confirm function gateway settings and that obsolete deployed handlers remain retired. Old clients cannot send plaintext or hard-delete retained content after cutover.
 4. The media migration rewrites known Cloud Storage URLs in profiles, companies, posts, articles, events and starter packs. Audit any historical URLs on other origins or unusual encodings and old signed/CDN URLs before publication. Test owner draft covers, inline editor images, recropping, avatars and company images. The gateway adds database/Storage work per image; measure latency, throughput and provider costs. Do not add a shared cache that bypasses deletion checks.
