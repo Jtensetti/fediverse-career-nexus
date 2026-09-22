@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -8,8 +9,9 @@ import { mastodonRequest, scopeDescription, type AppRequest } from '@/services/a
 
 export default function AuthorizeApp() {
   const { user, loading, mfaPending } = useAuth();
-  const input = useMemo(() => Object.fromEntries(new URLSearchParams(window.location.search)),[]);
-  const request = useQuery({ queryKey:['mastodon-consent',window.location.search],queryFn:()=>mastodonRequest<AppRequest>('request'+window.location.search),retry:false });
+  const { search } = useLocation();
+  const input = useMemo(() => Object.fromEntries(new URLSearchParams(search)),[search]);
+  const request = useQuery({ queryKey:['mastodon-consent',search],queryFn:()=>mastodonRequest<AppRequest>('request'+search),retry:false });
   const profile = useQuery({ queryKey:['app-consent-profile',user?.id], enabled:!!user, queryFn:async()=> {
     const { data,error } = await supabase.from('public_profiles').select('username,fullname').eq('id',user!.id).single();
     if (error) throw error; return data;
@@ -24,6 +26,7 @@ export default function AuthorizeApp() {
       window.location.assign(result.redirect);
     } catch(error) { setError(error instanceof Error ? error.message : 'Anslutningen misslyckades.'); setBusy(false); }
   };
+  if (window.top !== window.self) return <p role="alert">Öppna appanslutningen i ett eget fönster på Nolto.</p>;
   return <div className="mx-auto max-w-lg space-y-6 px-5 py-12">
     <Helmet><title>Anslut en app · Nolto</title><meta name="referrer" content="no-referrer" /></Helmet>
     <a href="/" className="font-display text-2xl text-primary">Nolto</a>

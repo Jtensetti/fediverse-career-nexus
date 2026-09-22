@@ -34,6 +34,8 @@ Deno.test('consent is origin-bound and remote HTML cannot become active markup i
   for (const origin of ['https://evil.example','null','https://nolto.social.evil.example']) assert.throws(()=>browserOrigin(new Request('https://backend.example/consent',{headers:{origin}})));
   assert.throws(()=>browserOrigin(new Request('https://backend.example/consent')));
   assert.equal(safeUrl('javascript:alert(1)'),null);
+  assert.equal(safeUrl('https://127.0.0.1/private'),null);
+  assert.equal(safeUrl('https://intranet.local/private'),null);
   assert.equal(safeUrl('https://user:pass@app.example'),null);
   assert.equal(safeHtml('<img src=x onerror=alert(1)>hello<script>alert(1)</script>',true),'helloalert(1)');
   assert.equal(safeHtml('<hello>\n&'), '&lt;hello&gt;<br>&amp;');

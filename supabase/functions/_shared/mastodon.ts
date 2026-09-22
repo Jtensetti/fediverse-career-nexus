@@ -3,7 +3,7 @@ import { serviceClient } from './local-actor.ts';
 import { getFederationBaseUrl, getSiteUrl } from './federation-urls.ts';
 import { tokenHash } from './oauth.ts';
 import { HttpError } from './user-auth.ts';
-import { readBody } from './remote-fetch.ts';
+import { readBody, remoteUrl } from './remote-fetch.ts';
 
 export const MASTODON_SCOPES = ['read', 'write', 'follow', 'push', 'read:accounts', 'read:statuses', 'read:favourites', 'read:follows', 'write:statuses', 'write:favourites', 'write:follows'];
 export type Db = ReturnType<typeof serviceClient>;
@@ -35,7 +35,7 @@ export function redirectUri(value: unknown): string {
 }
 export function safeUrl(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : null; } catch { return null; }
+  try { return remoteUrl(value).href; } catch { return null; }
 }
 export function safeHtml(value: unknown, remote = false): string {
   let text = typeof value === 'string' ? value.slice(0,50000) : '';
