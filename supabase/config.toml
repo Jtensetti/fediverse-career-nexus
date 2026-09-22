@@ -2,6 +2,9 @@
 # Gateway legacy JWT verification would reject modern Auth JWTs before those checks.
 project_id = "anknmcmqljejabxbeohv"
 
+[functions.review-deleted-content]
+verify_jwt = false
+
 [functions.activities]
 verify_jwt = false
 

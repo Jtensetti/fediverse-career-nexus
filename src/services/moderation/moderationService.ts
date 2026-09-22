@@ -20,6 +20,7 @@ export interface FlaggedContent {
     avatar_url: string | null;
   };
   content_preview?: string;
+  content_unavailable?: boolean;
 }
 
 export interface UserBan {
@@ -84,6 +85,7 @@ export async function getFlaggedContent(
     const reportsWithDetails = await Promise.all(
       (data || []).map(async (report) => {
         let content_preview = "";
+        let content_unavailable = false;
         let reporter = null;
         
         // Get reporter info
@@ -106,7 +108,9 @@ export async function getFlaggedContent(
               .eq("id", report.content_id)
               .single();
             const postContent = post?.content as Record<string, any> | null;
-            content_preview = postContent?.content?.slice(0, 200) || "Post not found";
+            const object = postContent?.type === 'Create' ? postContent.object : postContent;
+            content_unavailable = !post || object?.type === 'Tombstone';
+            content_preview = typeof object?.content === 'string' ? object.content.slice(0, 200) : "Inlägget är inte tillgängligt";
           } else if (report.content_type === "article") {
             const { data: article } = await supabase
               .from("articles")
@@ -114,6 +118,7 @@ export async function getFlaggedContent(
               .eq("id", report.content_id)
               .single();
             content_preview = article?.title || "Article not found";
+            content_unavailable = !article;
           } else if (report.content_type === "user") {
             const { data: profile } = await supabase
               .from("public_profiles")
@@ -144,6 +149,7 @@ export async function getFlaggedContent(
           ...report,
           reporter,
           content_preview,
+          content_unavailable,
         } as FlaggedContent;
       })
     );
@@ -422,6 +428,8 @@ export async function deleteFlaggedContent(
       ({ error } = await supabase.from("job_posts").delete().eq("id", contentId));
     } else if (contentType === "event") {
       ({ error } = await supabase.from("events").delete().eq("id", contentId));
+    } else {
+      throw new Error('Den här typen av innehåll kan inte raderas här');
     }
 
     if (error) throw error;

@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      message_public_keys: {
+        Row: { user_id: string; public_key: string; fingerprint: string; created_at: string }
+        Insert: { user_id: string; public_key: string; fingerprint: string; created_at?: string }
+        Update: { public_key?: string; fingerprint?: string }
+        Relationships: []
+      }
+      message_key_backups: {
+        Row: { user_id: string; encrypted_private_key: string; created_at: string }
+        Insert: { user_id: string; encrypted_private_key: string; created_at?: string }
+        Update: { encrypted_private_key?: string }
+        Relationships: []
+      }
       activities: {
         Row: {
           actor_id: string | null
@@ -1623,6 +1635,9 @@ export type Database = {
           content: string
           created_at: string
           delivery_status: string | null
+          encryption_version: string
+          sender_key_fingerprint: string | null
+          recipient_key_fingerprint: string | null
           encrypted_content: string | null
           federated_activity_id: string | null
           id: string
@@ -1639,6 +1654,9 @@ export type Database = {
           content: string
           created_at?: string
           delivery_status?: string | null
+          encryption_version?: string
+          sender_key_fingerprint?: string | null
+          recipient_key_fingerprint?: string | null
           encrypted_content?: string | null
           federated_activity_id?: string | null
           id?: string
@@ -1655,6 +1673,9 @@ export type Database = {
           content?: string
           created_at?: string
           delivery_status?: string | null
+          encryption_version?: string
+          sender_key_fingerprint?: string | null
+          recipient_key_fingerprint?: string | null
           encrypted_content?: string | null
           federated_activity_id?: string | null
           id?: string
@@ -3424,6 +3445,9 @@ export type Database = {
       }
     }
     Functions: {
+      get_following_feed: { Args: { p_limit?: number; p_offset?: number }; Returns: { id: string; content: Json; published_at: string; source: string; type: string; attributed_to: string; company_id: string | null }[] }
+      is_username_available: { Args: { candidate: string }; Returns: boolean }
+      request_recommendation: { Args: { recipient: string }; Returns: boolean }
       actor_id_to_partition_key: {
         Args: { actor_uuid: string }
         Returns: number
