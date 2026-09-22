@@ -21,7 +21,7 @@ export function atprotoMetadata(site: string) {
   const origin = remoteUrl(site).origin;
   if (site !== origin) throw new Error('SITE_URL must be a canonical HTTPS origin');
   return {
-    client_id: `${origin}/functions/v1/atproto-auth/client-metadata.json` as `https://${string}`,
+    client_id: `${origin}/oauth-client-metadata.json` as `https://${string}`,
     client_name: 'Nolto', client_uri: origin as `https://${string}`,
     tos_uri: `${origin}/terms` as `https://${string}`, policy_uri: `${origin}/privacy` as `https://${string}`,
     redirect_uris: [`${origin}/auth/atproto/callback`] as [`https://${string}`],

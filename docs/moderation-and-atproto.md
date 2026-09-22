@@ -16,7 +16,7 @@ Guiden på `/conversation-guide` är inspirerad av [CNVC](https://www.cnvc.org/l
 
 ## AT Protocol
 
-Inloggningen använder [det officiella OAuth-klientbiblioteket](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-node) och [AT Protocols OAuth-specifikation](https://atproto.com/specs/oauth). Behörigheten är enbart `atproto`; ingen läsning av följlistor eller publicering i Bluesky begärs. Det är inte en AT Protocol-server eller en brygga för inlägg.
+Inloggningen använder [det officiella OAuth-klientbiblioteket](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client) och [AT Protocols OAuth-specifikation](https://atproto.com/specs/oauth). Behörigheten är enbart `atproto`; ingen läsning av följlistor eller publicering i Bluesky begärs. Det är inte en AT Protocol-server eller en brygga för inlägg.
 
 - PAR, PKCE S256, DPoP och kontroll av DID/PDS/utfärdare sköts av biblioteket.
 - En egen transport stoppar omdirigeringar och privata nätadresser och låser anslutningen till den kontrollerade DNS-adressen med bibehållen TLS-värd.
@@ -31,7 +31,7 @@ Inloggningen använder [det officiella OAuth-klientbiblioteket](https://github.c
 1. Prova och applicera migreringarna `20260922141011`, `20260922142915` och `20260922150131` på rätt backend. Registrera dem i migreringshistoriken.
 2. Driftsätt `atproto-auth`, `federation` och `export-user-data` från samma granskade revision, med deras delade moduler. Funktionen `atproto-auth` måste ha `verify_jwt=false`; den validerar OAuth och kräver själv session vid kontokoppling.
 3. Behåll den befintliga `TOKEN_ENCRYPTION_KEY`. `SITE_URL` måste vara webbappens verkliga HTTPS-origin utan avslutande snedstreck. Byt inte nyckeln för att aktivera Bluesky.
-4. Kontrollera att `${SITE_URL}/functions/v1/atproto-auth/client-metadata.json` ger HTTP 200 och rätt JSON utan omdirigering. `client_id` ska vara just den URL:en. Återkomsten `/auth/atproto/callback` måste laddas på samma origin där inloggningen startade.
+4. Kontrollera att `${SITE_URL}/oauth-client-metadata.json` ger HTTP 200 och rätt JSON utan omdirigering. `client_id` ska vara just den URL:en. Metadatafilen ligger bland webbappens statiska filer och behöver ingen proxy till backend. Vid egen drift måste `public/oauth-client-metadata.json` använda installationens `SITE_URL` i stället för Noltos domän. Återkomsten `/auth/atproto/callback` måste laddas på samma origin där inloggningen startade.
 5. Kontrollera stödet för `Deno.createHttpClient` med TCP-transport i den driftsatta miljön och att DNS/HTTPS-anrop fungerar mot en riktig AT Protocol-leverantör. Kontrollerna får inte kringgås för att få en lyckad inloggning.
 6. Sätt `ATPROTO_AUTH_ENABLED=true` först när backend och domänrutterna är verifierade. Före detta visas ingen Bluesky-knapp på inloggningssidan. GET på funktionen visar endast beredskap och webbplatsens origin, inga hemligheter.
 7. Prova avbruten inloggning, nytt konto, återkommande konto, befintlig kontokoppling, handle-byte, MFA och spärrat/raderat konto med samtyckande testkonton. Kontrollera att tillfälliga tillstånd gallras. Stäng funktionen med samma flagga om leverantörstesterna misslyckas.

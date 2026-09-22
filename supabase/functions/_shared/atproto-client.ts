@@ -1,4 +1,5 @@
-import { NodeOAuthClient, type NodeSavedSession, type NodeSavedState, type RuntimeLock } from 'npm:@atproto/oauth-client-node@0.5.7';
+import { OAuthClient, type InternalStateData, type Session, type RuntimeLock } from 'npm:@atproto/oauth-client@0.8.7';
+import { JoseKey, type Jwk } from 'npm:@atproto/jwk-jose@0.2.4';
 import { serviceClient } from './local-actor.ts';
 import { tokenHash } from './oauth.ts';
 import { encryptToken, decryptToken } from './token-encryption.ts';
@@ -26,20 +27,28 @@ export async function createAtprotoClient(db: Backend, proof: string, requestFet
   const proofHash = await tokenHash(proof);
   let authorizationState: string | undefined;
   // Sign-in needs no ongoing access to Bluesky. Tokens live for this request only.
-  const sessions = new Map<string, NodeSavedSession>();
-  const client = new NodeOAuthClient({
+  const sessions = new Map<string, Session>();
+  const client = new OAuthClient({
     clientMetadata: atprotoMetadata(getSiteUrl()),
-    requestLock: atprotoLock(db),
-    // The SDK's default Node resolver relies on an undici dispatcher, which
-    // Deno's fetch does not implement. Its XRPC resolver uses our pinned fetch.
+    responseMode: 'query',
+    runtimeImplementation: {
+      requestLock: atprotoLock(db),
+      createKey: algorithms => JoseKey.generate(algorithms),
+      getRandomValues: length => crypto.getRandomValues(new Uint8Array(length)),
+      digest: async (data, algorithm) => new Uint8Array(await crypto.subtle.digest(algorithm.name.replace('sha', 'SHA-'), data)),
+    },
+    // Use the SDK's portable resolver and our DNS-pinned transport. Importing
+    // its Node wrapper loads undici at boot, which the hosted runtime cannot run.
     handleResolver: 'https://bsky.social',
     fetch: requestFetch,
     stateStore: {
-      async set(key, state) {
+      async set(key, { dpopKey, ...state }) {
         authorizationState = key;
+        const dpopJwk = dpopKey.privateJwk;
+        if (!dpopJwk) throw new Error('Private DPoP key is required');
         const { error } = await db.from('atproto_oauth_states').insert({
           state_hash: await tokenHash(key), browser_proof_hash: proofHash,
-          encrypted_state: await encryptToken(JSON.stringify(state)),
+          encrypted_state: await encryptToken(JSON.stringify({ ...state, dpopJwk })),
         });
         if (error) throw error;
       },
@@ -51,7 +60,8 @@ export async function createAtprotoClient(db: Backend, proof: string, requestFet
           .gt('expires_at', new Date().toISOString()).select('encrypted_state').maybeSingle();
         if (error) throw error;
         if (!data) return undefined;
-        return JSON.parse(await decryptToken(data.encrypted_state)) as NodeSavedState;
+        const { dpopJwk, ...state } = JSON.parse(await decryptToken(data.encrypted_state)) as Omit<InternalStateData, 'dpopKey'> & { dpopJwk: Jwk };
+        return { ...state, dpopKey: await JoseKey.fromJWK(dpopJwk) };
       },
       async del(key) {
         const { error } = await db.from('atproto_oauth_states').delete()
