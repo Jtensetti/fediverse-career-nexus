@@ -1,3 +1,4 @@
+import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import i18n from "@/i18n";
@@ -414,9 +415,9 @@ export async function deleteFlaggedContent(
     let error;
 
     if (contentType === "post") {
-      ({ error } = await supabase.from("ap_objects").delete().eq("id", contentId));
+      await requestContentDeletion('post', contentId);
     } else if (contentType === "article") {
-      ({ error } = await supabase.from("articles").delete().eq("id", contentId));
+      await requestContentDeletion('article', contentId);
     } else if (contentType === "job") {
       ({ error } = await supabase.from("job_posts").delete().eq("id", contentId));
     } else if (contentType === "event") {
@@ -425,7 +426,7 @@ export async function deleteFlaggedContent(
 
     if (error) throw error;
 
-    toast.success("Innehåll raderat");
+    toast.success(["post", "article"].includes(contentType) ? "Innehållet är dolt och raderas permanent efter 30 dagar." : "Innehåll raderat");
     return true;
   } catch (error) {
     console.error("Error deleting content:", error);

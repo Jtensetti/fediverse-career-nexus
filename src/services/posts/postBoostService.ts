@@ -1,3 +1,4 @@
+import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { getOrCreateLocalActor } from "@/services/federation/actorService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -101,16 +102,7 @@ export const togglePostBoost = async (postId: string): Promise<boolean> => {
     });
 
     if (existingBoost) {
-      // Remove boost
-      const { error } = await supabase
-        .from('ap_objects')
-        .delete()
-        .eq('id', existingBoost.id);
-
-      if (error) {
-        toast.error(`Error removing boost: ${error.message}`);
-        return false;
-      }
+      await requestContentDeletion('post', existingBoost.id);
 
       toast.success('Boost borttagen');
       return true;

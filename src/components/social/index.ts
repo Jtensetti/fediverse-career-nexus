@@ -7,7 +7,6 @@ export { default as TransparencyScore } from "./TransparencyScore";
 export { default as VerificationBadge } from "./VerificationBadge";
 export { default as FreelancerBadge } from "./FreelancerBadge";
 export { default as ReferralWidget } from "./ReferralWidget";
-export { default as ProfileViewsWidget } from "./ProfileViewsWidget";
 export { default as FeedSelector } from "./FeedSelector";
 export { default as SavedItemsList } from "./SavedItemsList";
 export { default as NewsletterSubscribe } from "./NewsletterSubscribe";

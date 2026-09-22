@@ -21,6 +21,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Users, MessageSquare, Inbox } from 'lucide-react';
 import { SEOHead } from '@/components/common/SEOHead';
+import EncryptedInbox from '@/components/messaging/EncryptedInbox';
 
 export default function Messages() {
   const { t } = useTranslation();
@@ -78,6 +79,7 @@ export default function Messages() {
           </Button>
         </div>
 
+        <EncryptedInbox />
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="messages" className="flex items-center gap-2">

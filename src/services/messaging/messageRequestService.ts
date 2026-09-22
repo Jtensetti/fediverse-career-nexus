@@ -27,19 +27,9 @@ export interface MessageRequest {
 
 export type DmPrivacy = 'everyone' | 'connections' | 'connections_plus' | 'nobody';
 
-export const INTRO_TEMPLATES = [
-  { id: 'mutual_connection', label: 'Mutual connection', template: "Hi! I noticed we're both connected to..." },
-  { id: 'saw_post', label: 'Saw your post', template: "I saw your post about... and wanted to reach out." },
-  { id: 'event', label: 'Event', template: "We both attended... and I'd love to connect!" },
-  { id: 'opportunity', label: 'Opportunity', template: "I have an opportunity that might interest you..." },
-  { id: 'custom', label: 'Custom message', template: "" }
-];
-
 // Send a message request
 export async function sendMessageRequest(
-  recipientId: string,
-  message: string,
-  introTemplate?: string
+  recipientId: string
 ): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
@@ -53,32 +43,6 @@ export async function sendMessageRequest(
     if (senderId === recipientId) {
       toast.error('Du kan inte skicka en förfrågan till dig själv');
       return false;
-    }
-
-    // Check recipient's DM privacy settings
-    const { data: recipient } = await supabase
-      .from('profiles')
-      .select('dm_privacy')
-      .eq('id', recipientId)
-      .single();
-
-    const dmPrivacy = ((recipient as any)?.dm_privacy as DmPrivacy) || 'connections';
-
-    if (dmPrivacy === 'nobody') {
-      toast.error('Denna användare tar inte emot meddelanden');
-      return false;
-    }
-
-    // Check if already connected (if privacy is 'connections')
-    if (dmPrivacy === 'connections') {
-      const { data: connected } = await supabase
-        .rpc('are_users_connected', { user1: senderId, user2: recipientId });
-      
-      if (connected) {
-        // They're connected, they can message directly
-        toast.info('Du kan skicka meddelanden direkt till denna person');
-        return false;
-      }
     }
 
     // Check for existing pending request
@@ -101,14 +65,10 @@ export async function sendMessageRequest(
 
     const { error } = await supabase
       .from('message_requests')
-      .upsert({
+      .insert({
         sender_id: senderId,
         recipient_id: recipientId,
-        preview_text: message.substring(0, 200),
-        intro_template: introTemplate,
         status: 'pending'
-      }, {
-        onConflict: 'sender_id,recipient_id'
       });
 
     if (error) throw error;

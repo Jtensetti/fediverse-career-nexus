@@ -335,8 +335,6 @@
     "connectFirst": "Connect with this person first to send messages",
     "mustBeLoggedIn": "You must be logged in to connect with others",
     "showWhoViewed": "Show who viewed my profile",
-    "profileViewsAnonymous": "Profile views will be anonymous, and you won't see who viewed your profile.",
-    "profileViewsVisible": "You'll see who viewed your profile, and others will know when you view theirs.",
     "viewsThisWeek": "views this week",
     "verified": "Verified",
     "connected": "Connected",
@@ -352,9 +350,7 @@
       "followers": "followers"
     },
     "signUpToConnect": "Sign up to connect",
-    "connectFirstToMessage": "Connect first to send messages",
-    "profileViews": "Profile views",
-    "profileViewsAlwaysOn": "Profile views are always tracked"
+    "connectFirstToMessage": "Connect first to send messages"
   },
   "followers": {
     "yourFollowers": "People who follow you",
@@ -466,12 +462,6 @@
     "createEvent": "Create an event",
     "hostMeetups": "Host meetings and networking events",
     "doIt": "Do it"
-  },
-  "profileViews": {
-    "title": "Profile Views",
-    "description": "Track who's viewing your profile",
-    "totalViews": "Total Views",
-    "viewsThisWeek": "Views This Week"
   },
   "openSource": {
     "badge": "Open Source",
@@ -1779,7 +1769,7 @@
     "loginRequiredEvent": "You must be logged in to create an event",
     "articleCreated": "Article created successfully!",
     "articleUpdated": "Article updated successfully!",
-    "articleDeleted": "Article deleted successfully!",
+    "articleDeleted": "The article is hidden and will be permanently deleted after 30 days.",
     "articleCreateFailed": "Failed to create article. Please try again.",
     "articleUpdateFailed": "Failed to update article. Please try again.",
     "articleDeleteFailed": "Failed to delete article. Please try again.",

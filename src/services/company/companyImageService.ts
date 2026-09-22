@@ -1,3 +1,4 @@
+import { publicMediaUrl } from "@/lib/media";
 import { supabase } from "@/integrations/supabase/client";
 
 const BUCKET = "company-assets";
@@ -17,7 +18,7 @@ export async function uploadCompanyImage(
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
     .upload(filePath, file, {
-      cacheControl: "3600",
+      cacheControl: "0",
       upsert: false,
     });
 
@@ -26,29 +27,19 @@ export async function uploadCompanyImage(
     throw new Error(uploadError.message || "Failed to upload image");
   }
 
-  const { data: urlData } = supabase.storage
-    .from(BUCKET)
-    .getPublicUrl(filePath);
-
-  return urlData.publicUrl;
+  return publicMediaUrl(BUCKET, filePath);
 }
 
 /**
  * Delete a company image from storage by its full URL.
  */
 export async function deleteCompanyImage(imageUrl: string): Promise<void> {
-  // Extract the path from the full URL
-  const bucketUrl = `/storage/v1/object/public/${BUCKET}/`;
-  const idx = imageUrl.indexOf(bucketUrl);
-  if (idx === -1) return;
-
-  const filePath = imageUrl.substring(idx + bucketUrl.length);
-
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .remove([filePath]);
-
-  if (error) {
-    console.error("Error deleting company image:", error);
-  }
+  const url = new URL(imageUrl);
+  if (url.origin !== new URL(import.meta.env.VITE_SUPABASE_URL).origin) return;
+  const prefix = [`/functions/v1/public-media/${BUCKET}/`, `/storage/v1/object/public/${BUCKET}/`]
+    .find(value => url.pathname.startsWith(value));
+  if (!prefix) return;
+  const name = url.pathname.slice(prefix.length).split('/').map(decodeURIComponent).join('/');
+  const { error } = await supabase.functions.invoke('request-deletion', { body: { kind: 'file', bucket: BUCKET, name } });
+  if (error) throw new Error('Den tidigare bilden kunde inte läggas i raderingskön.');
 }

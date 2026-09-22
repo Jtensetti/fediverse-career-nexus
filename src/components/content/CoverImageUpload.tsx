@@ -1,3 +1,5 @@
+import { MediaImage } from "@/components/content/MediaImage";
+import { publicMediaUrl } from "@/lib/media";
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -79,9 +81,7 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
         return;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('articles')
-        .getPublicUrl(fileName);
+      const publicUrl = publicMediaUrl('articles', fileName);
 
       onChange(publicUrl);
       toast.success(isRecropping ? t("coverImage.updated") : t("coverImage.uploaded"));
@@ -123,7 +123,7 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
 
       {value ? (
         <div className="relative aspect-[2/1] w-full rounded-lg overflow-hidden border">
-          <img
+          <MediaImage
             src={value}
             alt="Cover"
             className="w-full h-full object-cover"

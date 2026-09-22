@@ -6,8 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const EmailNotificationPreferences = () => {
-  const [digestEnabled, setDigestEnabled] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [digestEnabled, setDigestEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ const EmailNotificationPreferences = () => {
           .single();
 
         if (data) {
-          setDigestEnabled(data.email_digest_enabled !== false);
+          setDigestEnabled(data.email_digest_enabled === true);
         }
       } catch (error) {
         console.error("Error fetching email preferences:", error);

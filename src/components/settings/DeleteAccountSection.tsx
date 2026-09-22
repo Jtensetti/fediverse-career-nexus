@@ -34,7 +34,7 @@ export default function DeleteAccountSection() {
     const result = await deleteAccount();
 
     if (result.success) {
-      toast.success("Ditt konto har raderats");
+      toast.success(`Kontot är dolt. Permanent radering sker efter 30 dagar${result.purgeAfter ? ", från " + new Date(result.purgeAfter).toLocaleDateString("sv-SE") : ""}.`);
       navigate("/");
     } else {
       toast.error(result.error || "Kunde inte radera kontot");
@@ -50,12 +50,12 @@ export default function DeleteAccountSection() {
           Radera konto
         </CardTitle>
         <CardDescription>
-          Radera ditt konto och dina uppgifter på Nolto
+          Kontot döljs direkt och uppgifterna raderas permanent efter 30 dagar.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="bg-destructive/10 p-4 rounded-lg text-sm space-y-2">
-          <p className="font-medium">Detta kommer permanent att radera:</p>
+          <p className="font-medium">Efter 30 dagar raderas:</p>
           <ul className="list-disc list-inside space-y-1 text-muted-foreground">
             <li>Din profil och dina kontaktuppgifter</li>
             <li>Alla dina inlägg, kommentarer och reaktioner</li>
@@ -74,7 +74,7 @@ export default function DeleteAccountSection() {
             onCheckedChange={(checked) => setUnderstood(checked === true)}
           />
           <label htmlFor="understand" className="text-sm cursor-pointer">
-            Jag förstår att denna åtgärd är permanent och inte kan ångras
+            Jag förstår att kontot stängs direkt och raderas permanent efter 30 dagar
           </label>
         </div>
 
@@ -105,7 +105,7 @@ export default function DeleteAccountSection() {
             <AlertDialogHeader>
               <AlertDialogTitle>Är du helt säker?</AlertDialogTitle>
               <AlertDialogDescription>
-                Denna åtgärd kan inte ångras. Din profil och ditt innehåll på Nolto raderas. Raderingen kan inte garantera att kopior hos andra servrar tas bort.
+                Din profil och ditt innehåll på Nolto döljs direkt. Du loggas ut och kan inte använda kontot. Uppgifterna raderas permanent efter 30 dagar. Kopior som andra redan har tagit emot kan finnas kvar.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

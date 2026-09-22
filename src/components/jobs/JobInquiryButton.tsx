@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { sendJobMessage } from "@/services/messaging/jobMessagingService";
+import EncryptedInbox, { useUnlockedInbox } from '@/components/messaging/EncryptedInbox';
 
 interface JobInquiryButtonProps {
   jobId: string;
@@ -31,6 +32,7 @@ export function JobInquiryButton({ jobId, jobTitle, posterId, companyName }: Job
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const inboxReady = useUnlockedInbox();
 
   if (user?.id === posterId) {
     return null;
@@ -67,7 +69,7 @@ export function JobInquiryButton({ jobId, jobTitle, posterId, companyName }: Job
           {t('jobInquiry.messageHiringManager')}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('jobInquiry.sendMessage')}</DialogTitle>
           <DialogDescription>
@@ -76,7 +78,9 @@ export function JobInquiryButton({ jobId, jobTitle, posterId, companyName }: Job
         </DialogHeader>
         
         <div className="space-y-4 py-4">
+          <EncryptedInbox partnerId={posterId} />
           <Textarea
+            disabled={!inboxReady}
             placeholder={t('jobInquiry.writeMessage')}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -96,7 +100,7 @@ export function JobInquiryButton({ jobId, jobTitle, posterId, companyName }: Job
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             {t('jobInquiry.cancel')}
           </Button>
-          <Button onClick={handleSend} disabled={isSending || !message.trim()}>
+          <Button onClick={handleSend} disabled={isSending || !message.trim() || !inboxReady}>
             {isSending ? (
               <>{t('jobInquiry.sending')}</>
             ) : (

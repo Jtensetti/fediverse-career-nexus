@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const deleteAccount = async (): Promise<{ success: boolean; error?: string }> => {
+export const deleteAccount = async (): Promise<{ success: boolean; error?: string; purgeAfter?: string }> => {
   try {
     const { data, error } = await supabase.functions.invoke('delete-account', {
       method: 'POST', body: { confirmation: 'RADERA' }
@@ -20,7 +20,7 @@ export const deleteAccount = async (): Promise<{ success: boolean; error?: strin
     // Sign out the user locally after successful deletion
     await supabase.auth.signOut({ scope: 'local' });
 
-    return { success: true };
+    return { success: true, purgeAfter: data.purge_after };
   } catch (error) {
     console.error('Unexpected error deleting account:', error);
     return { success: false, error: 'An unexpected error occurred' };

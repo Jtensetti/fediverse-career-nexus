@@ -1,3 +1,4 @@
+import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { getOrCreateLocalActor } from "@/services/federation/actorService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -263,13 +264,7 @@ export async function deletePostReply(commentId: string): Promise<void> {
     throw new Error('You can only delete your own comments');
   }
 
-  // Delete the comment
-  const { error } = await supabase
-    .from('ap_objects')
-    .delete()
-    .eq('id', commentId);
-
-  if (error) throw new Error('Failed to delete comment');
+  await requestContentDeletion('post', commentId);
 }
 
 // Create a reply to a post (or to another reply), optionally as a company

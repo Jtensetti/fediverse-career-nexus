@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { decryptIncomingMessage, encryptOutgoingMessage, inboxRevision } from './inboxKeysService';
+import { MESSAGE_ENCRYPTION, type SealedMessage } from '@/lib/privateMessages';
 
 // Simple message interface matching our database schema
 export interface Message {
@@ -13,6 +15,10 @@ export interface Message {
   delivery_status?: string;
   is_encrypted?: boolean;
   encrypted_content?: string | null;
+  encryption_version?: string;
+  job_conversation_id?: string | null;
+  sender_key_fingerprint?: string | null;
+  recipient_key_fingerprint?: string | null;
   sender?: {
     id: string;
     username?: string;
@@ -139,7 +145,6 @@ export async function getConversations(): Promise<Conversation[]> {
         id,
         sender_id,
         recipient_id,
-        content,
         read_at,
         created_at,
         is_federated,
@@ -159,7 +164,7 @@ export async function getConversations(): Promise<Conversation[]> {
     for (const msg of messages || []) {
       const partnerId = msg.sender_id === userId ? msg.recipient_id : msg.sender_id;
       if (!conversationMap.has(partnerId)) {
-        conversationMap.set(partnerId, msg as Message);
+        conversationMap.set(partnerId, { ...msg, content: '' } as Message);
       }
     }
 
@@ -229,17 +234,26 @@ export async function getConversation(partnerId: string): Promise<Conversation |
 
 /**
  * Get messages with a specific user
- * Uses edge function for decryption of encrypted messages
+ * The server returns ciphertext. Only this browser opens new messages.
  */
 export interface MessageCursor { id: string; created_at: string }
 export interface MessagePage { messages: Message[]; next: MessageCursor | null }
 
 export async function getMessagePage(partnerId: string, before?: MessageCursor): Promise<MessagePage> {
+  const revision = inboxRevision();
   const { data, error } = await supabase.functions.invoke('encrypt-message', {
-    body: { action: 'decrypt-batch', partnerId, before }
+    body: { action: 'list', partnerId, before }
   });
   if (error || data?.error || !Array.isArray(data?.messages)) throw new Error('Kunde inte läsa meddelanden');
-  return data as MessagePage;
+  const messages = await Promise.all(data.messages.map(readPrivateMessage));
+  if (revision !== inboxRevision()) throw new Error('Inkorgen låstes medan meddelanden hämtades.');
+  return { ...data, messages };
+}
+
+async function readPrivateMessage(message: Message): Promise<Message> {
+  if (message.encryption_version !== MESSAGE_ENCRYPTION) return message;
+  const content = await decryptIncomingMessage(message as SealedMessage);
+  return { ...message, content };
 }
 
 export async function getMessages(partnerId: string): Promise<Message[]> {
@@ -267,14 +281,15 @@ export async function areUsersConnected(userId1: string, userId2: string): Promi
 }
 
 /**
- * Send a message to a user (handles both local and federated)
+ * Encrypt and send a local message to both participants.
  */
-export async function sendMessage(recipientId: string, content: string): Promise<Message> {
+export async function sendMessage(recipientId: string, content: string, jobConversationId: string | null = null): Promise<Message> {
+  const sealed = await encryptOutgoingMessage(recipientId, content, jobConversationId);
   const { data, error } = await supabase.functions.invoke('encrypt-message', {
-    body: { action: 'send', partnerId: recipientId, content }
+    body: { action: 'send', partnerId: recipientId, ...sealed }
   });
   if (error || data?.error || !data?.message) throw new Error('Kunde inte skicka meddelandet');
-  return data.message as Message;
+  return readPrivateMessage(data.message);
 }
 
 /**
@@ -318,7 +333,7 @@ export function subscribeToMessages(
     currentUserId = data.session?.user?.id || null;
   });
 
-  // Helper to decrypt a single message via edge function
+  // Fetch through the authenticated endpoint before opening a realtime message.
   const decryptSingleMessage = async (message: Message): Promise<Message> => {
     if (!message.is_encrypted || !message.encrypted_content) {
       return message;
@@ -326,15 +341,15 @@ export function subscribeToMessages(
 
     try {
       const { data, error } = await supabase.functions.invoke('encrypt-message', {
-        body: { action: 'decrypt', messageId: message.id }
+        body: { action: 'read', messageId: message.id }
       });
 
-      if (error || !data?.content) {
+      if (error || !data?.message) {
         console.error('Failed to decrypt real-time message:', error);
         return { ...message, content: '[Encrypted message]' };
       }
 
-      return { ...message, content: data.content };
+      return await readPrivateMessage(data.message);
     } catch (err) {
       console.error('Decryption error for real-time message:', err);
       return { ...message, content: '[Encrypted message]' };

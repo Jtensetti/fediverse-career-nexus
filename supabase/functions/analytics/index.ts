@@ -1,3 +1,4 @@
+import { createLogger } from "../_shared/logger.ts";
 import { adminHandler } from "../_shared/user-auth.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { z } from "npm:zod@3.25.76";
@@ -17,13 +18,6 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-// Simple logger implementation
-const createLogger = (req: Request, functionName: string) => ({
-  info: (data: any, message?: string) => console.log(`[${functionName}] INFO:`, message || '', data),
-  debug: (data: any, message?: string) => console.log(`[${functionName}] DEBUG:`, message || '', data),
-  warn: (data: any, message?: string) => console.warn(`[${functionName}] WARN:`, message || '', data),
-  error: (data: any, message?: string) => console.error(`[${functionName}] ERROR:`, message || '', data)
-});
 
 const logRequest = (logger: any, req: Request) => {
   logger.info({ method: req.method, url: req.url }, "Incoming request");
@@ -55,7 +49,7 @@ type AnalyticsRequest = z.infer<typeof analyticsSchema>;
 // Handler with validation
 const handleAnalytics = async (req: Request, data: AnalyticsRequest): Promise<Response> => {
   const startTime = performance.now();
-  const logger = createLogger(req, "analytics");
+  const logger = createLogger("analytics");
 
   logRequest(logger, req);
 

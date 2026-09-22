@@ -37,6 +37,7 @@ import { useToast } from '@/components/ui/use-toast';
 import FediverseBadge from '@/components/federation/FediverseBadge';
 import MessageReactions from '@/components/reactions/MessageReactions';
 import { SEOHead } from '@/components/common/SEOHead';
+import EncryptedInbox, { useUnlockedInbox } from '@/components/messaging/EncryptedInbox';
 
 export default function MessageConversation() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -44,6 +45,7 @@ export default function MessageConversation() {
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
   const currentUserId = user?.id || null;
+  const inboxReady = useUnlockedInbox();
   const [newMessage, setNewMessage] = useState('');
   const [otherUser, setOtherUser] = useState<ParticipantInfo | null>(null);
   const [canMessage, setCanMessage] = useState<boolean | null>(null);
@@ -55,12 +57,13 @@ export default function MessageConversation() {
   const hasInitialScrolled = useRef(false);
   const queryClient = useQueryClient();
   const [loadingOlder, setLoadingOlder] = useState(false);
+  useEffect(() => { if (!inboxReady) setNewMessage(''); }, [inboxReady]);
 
   // Fetch conversation and messages
   const { data, isLoading, error } = useQuery({
     queryKey: ['conversation', currentUserId, conversationId],
     queryFn: () => conversationId ? getConversationWithMessages(conversationId) : null,
-    enabled: !!conversationId && !!currentUserId
+    enabled: !!conversationId && !!currentUserId && inboxReady
   });
 
   // Scroll to bottom of messages container (not page)
@@ -94,7 +97,7 @@ export default function MessageConversation() {
 
   // Set up real-time subscription to new messages
   useEffect(() => {
-    if (!conversationId || !currentUserId) return;
+    if (!conversationId || !currentUserId || !inboxReady) return;
 
     const handleNewMessage = (message: Message) => {
       // Update query cache with the new message
@@ -131,7 +134,7 @@ export default function MessageConversation() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [conversationId, currentUserId, queryClient, toast, scrollToBottom]);
+  }, [conversationId, currentUserId, queryClient, toast, scrollToBottom, inboxReady]);
 
   // Get other participant details and check connection status
   useEffect(() => {
@@ -189,7 +192,7 @@ export default function MessageConversation() {
       console.error('Failed to send message:', error);
       toast({
         title: "Kunde inte skicka meddelande",
-        description: "Försök igen",
+        description: error instanceof Error ? error.message : "Försök igen",
         variant: "destructive"
       });
     }
@@ -211,7 +214,7 @@ export default function MessageConversation() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !inboxReady || canMessage !== true || sendMessageMutation.isPending) return;
 
     sendMessageMutation.mutate(newMessage);
   };
@@ -269,6 +272,8 @@ export default function MessageConversation() {
       </div>
     );
   }
+
+  if (!inboxReady) return <div className="min-h-screen flex flex-col"><Navbar /><main className="flex-grow container max-w-4xl px-4 py-10"><Button variant="link" onClick={() => navigate('/messages')}>← Till meddelanden</Button><EncryptedInbox partnerId={conversationId} /></main><Footer /></div>;
 
   if (isLoading) {
     return (
@@ -339,6 +344,7 @@ export default function MessageConversation() {
       />
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
+        <EncryptedInbox partnerId={conversationId} />
         <Card className="flex flex-col h-[calc(100vh-200px)]">
           <CardHeader className="border-b">
             <div className="flex items-center space-x-4">
@@ -404,6 +410,7 @@ export default function MessageConversation() {
                         />
                         <p className="text-xs opacity-70 mt-1">
                           {formatDistanceToNow(new Date(message.created_at), { addSuffix: true, locale: sv })}
+                          {message.encryption_version !== 'openpgp-v1' && ' · Äldre meddelande med serverkryptering'}
                         </p>
                       </div>
                       {/* Reactions moved OUTSIDE the bubble for better visibility */}

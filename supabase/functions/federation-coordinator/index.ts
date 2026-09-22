@@ -1,3 +1,4 @@
+import { createLogger } from "../_shared/logger.ts";
 import { adminHandler } from "../_shared/user-auth.ts";
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
@@ -71,13 +72,6 @@ function validateRequest<T>(
   };
 }
 
-// Simple logger implementation
-const createRequestLogger = (req: Request, functionName: string) => ({
-  info: (data: any, message?: string) => console.log(`[${functionName}] INFO:`, message || '', data),
-  debug: (data: any, message?: string) => console.log(`[${functionName}] DEBUG:`, message || '', data),
-  warn: (data: any, message?: string) => console.warn(`[${functionName}] WARN:`, message || '', data),
-  error: (data: any, message?: string) => console.error(`[${functionName}] ERROR:`, message || '', data)
-});
 
 const logRequest = (logger: any, req: Request) => {
   logger.info({ method: req.method, url: req.url }, "Incoming request");
@@ -147,7 +141,7 @@ async function invokeWorker(partition: number, logger: any) {
 // Handler with validation
 const handleCoordinator = async (req: Request, data: CoordinatorRequest): Promise<Response> => {
   const startTime = performance.now();
-  const logger = createRequestLogger(req, "federation-coordinator");
+  const logger = createLogger("federation-coordinator");
 
   logRequest(logger, req);
 

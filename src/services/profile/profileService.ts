@@ -217,7 +217,6 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       isVerified: profile.is_verified || false,
       domain: profile.domain || "",
       connections: connectionCount || 0,
-      profileViews: profile.profile_views || 0,
       networkVisibilityEnabled: settings?.show_network_connections ?? true,
       connectionDegree: 0, // Self profile is 0 degree
       // Federated auth fields

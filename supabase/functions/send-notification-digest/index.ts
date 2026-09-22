@@ -159,12 +159,12 @@ Deno.serve(workerHandler(async (req) => {
         // Get user's email and preferences - first check profiles.contact_email, then fall back to auth email
         const { data: userProfile } = await supabase
           .from('profiles')
-          .select('contact_email, email_digest_enabled')
+          .select('contact_email, email_digest_enabled, deleted_at')
           .eq('id', userId)
           .single();
 
-        // Check if user has opted out of digest emails (default to true/enabled)
-        if (userProfile?.email_digest_enabled === false) {
+        // Only send to active accounts that explicitly have digests enabled.
+        if (!userProfile || userProfile.deleted_at || userProfile.email_digest_enabled !== true) {
           logger.debug({ userId, traceId }, "Skipping - user opted out of digest emails");
           continue;
         }

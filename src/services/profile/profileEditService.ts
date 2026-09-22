@@ -1,3 +1,4 @@
+import { publicMediaUrl } from "@/lib/media";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -102,8 +103,8 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true
+        cacheControl: '0',
+        upsert: false
       });
 
     if (uploadError) {
@@ -113,9 +114,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     }
 
     // Get the public URL for the uploaded image
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
+    const publicUrl = publicMediaUrl('avatars', filePath);
 
     // Update the profile with the new avatar URL
     const { error: updateError } = await supabase

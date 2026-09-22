@@ -1,3 +1,5 @@
+import { publicMediaUrl } from "@/lib/media";
+import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { getLocalActorUrl, getNoltoInstanceDomain } from "@/lib/federation";
 import { createUserActor } from "../federation/actorService";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,9 +108,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
         return false;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('posts')
-        .getPublicUrl(filePath);
+      const publicUrl = publicMediaUrl('posts', filePath);
 
       imageUrl = publicUrl;
 
@@ -507,17 +507,8 @@ export const deletePost = async (postId: string): Promise<void> => {
       throw new Error('You can only delete your own posts');
     }
 
-    const { error: deleteError } = await supabase
-      .from('ap_objects')
-      .delete()
-      .eq('id', postId);
-
-    if (deleteError) {
-      console.error('❌ Error deleting post:', deleteError);
-      throw new Error(`Failed to delete post: ${deleteError.message}`);
-    }
-
-    toast.success('Inlägget raderades!');
+    await requestContentDeletion('post', postId);
+    toast.success('Inlägget är dolt och raderas permanent efter 30 dagar.');
   } catch (error) {
     console.error('❌ Error deleting post:', error);
     throw error;

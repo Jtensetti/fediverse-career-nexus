@@ -4,5 +4,4 @@
 export * from "./profileService";
 export * from "./profileEditService";
 // export * from "./profileCVService"; // conflicts with profileService types
-export * from "./profileViewService";
 export * from "./sectionVisibilityService";

@@ -1,8 +1,12 @@
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
-export const serviceClient = () => createClient(
+export const serviceClient = (timeoutMs?: number) => createClient(
   Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  { auth: { persistSession: false, autoRefreshToken: false } },
+  { auth: { persistSession: false, autoRefreshToken: false },
+    ...(timeoutMs ? { global: { fetch: (input: RequestInfo | URL, init?: RequestInit) => fetch(input, {
+      ...init, signal: init?.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs),
+    }) } } : {}),
+  },
 );
 
 export const federationHeaders = {

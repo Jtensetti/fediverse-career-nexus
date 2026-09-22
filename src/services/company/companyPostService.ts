@@ -1,3 +1,5 @@
+import { publicMediaUrl } from "@/lib/media";
+import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { FederatedPost } from "@/services/federation/federationService";
@@ -69,9 +71,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
         return null;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('posts')
-        .getPublicUrl(filePath);
+      const publicUrl = publicMediaUrl('posts', filePath);
 
       imageUrl = publicUrl;
     }
@@ -230,18 +230,8 @@ export async function deleteCompanyPost(postId: string, companyId: string): Prom
     return false;
   }
 
-  const { error } = await supabase
-    .from('ap_objects')
-    .delete()
-    .eq('id', postId)
-    .eq('company_id', companyId);
-
-  if (error) {
-    console.error('Error deleting company post:', error);
-    toast.error("Failed to delete post");
-    return false;
-  }
-
-  toast.success("Post deleted");
+  try { await requestContentDeletion('post', postId); }
+  catch (error) { toast.error(error instanceof Error ? error.message : 'Kunde inte dölja inlägget'); return false; }
+  toast.success('Inlägget är dolt och raderas permanent efter 30 dagar.');
   return true;
 }

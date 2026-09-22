@@ -1,3 +1,4 @@
+import { publicMediaUrl } from "@/lib/media";
 import { useState, useId } from "react";
 import { Camera, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -52,13 +53,11 @@ const ProfileBanner = ({
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, file, { upsert: false });
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
+      const publicUrl = publicMediaUrl('avatars', fileName);
 
       onHeaderChange?.(publicUrl);
       toast.success(t("banner.headerUpdated", "Header image updated!"));
