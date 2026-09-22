@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { getReactions, toggleMessageReaction, ReactionCount } from '@/services/content/reactionsService';
 import { REACTIONS, REACTION_CONFIG, ReactionKey } from '@/lib/reactions';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import {
   Popover,
   PopoverContent,

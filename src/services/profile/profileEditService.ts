@@ -1,6 +1,6 @@
 import { publicMediaUrl } from "@/lib/media";
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export interface ProfileUpdateData {
@@ -43,7 +43,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      console.error('❌ No user found in updateUserProfile');
+      console.error('No user found in updateUserProfile');
       toast.error("Du måste vara inloggad för att uppdatera din profil");
       return false;
     }
@@ -67,7 +67,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
       .eq("id", user.id);
 
     if (error) {
-      console.error('❌ Profile update error:', error);
+      console.error('Profile update error:', error);
       toast.error(`Kunde inte uppdatera profil: ${error.message}`);
       return false;
     }
@@ -75,7 +75,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     toast.success("Profil uppdaterad");
     return true;
   } catch (error) {
-    console.error("❌ Error updating profile:", error);
+    console.error("Error updating profile:", error);
     toast.error("Kunde inte uppdatera profil");
     return false;
   }
@@ -89,7 +89,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      console.error('❌ No user found in uploadProfileAvatar');
+      console.error('No user found in uploadProfileAvatar');
       toast.error("Du måste vara inloggad för att ladda upp en avatar");
       return null;
     }
@@ -108,7 +108,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
       });
 
     if (uploadError) {
-      console.error('❌ Avatar upload error:', uploadError);
+      console.error('Avatar upload error:', uploadError);
       toast.error(`Kunde inte ladda upp avatar: ${uploadError.message}`);
       return null;
     }
@@ -126,7 +126,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
       .eq("id", user.id);
 
     if (updateError) {
-      console.error('❌ Avatar URL update error:', updateError);
+      console.error('Avatar URL update error:', updateError);
       toast.error(`Kunde inte uppdatera profilbild: ${updateError.message}`);
       return null;
     }
@@ -134,7 +134,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
     toast.success("Avatar uppdaterad");
     return publicUrl;
   } catch (error) {
-    console.error("❌ Error uploading avatar:", error);
+    console.error("Error uploading avatar:", error);
     toast.error("Kunde inte ladda upp avatar");
     return null;
   }
@@ -145,7 +145,7 @@ export const updateProfile = async (profileData: any) => {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      console.error('❌ No user found in updateProfile');
+      console.error('No user found in updateProfile');
       toast.error('Du måste vara inloggad för att uppdatera din profil');
       throw new Error('Du måste vara inloggad');
     }
@@ -164,14 +164,14 @@ export const updateProfile = async (profileData: any) => {
       .single();
 
     if (error) {
-      console.error('❌ Profile update error:', error);
+      console.error('Profile update error:', error);
       toast.error(`Failed to update profile: ${error.message}`);
       throw error;
     }
 
     return data;
   } catch (error) {
-    console.error('❌ Error updating profile:', error);
+    console.error('Error updating profile:', error);
     throw error;
   }
 };

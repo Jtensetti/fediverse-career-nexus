@@ -23,8 +23,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 // Eager-loaded critical routes (landing, auth, 404)
 import Index from "./pages/Index";
-const Auth = lazy(() => import("./pages/auth/Auth"));
 import NotFound from "./pages/NotFound";
+const Auth = lazy(() => import("./pages/auth/Auth"));
 
 // Lazy-loaded routes — split into per-route chunks
 const Profile = lazy(() => import("./pages/profile/Profile"));

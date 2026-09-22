@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export const deleteAccount = async (): Promise<{ success: boolean; error?: string; purgeAfter?: string }> => {
   try {

@@ -1,91 +1,32 @@
-# Federation Pre-Launch Checklist
+# Federation acceptance
 
-A pragmatic checklist to verify Nolto is fully Fediverse-ready before
-opening signups in production.
+Use an existing, federation-enabled Nolto account and a separate Mastodon account. An invented username returning 404 is not a successful discovery test.
 
-## 1. DNS & Domain
-
-- [ ] `nolto.social` resolves to the Lovable/Vercel deployment
-- [ ] `www.nolto.social` resolves to the same origin (or 301 redirects to apex)
-- [ ] HTTPS valid certificate covering both apex and `www`
-- [ ] `SITE_URL` secret is set to `https://nolto.social`
-
-## 2. Discovery Endpoints (must return 200 publicly)
-
-```
-curl -sI https://nolto.social/.well-known/webfinger?resource=acct:test@nolto.social
-curl -sI https://nolto.social/.well-known/nodeinfo
-curl -sI https://nolto.social/.well-known/host-meta
-curl -sI https://nolto.social/.well-known/oauth-authorization-server
-curl -sI https://nolto.social/nodeinfo/2.0
+```sh
+npm run check:federation -- actual_enabled_user@nolto.social
 ```
 
-All should return `200 OK` with appropriate `Content-Type`.
+## Discovery and identity
 
-## 3. Actor Object
+- Verify DNS, TLS and host redirects for the actual deployment.
+- Fetch WebFinger through `https://nolto.social/.well-known/webfinger`. Require JSON rather than a web page or redirect.
+- Confirm the JRD subject is `acct:username@nolto.social` and the actor, key owner, inbox and collections use the same canonical domain.
+- Resolve that address by searching from Mastodon. Check opt-out and deleted accounts do not remain discoverable locally.
 
-```
-curl -H "Accept: application/activity+json" https://nolto.social/functions/v1/actor/<username>
-```
+The read-only check above validates WebFinger, actor and collections. Routing may use the configuration in `public/_redirects`, `vercel.json` or the optional gateway; confirm which is actually active.
 
-Verify the response includes:
-- [ ] `id` is `https://nolto.social/functions/v1/actor/<username>` (NOT supabase.co)
-- [ ] `inbox`, `outbox`, `followers`, `following` are all `nolto.social` URLs
-- [ ] `publicKey.publicKeyPem` contains a valid PEM
-- [ ] `endpoints.sharedInbox` is `https://nolto.social/functions/v1/inbox`
+## Cross-server behavior
 
-## 4. WebFinger Round-Trip
+- Follow in both directions, acknowledge Follow, retry a duplicate, unfollow and process Undo.
+- Publish, edit and delete a public post in both directions. Resolve the object URL and confirm deletion tombstones. Reject private content from the public feed.
+- Stop one receiving server while another remains healthy; verify retries do not resend to the successful inbox. Restart an interrupted worker and check ordering.
+- Reject unsigned, tampered, stale and replayed inbox requests, as well as blocked actors and domains.
+- Link an existing Nolto account to Mastodon without changing its identity. Reject reused OAuth state, wrong issuer, wrong Nolto session and duplicate identity binding.
+- Import more than one CSV batch, including an invalid remote account, and display partial failure honestly.
+- Verify a Move only after the destination declares the source alias. Remote servers decide whether to accept it.
 
-From an external Mastodon instance, search for `@<username>@nolto.social`.
-The profile should resolve and be followable.
+## Operational checks
 
-## 5. Federation Smoke Tests
+Monitor delivery backlog, stale processing jobs and failures. The active schedule invokes the delivery worker directly; do not re-enable the retired coordinator or database-wipe jobs. If delivery must stop, pause that schedule and registrations while retaining queued work for investigation.
 
-- [ ] Follow a Mastodon account from Nolto → confirm follower appears
-- [ ] Be followed by a Mastodon account → confirm follower stored
-- [ ] Post locally → confirm it appears on the Mastodon follower's timeline
-- [ ] Receive a like/boost/reply from Mastodon → confirm notification
-- [ ] Delete a post → confirm Tombstone propagates
-
-## 6. Security
-
-- [ ] HTTP signature verification is enforced on `/inbox` (rejects unsigned requests)
-- [ ] Replay-cache (`federation_signature_cache`) drops duplicate signatures
-- [ ] Date header window is enforced (±5 minutes)
-- [ ] `manuallyApprovesFollowers` is honored (pending → notification)
-- [ ] Blocked actors / blocked domains are rejected at inbox
-
-## 7. Mastodon API Compatibility
-
-Test with a third-party client (Tusky, Elk, Phanpy):
-- [ ] `/api/v1/instance` returns valid metadata
-- [ ] `/api/v1/apps` registers an OAuth client
-- [ ] OAuth flow completes via `/.well-known/oauth-authorization-server`
-- [ ] `/api/v2/search` returns local accounts and hashtags
-
-## 8. Migration Tools
-
-- [ ] CSV import (Mastodon-format follows) works in Settings → Migration
-- [ ] Account move (`Move` activity) auto-re-follows on the new account
-- [ ] Data export (JSON + ActivityPub ZIP) downloads successfully
-
-## 9. Observability
-
-- [ ] Federation queue stats visible in admin dashboard
-- [ ] Rate-limited hosts surfaced in admin dashboard
-- [ ] Federation alerts (`federation_alerts` table) are reviewed weekly
-- [ ] Dead-letter queue (failed deliveries with `attempts >= max_attempts`) drained
-
-## 10. SEO / Crawl Hygiene
-
-- [ ] `robots.txt` blocks `/functions/` and `/api/`
-- [ ] Actor and WebFinger endpoints have `Cache-Control: public, max-age=300`
-- [ ] No `noindex` on the public profile pages
-
-## 11. Rollback Plan
-
-If federation breaks in production:
-1. Disable signups (Cloud → Auth settings)
-2. Pause `federation-coordinator` cron
-3. Inspect `federation_alerts` and `federation_request_logs`
-4. Roll back the offending deployment
+Full Mastodon client APIs, remote DMs, universal account mirroring and automatic transfer of historical posts are not supported. Do not use a third-party client login or a successful link operation as proof of those features.

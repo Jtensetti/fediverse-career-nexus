@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+import { hasRecordId } from "@/lib/records";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export interface StarterPack {
@@ -12,8 +13,8 @@ export interface StarterPack {
   is_featured: boolean;
   member_count: number;
   follower_count: number;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
   creator?: {
     id: string;
     username: string | null;
@@ -26,7 +27,7 @@ export interface StarterPackMember {
   id: string;
   pack_id: string;
   user_id: string;
-  added_at: string;
+  added_at: string | null;
   user?: {
     id: string;
     username: string | null;
@@ -42,6 +43,16 @@ export interface StarterPackWithMembers extends StarterPack {
   isFollowed?: boolean;
 }
 
+function normalizePack(pack: import('@/integrations/supabase/types').Tables<'starter_packs'>): StarterPack {
+  return {
+    ...pack,
+    category: pack.category || '',
+    is_featured: pack.is_featured ?? false,
+    member_count: pack.member_count ?? 0,
+    follower_count: pack.follower_count ?? 0,
+  };
+}
+
 // Get all featured starter packs
 export async function getFeaturedStarterPacks(): Promise<StarterPack[]> {
   try {
@@ -52,7 +63,7 @@ export async function getFeaturedStarterPacks(): Promise<StarterPack[]> {
       .order('follower_count', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(normalizePack);
   } catch (error) {
     console.error('Error fetching featured starter packs:', error);
     return [];
@@ -86,7 +97,7 @@ export async function getStarterPacks(options: {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(normalizePack);
   } catch (error) {
     console.error('Error fetching starter packs:', error);
     return [];
@@ -129,7 +140,7 @@ export async function getStarterPackBySlug(slug: string): Promise<StarterPackWit
         .select('id, username, fullname, avatar_url, headline, is_verified')
         .in('id', memberUserIds);
 
-      const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+      const profileMap = new Map((profiles || []).filter(hasRecordId).map(p => [p.id, p]));
       
       membersWithProfiles = (members || []).map(m => ({
         ...m,
@@ -152,7 +163,7 @@ export async function getStarterPackBySlug(slug: string): Promise<StarterPackWit
     }
 
     return {
-      ...pack,
+      ...normalizePack(pack),
       members: membersWithProfiles,
       isFollowed
     };
@@ -285,7 +296,7 @@ export async function createStarterPack(data: {
 
     if (error) throw error;
     toast.success('Startpaket skapat!');
-    return pack;
+    return normalizePack(pack);
   } catch (error: any) {
     console.error('Error creating starter pack:', error);
     if (error.message?.includes('duplicate')) {

@@ -1,24 +1,24 @@
 
 import { useTranslation } from 'react-i18next';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
 import { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export interface ModerationAction {
   id: string;
   type: 'block' | 'silence' | 'warn';
-  target_user_id: string;
-  reason: string;
+  target_user_id: string | null;
+  reason: string | null;
   moderator_id: string;
   timestamp: Date;
   isPublic: boolean;
@@ -73,7 +73,7 @@ const ModerationLog = ({ isAdmin = false }: ModerationLogProps) => {
             reason: action.reason,
             moderator_id: action.moderator_id,
             timestamp: new Date(action.created_at),
-            isPublic: action.is_public
+            isPublic: action.is_public ?? false
           }));
           
           setActions(formattedActions);

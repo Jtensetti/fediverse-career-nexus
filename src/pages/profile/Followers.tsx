@@ -1,3 +1,4 @@
+import { hasRecordId } from "@/lib/records";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -6,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, MessageSquare } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface FollowerUser {
@@ -28,13 +29,13 @@ const fetchFollowers = async (userId: string): Promise<FollowerUser[]> => {
 
   const followerIds = follows.map(f => f.follower_id);
 
-  // Fetch profile data for followers from public_profiles view (bypasses RLS)
+  // Fetch profile data for followers from public_profiles view (public projection)
   const { data: profiles } = await supabase
     .from('public_profiles')
     .select('id, username, fullname, avatar_url, headline')
     .in('id', followerIds);
 
-  return (profiles || []).map(p => ({
+  return (profiles || []).filter(hasRecordId).map(p => ({
     id: p.id,
     username: p.username || p.id,
     displayName: p.fullname || p.username || 'Unknown',

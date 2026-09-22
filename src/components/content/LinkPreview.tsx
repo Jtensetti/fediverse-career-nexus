@@ -1,8 +1,8 @@
 import { useState, useEffect, memo } from "react";
-import { ExternalLink, Globe, X, Loader2, ImageOff } from "lucide-react";
+import { ExternalLink, Globe, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 interface LinkPreviewData {
   url: string;
@@ -171,7 +171,6 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
   const displayDescription = preview.description;
 
   // For compact mode without image, show a minimal text-only preview
-  const showImageSection = hasImage || !compact;
 
   return (
     <div

@@ -4,14 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Search, Filter } from "lucide-react";
-import { 
-  Select, 
-  SelectContent, 
-  SelectGroup, 
-  SelectItem, 
-  SelectLabel, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { JobPostFilter } from "@/services/misc/jobPostsService";
@@ -66,7 +66,9 @@ const JobSearchFilter = ({ onFilterChange }: JobSearchFilterProps) => {
         <div className="w-full md:w-[180px]">
           <Select 
             value={jobType} 
-            onValueChange={(value: "full_time" | "part_time" | "contract" | "internship" | "temporary" | undefined) => setJobType(value)}
+            onValueChange={(value) => {
+              if (value === "full_time" || value === "part_time" || value === "contract" || value === "internship" || value === "temporary") setJobType(value);
+            }}
           >
             <SelectTrigger>
               <SelectValue placeholder={t("jobs.jobType")} />

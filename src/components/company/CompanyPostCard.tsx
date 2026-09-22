@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Building2, MoreHorizontal, Trash2, Globe, Share2 } from "lucide-react";
+import { Building2, MoreHorizontal, Trash2, Globe } from "lucide-react";
 import { ShareButton } from "@/components/common/ShareButton";
 import { deleteCompanyPost } from "@/services/company/companyPostService";
 import { linkifyWithMarkdown, stripHtml } from "@/lib/linkify";

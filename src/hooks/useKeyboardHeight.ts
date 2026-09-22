@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 export function useKeyboardHeight() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -20,7 +20,6 @@ export function useKeyboardHeight() {
       const keyboardOffset = windowHeight - viewportBottom;
       
       // Also check if viewport itself is smaller (more reliable on iOS)
-      const viewportHeightDiff = window.screen.height - viewport.height;
       
       // Use the larger of the two measurements, with threshold to avoid address bar changes
       const effectiveKeyboardHeight = Math.max(keyboardOffset, 0);

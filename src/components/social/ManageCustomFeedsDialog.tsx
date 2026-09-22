@@ -19,7 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { deleteCustomFeed, type CustomFeed } from "@/services/misc/feedPreferencesService";
 import CreateCustomFeedDialog from "./CreateCustomFeedDialog";
 

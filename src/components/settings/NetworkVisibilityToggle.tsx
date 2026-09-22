@@ -4,9 +4,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { UsersRound, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { 
-  getProfileVisibilitySettings, 
-  updateProfileVisibilitySettings 
+import {
+  getProfileVisibilitySettings,
+  updateProfileVisibilitySettings
 } from "@/services/social/connectionsService";
 
 interface NetworkVisibilityToggleProps {

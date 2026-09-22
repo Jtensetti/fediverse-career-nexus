@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import type { Database } from "@/integrations/supabase/types";
 
 type CompanyAuditLog = Database["public"]["Tables"]["company_audit_log"]["Row"];

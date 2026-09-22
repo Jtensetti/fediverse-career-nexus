@@ -33,7 +33,7 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from "sonner";
 import FediverseBadge from '@/components/federation/FediverseBadge';
 import MessageReactions from '@/components/reactions/MessageReactions';
 import { SEOHead } from '@/components/common/SEOHead';
@@ -42,7 +42,7 @@ import EncryptedInbox, { useUnlockedInbox } from '@/components/messaging/Encrypt
 export default function MessageConversation() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
+
   const { user, loading: authLoading } = useAuth();
   const currentUserId = user?.id || null;
   const inboxReady = useUnlockedInbox();
@@ -118,15 +118,6 @@ export default function MessageConversation() {
       }
     };
 
-    const handleError = (error: any) => {
-      console.error('Error in realtime subscription:', error);
-      toast({
-        title: "Anslutningsproblem",
-        description: "Problem med att ta emot nya meddelanden. Försök uppdatera.",
-        variant: "destructive"
-      });
-    };
-
     // Subscribe to new messages
     const subscription = subscribeToMessages(conversationId, handleNewMessage);
 
@@ -149,7 +140,7 @@ export default function MessageConversation() {
 
         // Load user profile
         if (data?.conversation) {
-          const user = await getOtherParticipant(data.conversation, currentUserId);
+          const user = await getOtherParticipant(data.conversation);
           setOtherUser(user);
         }
       } catch (error) {
@@ -190,11 +181,7 @@ export default function MessageConversation() {
     },
     onError: (error) => {
       console.error('Failed to send message:', error);
-      toast({
-        title: "Kunde inte skicka meddelande",
-        description: error instanceof Error ? error.message : "Försök igen",
-        variant: "destructive"
-      });
+      toast.error("Kunde inte skicka meddelande", { description: error instanceof Error ? error.message : "Försök igen" });
     }
   });
 
@@ -208,7 +195,7 @@ export default function MessageConversation() {
         messages: [...page.messages, ...previous.messages.filter(message => !page.messages.some(item => item.id === message.id))],
       } : previous);
     } catch {
-      toast({ title: 'Kunde inte läsa äldre meddelanden', variant: 'destructive' });
+      toast.error('Kunde inte läsa äldre meddelanden');
     } finally { setLoadingOlder(false); }
   }
 

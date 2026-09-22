@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export interface FederatedPost {
   id: string;
@@ -66,7 +66,7 @@ export const getFederatedFeed = async (
       return [];
     }
 
-    // Get actor data from public_actors view (bypasses RLS)
+    // Get actor data from public_actors view (public projection)
     const actorIds = [...new Set(apObjects.map((obj: any) => obj.attributed_to).filter(Boolean))];
     let actorsMap: Record<string, { user_id: string | null; preferred_username: string }> = {};
 
@@ -114,6 +114,7 @@ export const getFederatedFeed = async (
         .select("id, username, fullname, avatar_url, home_instance, is_freelancer")
         .in("id", userIds);
 
+      if (profileError) throw profileError;
       if (profiles) {
         profilesMap = Object.fromEntries(
           profiles.map((p) => [
@@ -164,7 +165,7 @@ export const getFederatedFeed = async (
         created_at: obj.published_at,
         published_at: obj.published_at,
         actor_name: displayName,
-        actor_avatar: company?.logo_url || profile?.avatar_url || null,
+        actor_avatar: company?.logo_url || profile?.avatar_url || undefined,
         user_id: actor?.user_id || null,
         profile: profile
           ? {

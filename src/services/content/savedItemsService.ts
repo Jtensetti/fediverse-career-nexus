@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export type SavedItemType = "job" | "article" | "post" | "event" | "comment";
 

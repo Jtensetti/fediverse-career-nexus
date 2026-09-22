@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
@@ -17,7 +17,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Users, MessageSquare, Inbox } from 'lucide-react';
 import { SEOHead } from '@/components/common/SEOHead';
@@ -25,8 +24,7 @@ import EncryptedInbox from '@/components/messaging/EncryptedInbox';
 
 export default function Messages() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+
   const { user, loading: authLoading } = useAuth();
   const currentUserId = user?.id || null;
   const [activeTab, setActiveTab] = useState('messages');
@@ -117,20 +115,20 @@ export default function Messages() {
             ) : error ? (
               <div className="text-center py-8">
                 <p className="text-red-500">{t("messages.errorLoading")}</p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-4"
                   onClick={() => refetchConversations()}
                 >
                   {t("messages.tryAgain")}
                 </Button>
               </div>
-            ) : conversations && conversations.length > 0 ? (
+            ) : currentUserId && conversations && conversations.length > 0 ? (
               <div className="space-y-4">
                 {conversations.map((conversation) => (
-                  <ConversationItem 
-                    key={conversation.id} 
-                    conversation={conversation} 
+                  <ConversationItem
+                    key={conversation.id}
+                    conversation={conversation}
                     currentUserId={currentUserId}
                   />
                 ))}
@@ -168,8 +166,8 @@ export default function Messages() {
             {pendingRequests.length > 0 ? (
               <div className="space-y-4">
                 {pendingRequests.map((request) => (
-                  <MessageRequestCard 
-                    key={request.id} 
+                  <MessageRequestCard
+                    key={request.id}
                     request={request}
                     onAction={() => refetchRequests()}
                   />
@@ -206,7 +204,7 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const user = await getOtherParticipant(conversation, currentUserId);
+        const user = await getOtherParticipant(conversation);
         setOtherUser(user);
       } catch (error) {
         console.error('Error loading participant:', error);
@@ -220,7 +218,7 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
 
   // Get the last message time
   const { t } = useTranslation();
-  const lastMessageTime = conversation.last_message_at 
+  const lastMessageTime = conversation.last_message_at
     ? formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true, locale: sv })
     : t("messages.noMessagesYet");
 

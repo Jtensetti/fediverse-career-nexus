@@ -1,5 +1,4 @@
 
-import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -11,14 +10,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function ModeToggle() {
   const { t } = useTranslation();
-  const { setTheme, theme } = useTheme();
-  const { toast } = useToast();
+  const { setTheme } = useTheme();
+
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState<boolean>(true);
   const hasLoadedTheme = useRef(false);
@@ -30,20 +29,20 @@ export function ModeToggle() {
         setLoading(false);
         return;
       }
-      
+
       // Only fetch theme once per user to avoid redundant calls
       if (hasLoadedTheme.current) {
         setLoading(false);
         return;
       }
-      
+
       try {
         const { data, error } = await supabase
           .from('user_settings')
           .select('theme')
           .eq('user_id', user.id)
           .single();
-          
+
         if (error) {
           console.error('Error fetching theme preference:', error);
         } else if (data?.theme) {
@@ -63,20 +62,16 @@ export function ModeToggle() {
 
   const saveThemePreference = async (newTheme: string) => {
     setTheme(newTheme);
-    
+
     if (user) {
       const { error } = await supabase
         .from('user_settings')
         .update({ theme: newTheme })
         .eq('user_id', user.id);
-        
+
       if (error) {
         console.error('Error saving theme preference:', error);
-        toast({
-          title: t('common.error'),
-          description: 'Failed to save theme preference',
-          variant: 'destructive',
-        });
+        toast.error(t('common.error'), { description: 'Failed to save theme preference' });
       }
     }
   };

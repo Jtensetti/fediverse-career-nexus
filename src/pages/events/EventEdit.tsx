@@ -33,7 +33,7 @@ export default function EventEdit() {
     }
   });
 
-  const handleSubmit = (data: Event) => {
+  const handleSubmit = (data: Omit<Event, "id" | "created_at" | "updated_at" | "user_id">) => {
     if (id) {
       setIsSubmitting(true);
       updateMutation.mutate({ eventId: id, eventData: data });

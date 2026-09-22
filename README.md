@@ -1,83 +1,45 @@
 # Nolto
 
-A federated professional network for the Swedish public sector — municipalities, regions, and government agencies. Built with ActivityPub and WebFinger for interoperability. See the release checklist for deployment and verification requirements.
+Nolto is a Swedish-first professional network with profiles, organisation pages, posts, articles, events and jobs. Public accounts use `username@nolto.social` through WebFinger and ActivityPub. This is a federated identity, not an email address.
 
-Canonical federation domain: **[nolto.social](https://nolto.social)**.
+Mastodon account linking, follows and public content are supported in the implementation. Complete account mirroring and general Mastodon client compatibility are not. See the [federation acceptance checks](docs/federation-launch-checklist.md) and [remaining launch requirements](docs/production-readiness.md).
 
-**Release candidate:** read [production readiness and deployment gates](docs/production-readiness.md) before reopening registrations.
+## Development
 
----
+Use Node 24.15 or later within Node 24, or Node 22.22.2 or later within Node 22.
 
-## What it is
-
-Nolto combines:
-
-- **CV-style profiles** with verifiable employment, education, and endorsements
-- **Organisation pages** for public-sector employers with role-based admin (owner / admin / editor)
-- **A federated feed** that interoperates with Mastodon and other ActivityPub servers
-- **Long-form articles, events, and a structured job board** focused on transparency
-- **Local direct messaging** processed by the server; federated DMs are not supported
-- **Granular privacy controls** (per-section visibility, federation opt-in, MFA)
-
-The platform is Swedish-first (`sv` default, English fallback). Confirm actual hosting regions, subprocessors and transfer arrangements before publishing the privacy policy.
-
----
-
-## Tech stack
-
-- **Frontend:** React 18 · Vite 6.4 · TypeScript · Tailwind · shadcn/ui · TanStack Query
-- **Backend:** Lovable Cloud (Supabase/Postgres, Auth, RLS, Storage and Deno Edge Functions)
-- **Federation:** ActivityPub · HTTP Signatures · WebFinger · NodeInfo
-- **Auth:** Email/password · TOTP MFA · Mastodon sign-in/linking; other OAuth providers require explicit deployment configuration
-- **Email:** Resend (sender: `noreply@nolto.social`)
-
----
-
-## Quick start
-
-```bash
-git clone <your-fork-url>
-cd <repo>
+```sh
 npm ci
-cp .env.example .env   # fill in your own Supabase project values
+cp .env.example .env
+# Set the two public backend values in .env.
 npm run dev
 ```
 
-The dev server runs on `http://localhost:8080`.
+The development server listens on `http://localhost:8080`. The backend uses PostgreSQL, Supabase Auth, Storage and Deno Edge Functions. Use a separate development backend; do not run test fixtures or seed scripts against production. Historical migrations have not been verified as a clean installation sequence.
 
-You will need your own Supabase project — see [`docs/`](docs/) for schema notes and [`supabase/migrations/`](supabase/migrations/) for the full DDL history.
+The application uses React, TypeScript, Vite, Tailwind, TanStack Query and Radix components. Dependencies are pinned in `package.json`, `package-lock.json` and `deno.lock`. Browser configuration is public; service credentials belong only in server secret storage.
 
-### Running the test suite
+## Checks
 
-```bash
-npm run lint   # tsc + eslint
-npm test       # jest
+```sh
+npm run check:source
+npm run check:types
+npm test
+npm run check:edge
+npm run build
+npm audit --audit-level=high
 ```
 
----
-
-## Contributing
-
-Contributions are welcome. Before opening a PR:
-
-1. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) — coding conventions, branch flow, PR checklist.
-2. Read [`SECURITY.md`](SECURITY.md) — responsible disclosure and accepted-risk register.
-3. Read [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — expected behavior in the community.
-4. For database changes, always include a migration in `supabase/migrations/`. Never edit `src/integrations/supabase/types.ts` by hand.
-
-Issues and feature requests use the templates under [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/).
-
----
+`check:types` runs strict TypeScript checks; `lint` is an alias. Tests use Node's test runner and Deno. CI also rehearses migrations in isolated PostgreSQL; instructions are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Documentation
 
-- [`docs/openapi.yaml`](docs/openapi.yaml) — REST + ActivityPub endpoint contract
-- [`docs/`](docs/) — architecture notes
-- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
-- [`SECURITY.md`](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security reporting and boundaries](SECURITY.md)
+- [Security and maintenance review](docs/security-review.md)
+- [Deployment and launch requirements](docs/production-readiness.md)
+- [Privacy, encrypted messaging and deletion](docs/privacy-and-deletion.md)
 
----
+## Licence
 
-## License
-
-[MIT](LICENSE).
+Nolto's code is [MIT licensed](LICENSE). Bundled fonts retain their [own licences](public/licenses/README.md). Package licences remain with their respective authors.

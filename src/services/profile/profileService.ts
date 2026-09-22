@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import i18n from "@/i18n";
 
@@ -34,7 +34,7 @@ export const getProfilePreview = async (usernameOrId: string): Promise<ProfilePr
       .eq(isUUID ? "id" : "username", usernameOrId)
       .maybeSingle();
 
-    if (error || !profile) return null;
+    if (error || !profile?.id) return null;
 
     return {
       id: profile.id,
@@ -92,7 +92,7 @@ export interface Experience {
   title: string;
   company: string;
   isCurrentRole: boolean;
-  startDate: string;
+  startDate?: string;
   endDate?: string;
   location?: string;
   description?: string;
@@ -104,7 +104,7 @@ export interface Education {
   institution: string;
   degree: string;
   field?: string;
-  startYear: number;
+  startYear?: number;
   endYear?: number;
   isVerified?: boolean;
 }
@@ -115,17 +115,6 @@ export interface Skill {
   endorsements: number;
 }
 
-/**
- * Ensure a profile row exists for the given user. If none is found,
- * a minimal profile will be created with a fallback username.
- */
-export const ensureUserProfile = async (userId: string) => {
-  // Profile creation belongs to the auth.users transaction, never a speculative browser write.
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-  if (error) throw error;
-  return data;
-};
-
 export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
   try {
     // Check session first
@@ -134,20 +123,11 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
     } = await supabase.auth.getSession();
 
     if (!session?.user) {
-      console.error("❌ No session found in getCurrentUserProfile");
+      console.error("No session found in getCurrentUserProfile");
       return null;
     }
 
     const user = session.user;
-
-    // First ensure the profile exists
-    const ensuredProfile = await ensureUserProfile(user.id);
-    if (!ensuredProfile) {
-      console.error("❌ Failed to ensure profile exists");
-      return null;
-    }
-
-    // Get user profile - for own profile, fetch from base profiles table to include phone
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
@@ -156,12 +136,12 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       .single();
 
     if (profileError) {
-      console.error("❌ Profile fetch error:", profileError);
+      console.error("Profile fetch error:", profileError);
       throw profileError;
     }
 
-    if (!profile) {
-      console.error("❌ No profile found after ensuring it exists");
+    if (!profile?.username) {
+      console.error("Profile or username missing");
       return null;
     }
 
@@ -208,12 +188,12 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
 
     const userProfile = {
       id: profile.id,
-      username: profile.username || `user_${user.id.slice(0, 8)}`,
-      displayName: profile.fullname || profile.username || `user_${user.id.slice(0, 8)}`,
+      username: profile.username,
+      displayName: profile.fullname || profile.username,
       headline: profile.headline || "",
       bio: profile.bio || "",
-      avatarUrl: profile.avatar_url,
-      headerUrl: profile.header_url,
+      avatarUrl: profile.avatar_url || undefined,
+      headerUrl: profile.header_url || undefined,
       isVerified: profile.is_verified || false,
       domain: profile.domain || "",
       connections: connectionCount || 0,
@@ -239,20 +219,20 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
         id: exp.id,
         title: exp.title,
         company: exp.company,
-        isCurrentRole: exp.is_current_role,
-        startDate: exp.start_date,
-        endDate: exp.end_date,
-        location: exp.location,
-        description: exp.description,
+        isCurrentRole: exp.is_current_role ?? false,
+        startDate: exp.start_date || undefined,
+        endDate: exp.end_date || undefined,
+        location: exp.location || undefined,
+        description: exp.description || undefined,
         isVerified: exp.verification_status === "verified",
       })),
       education: (education || []).map((edu) => ({
         id: edu.id,
         institution: edu.institution,
         degree: edu.degree,
-        field: edu.field,
-        startYear: edu.start_year,
-        endYear: edu.end_year,
+        field: edu.field || undefined,
+        startYear: edu.start_year ?? undefined,
+        endYear: edu.end_year ?? undefined,
         isVerified: edu.verification_status === "verified",
       })),
       skills: (skills || []).map((skill) => ({
@@ -264,7 +244,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
 
     return userProfile;
   } catch (error) {
-    console.error("❌ Error fetching user profile:", error);
+    console.error("Error fetching user profile:", error);
     toast.error(i18n.t("toasts.profileLoadFailed"));
     return null;
   }
@@ -288,6 +268,7 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
       .single();
 
     if (profileError) throw profileError;
+    if (!profile?.id || !profile.username) return null;
 
     const isOwnProfile = user?.id === profile.id;
 
@@ -355,12 +336,12 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
       displayName: profile.fullname || profile.username,
       headline: profile.headline || "",
       bio: profile.bio || "",
-      avatarUrl: profile.avatar_url,
-      headerUrl: profile.header_url,
+      avatarUrl: profile.avatar_url || undefined,
+      headerUrl: profile.header_url || undefined,
       isVerified: profile.is_verified || false,
       connections: connectionCount || 0,
       networkVisibilityEnabled,
-      connectionDegree,
+      connectionDegree: connectionDegree ?? undefined,
       // Federated auth fields
       authType: (profile.auth_type as "local" | "federated") || "local",
       homeInstance: profile.home_instance || undefined,
@@ -382,20 +363,20 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
         id: exp.id,
         title: exp.title,
         company: exp.company,
-        isCurrentRole: exp.is_current_role,
-        startDate: exp.start_date,
-        endDate: exp.end_date,
-        location: exp.location,
-        description: exp.description,
+        isCurrentRole: exp.is_current_role ?? false,
+        startDate: exp.start_date || undefined,
+        endDate: exp.end_date || undefined,
+        location: exp.location || undefined,
+        description: exp.description || undefined,
         isVerified: exp.verification_status === "verified",
       })),
       education: (education || []).map((edu) => ({
         id: edu.id,
         institution: edu.institution,
         degree: edu.degree,
-        field: edu.field,
-        startYear: edu.start_year,
-        endYear: edu.end_year,
+        field: edu.field || undefined,
+        startYear: edu.start_year ?? undefined,
+        endYear: edu.end_year ?? undefined,
         isVerified: edu.verification_status === "verified",
       })),
       skills: (skills || []).map((skill) => ({

@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { ReactionKey, REACTIONS } from "@/lib/reactions";
 
 export interface ReactionUser {
@@ -75,7 +75,7 @@ export async function getReactionUsers(
       if (REACTIONS.includes(reactionKey)) {
         counts[reactionKey]++;
         
-        if (profile) {
+        if (profile?.id) {
           users.push({
             userId: profile.id,
             username: profile.username || 'unknown',
@@ -157,7 +157,7 @@ async function getArticleReactionUsers(articleId: string): Promise<ReactionUsers
       
       counts[reactionKey]++;
       
-      if (profile) {
+      if (profile?.id) {
         users.push({
           userId: profile.id,
           username: profile.username || 'unknown',

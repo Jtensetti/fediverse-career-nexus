@@ -9,7 +9,7 @@ import FederatedPostCard from "@/components/federation/FederatedPostCard";
 import PostReplyThread from "@/components/posts/PostReplyThread";
 import InlineReplyComposer from "@/components/posts/InlineReplyComposer";
 import PostEditDialog from "@/components/posts/PostEditDialog";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { getPostReplies, type PostReply } from "@/services/posts/postReplyService";
 import type { FederatedPost } from "@/services/federation/federationService";
 
@@ -103,7 +103,7 @@ export default function PostView() {
 
       // Resolve actor + profile via safe public views (base actors table is RLS-restricted)
       const actorId = postData.attributed_to as string | null;
-      let actor: { user_id: string | null; preferred_username: string; is_remote: boolean | null } | null = null;
+      let actor: { user_id: string | null; preferred_username: string | null; is_remote: boolean | null } | null = null;
       let profile: { username: string | null; fullname: string | null; avatar_url: string | null } | null = null;
 
       if (actorId) {
@@ -112,7 +112,7 @@ export default function PostView() {
           .select('user_id, preferred_username, is_remote')
           .eq('id', actorId)
           .maybeSingle();
-        actor = (actorData as typeof actor) || null;
+        actor = actorData;
       }
 
       if (actor?.user_id) {
@@ -121,7 +121,7 @@ export default function PostView() {
           .select('username, fullname, avatar_url')
           .eq('id', actor.user_id)
           .single();
-        profile = (profileData as typeof profile) || null;
+        profile = profileData;
       }
 
       // Resolve company data if this is a company post
@@ -147,7 +147,7 @@ export default function PostView() {
         actor_name: companyData?.name || actor?.preferred_username || undefined,
         actor_avatar: companyData?.logo_url || undefined,
         actor: {
-          preferredUsername: actor?.preferred_username,
+          preferredUsername: actor?.preferred_username || undefined,
         },
         profile: profile ? {
           username: profile.username || undefined,
@@ -186,7 +186,7 @@ export default function PostView() {
     }
   };
 
-  const handleReplyToReply = async (replyId: string) => {
+  const handleReplyToReply = async () => {
     // Reload replies after nested reply
     if (postId) {
       const repliesData = await getPostReplies(postId);

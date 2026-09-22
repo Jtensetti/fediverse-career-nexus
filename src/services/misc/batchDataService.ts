@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { ReactionKey, REACTIONS } from "@/lib/reactions";
 
 export interface BatchReactionCount {

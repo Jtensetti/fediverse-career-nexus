@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export interface Endorsement {
   id: string;
@@ -75,7 +75,7 @@ export const endorsementService = {
     }));
   },
 
-  async endorseSkill(skillId: string, skillOwnerId: string): Promise<boolean> {
+  async endorseSkill(skillId: string): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
@@ -90,15 +90,6 @@ export const endorsementService = {
       console.error('Error endorsing skill:', error);
       return false;
     }
-
-    // Get skill name for notification
-    const { data: skill } = await supabase
-      .from('skills')
-      .select('name')
-      .eq('id', skillId)
-      .single();
-
-    // Create notification
 
     return true;
   },
@@ -121,11 +112,11 @@ export const endorsementService = {
     return true;
   },
 
-  async toggleEndorsement(skillId: string, skillOwnerId: string, currentlyEndorsed: boolean): Promise<boolean> {
+  async toggleEndorsement(skillId: string, currentlyEndorsed: boolean): Promise<boolean> {
     if (currentlyEndorsed) {
       return this.removeEndorsement(skillId);
     } else {
-      return this.endorseSkill(skillId, skillOwnerId);
+      return this.endorseSkill(skillId);
     }
   },
 };

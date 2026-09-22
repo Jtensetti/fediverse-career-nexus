@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   Popover,
-  PopoverContent,
-  PopoverTrigger,
+  PopoverContent
 } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Link } from "lucide-react";

@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+import { hasRecordId } from "@/lib/records";
+import { supabase } from "@/lib/supabase";
 
 export interface SearchResult {
   type: 'profile' | 'job' | 'article' | 'event';
@@ -56,12 +57,12 @@ export const searchService = {
         .limit(limit),
     ]);
 
-    const profiles: SearchResult[] = (profilesRes.data || []).map(p => ({
+    const profiles: SearchResult[] = (profilesRes.data || []).filter(hasRecordId).map(p => ({
       type: 'profile' as const,
       id: p.id,
       title: p.fullname || p.username || 'Unknown User',
-      subtitle: p.headline,
-      imageUrl: p.avatar_url,
+      subtitle: p.headline || undefined,
+      imageUrl: p.avatar_url || undefined,
       url: `/profile/${p.username || p.id}`,
     }));
 
@@ -78,7 +79,7 @@ export const searchService = {
       id: a.id,
       title: a.title,
       subtitle: a.excerpt?.substring(0, 100),
-      imageUrl: a.cover_image_url,
+      imageUrl: a.cover_image_url || undefined,
       url: `/articles/${a.slug || a.id}`,
     }));
 
@@ -87,7 +88,7 @@ export const searchService = {
       id: e.id,
       title: e.title,
       subtitle: e.location || new Date(e.start_date).toLocaleDateString(),
-      imageUrl: e.cover_image_url,
+      imageUrl: e.cover_image_url || undefined,
       url: `/events/${e.id}`,
     }));
 

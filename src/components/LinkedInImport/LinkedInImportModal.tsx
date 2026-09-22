@@ -75,7 +75,7 @@ export default function LinkedInImportModal({ open, onOpenChange, onImportComple
       <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{getStepTitle()}</DialogTitle></DialogHeader>
         <Progress value={progress} className="h-1" />
-        {currentStep === 'instructions' && <InstructionsStep onNext={() => goToStep('upload')} onSkipToUpload={() => goToStep('upload')} />}
+        {currentStep === 'instructions' && <InstructionsStep onSkipToUpload={() => goToStep('upload')} />}
         {currentStep === 'upload' && <UploadStep onFileSelected={handleFileSelected} onBack={() => goToStep('instructions')} isProcessing={isProcessing} error={error} />}
         {currentStep === 'preview' && importData && <PreviewStep data={importData} options={importOptions} onOptionsChange={setImportOptions} onConfirm={handleConfirmImport} onBack={() => goToStep('upload')} isProcessing={isProcessing} error={error} />}
         {currentStep === 'confirm' && importResult && <ConfirmStep result={importResult} onClose={handleComplete} />}

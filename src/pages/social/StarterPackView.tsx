@@ -11,8 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEOHead, ShareButton } from "@/components/common";
 import { Package, Users, UserPlus, Check, ArrowLeft } from "lucide-react";
-import { getStarterPackBySlug, followStarterPack, unfollowStarterPack, type StarterPackWithMembers } from "@/services/social/starterPackService";
-import { followAuthor, isFollowingAuthor } from "@/services/social/authorFollowService";
+import { getStarterPackBySlug, followStarterPack, unfollowStarterPack } from "@/services/social/starterPackService";
+import { followAuthor } from "@/services/social/authorFollowService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 

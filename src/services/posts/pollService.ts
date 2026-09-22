@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export interface PollOption {
@@ -60,23 +60,9 @@ export const votePoll = async (
       return false;
     }
 
-    const userId = session.session.user.id;
-
-    // Remove existing votes first (for changing vote)
-    await supabase
-      .from("poll_votes")
-      .delete()
-      .eq("poll_id", pollId)
-      .eq("user_id", userId);
-
-    // Insert new votes
-    const votes = optionIndices.map(optionIndex => ({
-      poll_id: pollId,
-      user_id: userId,
-      option_index: optionIndex
-    }));
-
-    const { error } = await supabase.from("poll_votes").insert(votes);
+    const { error } = await supabase.rpc('set_poll_votes', {
+      p_poll_id: pollId, p_option_indices: optionIndices,
+    });
 
     if (error) {
       console.error("Error voting:", error);
@@ -116,7 +102,7 @@ export const getPollResults = async (
       .rpc("get_poll_results", { poll_uuid: pollId });
 
     if (countError) {
-      console.error("Error getting poll results:", countError);
+      throw countError;
     }
 
     // Get user's votes if logged in
@@ -153,10 +139,7 @@ export const getPollResults = async (
 
     const totalVotes = options.reduce((sum, opt) => sum + opt.voteCount, 0);
     
-    // Get unique voters count
-    const votersCount = new Set(
-      (voteCounts || []).map(() => 1)
-    ).size;
+    const votersCount = Number(voteCounts?.[0]?.voters_count || 0);
 
     // Check if poll is closed - use normalized content
     const endTime = normalizedContent?.endTime as string | undefined;
@@ -165,7 +148,7 @@ export const getPollResults = async (
     return {
       options,
       totalVotes,
-      votersCount: (normalizedContent?.votersCount as number) || votersCount,
+      votersCount,
       userVotes,
       isClosed
     };

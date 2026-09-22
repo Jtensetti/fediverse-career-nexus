@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { ReactionKey, REACTIONS } from "@/lib/reactions";
 import { toast } from "sonner";
 
@@ -76,7 +76,7 @@ export async function toggleReaction(
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.warn('⚠️ toggleReaction: User not authenticated');
+      console.warn('toggleReaction: User not authenticated');
       toast.error("Logga in för att reagera");
       return { success: false, action: 'error', reaction };
     }
@@ -105,7 +105,7 @@ export async function toggleReaction(
           .eq('id', existing.id);
 
         if (deleteError) {
-          console.error('❌ toggleReaction: Error removing reaction:', deleteError);
+          console.error('toggleReaction: Error removing reaction:', deleteError);
           toast.error("Kunde inte ta bort reaktion");
           return { success: false, action: 'error', reaction };
         }
@@ -119,7 +119,7 @@ export async function toggleReaction(
           .eq('id', existing.id);
 
         if (updateError) {
-          console.error('❌ toggleReaction: Error switching reaction:', updateError);
+          console.error('toggleReaction: Error switching reaction:', updateError);
           toast.error("Kunde inte uppdatera reaktion");
           return { success: false, action: 'error', reaction };
         }
@@ -138,7 +138,7 @@ export async function toggleReaction(
         });
 
       if (insertError) {
-        console.error('❌ toggleReaction: Error adding reaction:', insertError);
+        console.error('toggleReaction: Error adding reaction:', insertError);
         toast.error("Kunde inte lägga till reaktion");
         return { success: false, action: 'error', reaction };
       }
@@ -238,7 +238,7 @@ export async function toggleMessageReaction(
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.warn('⚠️ toggleMessageReaction: User not authenticated');
+      console.warn('toggleMessageReaction: User not authenticated');
       toast.error("Logga in för att reagera");
       return { success: false, action: 'error', reaction };
     }
@@ -267,7 +267,7 @@ export async function toggleMessageReaction(
           .eq('id', existing.id);
 
         if (deleteError) {
-          console.error('❌ Error removing message reaction:', deleteError);
+          console.error('Error removing message reaction:', deleteError);
           toast.error("Kunde inte ta bort reaktion");
           return { success: false, action: 'error', reaction };
         }
@@ -281,7 +281,7 @@ export async function toggleMessageReaction(
           .eq('id', existing.id);
 
         if (updateError) {
-          console.error('❌ Error switching message reaction:', updateError);
+          console.error('Error switching message reaction:', updateError);
           toast.error("Kunde inte uppdatera reaktion");
           return { success: false, action: 'error', reaction };
         }
@@ -300,7 +300,7 @@ export async function toggleMessageReaction(
         });
 
       if (insertError) {
-        console.error('❌ Error adding message reaction:', insertError);
+        console.error('Error adding message reaction:', insertError);
         toast.error("Kunde inte lägga till reaktion");
         return { success: false, action: 'error', reaction };
       }

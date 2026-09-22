@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { 
-  ArticleFormData, 
-  updateArticle, 
-  getArticleById, 
-  generateSlug, 
-  getArticleAuthors, 
-  addCoAuthor, 
+import {
+  ArticleFormData,
+  updateArticle,
+  getArticleById,
+  generateSlug,
+  getArticleAuthors,
+  addCoAuthor,
   removeCoAuthor,
-  searchUsers 
+  searchUsers
 } from "@/services/articles/articleService";
 import ArticleEditor from "@/components/articles/ArticleEditor";
 import CoverImageUpload from "@/components/content/CoverImageUpload";
@@ -24,7 +24,7 @@ import { ArrowLeft, Save, UserPlus, X, Users, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,

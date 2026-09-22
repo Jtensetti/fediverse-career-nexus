@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+import { hasRecordId } from "@/lib/records";
+import { supabase } from "@/lib/supabase";
 
 export interface AdvancedSearchFilters {
   query?: string;
@@ -50,7 +51,7 @@ export const advancedSearchService = {
       return [];
     }
     
-    return data || [];
+    return (data || []).filter(hasRecordId);
   },
 
   async getFilterOptions() {
@@ -96,7 +97,7 @@ export const advancedSearchService = {
       .select('id, username, fullname, headline, avatar_url, location, home_instance')
       .in('id', userIds);
     
-    return profiles || [];
+    return (profiles || []).filter(hasRecordId);
   },
 
   async searchByInstitution(institution: string, limit = 20): Promise<AdvancedProfileResult[]> {
@@ -118,6 +119,6 @@ export const advancedSearchService = {
       .select('id, username, fullname, headline, avatar_url, location, home_instance')
       .in('id', userIds);
     
-    return profiles || [];
+    return (profiles || []).filter(hasRecordId);
   },
 };

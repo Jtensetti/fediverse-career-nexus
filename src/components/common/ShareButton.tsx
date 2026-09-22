@@ -156,7 +156,7 @@ export function ShareButton({
             Dela på X/Twitter
           </DropdownMenuItem>
           
-          {navigator.share && (
+          {typeof navigator.share === "function" && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={shareNative}>
@@ -181,7 +181,6 @@ export function ShareButton({
                 handle: authorHandle,
                 avatar_url: authorAvatar,
               }}
-              postUrl={shareUrl}
             />
           </DialogContent>
         </Dialog>

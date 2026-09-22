@@ -108,7 +108,7 @@ export default function ReferralWidget() {
                 <Button variant="outline" size="icon" onClick={handleCopy} aria-label={t("referral.inviteLink")}>
                   {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
                 </Button>
-                {navigator.share && (
+                {typeof navigator.share === "function" && (
                   <Button variant="outline" size="icon" onClick={handleShare} aria-label={t("referral.shareTitle")}>
                     <Share2 className="h-4 w-4" />
                   </Button>

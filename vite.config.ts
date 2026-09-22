@@ -10,11 +10,9 @@ export default defineConfig(({ mode }) => {
   const resolved = {
     VITE_SUPABASE_URL: get("VITE_SUPABASE_URL"),
     VITE_SUPABASE_PUBLISHABLE_KEY: get("VITE_SUPABASE_PUBLISHABLE_KEY"),
-    VITE_SUPABASE_PROJECT_ID: get("VITE_SUPABASE_PROJECT_ID"),
   };
 
   // Build-time safety: forks/self-hosters must provide their own backend env vars.
-  // On Lovable hosting these are always injected, so this never trips in production.
   if (mode !== "development") {
     const missing = Object.entries(resolved)
       .filter(([, v]) => !v)
@@ -60,7 +58,6 @@ export default defineConfig(({ mode }) => {
               "@tiptap/extension-link",
               "@tiptap/extension-image",
             ],
-            "vendor-charts": ["recharts"],
             "vendor-query": ["@tanstack/react-query"],
           },
         },

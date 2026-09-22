@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export type FeedType = 'following' | 'local' | 'federated';
@@ -11,8 +11,8 @@ export interface FeedPreferences {
   show_replies: boolean;
   language_filter: string[] | null;
   muted_words: string[];
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface CustomFeed {
@@ -24,8 +24,8 @@ export interface CustomFeed {
   rules: FeedRules;
   is_public: boolean;
   position: number;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface FeedRules {
@@ -38,14 +38,6 @@ export interface FeedRules {
   min_engagement?: number;
   language?: string[];
 }
-
-const DEFAULT_PREFERENCES: Omit<FeedPreferences, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
-  default_feed: 'following',
-  show_reposts: true,
-  show_replies: false,
-  language_filter: null,
-  muted_words: []
-};
 
 // Get user's feed preferences
 export async function getFeedPreferences(): Promise<FeedPreferences | null> {
@@ -66,7 +58,9 @@ export async function getFeedPreferences(): Promise<FeedPreferences | null> {
       return {
         ...data,
         default_feed: (data.default_feed as FeedType) || 'following',
-        muted_words: data.muted_words || []
+        muted_words: data.muted_words || [],
+        show_reposts: data.show_reposts ?? true,
+        show_replies: data.show_replies ?? false
       };
     }
     
@@ -122,6 +116,9 @@ export async function getCustomFeeds(): Promise<CustomFeed[]> {
     if (error) throw error;
     return (data || []).map(feed => ({
       ...feed,
+      icon: feed.icon || "filter",
+      is_public: feed.is_public ?? false,
+      position: feed.position ?? 0,
       rules: (typeof feed.rules === 'object' ? feed.rules : {}) as FeedRules
     }));
   } catch (error) {
@@ -173,6 +170,9 @@ export async function createCustomFeed(feed: {
     toast.success('Custom feed created!');
     return {
       ...data,
+      icon: data.icon || "filter",
+      is_public: data.is_public ?? false,
+      position: data.position ?? 0,
       rules: (typeof data.rules === 'object' ? data.rules : {}) as FeedRules
     };
   } catch (error) {

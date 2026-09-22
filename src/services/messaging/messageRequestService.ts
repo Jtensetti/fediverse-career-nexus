@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+import { hasRecordId } from "@/lib/records";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export interface MessageRequest {
@@ -8,7 +9,7 @@ export interface MessageRequest {
   preview_text: string | null;
   intro_template: string | null;
   status: 'pending' | 'accepted' | 'declined' | 'ignored';
-  created_at: string;
+  created_at: string | null;
   responded_at: string | null;
   sender?: {
     id: string;
@@ -106,7 +107,7 @@ export async function getReceivedMessageRequests(): Promise<MessageRequest[]> {
       .select('id, username, fullname, avatar_url, headline')
       .in('id', senderIds);
 
-    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+    const profileMap = new Map((profiles || []).filter(hasRecordId).map(p => [p.id, p]));
 
     return (data || []).map(request => ({
       ...request,
@@ -142,7 +143,7 @@ export async function getSentMessageRequests(): Promise<MessageRequest[]> {
       .select('id, username, fullname, avatar_url')
       .in('id', recipientIds);
 
-    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+    const profileMap = new Map((profiles || []).filter(hasRecordId).map(p => [p.id, p]));
 
     return (data || []).map(request => ({
       ...request,

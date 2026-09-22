@@ -1,4 +1,4 @@
--- Read-only preflight for the existing Nolto database, including Lovable Cloud.
+-- Read-only preflight for the existing Nolto database, including the hosted backend.
 -- Run through the project's authenticated SQL editor or database connector.
 -- Returns aggregates and schema metadata only; never returns keys, tokens or user details.
 -- These checks do not replace a restorable backup or a staging migration rehearsal.

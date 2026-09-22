@@ -1,8 +1,8 @@
  import { useQuery } from "@tanstack/react-query";
- import { X, AlertTriangle, CheckCircle } from "lucide-react";
- import { supabase } from "@/integrations/supabase/client";
- import { cn } from "@/lib/utils";
- import { useState, useEffect } from "react";
+import { X, AlertTriangle, CheckCircle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
  
  interface SiteAlert {
    id: string;

@@ -1,7 +1,7 @@
+import { hasRecordId } from "@/lib/records";
 import { requestContentDeletion } from "@/services/privacy/deletionService";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import i18n from "@/i18n";
 
 export interface FlaggedContent {
   id: string;
@@ -512,12 +512,13 @@ export async function searchUsers(query: string): Promise<{
 
     // Check ban status for each user
     const usersWithBanStatus = await Promise.all(
-      (data || []).map(async (user) => {
+      (data || []).filter(hasRecordId).map(async (user) => {
         const { data: banData } = await supabase
           .rpc("is_user_banned", { check_user_id: user.id });
         
         return {
           ...user,
+          username: user.username || user.id,
           is_banned: banData || false,
         };
       })

@@ -1,2 +1,0 @@
-const Technology = () => <section className="container py-12"><h2 className="text-2xl font-semibold mb-4">Tekniken bakom Nolto</h2><p className="max-w-2xl text-muted-foreground">Nolto använder React och TypeScript i webbläsaren, PostgreSQL och Supabase för data och autentisering samt Deno-funktioner för serverlogik. WebFinger används för kontoupptäckt och ActivityPub för federation.</p><a className="inline-block mt-4 underline" href="https://github.com/Jtensetti/fediverse-career-nexus">Läs källkoden</a></section>;
-export default Technology;

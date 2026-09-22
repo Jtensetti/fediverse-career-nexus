@@ -1,5 +1,5 @@
 import { publicMediaUrl } from "@/lib/media";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 const BUCKET = "company-assets";
 

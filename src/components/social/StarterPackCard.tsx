@@ -93,7 +93,7 @@ export default function StarterPackCard({
                   {/* Member avatars */}
                   {memberPreviews.length > 0 && (
                     <div className="flex -space-x-2">
-                      {memberPreviews.slice(0, 3).map((member, i) => (
+                      {memberPreviews.slice(0, 3).map((member) => (
                         <Avatar key={member.id} className={cn(
                           "border-2 border-background",
                           compact ? "h-6 w-6" : "h-7 w-7"

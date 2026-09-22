@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { decryptIncomingMessage, encryptOutgoingMessage, inboxRevision } from './inboxKeysService';
 import { MESSAGE_ENCRYPTION, type SealedMessage } from '@/lib/privateMessages';
@@ -463,7 +463,7 @@ export function unsubscribeFromMessages(channelId: string): void {
 /**
  * Get the other participant's profile from a conversation (handles both local and federated users)
  */
-export async function getOtherParticipant(conversation: Conversation, currentUserId: string): Promise<ParticipantInfo | null> {
+export async function getOtherParticipant(conversation: Conversation): Promise<ParticipantInfo | null> {
   try {
     const partnerId = conversation.id;
 
@@ -521,14 +521,14 @@ export async function getOtherParticipant(conversation: Conversation, currentUse
  */
 async function getParticipantFallback(partnerId: string): Promise<ParticipantInfo | null> {
   try {
-    // Use public_profiles view for all lookups (bypasses RLS restrictions)
+    // Use public_profiles view for all lookups (excludes private profile fields)
     const { data: profile } = await supabase
       .from('public_profiles')
       .select('id, username, fullname, avatar_url')
       .eq('id', partnerId)
       .maybeSingle();
 
-    if (profile) {
+    if (profile?.id) {
       return {
         id: profile.id,
         username: profile.username || undefined,

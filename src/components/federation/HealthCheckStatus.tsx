@@ -1,12 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CircleCheck, CircleAlert, RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -28,7 +27,6 @@ interface HealthStatus {
 }
 
 export default function HealthCheckStatus() {
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   
   const fetchHealthStatus = async (): Promise<HealthStatus> => {
     try {
@@ -57,7 +55,6 @@ export default function HealthCheckStatus() {
   
   useEffect(() => {
     if (!isFetching && data) {
-      setLastRefresh(new Date());
     }
   }, [data, isFetching]);
   

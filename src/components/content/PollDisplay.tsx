@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { BarChart3, Clock, Check, Users } from "lucide-react";
+import { Clock, Check, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getPollResults, votePoll, PollResults } from "@/services/posts/pollService";
 import { useAuth } from "@/contexts/AuthContext";

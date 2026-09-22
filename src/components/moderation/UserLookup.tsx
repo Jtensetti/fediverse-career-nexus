@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { searchUsers } from "@/services/moderation/moderationService";
 import { UserBanDialog } from "./UserBanDialog";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 interface UserDetails {
   id: string;

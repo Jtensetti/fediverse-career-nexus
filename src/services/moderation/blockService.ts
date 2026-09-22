@@ -1,10 +1,10 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export interface UserBlock {
   id: string;
   blocker_id: string;
   blocked_user_id: string;
-  reason?: string;
+  reason?: string | null;
   created_at: string;
 }
 

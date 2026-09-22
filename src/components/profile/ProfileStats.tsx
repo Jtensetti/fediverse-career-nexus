@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProfileStatsProps {
@@ -37,7 +37,7 @@ const fetchProfileStats = async (userId: string): Promise<StatsData> => {
         .eq('user_id', userId)
         .single();
       
-      if (!actor) return { count: 0 };
+      if (!actor?.id) return { count: 0 };
       
       const { count } = await supabase
         .from('ap_objects')

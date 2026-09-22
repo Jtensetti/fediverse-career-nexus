@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/social/referralService";
 import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
@@ -222,7 +222,6 @@ export default function AuthPage() {
     try {
       const trimmedFirstName = firstName.trim();
       const trimmedLastName = lastName.trim();
-      const fullname = `${trimmedFirstName} ${trimmedLastName}`;
       const preferredUsername = username.trim().toLowerCase();
 
       // Validate username if provided
@@ -294,7 +293,7 @@ export default function AuthPage() {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -384,7 +383,7 @@ export default function AuthPage() {
         <div className="max-w-md w-full space-y-8">
           {/* Logo and Branding */}
           <div className="text-center">
-            <img src="/lovable-uploads/8dbd04e2-165c-4205-ba34-e66173afac69.png" alt="Nolto" className="mx-auto h-16 w-16 mb-4" />
+            <img src="/nolto-logo.png" alt="Nolto" className="mx-auto h-16 w-16 mb-4" />
             <h1 className="text-3xl font-bold text-foreground font-display">
               {t("auth.welcomeTitle", "Welcome to Nolto")}
             </h1>

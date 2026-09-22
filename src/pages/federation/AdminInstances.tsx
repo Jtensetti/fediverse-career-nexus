@@ -1,12 +1,11 @@
-import { AlertCircle, ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
 import { motion } from "framer-motion";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RemoteInstancesTable from "@/components/federation/RemoteInstancesTable";
 import ShardedQueueStats from "@/components/federation/ShardedQueueStats";
 import HealthCheckStatus from "@/components/federation/HealthCheckStatus";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { SEOHead } from "@/components/common/SEOHead";

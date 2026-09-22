@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { parseCSV, parseLinkedInDate, parseLinkedInYear, cleanText, getFlexibleColumn } from '@/lib/csvParser';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 // Nolto data types for import
 export interface NoltoProfile {

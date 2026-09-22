@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -75,7 +74,6 @@ const JobForm = ({
   isSubmitting,
   submitButtonText
 }: JobFormProps) => {
-  const [isOnline] = useState(false);
   const { user } = useAuth();
   const { t } = useTranslation();
 
@@ -351,7 +349,7 @@ const JobForm = ({
             <FormField
               control={form.control}
               name="salary_currency"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>{t("jobFormLabels.currency")}</FormLabel>
                   <FormControl>

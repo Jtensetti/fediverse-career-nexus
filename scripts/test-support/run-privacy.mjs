@@ -15,6 +15,10 @@ try {
     './privacy-assertions.sql',
     '../../supabase/migrations/20260922065026_nolto_reported_deletion_review.sql',
     './moderation-retention-assertions.sql',
+    '../../supabase/migrations/20260922073754_nolto_rpc_and_invitation_boundaries.sql',
+    './rpc-boundary-assertions.sql',
+    '../../supabase/migrations/20260922081110_nolto_post_notifications.sql',
+    './post-notification-assertions.sql',
   ]) {
     try {
       if (path !== './cloud-schema.sql') await db.exec('SET check_function_bodies = true');

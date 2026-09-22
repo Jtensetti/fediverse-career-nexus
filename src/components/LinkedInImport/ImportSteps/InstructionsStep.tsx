@@ -2,11 +2,10 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, ArrowRight, Lock } from 'lucide-react';
 
 interface InstructionsStepProps {
-  onNext: () => void;
   onSkipToUpload: () => void;
 }
 
-export default function InstructionsStep({ onNext, onSkipToUpload }: InstructionsStepProps) {
+export default function InstructionsStep({ onSkipToUpload }: InstructionsStepProps) {
   const linkedInExportUrl = 'https://www.linkedin.com/mypreferences/d/download-my-data';
 
   const steps = [

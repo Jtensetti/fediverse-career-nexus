@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail } from "lucide-react";
 import { subscribeToNewsletter, unsubscribeFromNewsletter, checkNewsletterSubscription } from "@/services/misc/newsletterService";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 const NewsletterSubscribe = () => {
   const [email, setEmail] = useState("");

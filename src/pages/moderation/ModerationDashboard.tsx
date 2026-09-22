@@ -1,20 +1,16 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Shield, 
-  Flag, 
-  Users, 
-  Ban, 
-  Activity, 
-  Search, 
+import {
+  Shield,
+  Flag,
+  Users,
+  Ban,
+  Activity,
+  Search,
   AlertTriangle,
-  CheckCircle,
-  Clock,
-  TrendingUp,
-  Eye,
+  CheckCircle, Eye,
   Gavel,
   Globe,
   Server,
@@ -98,9 +94,8 @@ function LoadingFallback() {
 }
 
 export default function ModerationDashboard() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { hasAccess, isAdmin, isModerator, loading: accessLoading } = useModerationAccess();
+  const { hasAccess, isAdmin, loading: accessLoading } = useModerationAccess();
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
 

@@ -29,7 +29,7 @@ export default function EventCreate() {
     onSettled: () => setIsSubmitting(false),
   });
 
-  const handleSubmit = (data: Event) => {
+  const handleSubmit = (data: Omit<Event, "id" | "created_at" | "updated_at" | "user_id">) => {
     setIsSubmitting(true);
     createMutation.mutate(data);
   };

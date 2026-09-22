@@ -1,21 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getPublishedArticles, Article, ArticleWithAccess } from "@/services/articles/articleService";
+import { getPublishedArticles, ArticleWithAccess } from "@/services/articles/articleService";
 import { canAccessFullArticle } from "@/services/social/authorFollowService";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import ArticleCard from "@/components/articles/ArticleCard";
 import ArticlePreviewCard from "@/components/articles/ArticlePreviewCard";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, BookText, Users, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEOHead } from "@/components/common/SEOHead";
 

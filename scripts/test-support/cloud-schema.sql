@@ -1,4 +1,4 @@
--- Schema-only snapshot of Lovable Cloud on 2026-09-21. Contains no user records, keys or credentials.
+-- Schema-only snapshot of the hosted backend on 2026-09-21. Contains no user records, keys or credentials.
 -- Local regression fixture; never apply to a live database.
 SET check_function_bodies = false;
 

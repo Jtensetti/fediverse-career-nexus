@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export type ContentType = "post" | "article" | "job" | "user" | "event";
 export type ReportStatus = "pending" | "reviewed" | "resolved" | "dismissed";

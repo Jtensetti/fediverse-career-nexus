@@ -2,7 +2,7 @@ import { MediaImage } from "@/components/content/MediaImage";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bookmark, Heart, MessageCircle, Repeat2, Share } from "lucide-react";
+import { Bookmark, MessageCircle, Repeat2, Share } from "lucide-react";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 import { Article } from "@/services/articles/articleService";

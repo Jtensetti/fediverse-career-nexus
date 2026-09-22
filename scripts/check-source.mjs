@@ -1,0 +1,66 @@
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+import ts from 'typescript';
+
+const root = process.cwd();
+const config = ts.readConfigFile('tsconfig.app.json', ts.sys.readFile);
+const options = ts.parseJsonConfigFileContent(config.config, ts.sys, root).options;
+const sources = readdirSync('src', { recursive: true })
+  .filter(file => /\.(tsx?|css)$/.test(file)).map(file => path.resolve('src', file));
+const entries = ['src/main.tsx', 'src/vite-env.d.ts', 'vite.config.ts', 'tailwind.config.ts'].map(file => path.resolve(file));
+const reached = new Set();
+const imported = new Set();
+const errors = [];
+
+function visitFile(file) {
+  if (reached.has(file) || !existsSync(file)) return;
+  reached.add(file);
+  if (file.endsWith('.css')) return;
+  const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+  const imports = [];
+  function visit(node) {
+    if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      imports.push(node.moduleSpecifier.text);
+    }
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      if (node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0])) imports.push(node.arguments[0].text);
+      else errors.push(`${path.relative(root, file)}: dynamic import needs an explicit entry in this check`);
+    }
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'require' && node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0])) {
+      imports.push(node.arguments[0].text);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(source);
+  for (const name of imports) {
+    if (!name.startsWith('.') && !name.startsWith('@/')) imported.add(name.startsWith('@') ? name.split('/').slice(0, 2).join('/') : name.split('/')[0]);
+    const resolved = ts.resolveModuleName(name, file, options, ts.sys).resolvedModule?.resolvedFileName;
+    if (resolved?.startsWith(`${root}/src/`)) visitFile(path.resolve(resolved));
+    else if (name.endsWith('.css')) visitFile(path.resolve(path.dirname(file), name));
+  }
+}
+entries.forEach(visitFile);
+for (const file of sources) if (!reached.has(file)) errors.push(`Unreachable source: ${path.relative(root, file)}`);
+const manifest = JSON.parse(readFileSync('package.json', 'utf8'));
+for (const dependency of Object.keys(manifest.dependencies)) if (!imported.has(dependency)) errors.push(`Unused runtime dependency: ${dependency}`);
+
+const tracked = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+for (const file of tracked) {
+  if (/(^|\/)\.env(?:\..+)?$/.test(file) && !file.endsWith('.example')) errors.push(`Environment file is tracked: ${file}`);
+  if (!existsSync(file) || !/\.(?:tsx?|m?js|json|sql|ya?ml|toml|md|html)$/.test(file)) continue;
+  const content = readFileSync(file, 'utf8');
+  for (const match of content.matchAll(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g)) {
+    try {
+      const claims = JSON.parse(Buffer.from(match[0].split('.')[1], 'base64url').toString());
+      if (claims.role === 'service_role') errors.push(`Privileged credential in ${file}`);
+    } catch { /* Not a JWT. Never print candidate credentials. */ }
+  }
+  if (/(?:gh[pousr]_[A-Za-z0-9]{30,}|sb_secret_[A-Za-z0-9_-]{20,})/.test(content)) errors.push(`Secret-shaped value in ${file}`);
+  if (/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----\s+[A-Za-z0-9+/=]{32}/.test(content)) errors.push(`Private key material in ${file}`);
+}
+if (/<script\b[^>]*\bsrc\s*=\s*["']https?:\/\//i.test(readFileSync('index.html', 'utf8'))) errors.push('Remote script in the application entrypoint');
+if (errors.length) {
+  console.error(errors.join('\n'));
+  process.exitCode = 1;
+} else console.log(`Source checks passed (${sources.length} source files, ${Object.keys(manifest.dependencies).length} runtime dependencies).`);

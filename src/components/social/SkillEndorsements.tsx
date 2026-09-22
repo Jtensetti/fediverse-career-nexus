@@ -53,7 +53,6 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
 
     const success = await endorsementService.toggleEndorsement(
       skill.id,
-      userId,
       skill.user_has_endorsed
     );
 

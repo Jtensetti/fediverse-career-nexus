@@ -6,17 +6,12 @@ import { format, parseISO } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import DOMPurify from 'dompurify';
 import {
-  Calendar,
-  Clock,
-  MapPin,
+  Calendar, MapPin,
   Video,
-  User,
-  Download,
-  Share,
-  Youtube
+  User, Share
 } from 'lucide-react';
 import { linkifyText } from '@/lib/linkify';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -101,7 +96,7 @@ export default function EventView() {
       try {
         await navigator.share({
           title: event?.title,
-          text: event?.description,
+          text: event?.description || undefined,
           url: eventUrl,
         });
       } catch (error) {
