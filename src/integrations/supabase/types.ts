@@ -14,18 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      atproto_identities: {
-        Row: { did: string; user_id: string; created_at: string }
-        Insert: { did: string; user_id: string; created_at?: string }
-        Update: { did?: string; user_id?: string }
-        Relationships: []
-      }
-      content_review_decisions: {
-        Row: { id: string; content_kind: string; content_id: string; revision: string; actor_id: string | null; action: string; explanation: string; created_at: string }
-        Insert: { id?: string; content_kind: string; content_id: string; revision: string; actor_id?: string | null; action: string; explanation: string; created_at?: string }
-        Update: { action?: string; explanation?: string }
-        Relationships: []
-      }
       activities: {
         Row: {
           actor_id: string | null
@@ -201,9 +189,6 @@ export type Database = {
       }
       ap_objects: {
         Row: {
-          moderation_status: string
-          moderation_revision: string
-          moderation_reason: string | null
           attributed_to: string | null
           company_id: string | null
           content: Json | null
@@ -211,15 +196,15 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
+          moderation_reason: string | null
+          moderation_revision: string
+          moderation_status: string
           published_at: string | null
           remote_object_id: string | null
           type: string
           updated_at: string
         }
         Insert: {
-          moderation_status?: string
-          moderation_revision?: string
-          moderation_reason?: string | null
           attributed_to?: string | null
           company_id?: string | null
           content?: Json | null
@@ -227,15 +212,15 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          moderation_reason?: string | null
+          moderation_revision?: string
+          moderation_status?: string
           published_at?: string | null
           remote_object_id?: string | null
           type: string
           updated_at?: string
         }
         Update: {
-          moderation_status?: string
-          moderation_revision?: string
-          moderation_reason?: string | null
           attributed_to?: string | null
           company_id?: string | null
           content?: Json | null
@@ -243,6 +228,9 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          moderation_reason?: string | null
+          moderation_revision?: string
+          moderation_status?: string
           published_at?: string | null
           remote_object_id?: string | null
           type?: string
@@ -348,9 +336,6 @@ export type Database = {
       }
       articles: {
         Row: {
-          moderation_status: string
-          moderation_revision: string
-          moderation_reason: string | null
           company_id: string | null
           content: string
           cover_image_url: string | null
@@ -358,6 +343,9 @@ export type Database = {
           deleted_at: string | null
           excerpt: string | null
           id: string
+          moderation_reason: string | null
+          moderation_revision: string
+          moderation_status: string
           published: boolean | null
           published_at: string | null
           search_vector: unknown
@@ -368,9 +356,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          moderation_status?: string
-          moderation_revision?: string
-          moderation_reason?: string | null
           company_id?: string | null
           content: string
           cover_image_url?: string | null
@@ -378,6 +363,9 @@ export type Database = {
           deleted_at?: string | null
           excerpt?: string | null
           id?: string
+          moderation_reason?: string | null
+          moderation_revision?: string
+          moderation_status?: string
           published?: boolean | null
           published_at?: string | null
           search_vector?: unknown
@@ -388,9 +376,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          moderation_status?: string
-          moderation_revision?: string
-          moderation_reason?: string | null
           company_id?: string | null
           content?: string
           cover_image_url?: string | null
@@ -398,6 +383,9 @@ export type Database = {
           deleted_at?: string | null
           excerpt?: string | null
           id?: string
+          moderation_reason?: string | null
+          moderation_revision?: string
+          moderation_status?: string
           published?: boolean | null
           published_at?: string | null
           search_vector?: unknown
@@ -416,6 +404,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      atproto_auth_locks: {
+        Row: {
+          expires_at: string
+          key_hash: string
+          lease_id: string
+        }
+        Insert: {
+          expires_at?: string
+          key_hash: string
+          lease_id: string
+        }
+        Update: {
+          expires_at?: string
+          key_hash?: string
+          lease_id?: string
+        }
+        Relationships: []
+      }
+      atproto_identities: {
+        Row: {
+          created_at: string
+          did: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          did: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          did?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      atproto_oauth_states: {
+        Row: {
+          browser_proof_hash: string
+          encrypted_state: string
+          expires_at: string
+          state_hash: string
+        }
+        Insert: {
+          browser_proof_hash: string
+          encrypted_state: string
+          expires_at?: string
+          state_hash: string
+        }
+        Update: {
+          browser_proof_hash?: string
+          encrypted_state?: string
+          expires_at?: string
+          state_hash?: string
+        }
+        Relationships: []
       }
       auth_request_logs: {
         Row: {
@@ -823,6 +868,39 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      content_review_decisions: {
+        Row: {
+          action: string
+          actor_id: string | null
+          content_id: string
+          content_kind: string
+          created_at: string
+          explanation: string
+          id: string
+          revision: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          content_id: string
+          content_kind: string
+          created_at?: string
+          explanation: string
+          id?: string
+          revision: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          content_id?: string
+          content_kind?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          revision?: string
         }
         Relationships: []
       }
@@ -2416,37 +2494,37 @@ export type Database = {
       }
       post_replies: {
         Row: {
-          moderation_status: string
-          moderation_revision: string
-          moderation_reason: string | null
           content: string
           created_at: string
           deleted_at: string | null
           id: string
+          moderation_reason: string | null
+          moderation_revision: string
+          moderation_status: string
           post_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          moderation_status?: string
-          moderation_revision?: string
-          moderation_reason?: string | null
           content: string
           created_at?: string
           deleted_at?: string | null
           id?: string
+          moderation_reason?: string | null
+          moderation_revision?: string
+          moderation_status?: string
           post_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          moderation_status?: string
-          moderation_revision?: string
-          moderation_reason?: string | null
           content?: string
           created_at?: string
           deleted_at?: string | null
           id?: string
+          moderation_reason?: string | null
+          moderation_revision?: string
+          moderation_status?: string
           post_id?: string
           updated_at?: string
           user_id?: string
@@ -3291,9 +3369,9 @@ export type Database = {
           created_at: string | null
           default_feed: string | null
           id: string
+          infinite_scroll: boolean
           language_filter: string[] | null
           muted_words: string[] | null
-          infinite_scroll: boolean
           show_replies: boolean | null
           show_reposts: boolean | null
           updated_at: string | null
@@ -3303,9 +3381,9 @@ export type Database = {
           created_at?: string | null
           default_feed?: string | null
           id?: string
+          infinite_scroll?: boolean
           language_filter?: string[] | null
           muted_words?: string[] | null
-          infinite_scroll?: boolean
           show_replies?: boolean | null
           show_reposts?: boolean | null
           updated_at?: string | null
@@ -3315,9 +3393,9 @@ export type Database = {
           created_at?: string | null
           default_feed?: string | null
           id?: string
+          infinite_scroll?: boolean
           language_filter?: string[] | null
           muted_words?: string[] | null
-          infinite_scroll?: boolean
           show_replies?: boolean | null
           show_reposts?: boolean | null
           updated_at?: string | null
@@ -3564,7 +3642,11 @@ export type Database = {
           content: Json | null
           content_warning: string | null
           created_at: string | null
+          deleted_at: string | null
           id: string | null
+          moderation_reason: string | null
+          moderation_revision: string | null
+          moderation_status: string | null
           published_at: string | null
           remote_object_id: string | null
           type: string | null
@@ -3864,25 +3946,6 @@ export type Database = {
       }
     }
     Functions: {
-      assess_public_text: { Args: { p_text: string }; Returns: Json }
-      get_content_review_queue: {
-        Args: { p_own?: boolean; p_offset?: number }
-        Returns: { content_kind: string; content_id: string; revision: string; status: string; reason: string | null; body: string; created_at: string; can_edit: boolean }[]
-      }
-      decide_content_review: {
-        Args: { p_kind: string; p_id: string; p_revision: string; p_action: string; p_explanation: string }
-        Returns: undefined
-      }
-      create_post_reply: {
-        Args: {
-          p_post_id: string
-          p_content: string
-          p_parent_reply_id?: string
-          p_company_id?: string
-        }
-        Returns: string
-      }
-
       actor_id_to_partition_key: {
         Args: { actor_uuid: string }
         Returns: number
@@ -3895,6 +3958,7 @@ export type Database = {
         Args: { user1: string; user2: string }
         Returns: boolean
       }
+      assess_public_text: { Args: { p_text: string }; Returns: Json }
       begin_actor_move: {
         Args: { actor_uuid: string; move_activity: Json; target_url: string }
         Returns: undefined
@@ -3920,6 +3984,10 @@ export type Database = {
       check_account_deletion: { Args: never; Returns: undefined }
       check_host_rate_limit: {
         Args: { p_max_requests_per_minute?: number; p_remote_host: string }
+        Returns: boolean
+      }
+      claim_atproto_lock: {
+        Args: { p_key: string; p_lease: string }
         Returns: boolean
       }
       claim_deletion_requests: {
@@ -4028,8 +4096,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_post_reply: {
+        Args: {
+          p_company_id?: string
+          p_content: string
+          p_parent_reply_id?: string
+          p_post_id: string
+        }
+        Returns: string
+      }
       current_session_is_active: { Args: never; Returns: boolean }
       current_session_is_verified: { Args: never; Returns: boolean }
+      decide_content_review: {
+        Args: {
+          p_action: string
+          p_explanation: string
+          p_id: string
+          p_kind: string
+          p_revision: string
+        }
+        Returns: undefined
+      }
       ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
       ensure_actor_keys: {
         Args: {
@@ -4079,6 +4166,19 @@ export type Database = {
         Args: { source_user_id: string; target_user_id: string }
         Returns: number
       }
+      get_content_review_queue: {
+        Args: { p_offset?: number; p_own?: boolean }
+        Returns: {
+          body: string
+          can_edit: boolean
+          content_id: string
+          content_kind: string
+          created_at: string
+          reason: string
+          revision: string
+          status: string
+        }[]
+      }
       get_current_public_key: { Args: never; Returns: string }
       get_event_owner: { Args: { p_event_id: string }; Returns: string }
       get_federation_health: {
@@ -4110,12 +4210,26 @@ export type Database = {
           total_batches: number
         }[]
       }
-      get_member_feed: {
-        Args: { p_feed?: string; p_limit?: number; p_offset?: number }
-        Returns: Database["public"]["Views"]["federated_feed"]["Row"][]
-      }
       get_following_feed: {
         Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          attributed_to: string | null
+          company_id: string | null
+          content: Json | null
+          id: string | null
+          published_at: string | null
+          source: string | null
+          type: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "federated_feed"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_member_feed: {
+        Args: { p_feed?: string; p_limit?: number; p_offset?: number }
         Returns: {
           attributed_to: string | null
           company_id: string | null
@@ -4149,6 +4263,25 @@ export type Database = {
           user_id: string
           username: string
         }[]
+      }
+      get_own_review_decisions: {
+        Args: never
+        Returns: {
+          action: string
+          actor_id: string | null
+          content_id: string
+          content_kind: string
+          created_at: string
+          explanation: string
+          id: string
+          revision: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "content_review_decisions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_participant_info: { Args: { participant_id: string }; Returns: Json }
       get_poll_results: {
@@ -4207,10 +4340,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      set_poll_votes: {
-        Args: { p_poll_id: string; p_option_indices: number[] }
-        Returns: undefined
-      }
       has_user_voted: {
         Args: { check_user_id: string; poll_uuid: string }
         Returns: {
@@ -4266,6 +4395,11 @@ export type Database = {
         }
       }
       media_gateway_url: { Args: { p_url: string }; Returns: string }
+      moderation_is_owner: {
+        Args: { p_id: string; p_kind: string }
+        Returns: boolean
+      }
+      moderation_object_text: { Args: { p_body: Json }; Returns: string }
       pending_account_content: {
         Args: { p_limit?: number }
         Returns: {
@@ -4292,6 +4426,10 @@ export type Database = {
         Args: { p_object_id: string }
         Returns: boolean
       }
+      privacy_publisher_is_active: {
+        Args: { p_actor_id: string; p_company_id: string }
+        Returns: boolean
+      }
       purge_expired_private_metadata: { Args: never; Returns: undefined }
       read_reported_deleted_content: {
         Args: { p_moderator_id: string; p_report_id: string }
@@ -4302,6 +4440,7 @@ export type Database = {
           subject_id: string
         }[]
       }
+      readable_poll: { Args: { p_poll_id: string }; Returns: Json }
       recalc_company_counts: {
         Args: { _company_id: string }
         Returns: undefined
@@ -4424,10 +4563,15 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      set_poll_votes: {
+        Args: { p_option_indices: number[]; p_poll_id: string }
+        Returns: undefined
+      }
       update_instance_health: {
         Args: { p_host: string; p_success: boolean }
         Returns: undefined
       }
+      valid_personal_feed_rules: { Args: { rules: Json }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
