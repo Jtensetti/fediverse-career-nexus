@@ -162,7 +162,14 @@ const ArticleView = () => {
               </div>
             </div>
             
-            {showFullContent ? (
+            {accessLoading ? (
+              <div className="space-y-4 not-prose" role="status" aria-busy="true">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            ) : showFullContent ? (
               <ArticleContent html={article.content} />
             ) : (
               <>
