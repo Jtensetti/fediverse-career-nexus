@@ -10,6 +10,8 @@ ARG VITE_SUPABASE_PUBLISHABLE_KEY
 RUN test -n "$VITE_SUPABASE_URL" && test -n "$VITE_SUPABASE_PUBLISHABLE_KEY" && npm run build
 
 FROM caddy:2.11.2-alpine
+# The official binary has a privileged-port capability; port 8080 needs none.
+RUN setcap -r /usr/bin/caddy
 COPY deploy/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/dist /srv
 USER 1000:1000
