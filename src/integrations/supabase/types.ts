@@ -3254,6 +3254,7 @@ export type Database = {
           id: string
           language_filter: string[] | null
           muted_words: string[] | null
+          infinite_scroll: boolean
           show_replies: boolean | null
           show_reposts: boolean | null
           updated_at: string | null
@@ -3265,6 +3266,7 @@ export type Database = {
           id?: string
           language_filter?: string[] | null
           muted_words?: string[] | null
+          infinite_scroll?: boolean
           show_replies?: boolean | null
           show_reposts?: boolean | null
           updated_at?: string | null
@@ -3276,6 +3278,7 @@ export type Database = {
           id?: string
           language_filter?: string[] | null
           muted_words?: string[] | null
+          infinite_scroll?: boolean
           show_replies?: boolean | null
           show_reposts?: boolean | null
           updated_at?: string | null
@@ -4058,6 +4061,10 @@ export type Database = {
           processed_batches: number
           total_batches: number
         }[]
+      }
+      get_member_feed: {
+        Args: { p_feed?: string; p_limit?: number; p_offset?: number }
+        Returns: Database["public"]["Views"]["federated_feed"]["Row"][]
       }
       get_following_feed: {
         Args: { p_limit?: number; p_offset?: number }

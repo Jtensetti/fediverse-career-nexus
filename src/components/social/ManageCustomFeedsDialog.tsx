@@ -1,6 +1,7 @@
+import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pencil, Trash2, GripVertical } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -38,13 +39,19 @@ export default function ManageCustomFeedsDialog({
   const { t } = useTranslation();
   const [editFeed, setEditFeed] = useState<CustomFeed | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    await deleteCustomFeed(deleteId);
-    setDeleteId(null);
-    onChanged?.();
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await deleteCustomFeed(deleteId);
+      setDeleteId(null);
+      onChanged?.();
+    } catch { toast.error(t('personalFeeds.saveError')); }
+    finally { setDeleting(false); }
   };
 
   const handleEditSaved = () => {
@@ -59,8 +66,8 @@ export default function ManageCustomFeedsDialog({
       parts.push(`${feed.rules.include_tags.length} taggar`);
     if (feed.rules.include_companies?.length)
       parts.push(`${feed.rules.include_companies.length} org.`);
-    if (feed.rules.include_users?.length)
-      parts.push(`${feed.rules.include_users.length} personer`);
+    const people = (feed.rules.include_users?.length ?? 0) + (feed.rules.include_actors?.length ?? 0);
+    if (people) parts.push(t("personalFeeds.peopleCount", { count: people }));
     if (feed.rules.include_keywords?.length)
       parts.push(`${feed.rules.include_keywords.length} nyckelord`);
     return parts.length > 0 ? parts.join(", ") : t("feed.noRules", "Inga regler");
@@ -90,7 +97,6 @@ export default function ManageCustomFeedsDialog({
                   key={feed.id}
                   className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                 >
-                  <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{feed.name}</p>
                     <p className="text-xs text-muted-foreground truncate">
@@ -102,6 +108,7 @@ export default function ManageCustomFeedsDialog({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
+                      aria-label={t("personalFeeds.edit", { name: feed.name })}
                       onClick={() => {
                         setEditFeed(feed);
                         setEditOpen(true);
@@ -113,6 +120,7 @@ export default function ManageCustomFeedsDialog({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
+                      aria-label={t("personalFeeds.remove", { name: feed.name })}
                       onClick={() => setDeleteId(feed.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -147,7 +155,7 @@ export default function ManageCustomFeedsDialog({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel", "Avbryt")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction disabled={deleting} onClick={event => { event.preventDefault(); void handleDelete(); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {t("common.delete", "Ta bort")}
             </AlertDialogAction>
           </AlertDialogFooter>

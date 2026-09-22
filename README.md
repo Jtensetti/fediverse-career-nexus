@@ -1,27 +1,27 @@
 # Nolto
 
-Nolto is a Swedish-first professional network with profiles, organisation pages, posts, articles, events and jobs. Public accounts use `username@nolto.social` through WebFinger and ActivityPub. This is a federated identity, not an email address.
+Nolto är ett öppet nätverk för arbetslivet, skapat av Jonatan Tensetti. Här finns yrkesprofiler, kontakter, inlägg, artiklar, organisationer, jobb och evenemang.
 
-Mastodon account linking, follows and public content are supported in the implementation. Complete account mirroring and general Mastodon client compatibility are not. See the [federation acceptance checks](docs/federation-launch-checklist.md) and [remaining launch requirements](docs/production-readiness.md).
+Flödena sorteras med nyast först. Du kan skapa privata flöden med utvalda personer och taggar, tysta ord och välja när fler inlägg ska läsas in. Det offentliga flödet går att läsa utan konto.
 
-## Development
+Konton har adressen `användarnamn@nolto.social`. Den används av WebFinger och ActivityPub; den är ingen e-postadress. Mastodon-koppling och federerade följningar finns i koden. Fullständig kontosynkronisering och stöd för alla Mastodon-klienter finns inte.
 
-Use Node 24.15 or later within Node 24, or Node 22.22.2 or later within Node 22.
+## Kör lokalt
+
+Använd Node 24.15+ inom version 24, eller Node 22.22.2+ inom version 22.
 
 ```sh
 npm ci
 cp .env.example .env
-# Set the two public backend values in .env.
+# Ange din utvecklingsbackends publika URL och nyckel i .env.
 npm run dev
 ```
 
-The development server listens on `http://localhost:8080`. The backend uses PostgreSQL, Supabase Auth, Storage and Deno Edge Functions. Use a separate development backend; do not run test fixtures or seed scripts against production. Historical migrations have not been verified as a clean installation sequence.
+Öppna `http://localhost:8080`. Använd en separat backend för utveckling och test.
 
-For Nolto’s managed build, `config/public-backend.json` contains only the public backend URL and publishable key. Environment overrides must provide both values together. This prevents builds without a local environment file from failing at startup. Forks must replace these values or supply their own environment.
+Webbappen använder React och TypeScript. Backend bygger på PostgreSQL, Supabase Auth, Storage och Deno Edge Functions. `config/public-backend.json` innehåller den publika konfigurationen för Noltos hanterade bygge. Byt den eller ange båda miljövariablerna om du driver en egen installation. Hemliga servernycklar ska aldrig ligga i klientkoden.
 
-The application uses React, TypeScript, Vite, Tailwind, TanStack Query and Radix components. Dependencies are pinned in `package.json`, `package-lock.json` and `deno.lock`. Browser configuration is public; service credentials belong only in server secret storage.
-
-## Checks
+## Verifiera ändringar
 
 ```sh
 npm run check:source
@@ -29,21 +29,20 @@ npm run check:types
 npm test
 npm run check:edge
 npm run build
-npm audit --audit-level=high
 ```
 
-`check:types` runs strict TypeScript checks; `lint` is an alias. Tests use Node's test runner and Deno. CI also rehearses migrations in isolated PostgreSQL; instructions are in [CONTRIBUTING.md](CONTRIBUTING.md).
+CI kontrollerar även beroenden, databasbehörigheter, migreringar, Docker-bygget och mobilappen. Testdata skapas endast i isolerade testdatabaser. Se [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Documentation
+## Drift och utveckling
 
-- [Self-hosting with Docker](docs/self-hosting.md)
-- [Native app foundation](docs/mobile.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security reporting and boundaries](SECURITY.md)
-- [Security and maintenance review](docs/security-review.md)
-- [Deployment and launch requirements](docs/production-readiness.md)
-- [Privacy, encrypted messaging and deletion](docs/privacy-and-deletion.md)
+- [Installera med Docker](docs/self-hosting.md). Containern innehåller webbappen; backend behövs separat.
+- [Kvar inför lansering](docs/production-readiness.md) och [kontrollera federation](docs/federation-launch-checklist.md).
+- [Integritet, meddelanden och radering](docs/privacy-and-deletion.md).
+- [Mobilappen](docs/mobile.md). En grund för en separat native-app, ännu ingen färdig appbutiksversion.
+- [Funktionsgenomgång och källor](docs/feature-review.md).
+- [Rapportera säkerhetsproblem](SECURITY.md).
+- Källkod: [GitHub](https://github.com/Jtensetti/fediverse-career-nexus) och [Codeberg](https://codeberg.org/Tensetti/Nolto). [Synka utan att skriva över historik](docs/repository-sync.md).
 
-## Licence
+## Licens
 
-Nolto's code is [MIT licensed](LICENSE). Bundled fonts retain their [own licences](public/licenses/README.md). Package licences remain with their respective authors.
+Koden har [MIT-licens](LICENSE). Medföljande typsnitt har [egna licenser](public/licenses/README.md). Beroenden behåller respektive upphovspersons licens.

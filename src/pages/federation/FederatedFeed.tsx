@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FederatedFeed from "@/components/federation/FederatedFeed";
@@ -14,28 +14,23 @@ import ReferralWidget from "@/components/social/ReferralWidget";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { getFeedPreferences } from "@/services/misc/feedPreferencesService";
 import { useQuery } from "@tanstack/react-query";
-import type { FeedType } from "@/services/federation/federationService";
 import { SEOHead } from "@/components/common/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 import Explore from "./Explore";
 
 function MemberFeed() {
-  const [activeFeed, setActiveFeed] = useState<FeedType>("local");
+  const [selectedFeed, setActiveFeed] = useState<string>();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const { showOnboarding, completeOnboarding, hasChecked } = useOnboarding();
 
   // Load user's feed preferences
   const { data: preferences } = useQuery({
-    queryKey: ['feedPreferences'],
+    queryKey: ['feedPreferences', user?.id],
     queryFn: getFeedPreferences,
   });
 
-  // Set default feed from preferences
-  useEffect(() => {
-    if (preferences?.default_feed) {
-      setActiveFeed(preferences.default_feed as FeedType);
-    }
-  }, [preferences]);
+  const activeFeed = selectedFeed ?? preferences?.default_feed ?? 'following';
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
@@ -62,12 +57,13 @@ function MemberFeed() {
             <div className="flex items-center justify-between mb-6">
               <FeedSelector
                 value={activeFeed}
-                onChange={(val) => setActiveFeed(val as FeedType)}
+                onChange={setActiveFeed}
               />
               
               <Button 
                 variant="ghost" 
                 size="icon"
+                aria-label="Uppdatera flödet"
                 onClick={handleRefresh}
                 className="shrink-0"
               >
@@ -100,7 +96,7 @@ function MemberFeed() {
 function FederatedFeedPage() {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center" aria-busy="true"><RefreshCw className="h-6 w-6 animate-spin" aria-label="Laddar" /></div>;
-  return user ? <MemberFeed /> : <Explore />;
+  return user ? <MemberFeed key={user.id} /> : <Explore />;
 }
 
 export default FederatedFeedPage;

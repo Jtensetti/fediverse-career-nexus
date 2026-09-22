@@ -1,6 +1,7 @@
+import { useTranslation } from "react-i18next";
 import { MediaImage } from "@/components/content/MediaImage";
 import { useState, useRef, useCallback } from "react";
-import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
+import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop, convertToPixelCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import {
   Dialog,
@@ -47,6 +48,7 @@ export function ImageCropDialog({
   onCropComplete,
   aspectRatio = 2 / 1, // Default 2:1 for cover images
 }: ImageCropDialogProps) {
+  const { t } = useTranslation();
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,7 +57,9 @@ export function ImageCropDialog({
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       const { width, height } = e.currentTarget;
-      setCrop(centerAspectCrop(width, height, aspectRatio));
+      const initialCrop = centerAspectCrop(width, height, aspectRatio);
+      setCrop(initialCrop);
+      setCompletedCrop(convertToPixelCrop(initialCrop, width, height));
     },
     [aspectRatio]
   );
@@ -127,7 +131,7 @@ export function ImageCropDialog({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Crop Cover Image</DialogTitle>
+          <DialogTitle>{t('profileInline.crop')}</DialogTitle>
         </DialogHeader>
 
         <div className="flex justify-center max-h-[60vh] overflow-auto">
@@ -141,7 +145,7 @@ export function ImageCropDialog({
             <MediaImage
               ref={imgRef}
               src={imageSrc}
-              alt="Crop preview"
+              alt={t('profileInline.cropPreview')}
               onLoad={onImageLoad}
               className="max-w-full max-h-[55vh] object-contain"
               crossOrigin="anonymous"
@@ -151,16 +155,16 @@ export function ImageCropDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isProcessing}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleCropConfirm} disabled={isProcessing || !completedCrop}>
             {isProcessing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Processing...
+                {t('profileInline.processing')}
               </>
             ) : (
-              "Apply Crop"
+              t('profileInline.applyCrop')
             )}
           </Button>
         </DialogFooter>

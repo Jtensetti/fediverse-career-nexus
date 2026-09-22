@@ -19,7 +19,8 @@
     "saveChanges": "Spara ändringar",
     "saved": "Sparat",
     "optional": "valfritt",
-    "close": "Stäng"
+    "close": "Stäng",
+    "remove": "Ta bort"
   },
   "errorBoundary": {
     "title": "Något gick fel",
@@ -193,7 +194,9 @@
     "sessionExpired": "Din session på {{instance}} har gått ut. Logga in igen för att se fjärrinlägg.",
     "includingRemote": "Inklusive {{count}} inlägg från din tidslinje på {{instance}}",
     "couldNotFetch": "Kunde inte hämta från {{instance}}: {{error}}",
-    "fetchingRemote": "Hämtar inlägg från din Fediverse-instans..."
+    "fetchingRemote": "Hämtar inlägg från din Fediverse-instans...",
+    "people": "Personer",
+    "keywords": "Nyckelord"
   },
   "comments": {
     "writeReply": "Skriv ett svar...",
@@ -1909,5 +1912,40 @@
   },
   "publicFeed": {
     "signInToParticipate": "Logga in för att svara eller reagera"
+  },
+  "personalFeeds": {
+    "description": "Ditt privata flöde visar inlägg från valda personer eller organisationer, eller inlägg med någon av dina taggar eller nyckelord. Nyast först. Endast innehåll som du får läsa visas.",
+    "tags": "Taggar",
+    "searchPlaceholder": "Skriv minst två tecken…",
+    "searchError": "Sökningen misslyckades. Försök igen.",
+    "noResults": "Inga träffar. Fjärrkonton måste redan vara kända av Nolto.",
+    "keywordPlaceholder": "Ett ord eller en fras",
+    "invalidTag": "Använd bokstäver, siffror eller understreck i taggen.",
+    "remove": "Ta bort {{name}}",
+    "edit": "Redigera {{name}}",
+    "unavailablePerson": "Profilen är inte tillgänglig",
+    "unavailableCompany": "Organisationen är inte tillgänglig",
+    "peopleCount": "{{count}} personer",
+    "saveError": "Kunde inte läsa eller spara flödet. Dina val finns kvar. Försök igen.",
+    "emptyTitle": "Inga inlägg att visa",
+    "emptyDescription": "Inga tillgängliga inlägg matchar just nu. Du kan ändra urvalet under Flöden eller följa fler personer.",
+    "infiniteScroll": "Läs in fler inlägg automatiskt",
+    "infiniteScrollDescription": "Avstängt som standard. Då väljer du själv när nästa sida ska hämtas."
+  },
+  "profileInline": {
+    "hint": "Klicka på det du vill ändra. Ändringarna publiceras när du sparar.",
+    "preview": "Förhandsvisa",
+    "edit": "Fortsätt redigera",
+    "avatar": "Ändra profilbild",
+    "header": "Ändra omslagsbild",
+    "imageError": "Välj en JPG-, PNG- eller WebP-bild på högst 10 MB.",
+    "invalid": "Kontrollera fälten. Namnet behöver 2–100 tecken.",
+    "saveError": "Kunde inte spara profilen. Dina ändringar finns kvar här så att du kan försöka igen.",
+    "accountSettings": "Kontouppgifter och CV",
+    "saved": "Profilen har sparats",
+    "crop": "Beskär bilden",
+    "cropPreview": "Förhandsvisning av beskärning",
+    "applyCrop": "Använd beskärningen",
+    "processing": "Bearbetar…"
   }
 }
