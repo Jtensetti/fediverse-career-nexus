@@ -1,4 +1,5 @@
 import { strict as assert } from 'node:assert';
+import publishedMetadata from '../../public/oauth-client-metadata.json' with { type: 'json' };
 import { atprotoHandle, atprotoMetadata, atprotoCallbackParams, browserProof } from '../functions/_shared/atproto-policy.ts';
 import { atprotoFetch } from '../functions/_shared/atproto-fetch.ts';
 import { createAtprotoClient } from '../functions/_shared/atproto-client.ts';
@@ -9,6 +10,7 @@ Deno.test('AT Protocol login requests identity only and rejects unsafe discovery
   assert.equal(browserProof('a'.repeat(64)).length, 64);
   assert.throws(() => browserProof('short'));
   const metadata = atprotoMetadata('https://nolto.social');
+  assert.deepEqual(metadata, publishedMetadata);
   assert.equal(metadata.scope, 'atproto');
   assert.deepEqual(metadata.grant_types, ['authorization_code']);
   assert.deepEqual(metadata.redirect_uris, ['https://nolto.social/auth/atproto/callback']);

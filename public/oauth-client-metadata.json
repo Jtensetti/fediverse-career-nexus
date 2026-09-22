@@ -1,0 +1,20 @@
+{
+  "client_id": "https://nolto.social/oauth-client-metadata.json",
+  "client_name": "Nolto",
+  "client_uri": "https://nolto.social",
+  "tos_uri": "https://nolto.social/terms",
+  "policy_uri": "https://nolto.social/privacy",
+  "redirect_uris": [
+    "https://nolto.social/auth/atproto/callback"
+  ],
+  "application_type": "web",
+  "token_endpoint_auth_method": "none",
+  "grant_types": [
+    "authorization_code"
+  ],
+  "response_types": [
+    "code"
+  ],
+  "scope": "atproto",
+  "dpop_bound_access_tokens": true
+}
