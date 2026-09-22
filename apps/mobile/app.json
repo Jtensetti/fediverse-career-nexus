@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Nolto",
+    "slug": "nolto",
+    "version": "0.1.0",
+    "orientation": "default",
+    "scheme": "nolto",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android"],
+    "ios": { "supportsTablet": true, "bundleIdentifier": "social.nolto.app" },
+    "android": { "package": "social.nolto.app", "permissions": [] }
+  }
+}

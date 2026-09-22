@@ -37,6 +37,7 @@ npm audit --audit-level=high
 ## Documentation
 
 - [Self-hosting with Docker](docs/self-hosting.md)
+- [Native app foundation](docs/mobile.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security reporting and boundaries](SECURITY.md)
 - [Security and maintenance review](docs/security-review.md)

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ArrowRight, Globe2, MessageCircle, RefreshCw } from "lucide-react";
-import { getFederatedFeed } from "@/services/federation/federationService";
+import { fetchPublicFeed } from "@nolto/public-feed";
 import FederatedPostCard from "./FederatedPostCard";
 import { Button } from "@/components/ui/button";
 import { PostSkeleton } from "@/components/common/skeletons";
@@ -16,7 +16,7 @@ export default function PublicFeed() {
   const [scope, setScope] = useState<"local" | "federated">("local");
   const feed = useInfiniteQuery({
     queryKey: ["publicFeed", scope],
-    queryFn: ({ pageParam }) => getFederatedFeed(PAGE_SIZE, pageParam, scope),
+    queryFn: ({ pageParam, signal }) => fetchPublicFeed({ url: import.meta.env.VITE_SUPABASE_URL, publishableKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY }, { limit: PAGE_SIZE, offset: pageParam, scope, signal }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages, offset) => lastPage.length === PAGE_SIZE ? offset + PAGE_SIZE : undefined,
     staleTime: 30_000,

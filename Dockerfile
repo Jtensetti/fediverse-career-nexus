@@ -1,6 +1,7 @@
 FROM node:24.19.0-bookworm-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY packages/public-feed ./packages/public-feed
 RUN npm ci
 COPY . .
 ARG VITE_SUPABASE_URL
