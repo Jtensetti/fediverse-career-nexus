@@ -14,18 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      message_public_keys: {
-        Row: { user_id: string; public_key: string; fingerprint: string; created_at: string }
-        Insert: { user_id: string; public_key: string; fingerprint: string; created_at?: string }
-        Update: { public_key?: string; fingerprint?: string }
-        Relationships: []
-      }
-      message_key_backups: {
-        Row: { user_id: string; encrypted_private_key: string; created_at: string }
-        Insert: { user_id: string; encrypted_private_key: string; created_at?: string }
-        Update: { encrypted_private_key?: string }
-        Relationships: []
-      }
       activities: {
         Row: {
           actor_id: string | null
@@ -75,6 +63,7 @@ export type Database = {
       actor_followers: {
         Row: {
           created_at: string
+          follow_activity_id: string | null
           follower_actor_url: string
           id: string
           local_actor_id: string
@@ -83,6 +72,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          follow_activity_id?: string | null
           follower_actor_url: string
           id?: string
           local_actor_id: string
@@ -91,6 +81,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          follow_activity_id?: string | null
           follower_actor_url?: string
           id?: string
           local_actor_id?: string
@@ -203,8 +194,10 @@ export type Database = {
           content: Json | null
           content_warning: string | null
           created_at: string
+          deleted_at: string | null
           id: string
           published_at: string | null
+          remote_object_id: string | null
           type: string
           updated_at: string
         }
@@ -214,8 +207,10 @@ export type Database = {
           content?: Json | null
           content_warning?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           published_at?: string | null
+          remote_object_id?: string | null
           type: string
           updated_at?: string
         }
@@ -225,8 +220,10 @@ export type Database = {
           content?: Json | null
           content_warning?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           published_at?: string | null
+          remote_object_id?: string | null
           type?: string
           updated_at?: string
         }
@@ -334,6 +331,7 @@ export type Database = {
           content: string
           cover_image_url: string | null
           created_at: string
+          deleted_at: string | null
           excerpt: string | null
           id: string
           published: boolean | null
@@ -350,6 +348,7 @@ export type Database = {
           content: string
           cover_image_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           excerpt?: string | null
           id?: string
           published?: boolean | null
@@ -366,6 +365,7 @@ export type Database = {
           content?: string
           cover_image_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           excerpt?: string | null
           id?: string
           published?: boolean | null
@@ -883,6 +883,92 @@ export type Database = {
         }
         Relationships: []
       }
+      deletion_media: {
+        Row: {
+          archived_path: string | null
+          bucket_id: string
+          last_attempt_at: string | null
+          name: string
+          object_id: string
+          request_id: string
+          source_removed: boolean
+        }
+        Insert: {
+          archived_path?: string | null
+          bucket_id: string
+          last_attempt_at?: string | null
+          name: string
+          object_id: string
+          request_id: string
+          source_removed?: boolean
+        }
+        Update: {
+          archived_path?: string | null
+          bucket_id?: string
+          last_attempt_at?: string | null
+          name?: string
+          object_id?: string
+          request_id?: string
+          source_removed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deletion_media_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "deletion_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deletion_requests: {
+        Row: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }
+        Insert: {
+          attempts?: number
+          auth_banned?: boolean
+          claimed_at?: string | null
+          encrypted_payload: string
+          id?: string
+          kind: string
+          last_error?: string | null
+          lease_id?: string | null
+          owner_id: string
+          purge_after?: string
+          requested_at?: string
+          state?: string
+          subject_id: string
+        }
+        Update: {
+          attempts?: number
+          auth_banned?: boolean
+          claimed_at?: string | null
+          encrypted_payload?: string
+          id?: string
+          kind?: string
+          last_error?: string | null
+          lease_id?: string | null
+          owner_id?: string
+          purge_after?: string
+          requested_at?: string
+          state?: string
+          subject_id?: string
+        }
+        Relationships: []
+      }
       education: {
         Row: {
           created_at: string
@@ -1132,6 +1218,60 @@ export type Database = {
         }
         Relationships: []
       }
+      federated_identities: {
+        Row: {
+          created_at: string
+          instance_domain: string
+          remote_account_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          instance_domain: string
+          remote_account_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          instance_domain?: string
+          remote_account_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      federated_oauth_states: {
+        Row: {
+          code_verifier: string
+          created_at: string
+          expires_at: string
+          instance_domain: string
+          link_user_id: string | null
+          redirect_uri: string
+          state_hash: string
+          username: string
+        }
+        Insert: {
+          code_verifier: string
+          created_at?: string
+          expires_at?: string
+          instance_domain: string
+          link_user_id?: string | null
+          redirect_uri: string
+          state_hash: string
+          username: string
+        }
+        Update: {
+          code_verifier?: string
+          created_at?: string
+          expires_at?: string
+          instance_domain?: string
+          link_user_id?: string | null
+          redirect_uri?: string
+          state_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
       federated_sessions: {
         Row: {
           access_token_encrypted: string
@@ -1216,6 +1356,24 @@ export type Database = {
         }
         Relationships: []
       }
+      federation_deliveries: {
+        Row: {
+          delivered_at: string
+          inbox: string
+          queue_id: string
+        }
+        Insert: {
+          delivered_at?: string
+          inbox: string
+          queue_id: string
+        }
+        Update: {
+          delivered_at?: string
+          inbox?: string
+          queue_id?: string
+        }
+        Relationships: []
+      }
       federation_queue_partitioned: {
         Row: {
           activity: Json
@@ -1286,6 +1444,24 @@ export type Database = {
           },
         ]
       }
+      federation_receipts: {
+        Row: {
+          activity_id: string
+          actor_url: string
+          received_at: string
+        }
+        Insert: {
+          activity_id: string
+          actor_url: string
+          received_at?: string
+        }
+        Update: {
+          activity_id?: string
+          actor_url?: string
+          received_at?: string
+        }
+        Relationships: []
+      }
       federation_request_logs: {
         Row: {
           endpoint: string
@@ -1328,6 +1504,21 @@ export type Database = {
         Update: {
           created_at?: string
           signature_hash?: string
+        }
+        Relationships: []
+      }
+      federation_tombstones: {
+        Row: {
+          deleted_at: string
+          id: string
+        }
+        Insert: {
+          deleted_at?: string
+          id: string
+        }
+        Update: {
+          deleted_at?: string
+          id?: string
         }
         Relationships: []
       }
@@ -1568,6 +1759,53 @@ export type Database = {
           },
         ]
       }
+      message_key_backups: {
+        Row: {
+          created_at: string
+          encrypted_private_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_private_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_private_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_key_backups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "message_public_keys"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      message_public_keys: {
+        Row: {
+          created_at: string
+          fingerprint: string
+          public_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fingerprint: string
+          public_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fingerprint?: string
+          public_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       message_requests: {
         Row: {
           created_at: string | null
@@ -1635,10 +1873,8 @@ export type Database = {
           content: string
           created_at: string
           delivery_status: string | null
-          encryption_version: string
-          sender_key_fingerprint: string | null
-          recipient_key_fingerprint: string | null
           encrypted_content: string | null
+          encryption_version: string
           federated_activity_id: string | null
           id: string
           is_encrypted: boolean | null
@@ -1646,18 +1882,18 @@ export type Database = {
           job_conversation_id: string | null
           read_at: string | null
           recipient_id: string
+          recipient_key_fingerprint: string | null
           remote_recipient_url: string | null
           remote_sender_url: string | null
           sender_id: string
+          sender_key_fingerprint: string | null
         }
         Insert: {
           content: string
           created_at?: string
           delivery_status?: string | null
-          encryption_version?: string
-          sender_key_fingerprint?: string | null
-          recipient_key_fingerprint?: string | null
           encrypted_content?: string | null
+          encryption_version?: string
           federated_activity_id?: string | null
           id?: string
           is_encrypted?: boolean | null
@@ -1665,18 +1901,18 @@ export type Database = {
           job_conversation_id?: string | null
           read_at?: string | null
           recipient_id: string
+          recipient_key_fingerprint?: string | null
           remote_recipient_url?: string | null
           remote_sender_url?: string | null
           sender_id: string
+          sender_key_fingerprint?: string | null
         }
         Update: {
           content?: string
           created_at?: string
           delivery_status?: string | null
-          encryption_version?: string
-          sender_key_fingerprint?: string | null
-          recipient_key_fingerprint?: string | null
           encrypted_content?: string | null
+          encryption_version?: string
           federated_activity_id?: string | null
           id?: string
           is_encrypted?: boolean | null
@@ -1684,9 +1920,11 @@ export type Database = {
           job_conversation_id?: string | null
           read_at?: string | null
           recipient_id?: string
+          recipient_key_fingerprint?: string | null
           remote_recipient_url?: string | null
           remote_sender_url?: string | null
           sender_id?: string
+          sender_key_fingerprint?: string | null
         }
         Relationships: [
           {
@@ -1828,6 +2066,45 @@ export type Database = {
           type?: string
         }
         Relationships: []
+      }
+      moderation_retention_access: {
+        Row: {
+          accessed_at: string
+          id: string
+          moderator_id: string | null
+          report_id: string
+          request_id: string
+        }
+        Insert: {
+          accessed_at?: string
+          id?: string
+          moderator_id?: string | null
+          report_id: string
+          request_id: string
+        }
+        Update: {
+          accessed_at?: string
+          id?: string
+          moderator_id?: string | null
+          report_id?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_retention_access_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "content_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_retention_access_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "deletion_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       newsletter_subscribers: {
         Row: {
@@ -1978,6 +2255,7 @@ export type Database = {
       outgoing_follows: {
         Row: {
           created_at: string
+          follow_activity_id: string | null
           id: string
           local_actor_id: string
           remote_actor_url: string
@@ -1986,6 +2264,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          follow_activity_id?: string | null
           id?: string
           local_actor_id: string
           remote_actor_url: string
@@ -1994,6 +2273,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          follow_activity_id?: string | null
           id?: string
           local_actor_id?: string
           remote_actor_url?: string
@@ -2095,12 +2375,20 @@ export type Database = {
             referencedRelation: "federated_posts_with_moderation"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
         ]
       }
       post_replies: {
         Row: {
           content: string
           created_at: string
+          deleted_at: string | null
           id: string
           post_id: string
           updated_at: string
@@ -2109,6 +2397,7 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           post_id: string
           updated_at?: string
@@ -2117,6 +2406,7 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           post_id?: string
           updated_at?: string
@@ -2144,7 +2434,32 @@ export type Database = {
             referencedRelation: "federated_posts_with_moderation"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "post_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      privacy_worker_lease: {
+        Row: {
+          expires_at: string
+          lease_id: string
+          singleton: boolean
+        }
+        Insert: {
+          expires_at: string
+          lease_id: string
+          singleton?: boolean
+        }
+        Update: {
+          expires_at?: string
+          lease_id?: string
+          singleton?: boolean
+        }
+        Relationships: []
       }
       profile_section_visibility: {
         Row: {
@@ -2213,6 +2528,7 @@ export type Database = {
           bio: string | null
           contact_email: string | null
           created_at: string
+          deleted_at: string | null
           dm_privacy: string | null
           domain: string | null
           email_digest_enabled: boolean | null
@@ -2241,6 +2557,7 @@ export type Database = {
           bio?: string | null
           contact_email?: string | null
           created_at?: string
+          deleted_at?: string | null
           dm_privacy?: string | null
           domain?: string | null
           email_digest_enabled?: boolean | null
@@ -2269,6 +2586,7 @@ export type Database = {
           bio?: string | null
           contact_email?: string | null
           created_at?: string
+          deleted_at?: string | null
           dm_privacy?: string | null
           domain?: string | null
           email_digest_enabled?: boolean | null
@@ -2514,6 +2832,21 @@ export type Database = {
           created_at?: string
           reason?: string | null
           slug?: string
+        }
+        Relationships: []
+      }
+      retired_usernames: {
+        Row: {
+          retired_at: string
+          username: string
+        }
+        Insert: {
+          retired_at?: string
+          username: string
+        }
+        Update: {
+          retired_at?: string
+          username?: string
         }
         Relationships: []
       }
@@ -3182,6 +3515,50 @@ export type Database = {
           },
         ]
       }
+      federation_public_objects: {
+        Row: {
+          attributed_to: string | null
+          company_id: string | null
+          content: Json | null
+          content_warning: string | null
+          created_at: string | null
+          id: string | null
+          published_at: string | null
+          remote_object_id: string | null
+          type: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       federation_queue_stats: {
         Row: {
           failed_count: number | null
@@ -3445,9 +3822,6 @@ export type Database = {
       }
     }
     Functions: {
-      get_following_feed: { Args: { p_limit?: number; p_offset?: number }; Returns: { id: string; content: Json; published_at: string; source: string; type: string; attributed_to: string; company_id: string | null }[] }
-      is_username_available: { Args: { candidate: string }; Returns: boolean }
-      request_recommendation: { Args: { recipient: string }; Returns: boolean }
       actor_id_to_partition_key: {
         Args: { actor_uuid: string }
         Returns: number
@@ -3460,6 +3834,10 @@ export type Database = {
         Args: { user1: string; user2: string }
         Returns: boolean
       }
+      begin_actor_move: {
+        Args: { actor_uuid: string; move_activity: Json; target_url: string }
+        Returns: undefined
+      }
       can_message_user: {
         Args: {
           p_job_post_id?: string
@@ -3468,14 +3846,44 @@ export type Database = {
         }
         Returns: Json
       }
+      can_view_connection_list: { Args: { owner_id: string }; Returns: boolean }
       can_view_own_profile_phone: {
         Args: { profile_id: string }
         Returns: boolean
       }
       can_view_phone: { Args: { profile_owner_id: string }; Returns: boolean }
+      can_view_profile_section: {
+        Args: { owner_id: string; section_name: string }
+        Returns: boolean
+      }
+      check_account_deletion: { Args: never; Returns: undefined }
       check_host_rate_limit: {
         Args: { p_max_requests_per_minute?: number; p_remote_host: string }
         Returns: boolean
+      }
+      claim_deletion_requests: {
+        Args: { p_limit?: number }
+        Returns: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "deletion_requests"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       claim_federation_items: {
         Args: { p_limit?: number; p_partition: number }
@@ -3501,6 +3909,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_privacy_worker: { Args: never; Returns: string }
       cleanup_expired_actor_cache: { Args: never; Returns: undefined }
       cleanup_expired_reset_codes: { Args: never; Returns: undefined }
       cleanup_federation_signature_cache: { Args: never; Returns: undefined }
@@ -3525,6 +3934,41 @@ export type Database = {
         Args: { user_a: string; user_b: string }
         Returns: boolean
       }
+      create_owned_company: {
+        Args: { payload: Json }
+        Returns: {
+          banner_url: string | null
+          claim_status: Database["public"]["Enums"]["company_claim_status"]
+          created_at: string
+          description: string | null
+          employee_count: number
+          follower_count: number
+          founded_year: number | null
+          id: string
+          industry: string | null
+          is_active: boolean
+          last_post_at: string | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          search_vector: unknown
+          size: Database["public"]["Enums"]["company_size"] | null
+          slug: string
+          tagline: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_method: string | null
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "companies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      current_session_is_active: { Args: never; Returns: boolean }
+      current_session_is_verified: { Args: never; Returns: boolean }
       ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
       ensure_actor_keys: {
         Args: {
@@ -3536,6 +3980,19 @@ export type Database = {
           private_key: string
           public_key: string
         }[]
+      }
+      ensure_local_actor: {
+        Args: {
+          enable_federation?: boolean
+          new_private_key: string
+          new_public_key: string
+          user_uuid: string
+        }
+        Returns: string
+      }
+      finish_content_deletion: {
+        Args: { p_lease_id: string; p_request_id: string }
+        Returns: undefined
       }
       generate_referral_code: { Args: never; Returns: string }
       get_actor_private_key: { Args: { actor_uuid: string }; Returns: string }
@@ -3591,6 +4048,24 @@ export type Database = {
           processed_batches: number
           total_batches: number
         }[]
+      }
+      get_following_feed: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          attributed_to: string | null
+          company_id: string | null
+          content: Json | null
+          id: string | null
+          published_at: string | null
+          source: string | null
+          type: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "federated_feed"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_onboarding_recommendations: {
         Args: {
@@ -3684,11 +4159,201 @@ export type Database = {
         Args: { p_event_id: string; p_user_id: string }
         Returns: boolean
       }
+      is_username_available: { Args: { candidate: string }; Returns: boolean }
+      list_deletion_owned_files: {
+        Args: { p_owner_id: string }
+        Returns: {
+          bucket_id: string
+          name: string
+        }[]
+      }
+      list_own_storage_objects: {
+        Args: never
+        Returns: {
+          bucket_id: string
+          created_at: string
+          id: string
+          name: string
+          size_bytes: string
+        }[]
+      }
+      list_purge_media: {
+        Args: { p_request_id: string }
+        Returns: {
+          archived_path: string | null
+          bucket_id: string
+          last_attempt_at: string | null
+          name: string
+          object_id: string
+          request_id: string
+          source_removed: boolean
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "deletion_media"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      media_gateway_url: { Args: { p_url: string }; Returns: string }
+      pending_account_content: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+          kind: string
+          owner_id: string
+          snapshot: Json
+          updated_at: string
+        }[]
+      }
+      privacy_account_is_active: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      privacy_actor_is_active: {
+        Args: { p_actor_id: string }
+        Returns: boolean
+      }
+      privacy_media_is_hidden: {
+        Args: { p_bucket: string; p_name: string }
+        Returns: boolean
+      }
+      privacy_object_is_active: {
+        Args: { p_object_id: string }
+        Returns: boolean
+      }
+      purge_expired_private_metadata: { Args: never; Returns: undefined }
+      read_reported_deleted_content: {
+        Args: { p_moderator_id: string; p_report_id: string }
+        Returns: {
+          encrypted_payload: string
+          kind: string
+          purge_after: string
+          subject_id: string
+        }[]
+      }
       recalc_company_counts: {
         Args: { _company_id: string }
         Returns: undefined
       }
+      register_message_keys: {
+        Args: {
+          p_fingerprint: string
+          p_private_key: string
+          p_public_key: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      request_email_verification: {
+        Args: { target_email: string }
+        Returns: string
+      }
+      request_recommendation: { Args: { recipient: string }; Returns: boolean }
+      resolve_private_media: {
+        Args: { p_bucket: string; p_name: string; p_user_id: string }
+        Returns: {
+          id: string
+          mime_type: string
+        }[]
+      }
+      resolve_public_media: {
+        Args: { p_bucket: string; p_name: string; p_url: string }
+        Returns: {
+          id: string
+          mime_type: string
+        }[]
+      }
       safe_uuid: { Args: { _text: string }; Returns: string }
+      schedule_account_deletion: {
+        Args: {
+          p_encrypted_payload: string
+          p_updated_at: string
+          p_user_id: string
+        }
+        Returns: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deletion_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      schedule_content_deletion: {
+        Args: {
+          p_encrypted_payload: string
+          p_files?: Json
+          p_id: string
+          p_kind: string
+          p_owner_id: string
+          p_updated_at: string
+        }
+        Returns: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deletion_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      schedule_file_deletion: {
+        Args: {
+          p_bucket: string
+          p_encrypted_payload: string
+          p_name: string
+          p_url: string
+          p_user_id: string
+        }
+        Returns: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deletion_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_instance_health: {
         Args: { p_host: string; p_success: boolean }
         Returns: undefined
