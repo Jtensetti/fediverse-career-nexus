@@ -53,6 +53,7 @@ export function SaveButton({
     const result = await toggleSaveItem(itemType, itemId);
     
     if (result.success) {
+      setIsSaved(result.saved);
       toast.success(result.saved ? "Sparat!" : "Borttaget från sparade");
     } else {
       setIsSaved(isSaved);

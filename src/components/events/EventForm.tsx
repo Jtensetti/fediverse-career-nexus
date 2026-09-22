@@ -16,21 +16,6 @@ import { sv } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Event } from "@/services/misc/eventService";
 
-const timezones = [
-  "UTC",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Stockholm",
-  "Asia/Tokyo",
-  "Asia/Singapore",
-  "Australia/Sydney",
-  "Pacific/Auckland",
-];
-
 const timeOptions = () => {
   const times = [];
   for (let hour = 0; hour < 24; hour++) {
@@ -94,9 +79,9 @@ const EventForm = ({
     title: defaultValues.title || "",
     description: defaultValues.description || "",
     location: defaultValues.location || "",
-    start_date: startDate,
+    start_date: startDate || new Date(),
     start_time: startDate ? format(startDate, "HH:mm") : "09:00",
-    end_date: endDate,
+    end_date: endDate || new Date(),
     end_time: endDate ? format(endDate, "HH:mm") : "10:00",
     timezone: "UTC",
     is_online: defaultValues.is_online || false,
@@ -110,15 +95,7 @@ const EventForm = ({
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema),
-    defaultValues: {
-      title: "", description: "", location: "",
-      start_date: new Date(), start_time: "09:00",
-      end_date: new Date(), end_time: "10:00",
-      timezone: "UTC", is_online: false,
-      meeting_url: null, max_attendees: null,
-      cover_image_url: null, visibility: "public" as const,
-      ...formattedDefaultValues,
-    },
+    defaultValues: formattedDefaultValues,
   });
 
   const handleSubmit = (values: z.infer<typeof eventFormSchema>) => {

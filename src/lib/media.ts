@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 const base = import.meta.env.VITE_SUPABASE_URL.replace(/\/$/, '');
 const prefix = `${base}/functions/v1/public-media/`;

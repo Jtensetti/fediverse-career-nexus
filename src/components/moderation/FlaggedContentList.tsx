@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
-import { Flag, Check, X, Trash2, AlertTriangle, Ban, ExternalLink } from "lucide-react";
+import { Flag, Check, X, Trash2, AlertTriangle, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

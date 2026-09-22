@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Image, X, Loader2, Send, ImagePlus, AlertTriangle, Building2 } from "lucide-react";
+import { Image, X, Loader2, Send, ImagePlus, Building2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { compressImage, formatFileSize } from "@/lib/imageCompression";
 import { LinkPreview, extractUrls } from "@/components/content/LinkPreview";

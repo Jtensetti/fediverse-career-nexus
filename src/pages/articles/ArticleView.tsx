@@ -16,7 +16,7 @@ import ArticleReactions from "@/components/articles/ArticleReactions";
 import ContentGate from "@/components/content/ContentGate";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ArticleView = () => {

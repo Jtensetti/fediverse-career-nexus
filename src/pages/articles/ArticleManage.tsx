@@ -5,7 +5,7 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getUserArticles, deleteArticle } from "@/services/articles/articleService";
-import { Search, Plus, Edit, Trash, BookText, FileText, Filter } from "lucide-react";
+import { Search, Plus, Edit, Trash, BookText, FileText } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -22,17 +22,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SEOHead } from "@/components/common/SEOHead";
 
 const ArticleManage = () => {

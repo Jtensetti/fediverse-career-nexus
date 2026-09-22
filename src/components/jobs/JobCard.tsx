@@ -1,14 +1,13 @@
+import { SaveButton } from "@/components/common/SaveButton";
 
 import { JobPost } from "@/services/misc/jobPostsService";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Globe, Building2, DollarSign, Bookmark } from "lucide-react";
+import { Calendar, MapPin, Globe, Building2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
-import { useState } from "react";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 import TransparencyScore from "@/components/social/TransparencyScore";
 
@@ -43,15 +42,8 @@ const JobTypeLabels: Record<string, string> = {
 };
 
 const JobCard = ({ job }: JobCardProps) => {
-  const [isSaved, setIsSaved] = useState(false);
   const salary = formatSalary(job.salary_min, job.salary_max, job.salary_currency);
-
-  const handleSave = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsSaved(!isSaved);
-    toast.success(isSaved ? "Borttagen från sparade jobb" : "Jobb sparat!");
-  };
+  const skills = job.skills || [];
 
   return (
     <motion.div
@@ -74,21 +66,13 @@ const JobCard = ({ job }: JobCardProps) => {
                 </CardDescription>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="shrink-0 h-8 w-8"
-              onClick={handleSave}
-              aria-label={isSaved ? "Ta bort från sparade" : "Spara jobb"}
-            >
-              <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-primary text-primary' : ''}`} />
-            </Button>
+            <SaveButton itemId={job.id} itemType="job" size="icon" className="shrink-0 h-8 w-8" />
           </div>
         </CardHeader>
         <CardContent className="pb-3">
           <div className="flex flex-wrap gap-2 mb-3">
             <Badge variant={job.job_type === "full_time" ? "default" : "outline"} className="text-xs">
-              {JobTypeLabels[job.job_type] || job.job_type}
+              {job.job_type ? JobTypeLabels[job.job_type] || job.job_type : "Anställning"}
             </Badge>
             {job.remote_allowed && (
               <Badge variant="secondary" className="text-xs">
@@ -113,16 +97,16 @@ const JobCard = ({ job }: JobCardProps) => {
           <p className="line-clamp-2 text-sm text-muted-foreground mb-3">{job.description}</p>
           
           {/* Skills */}
-          {job.skills.length > 0 && (
+          {skills.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-3">
-              {job.skills.slice(0, 3).map((skill, index) => (
+              {skills.slice(0, 3).map((skill, index) => (
                 <Badge key={index} variant="outline" className="text-xs bg-muted/50">
                   {skill}
                 </Badge>
               ))}
-              {job.skills.length > 3 && (
+              {skills.length > 3 && (
                 <Badge variant="outline" className="text-xs bg-muted/50">
-                  +{job.skills.length - 3}
+                  +{skills.length - 3}
                 </Badge>
               )}
             </div>
@@ -136,7 +120,7 @@ const JobCard = ({ job }: JobCardProps) => {
                 <span>{salary}</span>
               </div>
             )}
-            {job.transparency_score !== undefined && job.transparency_score > 0 && (
+            {job.transparency_score != null && job.transparency_score > 0 && (
               <TransparencyScore 
                 score={job.transparency_score}
                 details={{

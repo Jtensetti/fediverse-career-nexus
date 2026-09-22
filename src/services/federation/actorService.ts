@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 /** Provision signing material on the server; no private key enters the browser. */
 export const createUserActor = async (_userId: string, enableFederation = true): Promise<boolean> => {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
@@ -47,6 +47,7 @@ export default function SessionExpiryWarning() {
     if (!session?.expires_at) return;
 
     const checkExpiry = async () => {
+      if (!session.expires_at) return;
       const expiresAt = session.expires_at * 1000;
       const now = Date.now();
       const remaining = expiresAt - now;

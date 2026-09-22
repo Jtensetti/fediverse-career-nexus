@@ -31,20 +31,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import ConnectionBadge, { ConnectionDegree } from "@/components/social/ConnectionBadge";
 import ProfileBanner from "@/components/profile/ProfileBanner";
 import AvatarWithStatus from "@/components/common/AvatarWithStatus";
-import { supabase } from "@/integrations/supabase/client";
-import FederationInfo from "@/components/federation/FederationInfo";
+import { supabase } from "@/lib/supabase";
 import FediverseBadge from "@/components/federation/FediverseBadge";
-import { getUserProfileByUsername, getCurrentUserProfile, UserProfile } from "@/services/profile/profileService";
+import { getUserProfileByUsername, getCurrentUserProfile } from "@/services/profile/profileService";
 import {
   getUserConnections,
   NetworkConnection,
   sendConnectionRequest,
   acceptConnectionRequest,
   rejectConnectionRequest,
-  getConnectionRelationship,
-  ConnectionRelationship,
+  getConnectionRelationship
 } from "@/services/social/connectionsService";
-import UserPostsList from "@/components/posts/UserPostsList";
 import UserActivityList from "@/components/social/UserActivityList";
 import UserArticlesList from "@/components/articles/UserArticlesList";
 import { SkillEndorsements } from "@/components/social/SkillEndorsements";
@@ -124,10 +121,10 @@ const ProfilePage = () => {
   });
 
   // Determine if viewing own profile
-  const viewingOwnProfile = !usernameOrId || (profile && currentUserId === profile.id);
+  const viewingOwnProfile = !usernameOrId || (!!profile && currentUserId === profile.id);
 
   // Fetch connection relationship status (for action button)
-  const { data: connectionRelationship, isLoading: connectionRelationshipLoading } = useQuery({
+  const { data: connectionRelationship } = useQuery({
     queryKey: ["connectionRelationship", currentUserId, profile?.id],
     queryFn: async () => {
       if (!profile?.id || !currentUserId) return null;
@@ -728,10 +725,10 @@ const ProfilePage = () => {
                           </div>
                           <p className="text-primary font-medium">{exp.company}</p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(exp.startDate).toLocaleDateString("sv-SE", { year: "numeric", month: "short" })} -
+                            {exp.startDate ? new Date(exp.startDate).toLocaleDateString("sv-SE", { year: "numeric", month: "short" }) : ""} -
                             {exp.isCurrentRole
                               ? ` ${t("profileEdit.present", "Nuvarande")}`
-                              : ` ${new Date(exp.endDate).toLocaleDateString("sv-SE", { year: "numeric", month: "short" })}`}
+                              : ` ${exp.endDate ? new Date(exp.endDate).toLocaleDateString("sv-SE", { year: "numeric", month: "short" }) : ""}`}
                           </p>
                           {exp.location && <p className="text-sm text-muted-foreground">{exp.location}</p>}
                           {exp.description && <p className="mt-2 text-muted-foreground whitespace-pre-line">{exp.description}</p>}

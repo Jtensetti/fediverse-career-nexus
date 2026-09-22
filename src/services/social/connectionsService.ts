@@ -1,5 +1,6 @@
+import { hasRecordId } from "@/lib/records";
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import i18n from "@/i18n";
 import { ConnectionDegree } from "@/components/social/ConnectionBadge";
@@ -161,7 +162,7 @@ const getSimpleSuggestions = async (userId: string): Promise<NetworkSuggestion[]
     });
   }
 
-  const filteredSuggestions = suggestions.filter(
+  const filteredSuggestions = suggestions.filter(hasRecordId).filter(
     profile => !connectedUserIds.has(profile.id)
   );
 
@@ -245,7 +246,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
     }
 
     // Create the connection request
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("user_connections")
       .insert({
         user_id: user.id,

@@ -25,14 +25,11 @@ import { Switch } from "@/components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Briefcase, School, Star, Trash, Plus, Settings, CalendarIcon, Check, Globe } from "lucide-react";
+import { Briefcase, School, Star, Trash, Plus, Settings, Check } from "lucide-react";
 import { LinkedInImportButton } from "@/components/LinkedInImport";
 import DMPrivacySettings from "@/components/messaging/DMPrivacySettings";
 import FreelancerSettings from "@/components/settings/FreelancerSettings";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { MonthYearPicker } from "@/components/forms/MonthYearPicker";
-import { format } from "date-fns";
 import ProfileImageUpload from "@/components/content/ProfileImageUpload";
 import { getCurrentUserProfile } from "@/services/profile/profileService";
 import { updateUserProfile, ProfileUpdateData, checkUsernameAvailability } from "@/services/profile/profileEditService";
@@ -44,7 +41,7 @@ import DataExportSection from "@/components/settings/DataExportSection";
 import AccountMigrationSection from "@/components/settings/AccountMigrationSection";
 import EmailNotificationPreferences from "@/components/settings/EmailNotificationPreferences";
 import MFASettings from "@/components/auth/MFASettings";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import {
   getUserExperiences,
   createExperience,
@@ -828,7 +825,7 @@ const ProfileEditPage = () => {
                             </Label>
                             <div className="mt-1">
                               <MonthYearPicker
-                                value={exp.start_date}
+                                value={exp.start_date || undefined}
                                 onChange={(value) => {
                                   updateExperienceField(index, 'start_date', value);
                                   // Clear error when user selects
@@ -863,7 +860,7 @@ const ProfileEditPage = () => {
                                 <Label htmlFor={`endDate-${index}`}>{t("profileEdit.experience.endDate")}</Label>
                                 <div className="mt-1">
                                   <MonthYearPicker
-                                    value={exp.end_date}
+                                    value={exp.end_date || undefined}
                                     onChange={(value) => updateExperienceField(index, 'end_date', value)}
                                     placeholder={t("profileEdit.experience.pickDate")}
                                   />
@@ -1123,7 +1120,7 @@ const ProfileEditPage = () => {
                             variant="ghost"
                             size="icon"
                             className="h-5 w-5 rounded-full"
-                            onClick={() => removeSkill(skill.id)}
+                            onClick={() => skill.id && removeSkill(skill.id)}
                           >
                             <Trash size={12} className="text-muted-foreground" />
                           </Button>

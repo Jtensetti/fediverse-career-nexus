@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Ban, Check, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRateLimitedHosts, updateDomainModeration, getDomainModeration } from "@/services/federation/federationService";
@@ -56,12 +56,12 @@ const RemoteInstancesTable = () => {
   const updateDomainMutation = useMutation({
     mutationFn: (data: InstanceModerationFormData) => updateDomainModeration(data.host, data.status, data.reason),
     onSuccess: () => {
-      toast({ title: "Domänstatus uppdaterad", description: `${selectedInstance} har ställts in som ${statusLabels[selectedAction || 'normal']}` });
+      toast("Domänstatus uppdaterad", { description: `${selectedInstance} har ställts in som ${statusLabels[selectedAction || 'normal']}` });
       queryClient.invalidateQueries({ queryKey: ['domainModeration'] });
       setSelectedInstance(null); setSelectedAction(null); setBlockReason("");
     },
     onError: (error) => {
-      toast({ title: "Kunde inte uppdatera domänstatus", description: "Ett fel inträffade. Försök igen.", variant: "destructive" });
+      toast.error("Kunde inte uppdatera domänstatus", { description: "Ett fel inträffade. Försök igen." });
       console.error("Error updating domain moderation:", error);
     }
   });

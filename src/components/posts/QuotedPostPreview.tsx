@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Repeat2 } from "lucide-react";
-import DOMPurify from "dompurify";
+import { stripHtml } from "@/lib/linkify";
 
 interface ActorInfo {
   id?: string;
@@ -67,15 +67,8 @@ export function QuotedPostPreview({ quotedPost, className }: QuotedPostPreviewPr
   const { name: authorName, username: authorUsername, avatarUrl } = normalizeActorInfo(actorData);
   const postId = quotedPost.id;
   
-  // Sanitize the content
-  const sanitizedContent = quotedPost.content 
-    ? DOMPurify.sanitize(quotedPost.content, { ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a'] })
-    : '';
-
-  // Truncate content for preview
-  const truncatedContent = sanitizedContent.length > 200 
-    ? sanitizedContent.substring(0, 200) + '...' 
-    : sanitizedContent;
+  const text = stripHtml(quotedPost.content || '');
+  const truncatedContent = text.length > 200 ? text.slice(0, 200) + '…' : text;
 
   const firstImage = quotedPost.attachment?.find(a => a.mediaType?.startsWith('image/'))?.url;
 
@@ -99,8 +92,7 @@ export function QuotedPostPreview({ quotedPost, className }: QuotedPostPreviewPr
             {truncatedContent && (
               <div 
                 className="text-sm text-foreground/90 mt-1 line-clamp-3"
-                dangerouslySetInnerHTML={{ __html: truncatedContent }}
-              />
+              >{truncatedContent}</div>
             )}
             
             {firstImage && (

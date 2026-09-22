@@ -1,7 +1,9 @@
 import type { PrivateKey } from 'openpgp';
-import { supabase } from '@/integrations/supabase/client';
-import { createInboxKey, unlockInboxKey, readInboxPublicKey, sealPrivateMessage, openPrivateMessage,
-  type InboxKeyBackup, type SealedMessage } from '@/lib/privateMessages';
+import { supabase } from '@/lib/supabase';
+import {
+  createInboxKey, unlockInboxKey, readInboxPublicKey, sealPrivateMessage, openPrivateMessage,
+  type InboxKeyBackup, type SealedMessage
+} from '@/lib/privateMessages';
 
 let unlocked: { userId: string; key: PrivateKey } | null = null;
 let revision = 0;

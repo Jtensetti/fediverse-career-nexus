@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { addCompanyRole } from "@/services/company/companyRolesService";
 import { logAuditAction } from "@/services/company/companyAuditService";
 import type { Database } from "@/integrations/supabase/types";

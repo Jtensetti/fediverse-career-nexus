@@ -16,7 +16,7 @@ export function useMediaSource(src?: string): string | undefined {
     }).catch(() => { /* The public image may still be available without authentication. */ });
     return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [src, user?.id]);
-  return resolved?.src === src && resolved?.userId === user?.id ? resolved.url : src;
+  return resolved && resolved.src === src && resolved.userId === user?.id ? resolved.url : src;
 }
 
 export const MediaImage = forwardRef<HTMLImageElement, ImgHTMLAttributes<HTMLImageElement>>(function MediaImage({ src, ...props }, ref) {

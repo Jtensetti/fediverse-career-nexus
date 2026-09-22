@@ -1,72 +1,28 @@
-# Security Policy
+# Security
 
-Thank you for helping keep Nolto and its users safe.
+The maintained code is on `main`. A merge, successful build or dependency scan does not establish that the hosted deployment is secure or up to date.
 
-## Supported versions
+## Report a vulnerability
 
-Only the `main` branch deployed at **www.nolto.social** is actively maintained. Forks are the responsibility of their maintainers.
+Contact **jtensetti@protonmail.com** privately with the affected endpoint, impact and reproducible steps. Do not include real users' private data or open a public issue containing an exploit. There is no published response-time guarantee or paid bounty program.
 
-## Reporting a vulnerability
+## Authorization and data boundaries
 
-**Please do not open public GitHub issues for security vulnerabilities.**
+- Administration comes from database roles and verified sessions, never a hardcoded personal identifier or user-editable metadata.
+- Sensitive operations require a live session and the account's required MFA assurance. A frontend route guard alone is insufficient.
+- Every exposed table needs explicit grants and RLS. Default to `SECURITY INVOKER`. A necessary `SECURITY DEFINER` routine needs a fixed empty search path, qualified names, narrowly granted execution and explicit ownership/session checks.
+- Actor signing keys, token secrets and retained deletion archives are inaccessible to browser roles. Never return them through public views, RPCs, logs or exports.
+- Render untrusted content through sanitization after all HTML transformations. Do not add external scripts to the application entrypoint.
+- Remote HTTP requests require destination, redirect, size and timeout checks. Runtime egress controls and gateway rate limits are also needed.
 
-Instead, email **security@nolto.social** with:
+## Encryption and deletion
 
-- A description of the issue and its potential impact
-- Steps to reproduce (proof-of-concept code, screenshots, HTTP requests)
-- Your name/handle if you would like to be credited
+New local private messages are encrypted and signed in the browser. Participant metadata remains visible to the server; public content cannot be private while being published. The inbox integration has no forward secrecy or independent cryptographic review. A compromised client or application host can expose plaintext while it is used.
 
-We will:
+User-requested deletion hides data immediately and queues permanent erasure after 30 days. Ordinary active data does not expire after 30 days. Limited moderator access to reported deleted text ends at the same deadline. Provider backups and copies on other servers require separate operational procedures. See [the privacy design](docs/privacy-and-deletion.md).
 
-- Acknowledge your report within **3 business days**
-- Provide a remediation timeline within **10 business days** depending on severity
-- Credit you in the release notes if the issue is confirmed (unless you prefer to remain anonymous)
+## Deployment requirements
 
-We do not currently run a paid bug-bounty program but we deeply appreciate responsible disclosure.
+Keep service credentials and encryption secrets in server secret storage. Back up keys separately and test restores. If a credential was exposed, removing it from the current tree does not revoke it or remove it from Git history.
 
-## Scope
-
-In scope:
-
-- The Nolto web application at `www.nolto.social`
-- The federation endpoints (`/.well-known/*`, `/actor/*`, `/inbox`, `/outbox`)
-- The Supabase Edge Functions in `supabase/functions/`
-- Authentication, authorization, and session handling
-- Row Level Security policies in `supabase/migrations/`
-
-Out of scope:
-
-- Denial-of-service attacks against the public infrastructure
-- Social engineering of staff or users
-- Findings that require physical access to a user's device
-- Vulnerabilities in third-party services we depend on (Supabase, Cloudflare, Resend) — please report those upstream
-
-## Accepted risks
-
-The following items have been reviewed and are tracked as accepted risks until larger architectural changes are scheduled. Please **do not re-report** these:
-
-### 1. `actors.private_key` is readable by the actor's owning user
-
-Each user's ActivityPub actor row currently exposes its private key to the row's `user_id` via RLS. Signing happens server-side in Edge Functions, but the column is technically readable from the client.
-
-- **Mitigation:** key signing is performed via the `get_actor_private_key` security-definer function and never used directly from the browser.
-- **Long-term plan:** move the private key into a separate vault table with no client-side access path. Tracked in the federation infrastructure backlog.
-
-### 2. Realtime channel authorization
-
-Supabase Realtime broadcasts respect table-level RLS but do not currently support per-channel authorization out of the box. A user with knowledge of channel names cannot read protected rows, but they can observe that activity exists.
-
-- **Mitigation:** all sensitive payloads are stored in tables with strict RLS and never broadcast in plaintext.
-- **Long-term plan:** migrate sensitive realtime flows to Edge-Function-signed broadcasts when Supabase ships authorized channels.
-
-## Hardening guidelines for contributors
-
-When opening a PR:
-
-- **Never commit secrets.** Use Supabase secrets (Edge Functions) or `VITE_*` env vars (publishable values only).
-- **Never bypass RLS.** Use `SECURITY DEFINER` functions when broader access is required, and always set `search_path = public`.
-- **Never edit `src/integrations/supabase/types.ts`.** It is regenerated from the live schema.
-- New tables must enable RLS and ship with policies in the same migration.
-- Authenticated routes belong inside the `<ProtectedRoute>` wrapper in `src/App.tsx`.
-
-Thank you for contributing securely.
+The [current review](docs/security-review.md) records fixes and remaining work. [Launch requirements](docs/production-readiness.md) include authenticated browser acceptance, hosted rate limits, backup recovery and real federation round trips. There is no blanket acceptance of private-key exposure or authorization bypasses.

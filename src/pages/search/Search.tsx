@@ -12,8 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SEOHead } from "@/components/common/SEOHead";
 import Navbar from "@/components/layout/Navbar";
 import { advancedSearchService, AdvancedProfileResult, AdvancedSearchFilters } from "@/services/search/advancedSearchService";
-import { searchService } from "@/services/search/searchService";
-import { cn } from "@/lib/utils";
 
 export default function Search() {
   const { t } = useTranslation();

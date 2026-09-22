@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { subscribeInbox, inboxRevision, inboxIsUnlocked, lockInbox, getInboxBackup, prepareInbox, activateInbox,
-  unlockInbox, unlockInboxFromBackup, downloadInboxBackup, getInboxPublicKey } from '@/services/messaging/inboxKeysService';
+import {
+  subscribeInbox, inboxRevision, inboxIsUnlocked, lockInbox, getInboxBackup, prepareInbox, activateInbox,
+  unlockInbox, unlockInboxFromBackup, downloadInboxBackup, getInboxPublicKey
+} from '@/services/messaging/inboxKeysService';
 import type { InboxKeyBackup } from '@/lib/privateMessages';
 
 export function useUnlockedInbox() {

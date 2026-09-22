@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { challengeAndVerify } from "@/services/auth/mfaService";
 import MFARecoveryDialog from "./MFARecoveryDialog";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 interface MFAVerifyDialogProps {
   open: boolean;

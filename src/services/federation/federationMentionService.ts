@@ -3,7 +3,7 @@
  * Handles WebFinger lookups via Edge Function proxy and ActivityPub mention tagging
  */
 
-import { extractMentionsWithInstances, type ParsedMention } from "@/lib/linkify";
+import { extractMentionsWithInstances } from "@/lib/linkify";
 
 export interface ActivityPubMentionTag {
   type: "Mention";

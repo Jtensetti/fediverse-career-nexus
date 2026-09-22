@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+import { hasRecordId } from "@/lib/records";
+import { supabase } from "@/lib/supabase";
 
 export interface AuthorFollow {
   id: string;
@@ -108,7 +109,7 @@ export const getFollowedAuthors = async (): Promise<AuthorWithProfile[]> => {
     return [];
   }
 
-  return profiles || [];
+  return (profiles || []).filter(hasRecordId);
 };
 
 export const canAccessFullArticle = async (articleAuthorId: string): Promise<boolean> => {

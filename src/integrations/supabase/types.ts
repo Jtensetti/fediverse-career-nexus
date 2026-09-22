@@ -3822,6 +3822,16 @@ export type Database = {
       }
     }
     Functions: {
+      create_post_reply: {
+        Args: {
+          p_post_id: string
+          p_content: string
+          p_parent_reply_id?: string
+          p_company_id?: string
+        }
+        Returns: string
+      }
+
       actor_id_to_partition_key: {
         Args: { actor_uuid: string }
         Returns: number
@@ -4091,6 +4101,7 @@ export type Database = {
         Returns: {
           option_index: number
           vote_count: number
+          voters_count: number
         }[]
       }
       get_post_replies: {
@@ -4140,6 +4151,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      set_poll_votes: {
+        Args: { p_poll_id: string; p_option_indices: number[] }
+        Returns: undefined
       }
       has_user_voted: {
         Args: { check_user_id: string; poll_uuid: string }

@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, X, Loader2, Crop, RefreshCw } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImageCropDialog } from "./ImageCropDialog";
@@ -20,7 +20,6 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
   const [isUploading, setIsUploading] = useState(false);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
-  const [selectedFileName, setSelectedFileName] = useState<string>("");
   const [isRecropping, setIsRecropping] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,7 +37,6 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
       return;
     }
 
-    setSelectedFileName(file.name);
     setIsRecropping(false);
     const imageUrl = URL.createObjectURL(file);
     setSelectedImageSrc(imageUrl);
@@ -53,7 +51,6 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
     if (!value) return;
     setIsRecropping(true);
     setSelectedImageSrc(value);
-    setSelectedFileName("cover.jpg");
     setShowCropDialog(true);
   };
 

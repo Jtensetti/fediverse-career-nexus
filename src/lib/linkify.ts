@@ -1,127 +1,67 @@
-/**
- * Utility to make URLs, @mentions, and #hashtags in text/HTML clickable
- */
+import DOMPurify from 'dompurify';
 
-// URL regex that matches http/https URLs
-const URL_REGEX = /(?<!["'=])(https?:\/\/[^\s<>\[\]"'`\)]+)/gi;
-
-// Regex for @mentions - handles @username and @username@instance.com
+const URL_REGEX = /https?:\/\/[^\s<>\[\]"'`]+/gi;
 const MENTION_REGEX = /@([a-zA-Z0-9_]+)(?:@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))?/g;
-
-// Regex for #hashtags
 const HASHTAG_REGEX = /#([a-zA-Z0-9_]+)/g;
+const INLINE_TAGS = ['a', 'strong', 'em', 'b', 'i', 'code', 'br'];
+const BLOCK_TAGS = [...INLINE_TAGS, 'p', 'pre', 'blockquote', 'ul', 'ol', 'li'];
+const TOKEN = /\[([^\]\n]+)\]\(([^)\s]+)\)|\*\*([^*\n]+)\*\*|__([^_\n]+)__|(?<![\w*])\*([^*\n]+)\*(?!\w)|(?<![\w_])_([^_\n]+)_(?!\w)|https?:\/\/[^\s<>\[\]"'`]+|(?<![\w@])@([a-zA-Z0-9_]+)(?:@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}))?|(?<![\w&])#([\p{L}\p{N}_]+)/gu;
 
-/**
- * Converts @mentions to clickable profile links.
- * Handles both local (@username) and remote (@username@instance) mentions.
- */
-export function linkifyMentions(text: string): string {
-  return text.replace(MENTION_REGEX, (match, username, instance) => {
-    // If instance is provided, it's a remote user
-    const profilePath = instance 
-      ? `/profile/${username}@${instance}` // Remote user (future: federation lookup)
-      : `/profile/${username}`;
-    
-    return `<a href="${profilePath}" class="text-primary hover:underline font-medium">@${username}${instance ? '@' + instance : ''}</a>`;
-  });
-}
-
-/**
- * Converts #hashtags to clickable search links.
- * Links to the search page with the hashtag as query.
- */
-export function linkifyHashtags(text: string): string {
-  return text.replace(HASHTAG_REGEX, (match, tag) => {
-    // Link to search page with hashtag query
-    return `<a href="/search?q=%23${encodeURIComponent(tag)}" class="text-primary hover:underline font-medium">#${tag}</a>`;
-  });
-}
-
-/**
- * Converts plain URLs in text to clickable anchor tags.
- * Avoids double-wrapping URLs that are already inside anchor tags.
- */
-export function linkifyText(text: string): string {
-  // First, temporarily replace existing anchor tags to protect them
-  const anchors: string[] = [];
-  const protectedText = text.replace(/<a[^>]*>.*?<\/a>/gi, (match) => {
-    anchors.push(match);
-    return `__ANCHOR_${anchors.length - 1}__`;
-  });
-
-  // Linkify URLs first
-  let linkedText = protectedText.replace(URL_REGEX, (url) => {
-    // Clean up trailing punctuation that's likely not part of the URL
-    let cleanUrl = url;
-    const trailingPunctuation = /[.,;:!?\)\]]+$/;
-    const match = cleanUrl.match(trailingPunctuation);
-    let suffix = '';
-    if (match) {
-      suffix = match[0];
-      cleanUrl = cleanUrl.slice(0, -suffix.length);
+function render(text: string, markdown: boolean, inline = false): string {
+  const rules = { ALLOWED_TAGS: inline ? INLINE_TAGS : BLOCK_TAGS,
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+    ADD_URI_SAFE_ATTR: ['rel', 'target'],
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[/?#]|$)/i };
+  const template = document.createElement('template');
+  template.innerHTML = DOMPurify.sanitize(text, rules);
+  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT);
+  const nodes: Text[] = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    if (!node.parentElement?.closest('a,code,pre')) nodes.push(node);
+  }
+  for (const node of nodes) {
+    const fragment = document.createDocumentFragment();
+    let offset = 0;
+    for (const match of node.data.matchAll(TOKEN)) {
+      fragment.append(node.data.slice(offset, match.index));
+      offset = match.index + match[0].length;
+      const [, label, href, boldStars, boldUnderscores, italicStars, italicUnderscores, user, instance, tag] = match;
+      let element: HTMLElement | null = null;
+      let suffix = '';
+      if (markdown && (boldStars || boldUnderscores || italicStars || italicUnderscores)) {
+        element = document.createElement(boldStars || boldUnderscores ? 'strong' : 'em');
+        element.textContent = boldStars || boldUnderscores || italicStars || italicUnderscores;
+      } else if ((markdown && label) || user || tag || /^https?:/i.test(match[0])) {
+        const link = document.createElement('a');
+        element = link;
+        let url = href;
+        let value = label;
+        if (user) { url = `/profile/${user}${instance ? '@' + instance : ''}`; value = match[0]; }
+        else if (tag) { url = `/search?q=${encodeURIComponent('#' + tag)}`; value = match[0]; }
+        else if (!label) {
+          suffix = match[0].match(/[.,;:!?)}\]]+$/)?.[0] || '';
+          url = suffix ? match[0].slice(0, -suffix.length) : match[0];
+          value = url;
+        }
+        link.setAttribute('href', url);
+        link.textContent = value;
+        link.className = 'text-primary hover:underline break-all';
+        if (/^https?:/i.test(url)) link.target = '_blank';
+      }
+      fragment.append(element || document.createTextNode(match[0]));
+      if (suffix) fragment.append(suffix);
     }
-    
-    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline break-all">${cleanUrl}</a>${suffix}`;
-  });
-
-  // Now linkify mentions (avoid matching inside URLs we just created)
-  linkedText = linkifyMentions(linkedText);
-  
-  // Now linkify hashtags (avoid matching inside URLs we just created)
-  linkedText = linkifyHashtags(linkedText);
-
-  // Restore original anchor tags
-  return linkedText.replace(/__ANCHOR_(\d+)__/g, (_, index) => anchors[parseInt(index)]);
+    fragment.append(node.data.slice(offset));
+    node.replaceWith(fragment);
+  }
+  for (const link of template.content.querySelectorAll('a')) link.rel = 'noopener noreferrer ugc';
+  // Sanitize after transformation as well: Markdown may introduce a new URL.
+  return DOMPurify.sanitize(template.innerHTML, rules);
 }
 
-/**
- * Parse simple inline markdown (bold, italic) within text.
- * Should be called after linkifyText to avoid interfering with URLs.
- */
-export function parseInlineMarkdown(text: string): string {
-  if (!text) return "";
-
-  let result = text;
-
-  // Protect existing HTML elements with a unique placeholder that won't be matched by markdown patterns
-  const elements: string[] = [];
-  result = result.replace(/<[^>]+>.*?<\/[^>]+>|<[^>]+\/>/gi, (match) => {
-    elements.push(match);
-    // Use a placeholder pattern that won't be matched by bold/italic regex
-    return `\x00ELEM${elements.length - 1}\x00`;
-  });
-
-  // Parse markdown links: [text](url)
-  result = result.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>'
-  );
-
-  // Parse bold: **text** or __text__
-  result = result.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-  result = result.replace(/__([^_]+)__/g, "<strong>$1</strong>");
-
-  // Parse italic: *text* or _text_ (not inside words)
-  result = result.replace(/(?<![*\w])\*([^*]+)\*(?![*\w])/g, "<em>$1</em>");
-  result = result.replace(/(?<![_\w])_([^_]+)_(?![_\w])/g, "<em>$1</em>");
-
-  // Restore protected elements
-  result = result.replace(/\x00ELEM(\d+)\x00/g, (_, index) => elements[parseInt(index)]);
-
-  return result;
-}
-
-/**
- * Full linkify with inline markdown support.
- * Combines URL linking, mentions, hashtags, and basic markdown.
- */
-export function linkifyWithMarkdown(text: string): string {
-  // First linkify URLs, mentions, hashtags
-  let result = linkifyText(text);
-  // Then parse inline markdown
-  result = parseInlineMarkdown(result);
-  return result;
-}
+export const linkifyText = (text: string): string => render(text, false);
+export const linkifyWithMarkdown = (text: string, inline = false): string => render(text, true, inline);
 
 /**
  * Extracts all URLs from text content
@@ -150,22 +90,6 @@ export interface ParsedMention {
   instance?: string;
   isRemote: boolean;
   full: string; // e.g., "user" or "user@mastodon.social"
-}
-
-/**
- * Extracts all @mentions from text content
- * Returns array of usernames (without the @ symbol)
- */
-export function extractMentions(text: string): string[] {
-  // Remove HTML tags first for cleaner extraction
-  const plainText = text.replace(/<[^>]+>/g, ' ');
-  const matches = [...plainText.matchAll(MENTION_REGEX)];
-  
-  if (!matches.length) return [];
-
-  // Return unique usernames (first capture group)
-  const usernames = matches.map(m => m[1].toLowerCase());
-  return [...new Set(usernames)];
 }
 
 /**
@@ -261,10 +185,9 @@ export function smartTruncate(text: string, maxLength: number, urlCountLength = 
  * Strips HTML tags from content for plain text display
  */
 export function stripHtml(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  const element = document.createElement('div');
+  element.innerHTML = DOMPurify.sanitize(html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n'), {
+    ALLOWED_TAGS: [], ALLOWED_ATTR: [],
+  });
+  return (element.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
 }

@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  RefreshCw, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
+import {
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
   Activity,
   Server,
   Database,
@@ -16,7 +16,7 @@ import {
   Bell,
   Trash2
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
@@ -43,15 +43,15 @@ interface Alert {
   message: string;
   metadata: unknown;
   acknowledged_at: string | null;
-  created_at: string;
+  created_at: string | null;
 }
 
 interface InstanceHealth {
   host: string;
-  health_score: number;
-  request_count_24h: number;
-  error_count_24h: number;
-  last_seen_at: string;
+  health_score: number | null;
+  request_count_24h: number | null;
+  error_count_24h: number | null;
+  last_seen_at: string | null;
   status: string;
 }
 
@@ -372,14 +372,14 @@ export default function AdminFederationHealth() {
                     instances.map((instance) => (
                       <div key={instance.host} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                         <div className="flex items-center gap-3">
-                          <span className={`font-medium ${getHealthColor(instance.health_score)}`}>
-                            {instance.health_score}%
+                          <span className={`font-medium ${getHealthColor(instance.health_score ?? 0)}`}>
+                            {instance.health_score === null ? "—" : `${instance.health_score}%`}
                           </span>
                           <span className="font-mono text-sm">{instance.host}</span>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>{instance.request_count_24h} req/24h</span>
-                          {instance.error_count_24h > 0 && (
+                          {(instance.error_count_24h ?? 0) > 0 && (
                             <Badge variant="destructive">{instance.error_count_24h} errors</Badge>
                           )}
                           <Badge variant={instance.status === "active" ? "default" : "secondary"}>
@@ -421,7 +421,7 @@ export default function AdminFederationHealth() {
                           </div>
                           <p className="text-sm text-muted-foreground">{alert.message}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(alert.created_at).toLocaleString()}
+                            {alert.created_at ? new Date(alert.created_at).toLocaleString() : "—"}
                           </p>
                         </div>
                         <Button 

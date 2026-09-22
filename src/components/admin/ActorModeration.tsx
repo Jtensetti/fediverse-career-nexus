@@ -4,7 +4,7 @@ import {
   updateActorModeration,
   deleteActorModeration
 } from "@/services/federation/federationService";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -76,7 +76,7 @@ export default function ActorModeration() {
         setActorUrl("");
         setReason("");
         fetchActors();
-        toast({ title: "Aktör blockerad", description: `${actorUrl} har lagts till` });
+        toast("Aktör blockerad", { description: `${actorUrl} har lagts till` });
       } else {
         setError("Kunde inte blockera aktör");
       }
@@ -93,13 +93,13 @@ export default function ActorModeration() {
       if (result.success) {
         setIsEditDialogOpen(false);
         fetchActors();
-        toast({ title: "Aktör uppdaterad", description: `${currentActor.actor_url} uppdaterad` });
+        toast("Aktör uppdaterad", { description: `${currentActor.actor_url} uppdaterad` });
       } else {
-        toast({ title: "Uppdatering misslyckades", description: "Kunde inte uppdatera aktör", variant: "destructive" });
+        toast.error("Uppdatering misslyckades", { description: "Kunde inte uppdatera aktör" });
       }
     } catch (err) {
       console.error(err);
-      toast({ title: "Uppdatering misslyckades", description: "Ett fel inträffade", variant: "destructive" });
+      toast.error("Uppdatering misslyckades", { description: "Ett fel inträffade" });
     }
   };
 
@@ -110,13 +110,13 @@ export default function ActorModeration() {
       if (result.success) {
         setIsDeleteDialogOpen(false);
         fetchActors();
-        toast({ title: "Aktör borttagen", description: `${actorToDelete} borttagen` });
+        toast("Aktör borttagen", { description: `${actorToDelete} borttagen` });
       } else {
-        toast({ title: "Borttagning misslyckades", description: "Kunde inte ta bort aktör", variant: "destructive" });
+        toast.error("Borttagning misslyckades", { description: "Kunde inte ta bort aktör" });
       }
     } catch (err) {
       console.error(err);
-      toast({ title: "Borttagning misslyckades", description: "Ett fel inträffade", variant: "destructive" });
+      toast.error("Borttagning misslyckades", { description: "Ett fel inträffade" });
     } finally {
       setActorToDelete(null);
     }

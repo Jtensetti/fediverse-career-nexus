@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 export type NotificationType =
   | 'connection_request'
@@ -45,7 +45,7 @@ async function enrichWithActorData(notifications: any[]): Promise<Notification[]
     return notifications as Notification[];
   }
 
-  // Fetch actor profiles from the public_profiles view (bypasses RLS, excludes sensitive fields)
+  // Fetch actor profiles from the public_profiles view (excludes private profile fields)
   const { data: profiles } = await supabase
     .from('public_profiles')
     .select('id, fullname, username, avatar_url')

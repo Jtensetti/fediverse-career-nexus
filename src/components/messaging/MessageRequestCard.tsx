@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { sv } from "date-fns/locale";
-import { Check, X, MessageCircle, Loader2, AlertTriangle } from "lucide-react";
+import { Check, X, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -83,7 +83,7 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground flex-shrink-0">
-                  {formatDistanceToNow(new Date(request.created_at), { addSuffix: true, locale: sv })}
+                  {request.created_at && formatDistanceToNow(new Date(request.created_at), { addSuffix: true, locale: sv })}
                 </span>
               </div>
 

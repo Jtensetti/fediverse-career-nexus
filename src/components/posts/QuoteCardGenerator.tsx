@@ -21,14 +21,12 @@ interface QuoteCardGeneratorProps {
     handle?: string;
     avatar_url?: string;
   };
-  postUrl?: string;
   trigger?: React.ReactNode;
 }
 
 export default function QuoteCardGenerator({
   content,
   author,
-  postUrl,
   trigger
 }: QuoteCardGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false);

@@ -12,14 +12,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  getCustomFeeds, 
-  type FeedType, 
-  type CustomFeed 
+import {
+  getCustomFeeds,
+  type FeedType,
+  type CustomFeed
 } from "@/services/misc/feedPreferencesService";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import CreateCustomFeedDialog from "./CreateCustomFeedDialog";
 import ManageCustomFeedsDialog from "./ManageCustomFeedsDialog";
 

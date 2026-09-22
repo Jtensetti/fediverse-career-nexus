@@ -1,8 +1,7 @@
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { getOrCreateLocalActor } from "@/services/federation/actorService";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { extractMentions } from "@/lib/linkify";
 export interface PostReply {
   id: string;
   content: string;
@@ -276,210 +275,22 @@ export async function createPostReply(
 ): Promise<boolean> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-
     if (!user) {
       toast.error('Du måste vara inloggad för att svara');
       return false;
     }
-
-    const actor = await getOrCreateLocalActor(user.id);
-    let profile: { username?: string; fullname?: string } | null = null;
-
-    if (!profile) {
-      const { data: profileData } = await supabase
-        .from('public_profiles')
-        .select('username, fullname')
-        .eq('id', user.id)
-        .single();
-      profile = profileData as typeof profile;
-    }
-
-    // Create reply object - if parentReplyId is provided, reply to that instead
-    const inReplyTo = parentReplyId || postId;
-
-    // If replying as a company, fetch company info and use company_id instead of attributed_to
-    let replyObject: any;
-
-    if (companyId) {
-      // Verify user has permission to reply as this company
-      const { data: role } = await supabase
-        .from('company_roles')
-        .select('role')
-        .eq('company_id', companyId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (!role || !['owner', 'admin', 'editor'].includes(role.role)) {
-        toast.error("Du har inte behörighet att svara som detta företag");
-        return false;
-      }
-
-      const { data: company } = await supabase
-        .from('companies')
-        .select('name, slug, logo_url')
-        .eq('id', companyId)
-        .single();
-
-      if (!company) {
-        toast.error('Företag hittades inte');
-        return false;
-      }
-
-      replyObject = {
-        type: 'Note',
-        content: {
-          type: 'Note',
-          content: content,
-          inReplyTo: inReplyTo,
-          rootPost: postId,
-          company: {
-            id: companyId,
-            name: company.name,
-            slug: company.slug,
-            logo_url: company.logo_url,
-          },
-          published: new Date().toISOString()
-        },
-        company_id: companyId,
-      };
-    } else {
-      replyObject = {
-        type: 'Note',
-        content: {
-          type: 'Note',
-          content: content,
-          inReplyTo: inReplyTo,
-          rootPost: postId,
-          actor: {
-            id: actor.id,
-            preferredUsername: actor.preferred_username,
-            name: profile?.fullname || profile?.username || actor.preferred_username
-          },
-          published: new Date().toISOString()
-        },
-        attributed_to: actor.id
-      };
-    }
-
-    const { data: replyData, error } = await supabase
-      .from('ap_objects')
-      .insert(replyObject)
-      .select('id')
-      .single();
-
-    if (error || !replyData) {
-      toast.error(`Failed to create reply: ${error?.message || 'Unknown error'}`);
-      return false;
-    }
-
-    const replyId = replyData.id;
-
-    // Create notifications for relevant parties
-    try {
-      // 1. Always notify the original post author (unless it's you)
-      const { data: postData } = await supabase
-        .from('ap_objects')
-        .select('attributed_to')
-        .eq('id', postId)
-        .single();
-
-      if (postData?.attributed_to) {
-        const { data: postActor } = await supabase
-          .from('public_actors')
-          .select('user_id')
-          .eq('id', postData.attributed_to)
-          .maybeSingle();
-
-        // Don't notify yourself
-        if (postActor?.user_id && postActor.user_id !== user.id) {
-          await supabase.from('notifications').insert({
-            type: 'reply',
-            recipient_id: postActor.user_id,
-            actor_id: user.id,
-            object_id: postId,
-            object_type: 'post',
-            content: content.substring(0, 100)
-          });
-        }
-      }
-
-      // 2. If replying to a comment (nested reply), also notify the comment author
-      if (parentReplyId) {
-        const { data: parentComment } = await supabase
-          .from('ap_objects')
-          .select('attributed_to')
-          .eq('id', parentReplyId)
-          .single();
-
-        if (parentComment?.attributed_to) {
-          const { data: commentActor } = await supabase
-            .from('public_actors')
-            .select('user_id')
-            .eq('id', parentComment.attributed_to)
-            .maybeSingle();
-
-          // Don't notify yourself, and don't double-notify if same as post author
-          const postAuthorId = postData?.attributed_to ?
-            (await supabase.from('public_actors').select('user_id').eq('id', postData.attributed_to).maybeSingle())?.data?.user_id
-            : null;
-
-          if (commentActor?.user_id &&
-              commentActor.user_id !== user.id &&
-              commentActor.user_id !== postAuthorId) {
-            await supabase.from('notifications').insert({
-              type: 'reply',
-              recipient_id: commentActor.user_id,
-              actor_id: user.id,
-              object_id: postId,
-              object_type: 'reply',
-              content: content.substring(0, 100)
-            });
-          }
-        }
-      }
-
-      // 3. Handle @mentions - create notifications for mentioned users
-      const mentions = extractMentions(content);
-      if (mentions.length > 0) {
-
-        for (const username of mentions) {
-          try {
-            // Look up user by username
-            const { data: mentionedUser } = await supabase
-              .from('public_profiles')
-              .select('id')
-              .eq('username', username)
-              .single();
-
-            if (mentionedUser && mentionedUser.id !== user.id) {
-              // Create mention notification - link to the post with the reply highlighted
-              await supabase.from('notifications').insert({
-                type: 'mention',
-                recipient_id: mentionedUser.id,
-                actor_id: user.id,
-                object_id: postId, // Navigate to the parent post
-                object_type: 'post',
-                content: JSON.stringify({
-                  preview: content.substring(0, 100),
-                  highlightReply: replyId // Include the reply ID for scrolling
-                })
-              });
-
-            }
-          } catch (mentionError) {
-            console.warn('⚠️ Could not create mention notification for:', username, mentionError);
-          }
-        }
-      }
-    } catch (notifError) {
-      // Don't fail the reply if notification fails
-      console.error('Failed to create notification:', notifError);
-    }
-
+    await getOrCreateLocalActor(user.id);
+    const { error } = await supabase.rpc('create_post_reply', {
+      p_post_id: postId,
+      p_content: content,
+      p_parent_reply_id: parentReplyId,
+      p_company_id: companyId,
+    });
+    if (error) throw error;
     toast.success('Svar postat!');
     return true;
-  } catch (error) {
-    toast.error('Ett oväntat fel uppstod');
+  } catch {
+    toast.error('Svaret kunde inte publiceras. Kontrollera att inlägget finns kvar och att du har behörighet.');
     return false;
   }
-};
+}

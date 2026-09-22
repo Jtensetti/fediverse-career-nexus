@@ -1,6 +1,6 @@
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import i18n from "@/i18n";
 
@@ -17,6 +17,10 @@ export interface Article {
   user_id: string;
   cover_image_url?: string | null;
   tags?: string[] | null;
+}
+
+function normalizeArticle(article: import('@/integrations/supabase/types').Tables<'articles'>): Article {
+  return { ...article, slug: article.slug || article.id, published: article.published ?? false };
 }
 
 export interface ArticleWithAccess extends Article {
@@ -44,7 +48,7 @@ export const getUserPublishedArticles = async (userId: string): Promise<Article[
       return [];
     }
 
-    return data || [];
+    return (data || []).map(normalizeArticle);
   } catch (error) {
     console.error('Error fetching user articles:', error);
     return [];
@@ -119,7 +123,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
     }
     
     toast.success(i18n.t('toasts.articleCreated'));
-    return data;
+    return normalizeArticle(data);
   } catch (error) {
     console.error('Error creating article:', error);
     toast.error(i18n.t('toasts.articleCreateFailed'));
@@ -146,7 +150,7 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
     }
     
     toast.success(i18n.t('toasts.articleUpdated'));
-    return data;
+    return normalizeArticle(data);
   } catch (error) {
     console.error('Error updating article:', error);
     toast.error(i18n.t('toasts.articleUpdateFailed'));
@@ -168,7 +172,7 @@ export const getArticleById = async (id: string): Promise<Article | null> => {
       return null;
     }
     
-    return data;
+    return normalizeArticle(data);
   } catch (error) {
     console.error('Error fetching article:', error);
     return null;
@@ -190,7 +194,7 @@ export const getArticleBySlug = async (slugOrId: string): Promise<Article | null
         .single();
       
       if (!idError && byId) {
-        return byId;
+        return normalizeArticle(byId);
       }
     }
     
@@ -206,7 +210,7 @@ export const getArticleBySlug = async (slugOrId: string): Promise<Article | null
       return null;
     }
     
-    return data;
+    return normalizeArticle(data);
   } catch (error) {
     console.error('Error fetching article:', error);
     return null;
@@ -228,7 +232,7 @@ export const getPublishedArticles = async (): Promise<Article[]> => {
       return [];
     }
     
-    return data || [];
+    return (data || []).map(normalizeArticle);
   } catch (error) {
     console.error('Error fetching published articles:', error);
     return [];
@@ -269,7 +273,7 @@ export const getUserArticles = async (): Promise<Article[]> => {
       return [];
     }
     
-    return data || [];
+    return (data || []).map(normalizeArticle);
   } catch (error) {
     console.error('Error fetching user articles:', error);
     return [];
@@ -311,7 +315,7 @@ export const getUserDraftArticles = async (): Promise<Article[]> => {
       return [];
     }
     
-    return data || [];
+    return (data || []).map(normalizeArticle);
   } catch (error) {
     console.error('Error fetching user draft articles:', error);
     return [];

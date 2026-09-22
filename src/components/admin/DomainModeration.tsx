@@ -1,26 +1,25 @@
 
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { 
-  getDomainModeration, 
-  updateDomainModeration, 
-  deleteDomainModeration 
+import {
+  getDomainModeration,
+  updateDomainModeration,
+  deleteDomainModeration
 } from "@/services/federation/federationService";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle, RefreshCw, Check, Trash2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import {
   Dialog,
@@ -28,8 +27,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  DialogTitle
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -49,7 +47,6 @@ interface DomainEntry {
 }
 
 export default function DomainModeration() {
-  const { t } = useTranslation();
   const [domains, setDomains] = useState<DomainEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,10 +115,7 @@ export default function DomainModeration() {
         setReason("");
         fetchDomains();
         
-        toast({
-          title: "Domän tillagd",
-          description: `${host} har lagts till i ${status}-listan`,
-        });
+        toast("Domän tillagd", { description: `${host} har lagts till i ${status}-listan` });
       } else {
         setError("Kunde inte lägga till domän");
       }
@@ -145,24 +139,13 @@ export default function DomainModeration() {
         setIsEditDialogOpen(false);
         fetchDomains();
         
-        toast({
-          title: "Domän uppdaterad",
-          description: `${currentDomain.host} har uppdaterats till ${editStatus}`,
-        });
+        toast("Domän uppdaterad", { description: `${currentDomain.host} har uppdaterats till ${editStatus}` });
       } else {
-        toast({
-          title: "Uppdatering misslyckades",
-          description: "Kunde inte uppdatera domänstatus",
-          variant: "destructive",
-        });
+        toast.error("Uppdatering misslyckades", { description: "Kunde inte uppdatera domänstatus" });
       }
     } catch (err) {
       console.error(err);
-      toast({
-        title: "Uppdatering misslyckades",
-        description: "Ett fel uppstod vid uppdatering",
-        variant: "destructive",
-      });
+      toast.error("Uppdatering misslyckades", { description: "Ett fel uppstod vid uppdatering" });
     }
   };
 
@@ -176,24 +159,13 @@ export default function DomainModeration() {
         setIsDeleteDialogOpen(false);
         fetchDomains();
         
-        toast({
-          title: "Domän borttagen",
-          description: `${domainToDelete} har tagits bort från moderering`,
-        });
+        toast("Domän borttagen", { description: `${domainToDelete} har tagits bort från moderering` });
       } else {
-        toast({
-          title: "Borttagning misslyckades",
-          description: "Kunde inte ta bort domän",
-          variant: "destructive",
-        });
+        toast.error("Borttagning misslyckades", { description: "Kunde inte ta bort domän" });
       }
     } catch (err) {
       console.error(err);
-      toast({
-        title: "Borttagning misslyckades",
-        description: "Ett fel uppstod vid borttagning",
-        variant: "destructive",
-      });
+      toast.error("Borttagning misslyckades", { description: "Ett fel uppstod vid borttagning" });
     } finally {
       setDomainToDelete(null);
     }

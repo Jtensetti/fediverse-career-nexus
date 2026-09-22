@@ -1,6 +1,6 @@
 import { publicMediaUrl } from "@/lib/media";
 import { requestContentDeletion } from "@/services/privacy/deletionService";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import type { FederatedPost } from "@/services/federation/federationService";
 
@@ -184,7 +184,6 @@ export async function getCompanyPosts(companyId: string, limit = 20, offset = 0)
 
   return topLevelPosts.map(post => {
     const raw = post.content as any;
-    const note = raw?.type === 'Create' ? raw.object : raw;
 
     return {
       id: post.id,

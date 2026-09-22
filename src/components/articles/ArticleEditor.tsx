@@ -26,7 +26,7 @@ export function ArticleEditor({
   const [isFocused, setIsFocused] = useState(false);
   const isMobile = useIsMobile();
   const { keyboardHeight, isKeyboardOpen } = useKeyboardHeight();
-  const { uploadImage, isUploading } = useArticleImageUpload();
+  const { uploadImage } = useArticleImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<TipTapEditorHandle>(null);
 

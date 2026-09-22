@@ -28,3 +28,7 @@ coverage/
 # npm is the frontend package manager, including in CI.
 bun.lock
 bun.lockb
+
+.env
+.env.*
+!.env.example

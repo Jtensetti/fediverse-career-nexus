@@ -1,110 +1,42 @@
-# Contributing to Nolto
+# Contributing
 
-Thank you for your interest in contributing to Nolto — a federated, open-source professional networking platform.
+Set up a separate development backend using the instructions in [README.md](README.md). Keep changes focused and explain the user-visible behavior and validation in the pull request.
 
-## Getting Started
+## Structure
 
-```bash
-# Install dependencies
-npm install
+- `src/pages/`: routes and page composition.
+- `src/components/`: UI grouped by feature; shared primitives in `ui/`.
+- `src/services/`: database and API access.
+- `src/lib/`: shared logic, including the application-owned backend client.
+- `src/integrations/supabase/types.ts`: schema-derived database types.
+- `supabase/functions/`: deployed server handlers and shared server code.
+- `supabase/migrations/`: ordered database changes.
+- `scripts/test-support/`: schema fixtures and synthetic database assertions.
+- `deploy/`: optional federation gateway.
 
-# Start the development server
-npm run dev
+## Conventions
+
+Use existing feature modules before adding a new abstraction or dependency. Keep TypeScript strict; handle absent data instead of casting it away. Translate user-facing text through the existing Swedish/English language files. Use the shared renderer for untrusted post text and the shared notification component for status messages.
+
+Authorization belongs in database policies and server handlers. UI visibility is not authorization. Never derive administration from an email address, username or user-editable metadata. See [SECURITY.md](SECURITY.md) before changing grants, policies, authentication, media or encryption.
+
+Create new migrations with `supabase migration new <name>`. Preserve applied migrations; add a corrective migration rather than changing deployed history. Regenerate database types from the migrated development schema. A new RPC needs matching types and a test of both authorized and denied calls.
+
+Keep `.env` untracked and document public variables in `.env.example`. Never put server secrets in a `VITE_*` variable. The source check rejects tracked environment files, unused modules/dependencies and common credential patterns; it is not a complete secret scanner.
+
+## Validation
+
+Run the checks listed in the README. Test behavior that matters: ownership, revocation, privacy, failure handling and data integrity. Synthetic test records belong in isolated fixtures, never in the production feed.
+
+Run the database regressions without adding their runtime to the application:
+
+```sh
+npm install --prefix /tmp/nolto-pg --no-audit --no-fund @electric-sql/pglite@0.5.8
+node scripts/test-support/run-identity.mjs /tmp/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js
+node scripts/test-support/run-account-boundaries.mjs /tmp/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js
+node scripts/test-support/run-privacy.mjs /tmp/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js
 ```
 
-## Project Structure
+These tests reproduce schema and policy behavior with Auth/Storage stand-ins. They do not replace browser, hosted-service or federation integration tests. Remove unused exports, components and documentation when replacing a feature, but retain deployed migration history and third-party licence notices.
 
-```
-src/
-├── components/          # Reusable UI components, grouped by domain
-│   ├── admin/           # Moderation & admin tools
-│   ├── articles/        # Article cards, editor, reactions
-│   ├── auth/            # MFA, session management, consent
-│   ├── common/          # Shared utilities: EmptyState, ErrorBoundary, SEOHead, etc.
-│   ├── company/         # Company pages, roles, employees
-│   ├── content/         # Content creation: polls, image crops, markdown, link previews
-│   ├── editor/          # TipTap rich text editor components
-│   ├── events/          # Event forms
-│   ├── federation/      # ActivityPub federation UI: feeds, badges, analytics
-│   ├── feed/            # Feed empty states
-│   ├── forms/           # Form helpers: error summaries, date pickers
-│   ├── homepage/        # Landing page sections
-│   ├── jobs/            # Job cards, forms, search filters
-│   ├── layout/          # Navbar, Footer, DashboardLayout, MobileBottomNav
-│   ├── legal/           # Code of conduct, FAQ, instance guidelines
-│   ├── LinkedInImport/  # LinkedIn data import flow
-│   ├── messaging/       # Message requests, DM settings
-│   ├── moderation/      # Flagged content, bans, moderator management
-│   ├── onboarding/      # Onboarding flow, interest selector
-│   ├── posts/           # Post composer, edit/reply dialogs, quote reposts
-│   ├── profile/         # Profile banner, stats, share card
-│   ├── reactions/       # Reaction displays and popovers
-│   ├── settings/        # Account settings: data export, email prefs, visibility
-│   ├── social/          # Follow buttons, badges, endorsements, referrals
-│   └── ui/              # shadcn/ui primitives (Button, Dialog, Card, etc.)
-│
-├── contexts/            # React contexts (AuthContext)
-├── hooks/               # Custom hooks
-├── i18n/                # Internationalization (English + Swedish)
-├── integrations/        # Auto-generated Supabase client & types (do not edit)
-├── lib/                 # Utility functions
-│
-├── pages/               # Route-level page components, grouped by domain
-│   ├── articles/        # Article CRUD pages
-│   ├── auth/            # Login, signup, recovery, email confirmation
-│   ├── company/         # Company pages
-│   ├── events/          # Event pages
-│   ├── federation/      # Federation admin, feeds, actor pages
-│   ├── info/            # Mission, documentation, help center
-│   ├── jobs/            # Job CRUD pages
-│   ├── legal/           # Privacy policy, terms, cookies
-│   ├── messaging/       # Messages & conversations
-│   ├── profile/         # Profile, edit, followers, connections
-│   └── social/          # Starter packs, freelancers, saved items
-│
-├── services/            # API/data layer, grouped by domain
-│   ├── articles/        # Article & reaction services
-│   ├── auth/            # Auth, MFA, account services
-│   ├── company/         # Company CRUD, roles, employees
-│   ├── content/         # Reactions, saved items, LinkedIn import
-│   ├── federation/      # ActivityPub, federation health, analytics
-│   ├── messaging/       # Messages, requests, job messaging
-│   ├── misc/            # Newsletter, notifications, events, jobs, etc.
-│   ├── moderation/      # Moderation, reports, blocks
-│   ├── profile/         # Profile CRUD, CV, views
-│   ├── search/          # Search & advanced search
-│   └── social/          # Connections, follows, endorsements, referrals
-│
-└── App.tsx              # Root component with routing
-
-supabase/
-├── functions/           # Edge functions (auto-deployed)
-├── config.toml          # Supabase configuration
-└── migrations/          # Database migrations (do not edit manually)
-```
-
-## Key Conventions
-
-- **Imports**: Use the `@/` alias (e.g., `import { Button } from "@/components/ui/button"`)
-- **Styling**: Use Tailwind CSS with semantic design tokens from `index.css` — never hardcode colors
-- **State**: React Query for server state, React context for auth
-- **i18n**: All user-facing text goes through `react-i18next` (`useTranslation` hook)
-- **Types**: Database types are auto-generated in `src/integrations/supabase/types.ts` — do not edit
-
-## Do Not Edit
-
-These files are auto-generated and will be overwritten:
-
-- `src/integrations/supabase/client.ts`
-- `src/integrations/supabase/types.ts`
-- `.env`
-
-## Running Tests
-
-```bash
-npm test
-```
-
-## License
-
-See [LICENSE](./LICENSE) for details.
+Be respectful in reviews. Report security issues privately and do not post personal data, credentials or message contents in issues.

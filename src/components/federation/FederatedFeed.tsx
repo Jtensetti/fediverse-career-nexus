@@ -10,7 +10,6 @@ import { Loader2, MessageSquare } from "lucide-react";
 import { PostSkeleton } from "../common/skeletons";
 import EmptyState from "../common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
-import { RefreshCw } from "lucide-react";
 import PullToRefresh from "../common/PullToRefresh";
 
 interface FederatedFeedProps {

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Check } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -41,7 +41,6 @@ export function MonthYearPicker({
   }, [value]);
   
   const [selectedYear, setSelectedYear] = useState(parsedValue.year);
-  const [selectedMonth, setSelectedMonth] = useState(parsedValue.month);
   
   // Generate years array
   const years = useMemo(() => {
@@ -58,7 +57,6 @@ export function MonthYearPicker({
   };
   
   const handleMonthSelect = (monthIndex: number) => {
-    setSelectedMonth(monthIndex);
     // Create date as first of month in YYYY-MM-DD format
     const dateStr = `${selectedYear}-${String(monthIndex + 1).padStart(2, '0')}-01`;
     onChange(dateStr);

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { needsMFAVerification } from "@/services/auth/mfaService";
 import MFAVerifyDialog from "@/components/auth/MFAVerifyDialog";
 import { useLocation } from "react-router-dom";

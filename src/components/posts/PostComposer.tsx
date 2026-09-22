@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Image, PenTool, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send, ImagePlus, AlertTriangle, BarChart3 } from "lucide-react";
+import { Image, PenTool, Calendar as CalendarIcon, ChevronDown, X, Loader2, Send, ImagePlus, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profile/profileService";

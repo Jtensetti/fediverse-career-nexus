@@ -4,14 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Lock, UserPlus, Users } from "lucide-react";
-import { getUserProfileByUsername } from "@/services/profile/profileService";
 import { getAuthorFollowerCount } from "@/services/social/authorFollowService";
 import { sendConnectionRequest } from "@/services/social/connectionsService";
 import FollowAuthorButton from "../social/FollowAuthorButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 
 interface ContentGateProps { authorId: string; onAccessGranted?: () => void; }
 
