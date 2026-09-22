@@ -135,7 +135,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
                   selectedIndex === globalIndex && "bg-accent"
                 )}
               >
-                {type === 'profile' && result.imageUrl ? (
+                {type === 'profile' ? (
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={result.imageUrl} />
                     <AvatarFallback>{result.title[0]}</AvatarFallback>

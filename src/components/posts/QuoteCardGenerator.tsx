@@ -167,13 +167,7 @@ export default function QuoteCardGenerator({
                     "flex items-center gap-1.5 text-xs font-medium",
                     isDarkMode ? "text-white/50" : "text-slate-400"
                   )}>
-                    <svg 
-                      viewBox="0 0 24 24" 
-                      className="h-4 w-4" 
-                      fill="currentColor"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                    </svg>
+                    <img src="/brand/mascot.webp" alt="" width="20" height="20" className="h-5 w-5 object-contain" />
                     nolto.social
                   </div>
                 </div>

@@ -61,6 +61,7 @@ export default function PostCardHeader({
           >
             <AvatarWithStatus
               src={avatarUrl || undefined}
+              kind={isCompanyPost ? "organisation" : "person"}
               alt={actorName}
               fallback={actorName.charAt(0).toUpperCase()}
               size="md"

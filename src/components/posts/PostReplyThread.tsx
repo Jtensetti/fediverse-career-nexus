@@ -169,7 +169,7 @@ export default function PostReplyThread({
                   {reply.author.avatar_url ? (
                     <AvatarImage src={reply.author.avatar_url} />
                   ) : null}
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                  <AvatarFallback kind={reply.company ? "organisation" : "person"} className="bg-primary/10 text-primary text-xs">
                     {(reply.author.fullname || reply.author.username || 'U').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

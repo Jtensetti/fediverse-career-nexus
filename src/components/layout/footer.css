@@ -1,0 +1,29 @@
+.site-footer {
+  border-top: 1px solid hsl(var(--border));
+}
+
+.site-footer-links {
+  background: hsl(var(--muted) / .5);
+}
+
+.site-footer-public {
+  border-top: 0;
+}
+
+.site-footer-public .public-artwork {
+  margin-bottom: -1px;
+}
+
+.site-footer-public .site-footer-links {
+  --primary: 40 84% 72%;
+  --secondary: 40 84% 72%;
+  --muted-foreground: 197 22% 81%;
+  --border: 197 30% 32%;
+  color: #f6f9fa;
+  background: #032d42;
+}
+
+.site-footer-public a:focus-visible {
+  outline: 2px solid #efbf68;
+  outline-offset: 5px;
+}

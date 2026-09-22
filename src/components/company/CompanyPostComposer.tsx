@@ -134,7 +134,7 @@ export default function CompanyPostComposer({ company, className = "" }: Company
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={company.logo_url || undefined} alt={company.name} />
-            <AvatarFallback className="bg-primary/10">
+            <AvatarFallback kind="organisation" className="bg-primary/10">
               <Building2 className="h-5 w-5 text-primary" />
             </AvatarFallback>
           </Avatar>

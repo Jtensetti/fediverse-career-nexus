@@ -41,7 +41,7 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
   const logoContent = (
     <Avatar className="h-24 w-24 sm:h-32 sm:w-32 rounded-xl border-4 border-background shadow-lg bg-card">
       <AvatarImage src={company.logo_url || ''} alt={company.name} />
-      <AvatarFallback className="rounded-xl bg-primary text-primary-foreground text-3xl font-bold">
+      <AvatarFallback kind="organisation" className="rounded-xl bg-primary text-primary-foreground text-3xl font-bold">
         {company.name.charAt(0).toUpperCase()}
       </AvatarFallback>
     </Avatar>

@@ -28,7 +28,7 @@ export default function CompanyCard({ company }: CompanyCardProps) {
           <div className="flex items-start gap-3">
             <Avatar className="h-14 w-14 rounded-lg border-2 border-background shadow-sm -mt-10 bg-card">
               <AvatarImage src={company.logo_url || ''} alt={company.name} />
-              <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-lg font-semibold">
+              <AvatarFallback kind="organisation" className="rounded-lg bg-primary text-primary-foreground text-lg font-semibold">
                 {company.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

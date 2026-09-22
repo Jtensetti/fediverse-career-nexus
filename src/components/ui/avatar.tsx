@@ -32,8 +32,10 @@ AvatarImage.displayName = AvatarPrimitive.Image.displayName
 
 const AvatarFallback = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback> & {
+    kind?: "person" | "organisation";
+  }
+>(({ className, children, kind = "person", ...props }, ref) => (
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
@@ -41,7 +43,21 @@ const AvatarFallback = React.forwardRef<
       className
     )}
     {...props}
-  />
+  >
+    {kind === "person" ? (
+      <>
+        <img
+          src="/brand/avatar-default.webp"
+          alt=""
+          width="384"
+          height="384"
+          className="h-full w-full object-contain"
+          decoding="async"
+        />
+        <span className="sr-only">{children}</span>
+      </>
+    ) : children}
+  </AvatarPrimitive.Fallback>
 ))
 AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
 
