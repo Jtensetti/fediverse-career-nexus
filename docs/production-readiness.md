@@ -49,7 +49,7 @@ Account exports fail above their configured size/row limits and require assisted
 
 ## Federation routing
 
-Keep `FEDERATION_DOMAIN=nolto.social` stable. `SITE_URL` may point to another web origin without changing account identity. When the UI is on a separate origin, `deploy/nolto-gateway.mjs` proxies discovery and ActivityPub paths before redirecting other requests. Set its `SUPABASE_ORIGIN` and `SITE_ORIGIN`; do not point the latter back to the gateway itself. Installing and verifying this gateway remains an operational task.
+Keep `FEDERATION_DOMAIN=nolto.social` stable. The gateway in `deploy/nolto-gateway.mjs` is configured as a Worker Route on the existing domain, with `SUPABASE_ORIGIN` for the backend. It forwards discovery and ActivityPub requests and lets other requests continue to the existing website. Installing and verifying this gateway remains an operational task.
 
 ## Federation routing on the hosted nolto.social domain
 
