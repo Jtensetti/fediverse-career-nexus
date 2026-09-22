@@ -3,6 +3,7 @@ import publishedMetadata from '../../public/oauth-client-metadata.json' with { t
 import { atprotoHandle, atprotoMetadata, atprotoCallbackParams, browserProof } from '../functions/_shared/atproto-policy.ts';
 import { atprotoFetch } from '../functions/_shared/atproto-fetch.ts';
 import { createAtprotoClient } from '../functions/_shared/atproto-client.ts';
+import { atprotoFailureDetails, AtprotoTransportError } from '../functions/_shared/atproto-diagnostics.ts';
 
 Deno.test('AT Protocol login requests identity only and rejects unsafe discovery inputs', () => {
   assert.equal(atprotoHandle('@Alice.Bsky.Social'), 'alice.bsky.social');
@@ -37,12 +38,19 @@ Deno.test('OAuth transport pins the checked IP while retaining the HTTPS hostnam
     assert.equal(await (await atprotoFetch('https://oauth.example.com/token')).text(), '{}');
     assert.equal(closed, 1);
     addresses = ['8.8.8.8', '127.0.0.1'];
-    await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), /not public/);
+    await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), (error: unknown) => error instanceof AtprotoTransportError && error.stage === 'public-address');
     assert.equal(connections, 1);
     addresses = ['8.8.8.8']; body = 'x'.repeat(2 * 1024 * 1024 + 1);
-    await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), /large|limit/i);
+    await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), (error: unknown) => error instanceof AtprotoTransportError && error.stage === 'response-body');
     assert.equal(closed, 2);
   } finally { Deno.resolveDns = originals.dns; Deno.createHttpClient = originals.client; globalThis.fetch = originals.fetch; }
+});
+
+Deno.test('OAuth diagnostics retain the failing stage without exposing wrapped request secrets', () => {
+  const cause = new TypeError('https://issuer.example.com/token?code=secret-code Authorization: Bearer secret-token');
+  const error = new Error('browserProof=private-proof', { cause: new AtprotoTransportError('https', 'issuer.example.com', cause) });
+  assert.deepEqual(atprotoFailureDetails(error), { errorClass: 'TypeError', transportStage: 'https', hostname: 'issuer.example.com' });
+  assert.ok(!JSON.stringify(atprotoFailureDetails(error)).includes('secret'));
 });
 
 // The real SDK runs against an isolated provider. No live account, token or
