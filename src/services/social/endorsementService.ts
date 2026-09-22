@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { notificationService } from "../misc/notificationService";
 
 export interface Endorsement {
   id: string;
@@ -26,7 +25,7 @@ export interface SkillWithEndorsements {
 export const endorsementService = {
   async getSkillsWithEndorsements(userId: string): Promise<SkillWithEndorsements[]> {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
-    
+
     // Get skills
     const { data: skills, error: skillsError } = await supabase
       .from('skills')
@@ -45,10 +44,10 @@ export const endorsementService = {
 
     // Get unique endorser IDs and fetch their profiles from public_profiles view
     const endorserIds = [...new Set((endorsementsData || []).map(e => e.endorser_id))];
-    const { data: profiles } = endorserIds.length > 0 
+    const { data: profiles } = endorserIds.length > 0
       ? await supabase.from('public_profiles').select('id, fullname, username, avatar_url').in('id', endorserIds)
       : { data: [] };
-    
+
     const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
     // Enrich endorsements with profile data
@@ -70,7 +69,7 @@ export const endorsementService = {
           created_at: e.created_at,
           endorser: e.endorser as Endorsement['endorser'],
         })),
-      user_has_endorsed: currentUser 
+      user_has_endorsed: currentUser
         ? enrichedEndorsements.some(e => e.skill_id === skill.id && e.endorser_id === currentUser.id)
         : false,
     }));
@@ -100,14 +99,6 @@ export const endorsementService = {
       .single();
 
     // Create notification
-    await notificationService.createNotification({
-      type: 'endorsement',
-      recipientId: skillOwnerId,
-      actorId: user.id,
-      content: `endorsed your skill: ${skill?.name || 'Unknown'}`,
-      objectId: skillId,
-      objectType: 'skill',
-    });
 
     return true;
   },

@@ -23,11 +23,7 @@ import { ShieldCheck, ShieldOff, Loader2, CheckCircle } from "lucide-react";
 import { getMFAFactors, unenrollFactor, challengeAndVerify, MFAFactor } from "@/services/auth/mfaService";
 import MFAEnrollDialog from "./MFAEnrollDialog";
 
-interface MFASettingsProps {
-  isFederatedUser?: boolean;
-}
-
-export default function MFASettings({ isFederatedUser = false }: MFASettingsProps) {
+export default function MFASettings() {
   const { t } = useTranslation();
   const [factors, setFactors] = useState<MFAFactor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,23 +77,6 @@ export default function MFASettings({ isFederatedUser = false }: MFASettingsProp
   const handleEnrollSuccess = () => {
     loadFactors();
   };
-
-  // Federated users can't use local MFA
-  if (isFederatedUser) {
-    return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-          <Label className="text-base font-medium">
-            {t("mfa.title", "Two-Factor Authentication")}
-          </Label>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {t("mfa.federatedNote", "As a federated user, your security settings are managed by your home instance. Configure 2FA on your Fediverse server to protect your account.")}
-        </p>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (

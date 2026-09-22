@@ -66,7 +66,7 @@ export async function getReferralStats(): Promise<{
 
   // Only count actual referrals (where someone was referred)
   const actualReferrals = data.filter((r) => r.referred_user_id !== null);
-  
+
   const stats = {
     total: actualReferrals.length,
     // Pending = referred but not completed
@@ -120,13 +120,13 @@ export async function processReferralCode(code: string, newUserId: string): Prom
       .single();
 
     if (findError || !referral) {
-      console.log('Referral code not found or already used:', code);
+
       return false;
     }
 
     // Don't allow self-referral
     if (referral.referrer_id === newUserId) {
-      console.log('Cannot self-refer');
+
       return false;
     }
 
@@ -146,7 +146,6 @@ export async function processReferralCode(code: string, newUserId: string): Prom
       return false;
     }
 
-    console.log('✅ Referral processed successfully for user:', newUserId);
     return true;
   } catch (error) {
     console.error('Error processing referral:', error);

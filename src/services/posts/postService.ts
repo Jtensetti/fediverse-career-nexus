@@ -1,3 +1,5 @@
+import { getLocalActorUrl, getNoltoInstanceDomain } from "@/lib/federation";
+import { createUserActor } from "../federation/actorService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractMentions } from "@/lib/linkify";
@@ -27,15 +29,12 @@ export interface CreatePostData {
 
 // Helper to fetch a post along with its owner's user_id
 const getPostOwner = async (postId: string) => {
-  console.log('🔍 Getting post owner for post:', postId);
-  
+
   const { data, error } = await supabase
     .from('ap_objects')
     .select('id, attributed_to')
     .eq('id', postId)
     .single();
-
-  console.log('📄 Post owner query result:', { data, error });
 
   if (error || !data) {
     console.error('❌ Error fetching post owner:', error);
@@ -44,7 +43,7 @@ const getPostOwner = async (postId: string) => {
 
   const actorId = (data as any).attributed_to as string | null;
   if (!actorId) {
-    console.log('👤 Post has no attributed_to actor');
+
     return null;
   }
 
@@ -60,14 +59,13 @@ const getPostOwner = async (postId: string) => {
   }
 
   const ownerId = (actorData as any)?.user_id || null;
-  console.log('👤 Post owner ID:', ownerId);
+
   return ownerId as string | null;
 };
 
 export const createPost = async (postData: CreatePostData): Promise<boolean> => {
   try {
-    console.log('🚀 Starting post creation...', { contentLength: postData.content.length });
-    
+
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -75,73 +73,12 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       toast.error("Du måste vara inloggad för att skapa ett inlägg");
       return false;
     }
-    
-    console.log('✅ User authenticated:', user.id);
 
-    // Check/create actor
-    let { data: actor, error: actorError } = await supabase
-      .from('actors')
-      .select('id, preferred_username')
-      .eq('user_id', user.id)
-      .single();
-
-    if (actorError || !actor) {
-      console.log('🔍 No actor found, checking profile...');
-
-      // Get user profile
-      const { data: profile, error: profileError } = await supabase
-        .from('public_profiles')
-        .select('username, fullname')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError || !profile) {
-        console.error('❌ Profile error:', profileError);
-        toast.error("Profil hittades inte. Vänligen fyll i din profilinformation.");
-        return false;
-      }
-
-      // Create username if needed
-      let username = profile.username;
-      if (!username) {
-        username = `user_${user.id.slice(0, 8)}`;
-        console.log('📝 Creating default username:', username);
-        
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ username })
-          .eq('id', user.id);
-
-        if (updateError) {
-          console.error('❌ Username update error:', updateError);
-          toast.error("Kunde inte uppdatera användarnamn");
-          return false;
-        }
-      }
-
-      // Create actor
-      console.log('🎭 Creating actor...');
-      const { data: newActor, error: createActorError } = await supabase
-        .from('actors')
-        .insert({
-          user_id: user.id,
-          preferred_username: username,
-          type: 'Person',
-          status: 'active'
-        })
-        .select('id, preferred_username')
-        .single();
-
-      if (createActorError || !newActor) {
-        console.error('❌ Actor creation error:', createActorError);
-        toast.error("Kunde inte skapa användaraktör");
-        return false;
-      }
-
-      actor = newActor;
-    }
-
-    console.log('✅ Actor ready:', actor.id);
+    // Local posting does not implicitly enable public federation.
+    if (!await createUserActor(user.id, false)) return false;
+    const { data: actor, error: actorError } = await supabase.from('public_actors')
+      .select('id, preferred_username').eq('user_id', user.id).eq('is_remote', false).single();
+    if (actorError || !actor) throw actorError || new Error('Account not ready');
 
     // Fetch profile to include display name in the post content
     const { data: profile } = await supabase
@@ -154,8 +91,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     // Handle image upload if provided
     let imageUrl: string | null = null;
     if (postData.imageFile) {
-      console.log('📸 Uploading image...');
-      
+
       const fileExt = postData.imageFile.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `posts/${fileName}`;
@@ -175,14 +111,14 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
         .getPublicUrl(filePath);
 
       imageUrl = publicUrl;
-      console.log('✅ Image uploaded:', imageUrl);
+
     }
 
     // Create a "Create" activity that wraps the Note or Question object
-    console.log('💾 Creating post in database...');
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const actorUrl = `${supabaseUrl}/functions/v1/actor/${actor.preferred_username}`;
+    const actorUrl = getLocalActorUrl(actor.preferred_username);
+    const baseUrl = `https://${getNoltoInstanceDomain()}`;
+    const followersUrl = `${baseUrl}/functions/v1/followers/${actor.preferred_username}`;
     const postId = crypto.randomUUID();
 
     // Determine if this is a poll (Question type) or regular post (Note type)
@@ -194,11 +130,11 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       // Create a Question object for polls
       noteObject = {
         ...postData.pollData,
-        id: `${actorUrl}/posts/${postId}`,
+        id: `${baseUrl}/functions/v1/objects/${postId}`,
         attributedTo: actorUrl,
         published: new Date().toISOString(),
         to: ['https://www.w3.org/ns/activitystreams#Public'],
-        cc: [`${actorUrl}/followers`],
+        cc: [followersUrl],
         actor: {
           id: actor.id,
           preferredUsername: actor.preferred_username,
@@ -209,12 +145,12 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       // Create a Note object for regular posts
       noteObject = {
         type: 'Note',
-        id: `${actorUrl}/posts/${postId}`,
+        id: `${baseUrl}/functions/v1/objects/${postId}`,
         attributedTo: actorUrl,
         content: postData.content,
         published: new Date().toISOString(),
         to: ['https://www.w3.org/ns/activitystreams#Public'],
-        cc: [`${actorUrl}/followers`],
+        cc: [followersUrl],
         attachment: imageUrl ? [{
           type: 'Image',
           mediaType: 'image/jpeg', // Standard media type for compatibility
@@ -238,10 +174,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     // Process federated mentions - adds Mention tags and cc addresses for remote users
     try {
       noteObject = await processFederatedMentions(postData.content, noteObject);
-      console.log('✅ Federated mentions processed:', {
-        tags: (noteObject.tag as unknown[])?.length || 0,
-        ccAddresses: (noteObject.cc as string[])?.length || 0
-      });
+
     } catch (mentionError) {
       // Log but don't block the post - NO DATABASE WRITE
       console.warn('⚠️ Mention resolution failed', {
@@ -254,15 +187,16 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     const createActivity = {
       '@context': 'https://www.w3.org/ns/activitystreams',
       type: 'Create',
-      id: `${actorUrl}/activities/${crypto.randomUUID()}`,
+      id: `${baseUrl}/functions/v1/activities/${postId}`,
       actor: actorUrl,
       published: new Date().toISOString(),
       to: ['https://www.w3.org/ns/activitystreams#Public'],
-      cc: noteObject.cc || [`${actorUrl}/followers`],
+      cc: noteObject.cc || [followersUrl],
       object: noteObject
     };
 
     const postObject = {
+      id: postId,
       type: 'Create' as const,
       content: createActivity as unknown as import("@/integrations/supabase/types").Json,
       attributed_to: actor.id,
@@ -282,12 +216,10 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       return false;
     }
 
-    console.log('✅ Post created successfully:', post.id);
-
     // Handle @mentions - create notifications for mentioned users
     const mentions = extractMentions(postData.content);
     if (mentions.length > 0) {
-      console.log('📣 Processing mentions:', mentions);
+
       for (const username of mentions) {
         try {
           // Look up user by username
@@ -307,7 +239,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
               object_type: 'post',
               content: JSON.stringify({ preview: postData.content.substring(0, 100) })
             });
-            console.log('✅ Mention notification created for:', username);
+
           }
         } catch (mentionError) {
           console.warn('⚠️ Could not create mention notification for:', username, mentionError);
@@ -315,26 +247,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       }
     }
 
-    // Queue the activity for federation delivery
-    console.log('📤 Queueing post for federation...');
-    
-    const { data: session } = await supabase.auth.getSession();
-    if (session?.session?.access_token) {
-      try {
-        const { error: federateError } = await supabase.functions.invoke('outbox', {
-          body: { activity: createActivity },
-          headers: { Authorization: `Bearer ${session.session.access_token}` }
-        });
-        
-        if (federateError) {
-          console.warn('⚠️ Federation queue error (post still created locally):', federateError);
-        } else {
-          console.log('✅ Post queued for federation');
-        }
-      } catch (fedError) {
-        console.warn('⚠️ Could not queue post for federation:', fedError);
-      }
-    }
+    // A database trigger queues federation in the same transaction as this insert.
 
     toast.success("Inlägget skapades!");
     return true;
@@ -365,23 +278,19 @@ export interface UserPostWithMeta extends Post {
 
 export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]> => {
   try {
-    console.log('🔍 getUserPosts - Starting with userId:', userId);
-    
+
     const { data: { user } } = await supabase.auth.getUser();
     const targetUserId = userId || user?.id;
-    
-    console.log('🔍 getUserPosts - Target user ID:', targetUserId);
-    console.log('🔍 getUserPosts - Current user ID:', user?.id);
-    
+
+
     if (!targetUserId) {
-      console.log('❌ No target user ID provided');
+
       return [];
     }
 
     // Get posts from ap_objects where the attributed actor belongs to the user
     // Include Create, Note, AND Announce (reposts/boosts)
     // Exclude replies (posts with inReplyTo)
-    console.log('📊 Fetching posts for user:', targetUserId);
 
     // Resolve the user's actor id(s) via safe public view (FK joins to actors are blocked by RLS)
     const { data: userActors, error: userActorsError } = await supabase
@@ -400,7 +309,7 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
     );
 
     if (actorIds.length === 0) {
-      console.log('📭 No actor found for user:', targetUserId);
+
       return [];
     }
     
@@ -411,24 +320,17 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
       .in('type', ['Create', 'Note', 'Announce']) // Include Announce for reposts
       .order('published_at', { ascending: false });
 
-    console.log('📄 Raw posts query result:', { 
-      count: posts?.length, 
-      error: error,
-      posts: posts?.slice(0, 3) // Log first 3 for debugging
-    });
-
     if (error) {
       console.error('Error fetching user posts:', error);
       return [];
     }
 
     if (!posts || posts.length === 0) {
-      console.log('📭 No posts found for user:', targetUserId);
+
       return [];
     }
 
     const authorIds = [targetUserId];
-    console.log('👥 Author IDs from posts:', authorIds);
 
     let profilesMap: Record<string, { fullname: string | null; avatar_url: string | null }> = {};
     if (authorIds.length > 0) {
@@ -436,12 +338,6 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
         .from('public_profiles')
         .select('id, fullname, avatar_url')
         .in('id', authorIds);
-
-      console.log('📝 Profiles for posts:', {
-        count: profiles?.length,
-        error: profileError,
-        profiles: profiles
-      });
 
       if (profiles) {
         profilesMap = Object.fromEntries(
@@ -511,16 +407,9 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
         },
       };
 
-      console.log('🔄 Transformed post:', {
-        id: transformedPost.id,
-        content: transformedPost.content.substring(0, 50) + '...',
-        author: transformedPost.author
-      });
-
       return transformedPost;
     }).filter(Boolean) || [];
 
-    console.log('✅ Final transformed posts:', transformedPosts.length);
     return transformedPosts as UserPostWithMeta[];
   } catch (error) {
     console.error('Error fetching user posts:', error);
@@ -530,20 +419,15 @@ export const getUserPosts = async (userId?: string): Promise<UserPostWithMeta[]>
 
 export const updatePost = async (postId: string, updates: { content: string }): Promise<void> => {
   try {
-    console.log('🔄 Updating post:', postId, 'with content:', updates.content);
-    
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.error('❌ No user found for post update');
       throw new Error('You must be logged in to update posts');
     }
 
-    console.log('👤 User found for update:', user.id);
-
     // Get the post owner to check ownership
     const ownerId = await getPostOwner(postId);
-
-    console.log('📄 Post owner:', ownerId, 'Current user:', user.id);
 
     if (ownerId !== user.id) {
       console.error('❌ User does not own this post');
@@ -589,8 +473,6 @@ export const updatePost = async (postId: string, updates: { content: string }): 
       };
     }
 
-    console.log('📝 Updating content:', updatedContent);
-
     const { error: updateError } = await supabase
       .from('ap_objects')
       .update({ content: updatedContent })
@@ -601,7 +483,6 @@ export const updatePost = async (postId: string, updates: { content: string }): 
       throw new Error(`Failed to update post: ${updateError.message}`);
     }
 
-    console.log('✅ Post updated successfully');
     toast.success('Inlägget uppdaterades!');
   } catch (error) {
     console.error('❌ Error updating post:', error);
@@ -611,27 +492,20 @@ export const updatePost = async (postId: string, updates: { content: string }): 
 
 export const deletePost = async (postId: string): Promise<void> => {
   try {
-    console.log('🗑️ Deleting post:', postId);
-    
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.error('❌ No user found for post deletion');
       throw new Error('You must be logged in to delete posts');
     }
 
-    console.log('👤 User found for deletion:', user.id);
-
     // Get the post owner to check ownership
     const ownerId = await getPostOwner(postId);
-
-    console.log('📄 Post owner for deletion:', ownerId, 'Current user:', user.id);
 
     if (ownerId !== user.id) {
       console.error('❌ User does not own this post');
       throw new Error('You can only delete your own posts');
     }
-
-    console.log('🗑️ Proceeding with deletion');
 
     const { error: deleteError } = await supabase
       .from('ap_objects')
@@ -643,7 +517,6 @@ export const deletePost = async (postId: string): Promise<void> => {
       throw new Error(`Failed to delete post: ${deleteError.message}`);
     }
 
-    console.log('✅ Post deleted successfully');
     toast.success('Inlägget raderades!');
   } catch (error) {
     console.error('❌ Error deleting post:', error);

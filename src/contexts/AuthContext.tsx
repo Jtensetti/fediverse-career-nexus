@@ -1,254 +1,85 @@
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { needsMFAVerification } from "@/services/auth/mfaService";
+import MFAVerifyDialog from "@/components/auth/MFAVerifyDialog";
+import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { createUserActor } from '@/services/federation/actorService';
-import { ensureUserProfile } from '@/services/profile/profileService';
-import { needsMFAVerification } from '@/services/auth/mfaService';
-import MFAVerifyDialog from '@/components/auth/MFAVerifyDialog';
-import { logger } from '@/lib/logger';
-
-const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'default';
-const SETUP_CACHE_PREFIX = `user_setup_${PROJECT_ID}_`;
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  /** True if user is authenticated but needs MFA verification */
   mfaPending: boolean;
 }
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Background user setup - non-blocking
-const setupUserInBackground = async (userId: string) => {
-  const cacheKey = `${SETUP_CACHE_PREFIX}${userId}`;
-  const cachedSetup = localStorage.getItem(cacheKey);
-
-  // Cache valid for 5 minutes
-  if (cachedSetup) {
-    try {
-      const cached = JSON.parse(cachedSetup);
-      if (Date.now() - cached.timestamp < 300000) {
-        return; // Cache hit - skip setup
-      }
-    } catch {
-      // Invalid cache, continue with setup
-    }
-  }
-
-  try {
-    // Run profile and actor checks in PARALLEL
-    const [profile, existingActor] = await Promise.all([
-      ensureUserProfile(userId),
-      supabase.from('public_actors').select('id').eq('user_id', userId).maybeSingle()
-    ]);
-
-    if (!profile) {
-      logger.error('AuthProvider: Failed to create/ensure profile');
-      return;
-    }
-
-    // Create actor if needed
-    if (!existingActor.data && !existingActor.error) {
-      try {
-        await createUserActor(userId);
-      } catch (error) {
-        logger.error('AuthProvider: Error creating actor:', error);
-      }
-    }
-
-    // Update cache
-    localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now() }));
-  } catch (error) {
-    logger.error('AuthProvider: Error in user setup:', error);
-  }
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const queryClient = useQueryClient();
+  const previousUser = useRef<string | null>(null);
+  const { t } = useTranslation();
+  const location = useLocation();
+  const recoveringMfa = location.pathname === "/aterstall-mfa";
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [mfaPending, setMfaPending] = useState(false);
-  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
-  const [mfaDialogOpen, setMfaDialogOpen] = useState(false);
-
-  // Check MFA requirement whenever session changes
-  const checkMFARequirement = async () => {
-    if (!session?.user) {
-      setMfaPending(false);
-      setMfaFactorId(null);
-      return;
-    }
-    
-    try {
-      const mfaCheck = await needsMFAVerification();
-      logger.debug('AuthProvider: MFA check result:', mfaCheck);
-
-      if (mfaCheck.needed && mfaCheck.factorId) {
-        setMfaPending(true);
-        setMfaFactorId(mfaCheck.factorId);
-        setMfaDialogOpen(true);
-      } else {
-        setMfaPending(false);
-        setMfaFactorId(null);
-        setMfaDialogOpen(false);
-      }
-    } catch (error) {
-      logger.error('AuthProvider: Error checking MFA:', error);
-      setMfaPending(false);
-    }
-  };
-
-  useEffect(() => {
-    let loadingTimeoutId: NodeJS.Timeout;
-    
-    // Timeout to prevent indefinite loading state
-    loadingTimeoutId = setTimeout(() => {
-      setLoading(prev => {
-        if (prev) {
-          logger.error('AuthProvider: Loading timeout reached, forcing completion');
-          return false;
-        }
-        return prev;
-      });
-    }, 10000);
-    
-    // Get initial session first
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          logger.error('AuthProvider: Error getting initial session:', error);
-        } else {
-          setSession(session);
-          setUser(session?.user ?? null);
-          // Resolve MFA gate before unblocking the UI to remove the brief
-          // window where protected routes could render without verification.
-          if (session?.user) {
-            try {
-              await checkMFARequirement();
-            } catch (mfaError) {
-              logger.error('AuthProvider: Initial MFA check failed:', mfaError);
-            }
-          }
-        }
-      } catch (error) {
-        logger.error('AuthProvider: Unexpected error getting session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-
-        // Handle sign in - run setup in background (non-blocking)
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Fire and forget - don't block the UI
-          void setupUserInBackground(session.user.id);
-          // Resolve MFA gate before flipping loading to false on sign-in events.
-          try {
-            await checkMFARequirement();
-          } catch (mfaError) {
-            logger.error('AuthProvider: Sign-in MFA check failed:', mfaError);
-          }
-        }
-
-        setLoading(false);
-
-        // Clear cache on sign out
-        if (event === 'SIGNED_OUT') {
-          setMfaPending(false);
-          setMfaFactorId(null);
-          setMfaDialogOpen(false);
-          // Clear all user setup caches (any project scope)
-          Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('user_setup_')) {
-              localStorage.removeItem(key);
-            }
-          });
-        }
-      }
-    );
-
-    // Clear timeout on cleanup
-    return () => {
-      clearTimeout(loadingTimeoutId);
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Check MFA whenever session changes
-  useEffect(() => {
-    if (session?.user && !loading) {
-      checkMFARequirement();
-    }
-  }, [session?.user?.id, loading]);
-
-  const handleMFASuccess = () => {
-    setMfaPending(false);
-    setMfaFactorId(null);
-    setMfaDialogOpen(false);
-  };
-
-  const handleMFACancel = async () => {
-    // Sign out since they cancelled MFA verification
-    await supabase.auth.signOut();
-    setMfaPending(false);
-    setMfaFactorId(null);
-    setMfaDialogOpen(false);
-  };
-
+  const [factorId, setFactorId] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  const generation = useRef(0);
+  const verifiedUser = useRef<string | null>(null);
   const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  };
+  const verifySession = async (nextSession: Session | null, version: number) => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        logger.error('AuthProvider: Error signing out:', error);
-        throw error;
+      const result = nextSession ? await needsMFAVerification() : { needed: false };
+      if (version !== generation.current) return;
+      verifiedUser.current = !result.needed ? nextSession?.user.id || null : null;
+      setSession(nextSession);
+      setFactorId(result.factorId || null);
+      setMfaPending(result.needed);
+      setError(false);
+    } catch {
+      if (version !== generation.current) return;
+      setMfaPending(true);
+      setError(true);
+    } finally { if (version === generation.current) setLoading(false); }
+  };
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    // Auth callbacks must be synchronous: calling auth APIs while its lock is held can deadlock.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      const nextUser = nextSession?.user.id || null;
+      if (nextUser !== previousUser.current) {
+        queryClient.clear();
+        previousUser.current = nextUser;
       }
-    } catch (error) {
-      logger.error('AuthProvider: Sign out failed:', error);
-      throw error;
-    }
-  };
+      const version = ++generation.current;
+      const refresh = event === "TOKEN_REFRESHED" && nextUser !== null && verifiedUser.current === nextUser;
+      if (!refresh) { setLoading(true); setMfaPending(!!nextSession); }
+      setSession(nextSession);
+      clearTimeout(timer);
+      timer = setTimeout(() => { void verifySession(nextSession, version); }, 0);
+    });
+    return () => { generation.current++; clearTimeout(timer); subscription.unsubscribe(); };
+  }, []);
+  return <AuthContext.Provider value={{ user: !loading && !mfaPending ? session?.user || null : null, session, loading, mfaPending, signOut }}>
+    {children}
+    {error && <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background p-6" role="alert">
+      <p>{t("auth.sessionVerificationFailed")}</p>
+      <button className="underline" onClick={() => { setLoading(true); void verifySession(session, ++generation.current); }}>{t("common.retry")}</button>
+      {session && <button className="underline" onClick={() => void signOut()}>{t("auth.signOut")}</button>}
+    </div>}
 
-  const value = {
-    user,
-    session,
-    loading,
-    signOut,
-    mfaPending,
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-      {/* Global MFA verification dialog */}
-      {mfaFactorId && (
-        <MFAVerifyDialog
-          open={mfaDialogOpen}
-          onOpenChange={setMfaDialogOpen}
-          factorId={mfaFactorId}
-          onSuccess={handleMFASuccess}
-          onCancel={handleMFACancel}
-        />
-      )}
-    </AuthContext.Provider>
-  );
+    {factorId && !recoveringMfa && <MFAVerifyDialog open={mfaPending} onOpenChange={open => { if (!open) void signOut(); }} factorId={factorId}
+      onSuccess={() => { setLoading(true); void verifySession(session, ++generation.current); }} onCancel={signOut} />}
+  </AuthContext.Provider>;
 }
-
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }

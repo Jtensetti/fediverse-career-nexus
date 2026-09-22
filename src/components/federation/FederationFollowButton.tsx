@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { UserPlus, UserCheck, UserX, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { ensureActorKeys } from "@/services/federation/actorService";
-import { getOutgoingFollowStatus, subscribeToOutgoingFollows } from "@/services/federation/outgoingFollowsService";
+import { getOutgoingFollowStatus, subscribeToOutgoingFollows, followRemoteActor, unfollowRemoteActor } from "@/services/federation/outgoingFollowsService";
 
 interface FederationFollowButtonProps {
   remoteActorUri: string;
@@ -71,27 +70,11 @@ export default function FederationFollowButton({
         return;
       }
       
-      const { data, error } = await supabase.rpc('create_follow', {
-        p_local_actor_id: localActorId,
-        p_remote_actor_url: remoteActorUri
-      });
-      
-      if (error) {
-        toast({
-          title: "Följning misslyckades",
-          description: error.message,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      toast({
-        title: "Följförfrågan skickad",
-        description: "Din följförfrågan har lagts i kö för federation med korrekta HTTP-signaturer.",
-        variant: "default"
-      });
-      
-      setFollowStatus('pending');
+      const unfollow = followStatus === 'accepted';
+      const result = await (unfollow ? unfollowRemoteActor : followRemoteActor)(localActorId, remoteActorUri);
+      if (!result.success) throw new Error(result.error || "Kunde inte skicka förfrågan");
+      toast({ title: unfollow ? "Du följer inte längre kontot" : "Följförfrågan skickad" });
+      setFollowStatus(unfollow ? null : await getOutgoingFollowStatus(localActorId, remoteActorUri) || 'pending');
     } catch (error) {
       toast({
         title: "Ett fel uppstod",
@@ -116,19 +99,19 @@ export default function FederationFollowButton({
       case 'pending':
         return {
           icon: <Clock size={16} />,
-          text: "Väntande",
+          text: "Väntande · skicka igen",
           variant: "secondary" as const
         };
       case 'accepted':
         return {
           icon: <UserCheck size={16} />,
-          text: "Följer",
+          text: "Sluta följa",
           variant: "default" as const
         };
       case 'rejected':
         return {
           icon: <UserX size={16} />,
-          text: "Avvisad",
+          text: "Avvisad · försök igen",
           variant: "destructive" as const
         };
       default:
@@ -141,7 +124,7 @@ export default function FederationFollowButton({
   };
   
   const { icon, text, variant } = getButtonContent();
-  const isDisabled = disabled || loading || !localActorId || followStatus === 'accepted' || followStatus === 'pending';
+  const isDisabled = disabled || loading || !localActorId;
   
   return (
     <Button 

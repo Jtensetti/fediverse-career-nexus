@@ -1,5 +1,6 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { userHandler } from "../_shared/user-auth.ts";
+import { remoteFetch, readJson } from "../_shared/remote-fetch.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { decryptToken } from "../_shared/token-encryption.ts";
 
 const corsHeaders = {
@@ -32,25 +33,25 @@ function stripHtml(html: string): string {
 // Fetch remote account data
 async function fetchRemoteAccount(domain: string, accessToken: string): Promise<MastodonAccount | null> {
   const verifyUrl = `https://${domain}/api/v1/accounts/verify_credentials`;
-  
+
   try {
-    const response = await fetch(verifyUrl, {
+    const response = await remoteFetch(verifyUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-    
+
     if (!response.ok) {
       console.error(`Fetch remote account failed: ${response.status}`);
       return null;
     }
-    
-    return await response.json();
+
+    return await readJson(response);
   } catch (error) {
     console.error('Fetch remote account error:', error);
     return null;
   }
 }
 
-serve(async (req) => {
+Deno.serve(userHandler(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -75,7 +76,7 @@ serve(async (req) => {
     // Verify the user
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
@@ -114,8 +115,8 @@ serve(async (req) => {
       .single();
 
     if (sessionError || !session) {
-      return new Response(JSON.stringify({ 
-        error: 'No active federated session found. Please re-authenticate with your Fediverse account.' 
+      return new Response(JSON.stringify({
+        error: 'No active federated session found. Please re-authenticate with your Fediverse account.'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -127,16 +128,19 @@ serve(async (req) => {
 
     // Fetch the latest account data from the remote instance
     const remoteAccount = await fetchRemoteAccount(session.remote_instance, accessToken);
-    
+
     if (!remoteAccount) {
-      return new Response(JSON.stringify({ 
-        error: 'Failed to fetch data from your home instance. Your session may have expired.' 
+      return new Response(JSON.stringify({
+        error: 'Failed to fetch data from your home instance. Your session may have expired.'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
+    const { data: identity, error: identityError } = await supabase.from("federated_identities").select("user_id")
+      .eq("instance_domain", session.remote_instance).eq("remote_account_id", String(remoteAccount.id)).eq("user_id", user.id).maybeSingle();
+    if (identityError || !identity) throw new Error("Remote account is not linked to this Nolto account");
     // Update the local profile with remote data
     const { error: updateError } = await supabase
       .from('profiles')
@@ -183,4 +187,4 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
-});
+}));

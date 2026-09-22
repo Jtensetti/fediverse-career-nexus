@@ -41,12 +41,12 @@ export default function Index() {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="Nolto — Det federerade alternativet till LinkedIn"
-        description="Anslut till ett federerat alternativ till LinkedIn. Inga algoritmer, inga annonser, ingen dataförsäljning."
+        description="Bygg en yrkesprofil, hitta jobb och skapa kontakter i ett öppet professionellt nätverk."
       />
       <Navbar />
-      <main className="flex-grow">
+      <div className="flex-grow">
         <UnauthenticatedHomepage />
-      </main>
+      </div>
       <Footer />
     </div>
   );

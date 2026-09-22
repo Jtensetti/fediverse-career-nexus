@@ -1,5 +1,8 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { HttpError, requireUser } from "../_shared/user-auth.ts";
+import { remoteFetch, readJson } from "../_shared/remote-fetch.ts";
+import { tokenHash, OAUTH_SCOPES } from "../_shared/oauth.ts";
+import { getSiteUrl } from "../_shared/federation-urls.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { encryptToken } from "../_shared/token-encryption.ts";
 
 const corsHeaders = {
@@ -28,16 +31,17 @@ interface MastodonAccount {
 
 // Exchange authorization code for access token
 async function exchangeCodeForToken(
-  domain: string, 
-  code: string, 
-  clientId: string, 
+  domain: string,
+  code: string,
+  clientId: string,
   clientSecret: string,
-  redirectUri: string
+  redirectUri: string,
+  codeVerifier: string
 ): Promise<{ accessToken: string; refreshToken?: string; expiresIn?: number } | null> {
   const tokenUrl = `https://${domain}/oauth/token`;
-  
+
   try {
-    const response = await fetch(tokenUrl, {
+    const response = await remoteFetch(tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -46,17 +50,17 @@ async function exchangeCodeForToken(
         client_id: clientId,
         client_secret: clientSecret,
         redirect_uri: redirectUri,
-        scope: 'read'
+        scope: OAUTH_SCOPES,
+        code_verifier: codeVerifier
       })
     });
-    
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Token exchange failed: ${response.status} - ${errorText}`);
+      console.error(`Token exchange failed: ${response.status}`);
       return null;
     }
-    
-    const data = await response.json();
+
+    const data = await readJson(response);
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
@@ -71,18 +75,18 @@ async function exchangeCodeForToken(
 // Verify the user's credentials with the remote instance
 async function verifyCredentials(domain: string, accessToken: string): Promise<MastodonAccount | null> {
   const verifyUrl = `https://${domain}/api/v1/accounts/verify_credentials`;
-  
+
   try {
-    const response = await fetch(verifyUrl, {
+    const response = await remoteFetch(verifyUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-    
+
     if (!response.ok) {
       console.error(`Verify credentials failed: ${response.status}`);
       return null;
     }
-    
-    return await response.json();
+
+    return await readJson(response);
   } catch (error) {
     console.error('Verify credentials error:', error);
     return null;
@@ -92,9 +96,9 @@ async function verifyCredentials(domain: string, accessToken: string): Promise<M
 // Generate a unique username for the federated user
 function generateUsername(account: MastodonAccount, domain: string): string {
   // Use their remote username with instance suffix
-  const baseUsername = account.username.toLowerCase().replace(/[^a-z0-9_]/g, '');
+  const baseUsername = account.username.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 15);
   const domainPrefix = domain.split('.')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-  return `${baseUsername}_${domainPrefix}`;
+  return `${baseUsername}_${domainPrefix}`.slice(0, 24);
 }
 
 // Strip HTML tags from bio
@@ -102,7 +106,7 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').trim();
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -116,7 +120,7 @@ serve(async (req) => {
 
   try {
     const { code, state, redirectUri } = await req.json();
-    
+
     if (!code || !state) {
       return new Response(JSON.stringify({ error: 'Code and state are required' }), {
         status: 400,
@@ -124,27 +128,16 @@ serve(async (req) => {
       });
     }
 
-    // Decode and validate the state
-    let stateData: { domain: string; username: string; actorUrl?: string; redirectUri?: string; timestamp: number };
-    try {
-      stateData = JSON.parse(atob(state));
-    } catch {
-      return new Response(JSON.stringify({ error: 'Invalid state parameter' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    if (typeof state !== "string" || !/^[a-f0-9]{64}$/.test(state)) {
+      return new Response(JSON.stringify({ error: "Invalid sign-in state" }), { status: 400, headers: corsHeaders });
     }
-
-    // Check if state is not too old (15 minutes max)
-    if (Date.now() - stateData.timestamp > 15 * 60 * 1000) {
-      return new Response(JSON.stringify({ error: 'Authentication session expired. Please try again.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    // DELETE RETURNING consumes state atomically. A replay or expired state has no row.
+    const { data: stateData, error: stateError } = await supabase.from("federated_oauth_states")
+      .delete().eq("state_hash", await tokenHash(state)).gt("expires_at", new Date().toISOString()).select().maybeSingle();
+    if (stateError || !stateData || stateData.redirect_uri !== `${getSiteUrl()}/auth/callback` || redirectUri !== stateData.redirect_uri) {
+      return new Response(JSON.stringify({ error: "Sign-in expired or was already used. Start again." }), { status: 400, headers: corsHeaders });
     }
-
-    const { domain } = stateData;
-    console.log(`Processing OAuth callback for ${domain}`);
+    const domain = stateData.instance_domain;
 
     // Get the OAuth client for this domain
     const { data: oauthClient, error: clientError } = await supabase
@@ -161,17 +154,14 @@ serve(async (req) => {
       });
     }
 
-    // Always use the canonical redirect URI for token exchange to ensure consistency
-    const CANONICAL_REDIRECT_URI = 'https://www.nolto.social/auth/callback';
-    const tokenRedirectUri = CANONICAL_REDIRECT_URI;
-    console.log(`Using canonical redirect URI for token exchange: ${tokenRedirectUri}`);
-    
+    const tokenRedirectUri = stateData.redirect_uri;
     const tokenResult = await exchangeCodeForToken(
       domain,
       code,
       oauthClient.client_id,
       oauthClient.client_secret,
-      tokenRedirectUri
+      tokenRedirectUri,
+      stateData.code_verifier
     );
 
     if (!tokenResult) {
@@ -183,7 +173,7 @@ serve(async (req) => {
 
     // Verify the user's identity
     const account = await verifyCredentials(domain, tokenResult.accessToken);
-    if (!account) {
+    if (!account || account.username.toLowerCase() !== stateData.username.toLowerCase()) {
       return new Response(JSON.stringify({ error: 'Failed to verify your identity with the remote instance' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -195,37 +185,26 @@ serve(async (req) => {
     const remoteActorUrl = account.url;
     const fullHandle = `${account.username}@${domain}`;
 
-    // Check if this federated user already has a profile
-    const { data: existingProfile } = await supabase
-      .from('public_profiles')
-      .select('*')
-      .eq('remote_actor_url', remoteActorUrl)
-      .single();
-
+    if (!account.id || new URL(remoteActorUrl).hostname !== domain) throw new Error("Remote account URL must belong to its OAuth issuer");
+    const { data: identity, error: lookupError } = await supabase.from("federated_identities")
+      .select("user_id").eq("instance_domain", domain).eq("remote_account_id", String(account.id)).maybeSingle();
+    if (lookupError) throw lookupError;
+    if (stateData.link_user_id) {
+      const { user } = await requireUser(req);
+      if (user.id !== stateData.link_user_id) throw new Error("Original Nolto session is required to link accounts");
+      if (identity && identity.user_id !== user.id) throw new Error("Mastodon account is already linked to a different Nolto account");
+    }
     let profileId: string;
     let isNewUser = false;
-
-    if (existingProfile) {
-      console.log(`Found existing profile for ${fullHandle}`);
-      profileId = existingProfile.id;
-
-      // Update profile with latest info from remote
-      await supabase
-        .from('profiles')
-        .update({
-          fullname: account.display_name || account.username,
-          bio: stripHtml(account.note || ''),
-          avatar_url: account.avatar,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', profileId);
+    if (stateData.link_user_id || identity) {
+      profileId = stateData.link_user_id || identity!.user_id;
     } else {
       console.log(`Creating new profile for ${fullHandle}`);
       isNewUser = true;
 
       // Generate a unique username
       let username = generateUsername(account, domain);
-      
+
       // Check if username exists and add suffix if needed
       const { data: usernameCheck } = await supabase
         .from('public_profiles')
@@ -245,7 +224,9 @@ serve(async (req) => {
           federated: true,
           remote_instance: domain,
           remote_actor_url: remoteActorUrl,
-          remote_username: account.username
+          remote_username: account.username,
+          preferred_username: username,
+          fullname: account.display_name || account.username,
         }
       });
 
@@ -260,7 +241,7 @@ serve(async (req) => {
       profileId = authUser.user.id;
 
       // The trigger should create the profile, but let's update it with remote data
-      await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           username,
@@ -272,32 +253,26 @@ serve(async (req) => {
           home_instance: domain
         })
         .eq('id', profileId);
+      if (profileError) throw profileError;
 
-      // Create an actor for federation
-      await supabase
-        .from('actors')
-        .insert({
-          user_id: profileId,
-          preferred_username: username,
-          type: 'Person',
-          is_remote: false, // This is their local representation
-          remote_actor_url: remoteActorUrl,
-          remote_inbox_url: `${remoteActorUrl}/inbox`
-        });
     }
 
+    if (!identity) {
+      const { error: linkError } = await supabase.from("federated_identities").insert({ instance_domain: domain, remote_account_id: String(account.id), user_id: profileId });
+      if (linkError) throw linkError;
+    }
     // Encrypt tokens using AES-GCM
     const encryptedAccessToken = await encryptToken(tokenResult.accessToken);
-    const encryptedRefreshToken = tokenResult.refreshToken 
-      ? await encryptToken(tokenResult.refreshToken) 
+    const encryptedRefreshToken = tokenResult.refreshToken
+      ? await encryptToken(tokenResult.refreshToken)
       : null;
 
     // Store/update the federated session with encrypted tokens
-    const tokenExpiry = tokenResult.expiresIn 
+    const tokenExpiry = tokenResult.expiresIn
       ? new Date(Date.now() + tokenResult.expiresIn * 1000).toISOString()
       : null;
 
-    await supabase
+    const { error: sessionSaveError } = await supabase
       .from('federated_sessions')
       .upsert({
         profile_id: profileId,
@@ -312,12 +287,16 @@ serve(async (req) => {
         onConflict: 'profile_id,remote_instance'
       });
 
-    // Generate a session for the user
+    if (sessionSaveError) throw sessionSaveError;
+    const { data: authIdentity, error: identityError } = await supabase.auth.admin.getUserById(profileId);
+    if (identityError || !authIdentity.user?.email) throw new Error("Local sign-in identity missing");
+    // Generate a session for the existing local auth identity, even if its email was changed.
+
     const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
-      email: `${account.username}@${domain}.federated.local`,
+      email: authIdentity.user.email,
       options: {
-        redirectTo: '/'
+        redirectTo: getSiteUrl()
       }
     });
 
@@ -334,23 +313,25 @@ serve(async (req) => {
     const magicLinkUrl = new URL(sessionData.properties.action_link);
     const token = magicLinkUrl.searchParams.get('token_hash') || magicLinkUrl.searchParams.get('token');
     const tokenType = magicLinkUrl.searchParams.get('type');
-    
+
     if (!token) {
-      console.error('No token found in magic link URL:', sessionData.properties.action_link);
+      console.error('Authentication token missing from generated link');
       return new Response(JSON.stringify({ error: 'Failed to generate authentication token' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    console.log(`Successfully authenticated ${fullHandle}`);
+    const { data: savedProfile, error: savedProfileError } = await supabase.from("public_profiles")
+      .select("username").eq("id", profileId).single();
+    if (savedProfileError) throw savedProfileError;
 
     return new Response(JSON.stringify({
       success: true,
       isNewUser,
       profile: {
         id: profileId,
-        username: existingProfile?.username || generateUsername(account, domain),
+        username: savedProfile.username,
         fullname: account.display_name || account.username,
         avatar_url: account.avatar,
         home_instance: domain,
@@ -367,6 +348,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
+    if (error instanceof HttpError) return new Response(JSON.stringify({ error: error.message }), { status: error.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     console.error('Federated auth callback error:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,

@@ -1,142 +1,21 @@
+import { ACTIVITY_CONTENT_TYPE, createActorDocument, USERNAME_PATTERN } from "../_shared/actor-document.ts";
+import { functionPath } from "../_shared/federation-urls.ts";
+import { federationHeaders, jsonResponse, loadLocalActor } from "../_shared/local-actor.ts";
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { 
-  corsHeaders,
-  getActorFromCache,
-  fetchActorFromDatabase,
-  createActorObject,
-  cacheActor,
-  createLocalActor,
-  logRequestMetrics
-} from "./utils.ts";
-
-serve(async (req) => {
-  // Start measuring request time
-  const startTime = performance.now();
-  
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+export async function handler(req: Request): Promise<Response> {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: federationHeaders });
+  if (!["GET", "HEAD"].includes(req.method)) return jsonResponse({ error: "Method not allowed" }, 405);
+  const head = req.method === "HEAD";
+  const path = functionPath(new URL(req.url), "actor");
+  const username = path?.length === 1 ? path[0].toLowerCase() : "";
+  if (!USERNAME_PATTERN.test(username)) return jsonResponse({ error: "Account not found" }, 404, undefined, head);
   try {
-    const url = new URL(req.url);
-    const pathParts = url.pathname.split("/").filter(Boolean);
-    const remoteHost = url.hostname;
-    
-    // The path structure is /functions/v1/actor/:username or /actor/:username
-    // Find the username - it's the last part after 'actor'
-    const actorIndex = pathParts.indexOf('actor');
-    let username: string | undefined;
-    
-    if (actorIndex !== -1 && actorIndex < pathParts.length - 1) {
-      username = pathParts[actorIndex + 1];
-    } else if (pathParts.length === 1) {
-      // Direct call with just username
-      username = pathParts[0];
-    }
-    
-    if (!username) {
-      await logRequestMetrics(remoteHost, url.pathname, startTime, false, 404);
-      return new Response(
-        JSON.stringify({ error: "Not found" }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
-    }
-    
-    // Try to get from cache first
-    const cachedActor = await getActorFromCache(username);
-    
-    if (cachedActor) {
-      await logRequestMetrics(remoteHost, url.pathname, startTime, true, 200);
-      return new Response(
-        JSON.stringify(cachedActor),
-        {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/activity+json",
-            "Cache-Control": "public, max-age=300, s-maxage=300",
-            "Vary": "Accept",
-          }
-        }
-      );
-    }
-
-    console.log(`Cache miss for actor ${username}, fetching from database`);
-
-    // Fetch actor from database
-    let result = await fetchActorFromDatabase(username);
-
-    if ('error' in result) {
-      if (result.error === "Actor not found") {
-        console.log(`Auto-creating actor for ${username}`);
-        const created = await createLocalActor(username);
-        if (!created) {
-          await logRequestMetrics(remoteHost, url.pathname, startTime, false, result.status, result.error);
-          return new Response(
-            JSON.stringify({ error: result.error }),
-            {
-              status: result.status,
-              headers: { ...corsHeaders, "Content-Type": "application/json" }
-            }
-          );
-        }
-        result = created;
-      } else {
-        await logRequestMetrics(remoteHost, url.pathname, startTime, false, result.status, result.error);
-        return new Response(
-          JSON.stringify({ error: result.error }),
-          {
-            status: result.status,
-            headers: { ...corsHeaders, "Content-Type": "application/json" }
-          }
-        );
-      }
-    }
-
-    const { profile, actor } = result;
-    const domain = url.hostname;
-    const protocol = url.protocol;
-
-    // Create the actor object
-    const actorObject = createActorObject(profile, actor, domain, protocol);
-
-    // Cache the actor
-    await cacheActor(username, actorObject);
-    
-    await logRequestMetrics(remoteHost, url.pathname, startTime, true, 200);
-    return new Response(
-      JSON.stringify(actorObject),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/activity+json",
-          "Cache-Control": "public, max-age=300, s-maxage=300",
-          "Vary": "Accept",
-        }
-      }
-    );
+    const result = await loadLocalActor(username);
+    if ("error" in result) return jsonResponse({ error: result.error }, result.status, undefined, head);
+    return jsonResponse(createActorDocument(result.profile, result.actor), 200, ACTIVITY_CONTENT_TYPE, head);
   } catch (error) {
-    console.error("Error processing Actor request:", error);
-    
-    await logRequestMetrics(
-      new URL(req.url).hostname,
-      new URL(req.url).pathname,
-      startTime,
-      false,
-      500,
-      error.message
-    );
-    
-    return new Response(
-      JSON.stringify({ error: "Internal Server Error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
+    console.error("Actor lookup failed", error);
+    return jsonResponse({ error: "Account lookup is temporarily unavailable" }, 503, undefined, head);
   }
-});
+}
+if (import.meta.main) Deno.serve(handler);

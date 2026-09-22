@@ -1,3 +1,4 @@
+import Papa from "papaparse";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -51,14 +52,15 @@ export default function AccountMigrationSection() {
   const addAlias = async () => {
     if (!newAliasUrl.trim() || !actorId) return;
     try {
-      new URL(newAliasUrl);
+      const url = new URL(newAliasUrl.trim());
+      if (url.protocol !== "https:" || url.username || url.password || url.hash) throw new Error("Invalid actor URL");
     } catch {
       toast.error(t("migration.invalidUrl"));
       return;
     }
     setIsSaving(true);
     try {
-      const updatedAliases = [...alsoKnownAs, newAliasUrl.trim()];
+      const updatedAliases = [...new Set([...alsoKnownAs, newAliasUrl.trim()])];
       const { error } = await supabase
         .from("actors")
         .update({ also_known_as: updatedAliases })
@@ -124,13 +126,21 @@ export default function AccountMigrationSection() {
     setIsImporting(true);
     setImportResult(null);
     try {
-      const csv = await file.text();
-      const { data, error } = await supabase.functions.invoke("import-follows-csv", {
-        body: { csv },
-      });
-      if (error) throw error;
-      setImportResult({ queued: data.queued ?? 0, skipped: data.skipped ?? 0 });
-      toast.success(t("migration.importSuccess", { count: data.queued ?? 0 }));
+      if (file.size > 1024 * 1024) throw new Error("CSV-filen får vara högst 1 MB.");
+      const parsed = Papa.parse<string[]>(await file.text(), { skipEmptyLines: true });
+      if (parsed.errors.length) throw new Error("CSV-filen kunde inte läsas.");
+      const accounts = [...new Set(parsed.data.map(row => row[0]?.trim()).filter(value => /^@?[^@\s]+@[^@\s]+$/.test(value || "")))];
+      if (!accounts.length || accounts.length > 5000) throw new Error("Välj en Mastodon-följlista med 1–5000 konton.");
+      let queued = 0, skipped = 0;
+      for (let offset = 0; offset < accounts.length; offset += 20) {
+        const csv = Papa.unparse([["Account address"], ...accounts.slice(offset, offset + 20).map(acct => [acct])]);
+        const { data, error } = await supabase.functions.invoke("import-follows-csv", { body: { csv } });
+        if (error) throw new Error(`${queued} skickade, ${skipped} misslyckade. ${error.message}`);
+        queued += data.queued || 0; skipped += data.skipped || 0;
+        setImportResult({ queued, skipped });
+      }
+      if (skipped) toast.warning(t("migration.importResult", { queued, skipped }));
+      else toast.success(t("migration.importSuccess", { count: queued }));
     } catch (err: any) {
       console.error("CSV import error:", err);
       toast.error(err.message || t("migration.importFailed"));
@@ -197,7 +207,7 @@ export default function AccountMigrationSection() {
             <div className="space-y-2">
               {alsoKnownAs.map((url) => (
                 <div key={url} className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                  <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm underline truncate">{url}</a>
+                  <a href={/^https:\/\//i.test(url) ? url : undefined} target="_blank" rel="noopener noreferrer" className="text-sm underline truncate">{url}</a>
                   <Button variant="ghost" size="sm" onClick={() => removeAlias(url)} disabled={isSaving}>
                     <Trash className="h-4 w-4 text-destructive" />
                   </Button>

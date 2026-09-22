@@ -5,10 +5,13 @@
 /.well-known/oauth-authorization-server      https://anknmcmqljejabxbeohv.supabase.co/functions/v1/oauth-authorization-server  200
 /nodeinfo/*                                  https://anknmcmqljejabxbeohv.supabase.co/functions/v1/nodeinfo/:splat  200
 
-# Mastodon-compatible API surface (for Tusky / Elk / Ivory / Phanpy)
+# Partial discovery/search API; not a complete Mastodon client API
 /api/v1/instance                             https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/v1/instance  200
 /api/v1/apps                                 https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/v1/apps      200
 /api/v2/search                               https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/v2/search    200
 
 # Proxy all edge function calls
 /functions/v1/*                              https://anknmcmqljejabxbeohv.supabase.co/functions/v1/:splat  200
+
+# Keep browser deep links working after federation rewrites.
+/* /index.html 200

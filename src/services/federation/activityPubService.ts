@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+import { getLocalActorUrl, getNoltoInstanceDomain } from "@/lib/federation";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,12 +37,12 @@ export const createJobPostActivity = async (jobPost: any): Promise<ActivityPubAc
       return null;
     }
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseUrl = `https://${getNoltoInstanceDomain()}`;
     if (!supabaseUrl) {
       toast.error('VITE_SUPABASE_URL not set');
       return null;
     }
-    const actorUrl = `${supabaseUrl}/functions/v1/actor/${profile.username}`;
+    const actorUrl = getLocalActorUrl(profile.username);
 
     // Create the Note/Article object for the job post
     const jobObject = {
@@ -90,7 +92,7 @@ export const createJobPostActivity = async (jobPost: any): Promise<ActivityPubAc
       actor: actorUrl,
       object: jobObject,
       to: ["https://www.w3.org/ns/activitystreams#Public"],
-      cc: [`${actorUrl}/followers`]
+      cc: [`https://${getNoltoInstanceDomain()}/functions/v1/followers/${profile.username}`]
     };
 
     return activity;
@@ -123,22 +125,17 @@ export const sendActivityToOutbox = async (activity: ActivityPubActivity): Promi
       return false;
     }
 
-    // Send to outbox via Supabase function
-    const { data, error } = await supabase.functions.invoke('outbox', {
-      body: activity,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.session.access_token}`
-      }
-    });
+    const { data: actor, error: actorError } = await supabase.from('public_actors').select('id, status')
+      .eq('user_id', session.session.user.id).eq('is_remote', false).single();
+    if (actorError || actor?.status !== 'active') throw new Error('Enable federation before sharing a job externally');
+    const id = crypto.randomUUID();
+    const object = { ...activity.object, id: `https://${getNoltoInstanceDomain()}/functions/v1/objects/${id}`,
+      attributedTo: getLocalActorUrl(profile.username), to: activity.to, cc: activity.cc,
+      content: DOMPurify.sanitize(activity.object.content || '') };
+    const { error } = await supabase.from('ap_objects').insert({ id, type: object.type, attributed_to: actor.id,
+      published_at: new Date().toISOString(), content: object });
+    if (error) throw error;
 
-    if (error) {
-      console.error('Error sending activity to outbox:', error);
-      toast.error('Failed to federate job post');
-      return false;
-    }
-
-    console.log('Activity sent to outbox:', data);
     return true;
   } catch (error) {
     console.error('Error in sendActivityToOutbox:', error);

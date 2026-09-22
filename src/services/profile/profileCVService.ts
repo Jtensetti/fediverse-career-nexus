@@ -23,11 +23,11 @@ const normalizeDate = (value: string | undefined | null): string | null => {
   if (value === undefined || value === null) return null;
   const trimmed = typeof value === 'string' ? value.trim() : '';
   if (trimmed === '') return null;
-  
+
   // If it's already a valid YYYY-MM-DD format, return it
   const dateOnly = trimmed.substring(0, 10);
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) return dateOnly;
-  
+
   // Try to parse and format the date
   try {
     const date = new Date(trimmed);
@@ -37,7 +37,7 @@ const normalizeDate = (value: string | undefined | null): string | null => {
   } catch {
     // Fall through to return null
   }
-  
+
   return null;
 };
 
@@ -98,19 +98,19 @@ export const getUserExperiences = async (userId?: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       targetUserId = user?.id;
     }
-    
+
     if (!targetUserId) {
       console.error('No user ID available for fetching experiences');
       return [];
     }
-    
+
     const { data, error } = await supabase
       .from('experiences')
       .select('*')
       .eq('user_id', targetUserId)
       .order('is_current_role', { ascending: false })
       .order('start_date', { ascending: false });
-    
+
     if (error) throw error;
     return data || [];
   } catch (error) {
@@ -136,13 +136,13 @@ export const createExperience = async (experience: Experience) => {
         throw new Error("User not authenticated");
       }
     }
-    
+
     // Validate start_date is provided and valid
     const normalizedStartDate = normalizeDate(experience.start_date);
     if (!normalizedStartDate) {
       throw new Error("Start date is required and must be a valid date");
     }
-    
+
     // Build a sanitized payload with only valid columns
     const payload = {
       user_id: userId,
@@ -155,25 +155,23 @@ export const createExperience = async (experience: Experience) => {
       is_current_role: experience.is_current_role || false,
       description: normalizeMultilineText(experience.description),
     };
-    
-    console.log('Creating experience with payload:', JSON.stringify(payload, null, 2));
-    
+
     const { data, error } = await supabase
       .from('experiences')
       .insert(payload)
       .select()
       .single();
-    
+
     if (error) {
       console.error('Database error creating experience:', JSON.stringify(error, null, 2));
       throw new Error(error.message || 'Database error');
     }
-    
+
     toast({
       title: "Experience added",
       description: "Your experience has been successfully added to your profile."
     });
-    
+
     return data;
   } catch (error: any) {
     console.error('Error creating experience:', error);
@@ -190,7 +188,7 @@ export const updateExperience = async (id: string, experience: Partial<Experienc
   try {
     // Build a sanitized payload with only valid columns (exclude id, created_at, updated_at, user_id)
     const payload: Record<string, any> = {};
-    
+
     if (experience.title !== undefined) payload.title = normalizeText(experience.title) || '';
     if (experience.company !== undefined) payload.company = normalizeText(experience.company) || '';
     if (experience.company_domain !== undefined) payload.company_domain = normalizeText(experience.company_domain);
@@ -201,24 +199,24 @@ export const updateExperience = async (id: string, experience: Partial<Experienc
       payload.end_date = experience.is_current_role ? null : normalizeDate(experience.end_date);
     }
     if (experience.description !== undefined) payload.description = normalizeMultilineText(experience.description);
-    
+
     const { data, error } = await supabase
       .from('experiences')
       .update(payload)
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) {
       console.error('Database error updating experience:', error);
       throw new Error(error.message || 'Database error');
     }
-    
+
     toast({
       title: "Experience updated",
       description: "Your experience has been successfully updated."
     });
-    
+
     return data;
   } catch (error: any) {
     console.error('Error updating experience:', error);
@@ -237,14 +235,14 @@ export const deleteExperience = async (id: string) => {
       .from('experiences')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
-    
+
     toast({
       title: "Experience deleted",
       description: "Your experience has been successfully removed."
     });
-    
+
     return true;
   } catch (error) {
     console.error('Error deleting experience:', error);
@@ -266,18 +264,18 @@ export const getUserEducation = async (userId?: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       targetUserId = user?.id;
     }
-    
+
     if (!targetUserId) {
       console.error('No user ID available for fetching education');
       return [];
     }
-    
+
     const { data, error } = await supabase
       .from('education')
       .select('*')
       .eq('user_id', targetUserId)
       .order('start_year', { ascending: false });
-    
+
     if (error) throw error;
     return data || [];
   } catch (error) {
@@ -303,7 +301,7 @@ export const createEducation = async (education: Education) => {
         throw new Error("User not authenticated");
       }
     }
-    
+
     // Build a sanitized payload with only valid columns
     const payload = {
       user_id: userId,
@@ -313,23 +311,23 @@ export const createEducation = async (education: Education) => {
       start_year: normalizeYear(education.start_year),
       end_year: normalizeYear(education.end_year),
     };
-    
+
     const { data, error } = await supabase
       .from('education')
       .insert(payload)
       .select()
       .single();
-    
+
     if (error) {
       console.error('Database error creating education:', error);
       throw new Error(error.message || 'Database error');
     }
-    
+
     toast({
       title: "Education added",
       description: "Your education has been successfully added to your profile."
     });
-    
+
     return data;
   } catch (error: any) {
     console.error('Error creating education:', error);
@@ -346,30 +344,30 @@ export const updateEducation = async (id: string, education: Partial<Education>)
   try {
     // Build a sanitized payload with only valid columns
     const payload: Record<string, any> = {};
-    
+
     if (education.institution !== undefined) payload.institution = normalizeText(education.institution) || '';
     if (education.degree !== undefined) payload.degree = normalizeText(education.degree) || '';
     if (education.field !== undefined) payload.field = normalizeText(education.field);
     if (education.start_year !== undefined) payload.start_year = normalizeYear(education.start_year);
     if (education.end_year !== undefined) payload.end_year = normalizeYear(education.end_year);
-    
+
     const { data, error } = await supabase
       .from('education')
       .update(payload)
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) {
       console.error('Database error updating education:', error);
       throw new Error(error.message || 'Database error');
     }
-    
+
     toast({
       title: "Education updated",
       description: "Your education has been successfully updated."
     });
-    
+
     return data;
   } catch (error: any) {
     console.error('Error updating education:', error);
@@ -388,14 +386,14 @@ export const deleteEducation = async (id: string) => {
       .from('education')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
-    
+
     toast({
       title: "Education deleted",
       description: "Your education has been successfully removed."
     });
-    
+
     return true;
   } catch (error) {
     console.error('Error deleting education:', error);
@@ -417,18 +415,18 @@ export const getUserSkills = async (userId?: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       targetUserId = user?.id;
     }
-    
+
     if (!targetUserId) {
       console.error('No user ID available for fetching skills');
       return [];
     }
-    
+
     const { data, error } = await supabase
       .from('skills')
       .select('*')
       .eq('user_id', targetUserId)
       .order('name');
-    
+
     if (error) throw error;
     return data || [];
   } catch (error) {
@@ -453,13 +451,13 @@ export const createSkill = async (skill: Skill) => {
         throw new Error("User not authenticated");
       }
     }
-    
+
     const { data, error } = await supabase
       .from('skills')
-      .insert(skill)
+      .insert({ name: skill.name, user_id: skill.user_id })
       .select()
       .single();
-    
+
     if (error) {
       // Check if error is due to unique constraint violation
       if (error.code === '23505') {
@@ -473,12 +471,12 @@ export const createSkill = async (skill: Skill) => {
       }
       return null;
     }
-    
+
     toast({
       title: "Skill added",
       description: "Your skill has been successfully added to your profile."
     });
-    
+
     return data;
   } catch (error) {
     console.error('Error creating skill:', error);
@@ -497,14 +495,14 @@ export const deleteSkill = async (id: string) => {
       .from('skills')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
-    
+
     toast({
       title: "Skill deleted",
       description: "Your skill has been successfully removed."
     });
-    
+
     return true;
   } catch (error) {
     console.error('Error deleting skill:', error);
@@ -514,77 +512,5 @@ export const deleteSkill = async (id: string) => {
       description: "There was an error removing your skill."
     });
     return false;
-  }
-};
-
-// Generate a unique verification token
-const generateVerificationToken = (): string => {
-  return crypto.randomUUID().replace(/-/g, '').substring(0, 24).toUpperCase();
-};
-
-// Verification Services - Generate and store verification tokens
-export const requestExperienceVerification = async (experienceId: string): Promise<string | null> => {
-  try {
-    const token = generateVerificationToken();
-    
-    const { data, error } = await supabase
-      .from('experiences')
-      .update({ 
-        verification_status: 'pending',
-        verification_token: token
-      })
-      .eq('id', experienceId)
-      .select('verification_token')
-      .single();
-    
-    if (error) throw error;
-    
-    toast({
-      title: "Verification requested",
-      description: "Your experience verification token has been generated."
-    });
-    
-    return data?.verification_token || token;
-  } catch (error) {
-    console.error('Error requesting experience verification:', error);
-    toast({
-      variant: "destructive",
-      title: "Verification request failed",
-      description: "There was an error requesting verification for your experience."
-    });
-    return null;
-  }
-};
-
-export const requestEducationVerification = async (educationId: string): Promise<string | null> => {
-  try {
-    const token = generateVerificationToken();
-    
-    const { data, error } = await supabase
-      .from('education')
-      .update({ 
-        verification_status: 'pending',
-        verification_token: token
-      })
-      .eq('id', educationId)
-      .select('verification_token')
-      .single();
-    
-    if (error) throw error;
-    
-    toast({
-      title: "Verification requested",
-      description: "Your education verification token has been generated."
-    });
-    
-    return data?.verification_token || token;
-  } catch (error) {
-    console.error('Error requesting education verification:', error);
-    toast({
-      variant: "destructive",
-      title: "Verification request failed",
-      description: "There was an error requesting verification for your education."
-    });
-    return null;
   }
 };

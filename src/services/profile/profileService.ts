@@ -120,109 +120,10 @@ export interface Skill {
  * a minimal profile will be created with a fallback username.
  */
 export const ensureUserProfile = async (userId: string) => {
-  try {
-    console.log("🔍 ensureUserProfile: Checking profile for user:", userId);
-
-    let { data: profile, error } = await supabase
-      .from("public_profiles")
-      .select("id, username, fullname")
-      .eq("id", userId)
-      .single();
-
-    if (error && error.code !== "PGRST116") {
-      console.error("ensureUserProfile: error fetching profile:", error);
-      return null;
-    }
-
-    if (!profile) {
-      console.log("ensureUserProfile: Creating new profile for user:", userId);
-
-      // Try to get user metadata for name
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const metadata = user?.user_metadata || {};
-      const firstName = metadata.first_name || "";
-      const lastName = metadata.last_name || "";
-      const email = user?.email || "";
-      const fullname = metadata.fullname || `${firstName} ${lastName}`.trim() || null;
-
-      // Check for preferred_username from signup
-      const preferredUsername = metadata.preferred_username;
-
-      // Generate username with improved algorithm
-      let username: string;
-
-      if (preferredUsername && /^[a-z0-9_]{3,20}$/.test(preferredUsername)) {
-        // Use the preferred username if valid
-        username = preferredUsername;
-      } else if (firstName && lastName) {
-        // e.g., "jonatan_tensetti" from "Jonatan Tensetti"
-        const baseUsername = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`;
-        // Clean up non-alphanumeric characters and limit length
-        username = baseUsername.replace(/[^a-z0-9_]/g, "").substring(0, 20);
-
-        // If username is too short after cleanup, add first name only
-        if (username.length < 3) {
-          username = firstName.toLowerCase().replace(/[^a-z0-9]/g, "");
-        }
-      } else if (email) {
-        // Use email prefix: "john.doe@gmail.com" → "john_doe"
-        const emailPrefix = email
-          .split("@")[0]
-          .replace(/[^a-z0-9]/gi, "_")
-          .toLowerCase();
-        username = emailPrefix.substring(0, 20);
-
-        // If still too short, add random suffix
-        if (username.length < 3) {
-          username = `user_${Math.random().toString(36).substring(2, 8)}`;
-        }
-      } else {
-        // Last resort: short random suffix
-        username = `user_${Math.random().toString(36).substring(2, 8)}`;
-      }
-
-      // Check for uniqueness and add suffix if needed
-      const { data: existingUser } = await supabase
-        .from("public_profiles")
-        .select("username")
-        .eq("username", username)
-        .maybeSingle();
-
-      if (existingUser) {
-        // Add random suffix to make unique
-        username = `${username.substring(0, 15)}_${Math.random().toString(36).substring(2, 6)}`;
-      }
-
-      const { data: newProfile, error: insertError } = await supabase
-        .from("profiles")
-        .insert({
-          id: userId,
-          username,
-          fullname,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select("id, username, fullname")
-        .single();
-
-      if (insertError || !newProfile) {
-        console.error("ensureUserProfile: failed to create profile:", insertError);
-        return null;
-      }
-
-      profile = newProfile;
-      console.log("✅ ensureUserProfile: Created new profile:", profile);
-    } else {
-      console.log("✅ ensureUserProfile: Found existing profile:", profile);
-    }
-
-    return profile;
-  } catch (err) {
-    console.error("ensureUserProfile: unexpected error:", err);
-    return null;
-  }
+  // Profile creation belongs to the auth.users transaction, never a speculative browser write.
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  if (error) throw error;
+  return data;
 };
 
 export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
@@ -231,11 +132,6 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    console.log("👤 getCurrentUserProfile - Session check:", {
-      has_session: !!session,
-      user_id: session?.user?.id,
-      email: session?.user?.email,
-    });
 
     if (!session?.user) {
       console.error("❌ No session found in getCurrentUserProfile");
@@ -252,7 +148,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
     }
 
     // Get user profile - for own profile, fetch from base profiles table to include phone
-    console.log("🔍 Fetching complete profile for user:", user.id);
+
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
@@ -268,8 +164,6 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       console.error("❌ No profile found after ensuring it exists");
       return null;
     }
-
-    console.log("📋 Profile data:", profile);
 
     // Get experience - ordered by current role first, then by start date descending
     const { data: experience, error: experienceError } = await supabase
@@ -368,13 +262,6 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
         endorsements: skill.endorsements || 0,
       })),
     };
-
-    console.log("✅ User profile assembled:", {
-      id: userProfile.id,
-      username: userProfile.username,
-      displayName: userProfile.displayName,
-      hasEmail: !!userProfile.contact?.email,
-    });
 
     return userProfile;
   } catch (error) {

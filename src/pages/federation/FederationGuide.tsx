@@ -1,127 +1,30 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Network, Users, Shield, Zap } from "lucide-react";
-
-const FederationGuide = () => {
-  const examples = [
-    { text: "Du ansluter dig via en instans och kan samverka med kollegor från alla andra instanser i det federerade nätverket." },
-    { text: "Om din organisation vill ha en egen Nolto-instans med egna regler kan ni starta en — och fortfarande samverka med alla andra." },
-    { text: "En kollega publicerar en tjänst på sin organisations Nolto-instans. Den dyker upp i sökresultat för användare i hela nätverket." },
+import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
+export default function FederationGuide() {
+  const { i18n } = useTranslation();
+  const { user } = useAuth();
+  const sv = i18n.language.startsWith("sv");
+  const rows = sv ? [
+    ["Hitta din profil", "Sök efter @användarnamn@nolto.social i Mastodon. WebFinger översätter adressen till din offentliga ActivityPub-profil."],
+    ["Följa och dela", "Aktivera federation på din Nolto-profil. ActivityPub används sedan för följningar och offentliga inlägg mellan servrarna."],
+    ["Logga in med Mastodon", "Du identifierar dig på din Mastodon-server och kommer tillbaka till Nolto. Kontona är fortfarande separata, och du väljer en egen Nolto-adress."],
+    ["Importera följningar", "Exportera en följlista som CSV från Mastodon och importera den i profilinställningarna. Det skickar följförfrågningar; vissa konton behöver godkänna dem."],
+    ["Flytta ett konto", "Alias och ActivityPub Move kan användas för att begära flytt av följare till en kompatibel server. Mottagande servrar avgör om flytten godtas. Inlägg, filer och privata meddelanden flyttas inte med."],
+  ] : [
+    ["Find your profile", "Search for @username@nolto.social in Mastodon. WebFinger resolves the address to your public ActivityPub profile."],
+    ["Follow and share", "Enable federation on your Nolto profile. ActivityPub then handles follows and public posts between servers."],
+    ["Sign in with Mastodon", "Authenticate on your Mastodon server and return to Nolto. The accounts remain separate and you choose your own Nolto address."],
+    ["Import follows", "Export your Mastodon following list as CSV and import it in profile settings. This sends follow requests; some accounts need to approve them."],
+    ["Move an account", "Aliases and ActivityPub Move can request a follower migration to a compatible server. Receiving servers decide whether to honor the move. Posts, files and private messages are not transferred."],
   ];
-
-  const benefits = [
-    { icon: Users, title: "Valfrihet", description: "Välj en instans som matchar er organisation — eller starta en egen." },
-    { icon: Shield, title: "Kontroll", description: "Behåll er data där ni vill ha den, under regler ni bestämmer." },
-    { icon: Zap, title: "Stabilitet", description: "Nätverket kan inte köpas, säljas eller stängas av ett enskilt företag." },
-    { icon: Network, title: "Nolto", description: "Kommunicera med andra organisationer, inte bara inom Nolto." },
-  ];
-
-  const faqs = [
-    { question: "Behöver jag flera konton för olika organisationer?", answer: "Nej, du behöver bara ett Nolto-konto. Men du kan skapa separata konton på olika instanser om du vill." },
-    { question: "Kan jag flytta min profil till en annan instans?", answer: "Ja. Nolto låter dig exportera din profil och kontakter, och flytta till en ny instans när du vill." },
-    { question: "Förlorar jag mina kontakter om jag byter?", answer: "Nej. Ditt professionella nätverk följer med dig tack vare nolto och öppna standarder." },
-    { question: "Vad händer om en instans stängs?", answer: "Du kan exportera din data och gå med i en annan instans när som helst." },
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="bg-primary text-primary-foreground py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Hur nolto fungerar</h1>
-            <p className="text-xl text-secondary">Kraften i nolto</p>
-            <p className="text-lg text-primary-foreground/90 mt-4">
-              Nolto är inte en enskild webbplats — det är en del av något större. 
-              Nolto innebär valfrihet, verklig interoperabilitet och äkta kontroll över din professionella identitet.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-6">Vad är nolto?</h2>
-            <div className="prose prose-lg text-muted-foreground space-y-4">
-              <p>De flesta sociala nätverk och jobbportaler är centraliserade — allt sker på ett företags servrar, under en uppsättning regler. Om du inte gillar hur saker fungerar är ditt enda alternativ att lämna.</p>
-              <p>Nolto är annorlunda. Det är ett sätt för oberoende servrar (kallade "instanser") att kommunicera med varandra och dela information. Det är som e-post: du kan ha ett konto var som helst och ändå nå alla, överallt.</p>
-              <p>Nolto använder det öppna <strong>ActivityPub-protokollet</strong>, samma standard som driver Mastodon, Lemmy, PeerTube och många andra plattformar. Detta gör Nolto till en del av ett växande nätverk av oberoende men sammankopplade organisationer.</p>
-            </div>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-6">Hur det fungerar på Nolto</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-muted/50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-primary mb-3">Flera instanser</h3>
-                <p className="text-muted-foreground">Vem som helst kan driva en Nolto-server ("instans"). Varje instans kan ha sitt eget fokus — som teknikjobb, kreativa branscher eller lokala organisationer.</p>
-              </div>
-              <div className="bg-muted/50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-primary mb-3">Ett nätverk</h3>
-                <p className="text-muted-foreground">Oavsett var du registrerar dig kan du ansluta med användare, jobb och organisationer över hela Nolto-nätverket.</p>
-              </div>
-              <div className="bg-muted/50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-primary mb-3">Portabilitet</h3>
-                <p className="text-muted-foreground">Du är aldrig inlåst. Du kan flytta din profil, kontakter och meriter till en annan instans när som helst.</p>
-              </div>
-              <div className="bg-muted/50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-primary mb-3">Lokalt och globalt</h3>
-                <p className="text-muted-foreground">Vissa saker (som moderering eller utvalda jobb) hanteras av din valda instans. Men din räckvidd sträcker sig över hela det noltode nätverket.</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-6">Exempel</h2>
-            <div className="space-y-4">
-              {examples.map((example, index) => (
-                <div key={index} className="border-l-4 border-secondary pl-6 py-2">
-                  <p className="text-muted-foreground leading-relaxed">{example.text}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-6">Varför nolto är viktigt</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-start space-x-4 p-4 bg-card border rounded-lg">
-                  <div className="bg-primary/10 p-3 rounded-lg"><benefit.icon className="h-6 w-6 text-primary" /></div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-primary mb-2">{benefit.title}</h3>
-                    <p className="text-muted-foreground">{benefit.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-6">Vanliga frågor</h2>
-            <div className="space-y-6">
-              {faqs.map((faq, index) => (
-                <div key={index} className="bg-muted/50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-primary mb-3">{faq.question}</h3>
-                  <p className="text-muted-foreground">{faq.answer}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-
-      <div className="border-t py-6">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Button asChild variant="outline">
-              <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />Tillbaka till startsidan</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default FederationGuide;
+  return <main className="container max-w-3xl px-4 py-12">
+    <Link className="text-sm underline" to="/">← {sv ? "Till startsidan" : "Back to home"}</Link>
+    <h1 className="text-3xl font-bold mt-8 mb-4">{sv ? "Nolto och Mastodon" : "Nolto and Mastodon"}</h1>
+    <p className="text-lg text-muted-foreground mb-8">{sv ? "En Nolto-adress gör det möjligt att hitta och följa dig från andra tjänster i fediversum. Den är inte en e-postadress." : "Your Nolto address lets people find and follow you from other federated services. It is not an email address."}</p>
+    <div className="divide-y">{rows.map(([title, text]) => <section key={title} className="py-6"><h2 className="text-xl font-semibold mb-2">{title}</h2><p className="text-muted-foreground leading-relaxed">{text}</p></section>)}</div>
+    <section className="rounded-xl bg-muted p-6 my-8"><h2 className="font-semibold mb-2">{sv ? "Vad synkroniseras inte?" : "What is not synchronized?"}</h2><p>{sv ? "Fullständig tvåvägssynk mellan konton ingår inte. Privat meddelandehistorik, sparade inlägg och alla Mastodon-inställningar speglas inte i Nolto. Federerade direktmeddelanden stöds inte. AT Protocol, som används av Bluesky, är ett separat protokoll och ersätter inte Mastodon-kompatibilitet." : "Accounts are not fully mirrored in both directions. Private message history, bookmarks and all Mastodon preferences are not synchronized. Federated direct messages are unsupported. Bluesky's AT Protocol is a separate protocol and does not replace Mastodon compatibility."}</p></section>
+    <p className="mb-6 text-sm text-muted-foreground">{sv ? "Offentligt innehåll kan lagras på andra servrar. Att stänga av federation tar inte bort redan mottagna kopior. När din federerade adress har publicerats är användarnamnet beständigt." : "Other servers may retain public content. Disabling federation does not remove existing remote copies. Once published, your federated username is permanent."}</p>
+    <div className="flex flex-wrap gap-5"><Link className="underline" to={user ? "/profile/edit" : "/auth/signup"}>{sv ? user ? "Till profilinställningar" : "Skapa din Nolto-adress" : user ? "Open profile settings" : "Create your Nolto address"}</Link><Link className="underline" to="/privacy">{sv ? "Läs integritetspolicyn" : "Read the privacy policy"}</Link><a className="underline" href="https://docs.joinmastodon.org/user/moving/" target="_blank" rel="noopener noreferrer">{sv ? "Mastodons guide till kontoflytt" : "Mastodon account migration guide"}</a></div>
+  </main>;
+}

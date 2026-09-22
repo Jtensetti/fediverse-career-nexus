@@ -6,13 +6,15 @@ import {
   Route,
   Navigate,
   useParams,
+  useLocation,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ErrorBoundary, SkipToContent } from "@/components/common";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
+import SkipToContent from "@/components/common/SkipToContent";
 import SessionExpiryWarning from "@/components/auth/SessionExpiryWarning";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { AlertBanner } from "@/components/layout/AlertBanner";
@@ -21,7 +23,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 // Eager-loaded critical routes (landing, auth, 404)
 import Index from "./pages/Index";
-import Auth from "./pages/auth/Auth";
+const Auth = lazy(() => import("./pages/auth/Auth"));
 import NotFound from "./pages/NotFound";
 
 // Lazy-loaded routes — split into per-route chunks
@@ -35,6 +37,7 @@ const JobManage = lazy(() => import("./pages/jobs/JobManage"));
 const FederatedFeedPage = lazy(() => import("./pages/federation/FederatedFeed"));
 const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
 const AuthRecovery = lazy(() => import("./pages/auth/AuthRecovery"));
+const UpdatePassword = lazy(() => import("./pages/auth/UpdatePassword"));
 const ConfirmEmail = lazy(() => import("./pages/auth/ConfirmEmail"));
 const MfaRecover = lazy(() => import("./pages/auth/MfaRecover"));
 const Events = lazy(() => import("./pages/events/Events"));
@@ -95,6 +98,11 @@ const queryClient = new QueryClient({
 function JoinRedirect() {
   const { code } = useParams();
   return <Navigate to={`/auth/signup?ref=${code}`} replace />;
+}
+
+function JobRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/jobs/${encodeURIComponent(id || "")}`} replace />;
 }
 
 // Redirect components for old company URLs
@@ -179,6 +187,7 @@ function App() {
             <Route path="/auth/signup" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/recovery" element={<AuthRecovery />} />
+            <Route path="/auth/update-password" element={<UpdatePassword />} />
             <Route path="/confirm-email" element={<ConfirmEmail />} />
             <Route path="/aterstall-mfa" element={<MfaRecover />} />
             {/* Referral join route - redirects to signup with ref param */}
@@ -190,7 +199,7 @@ function App() {
                     <Route path="/jobs/edit/:id" element={<ProtectedRoute><JobEdit /></ProtectedRoute>} />
                     {/* Route aliases for common typos - singular /job → /jobs */}
                     <Route path="/job/create" element={<Navigate to="/jobs/create" replace />} />
-                    <Route path="/job/:id" element={<Navigate to="/jobs/:id" replace />} />
+                    <Route path="/job/:id" element={<JobRedirect />} />
                     <Route path="/job" element={<Navigate to="/jobs" replace />} />
                     <Route path="/articles/:slug" element={<ArticleView />} />
                     <Route path="/post/:postId" element={<PostView />} />
@@ -356,9 +365,10 @@ function App() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, mfaPending } = useAuth();
+  const location = useLocation();
 
-  if (loading) {
+  if (loading || mfaPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -370,7 +380,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/auth" state={{ returnTo: location.pathname + location.search + location.hash }} replace />;
   }
 
   return <>{children}</>;

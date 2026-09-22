@@ -1,9 +1,7 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { Resend } from "npm:resend@2.0.0";
+import { workerHandler } from "../_shared/user-auth.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { sendEmail } from "../_shared/email.ts";
 import { createLogger } from "../_shared/logger.ts";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,7 +90,7 @@ interface NotificationWithActor {
   actor_name: string | null;
 }
 
-serve(async (req) => {
+Deno.serve(workerHandler(async (req) => {
   const traceId = crypto.randomUUID();
   const logger = createLogger("send-notification-digest", traceId);
 
@@ -125,7 +123,7 @@ serve(async (req) => {
 
     // Get unique user IDs
     const uniqueUserIds = [...new Set(usersWithNotifications?.map(n => n.recipient_id) || [])];
-    
+
     if (uniqueUserIds.length === 0) {
       logger.info({ traceId }, "No users with old unread notifications");
       return new Response(JSON.stringify({ success: true, emailsSent: 0 }), {
@@ -151,7 +149,7 @@ serve(async (req) => {
         if (tracking?.last_digest_sent_at) {
           const lastSent = new Date(tracking.last_digest_sent_at);
           const hoursSinceLastDigest = (Date.now() - lastSent.getTime()) / (1000 * 60 * 60);
-          
+
           if (hoursSinceLastDigest < 36) {
             logger.debug({ userId, hoursSinceLastDigest, traceId }, "Skipping - digest sent recently");
             continue;
@@ -164,18 +162,18 @@ serve(async (req) => {
           .select('contact_email, email_digest_enabled')
           .eq('id', userId)
           .single();
-        
+
         // Check if user has opted out of digest emails (default to true/enabled)
         if (userProfile?.email_digest_enabled === false) {
           logger.debug({ userId, traceId }, "Skipping - user opted out of digest emails");
           continue;
         }
-        
+
         const contactEmail = userProfile?.contact_email;
-        
+
         // If user has a contact_email set, use that; otherwise try auth email
         let userEmail: string | null = null;
-        
+
         if (contactEmail) {
           // Skip federated local emails
           if (contactEmail.endsWith('.federated.local')) {
@@ -200,7 +198,7 @@ serve(async (req) => {
             }
           }
         }
-        
+
         if (!userEmail) {
           logger.debug({ userId, traceId }, "Skipping - no valid email found");
           continue;
@@ -228,13 +226,13 @@ serve(async (req) => {
         // Enrich with actor names from public_profiles
         const actorIds = [...new Set(notifications.map(n => n.actor_id).filter(Boolean))];
         let actorMap = new Map<string, string>();
-        
+
         if (actorIds.length > 0) {
           const { data: profiles } = await supabase
             .from('public_profiles')
             .select('id, fullname, username')
             .in('id', actorIds);
-          
+
           if (profiles) {
             profiles.forEach(p => {
               actorMap.set(p.id, p.fullname || p.username || 'Someone');
@@ -255,7 +253,7 @@ serve(async (req) => {
           const emoji = getNotificationEmoji(n.type);
           const description = getNotificationDescription(n.type, n.content);
           const timeAgo = formatTimeAgo(new Date(n.created_at));
-          
+
           return `
             <tr>
               <td style="padding: 12px 0; border-bottom: 1px solid #e5e5e5;">
@@ -301,7 +299,7 @@ serve(async (req) => {
               <h1 style="margin: 0; font-size: 22px; font-weight: 600; color: #ffffff;">Nolto</h1>
             </td>
           </tr>
-          
+
           <!-- Main Content -->
           <tr>
             <td style="padding: 32px;">
@@ -311,17 +309,17 @@ serve(async (req) => {
               <p style="margin: 0 0 24px 0; font-size: 15px; color: #6a6a6a; line-height: 1.5;">
                 Here's what you've missed on Nolto:
               </p>
-              
+
               <!-- Notifications List -->
               <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 ${notificationListHtml}
               </table>
-              
+
               <!-- CTA Button -->
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 32px;">
                 <tr>
                   <td align="center">
-                    <a href="${siteUrl}/notifications" 
+                    <a href="${siteUrl}/notifications"
                        style="display: inline-block; background-color: #1a1a1a; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: 500;">
                       View your notifications
                     </a>
@@ -330,7 +328,7 @@ serve(async (req) => {
               </table>
             </td>
           </tr>
-          
+
           <!-- Footer -->
           <tr>
             <td style="padding: 24px 32px; background-color: #fafafa; border-top: 1px solid #e5e5e5;">
@@ -351,18 +349,12 @@ serve(async (req) => {
         `;
 
         // Send the email
-        const { error: emailError } = await resend.emails.send({
+        await sendEmail(Deno.env.get("RESEND_API_KEY")!, {
           from: fromEmail,
           to: [userEmail],
           subject: `You have ${totalUnread} unread notification${totalUnread > 1 ? 's' : ''} on Nolto`,
           html: emailHtml,
         });
-
-        if (emailError) {
-          logger.error({ userId, error: emailError, traceId }, "Failed to send digest email");
-          errorsEncountered++;
-          continue;
-        }
 
         // Update tracking record
         await supabase
@@ -384,8 +376,8 @@ serve(async (req) => {
 
     logger.info({ emailsSent, errorsEncountered, traceId }, "Notification digest job complete");
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       emailsSent,
       errorsEncountered,
       traceId
@@ -395,13 +387,13 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    logger.error({ error: error.message, traceId }, "Error in notification digest function");
-    return new Response(JSON.stringify({ error: error.message, traceId }), {
+    logger.error({ error: (error instanceof Error ? error.message : "Request failed"), traceId }, "Error in notification digest function");
+    return new Response(JSON.stringify({ error: (error instanceof Error ? error.message : "Request failed"), traceId }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));
 
 // Helper to escape HTML
 function escapeHtml(text: string): string {
@@ -418,18 +410,18 @@ function escapeHtml(text: string): string {
 // Format time ago for emails
 function formatTimeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  
+
   if (seconds < 60) return 'Just now';
-  
+
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-  
+
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  
+
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
-  
+
   const weeks = Math.floor(days / 7);
   return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
 }

@@ -1,8 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from 'uuid';
-import { createUserActor } from "../federation/actorService";
 
 export interface ProfileUpdateData {
   username?: string;
@@ -22,19 +20,14 @@ export const checkUsernameAvailability = async (username: string): Promise<boole
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("username", username.toLowerCase())
-      .neq("id", user.id)
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("is_username_available", { candidate: username.trim().toLowerCase() });
 
     if (error) {
       console.error("Error checking username availability:", error);
       return false;
     }
 
-    return !data; // Available if no matching profile found
+    return data === true;
   } catch (error) {
     console.error("Error checking username:", error);
     return false;
@@ -47,25 +40,18 @@ export const checkUsernameAvailability = async (username: string): Promise<boole
 export const updateUserProfile = async (profileData: ProfileUpdateData): Promise<boolean> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    console.log('👤 updateUserProfile - Current user:', {
-      user_id: user?.id,
-      email: user?.email,
-      user_exists: !!user
-    });
-    
+
     if (!user) {
       console.error('❌ No user found in updateUserProfile');
       toast.error("Du måste vara inloggad för att uppdatera din profil");
       return false;
     }
 
-    console.log('📝 Updating profile with data:', profileData);
-
     // Build update object, only including defined fields
     const updateData: Record<string, any> = {
       updated_at: new Date().toISOString()
     };
-    
+
     if (profileData.username !== undefined) updateData.username = profileData.username.toLowerCase();
     if (profileData.fullname !== undefined) updateData.fullname = profileData.fullname;
     if (profileData.headline !== undefined) updateData.headline = profileData.headline;
@@ -85,23 +71,6 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
       return false;
     }
 
-    // If username was updated, also update the actor's preferred_username for federation
-    if (profileData.username) {
-      const { error: actorError } = await supabase
-        .from("actors")
-        .update({ 
-          preferred_username: profileData.username.toLowerCase(),
-          updated_at: new Date().toISOString()
-        })
-        .eq("user_id", user.id);
-
-      if (actorError) {
-        console.warn('⚠️ Failed to update actor username:', actorError);
-        // Don't fail the whole operation, just log the warning
-      }
-    }
-
-    console.log('✅ Profile updated successfully');
     toast.success("Profil uppdaterad");
     return true;
   } catch (error) {
@@ -117,12 +86,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
 export const uploadProfileAvatar = async (file: File): Promise<string | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    console.log('🖼️ uploadProfileAvatar - Current user:', {
-      user_id: user?.id,
-      email: user?.email,
-      user_exists: !!user
-    });
-    
+
     if (!user) {
       console.error('❌ No user found in uploadProfileAvatar');
       toast.error("Du måste vara inloggad för att ladda upp en avatar");
@@ -131,10 +95,8 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     // Generate a unique filename to prevent collisions
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
+    const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
     const filePath = fileName;
-
-    console.log('📤 Uploading avatar to path:', filePath);
 
     // Upload image to Supabase Storage
     const { error: uploadError } = await supabase.storage
@@ -155,8 +117,6 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
       .from('avatars')
       .getPublicUrl(filePath);
 
-    console.log('🔗 Avatar public URL:', publicUrl);
-
     // Update the profile with the new avatar URL
     const { error: updateError } = await supabase
       .from("profiles")
@@ -172,7 +132,6 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
       return null;
     }
 
-    console.log('✅ Avatar updated successfully');
     toast.success("Avatar uppdaterad");
     return publicUrl;
   } catch (error) {
@@ -185,19 +144,12 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 export const updateProfile = async (profileData: any) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    console.log('📋 updateProfile - Current user:', {
-      user_exists: !!user,
-      user_id: user?.id,
-      email: user?.email
-    });
-    
+
     if (!user) {
       console.error('❌ No user found in updateProfile');
       toast.error('Du måste vara inloggad för att uppdatera din profil');
       throw new Error('Du måste vara inloggad');
     }
-
-    console.log('📝 Updating profile with data:', profileData);
 
     // Make sure we're updating the right fields
     const updateData = {
@@ -216,30 +168,6 @@ export const updateProfile = async (profileData: any) => {
       console.error('❌ Profile update error:', error);
       toast.error(`Failed to update profile: ${error.message}`);
       throw error;
-    }
-
-    console.log('✅ Profile updated successfully:', data);
-
-    // If username was updated and this is the first time setting it, create actor
-    if (profileData.username) {
-      // Check if user has an actor
-      const { data: existingActor } = await supabase
-        .from('actors')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!existingActor) {
-        console.log('🎭 Creating actor for new username:', profileData.username);
-        const actorCreated = await createUserActor(user.id);
-        if (actorCreated) {
-          console.log('✅ Actor created successfully');
-          toast.success("Profil och aktör skapades");
-        } else {
-          console.warn('⚠️ Failed to create actor, but profile update succeeded');
-          toast.warning("Profil uppdaterad men aktörsskapande misslyckades");
-        }
-      }
     }
 
     return data;

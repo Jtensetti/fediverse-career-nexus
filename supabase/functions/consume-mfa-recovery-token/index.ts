@@ -1,153 +1,38 @@
-// Caller: src/pages/auth/MfaRecover.tsx
-// Validates a signed recovery token against the currently signed-in user
-// and removes all MFA factors on success.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
+import { HttpError, postHandler, requestBody, requireUser } from "../_shared/user-auth.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-async function sha256Hex(input: string): Promise<string> {
-  const data = new TextEncoder().encode(input);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+Deno.serve(postHandler(async req => {
+  const { user, token: accessToken } = await requireUser(req, { allowMfaRecovery: true });
+  const { token } = await requestBody(req, 2048);
+  if (typeof token !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(token)) throw new HttpError(400, "Invalid recovery token");
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  const tokenHash = Array.from(new Uint8Array(hash), x => x.toString(16).padStart(2, "0")).join("");
+  const admin = serviceClient();
+  // Claim once before modifying factors. A replay or a simultaneous request cannot pass.
+  const { data: claimed, error } = await admin.from("mfa_recovery_tokens")
+    .update({ used_at: new Date().toISOString() }).eq("token_hash", tokenHash)
+    .eq("user_id", user.id).is("used_at", null).gt("expires_at", new Date().toISOString())
+    .select("id,request_id,created_by_admin_id").maybeSingle();
+  if (error) throw error;
+  if (!claimed) throw new HttpError(410, "Recovery token is invalid, expired or already used");
+  // If a downstream operation fails the token remains consumed; an admin must issue a new one.
+  const { data, error: factorsError } = await admin.auth.admin.mfa.listFactors({ userId: user.id });
+  if (factorsError) throw factorsError;
+  for (const factor of data.factors) {
+    const { error: deleteError } = await admin.auth.admin.mfa.deleteFactor({ userId: user.id, id: factor.id });
+    if (deleteError) throw deleteError;
   }
-
-  try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const admin = createClient(supabaseUrl, serviceKey);
-
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "not_authenticated" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { data: userData } = await admin.auth.getUser(
-      authHeader.replace("Bearer ", ""),
-    );
-    const userId = userData.user?.id;
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "not_authenticated" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { token } = (await req.json().catch(() => ({}))) as {
-      token?: string;
-    };
-    if (!token || typeof token !== "string" || token.length < 16) {
-      return new Response(JSON.stringify({ error: "invalid_token" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const tokenHash = await sha256Hex(token);
-
-    const { data: tokenRow, error: tokenErr } = await admin
-      .from("mfa_recovery_tokens")
-      .select("id, user_id, expires_at, used_at")
-      .eq("token_hash", tokenHash)
-      .maybeSingle();
-
-    if (tokenErr || !tokenRow) {
-      return new Response(JSON.stringify({ error: "invalid_token" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (tokenRow.used_at) {
-      return new Response(JSON.stringify({ error: "token_used" }), {
-        status: 410,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (new Date(tokenRow.expires_at).getTime() < Date.now()) {
-      return new Response(JSON.stringify({ error: "token_expired" }), {
-        status: 410,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (tokenRow.user_id !== userId) {
-      return new Response(JSON.stringify({ error: "wrong_user" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Remove all MFA factors for the user
-    const { data: factors } = await admin.auth.admin.mfa.listFactors({
-      userId,
-    });
-    for (const f of factors?.factors ?? []) {
-      await admin.auth.admin.mfa.deleteFactor({ userId, id: f.id });
-    }
-
-    // Mark token as used
-    await admin
-      .from("mfa_recovery_tokens")
-      .update({ used_at: new Date().toISOString() })
-      .eq("id", tokenRow.id);
-
-    // Resolve any related request
-    const { data: linkedReq } = await admin
-      .from("mfa_recovery_tokens")
-      .select("request_id")
-      .eq("id", tokenRow.id)
-      .single();
-
-    if (linkedReq?.request_id) {
-      await admin
-        .from("mfa_recovery_requests")
-        .update({
-          status: "resolved",
-          handled_at: new Date().toISOString(),
-        })
-        .eq("id", linkedReq.request_id);
-    }
-
-    // Audit log (use the token's admin issuer as moderator if known)
-    const { data: tokenFull } = await admin
-      .from("mfa_recovery_tokens")
-      .select("created_by_admin_id")
-      .eq("id", tokenRow.id)
-      .single();
-
-    if (tokenFull?.created_by_admin_id) {
-      await admin.from("moderation_actions").insert({
-        type: "mfa_factors_reset",
-        target_user_id: userId,
-        moderator_id: tokenFull.created_by_admin_id,
-        reason: "User completed MFA recovery via signed link",
-      });
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    return new Response(JSON.stringify({ error: "Unexpected error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  const { error: signOutError } = await admin.auth.admin.signOut(accessToken, "others");
+  if (signOutError) throw signOutError;
+  if (claimed.request_id) {
+    const { error: resolveError } = await admin.from("mfa_recovery_requests")
+      .update({ status: "resolved", handled_at: new Date().toISOString() }).eq("id", claimed.request_id);
+    if (resolveError) throw resolveError;
   }
-});
+  const { error: auditError } = await admin.from("moderation_actions").insert({
+    type: "mfa_factors_reset", target_user_id: user.id, moderator_id: claimed.created_by_admin_id,
+    reason: "Account holder used an administrator-issued single-use recovery token",
+  });
+  if (auditError) throw auditError;
+  return jsonResponse({ success: true });
+}));

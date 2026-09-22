@@ -1,13 +1,13 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { getFederationDomain } from "../_shared/federation-urls.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const NOLTO_DOMAIN = Deno.env.get("SITE_URL")?.replace("https://", "").replace("http://", "") ?? "nolto.social";
+const NOLTO_DOMAIN = getFederationDomain();
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });

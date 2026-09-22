@@ -1,463 +1,105 @@
-
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { deliverInboxes } from "../_shared/delivery.ts";
+import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
 import { signedFetch } from "../_shared/http-signature.ts";
-import {
-  buildActorUrl,
-  buildActivityId,
-  buildFollowersUrl,
-  buildInboxUrl,
-  isLocalUrl,
-} from "../_shared/federation-urls.ts";
+import { fetchActorDocument } from "../_shared/remote-fetch.ts";
+import { buildActorUrl, buildFollowersUrl, getFederationBaseUrl, isLocalUrl } from "../_shared/federation-urls.ts";
+import { CONTEXT, PUBLIC, localObject } from "../_shared/local-content.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+type QueueOrder = { created_at: string; id: string };
 
-// Timeout for actor document fetches (10 seconds)
-const ACTOR_FETCH_TIMEOUT_MS = 10000;
-
-// Validate environment at startup
-const supabaseUrl = Deno.env.get("SUPABASE_URL");
-const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error("CRITICAL: Missing required environment variables (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)");
-}
-
-// Initialize the Supabase client
-const supabaseClient = createClient(
-  supabaseUrl ?? "",
-  supabaseServiceKey ?? ""
-);
-
-// Fetch with AbortController timeout
-async function fetchWithTimeout(
-  url: string, 
-  options: RequestInit, 
-  timeoutMs: number
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+Deno.serve(async (req) => {
+  // This is a worker, not a user API. A valid ordinary user JWT is insufficient.
+  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
+  const secret = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!secret || req.headers.get("Authorization") !== `Bearer ${secret}`) return jsonResponse({ error: "Worker credentials required" }, 401);
+  const db = serviceClient();
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
-// Get sharedInbox map for batched delivery - reduces N calls to M unique endpoints
-async function getSharedInboxMap(actorId: string): Promise<Map<string, string[]>> {
-  const { data: followers } = await supabaseClient
-    .from("actor_followers")
-    .select("follower_actor_url")
-    .eq("local_actor_id", actorId)
-    .eq("status", "accepted");
-  
-  const inboxMap = new Map<string, string[]>();
-  
-  for (const follower of followers || []) {
-    // Check cache for sharedInbox
-    const { data: cached } = await supabaseClient
-      .from("remote_actors_cache")
-      .select("actor_data")
-      .eq("actor_url", follower.follower_actor_url)
-      .single();
-    
-    const actorData = cached?.actor_data as any;
-    // Prefer sharedInbox, fallback to individual inbox
-    const sharedInbox = actorData?.endpoints?.sharedInbox || actorData?.inbox;
-    
-    if (sharedInbox) {
-      if (!inboxMap.has(sharedInbox)) {
-        inboxMap.set(sharedInbox, []);
-      }
-      inboxMap.get(sharedInbox)!.push(follower.follower_actor_url);
+    const { partition, limit = 10 } = await req.json().catch(() => ({}));
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50) return jsonResponse({ error: "Invalid limit" }, 400);
+    let partitions: number[];
+    if (partition !== undefined) {
+      if (!Number.isInteger(partition) || partition < 0 || partition > 15) return jsonResponse({ error: "Invalid partition" }, 400);
+      partitions = [partition];
+    } else {
+      partitions = Array.from({ length: 16 }, (_, index) => index);
     }
-  }
-  
-  return inboxMap;
-}
-
-// Enrich activity if needed (for thin trigger queued items)
-async function enrichActivity(item: any): Promise<any> {
-  const activity = item.activity;
-  
-  if (!activity.needs_enrichment) {
-    return activity;
-  }
-  
-  // Fetch the full object from ap_objects
-  const { data: apObject } = await supabaseClient
-    .from("ap_objects")
-    .select("*")
-    .eq("id", activity.object_id)
-    .single();
-  
-  if (!apObject) {
-    console.error(`Object not found for enrichment: ${activity.object_id}`);
-    return null;
-  }
-  
-  // Look up actor's preferred_username so we can build canonical URLs.
-  // item.actor_id is a UUID — never use it as a username in federation payloads.
-  const { data: actorRow } = await supabaseClient
-    .from("actors")
-    .select("preferred_username")
-    .eq("id", item.actor_id)
-    .single();
-  
-  const username = actorRow?.preferred_username;
-  const fallbackActorUrl = username ? buildActorUrl(username) : null;
-  const followersUrl = username ? buildFollowersUrl(username) : null;
-  
-  // Build full Create activity using canonical nolto.social URLs
-  return {
-    "@context": "https://www.w3.org/ns/activitystreams",
-    type: "Create",
-    id: buildActivityId(),
-    actor: apObject.content?.attributedTo || fallbackActorUrl,
-    published: apObject.published_at || new Date().toISOString(),
-    to: ["https://www.w3.org/ns/activitystreams#Public"],
-    cc: followersUrl ? [followersUrl] : [],
-    object: apObject.content
-  };
-}
-
-// Mark item as failed with error
-async function markAsFailed(itemId: string, error: string) {
-  await supabaseClient
-    .from("federation_queue_partitioned")
-    .update({ 
-      status: "failed",
-      last_error: error,
-      processed_at: new Date().toISOString()
-    })
-    .eq("id", itemId);
-}
-
-// Mark item for retry with exponential backoff
-async function scheduleRetry(item: any, error: string) {
-  const attempts = (item.attempts || 0) + 1;
-  const maxAttempts = item.max_attempts || 10;
-  
-  if (attempts >= maxAttempts) {
-    await markAsFailed(item.id, `Max attempts (${maxAttempts}) reached. Last error: ${error}`);
-    return;
-  }
-  
-  // Exponential backoff: 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 minutes
-  const backoffMinutes = Math.pow(2, attempts - 1);
-  const nextRetry = new Date(Date.now() + backoffMinutes * 60 * 1000);
-  
-  await supabaseClient
-    .from("federation_queue_partitioned")
-    .update({ 
-      status: "retry",
-      attempts,
-      next_retry_at: nextRetry.toISOString(),
-      last_error: error
-    })
-    .eq("id", item.id);
-  
-  console.log(`Scheduled retry ${attempts}/${maxAttempts} for item ${item.id} at ${nextRetry.toISOString()}`);
-}
-
-// Mark item as successfully processed
-async function markAsProcessed(itemId: string) {
-  await supabaseClient
-    .from("federation_queue_partitioned")
-    .update({ 
-      status: "processed",
-      processed_at: new Date().toISOString()
-    })
-    .eq("id", itemId);
-}
-
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  // Validate environment is configured
-  if (!supabaseUrl || !supabaseServiceKey) {
-    console.error("CRITICAL: Server misconfiguration - missing environment variables");
-    return new Response(
-      JSON.stringify({ error: "Server misconfiguration" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-
-  try {
-    const { limit = 50, partition = 0 } = await req.json().catch(() => ({}));
-    
-    // Use atomic claim function with SKIP LOCKED to prevent race conditions
-    const { data: queueItems, error } = await supabaseClient
-      .rpc("claim_federation_items", { 
-        p_partition: partition,
-        p_limit: limit 
-      });
-    
-    if (error) {
-      throw error;
-    }
-    
-    if (!queueItems || queueItems.length === 0) {
-      return new Response(
-        JSON.stringify({ message: "No pending federation items", partition }), 
-        { 
-          status: 200, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        }
-      );
-    }
-    
-    console.log(`Processing ${queueItems.length} federation items from partition ${partition}`);
-    
     const results = [];
-    
-    for (const item of queueItems) {
-      try {
-        // Enrich activity if needed
-        const activity = await enrichActivity(item);
-        
-        if (!activity) {
-          await markAsFailed(item.id, "Failed to enrich activity - object not found");
-          results.push({ id: item.id, success: false, error: "Object not found" });
-          continue;
-        }
-        
-        const actorId = item.actor_id;
-        let recipients: string[] = [];
-        
-        // Handle Accept activities specially - direct delivery to follower
-        if (activity.type === "Accept" && activity.object?.type === "Follow") {
-          const followerActorUrl = activity.object.actor;
-          if (followerActorUrl) {
-            recipients.push(followerActorUrl);
-            console.log(`Accept activity targeting follower: ${followerActorUrl}`);
+    for (const partitionKey of partitions) {
+      const { data: items, error } = await db.rpc("claim_federation_items", { p_partition: partitionKey, p_limit: limit });
+      if (error) throw error;
+      for (const item of (items || []).sort((a: QueueOrder, b: QueueOrder) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))) {
+        let failure: string | null = null;
+        try {
+          const { data: actor, error: actorError } = await db.from("actors").select("preferred_username, status, is_remote").eq("id", item.actor_id).single();
+          if (actorError) throw actorError;
+          if (actor.is_remote || actor.status !== "active") throw new Error("Local federation is disabled");
+          let activity = item.activity;
+          if (activity.needs_enrichment) {
+            if (!activity.snapshot) throw new Error("Legacy queue item has no snapshot; reconcile before retrying");
+            const object = localObject(activity.snapshot, actor.preferred_username);
+            const kind = activity.type;
+            activity = { "@context": CONTEXT, type: kind,
+              id: `${getFederationBaseUrl()}/functions/v1/activities/${kind === "Create" ? activity.object_id : activity.activity_id}`,
+              actor: buildActorUrl(actor.preferred_username), to: object.to, cc: object.cc,
+              object: kind === "Delete" ? { id: object.id, type: "Tombstone", formerType: object.type } : object };
           }
-        } else if (activity.type === "Delete") {
-          // For Delete activities, use sharedInbox batching
-          const sharedInboxMap = await getSharedInboxMap(actorId);
-          
-          // Deliver to each unique sharedInbox
-          for (const [inboxUrl, _followers] of sharedInboxMap) {
-            try {
-              console.log(`Sending Delete to sharedInbox: ${inboxUrl}`);
-              const response = await signedFetch(inboxUrl, {
-                method: "POST",
-                body: JSON.stringify(activity),
-              }, actorId);
-              
-              if (!response.ok) {
-                console.error(`Failed to deliver Delete to ${inboxUrl}: ${response.status}`);
-              }
-            } catch (err) {
-              console.error(`Error delivering Delete to ${inboxUrl}:`, err);
+          if (activity.actor !== buildActorUrl(actor.preferred_username)) throw new Error("Queue actor does not own activity");
+          const audience = [activity.to, activity.cc].flat().filter((x: unknown): x is string => typeof x === "string");
+          const recipients = new Set<string>(audience.filter((x: string) => x !== PUBLIC && !isLocalUrl(x)));
+          if (["Create", "Update", "Delete", "Announce", "Undo", "Move"].includes(activity.type) &&
+              (audience.includes(PUBLIC) || audience.includes(buildFollowersUrl(actor.preferred_username)))) {
+            const { data: followers, error } = await db.from("actor_followers").select("follower_actor_url")
+              .eq("local_actor_id", item.actor_id).eq("status", "accepted");
+            if (error) throw error;
+            for (const follower of followers || []) recipients.add(follower.follower_actor_url);
+          }
+          if (activity.type === "Accept" && activity.object?.actor) recipients.add(activity.object.actor);
+          const inboxes = new Set<string>();
+          const resolutionFailures: string[] = [];
+          const addresses = [...recipients];
+          for (let offset = 0; offset < addresses.length; offset += 50) {
+            const batch = addresses.slice(offset, offset + 50);
+            const { data: cache, error } = await db.from("remote_actors_cache").select("actor_url, actor_data, fetched_at").in("actor_url", batch);
+            if (error) throw error;
+            const { data: blockedActors, error: actorBlockError } = await db.from("blocked_actors").select("actor_url").in("actor_url", batch).eq("status", "blocked");
+            const { data: blockedDomains, error: domainBlockError } = await db.from("blocked_domains").select("host").eq("status", "blocked");
+            if (actorBlockError || domainBlockError) throw actorBlockError || domainBlockError;
+            const blockedActorUrls = new Set((blockedActors || []).map(row => row.actor_url));
+            const blockedHosts = new Set((blockedDomains || []).map(row => row.host));
+            const known = new Map((cache || []).map(row => [row.actor_url, row]));
+            for (const recipient of batch) {
+              try {
+                if (blockedActorUrls.has(recipient) || blockedHosts.has(new URL(recipient).hostname)) continue;
+                const cached = known.get(recipient);
+                const remote = cached?.actor_data?.id === recipient && Date.parse(cached.fetched_at) > Date.now() - 86400000
+                  ? cached.actor_data : await fetchActorDocument(recipient);
+                const inbox = remote.endpoints?.sharedInbox || remote.inbox;
+                if (!blockedHosts.has(new URL(inbox).hostname)) inboxes.add(inbox);
+              } catch { resolutionFailures.push(`Could not resolve ${recipient}`); }
             }
           }
-          
-          await markAsProcessed(item.id);
-          results.push({ id: item.id, success: true, type: "Delete" });
-          continue;
-        } else if (activity.to) {
-          // Handle activities with explicit 'to' field
-          const toField = Array.isArray(activity.to) ? activity.to : [activity.to];
-          recipients.push(...toField.filter((to: string) => 
-            typeof to === 'string' && 
-            to !== 'https://www.w3.org/ns/activitystreams#Public'
-          ));
-        }
-        
-        // If no explicit recipients, use sharedInbox batching for followers
-        if (recipients.length === 0 && activity.type === "Create") {
-          const sharedInboxMap = await getSharedInboxMap(actorId);
-          
-          console.log(`Create activity has ${sharedInboxMap.size} unique sharedInboxes`);
-          
-          let successCount = 0;
-          let failCount = 0;
-          
-          // Deliver to each unique sharedInbox (massive reduction in HTTP calls)
-          for (const [inboxUrl, followers] of sharedInboxMap) {
-            try {
-              console.log(`Sending Create to sharedInbox: ${inboxUrl} (${followers.length} followers)`);
-              const response = await signedFetch(inboxUrl, {
-                method: "POST",
-                body: JSON.stringify(activity),
-              }, actorId);
-              
-              if (!response.ok) {
-                console.error(`Failed to deliver to ${inboxUrl}: ${response.status}`);
-                failCount++;
-              } else {
-                successCount++;
-              }
-            } catch (err) {
-              console.error(`Error delivering to ${inboxUrl}:`, err);
-              failCount++;
-            }
-          }
-          
-          if (failCount > 0 && successCount === 0) {
-            // All failed - schedule retry
-            await scheduleRetry(item, `All ${failCount} deliveries failed`);
-            results.push({ id: item.id, success: false, error: "All deliveries failed" });
-          } else {
-            await markAsProcessed(item.id);
-            results.push({ id: item.id, success: true, delivered: successCount, failed: failCount });
-          }
-          continue;
-        }
-        
-        // Direct delivery to specific recipients
-        console.log(`Activity ${item.id} has ${recipients.length} direct recipients`);
-        
-        for (const recipientUri of recipients) {
-          // Validate recipient URI before processing
-          if (!recipientUri || typeof recipientUri !== 'string' || !recipientUri.startsWith('http')) {
-            console.warn(`Skipping invalid recipient URI: ${recipientUri}`);
-            continue;
-          }
-          
-          try {
-            console.log(`Determining inbox for recipient: ${recipientUri}`);
-            
-            let inboxUrl: string;
-            
-            if (isLocalUrl(recipientUri)) {
-              // Local actor — recipient is on nolto.social
-              const username = recipientUri.split('/').pop() || '';
-              inboxUrl = buildInboxUrl(username);
-            } else {
-              // Remote actor - fetch their actor document for inbox with timeout
-              const { data: cached } = await supabaseClient
-                .from("remote_actors_cache")
-                .select("actor_data")
-                .eq("actor_url", recipientUri)
-                .single();
-              
-              const actorData = cached?.actor_data as Record<string, unknown> | undefined;
-              
-              if (actorData?.inbox && typeof actorData.inbox === 'string') {
-                inboxUrl = actorData.inbox;
-              } else {
-                // Need to fetch actor document
-                console.log(`Fetching actor document for inbox: ${recipientUri}`);
-                try {
-                  const actorResponse = await fetchWithTimeout(
-                    recipientUri,
-                    {
-                      headers: {
-                        "Accept": 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-                        "User-Agent": "Nolto-Federation/1.0 (+https://nolto.social)"
-                      }
-                    },
-                    ACTOR_FETCH_TIMEOUT_MS
-                  );
-                  
-                  if (actorResponse.ok) {
-                    const fetchedActorData = await actorResponse.json();
-                    inboxUrl = fetchedActorData.inbox || `${recipientUri}/inbox`;
-                    
-                    // Cache for future use
-                    await supabaseClient
-                      .from("remote_actors_cache")
-                      .upsert({
-                        actor_url: recipientUri,
-                        actor_data: fetchedActorData,
-                        fetched_at: new Date().toISOString()
-                      }, { onConflict: "actor_url" });
-                  } else {
-                    console.warn(`Failed to fetch actor ${recipientUri}: ${actorResponse.status}`);
-                    inboxUrl = `${recipientUri}/inbox`;
-                  }
-                } catch (fetchError) {
-                  if (fetchError.name === "AbortError") {
-                    console.error(`Timeout fetching actor document: ${recipientUri}`);
-                  } else {
-                    console.error(`Error fetching actor document: ${fetchError}`);
-                  }
-                  inboxUrl = `${recipientUri}/inbox`;
-                }
-              }
-            }
-            
-            console.log(`Sending activity to ${inboxUrl}`);
-            
-            const response = await signedFetch(inboxUrl, {
-              method: "POST",
-              body: JSON.stringify(activity),
-            }, actorId);
-            
-            if (!response.ok) {
-              const status = response.status;
-              console.error(`Failed to deliver to ${inboxUrl}: ${status}`);
-              
-              // Handle specific status codes
-              if (status === 410) {
-                // Actor is gone - remove from followers
-                await supabaseClient
-                  .from("actor_followers")
-                  .delete()
-                  .eq("follower_actor_url", recipientUri);
-                console.log(`Removed gone actor: ${recipientUri}`);
-              } else if (status >= 500 || status === 408 || status === 429) {
-                // Retry-able errors
-                await scheduleRetry(item, `HTTP ${status} from ${inboxUrl}`);
-                results.push({ id: item.id, success: false, error: `HTTP ${status}` });
-                continue;
-              }
-            } else {
-              console.log(`Successfully delivered to ${inboxUrl}`);
-            }
-            
-          } catch (deliveryError) {
-            console.error("Error delivering to recipient:", deliveryError);
-            await scheduleRetry(item, deliveryError.message);
-            results.push({ id: item.id, success: false, error: deliveryError.message });
-            continue;
-          }
-        }
-        
-        await markAsProcessed(item.id);
-        results.push({ id: item.id, success: true });
-        
-      } catch (itemError) {
-        console.error(`Error processing item ${item.id}:`, itemError);
-        await scheduleRetry(item, itemError.message);
-        results.push({ id: item.id, success: false, error: itemError.message });
+          const { data: receipts, error: receiptsError } = await db.from("federation_deliveries").select("inbox").eq("queue_id", item.id);
+          if (receiptsError) throw receiptsError;
+          const failures = await deliverInboxes(inboxes, new Set((receipts || []).map(row => row.inbox)),
+            inbox => signedFetch(inbox, { method: "POST", body: JSON.stringify(activity) }, item.actor_id),
+            async inbox => {
+              const { error } = await db.from("federation_deliveries").upsert({ queue_id: item.id, inbox });
+              if (error) throw error;
+            });
+          const allFailures = [...resolutionFailures, ...failures];
+          if (allFailures.length) throw new Error(allFailures.slice(0, 3).join("; "));
+
+        } catch (error) { failure = error instanceof Error ? error.message : "Delivery failed"; }
+        const attempts = (item.attempts || 0) + 1;
+        const { error: updateError } = await db.from("federation_queue_partitioned").update(failure ? {
+          status: attempts >= (item.max_attempts || 10) ? "failed" : "retry", attempts,
+          last_error: failure, next_retry_at: new Date(Date.now() + 60000 * 2 ** Math.min(attempts - 1, 9)).toISOString(),
+        } : { status: "processed", attempts, last_error: null, processed_at: new Date().toISOString() })
+          .eq("id", item.id).eq("partition_key", item.partition_key);
+        if (updateError) throw updateError;
+        results.push({ id: item.id, success: !failure, ...(failure ? { error: failure } : {}) });
       }
     }
-    
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        partition,
-        processed: results.length,
-        results 
-      }), 
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
-  } catch (error) {
-    console.error("Error in federation processor:", error);
-    
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: "Error processing federation queue", 
-        details: error.message 
-      }), 
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
-  }
+    return jsonResponse({ results, processed: results.length });
+  } catch (error) { console.error("Federation worker failed", error); return jsonResponse({ error: "Queue processing failed" }, 500); }
 });

@@ -1,16 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type NotificationType = 
-  | 'connection_request' 
-  | 'connection_accepted' 
-  | 'endorsement' 
-  | 'message' 
+export type NotificationType =
+  | 'connection_request'
+  | 'connection_accepted'
+  | 'endorsement'
+  | 'message'
   | 'message_reaction'
-  | 'job_application' 
-  | 'mention' 
-  | 'follow' 
-  | 'like' 
-  | 'boost' 
+  | 'job_application'
+  | 'mention'
+  | 'follow'
+  | 'like'
+  | 'boost'
   | 'reply'
   | 'recommendation_request'
   | 'recommendation_received'
@@ -40,7 +40,7 @@ async function enrichWithActorData(notifications: any[]): Promise<Notification[]
 
   // Get unique actor IDs
   const actorIds = [...new Set(notifications.map(n => n.actor_id).filter(Boolean))];
-  
+
   if (actorIds.length === 0) {
     return notifications as Notification[];
   }
@@ -122,26 +122,6 @@ export const notificationService = {
       .eq('id', notificationId);
   },
 
-  async createNotification(params: {
-    type: NotificationType;
-    recipientId: string;
-    actorId?: string;
-    content?: string;
-    objectId?: string;
-    objectType?: string;
-  }): Promise<void> {
-    await supabase
-      .from('notifications')
-      .insert({
-        type: params.type,
-        recipient_id: params.recipientId,
-        actor_id: params.actorId,
-        content: params.content,
-        object_id: params.objectId,
-        object_type: params.objectType,
-      });
-  },
-
   subscribeToNotifications(userId: string, callback: (notification: Notification) => void) {
     const channel = supabase
       .channel(`notifications:${userId}`)
@@ -160,7 +140,7 @@ export const notificationService = {
             .select('*')
             .eq('id', payload.new.id)
             .single();
-          
+
           if (data) {
             const enriched = await enrichWithActorData([data]);
             if (enriched.length > 0) {

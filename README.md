@@ -1,8 +1,10 @@
 # Nolto
 
-A federated professional network for the Swedish public sector — municipalities, regions, and government agencies. Built on ActivityPub, hosted in the EU, designed around privacy, accessibility, and a healthy collaborative culture.
+A federated professional network for the Swedish public sector — municipalities, regions, and government agencies. Built with ActivityPub and WebFinger for interoperability. See the release checklist for deployment and verification requirements.
 
-Live at **[www.nolto.social](https://www.nolto.social)**.
+Canonical federation domain: **[nolto.social](https://nolto.social)**.
+
+**Release candidate:** read [production readiness and deployment gates](docs/production-readiness.md) before reopening registrations.
 
 ---
 
@@ -14,19 +16,19 @@ Nolto combines:
 - **Organisation pages** for public-sector employers with role-based admin (owner / admin / editor)
 - **A federated feed** that interoperates with Mastodon and other ActivityPub servers
 - **Long-form articles, events, and a structured job board** focused on transparency
-- **Direct messaging** with end-to-end encryption support
+- **Local direct messaging** processed by the server; federated DMs are not supported
 - **Granular privacy controls** (per-section visibility, federation opt-in, MFA)
 
-The platform is Swedish-first (`sv` default, English fallback) and hosted in Frankfurt (AWS `eu-central-1`) for GDPR data-residency.
+The platform is Swedish-first (`sv` default, English fallback). Confirm actual hosting regions, subprocessors and transfer arrangements before publishing the privacy policy.
 
 ---
 
 ## Tech stack
 
-- **Frontend:** React 18 · Vite 5 · TypeScript · Tailwind · shadcn/ui · TanStack Query
-- **Backend:** Supabase (Postgres + RLS + Edge Functions on Deno)
+- **Frontend:** React 18 · Vite 6.4 · TypeScript · Tailwind · shadcn/ui · TanStack Query
+- **Backend:** Lovable Cloud (Supabase/Postgres, Auth, RLS, Storage and Deno Edge Functions)
 - **Federation:** ActivityPub · HTTP Signatures · WebFinger · NodeInfo
-- **Auth:** Email/password · OAuth (Google, Apple) · TOTP MFA · federated login
+- **Auth:** Email/password · TOTP MFA · Mastodon sign-in/linking; other OAuth providers require explicit deployment configuration
 - **Email:** Resend (sender: `noreply@nolto.social`)
 
 ---
@@ -36,7 +38,7 @@ The platform is Swedish-first (`sv` default, English fallback) and hosted in Fra
 ```bash
 git clone <your-fork-url>
 cd <repo>
-npm install
+npm ci
 cp .env.example .env   # fill in your own Supabase project values
 npm run dev
 ```

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,7 @@ export default function AuthCallback() {
   const [status, setStatus] = useState<CallbackStatus>('processing');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [profile, setProfile] = useState<any>(null);
+  const exchange = useRef<Promise<{ data: any; error: any }> | null>(null);
 
   useEffect(() => {
     let navigateTimer: number | undefined;
@@ -43,12 +44,13 @@ export default function AuthCallback() {
       }
 
       try {
+        const expectedState = sessionStorage.getItem('federated_auth_state');
+        if (!expectedState || state !== expectedState) throw new Error(t("authCallback.invalidParams"));
         const redirectUri = sessionStorage.getItem('federated_auth_redirect') || `${window.location.origin}/auth/callback`;
-        sessionStorage.removeItem('federated_auth_redirect');
 
-        const response = await supabase.functions.invoke('federated-auth-callback', {
-          body: { code, state, redirectUri }
-        });
+
+        exchange.current ??= supabase.functions.invoke('federated-auth-callback', { body: { code, state, redirectUri } });
+        const response = await exchange.current;
 
         if (response.error) {
           throw new Error(response.error.message || t("authCallback.failed"));
@@ -77,6 +79,8 @@ export default function AuthCallback() {
         }
 
         if (cancelled) return;
+        sessionStorage.removeItem('federated_auth_state');
+        sessionStorage.removeItem('federated_auth_redirect');
         setStatus('success');
 
         if (isNewUser) {

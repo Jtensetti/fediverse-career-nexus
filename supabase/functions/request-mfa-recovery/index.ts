@@ -1,6 +1,7 @@
+import { sendEmail } from "../_shared/email.ts";
 // Caller: src/components/auth/MFARecoveryDialog.tsx
 // Stores an MFA recovery request and notifies all admins via email.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -111,9 +112,8 @@ Deno.serve(async (req) => {
       }
 
       const resendKey = Deno.env.get("RESEND_API_KEY");
-      const lovableKey = Deno.env.get("LOVABLE_API_KEY");
 
-      if (adminEmails.length > 0 && resendKey && lovableKey) {
+      if (adminEmails.length > 0 && resendKey) {
         const emailsMatch =
           attemptedLoginEmail !== null && attemptedLoginEmail === email;
         const matchBadge = attemptedLoginEmail
@@ -135,20 +135,9 @@ Deno.serve(async (req) => {
           <p>Review and respond in the moderation dashboard.</p>
         `;
 
-        await fetch("https://connector-gateway.lovable.dev/resend/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${lovableKey}`,
-            "X-Connection-Api-Key": resendKey,
-          },
-          body: JSON.stringify({
-            from: "Nolto Support <noreply@nolto.social>",
-            to: adminEmails,
-            reply_to: email,
-            subject: `[Nolto] MFA recovery request from ${email}`,
-            html,
-          }),
+        await sendEmail(resendKey, {
+          from: "Nolto Support <noreply@nolto.social>", to: adminEmails, reply_to: email,
+          subject: `[Nolto] MFA recovery request from ${email}`, html,
         });
       }
     } catch (notifyError) {

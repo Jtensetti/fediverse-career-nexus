@@ -1,124 +1,24 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { SEOHead } from "@/components/common/SEOHead";
+import { useTranslation } from "react-i18next";
+import InformationPage from "@/components/common/InformationPage";
 
-const HelpCenter = () => {
-  const faqSections = [
-    {
-      title: "Komma igång",
-      items: [
-        { question: "Hur går jag med i Nolto?", answer: "Välj en Nolto-instans (t.ex. nolto.social) och skapa ditt konto. Fyll i din profil för att börja ansluta och utforska möjligheter." },
-        { question: "Behöver jag betala för att använda Nolto?", answer: "Nej. Nolto är gratis att använda. Vissa organisationer kan erbjuda premiumfunktioner eller ta emot donationer, men kärnplattformen är alltid öppen." },
-        { question: "Kan jag använda Nolto på mobilen?", answer: "Ja! Nolto fungerar i alla moderna webbläsare på både dator och mobil." },
-      ]
-    },
-    {
-      title: "Nolto",
-      items: [
-        { question: "Vad är nolto?", answer: "Nolto innebär att Nolto inte bara är en enskild webbplats. Det är ett nätverk av oberoende servrar (\"instanser\") som kommunicerar med varandra." },
-        { question: "Kan jag ansluta med användare från andra Nolto-instanser?", answer: "Ja. Du kan följa, skicka meddelanden och söka jobb över alla anslutna Nolto-instanser, oavsett var ditt konto skapades." },
-        { question: "Vad händer om jag vill flytta mitt konto?", answer: "Du kan exportera din profildata och flytta till en annan Nolto-instans när du vill. Dina kontakter och historik följer med." },
-      ]
-    },
-    {
-      title: "Integritet och säkerhet",
-      items: [
-        { question: "Vem kan se min profil?", answer: "Du styr din integritet. Ställ in varje del av din profil som offentlig, privat eller synlig bara för dina kontakter." },
-        { question: "Hur skyddas min data?", answer: "Nolto är byggt med integritet i åtanke och följer strikta dataskyddsprinciper. Din data stannar på den instans du väljer och du har alltid kontroll." },
-        { question: "Hur rapporterar jag missbruk eller olämpligt innehåll?", answer: "Varje Nolto-instans har ett eget modereringsteam. Använd \"Rapportera\"-funktionen på profiler, inlägg eller meddelanden för att flagga problem." },
-      ]
-    },
-    {
-      title: "Felsökning",
-      items: [
-        { question: "Jag har glömt mitt lösenord. Vad gör jag?", answer: "Klicka på \"Glömt lösenord?\" på inloggningssidan och följ instruktionerna för att återställa ditt lösenord via e-post." },
-        { question: "Jag hittar inte svar på mitt problem — vad gör jag nu?", answer: "Kontakta din instansadministratör, besök vårt communityforum eller öppna ett ärende på Codeberg Issues." },
-      ]
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
-      <SEOHead title="Hjälpcenter" description="Hitta svar på vanliga frågor och få ut det mesta av ditt professionella nätverk på Nolto." />
-      <div className="bg-primary text-primary-foreground py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">Hjälpcenter</h1>
-            <p className="text-xl text-accent">Välkommen till Noltos hjälpcenter! Hitta svar på vanliga frågor och få ut det mesta av ditt professionella nätverk.</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-8">Vanliga frågor</h2>
-            {faqSections.map((section, sectionIndex) => (
-              <div key={sectionIndex} className="mb-8">
-                <h3 className="text-xl font-semibold text-primary mb-4">{section.title}</h3>
-                <Accordion type="single" collapsible className="w-full">
-                  {section.items.map((item, itemIndex) => (
-                    <AccordionItem key={itemIndex} value={`${sectionIndex}-${itemIndex}`}>
-                      <AccordionTrigger className="text-left">{item.question}</AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground">{item.answer}</AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </div>
-            ))}
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-primary mb-6">Snabbstartsguide</h2>
-            <div className="bg-muted p-6 rounded-lg">
-              <ol className="space-y-4">
-                {[
-                  { step: "1", title: "Välj en instans:", desc: "Bläddra bland publika Nolto-servrar och välj en som passar er." },
-                  { step: "2", title: "Registrera dig:", desc: "Skapa ditt konto och verifiera din e-post." },
-                  { step: "3", title: "Fyll i din profil:", desc: "Lägg till kompetenser, erfarenhet och ställ in dina integritetsinställningar." },
-                  { step: "4", title: "Börja ansluta:", desc: "Sök efter jobb, följ organisationer och anslut med kollegor." },
-                  { step: "5", title: "Utforska nätverket:", desc: "Upptäck möjligheter från hela nätverket!" },
-                ].map(({ step, title, desc }) => (
-                  <li key={step} className="flex items-start">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0 mt-1">{step}</div>
-                    <div><strong className="text-primary">{title}</strong> {desc}</div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </section>
-
-          <section className="bg-primary text-primary-foreground p-8 rounded-lg text-center">
-            <h2 className="text-2xl font-bold mb-4">Behöver du mer hjälp?</h2>
-            <p className="text-lg mb-6 text-primary-foreground/90">
-              Om du behöver mer hjälp, kolla{" "}
-              <Link to="/documentation" className="text-accent hover:underline">Dokumentationen</Link>{" "}
-              eller kontakta din instansadministratör.
-            </p>
-            <p className="text-lg mb-6 text-primary-foreground/90">
-              För tekniska problem eller funktionsförslag kan du också öppna ett ärende på{" "}
-              <a href="https://codeberg.org/Tensetti/Nolto/issues" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline inline-flex items-center">
-                Codeberg Issues <ExternalLink className="ml-1 h-4 w-4" />
-              </a>
-            </p>
-            <p className="text-xl font-semibold text-accent">Vi finns här för att hjälpa — välkommen till Nolto!</p>
-          </section>
-        </div>
-      </div>
-
-      <div className="border-t py-6">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Button asChild variant="outline">
-              <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />Tillbaka till startsidan</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default HelpCenter;
+export default function HelpCenter() {
+  const { i18n } = useTranslation();
+  const sv = i18n.language.startsWith("sv");
+  return <InformationPage title={sv ? "Hjälp" : "Help"}
+    intro={sv ? "Svar på vanliga frågor om kontot, federation och integritet." : "Common questions about accounts, federation and privacy."}
+    sections={sv ? [
+      ["Jag har glömt lösenordet", "Välj Glömt lösenord på inloggningssidan. Du får en länk via e-post om ett konto finns för adressen. Använd den senaste länken. Loggar du in enbart med Mastodon återställer du lösenordet på din Mastodon-server."],
+      ["Jag har förlorat min autentiseringsapp", "Använd återställningsvägen i MFA-dialogen eller kontakta operatören. Återställning kräver att kontots ägare verifieras. Dela aldrig lösenord, engångskoder eller återställningslänkar i ett offentligt ärende."],
+      ["Varför hittar Mastodon inte min Nolto-adress?", "Kontrollera att federation är aktiverad i profilinställningarna och sök på hela adressen, användarnamn@nolto.social. WebFinger behöver nås på Nolto-domänen. Om profilen fortfarande inte hittas, kontakta operatören med adressen och vilken server du söker från."],
+      ["Synkas mina två konton automatiskt?", "Nej. Mastodon-inloggning och kontokoppling identifierar dig. En koppling slår inte samman följare, inlägg, lösenord, bokmärken eller privata meddelanden. Läs federationsguiden innan du importerar följningar eller flyttar följare."],
+      ["Vad innebär profilens integritetsval?", "Erfarenhet, utbildning och kompetenser begränsas efter den synlighet du väljer. Att dölja aktivitet eller artiklar på profilen avpublicerar inte innehåll som redan är offentligt i flödet eller på en egen länk. Servern kan läsa privata meddelanden; de är inte totalsträckskrypterade."],
+      ["Hur anmäler jag ett problem?", "Använd Rapportera där funktionen finns, eller kontakta operatören nedan med en länk och en kort beskrivning. Radering på Nolto kan inte garantera att andra servrar eller personer tar bort sina kopior."],
+    ] : [
+      ["I forgot my password", "Choose Forgot password on the sign-in page. If the address has an account, you will receive an email link. Use the most recent link. If you only use Mastodon sign-in, reset your password on your Mastodon server."],
+      ["I lost my authenticator app", "Use the recovery option in the MFA dialog or contact the operator. Recovery requires verification of account ownership. Never share passwords, one-time codes or recovery links in a public issue."],
+      ["Why can't Mastodon find my Nolto address?", "Check that federation is enabled in your profile settings and search for the full username@nolto.social address. WebFinger must be reachable on the Nolto domain. If discovery still fails, contact the operator with your address and the server you searched from."],
+      ["Do my two accounts sync automatically?", "No. Mastodon sign-in and account linking identify you. Linking does not merge followers, posts, passwords, bookmarks or private messages. Read the federation guide before importing follows or moving followers."],
+      ["What do profile privacy choices mean?", "Experience, education and skills follow their visibility settings. Hiding activity or articles on your profile does not unpublish content already public in feeds or at its own link. The server can read private messages; they are not end-to-end encrypted."],
+      ["How do I report a problem?", "Use Report where available or contact the operator below with a link and a short description. Deleting content on Nolto cannot guarantee that other servers or people delete their copies."],
+    ]} />;
+}

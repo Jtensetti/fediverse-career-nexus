@@ -43,17 +43,17 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
     queryFn: async () => {
       if (!user?.id) return null;
       const { data } = await supabase
-        .from('profiles')
-        .select('auth_type')
-        .eq('id', user.id)
-        .single();
+        .from('public_actors')
+        .select('status')
+        .eq('user_id', user.id).eq('is_remote', false)
+        .maybeSingle();
       return data;
     },
     enabled: !!user?.id,
     staleTime: Infinity,
   });
 
-  const isFederatedUser = profile?.auth_type === 'federated';
+  const isFederatedUser = profile?.status === 'active';
 
   // Build feed tabs - only show federated tab to federated users
   const feedTabs = [

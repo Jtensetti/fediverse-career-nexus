@@ -1,7 +1,7 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -24,13 +24,15 @@ export default function DeleteAccountSection() {
   const [understood, setUnderstood] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const canDelete = confirmText === "RADERA" && understood;
 
   const handleDelete = async () => {
+    if (isDeleting || !canDelete) return;
     setIsDeleting(true);
     const result = await deleteAccount();
-    
+
     if (result.success) {
       toast.success("Ditt konto har raderats");
       navigate("/");
@@ -48,14 +50,14 @@ export default function DeleteAccountSection() {
           Radera konto
         </CardTitle>
         <CardDescription>
-          Radera ditt konto och all tillhörande data permanent
+          Radera ditt konto och dina uppgifter på Nolto
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="bg-destructive/10 p-4 rounded-lg text-sm space-y-2">
           <p className="font-medium">Detta kommer permanent att radera:</p>
           <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-            <li>Din profil och all personlig information</li>
+            <li>Din profil och dina kontaktuppgifter</li>
             <li>Alla dina inlägg, kommentarer och reaktioner</li>
             <li>Dina kontakter och meddelanden</li>
             <li>Din erfarenhet, utbildning och kompetenser</li>
@@ -63,9 +65,11 @@ export default function DeleteAccountSection() {
           </ul>
         </div>
 
+        <p className="text-sm text-muted-foreground">Ladda ner dina uppgifter först om du vill behålla dem. Kopior hos andra servrar och mottagare kan finnas kvar. Organisationer och deras filer behöver överlåtas innan kontot raderas.</p>
+        <Button variant="link" onClick={async () => { await signOut(); navigate('/auth', { state: { returnTo: '/profile/edit' } }); }}>Logga ut och logga in igen för att bekräfta din identitet</Button>
         <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="understand" 
+          <Checkbox
+            id="understand"
             checked={understood}
             onCheckedChange={(checked) => setUnderstood(checked === true)}
           />
@@ -75,10 +79,10 @@ export default function DeleteAccountSection() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">
+          <label htmlFor="delete-confirmation" className="text-sm font-medium">
             Skriv <span className="font-mono bg-muted px-1 rounded">RADERA</span> för att bekräfta
           </label>
-          <Input 
+          <Input id="delete-confirmation"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
             placeholder="RADERA"
@@ -88,8 +92,8 @@ export default function DeleteAccountSection() {
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               className="w-full"
               disabled={!canDelete}
             >
@@ -101,18 +105,18 @@ export default function DeleteAccountSection() {
             <AlertDialogHeader>
               <AlertDialogTitle>Är du helt säker?</AlertDialogTitle>
               <AlertDialogDescription>
-                Denna åtgärd kan inte ångras. Ditt konto och all tillhörande data kommer att raderas permanent från våra servrar.
+                Denna åtgärd kan inte ångras. Din profil och ditt innehåll på Nolto raderas. Raderingen kan inte garantera att kopior hos andra servrar tas bort.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Avbryt</AlertDialogCancel>
-              <AlertDialogAction 
+              <Button variant="destructive"
                 onClick={handleDelete}
                 disabled={isDeleting}
                 className="bg-destructive hover:bg-destructive/90"
               >
                 {isDeleting ? "Raderar..." : "Ja, radera mitt konto"}
-              </AlertDialogAction>
+              </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

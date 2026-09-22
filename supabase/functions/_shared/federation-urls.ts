@@ -11,12 +11,14 @@ const FALLBACK_DOMAIN = "nolto.social";
 
 /** The canonical federation base URL, e.g. "https://nolto.social" */
 export function getFederationBaseUrl(): string {
-  const raw = Deno.env.get("SITE_URL") || Deno.env.get("FEDERATION_DOMAIN");
-  if (raw) {
-    const cleaned = raw.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    return `https://${normalizeDomain(cleaned)}`;
+  // UI deployments may move; published ActivityPub identities must not.
+  const raw = Deno.env.get("FEDERATION_DOMAIN") || FALLBACK_DOMAIN;
+  const url = new URL(raw.includes("://") ? raw : `https://${raw}`);
+  if (url.protocol !== "https:" || url.username || url.password || url.port ||
+      url.pathname !== "/" || url.search || url.hash) {
+    throw new Error("FEDERATION_DOMAIN must be an HTTPS origin without a path or port");
   }
-  return `https://${FALLBACK_DOMAIN}`;
+  return `https://${normalizeDomain(url.hostname)}`;
 }
 
 /** The canonical federation hostname, e.g. "nolto.social" (no www, no protocol). */
@@ -39,7 +41,9 @@ export function isLocalDomain(host: string | null | undefined): boolean {
 export function isLocalUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   try {
-    return isLocalDomain(new URL(url).hostname);
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && !parsed.username && !parsed.password &&
+      !parsed.port && isLocalDomain(parsed.hostname);
   } catch {
     return false;
   }
@@ -87,4 +91,21 @@ export function buildObjectId(): string {
 /** Public-facing profile page URL (HTML). */
 export function buildProfilePageUrl(username: string): string {
   return `${getFederationBaseUrl()}/profile/${username}`;
+}
+
+/** OAuth and email links use the UI origin, independently of federation. */
+export function getSiteUrl(): string {
+  const url = new URL(Deno.env.get("SITE_URL") || getFederationBaseUrl());
+  if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+    throw new Error("SITE_URL must be an HTTPS origin");
+  }
+  return url.origin;
+}
+
+/** Supabase includes the function name in Request.url, including behind a proxy. */
+export function functionPath(url: URL, name: string): string[] | null {
+  const parts = url.pathname.split("/").filter(Boolean);
+  const index = parts.indexOf(name);
+  if (index < 0) return null;
+  try { return parts.slice(index + 1).map(decodeURIComponent); } catch { return null; }
 }

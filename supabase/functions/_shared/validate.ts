@@ -1,5 +1,5 @@
 
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { z } from "npm:zod@3.25.76";
 
 // Common headers to be used by all endpoints
 export const corsHeaders = {
@@ -10,14 +10,14 @@ export const corsHeaders = {
 
 /**
  * Middleware to validate request body against a Zod schema
- * 
+ *
  * @param handler The request handler function to wrap
  * @param schema The Zod schema to validate the request body against
  * @returns A new request handler that validates the request body
  */
 export function validateRequest<T>(
   handler: (req: Request, validData: T) => Promise<Response>,
-  schema: z.Schema<T>
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>
 ) {
   return async (req: Request): Promise<Response> => {
     // Handle CORS preflight requests
@@ -29,10 +29,10 @@ export function validateRequest<T>(
       // Clone the request to read the body
       const clonedReq = req.clone();
       const body = await clonedReq.json().catch(() => ({}));
-      
+
       // Validate the request body against the schema
       const result = schema.safeParse(body);
-      
+
       if (!result.success) {
         // Return validation errors
         const errorResponse = {
@@ -43,30 +43,30 @@ export function validateRequest<T>(
             message: err.message
           }))
         };
-        
+
         return new Response(
           JSON.stringify(errorResponse),
-          { 
-            status: 422, 
+          {
+            status: 422,
             headers: { ...corsHeaders, "Content-Type": "application/json" }
           }
         );
       }
-      
+
       // Call the handler with validated data
       return handler(req, result.data);
     } catch (error) {
       console.error("Error processing request:", error);
-      
+
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           error: "Invalid request format",
-          message: error.message
+          message: (error instanceof Error ? error.message : "Request failed")
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }
@@ -75,14 +75,14 @@ export function validateRequest<T>(
 
 /**
  * Helper function to validate a request with query parameters
- * 
+ *
  * @param handler The request handler function to wrap
  * @param schema The Zod schema to validate the query parameters against
  * @returns A new request handler that validates the query parameters
  */
 export function validateQuery<T>(
   handler: (req: Request, validParams: T) => Promise<Response>,
-  schema: z.Schema<T>
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>
 ) {
   return async (req: Request): Promise<Response> => {
     // Handle CORS preflight requests
@@ -93,15 +93,15 @@ export function validateQuery<T>(
     try {
       const url = new URL(req.url);
       const params: Record<string, string> = {};
-      
+
       // Convert URLSearchParams to a plain object
       for (const [key, value] of url.searchParams.entries()) {
         params[key] = value;
       }
-      
+
       // Validate the query parameters against the schema
       const result = schema.safeParse(params);
-      
+
       if (!result.success) {
         // Return validation errors
         const errorResponse = {
@@ -112,30 +112,30 @@ export function validateQuery<T>(
             message: err.message
           }))
         };
-        
+
         return new Response(
           JSON.stringify(errorResponse),
-          { 
-            status: 422, 
+          {
+            status: 422,
             headers: { ...corsHeaders, "Content-Type": "application/json" }
           }
         );
       }
-      
+
       // Call the handler with validated query parameters
       return handler(req, result.data);
     } catch (error) {
       console.error("Error processing request:", error);
-      
+
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           error: "Invalid request format",
-          message: error.message
+          message: (error instanceof Error ? error.message : "Request failed")
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
         }
       );
     }

@@ -9,24 +9,17 @@ const NOLTO_DOMAIN = 'nolto.social';
  * Get the Nolto instance domain for federation identity.
  * For local users, this should always be nolto.social in production.
  */
-export const getNoltoInstanceDomain = (): string => {
-  // Check if we're on the official domain
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : NOLTO_DOMAIN;
-  
-  // If on nolto.social or a subdomain, use nolto.social
-  if (hostname === 'nolto.social' || hostname.endsWith('.nolto.social')) {
-    return 'nolto.social';
-  }
-  
-  // For preview/development URLs, still show nolto.social for consistency
-  // Users should see their "real" handle even in preview
-  if (hostname.includes('lovable.app') || hostname.includes('localhost')) {
-    return 'nolto.social';
-  }
-  
-  // Fallback to actual hostname for custom domains
-  return hostname;
-};
+export const getNoltoInstanceDomain = (): string =>
+  (import.meta.env.VITE_FEDERATION_DOMAIN || NOLTO_DOMAIN).replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+
+export const getLocalActorUrl = (username: string): string =>
+  `https://${getNoltoInstanceDomain()}/functions/v1/actor/${username}`;
+
+export const getLocalProfileUrl = (username: string): string =>
+  `https://${getNoltoInstanceDomain()}/profile/${username}`;
+
+export const getWebFingerUrl = (username: string): string =>
+  `https://${getNoltoInstanceDomain()}/.well-known/webfinger?resource=${encodeURIComponent(`acct:${username}@${getNoltoInstanceDomain()}`)}`;
 
 /**
  * Format a Fediverse handle for display

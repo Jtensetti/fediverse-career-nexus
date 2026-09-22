@@ -269,46 +269,16 @@ export async function canMessageDirectly(targetUserId: string): Promise<{
       return { canMessage: false, reason: 'Not logged in' };
     }
 
-    const currentUserId = session.session.user.id;
-
-    // Check if connected
-    const { data: connected } = await supabase
-      .rpc('are_users_connected', { user1: currentUserId, user2: targetUserId });
-
-    if (connected) {
-      return { canMessage: true };
-    }
-
-    // Check target's DM privacy
-    const { data: target } = await supabase
-      .from('profiles')
-      .select('dm_privacy')
-      .eq('id', targetUserId)
-      .single();
-
-    const dmPrivacy = ((target as any)?.dm_privacy as DmPrivacy) || 'connections';
-
-    if (dmPrivacy === 'everyone') {
-      return { canMessage: true };
-    }
-
-    if (dmPrivacy === 'nobody') {
-      return { canMessage: false, reason: 'Användaren tar inte emot meddelanden' };
-    }
-
-    // Check for accepted request
-    const { data: request } = await supabase
-      .from('message_requests')
-      .select('status')
-      .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${targetUserId}),and(sender_id.eq.${targetUserId},recipient_id.eq.${currentUserId})`)
-      .eq('status', 'accepted')
-      .maybeSingle();
-
-    if (request) {
-      return { canMessage: true };
-    }
-
-    return { canMessage: false, needsRequest: true, reason: 'Skicka en meddelandeförfrågan först' };
+    const { data, error } = await supabase.rpc('can_message_user', {
+      p_sender_id: session.session.user.id, p_recipient_id: targetUserId,
+    });
+    if (error) throw error;
+    const permission = data as { can_message?: boolean; reason?: string } | null;
+    return {
+      canMessage: permission?.can_message === true,
+      needsRequest: permission?.reason === 'not_connected',
+      reason: permission?.can_message ? undefined : 'Mottagarens inställningar tillåter inte meddelanden nu',
+    };
   } catch (error) {
     console.error('Error checking message permissions:', error);
     return { canMessage: false, reason: 'Fel vid kontroll av behörigheter' };

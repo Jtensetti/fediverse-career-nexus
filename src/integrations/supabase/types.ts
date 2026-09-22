@@ -3424,6 +3424,9 @@ export type Database = {
       }
     }
     Functions: {
+      get_following_feed: { Args: { p_limit?: number; p_offset?: number }; Returns: { id: string; content: Json; published_at: string; source: string; type: string; attributed_to: string; company_id: string | null }[] }
+      is_username_available: { Args: { candidate: string }; Returns: boolean }
+      request_recommendation: { Args: { recipient: string }; Returns: boolean }
       actor_id_to_partition_key: {
         Args: { actor_uuid: string }
         Returns: number

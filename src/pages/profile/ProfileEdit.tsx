@@ -1,3 +1,4 @@
+import MastodonConnection from "@/components/settings/MastodonConnection";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -10,14 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
+import {
   Form,
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage 
+  FormMessage
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
@@ -38,7 +39,6 @@ import { updateUserProfile, ProfileUpdateData, checkUsernameAvailability } from 
 import NetworkVisibilityToggle from "@/components/settings/NetworkVisibilityToggle";
 import ProfileVisitsToggle from "@/components/settings/ProfileVisitsToggle";
 import VerificationBadge from "@/components/social/VerificationBadge";
-import VerificationRequest from "@/components/social/VerificationRequest";
 import { toast } from "sonner";
 import DeleteAccountSection from "@/components/settings/DeleteAccountSection";
 import DataExportSection from "@/components/settings/DataExportSection";
@@ -46,10 +46,10 @@ import AccountMigrationSection from "@/components/settings/AccountMigrationSecti
 import EmailNotificationPreferences from "@/components/settings/EmailNotificationPreferences";
 import MFASettings from "@/components/auth/MFASettings";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  getUserExperiences, 
-  createExperience, 
-  updateExperience, 
+import {
+  getUserExperiences,
+  createExperience,
+  updateExperience,
   deleteExperience,
   getUserEducation,
   createEducation,
@@ -87,25 +87,25 @@ const ProfileEditPage = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // State for experiences, education, and skills
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [education, setEducation] = useState<Education[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [newSkill, setNewSkill] = useState("");
-  
+
   // State for validation errors on experience fields
   const [experienceErrors, setExperienceErrors] = useState<Record<number, string[]>>({});
-  
+
   // State for recently saved experiences (for showing checkmark confirmation)
   const [recentlySaved, setRecentlySaved] = useState<Record<number, boolean>>({});
-  
+
   // State for validation errors on education fields
   const [educationErrors, setEducationErrors] = useState<Record<number, { institution?: boolean; degree?: boolean; start_year?: boolean }>>({});
-  
+
   // State for recently saved education (for showing checkmark confirmation)
   const [recentlySavedEducation, setRecentlySavedEducation] = useState<Record<number, boolean>>({});
-  
+
   const [isLoading, setIsLoading] = useState({
     profile: true,
     experiences: false,
@@ -114,7 +114,7 @@ const ProfileEditPage = () => {
     saving: false
   });
 
-  // Form for basic profile information  
+  // Form for basic profile information
   const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -134,18 +134,18 @@ const ProfileEditPage = () => {
     const fetchUserData = async () => {
       try {
         setIsLoading(prev => ({ ...prev, profile: true }));
-        
+
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setUserId(user.id);
-          
+
           // Get user profile
           const userProfile = await getCurrentUserProfile();
           if (userProfile) {
             setProfile(userProfile);
             setAvatarUrl(userProfile.avatarUrl);
-            
+
             // Initialize the form with data
             form.reset({
               username: userProfile.username || "",
@@ -156,7 +156,7 @@ const ProfileEditPage = () => {
               phone: userProfile.contact?.phone || "",
               location: userProfile.contact?.location || ""
             });
-            
+
             // Fetch CV data
             await fetchCVData();
           }
@@ -172,7 +172,7 @@ const ProfileEditPage = () => {
         setLoading(false);
       }
     };
-    
+
     fetchUserData();
   }, [navigate]);
 
@@ -182,13 +182,13 @@ const ProfileEditPage = () => {
     const userExperiences = await getUserExperiences();
     setExperiences(userExperiences);
     setIsLoading(prev => ({ ...prev, experiences: false }));
-    
+
     // Fetch education
     setIsLoading(prev => ({ ...prev, education: true }));
     const userEducation = await getUserEducation();
     setEducation(userEducation);
     setIsLoading(prev => ({ ...prev, education: false }));
-    
+
     // Fetch skills
     setIsLoading(prev => ({ ...prev, skills: true }));
     const userSkills = await getUserSkills();
@@ -199,7 +199,7 @@ const ProfileEditPage = () => {
   const onSubmit = async (data: z.infer<typeof profileSchema>) => {
     try {
       setIsLoading(prev => ({ ...prev, saving: true }));
-      
+
       // Check if username changed and validate uniqueness
       if (data.username && data.username !== profile?.username) {
         const isAvailable = await checkUsernameAvailability(data.username);
@@ -209,7 +209,7 @@ const ProfileEditPage = () => {
           return;
         }
       }
-      
+
       const profileData: ProfileUpdateData = {
         username: data.username,
         fullname: data.displayName, // Map displayName to fullname for database
@@ -219,10 +219,9 @@ const ProfileEditPage = () => {
         phone: data.phone,
         location: data.location
       };
-      
-      
+
       const success = await updateUserProfile(profileData);
-      
+
       if (success) {
         // Invalidate profile cache
         queryClient.invalidateQueries({ queryKey: ["profile"] });
@@ -251,7 +250,7 @@ const ProfileEditPage = () => {
       toast.error(t("toasts.addExperienceLoginRequired"));
       return;
     }
-    
+
     const newExperience: Experience = {
       title: "",
       company: "",
@@ -265,7 +264,7 @@ const ProfileEditPage = () => {
 
   const removeExperience = async (index: number) => {
     const exp = experiences[index];
-    
+
     // If this experience has an ID (stored in DB), delete it
     if (exp.id) {
       const success = await deleteExperience(exp.id);
@@ -282,39 +281,39 @@ const ProfileEditPage = () => {
 
   const updateExperienceField = (index: number, field: string, value: any) => {
     const updatedExperiences = [...experiences];
-    updatedExperiences[index] = { 
-      ...updatedExperiences[index], 
-      [field]: value 
+    updatedExperiences[index] = {
+      ...updatedExperiences[index],
+      [field]: value
     };
     setExperiences(updatedExperiences);
   };
 
   const saveExperience = async (index: number) => {
     const exp = experiences[index];
-    
+
     // Validate required fields - only title and start_date are required (company is optional for freelancers)
     const errors: string[] = [];
     if (!exp.title?.trim()) errors.push('title');
     if (!exp.start_date) errors.push('start_date');
-    
+
     if (errors.length > 0) {
       setExperienceErrors(prev => ({ ...prev, [index]: errors }));
       toast.error(`${t("toasts.experienceFillIn")}${errors.map(e => e === 'start_date' ? t("profileEdit.experience.startDate", 'start date') : e).join(', ')}`);
       return;
     }
-    
+
     // Clear errors for this experience
     setExperienceErrors(prev => {
       const newErrors = { ...prev };
       delete newErrors[index];
       return newErrors;
     });
-    
+
     // Ensure user_id is set
     if (!exp.user_id && userId) {
       exp.user_id = userId;
     }
-    
+
     // If experience has an ID, update it, otherwise create new
     if (exp.id) {
       const updated = await updateExperience(exp.id, exp);
@@ -361,7 +360,7 @@ const ProfileEditPage = () => {
       toast.error(t("toasts.loginRequiredProfile"));
       return;
     }
-    
+
     const newEducation: Education = {
       institution: "",
       degree: "",
@@ -374,7 +373,7 @@ const ProfileEditPage = () => {
 
   const removeEducation = async (index: number) => {
     const edu = education[index];
-    
+
     // If this education has an ID (stored in DB), delete it
     if (edu.id) {
       const success = await deleteEducation(edu.id);
@@ -391,22 +390,22 @@ const ProfileEditPage = () => {
 
   const updateEducationField = (index: number, field: string, value: any) => {
     const updatedEducation = [...education];
-    updatedEducation[index] = { 
-      ...updatedEducation[index], 
-      [field]: value 
+    updatedEducation[index] = {
+      ...updatedEducation[index],
+      [field]: value
     };
     setEducation(updatedEducation);
   };
 
   const saveEducation = async (index: number) => {
     const edu = education[index];
-    
+
     // Validate required fields and track errors
     const errors: { institution?: boolean; degree?: boolean; start_year?: boolean } = {};
     if (!edu.institution?.trim()) errors.institution = true;
     if (!edu.degree?.trim()) errors.degree = true;
     if (!edu.start_year) errors.start_year = true;
-    
+
     if (Object.keys(errors).length > 0) {
       setEducationErrors(prev => ({ ...prev, [index]: errors }));
       const missingFields = [];
@@ -416,19 +415,19 @@ const ProfileEditPage = () => {
       toast.error(`Fyll i obligatoriska fält: ${missingFields.join(", ")}`);
       return;
     }
-    
+
     // Clear errors on successful validation
     setEducationErrors(prev => {
       const newErrors = { ...prev };
       delete newErrors[index];
       return newErrors;
     });
-    
+
     // Ensure user_id is set
     if (!edu.user_id && userId) {
       edu.user_id = userId;
     }
-    
+
     // If education has an ID, update it, otherwise create new
     if (edu.id) {
       const updated = await updateEducation(edu.id, edu);
@@ -475,14 +474,14 @@ const ProfileEditPage = () => {
       toast.error(t("toasts.loginRequiredProfile"));
       return;
     }
-    
+
     if (newSkill.trim() === "") return;
-    
+
     const newSkillItem: Skill = {
       name: newSkill.trim(),
       user_id: userId
     };
-    
+
     const createdSkill = await createSkill(newSkillItem);
     if (createdSkill) {
       setSkills([...skills, createdSkill]);
@@ -519,11 +518,11 @@ const ProfileEditPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       <Navbar />
-      
+
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">{t("profileEdit.title")}</h1>
-          <LinkedInImportButton 
+          <LinkedInImportButton
             onImportComplete={() => {
               // Invalidate profile cache to refresh data without full page reload
               queryClient.invalidateQueries({ queryKey: ["profile"] });
@@ -531,7 +530,7 @@ const ProfileEditPage = () => {
             }}
           />
         </div>
-        
+
         <Tabs value={searchParams.get('tab') || 'basic'} onValueChange={(value) => setSearchParams({ tab: value })} className="mb-6">
           <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mb-4">
             <TabsList className="w-max md:w-auto">
@@ -543,7 +542,7 @@ const ProfileEditPage = () => {
               <TabsTrigger value="privacy" className="text-xs sm:text-sm whitespace-nowrap">{t("profileEdit.tabs.privacy")}</TabsTrigger>
             </TabsList>
           </div>
-          
+
           <TabsContent value="basic">
             <Card>
               <CardHeader>
@@ -551,12 +550,12 @@ const ProfileEditPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col sm:flex-row gap-8 mb-6">
-                  <ProfileImageUpload 
-                    currentImageUrl={avatarUrl} 
+                  <ProfileImageUpload
+                    currentImageUrl={avatarUrl}
                     displayName={profile?.displayName}
                     onImageUploaded={handleAvatarUploaded}
                   />
-                  
+
                   <div className="flex-1">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -583,9 +582,9 @@ const ProfileEditPage = () => {
                               <FormControl>
                                 <div className="flex items-center gap-2">
                                   <span className="text-muted-foreground">@</span>
-                                  <Input 
-                                    placeholder={t("profileEdit.usernamePlaceholder", "your_username")} 
-                                    {...field} 
+                                  <Input
+                                    placeholder={t("profileEdit.usernamePlaceholder", "your_username")}
+                                    {...field}
                                     onChange={(e) => field.onChange(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                                   />
                                 </div>
@@ -597,7 +596,7 @@ const ProfileEditPage = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="headline"
@@ -614,7 +613,7 @@ const ProfileEditPage = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="bio"
@@ -622,20 +621,20 @@ const ProfileEditPage = () => {
                             <FormItem>
                               <FormLabel>{t("profileEdit.bio")}</FormLabel>
                               <FormControl>
-                                <Textarea 
-                                  placeholder={t("profileEdit.bioPlaceholder")} 
-                                  className="min-h-32" 
-                                  {...field} 
+                                <Textarea
+                                  placeholder={t("profileEdit.bioPlaceholder")}
+                                  className="min-h-32"
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        
+
                         <div className="pt-4">
                           <h3 className="text-lg font-medium mb-4">{t("profileEdit.contactInfo")}</h3>
-                          
+
                           <div className="grid md:grid-cols-2 gap-4">
                             <FormField
                               control={form.control}
@@ -651,7 +650,7 @@ const ProfileEditPage = () => {
                                 </FormItem>
                               )}
                             />
-                            
+
                             <FormField
                               control={form.control}
                               name="phone"
@@ -665,7 +664,7 @@ const ProfileEditPage = () => {
                                 </FormItem>
                               )}
                             />
-                            
+
                             <FormField
                               control={form.control}
                               name="location"
@@ -681,9 +680,9 @@ const ProfileEditPage = () => {
                             />
                           </div>
                         </div>
-                        
-                        <Button 
-                          type="submit" 
+
+                        <Button
+                          type="submit"
                           disabled={isLoading.saving}
                         >
                           {isLoading.saving ? t("profileEdit.saving") : t("profileEdit.saveChanges")}
@@ -695,7 +694,7 @@ const ProfileEditPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="freelance">
             <Card>
               <CardHeader>
@@ -711,7 +710,7 @@ const ProfileEditPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="experience">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -719,8 +718,8 @@ const ProfileEditPage = () => {
                   <Briefcase size={20} className="text-primary" />
                   {t("profileEdit.experience.title")}
                 </CardTitle>
-                <Button 
-                  onClick={addExperience} 
+                <Button
+                  onClick={addExperience}
                   variant="outline"
                   className="flex items-center gap-1"
                 >
@@ -749,16 +748,9 @@ const ProfileEditPage = () => {
                             )}
                           </div>
                           <div className="flex gap-2">
-                            {exp.id && (
-                              <VerificationRequest 
-                                type="experience" 
-                                itemId={exp.id}
-                                companyDomain={exp.company_domain}
-                              />
-                            )}
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => removeExperience(index)}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
@@ -766,16 +758,16 @@ const ProfileEditPage = () => {
                             </Button>
                           </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor={`title-${index}`} className="flex items-center gap-1">
                               {t("profileEdit.experience.jobTitle")}
                               <span className="text-destructive">*</span>
                             </Label>
-                            <Input 
+                            <Input
                               id={`title-${index}`}
-                              value={exp.title || ''} 
+                              value={exp.title || ''}
                               onChange={(e) => {
                                 updateExperienceField(index, 'title', e.target.value);
                                 // Clear error when user types
@@ -793,43 +785,43 @@ const ProfileEditPage = () => {
                               <p className="text-sm text-destructive mt-1">{t("profileEdit.experience.titleRequired", "Job title is required")}</p>
                             )}
                           </div>
-                          
+
                           <div>
                             <Label htmlFor={`company-${index}`}>
                               {t("profileEdit.experience.company")}
                               <span className="text-muted-foreground text-xs ml-1">({t("common.optional", "optional")})</span>
                             </Label>
-                            <Input 
+                            <Input
                               id={`company-${index}`}
-                              value={exp.company || ''} 
+                              value={exp.company || ''}
                               onChange={(e) => updateExperienceField(index, 'company', e.target.value)}
                               placeholder={t("profileEdit.experience.companyPlaceholder", "e.g. Acme Inc, Freelance, Self-employed")}
                               className="mt-1"
                             />
                           </div>
-                          
+
                           <div>
                             <Label htmlFor={`company_domain-${index}`}>{t("profileEdit.experience.companyDomain")}</Label>
-                            <Input 
+                            <Input
                               id={`company_domain-${index}`}
-                              value={exp.company_domain || ''} 
+                              value={exp.company_domain || ''}
                               onChange={(e) => updateExperienceField(index, 'company_domain', e.target.value)}
                               placeholder={t("profileEdit.experience.companyDomainPlaceholder")}
                               className="mt-1"
                             />
                           </div>
-                          
+
                           <div>
                             <Label htmlFor={`location-${index}`}>{t("profileEdit.location")}</Label>
-                            <Input 
+                            <Input
                               id={`location-${index}`}
-                              value={exp.location || ''} 
+                              value={exp.location || ''}
                               onChange={(e) => updateExperienceField(index, 'location', e.target.value)}
                               placeholder={t("profileEdit.experience.locationPlaceholder")}
                               className="mt-1"
                             />
                           </div>
-                          
+
                           <div>
                             <Label htmlFor={`startDate-${index}`} className="flex items-center gap-1">
                               {t("profileEdit.experience.startDate")}
@@ -855,7 +847,7 @@ const ProfileEditPage = () => {
                               <p className="text-sm text-destructive mt-1">{t("profileEdit.experience.startDateRequired", "Start date is required")}</p>
                             )}
                           </div>
-                          
+
                           <div className="flex flex-col">
                             <div className="flex items-center mb-2">
                               <Switch
@@ -866,7 +858,7 @@ const ProfileEditPage = () => {
                               />
                               <Label htmlFor={`current-${index}`}>{t("profileEdit.experience.currentRole")}</Label>
                             </div>
-                            
+
                             {!exp.is_current_role && (
                               <>
                                 <Label htmlFor={`endDate-${index}`}>{t("profileEdit.experience.endDate")}</Label>
@@ -880,18 +872,18 @@ const ProfileEditPage = () => {
                               </>
                             )}
                           </div>
-                          
+
                           <div className="md:col-span-2">
                             <Label htmlFor={`description-${index}`}>{t("profileEdit.experience.description")}</Label>
-                            <Textarea 
+                            <Textarea
                               id={`description-${index}`}
-                              value={exp.description || ''} 
+                              value={exp.description || ''}
                               onChange={(e) => updateExperienceField(index, 'description', e.target.value)}
                               placeholder={t("profileEdit.experience.descriptionPlaceholder")}
                               className="mt-1 h-24"
                             />
                           </div>
-                          
+
                           <div className="md:col-span-2 flex justify-end items-center gap-2">
                             {recentlySaved[index] && (
                               <span className="flex items-center gap-1 text-sm text-primary animate-in fade-in">
@@ -908,7 +900,7 @@ const ProfileEditPage = () => {
                         </div>
                       </div>
                     ))}
-                    
+
                     {experiences.length === 0 && (
                       <div className="text-center py-6 text-muted-foreground">
                         <p>{t("profileEdit.experience.noExperience")}</p>
@@ -919,7 +911,7 @@ const ProfileEditPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="education">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -927,8 +919,8 @@ const ProfileEditPage = () => {
                   <School size={20} className="text-primary" />
                   {t("profileEdit.education.title")}
                 </CardTitle>
-                <Button 
-                  onClick={addEducation} 
+                <Button
+                  onClick={addEducation}
                   variant="outline"
                   className="flex items-center gap-1"
                 >
@@ -954,9 +946,9 @@ const ProfileEditPage = () => {
                             </h4>
                           </div>
                           <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => removeEducation(index)}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
@@ -964,15 +956,15 @@ const ProfileEditPage = () => {
                             </Button>
                           </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="md:col-span-2">
                             <Label htmlFor={`institution-${index}`}>
                               {t("profileEdit.education.institution")} <span className="text-destructive">*</span>
                             </Label>
-                            <Input 
+                            <Input
                               id={`institution-${index}`}
-                              value={edu.institution || ''} 
+                              value={edu.institution || ''}
                               onChange={(e) => {
                                 updateEducationField(index, 'institution', e.target.value);
                                 if (educationErrors[index]?.institution) {
@@ -989,14 +981,14 @@ const ProfileEditPage = () => {
                               <p className="text-sm text-destructive mt-1">{t("profileEdit.education.institutionRequired", "Institution krävs")}</p>
                             )}
                           </div>
-                          
+
                           <div>
                             <Label htmlFor={`degree-${index}`}>
                               {t("profileEdit.education.degree")} <span className="text-destructive">*</span>
                             </Label>
-                            <Input 
+                            <Input
                               id={`degree-${index}`}
-                              value={edu.degree || ''} 
+                              value={edu.degree || ''}
                               onChange={(e) => {
                                 updateEducationField(index, 'degree', e.target.value);
                                 if (educationErrors[index]?.degree) {
@@ -1013,26 +1005,26 @@ const ProfileEditPage = () => {
                               <p className="text-sm text-destructive mt-1">{t("profileEdit.education.degreeRequired", "Examen krävs")}</p>
                             )}
                           </div>
-                          
+
                           <div>
                             <Label htmlFor={`field-${index}`}>{t("profileEdit.education.field")}</Label>
-                            <Input 
+                            <Input
                               id={`field-${index}`}
-                              value={edu.field || ''} 
+                              value={edu.field || ''}
                               onChange={(e) => updateEducationField(index, 'field', e.target.value)}
                               placeholder={t("profileEdit.education.fieldPlaceholder")}
                               className="mt-1"
                             />
                           </div>
-                          
+
                           <div>
                             <Label htmlFor={`startYear-${index}`}>
                               {t("profileEdit.education.startYear")} <span className="text-destructive">*</span>
                             </Label>
-                            <Input 
+                            <Input
                               id={`startYear-${index}`}
                               type="number"
-                              value={edu.start_year ?? ''} 
+                              value={edu.start_year ?? ''}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 updateEducationField(index, 'start_year', val === '' ? undefined : parseInt(val, 10));
@@ -1049,13 +1041,13 @@ const ProfileEditPage = () => {
                               <p className="text-sm text-destructive mt-1">{t("profileEdit.education.startYearRequired", "Startår krävs")}</p>
                             )}
                           </div>
-                          
+
                           <div>
                             <Label htmlFor={`endYear-${index}`}>{t("profileEdit.education.endYear")}</Label>
-                            <Input 
+                            <Input
                               id={`endYear-${index}`}
                               type="number"
-                              value={edu.end_year ?? ''} 
+                              value={edu.end_year ?? ''}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 updateEducationField(index, 'end_year', val === '' ? undefined : parseInt(val, 10));
@@ -1063,7 +1055,7 @@ const ProfileEditPage = () => {
                               className="mt-1"
                             />
                           </div>
-                          
+
                           <div className="md:col-span-2 flex justify-end items-center gap-2">
                             {recentlySavedEducation[index] && (
                               <span className="text-primary flex items-center gap-1 text-sm">
@@ -1079,7 +1071,7 @@ const ProfileEditPage = () => {
                         </div>
                       </div>
                     ))}
-                    
+
                     {education.length === 0 && (
                       <div className="text-center py-6 text-muted-foreground">
                         <p>{t("profileEdit.education.noEducation")}</p>
@@ -1090,7 +1082,7 @@ const ProfileEditPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="skills">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -1110,15 +1102,15 @@ const ProfileEditPage = () => {
                 ) : (
                   <div className="space-y-6">
                     <div className="flex gap-2">
-                      <Input 
-                        placeholder={t("profileEdit.skills.placeholder")} 
+                      <Input
+                        placeholder={t("profileEdit.skills.placeholder")}
                         value={newSkill}
                         onChange={(e) => setNewSkill(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && addSkill()}
                       />
                       <Button onClick={addSkill} type="button">{t("profileEdit.skills.add")}</Button>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-2 mt-4">
                       {skills.map((skill) => (
                         <div key={skill.id} className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
@@ -1128,10 +1120,10 @@ const ProfileEditPage = () => {
                               {skill.endorsements}
                             </span>
                           )}
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-5 w-5 rounded-full" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 rounded-full"
                             onClick={() => removeSkill(skill.id)}
                           >
                             <Trash size={12} className="text-muted-foreground" />
@@ -1139,7 +1131,7 @@ const ProfileEditPage = () => {
                         </div>
                       ))}
                     </div>
-                    
+
                     {skills.length === 0 && (
                       <div className="text-center py-6 text-muted-foreground">
                         <p>{t("profileEdit.skills.noSkills")}</p>
@@ -1150,7 +1142,7 @@ const ProfileEditPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="privacy" className="space-y-6">
             <Card>
               <CardHeader>
@@ -1160,38 +1152,39 @@ const ProfileEditPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <MFASettings isFederatedUser={profile?.auth_type === 'federated'} />
-                
+                <MFASettings />
+
                 <Separator />
-                
-                <NetworkVisibilityToggle 
-                  initialValue={profile.networkVisibilityEnabled} 
+
+                <NetworkVisibilityToggle
+                  initialValue={profile.networkVisibilityEnabled}
                   onChange={(value) => setProfile({...profile, networkVisibilityEnabled: value})}
                 />
-                
+
                 <Separator />
-                
+
                 <ProfileVisitsToggle />
-                
+
                 <Separator />
-                
+
                 <DMPrivacySettings />
-                
+
                 <Separator />
-                
+
                 <EmailNotificationPreferences />
               </CardContent>
             </Card>
-            
+
             <DataExportSection />
-            
+
+            <MastodonConnection />
             <AccountMigrationSection />
-            
+
             <DeleteAccountSection />
           </TabsContent>
         </Tabs>
       </main>
-      
+
       <Footer />
     </div>
   );

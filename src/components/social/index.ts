@@ -5,7 +5,6 @@ export * from "./RecommendationsSection";
 export { default as StarterPackCard } from "./StarterPackCard";
 export { default as TransparencyScore } from "./TransparencyScore";
 export { default as VerificationBadge } from "./VerificationBadge";
-export { default as VerificationRequest } from "./VerificationRequest";
 export { default as FreelancerBadge } from "./FreelancerBadge";
 export { default as ReferralWidget } from "./ReferralWidget";
 export { default as ProfileViewsWidget } from "./ProfileViewsWidget";

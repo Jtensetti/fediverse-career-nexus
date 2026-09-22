@@ -28,6 +28,11 @@ async function fetchLinkPreview(url: string): Promise<LinkPreviewData | null> {
   }
 
   try {
+    const parsed = new URL(url);
+    if (!["https:", "http:"].includes(parsed.protocol)) return null;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || parsed.protocol !== "https:") return { url, domain: parsed.hostname };
+    if (previewCache.size >= 200) previewCache.clear();
     const { data, error } = await supabase.functions.invoke("fetch-link-preview", {
       body: { url },
     });
@@ -110,6 +115,8 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
   const handleKeyDown = (e: React.KeyboardEvent) => {
     e.stopPropagation();
   };
+
+  if (!/^https?:\/\//i.test(url)) return null;
 
   if (loading) {
     return (
@@ -205,6 +212,7 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
               alt={displayTitle || ""}
               className="absolute inset-0 w-full h-full object-cover object-top"
               loading="lazy"
+              referrerPolicy="no-referrer"
               onError={() => setImageError(true)}
             />
           </div>
@@ -218,6 +226,7 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
               alt=""
               className="w-full h-full object-cover object-top"
               loading="lazy"
+              referrerPolicy="no-referrer"
               onError={() => setImageError(true)}
             />
           </div>

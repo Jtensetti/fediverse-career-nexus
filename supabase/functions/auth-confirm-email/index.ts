@@ -1,53 +1,27 @@
+import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
+import { z } from "npm:zod@3.25.76";
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, signature, digest, date, host',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-};
-
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
-
-const schema = z.object({ token: z.string().uuid() });
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return jsonResponse({});
+  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
+  try {
+    const parsed = z.object({ token: z.string().uuid() }).safeParse(await req.json());
+    if (!parsed.success) return jsonResponse({ error: "Invalid token" }, 422);
+    const db = serviceClient();
+    const { data, error } = await db.from("email_verification_tokens").select("id,user_id,expires_at,used_at")
+      .eq("token", parsed.data.token).maybeSingle();
+    if (error) throw error;
+    if (!data) return jsonResponse({ error: "Invalid token" }, 400);
+    // A consumed confirmation remains successful on reload/React StrictMode. It grants no session.
+    if (data.used_at) return jsonResponse({ success: true });
+    if (new Date(data.expires_at) < new Date()) return jsonResponse({ error: "Token expired" }, 400);
+    const { error: authError } = await db.auth.admin.updateUserById(data.user_id, { email_confirm: true });
+    if (authError) throw authError;
+    const { error: updateError } = await db.from("email_verification_tokens").update({ used_at: new Date().toISOString() }).eq("user_id", data.user_id);
+    if (updateError) throw updateError;
+    return jsonResponse({ success: true });
+  } catch (error) {
+    console.error("Email confirmation failed", error);
+    return jsonResponse({ error: "Email confirmation failed. Please retry." }, 500);
   }
-
-  const body = await req.json();
-  const result = schema.safeParse(body);
-  if (!result.success) {
-    return new Response(JSON.stringify({ error: 'Validation error' }), { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-  }
-
-  const { token } = result.data;
-  const { data, error } = await supabase
-    .from('email_verification_tokens')
-    .select('id, user_id, expires_at, used_at')
-    .eq('token', token)
-    .single();
-
-  if (error || !data) {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-  }
-
-  if (data.used_at || new Date(data.expires_at) < new Date()) {
-    return new Response(JSON.stringify({ error: 'Token expired' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-  }
-
-  await supabase.auth.admin.updateUserById(data.user_id, { email_confirm: true });
-  await supabase
-    .from('email_verification_tokens')
-    .update({ used_at: new Date().toISOString() })
-    .eq('id', data.id);
-
-  return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 });
