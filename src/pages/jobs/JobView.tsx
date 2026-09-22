@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import TransparencyScore from "@/components/social/TransparencyScore";
 import { JobInquiryButton } from "@/components/jobs/JobInquiryButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { isItemSaved, toggleSaveItem } from "@/services/content/savedItemsService";
 
 const JobView = () => {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,7 @@ const JobView = () => {
   const [job, setJob] = useState<JobPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
+  const [isSavePending, setIsSavePending] = useState(false);
 
   const JobTypeLabels: Record<string, string> = {
     "full-time": t("jobView.fullTime"),
@@ -69,9 +71,32 @@ const JobView = () => {
     fetchJob();
   }, [id, navigate]);
 
-  const handleSaveJob = () => {
-    setIsSaved(!isSaved);
-    toast.success(isSaved ? t("jobView.jobUnsaved") : t("jobView.jobSaved"));
+  useEffect(() => {
+    let active = true;
+    if (!id || !user) {
+      setIsSaved(false);
+      return;
+    }
+    isItemSaved("job", id).then(saved => { if (active) setIsSaved(saved); });
+    return () => { active = false; };
+  }, [id, user]);
+
+  const handleSaveJob = async () => {
+    if (!id) return;
+    if (!user) {
+      toast.error(t("jobView.loginToSave", { defaultValue: "Logga in för att spara jobbet" }));
+      return;
+    }
+    if (isSavePending) return;
+    setIsSavePending(true);
+    const result = await toggleSaveItem("job", id);
+    if (result.success) {
+      setIsSaved(result.saved);
+      toast.success(result.saved ? t("jobView.jobSaved") : t("jobView.jobUnsaved"));
+    } else {
+      toast.error(t("jobView.saveFailed", { defaultValue: "Kunde inte spara jobbet" }));
+    }
+    setIsSavePending(false);
   };
   
   const getCompanyName = (job: JobPost) => job.company_name || job.company;

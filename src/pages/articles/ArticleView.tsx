@@ -112,7 +112,7 @@ const ArticleView = () => {
   const authorInitials = authorName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
   const previewContent = article.excerpt || article.content.substring(0, 500);
-  const showFullContent = hasAccess || accessLoading;
+  const showFullContent = !!hasAccess && !accessLoading;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -162,7 +162,14 @@ const ArticleView = () => {
               </div>
             </div>
             
-            {showFullContent ? (
+            {accessLoading ? (
+              <div className="space-y-4 not-prose" role="status" aria-busy="true">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            ) : showFullContent ? (
               <ArticleContent html={article.content} />
             ) : (
               <>
