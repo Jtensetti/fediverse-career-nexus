@@ -1,6 +1,7 @@
 import { functionPath, getFederationBaseUrl } from "./federation-urls.ts";
 import { serviceClient, jsonResponse, federationHeaders } from "./local-actor.ts";
 import { localObject, localCreate, CONTEXT } from "./local-content.ts";
+import { resolveReplyAddress } from './federated-interactions.ts';
 export function objectEndpoint(kind: "objects" | "activities") {
   return async (req: Request): Promise<Response> => {
     if (req.method === "OPTIONS") return new Response(null, { headers: federationHeaders });
@@ -20,7 +21,8 @@ export function objectEndpoint(kind: "objects" | "activities") {
       const { data: actor, error: actorError } = await db.from("actors").select("preferred_username, status, is_remote").eq("id", row.attributed_to).single();
       if (actorError) throw actorError;
       if (actor.is_remote || actor.status !== "active") return jsonResponse({ error: "Not found" }, 404);
-      const body = kind === "objects" ? { "@context": CONTEXT, ...localObject(row, actor.preferred_username) } : localCreate(row, actor.preferred_username);
+      const resolved = await resolveReplyAddress(db, row);
+      const body = kind === "objects" ? { "@context": CONTEXT, ...localObject(resolved, actor.preferred_username) } : localCreate(resolved, actor.preferred_username);
       return new Response(req.method === "HEAD" ? null : JSON.stringify(body), { headers: { ...federationHeaders, "Content-Type": "application/activity+json" } });
     } catch (error) { console.error("Object lookup failed", error); return jsonResponse({ error: "Temporarily unavailable" }, 503); }
   };

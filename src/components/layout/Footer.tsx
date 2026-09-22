@@ -49,6 +49,7 @@ const Footer = () => {
               <div>
                 <h3 className="text-sm font-semibold text-primary mb-4">{t("footer.resources", "Resources")}</h3>
                 <ul className="space-y-3">
+                  <li><Link to="/integrations" className="text-muted-foreground hover:text-primary">{sv ? "Hämta från Nolto-knapp" : "Import from Nolto button"}</Link></li>
                   <li><Link to="/documentation" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.documentation", "Documentation")}</Link></li>
                   <li><Link to="/help" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.helpCenter", "Help Center")}</Link></li>
                   <li><Link to="/federation" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.howFederationWorks", "How Federation Works")}</Link></li>

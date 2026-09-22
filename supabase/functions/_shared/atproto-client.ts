@@ -37,7 +37,7 @@ export async function createAtprotoClient(db: Backend, proof: string, requestFet
       getRandomValues: length => crypto.getRandomValues(new Uint8Array(length)),
       digest: async (data, algorithm) => new Uint8Array(await crypto.subtle.digest(algorithm.name.replace('sha', 'SHA-'), data)),
     },
-    // Use the SDK's portable resolver and our DNS-pinned transport. Importing
+    // Use the SDK's portable resolver and our restricted HTTPS transport. Importing
     // its Node wrapper loads undici at boot, which the hosted runtime cannot run.
     handleResolver: 'https://bsky.social',
     fetch: requestFetch,

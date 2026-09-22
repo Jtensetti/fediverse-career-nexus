@@ -26,6 +26,10 @@ try {
     './atproto-assertions.sql',
     '../../supabase/migrations/20260922150131_review_context_and_appeal.sql',
     './considerate-moderation-assertions.sql',
+    '../../supabase/migrations/20260922172010_federated_interactions.sql',
+    './federated-interaction-assertions.sql',
+    '../../supabase/migrations/20260922172019_post_image_drafts.sql',
+    './post-image-assertions.sql',
   ]) {
     try {
       if (path !== './cloud-schema.sql') await db.exec('SET check_function_bodies = true');

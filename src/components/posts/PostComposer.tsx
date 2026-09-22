@@ -15,7 +15,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUserProfile } from "@/services/profile/profileService";
 import { createPost, CreatePostData } from "@/services/posts/postService";
-import { compressImage, formatFileSize } from "@/lib/imageCompression";
+import { formatFileSize } from "@/lib/imageCompression";
+import { usePostImageDraft } from "@/hooks/usePostImageDraft";
+import { ImageUploadStatus } from "@/components/posts/ImageUploadStatus";
 import { LinkPreview, extractUrls } from "@/components/content/LinkPreview";
 import ContentWarningInput from "@/components/content/ContentWarningInput";
 import { PollCreator, PollCreatorData } from "@/components/content/PollCreator";
@@ -34,11 +36,12 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
   const contentCheck = useContentCheck();
   const [isOpen, setIsOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const imageDraft = usePostImageDraft();
+  const imagePreview = imageDraft.preview;
+  const [postId, setPostId] = useState(() => crypto.randomUUID());
+  const [preparingPost, setPreparingPost] = useState(false);
   const [imageAltText, setImageAltText] = useState<string>("");
-  const [isCompressing, setIsCompressing] = useState(false);
-  const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
+  const compressionInfo = imageDraft.compressedSize && imageDraft.file ? { original: imageDraft.file.size, compressed: imageDraft.compressedSize } : null;
   const [dismissedUrls, setDismissedUrls] = useState<Set<string>>(new Set());
   const [contentWarning, setContentWarning] = useState<string>("");
   const [pollData, setPollData] = useState<PollCreatorData | null>(null);
@@ -72,17 +75,6 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
     }
   }, [isOpen]);
 
-  // Generate image preview
-  useEffect(() => {
-    if (selectedImage) {
-      const url = URL.createObjectURL(selectedImage);
-      setImagePreview(url);
-      return () => URL.revokeObjectURL(url);
-    } else {
-      setImagePreview(null);
-    }
-  }, [selectedImage]);
-
   const createPostMutation = useMutation({
     mutationFn: (postData: CreatePostData) => createPost(postData),
     onSuccess: (success) => {
@@ -99,50 +91,19 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
 
   const resetForm = () => {
     setPostContent("");
-    setSelectedImage(null);
-    setImagePreview(null);
+    imageDraft.clear();
+    setPostId(crypto.randomUUID());
     setImageAltText("");
-    setCompressionInfo(null);
     setDismissedUrls(new Set());
     setContentWarning("");
     setPollData(null);
     setShowPollCreator(false);
   };
 
-  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(t("posts.imageTooLarge", "Image size must be less than 10MB"));
-        return;
-      }
-      
-      setIsCompressing(true);
-      try {
-        const originalSize = file.size;
-        const compressedFile = await compressImage(file, {
-          maxWidth: 1920,
-          maxHeight: 1920,
-          quality: 0.8,
-          maxSizeKB: 500
-        });
-        
-        setSelectedImage(compressedFile);
-        setCompressionInfo({
-          original: originalSize,
-          compressed: compressedFile.size
-        });
-        
-        if (compressedFile.size < originalSize) {
-          toast.success(`${t("posts.imageCompressed", "Image compressed")}: ${formatFileSize(originalSize)} → ${formatFileSize(compressedFile.size)}`);
-        }
-      } catch (error) {
-        console.error('Compression failed, using original:', error);
-        setSelectedImage(file);
-      } finally {
-        setIsCompressing(false);
-      }
-    }
+    event.target.value = '';
+    if (file) imageDraft.select(file);
   };
 
   const handlePost = async () => {
@@ -160,28 +121,33 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
       }
     }
 
-    // Build post data with optional poll
-    let finalPostData: CreatePostData = {
-      content: postContent.trim(),
-      imageFile: selectedImage || undefined,
-      imageAltText: imageAltText.trim() || undefined,
-      contentWarning: contentWarning.trim() || undefined,
-    };
+    setPreparingPost(true);
+    try {
+      // Build post data with optional poll
+      const finalPostData: CreatePostData = {
+        content: postContent.trim(),
+        image: await imageDraft.ready(),
+        postId,
+        imageAltText: imageAltText.trim() || undefined,
+        contentWarning: contentWarning.trim() || undefined,
+      };
 
-    // If poll is active, add poll object to the post
-    if (showPollCreator && pollData) {
-      const validOptions = pollData.options.filter(opt => opt.trim().length > 0);
-      const pollObject = createPollObject(
-        postContent.trim(),
-        validOptions,
-        pollData.durationMinutes,
-        pollData.multipleChoice
-      );
-      finalPostData.pollData = pollObject;
-    }
+      // If poll is active, add poll object to the post
+      if (showPollCreator && pollData) {
+        const validOptions = pollData.options.filter(opt => opt.trim().length > 0);
+        const pollObject = createPollObject(
+          postContent.trim(),
+          validOptions,
+          pollData.durationMinutes,
+          pollData.multipleChoice
+        );
+        finalPostData.pollData = pollObject;
+      }
 
-    if (!await contentCheck.check([postContent, contentWarning, imageAltText, ...(pollData?.options || [])].join('\n'))) return;
-    createPostMutation.mutate(finalPostData);
+      if (!await contentCheck.check([postContent, contentWarning, imageAltText, ...(pollData?.options || [])].join('\n'))) return;
+      createPostMutation.mutate(finalPostData);
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Kunde inte förbereda bilden.'); }
+    finally { setPreparingPost(false); }
   };
 
   const handleWriteArticle = () => {
@@ -201,7 +167,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
       .slice(0, 2);
   };
 
-  const isLoading = createPostMutation.isPending || contentCheck.checking;
+  const isLoading = createPostMutation.isPending || contentCheck.checking || preparingPost;
   const characterCount = postContent.length;
   const isOverLimit = characterCount > MAX_CHARACTERS;
   const characterPercentage = Math.min((characterCount / MAX_CHARACTERS) * 100, 100);
@@ -275,9 +241,8 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                           size="icon"
                           className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
                           onClick={() => {
-                            setSelectedImage(null);
+                            imageDraft.clear();
                             setImageAltText("");
-                            setCompressionInfo(null);
                           }}
                           disabled={isLoading}
                         >
@@ -313,13 +278,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                   )}
                 </AnimatePresence>
 
-                {/* Compressing indicator */}
-                {isCompressing && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    {t("posts.optimizingImage", "Optimizing image...")}
-                  </div>
-                )}
+                <ImageUploadStatus draft={imageDraft} retry={imageDraft.retry} />
 
                 {/* Link Preview */}
                 <AnimatePresence>

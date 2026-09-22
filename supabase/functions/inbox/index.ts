@@ -1,4 +1,5 @@
 import { remoteFetch, fetchActorDocument, readBody } from "../_shared/remote-fetch.ts";
+import { linkRemoteReply, localObjectId, resolveKnownObject } from '../_shared/federated-interactions.ts';
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 import { functionPath, isLocalUrl, buildActorUrl, buildActivityId } from "../_shared/federation-urls.ts";
@@ -486,10 +487,16 @@ async function handleUndoActivity(activity: any, recipientId: string, sender: st
   try {
 
     // Check if the object is a Follow activity
-    if (activity.object?.actor !== sender) throw new Error("Undo actor mismatch");
+    if (typeof activity.object !== 'string' && activity.object?.actor !== sender) throw new Error("Undo actor mismatch");
     if (activity.object?.type === "Follow") {
       await handleUnfollowActivity(activity.object, recipientId, sender);
     } else {
+      const id = typeof activity.object === 'string' ? activity.object : activity.object?.id;
+      if (typeof id !== 'string') throw new Error('Undo activity has no identifier');
+      const actorId = await resolveRemoteActorId(sender);
+      if (!actorId) throw new Error('Remote actor unavailable');
+      const { error } = await supabaseClient.rpc('undo_remote_interaction', { p_activity_id: id, p_actor_id: actorId });
+      if (error) throw error;
     }
   } catch (error) {
     console.error("Error handling Undo activity:", error);
@@ -614,6 +621,8 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
         }
       }
 
+      if (!remoteActorId) throw new Error('Remote actor unavailable');
+
       // Store the Note/Article in ap_objects with remote source
       const { data: apObject, error: apError } = await supabaseClient
         .from("ap_objects")
@@ -631,7 +640,13 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
       if (apError) {
         console.error("Error storing in ap_objects:", apError);
         if (apError.code !== "PGRST116") throw apError;
-      } else {
+      }
+      if (object.inReplyTo) {
+        const saved = apObject || await resolveKnownObject(supabaseClient, object.id);
+        if (saved) {
+          if (saved.attributed_to !== remoteActorId) throw new Error('Object ownership mismatch');
+          await linkRemoteReply(supabaseClient, saved.id, saved.content?.inReplyTo);
+        }
       }
 
       // If we don't have the actor cached, try to fetch and cache it
@@ -690,14 +705,6 @@ async function resolveRemoteActorId(actorUrl: string): Promise<string | null> {
   return inserted.id;
 }
 
-// Try to extract our local ap_objects UUID from an object URL like
-// https://nolto.social/functions/v1/objects/<uuid> or any URL containing a UUID.
-function extractLocalObjectId(objectUrl: string): string | null {
-  if (!objectUrl || !isLocalUrl(objectUrl)) return null;
-  const m = objectUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
-  return m ? m[0] : null;
-}
-
 async function handleLikeActivity(activity: any, recipientId: string, sender: string) {
   try {
 
@@ -720,16 +727,18 @@ async function handleLikeActivity(activity: any, recipientId: string, sender: st
     // Persist as a Like ap_object so reaction counts / UIs see the boost-like
     const remoteActorId = await resolveRemoteActorId(sender);
     if (remoteActorId) {
-      await supabaseClient.from("ap_objects").upsert({
+      const { error } = await supabaseClient.from("ap_objects").upsert({
         remote_object_id: activity.id,
         type: "Like",
         attributed_to: remoteActorId,
         content: activity
       }, { onConflict: "remote_object_id", ignoreDuplicates: true });
-    }
-
-    const localObjectId = extractLocalObjectId(objectUrl);
-    if (localObjectId) {
+      if (error) throw error;
+      const target = await resolveKnownObject(supabaseClient, objectUrl);
+      if (target && !target.deleted_at && target.moderation_status === 'published') {
+        const { error } = await supabaseClient.rpc('record_remote_like', { p_activity_id: activity.id, p_actor_id: remoteActorId, p_target_id: target.id });
+        if (error) throw error;
+      }
     }
   } catch (error) {
     console.error("Error handling Like activity:", error);
@@ -1056,7 +1065,7 @@ async function handleFlagActivity(activity: any, recipientId: string, sender: st
       const objUrl = typeof obj === "string" ? obj : obj?.id;
       if (!objUrl) continue;
 
-      const localId = extractLocalObjectId(objUrl);
+      const localId = localObjectId(objUrl);
 
       await supabaseClient.from("content_reports").insert({
         content_id: localId || objUrl,
