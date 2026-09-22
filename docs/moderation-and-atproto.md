@@ -6,7 +6,7 @@
 
 Skrivdialogen låter författaren redigera, gå vidare efter en påminnelse eller skicka innehåll till granskning. Databastriggers upprepar bedömningen för inlägg, svar, äldre kommentarer och publicerade artiklar, även vid direkta API-anrop. Privata meddelanden och privata artikelutkast omfattas inte.
 
-Innehåll som väntar eller har avslagits kan läsas av författaren. Moderatorer får text och beslutshistorik genom särskilda funktioner efter sessions- och rollkontroll. Det visas inte i vanliga flöden, publika filer, API-svar, notiser eller ActivityPub-utskick. Godkännande kräver en annan moderator än författaren, en motivering och samma innehållsversion som granskades. Författaren kan lämna sammanhang eller begära omprövning en gång per version i `/my-reviews`.
+Innehåll som väntar eller har avslagits kan läsas av författaren. Moderatorer får text och beslutshistorik genom särskilda funktioner efter sessions- och rollkontroll. Det visas inte i vanliga flöden, publika filer, API-svar, notiser eller ActivityPub-utskick. Godkännande kräver en annan moderator än författaren, en motivering och samma innehållsversion som granskades. Författaren kan lämna sammanhang eller begära omprövning i `/my-reviews`. Sammanhang och överklagande är separata åtgärder, vardera en gång per version.
 
 En ändring av publicerat innehåll bedöms på nytt. Om den hålls undan avbryts väntande utskick och ett tidigare publicerat federationsobjekt återkallas. Mottagande servrar styr sina egna kopior och kan hantera återpublicering efter en Delete olika. Detta behöver provas mot de servrar installationen federerar med.
 
@@ -28,7 +28,7 @@ Inloggningen använder [det officiella OAuth-klientbiblioteket](https://github.c
 
 ## Driftsättning
 
-1. Prova och applicera migreringarna `20260922141011` och `20260922142915` på rätt backend. Registrera dem i migreringshistoriken.
+1. Prova och applicera migreringarna `20260922141011`, `20260922142915` och `20260922150131` på rätt backend. Registrera dem i migreringshistoriken.
 2. Driftsätt `atproto-auth`, `federation` och `export-user-data` från samma granskade revision, med deras delade moduler. Funktionen `atproto-auth` måste ha `verify_jwt=false`; den validerar OAuth och kräver själv session vid kontokoppling.
 3. Behåll den befintliga `TOKEN_ENCRYPTION_KEY`. `SITE_URL` måste vara webbappens verkliga HTTPS-origin utan avslutande snedstreck. Byt inte nyckeln för att aktivera Bluesky.
 4. Kontrollera att `${SITE_URL}/functions/v1/atproto-auth/client-metadata.json` ger HTTP 200 och rätt JSON utan omdirigering. `client_id` ska vara just den URL:en. Återkomsten `/auth/atproto/callback` måste laddas på samma origin där inloggningen startade.

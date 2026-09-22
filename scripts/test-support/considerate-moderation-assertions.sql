@@ -77,6 +77,9 @@ RESET ROLE;
 SET test.uid='77777777-1111-4111-8111-111111111111';
 SET test.jwt='{"session_id":"77777777-aaaa-4aaa-8aaa-aaaaaaaaaaaa","aal":"aal1"}'; SET ROLE authenticated;
 SELECT public.test_assert((SELECT status FROM public.get_content_review_queue(true) WHERE content_id='77777777-0001-4000-8000-000000000001')='rejected','author can see rejection');
+SELECT public.decide_content_review('post','77777777-0001-4000-8000-000000000001',(SELECT revision FROM public.get_content_review_queue(true) WHERE content_id='77777777-0001-4000-8000-000000000001'),'appeal','Please reconsider the rejection after my earlier context');
+SELECT public.test_assert((SELECT status FROM public.get_content_review_queue(true) WHERE content_id='77777777-0001-4000-8000-000000000001')='pending','context before a decision does not consume the right to appeal a rejection');
+SELECT public.test_assert((SELECT count(*) FROM public.get_own_review_decisions() WHERE action IN ('context','appeal'))=2,'both context and appeal are visible in the author export');
 UPDATE public.ap_objects SET content=jsonb_set(content,'{content}','"Jag är arg över beslutet och vill förstå underlaget."') WHERE id='77777777-0001-4000-8000-000000000001';
 SELECT public.test_assert((SELECT moderation_status FROM public.ap_objects WHERE id='77777777-0001-4000-8000-000000000001')='published','a rewritten text can be published');
 INSERT INTO public.articles(id,user_id,title,content,slug,published) VALUES

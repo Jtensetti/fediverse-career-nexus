@@ -65,7 +65,7 @@ function ReviewItem({ review, own }: { review: Review; own: boolean }) {
     } catch { toast.error(t('contentCare.deletionFailed')); }
     finally { setBusy(false); }
   };
-  const appealed = history.data?.some(item => item.action === 'appeal' && item.revision === review.revision);
+  const appealed = history.data?.some(item => item.action === (review.status === 'rejected' ? 'appeal' : 'context') && item.revision === review.revision);
   return <Card>
     <CardHeader className="pb-3">
       <CardTitle className="text-base">{t(`contentCare.${review.status}`)}</CardTitle>
