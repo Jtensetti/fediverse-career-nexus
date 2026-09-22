@@ -72,24 +72,6 @@ const Footer = () => {
             <Link to="/privacy" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.privacy", "Privacy")}</Link>
             <Link to="/cookies" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.cookies", "Cookies")}</Link>
             <a 
-              href="https://codeberg.org/Tensetti/Nolto" 
-              target="_blank" 
-              rel="noopener"
-              className="text-muted-foreground hover:text-secondary transition-colors"
-              title="View source on Codeberg"
-            >
-              <svg 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                xmlns="http://www.w3.org/2000/svg"
-                className="fill-current"
-              >
-                <path fill="currentColor" d="M12 1A11 11 0 0 0 1 12a11 11 0 0 0 1.7 6.4L12 6l9.3 12.4A11 11 0 0 0 23 12 11 11 0 0 0 12 1Z"/>
-                <path fill="currentColor" opacity="0.6" d="M21.3 18.4 12 6l4.4 16.8a11 11 0 0 0 4.9-4.4Z"/>
-              </svg>
-            </a>
-            <a 
               href="https://github.com/Jtensetti/fediverse-career-nexus"
               target="_blank" 
               rel="noopener"

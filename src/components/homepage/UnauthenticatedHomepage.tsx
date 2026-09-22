@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, ArrowUpRight, Code2, Globe2, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import PublicFeed from "@/components/federation/PublicFeed";
 import "./homepage.css";
 
 export default function UnauthenticatedHomepage() {
@@ -23,7 +22,16 @@ export default function UnauthenticatedHomepage() {
         </div>
         <div className="home-product">
           <div className="home-product-label"><span>Nolto</span><span>{sv ? "En plats för nya perspektiv" : "A place for fresh perspectives"}</span></div>
-          <div className="home-product-body"><PublicFeed /></div>
+          <Link to="/feed" className="home-product-preview">
+            <img
+              src="/screenshots/feed.jpg"
+              width="756"
+              height="696"
+              alt={sv ? "Noltos offentliga flöde med val mellan På Nolto och Hela nätverket. Öppna flödet." : "Nolto’s public feed, with local and network views. Open the feed."}
+              fetchPriority="high"
+              decoding="async"
+            />
+          </Link>
         </div>
       </div>
     </section>
@@ -43,7 +51,14 @@ export default function UnauthenticatedHomepage() {
         <Link to="/organisationer" className="home-text-link">{sv ? "Upptäck organisationer" : "Discover organisations"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
       </div>
       <div className="home-feature-visual">
-        <img src="/og-image.png" width="1200" height="630" alt={sv ? "Nolto – ett professionellt nätverk" : "Nolto – a professional network"} loading="lazy" decoding="async" />
+        <img
+          src="/screenshots/jobs.jpg"
+          width="1328"
+          height="699"
+          alt={sv ? "Noltos jobbsökning med filter för jobbtyp, plats och distansarbete." : "Nolto’s job search with filters for job type, location and remote work."}
+          loading="lazy"
+          decoding="async"
+        />
       </div>
     </section>
 
