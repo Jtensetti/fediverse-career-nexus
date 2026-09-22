@@ -1,10 +1,10 @@
+import { ArticleContent } from "@/components/content/ArticleContent";
 import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { getArticleBySlug } from "@/services/articles/articleService";
 import { canAccessFullArticle } from "@/services/social/authorFollowService";
-import DOMPurify from "dompurify";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -159,27 +159,11 @@ const ArticleView = () => {
             </div>
             
             {showFullContent ? (
-              <div 
-                className="article-content"
-                dangerouslySetInnerHTML={{ 
-                  __html: DOMPurify.sanitize(article.content, {
-                    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code', 'img', 'hr'],
-                    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'class'],
-                  })
-                }} 
-              />
+              <ArticleContent html={article.content} />
             ) : (
               <>
                 <div className="relative">
-                  <div 
-                    className="article-content"
-                    dangerouslySetInnerHTML={{ 
-                      __html: DOMPurify.sanitize(previewContent + '...', {
-                        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code', 'img', 'hr'],
-                        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'class'],
-                      })
-                    }} 
-                  />
+                  <ArticleContent html={previewContent + '...'} />
                   <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                 </div>
                 <div className="mt-8">

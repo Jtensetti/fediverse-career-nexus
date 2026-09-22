@@ -1,3 +1,4 @@
+import { MediaImage } from "@/components/content/MediaImage";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getUserPublishedArticles, Article } from "@/services/articles/articleService";
@@ -71,7 +72,7 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
             <div className="flex gap-4">
               {article.cover_image_url && (
                 <div className="flex-shrink-0 w-20 h-20 rounded overflow-hidden">
-                  <img 
+                  <MediaImage
                     src={article.cover_image_url} 
                     alt={article.title}
                     className="w-full h-full object-cover"

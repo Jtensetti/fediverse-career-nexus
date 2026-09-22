@@ -5,6 +5,7 @@ import { needsMFAVerification } from "@/services/auth/mfaService";
 import MFAVerifyDialog from "@/components/auth/MFAVerifyDialog";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { lockInbox, subscribeInbox } from '@/services/messaging/inboxKeysService';
 
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
       const nextUser = nextSession?.user.id || null;
       if (nextUser !== previousUser.current) {
+        lockInbox();
         queryClient.clear();
         previousUser.current = nextUser;
       }
@@ -65,6 +67,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       timer = setTimeout(() => { void verifySession(nextSession, version); }, 0);
     });
     return () => { generation.current++; clearTimeout(timer); subscription.unsubscribe(); };
+  }, []);
+  useEffect(() => {
+    let idle: ReturnType<typeof setTimeout>;
+    const unsubscribeInbox = subscribeInbox(() => { queryClient.removeQueries({ queryKey: ['conversation'] }); });
+    const resetIdle = () => { clearTimeout(idle); idle = setTimeout(lockInbox, 15 * 60 * 1000); };
+    window.addEventListener('pagehide', lockInbox);
+    window.addEventListener('pointerdown', resetIdle);
+    window.addEventListener('keydown', resetIdle);
+    resetIdle();
+    return () => { unsubscribeInbox(); clearTimeout(idle); window.removeEventListener('pagehide', lockInbox); window.removeEventListener('pointerdown', resetIdle); window.removeEventListener('keydown', resetIdle); lockInbox(); };
   }, []);
   return <AuthContext.Provider value={{ user: !loading && !mfaPending ? session?.user || null : null, session, loading, mfaPending, signOut }}>
     {children}

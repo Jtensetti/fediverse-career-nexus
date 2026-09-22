@@ -1,10 +1,19 @@
-import { useEditor, EditorContent } from "@tiptap/react";
+import { MediaImage } from "@/components/content/MediaImage";
+import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
 import { useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from "react";
 import { cn } from "@/lib/utils";
+
+const PrivatePreviewImage = Image.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(({ node }: NodeViewProps) => (
+      <NodeViewWrapper><MediaImage src={node.attrs.src} alt={node.attrs.alt || ''} /></NodeViewWrapper>
+    ));
+  },
+});
 
 export interface TipTapEditorHandle {
   toggleBold: () => void;
@@ -65,7 +74,7 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
         placeholder,
         emptyEditorClass: "is-editor-empty",
       }),
-      Image.configure({
+      PrivatePreviewImage.configure({
         inline: false,
         allowBase64: true,
       }),

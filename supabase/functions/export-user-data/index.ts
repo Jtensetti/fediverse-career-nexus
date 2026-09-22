@@ -30,6 +30,7 @@ Deno.serve(postHandler(async req => {
   records.skill_endorsements = await collectPages((from, to) => client.from("skill_endorsements").select("*", { count: "exact" })
     .or(`endorser_id.eq.${user.id}${skillIds.length ? `,skill_id.in.(${skillIds.join(",")})` : ""}`).order("id").range(from, to), 50000, consumePage);
   for (const message of records.messages) {
+    if (message.encryption_version === 'openpgp-v1') continue;
     if (message.is_encrypted) message.content = await decryptMessage(message.encrypted_content);
     delete message.encrypted_content;
   }
@@ -39,7 +40,7 @@ Deno.serve(postHandler(async req => {
     account: { id: user.id, email: user.email, created_at: user.created_at, email_confirmed_at: user.email_confirmed_at },
     records, files,
     scope: {
-      included: "Account profile, authored content, messages, relationships, preferences and uploaded file metadata",
+      included: "Account profile, authored content, messages (new private messages remain end-to-end encrypted), relationships, preferences and uploaded file metadata",
       excluded: ["File contents (download separately)", "Passwords, signing keys and authentication tokens", "Internal security logs and other users' confidential data"],
       portability: "This JSON archive is a Nolto data export, not a Mastodon import file or a database backup.",
     },

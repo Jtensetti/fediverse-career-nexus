@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import i18n from "@/i18n";
+import { sendMessage } from './messageService';
 
 export interface JobConversation {
   id: string;
@@ -103,19 +104,11 @@ export async function sendJobMessage(
       return false;
     }
 
-    const { error } = await supabase.functions.invoke('encrypt-message', {
-      body: { action: 'send', partnerId: recipientId, content, jobConversationId: conversationId }
-    });
-
-    if (error) {
-      console.error('Error sending job message:', error);
-      toast.error(i18n.t('toasts.messageSendFailed'));
-      return false;
-    }
+    await sendMessage(recipientId, content, conversationId);
 
     return true;
   } catch (error) {
-    console.error('Error in sendJobMessage:', error);
+    toast.error(error instanceof Error ? error.message : i18n.t('toasts.messageSendFailed'));
     return false;
   }
 }

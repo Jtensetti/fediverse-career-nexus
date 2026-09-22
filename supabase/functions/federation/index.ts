@@ -1,3 +1,4 @@
+import { collectPages } from "../_shared/export-pagination.ts";
 import { deliverInboxes } from "../_shared/delivery.ts";
 import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
 import { signedFetch } from "../_shared/http-signature.ts";
@@ -30,10 +31,25 @@ Deno.serve(async (req) => {
       for (const item of (items || []).sort((a: QueueOrder, b: QueueOrder) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))) {
         let failure: string | null = null;
         try {
-          const { data: actor, error: actorError } = await db.from("actors").select("preferred_username, status, is_remote").eq("id", item.actor_id).single();
+          const { data: actor, error: actorError } = await db.from("actors").select("preferred_username, status, is_remote, user_id").eq("id", item.actor_id).single();
           if (actorError) throw actorError;
-          if (actor.is_remote || actor.status !== "active") throw new Error("Local federation is disabled");
           let activity = item.activity;
+          const actorDeletion = activity.type === 'Delete' && activity.delete_actor === true;
+          const { data: profile, error: profileError } = await db.from('profiles').select('deleted_at').eq('id', actor.user_id).maybeSingle();
+          if (profileError) throw profileError;
+          if (actor.is_remote || !profile || (actorDeletion ? !profile.deleted_at : actor.status !== 'active' || !!profile.deleted_at)) {
+            throw new Error('Local federation is unavailable');
+          }
+          if (actorDeletion) {
+            activity = { '@context': CONTEXT, type: 'Delete',
+              id: `${buildActorUrl(actor.preferred_username)}#delete-${activity.activity_id}`,
+              actor: buildActorUrl(actor.preferred_username), object: { id: buildActorUrl(actor.preferred_username), type: 'Tombstone' },
+              to: [PUBLIC], cc: [buildFollowersUrl(actor.preferred_username)] };
+          } else if (activity.needs_enrichment && ['Create', 'Update'].includes(activity.type)) {
+            const { data: current, error } = await db.from('ap_objects').select('id,deleted_at').eq('id', activity.object_id).maybeSingle();
+            if (error) throw error;
+            if (!current || current.deleted_at) throw new Error('Content has been removed');
+          }
           if (activity.needs_enrichment) {
             if (!activity.snapshot) throw new Error("Legacy queue item has no snapshot; reconcile before retrying");
             const object = localObject(activity.snapshot, actor.preferred_username);
@@ -48,9 +64,9 @@ Deno.serve(async (req) => {
           const recipients = new Set<string>(audience.filter((x: string) => x !== PUBLIC && !isLocalUrl(x)));
           if (["Create", "Update", "Delete", "Announce", "Undo", "Move"].includes(activity.type) &&
               (audience.includes(PUBLIC) || audience.includes(buildFollowersUrl(actor.preferred_username)))) {
-            const { data: followers, error } = await db.from("actor_followers").select("follower_actor_url")
-              .eq("local_actor_id", item.actor_id).eq("status", "accepted");
-            if (error) throw error;
+            const followers = await collectPages<{ follower_actor_url: string }>((from, to) =>
+              db.from('actor_followers').select('follower_actor_url', { count: 'exact' })
+                .eq('local_actor_id', item.actor_id).eq('status', 'accepted').order('follower_actor_url').range(from, to));
             for (const follower of followers || []) recipients.add(follower.follower_actor_url);
           }
           if (activity.type === "Accept" && activity.object?.actor) recipients.add(activity.object.actor);
@@ -75,13 +91,18 @@ Deno.serve(async (req) => {
                   ? cached.actor_data : await fetchActorDocument(recipient);
                 const inbox = remote.endpoints?.sharedInbox || remote.inbox;
                 if (!blockedHosts.has(new URL(inbox).hostname)) inboxes.add(inbox);
-              } catch { resolutionFailures.push(`Could not resolve ${recipient}`); }
+              } catch { resolutionFailures.push("Recipient resolution failed"); }
             }
           }
           const { data: receipts, error: receiptsError } = await db.from("federation_deliveries").select("inbox").eq("queue_id", item.id);
           if (receiptsError) throw receiptsError;
           const failures = await deliverInboxes(inboxes, new Set((receipts || []).map(row => row.inbox)),
-            inbox => signedFetch(inbox, { method: "POST", body: JSON.stringify(activity) }, item.actor_id),
+            async inbox => {
+              const { data: stillQueued, error } = await db.from('federation_queue_partitioned').select('id').eq('id', item.id).maybeSingle();
+              if (error) throw error;
+              if (!stillQueued) throw new Error('Delivery cancelled');
+              return signedFetch(inbox, { method: 'POST', body: JSON.stringify(activity) }, item.actor_id);
+            },
             async inbox => {
               const { error } = await db.from("federation_deliveries").upsert({ queue_id: item.id, inbox });
               if (error) throw error;
@@ -89,7 +110,7 @@ Deno.serve(async (req) => {
           const allFailures = [...resolutionFailures, ...failures];
           if (allFailures.length) throw new Error(allFailures.slice(0, 3).join("; "));
 
-        } catch (error) { failure = error instanceof Error ? error.message : "Delivery failed"; }
+        } catch (error) { failure = "Delivery failed; retry or inspect aggregate worker health"; }
         const attempts = (item.attempts || 0) + 1;
         const { error: updateError } = await db.from("federation_queue_partitioned").update(failure ? {
           status: attempts >= (item.max_attempts || 10) ? "failed" : "retry", attempts,
@@ -101,5 +122,5 @@ Deno.serve(async (req) => {
       }
     }
     return jsonResponse({ results, processed: results.length });
-  } catch (error) { console.error("Federation worker failed", error); return jsonResponse({ error: "Queue processing failed" }, 500); }
+  } catch (error) { console.error("Federation worker failed"); return jsonResponse({ error: "Queue processing failed" }, 500); }
 });

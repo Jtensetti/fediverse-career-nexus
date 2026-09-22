@@ -29,10 +29,8 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ConnectionBadge, { ConnectionDegree } from "@/components/social/ConnectionBadge";
-import ProfileViewsWidget from "@/components/social/ProfileViewsWidget";
 import ProfileBanner from "@/components/profile/ProfileBanner";
 import AvatarWithStatus from "@/components/common/AvatarWithStatus";
-import { recordProfileView } from "@/services/profile/profileViewService";
 import { supabase } from "@/integrations/supabase/client";
 import FederationInfo from "@/components/federation/FederationInfo";
 import FediverseBadge from "@/components/federation/FediverseBadge";
@@ -191,13 +189,6 @@ const ProfilePage = () => {
       }
     }
   }, [profile?.username, usernameOrId, navigate]);
-
-  // Record profile view when visiting another user's profile
-  useEffect(() => {
-    if (!viewingOwnProfile && profile?.id && isAuthenticated) {
-      recordProfileView(profile.id);
-    }
-  }, [profile?.id, viewingOwnProfile, isAuthenticated]);
 
   // Handle header image update
   const handleHeaderChange = async (url: string) => {
@@ -964,7 +955,6 @@ const ProfilePage = () => {
             />
           )}
           
-          {viewingOwnProfile && <ProfileViewsWidget userId={profile.id} />}
 
           {!viewingOwnProfile && (
             <Card>

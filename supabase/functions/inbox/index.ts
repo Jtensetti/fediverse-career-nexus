@@ -112,7 +112,6 @@ Deno.serve(async (req) => {
     // Check rate limit before processing
     const withinLimit = await checkRateLimit(remoteHost);
     if (!withinLimit) {
-      console.log(`Rate limit exceeded for host: ${remoteHost}`);
       return new Response(
         JSON.stringify({ error: "Rate limit exceeded. Try again later." }),
         {
@@ -243,7 +242,6 @@ Deno.serve(async (req) => {
         recipientActorId = follower?.local_actor_id || null;
       }
       if (!recipientActorId) {
-        console.log("sharedInbox activity with no resolvable local recipient, dropping");
         return new Response(JSON.stringify({ success: true, note: "no local recipient" }), {
           status: 202,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -271,7 +269,6 @@ Deno.serve(async (req) => {
 
     // Moderation checks
     if (await isDomainBlocked(activity.actor)) {
-      console.log(`Inbound activity from blocked domain: ${activity.actor}`);
       return new Response(
         JSON.stringify({ error: "Domain blocked" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -279,7 +276,6 @@ Deno.serve(async (req) => {
     }
 
     if (await isActorBlocked(activity.actor)) {
-      console.log(`Inbound activity from blocked actor: ${activity.actor}`);
       return new Response(
         JSON.stringify({ error: "Actor blocked" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -328,7 +324,6 @@ Deno.serve(async (req) => {
         await handleBlockActivity(activity, actorIdForHandlers, sender);
         break;
       default:
-        console.log(`Unsupported activity type: ${activity.type}`);
         // Store unsupported activities for future reference
         await supabaseClient
           .from("inbox_items")
@@ -364,7 +359,6 @@ Deno.serve(async (req) => {
 
 async function handleFollowActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Follow activity from ${sender} to recipient ${recipientId}`);
 
     const followerActorUrl = activity.actor;
     if (!followerActorUrl) {
@@ -412,7 +406,6 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
 
     // Only auto-Accept if not requiring manual approval. Otherwise wait for owner action.
     if (requiresApproval) {
-      console.log(`Follow request pending manual approval for ${recipientId}`);
       // Notify the local user about the pending follow request
       const { data: actorWithUser } = await supabaseClient
         .from("actors")
@@ -444,7 +437,6 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       "published": new Date().toISOString()
     };
 
-    console.log(`Created Accept activity targeting ${followerActorUrl}`);
 
     // Queue the Accept activity using the partitioned federation queue
     const { data: partitionKey, error: partitionError } = await supabaseClient
@@ -469,7 +461,6 @@ async function handleFollowActivity(activity: any, recipientId: string, sender: 
       throw queueError;
     }
 
-    console.log(`Queued Accept activity for delivery to ${followerActorUrl}`);
   } catch (error) {
     console.error("Error handling Follow activity:", error);
     throw error;
@@ -493,14 +484,12 @@ async function handleRejectActivity(activity: any, recipientId: string, sender: 
 
 async function handleUndoActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Undo activity from ${sender}`);
 
     // Check if the object is a Follow activity
     if (activity.object?.actor !== sender) throw new Error("Undo actor mismatch");
     if (activity.object?.type === "Follow") {
       await handleUnfollowActivity(activity.object, recipientId, sender);
     } else {
-      console.log(`Unsupported Undo object type: ${activity.object?.type}`);
     }
   } catch (error) {
     console.error("Error handling Undo activity:", error);
@@ -510,7 +499,6 @@ async function handleUndoActivity(activity: any, recipientId: string, sender: st
 
 async function handleUnfollowActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Unfollow (via Undo) from ${sender}`);
 
     const followerActorUrl = activity.actor;
     if (!followerActorUrl) {
@@ -536,7 +524,6 @@ async function handleUnfollowActivity(activity: any, recipientId: string, sender
     const expectedActorUrl = buildActorUrl(localActor.preferred_username);
 
     if (targetActorUrl !== expectedActorUrl) {
-      console.log(`Undo Follow not targeted at this actor: ${targetActorUrl}`);
       return;
     }
 
@@ -560,7 +547,6 @@ async function handleUnfollowActivity(activity: any, recipientId: string, sender
 
 async function handleCreateActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Create activity from ${sender}`);
 
     // Extract the created object
     const object = activity.object;
@@ -585,7 +571,6 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
       throw inboxError;
     }
 
-    console.log(`Stored inbox item: ${inboxData.id}`);
 
     // Also store in ap_objects so it appears in the federated feed!
     // Only store Note/Article type objects
@@ -626,7 +611,6 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
 
         if (!actorError && newActor) {
           remoteActorId = newActor.id;
-          console.log(`Created remote actor entry: ${remoteActorId}`);
         }
       }
 
@@ -648,7 +632,6 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
         console.error("Error storing in ap_objects:", apError);
         if (apError.code !== "PGRST116") throw apError;
       } else {
-        console.log('Remote content stored');
       }
 
       // If we don't have the actor cached, try to fetch and cache it
@@ -667,7 +650,6 @@ async function handleCreateActivity(activity: any, recipientId: string, sender: 
                 fetched_at: new Date().toISOString(),
                 expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
               });
-            console.log(`Cached remote actor: ${sender}`);
           }
         } catch (fetchError) {
           console.warn(`Could not cache remote actor ${sender}:`, fetchError);
@@ -718,7 +700,6 @@ function extractLocalObjectId(objectUrl: string): string | null {
 
 async function handleLikeActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Like activity from ${sender}`);
 
     const objectUrl = typeof activity.object === 'string' ? activity.object : activity.object?.id;
     if (!objectUrl) {
@@ -749,9 +730,7 @@ async function handleLikeActivity(activity: any, recipientId: string, sender: st
 
     const localObjectId = extractLocalObjectId(objectUrl);
     if (localObjectId) {
-      console.log(`Like targets local object ${localObjectId}`);
     }
-    console.log(`Processed Like for ${objectUrl}`);
   } catch (error) {
     console.error("Error handling Like activity:", error);
     throw error;
@@ -760,7 +739,6 @@ async function handleLikeActivity(activity: any, recipientId: string, sender: st
 
 async function handleAnnounceActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Announce (boost) activity from ${sender}`);
 
     const objectUrl = typeof activity.object === 'string' ? activity.object : activity.object?.id;
     if (!objectUrl) {
@@ -788,7 +766,6 @@ async function handleAnnounceActivity(activity: any, recipientId: string, sender
       }, { onConflict: "remote_object_id", ignoreDuplicates: true });
     }
 
-    console.log(`Processed Announce for ${objectUrl}`);
   } catch (error) {
     console.error("Error handling Announce activity:", error);
     throw error;
@@ -797,7 +774,6 @@ async function handleAnnounceActivity(activity: any, recipientId: string, sender
 
 async function handleDeleteActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Delete activity from ${sender}`);
 
     const objectUrl = typeof activity.object === 'string' ? activity.object : activity.object?.id;
     if (!objectUrl) {
@@ -808,7 +784,6 @@ async function handleDeleteActivity(activity: any, recipientId: string, sender: 
     const objectType = typeof activity.object === 'object' ? activity.object.type : null;
 
     if (objectType === 'Tombstone') {
-      console.log(`Received tombstone for ${objectUrl}`);
     }
 
     const remoteActorId = await resolveRemoteActorId(sender);
@@ -848,7 +823,6 @@ async function handleDeleteActivity(activity: any, recipientId: string, sender: 
       throw error;
     }
 
-    console.log(`Processed Delete activity: ${data.id} for object ${objectUrl}`);
   } catch (error) {
     console.error("Error handling Delete activity:", error);
     throw error;
@@ -857,7 +831,6 @@ async function handleDeleteActivity(activity: any, recipientId: string, sender: 
 
 async function handleUpdateActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Update activity from ${sender}`);
 
     const object = activity.object;
     if (!object) {
@@ -878,7 +851,6 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
         content: activity
       });
 
-    console.log(`Stored Update activity for object ${objectUrl}`);
 
     // If this is an actor update, refresh the cache
     if (objectType === 'Person' || objectType === 'Service' || objectType === 'Application' || objectType === 'Organization' || objectType === 'Group') {
@@ -909,7 +881,6 @@ async function handleUpdateActivity(activity: any, recipientId: string, sender: 
 // Handle Move activity (account migration)
 async function handleMoveActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Move activity from ${sender}`);
 
     const oldAccount = activity.object;
     const newAccount = activity.target;
@@ -921,7 +892,6 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
     // Verify that sender matches the object being moved
     const oldAccountUrl = typeof oldAccount === 'string' ? oldAccount : oldAccount.id;
     if (oldAccountUrl !== sender) {
-      console.log(`Move activity sender ${sender} doesn't match object ${oldAccountUrl}`);
       throw new Error("Move activity sender must match the account being moved");
     }
 
@@ -940,7 +910,6 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
 
     if (error) throw error;
 
-    console.log(`Stored Move activity: ${data.id}`);
 
     // Fetch new account to verify alsoKnownAs
     const newAccountUrl = typeof newAccount === 'string' ? newAccount : newAccount.id;
@@ -956,7 +925,6 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
 
         // Verify the new account lists the old account in alsoKnownAs
         if (newAccountData.id !== newAccountUrl || !alsoKnownAs.includes(oldAccountUrl)) {
-          console.log(`Move verification failed: new account doesn't list old account in alsoKnownAs`);
           return; // Don't process unverified moves
         }
 
@@ -1020,7 +988,6 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
             if (queueError) throw queueError;
           }
 
-          console.log(`Queued auto re-follow for ${(localFollowers || []).length} local followers`);
 
           // Notify the local users about the migration
           const { data: usersToNotify } = await supabaseClient
@@ -1057,7 +1024,6 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
             fetched_at: new Date().toISOString()
           });
 
-        console.log(`Successfully processed Move from ${oldAccountUrl} to ${newAccountUrl}`);
       }
     } catch (fetchError) {
       console.error("Error fetching new account for Move verification:", fetchError);
@@ -1072,7 +1038,6 @@ async function handleMoveActivity(activity: any, recipientId: string, sender: st
 // Handle incoming Flag (moderation report) from a remote instance
 async function handleFlagActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Flag (report) from ${sender}`);
 
     // Audit trail
     await supabaseClient.from("inbox_items").insert({
@@ -1103,7 +1068,6 @@ async function handleFlagActivity(activity: any, recipientId: string, sender: st
       });
     }
 
-    console.log(`Stored federated Flag with ${objects.length} target object(s)`);
   } catch (error) {
     console.error("Error handling Flag activity:", error);
     throw error;
@@ -1113,7 +1077,6 @@ async function handleFlagActivity(activity: any, recipientId: string, sender: st
 // Handle incoming Block — record so we don't deliver to the blocker
 async function handleBlockActivity(activity: any, recipientId: string, sender: string) {
   try {
-    console.log(`Processing Block from ${sender}`);
 
     const target = typeof activity.object === "string" ? activity.object : activity.object?.id;
 
@@ -1138,7 +1101,6 @@ async function handleBlockActivity(activity: any, recipientId: string, sender: s
         .delete()
         .eq("remote_actor_url", sender);
 
-      console.log(`Cleared follow relationships with blocker ${sender}`);
     }
   } catch (error) {
     console.error("Error handling Block activity:", error);

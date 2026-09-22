@@ -180,7 +180,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log(`Verified user: ${account.username}@${domain}`);
 
     const remoteActorUrl = account.url;
     const fullHandle = `${account.username}@${domain}`;
@@ -199,7 +198,6 @@ Deno.serve(async (req) => {
     if (stateData.link_user_id || identity) {
       profileId = stateData.link_user_id || identity!.user_id;
     } else {
-      console.log(`Creating new profile for ${fullHandle}`);
       isNewUser = true;
 
       // Generate a unique username

@@ -336,8 +336,6 @@
     "connectFirst": "Anslut med denna person först för att skicka meddelanden",
     "mustBeLoggedIn": "Du måste vara inloggad för att ansluta med andra",
     "showWhoViewed": "Visa vem som såg min profil",
-    "profileViewsAnonymous": "Profilvisningar kommer att vara anonyma, och du ser inte vem som har tittat på din profil.",
-    "profileViewsVisible": "Du ser vem som tittat på din profil, och andra vet när du tittar på deras.",
     "viewsThisWeek": "visningar denna vecka",
     "verified": "Verifierad",
     "connected": "Kontakt",
@@ -353,9 +351,7 @@
       "followers": "följare"
     },
     "signUpToConnect": "Registrera dig för att ansluta",
-    "connectFirstToMessage": "Anslut först för att skicka meddelanden",
-    "profileViews": "Profilvisningar",
-    "profileViewsAlwaysOn": "Profilvisningsstatistik är alltid synlig för dig. Andra användare kan inte se vem som har besökt deras profil."
+    "connectFirstToMessage": "Anslut först för att skicka meddelanden"
   },
   "followers": {
     "yourFollowers": "Personer som följer dig",
@@ -467,12 +463,6 @@
     "createEvent": "Skapa ett evenemang",
     "hostMeetups": "Håll i möten och nätverksevenemang",
     "doIt": "Gör det"
-  },
-  "profileViews": {
-    "title": "Profilvisningar",
-    "description": "Se vem som besöker din profil",
-    "totalViews": "Totalt antal visningar",
-    "viewsThisWeek": "Visningar denna vecka"
   },
   "openSource": {
     "badge": "Öppen källkod",
@@ -1786,7 +1776,7 @@
     "loginRequiredEvent": "Du måste vara inloggad för att skapa evenemang",
     "articleCreated": "Artikeln skapad!",
     "articleUpdated": "Artikeln uppdaterad!",
-    "articleDeleted": "Artikeln borttagen!",
+    "articleDeleted": "Artikeln är dold och raderas permanent efter 30 dagar.",
     "articleCreateFailed": "Kunde inte skapa artikeln. Försök igen.",
     "articleUpdateFailed": "Kunde inte uppdatera artikeln. Försök igen.",
     "articleDeleteFailed": "Kunde inte ta bort artikeln. Försök igen.",

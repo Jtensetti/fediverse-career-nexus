@@ -84,7 +84,6 @@ Deno.serve(userHandler(async (req) => {
       });
     }
 
-    console.log(`Syncing federated profile for user: ${user.id}`);
 
     // Check if user is a federated user
     const { data: profile, error: profileError } = await supabase
@@ -166,7 +165,6 @@ Deno.serve(userHandler(async (req) => {
       .update({ last_verified_at: new Date().toISOString() })
       .eq('profile_id', user.id);
 
-    console.log(`Successfully synced profile for user: ${user.id}`);
 
     return new Response(JSON.stringify({
       success: true,

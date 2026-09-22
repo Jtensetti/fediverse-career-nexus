@@ -37,7 +37,6 @@ import ProfileImageUpload from "@/components/content/ProfileImageUpload";
 import { getCurrentUserProfile } from "@/services/profile/profileService";
 import { updateUserProfile, ProfileUpdateData, checkUsernameAvailability } from "@/services/profile/profileEditService";
 import NetworkVisibilityToggle from "@/components/settings/NetworkVisibilityToggle";
-import ProfileVisitsToggle from "@/components/settings/ProfileVisitsToggle";
 import VerificationBadge from "@/components/social/VerificationBadge";
 import { toast } from "sonner";
 import DeleteAccountSection from "@/components/settings/DeleteAccountSection";
@@ -1163,7 +1162,6 @@ const ProfileEditPage = () => {
 
                 <Separator />
 
-                <ProfileVisitsToggle />
 
                 <Separator />
 

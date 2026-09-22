@@ -1,3 +1,4 @@
+import { createLogger } from "../_shared/logger.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 // Common headers to be used by all endpoints
@@ -8,12 +9,6 @@ const corsHeaders = {
 };
 
 // Logger functionality
-const createLogger = (functionName: string) => ({
-  debug: (data: any, message?: string) => console.log(`[${functionName}] DEBUG:`, message || '', data),
-  info: (data: any, message?: string) => console.log(`[${functionName}] INFO:`, message || '', data),
-  warn: (data: any, message?: string) => console.warn(`[${functionName}] WARN:`, message || '', data),
-  error: (data: any, message?: string) => console.error(`[${functionName}] ERROR:`, message || '', data)
-});
 
 const logger = createLogger("healthz");
 

@@ -1,3 +1,4 @@
+import { MediaImage } from "@/components/content/MediaImage";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -80,7 +81,7 @@ const ArticlePreviewCard = ({
         <Link to={`/articles/${article.slug}`} className="block">
           <div className="relative aspect-[16/10] overflow-hidden">
             {article.cover_image_url ? (
-              <img
+              <MediaImage
                 src={article.cover_image_url}
                 alt={article.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

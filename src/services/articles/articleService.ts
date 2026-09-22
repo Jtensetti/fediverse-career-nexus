@@ -1,3 +1,4 @@
+import { requestContentDeletion } from "@/services/privacy/deletionService";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -320,16 +321,8 @@ export const getUserDraftArticles = async (): Promise<Article[]> => {
 // Delete an article
 export const deleteArticle = async (id: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('articles')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
-      toast.error(`${i18n.t('toasts.articleDeleteFailed')}: ${error.message}`);
-      return false;
-    }
-    
+    await requestContentDeletion('article', id);
+
     toast.success(i18n.t('toasts.articleDeleted'));
     return true;
   } catch (error) {

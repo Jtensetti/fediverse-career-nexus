@@ -6,7 +6,6 @@ import { Check, X, MessageCircle, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,8 +19,7 @@ import {
 import {
   MessageRequest,
   acceptMessageRequest,
-  declineMessageRequest,
-  INTRO_TEMPLATES
+  declineMessageRequest
 } from "@/services/messaging/messageRequestService";
 
 interface MessageRequestCardProps {
@@ -35,7 +33,6 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
 
   const sender = request.sender;
-  const template = INTRO_TEMPLATES.find(t => t.id === request.intro_template);
 
   const handleAccept = async () => {
     setIsAccepting(true);
@@ -89,22 +86,6 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
                   {formatDistanceToNow(new Date(request.created_at), { addSuffix: true, locale: sv })}
                 </span>
               </div>
-
-              {/* Template badge */}
-              {template && template.id !== 'custom' && (
-                <Badge variant="secondary" className="mb-2 text-xs">
-                  {template.label}
-                </Badge>
-              )}
-
-              {/* Preview text */}
-              {request.preview_text && (
-                <div className="bg-muted/50 rounded-lg p-3 mb-3">
-                  <p className="text-sm text-foreground/90 whitespace-pre-wrap">
-                    "{request.preview_text}"
-                  </p>
-                </div>
-              )}
 
               {/* Actions */}
               <div className="flex items-center gap-2">

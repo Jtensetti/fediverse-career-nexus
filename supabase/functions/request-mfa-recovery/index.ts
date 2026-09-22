@@ -54,12 +54,6 @@ Deno.serve(async (req) => {
       userId = data.user?.id ?? null;
     }
 
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      req.headers.get("cf-connecting-ip") ??
-      null;
-    const userAgent = req.headers.get("user-agent")?.slice(0, 500) ?? null;
-
     // Basic abuse guard: max 3 pending requests per email in last hour
     const { count } = await admin
       .from("mfa_recovery_requests")
@@ -81,8 +75,6 @@ Deno.serve(async (req) => {
         email,
         username,
         message,
-        ip_address: ip,
-        user_agent: userAgent,
         attempted_login_email: attemptedLoginEmail,
       })
       .select("id, created_at")

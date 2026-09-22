@@ -1,3 +1,4 @@
+import { MediaImage } from "@/components/content/MediaImage";
 import { useState, useRef, useCallback } from "react";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -137,7 +138,7 @@ export function ImageCropDialog({
             aspect={aspectRatio}
             className="max-w-full"
           >
-            <img
+            <MediaImage
               ref={imgRef}
               src={imageSrc}
               alt="Crop preview"
