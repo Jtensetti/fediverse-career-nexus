@@ -1,5 +1,5 @@
 import { notifyPublication } from '@/services/moderation/publicationStatus';
-import { publicMediaUrl } from "@/lib/media";
+import type { UploadedPostImage } from "@/lib/imageDraft";
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { getLocalActorUrl, getNoltoInstanceDomain } from "@/lib/federation";
 import { createUserActor } from "../federation/actorService";
@@ -9,7 +9,8 @@ import { processFederatedMentions } from "../federation/federationMentionService
 
 export interface CreatePostData {
   content: string;
-  imageFile?: File;
+  image?: UploadedPostImage;
+  postId?: string;
   imageAltText?: string;
   contentWarning?: string;
   pollData?: Record<string, unknown>;
@@ -66,7 +67,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     if (!await createUserActor(user.id, false)) return false;
     const { data: actor, error: actorError } = await supabase.from('public_actors')
       .select('id, preferred_username').eq('user_id', user.id).eq('is_remote', false).single();
-    if (actorError || !actor) throw actorError || new Error('Account not ready');
+    if (actorError || !actor?.id) throw actorError || new Error('Account not ready');
 
     // Fetch profile to include display name in the post content
     const { data: profile } = await supabase
@@ -76,29 +77,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       .single();
     const actorName = profile?.fullname || profile?.username || actor.preferred_username;
 
-    // Handle image upload if provided
-    let imageUrl: string | null = null;
-    if (postData.imageFile) {
-
-      const fileExt = postData.imageFile.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `posts/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('posts')
-        .upload(filePath, postData.imageFile);
-
-      if (uploadError) {
-        console.error('Image upload error:', uploadError);
-        toast.error("Kunde inte ladda upp bild");
-        return false;
-      }
-
-      const publicUrl = publicMediaUrl('posts', filePath);
-
-      imageUrl = publicUrl;
-
-    }
+    const imageUrl = postData.image?.url;
 
     // Create a "Create" activity that wraps the Note or Question object
 
@@ -106,7 +85,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     const actorUrl = getLocalActorUrl(actor.preferred_username);
     const baseUrl = `https://${getNoltoInstanceDomain()}`;
     const followersUrl = `${baseUrl}/functions/v1/followers/${actor.preferred_username}`;
-    const postId = crypto.randomUUID();
+    const postId = postData.postId || crypto.randomUUID();
 
     // Determine if this is a poll (Question type) or regular post (Note type)
     const isPoll = postData.pollData && postData.pollData.type === 'Question';
@@ -138,12 +117,6 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
         published: new Date().toISOString(),
         to: ['https://www.w3.org/ns/activitystreams#Public'],
         cc: [followersUrl],
-        attachment: imageUrl ? [{
-          type: 'Image',
-          mediaType: 'image/jpeg', // Standard media type for compatibility
-          url: imageUrl,
-          name: postData.imageAltText || '' // Alt text for accessibility
-        }] : undefined,
         actor: {
           id: actor.id,
           preferredUsername: actor.preferred_username,
@@ -151,6 +124,9 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
         }
       };
     }
+
+    if (postData.image) noteObject.attachment = [{ type: 'Image', mediaType: postData.image.mediaType,
+      url: imageUrl, name: postData.imageAltText || '' }];
 
     // Add content warning (summary in ActivityPub) if provided
     if (postData.contentWarning) {
@@ -197,6 +173,8 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
       .single();
 
     if (postError) {
+      const { data: existing } = await supabase.from('ap_objects').select('id,moderation_status').eq('id', postId).eq('attributed_to', actor.id).maybeSingle();
+      if (existing) { notifyPublication(existing.moderation_status || 'published', 'Inlägget skapades!'); return true; }
       console.error('Post creation error:', postError);
       toast.error(`Failed to create post: ${postError.message}`);
       return false;

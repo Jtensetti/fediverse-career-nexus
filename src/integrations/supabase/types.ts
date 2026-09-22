@@ -641,292 +641,4118 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
- …44531 tokens truncated…/deletionService";
-import { getLocalActorUrl, getNoltoInstanceDomain } from "@/lib/federation";
-import { createUserActor } from "../federation/actorService";
-import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
-import { processFederatedMentions } from "../federation/federationMentionService";
+      }
+      company_audit_log: {
+        Row: {
+          action: string
+          actor_user_id: string
+          company_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action: string
+          actor_user_id: string
+          company_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_audit_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_claim_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          evidence: Json | null
+          id: string
+          requester_user_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["claim_request_status"]
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          requester_user_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["claim_request_status"]
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          evidence?: Json | null
+          id?: string
+          requester_user_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["claim_request_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_claim_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_employees: {
+        Row: {
+          company_id: string
+          created_at: string
+          employment_type: Database["public"]["Enums"]["employment_type"]
+          end_date: string | null
+          id: string
+          is_verified: boolean
+          start_date: string
+          title: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          end_date?: string | null
+          id?: string
+          is_verified?: boolean
+          start_date: string
+          title: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          end_date?: string | null
+          id?: string
+          is_verified?: boolean
+          start_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_followers: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_followers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_roles: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["company_role"]
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["company_role"]
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["company_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_reports: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      content_review_decisions: {
+        Row: {
+          action: string
+          actor_id: string | null
+          content_id: string
+          content_kind: string
+          created_at: string
+          explanation: string
+          id: string
+          revision: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          content_id: string
+          content_kind: string
+          created_at?: string
+          explanation: string
+          id?: string
+          revision: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          content_id?: string
+          content_kind?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          revision?: string
+        }
+        Relationships: []
+      }
+      custom_feeds: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          position: number | null
+          rules: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          position?: number | null
+          rules?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          position?: number | null
+          rules?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_feeds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_feeds_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cv_sections: {
+        Row: {
+          content: Json | null
+          created_at: string
+          display_order: number | null
+          id: string
+          section_type: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          section_type: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          section_type?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deletion_media: {
+        Row: {
+          archived_path: string | null
+          bucket_id: string
+          last_attempt_at: string | null
+          name: string
+          object_id: string
+          request_id: string
+          source_removed: boolean
+        }
+        Insert: {
+          archived_path?: string | null
+          bucket_id: string
+          last_attempt_at?: string | null
+          name: string
+          object_id: string
+          request_id: string
+          source_removed?: boolean
+        }
+        Update: {
+          archived_path?: string | null
+          bucket_id?: string
+          last_attempt_at?: string | null
+          name?: string
+          object_id?: string
+          request_id?: string
+          source_removed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deletion_media_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "deletion_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deletion_requests: {
+        Row: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }
+        Insert: {
+          attempts?: number
+          auth_banned?: boolean
+          claimed_at?: string | null
+          encrypted_payload: string
+          id?: string
+          kind: string
+          last_error?: string | null
+          lease_id?: string | null
+          owner_id: string
+          purge_after?: string
+          requested_at?: string
+          state?: string
+          subject_id: string
+        }
+        Update: {
+          attempts?: number
+          auth_banned?: boolean
+          claimed_at?: string | null
+          encrypted_payload?: string
+          id?: string
+          kind?: string
+          last_error?: string | null
+          lease_id?: string | null
+          owner_id?: string
+          purge_after?: string
+          requested_at?: string
+          state?: string
+          subject_id?: string
+        }
+        Relationships: []
+      }
+      education: {
+        Row: {
+          created_at: string
+          degree: string
+          end_year: number | null
+          field: string | null
+          id: string
+          institution: string
+          start_year: number | null
+          updated_at: string
+          user_id: string
+          verification_status: string | null
+          verification_token: string | null
+        }
+        Insert: {
+          created_at?: string
+          degree: string
+          end_year?: number | null
+          field?: string | null
+          id?: string
+          institution: string
+          start_year?: number | null
+          updated_at?: string
+          user_id: string
+          verification_status?: string | null
+          verification_token?: string | null
+        }
+        Update: {
+          created_at?: string
+          degree?: string
+          end_year?: number | null
+          field?: string | null
+          id?: string
+          institution?: string
+          start_year?: number | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: string | null
+          verification_token?: string | null
+        }
+        Relationships: []
+      }
+      email_verification_tokens: {
+        Row: {
+          expires_at: string
+          id: string
+          token: string
+          used_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          expires_at: string
+          id?: string
+          token: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          expires_at?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      event_invitations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_invitations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_invitations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_invitations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          is_online: boolean | null
+          location: string | null
+          max_attendees: number | null
+          meeting_url: string | null
+          search_vector: unknown
+          start_date: string
+          title: string
+          updated_at: string
+          user_id: string
+          visibility: string | null
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_online?: boolean | null
+          location?: string | null
+          max_attendees?: number | null
+          meeting_url?: string | null
+          search_vector?: unknown
+          start_date: string
+          title: string
+          updated_at?: string
+          user_id: string
+          visibility?: string | null
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_online?: boolean | null
+          location?: string | null
+          max_attendees?: number | null
+          meeting_url?: string | null
+          search_vector?: unknown
+          start_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: string | null
+        }
+        Relationships: []
+      }
+      experiences: {
+        Row: {
+          company: string
+          company_domain: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          is_current_role: boolean | null
+          location: string | null
+          start_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          verification_status: string | null
+          verification_token: string | null
+        }
+        Insert: {
+          company: string
+          company_domain?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current_role?: boolean | null
+          location?: string | null
+          start_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          verification_status?: string | null
+          verification_token?: string | null
+        }
+        Update: {
+          company?: string
+          company_domain?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current_role?: boolean | null
+          location?: string | null
+          start_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          verification_status?: string | null
+          verification_token?: string | null
+        }
+        Relationships: []
+      }
+      federated_identities: {
+        Row: {
+          created_at: string
+          instance_domain: string
+          remote_account_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          instance_domain: string
+          remote_account_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          instance_domain?: string
+          remote_account_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      federated_oauth_states: {
+        Row: {
+          code_verifier: string
+          created_at: string
+          expires_at: string
+          instance_domain: string
+          link_user_id: string | null
+          redirect_uri: string
+          state_hash: string
+          username: string
+        }
+        Insert: {
+          code_verifier: string
+          created_at?: string
+          expires_at?: string
+          instance_domain: string
+          link_user_id?: string | null
+          redirect_uri: string
+          state_hash: string
+          username: string
+        }
+        Update: {
+          code_verifier?: string
+          created_at?: string
+          expires_at?: string
+          instance_domain?: string
+          link_user_id?: string | null
+          redirect_uri?: string
+          state_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      federated_sessions: {
+        Row: {
+          access_token_encrypted: string
+          created_at: string | null
+          id: string
+          last_verified_at: string | null
+          profile_id: string | null
+          refresh_token_encrypted: string | null
+          remote_actor_url: string
+          remote_instance: string
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_token_encrypted: string
+          created_at?: string | null
+          id?: string
+          last_verified_at?: string | null
+          profile_id?: string | null
+          refresh_token_encrypted?: string | null
+          remote_actor_url: string
+          remote_instance: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_token_encrypted?: string
+          created_at?: string | null
+          id?: string
+          last_verified_at?: string | null
+          profile_id?: string | null
+          refresh_token_encrypted?: string | null
+          remote_actor_url?: string
+          remote_instance?: string
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federated_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federation_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          alert_type: string
+          created_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          severity: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          severity: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          severity?: string
+        }
+        Relationships: []
+      }
+      federation_deliveries: {
+        Row: {
+          delivered_at: string
+          inbox: string
+          queue_id: string
+        }
+        Insert: {
+          delivered_at?: string
+          inbox: string
+          queue_id: string
+        }
+        Update: {
+          delivered_at?: string
+          inbox?: string
+          queue_id?: string
+        }
+        Relationships: []
+      }
+      federation_queue_partitioned: {
+        Row: {
+          activity: Json
+          actor_id: string
+          attempts: number | null
+          created_at: string
+          id: string
+          last_error: string | null
+          max_attempts: number | null
+          next_retry_at: string | null
+          partition_key: number
+          priority: number | null
+          processed_at: string | null
+          scheduled_for: string | null
+          status: string
+        }
+        Insert: {
+          activity: Json
+          actor_id: string
+          attempts?: number | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number | null
+          next_retry_at?: string | null
+          partition_key?: number
+          priority?: number | null
+          processed_at?: string | null
+          scheduled_for?: string | null
+          status?: string
+        }
+        Update: {
+          activity?: Json
+          actor_id?: string
+          attempts?: number | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number | null
+          next_retry_at?: string | null
+          partition_key?: number
+          priority?: number | null
+          processed_at?: string | null
+          scheduled_for?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_queue_partitioned_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_queue_partitioned_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "federation_queue_partitioned_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federation_receipts: {
+        Row: {
+          activity_id: string
+          actor_url: string
+          received_at: string
+        }
+        Insert: {
+          activity_id: string
+          actor_url: string
+          received_at?: string
+        }
+        Update: {
+          activity_id?: string
+          actor_url?: string
+          received_at?: string
+        }
+        Relationships: []
+      }
+      federation_request_logs: {
+        Row: {
+          endpoint: string
+          id: string
+          remote_host: string
+          request_id: string | null
+          request_path: string | null
+          timestamp: string
+          user_agent: string | null
+        }
+        Insert: {
+          endpoint: string
+          id?: string
+          remote_host: string
+          request_id?: string | null
+          request_path?: string | null
+          timestamp?: string
+          user_agent?: string | null
+        }
+        Update: {
+          endpoint?: string
+          id?: string
+          remote_host?: string
+          request_id?: string | null
+          request_path?: string | null
+          timestamp?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      federation_signature_cache: {
+        Row: {
+          created_at: string
+          signature_hash: string
+        }
+        Insert: {
+          created_at?: string
+          signature_hash: string
+        }
+        Update: {
+          created_at?: string
+          signature_hash?: string
+        }
+        Relationships: []
+      }
+      federation_tombstones: {
+        Row: {
+          deleted_at: string
+          id: string
+        }
+        Insert: {
+          deleted_at?: string
+          id: string
+        }
+        Update: {
+          deleted_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      follower_batches: {
+        Row: {
+          actor_id: string
+          created_at: string
+          followers: Json
+          id: string
+          processed_at: string | null
+          status: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          followers: Json
+          id?: string
+          processed_at?: string | null
+          status?: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          followers?: Json
+          id?: string
+          processed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follower_batches_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follower_batches_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "follower_batches_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inbox_items: {
+        Row: {
+          activity_type: string
+          content: Json
+          created_at: string
+          id: string
+          object_type: string | null
+          processed_at: string | null
+          recipient_id: string
+          sender: string
+        }
+        Insert: {
+          activity_type: string
+          content: Json
+          created_at?: string
+          id?: string
+          object_type?: string | null
+          processed_at?: string | null
+          recipient_id: string
+          sender: string
+        }
+        Update: {
+          activity_type?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          object_type?: string | null
+          processed_at?: string | null
+          recipient_id?: string
+          sender?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbox_items_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbox_items_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "inbox_items_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_conversations: {
+        Row: {
+          applicant_id: string
+          created_at: string
+          id: string
+          job_post_id: string
+          poster_id: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          created_at?: string
+          id?: string
+          job_post_id: string
+          poster_id: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          created_at?: string
+          id?: string
+          job_post_id?: string
+          poster_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_conversations_job_post_id_fkey"
+            columns: ["job_post_id"]
+            isOneToOne: false
+            referencedRelation: "job_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_posts: {
+        Row: {
+          application_url: string | null
+          company: string
+          company_id: string | null
+          contact_email: string | null
+          created_at: string
+          description: string | null
+          employment_type: string | null
+          experience_level: string | null
+          expires_at: string | null
+          growth_path: string | null
+          id: string
+          interview_process: string | null
+          is_active: boolean | null
+          location: string | null
+          remote_policy: string | null
+          response_time: string | null
+          salary_currency: string | null
+          salary_max: number | null
+          salary_min: number | null
+          search_vector: unknown
+          skills: string[] | null
+          team_size: string | null
+          title: string
+          transparency_score: number | null
+          updated_at: string
+          user_id: string
+          visa_sponsorship: boolean | null
+        }
+        Insert: {
+          application_url?: string | null
+          company: string
+          company_id?: string | null
+          contact_email?: string | null
+          created_at?: string
+          description?: string | null
+          employment_type?: string | null
+          experience_level?: string | null
+          expires_at?: string | null
+          growth_path?: string | null
+          id?: string
+          interview_process?: string | null
+          is_active?: boolean | null
+          location?: string | null
+          remote_policy?: string | null
+          response_time?: string | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          search_vector?: unknown
+          skills?: string[] | null
+          team_size?: string | null
+          title: string
+          transparency_score?: number | null
+          updated_at?: string
+          user_id: string
+          visa_sponsorship?: boolean | null
+        }
+        Update: {
+          application_url?: string | null
+          company?: string
+          company_id?: string | null
+          contact_email?: string | null
+          created_at?: string
+          description?: string | null
+          employment_type?: string | null
+          experience_level?: string | null
+          expires_at?: string | null
+          growth_path?: string | null
+          id?: string
+          interview_process?: string | null
+          is_active?: boolean | null
+          location?: string | null
+          remote_policy?: string | null
+          response_time?: string | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          search_vector?: unknown
+          skills?: string[] | null
+          team_size?: string | null
+          title?: string
+          transparency_score?: number | null
+          updated_at?: string
+          user_id?: string
+          visa_sponsorship?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_posts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_key_backups: {
+        Row: {
+          created_at: string
+          encrypted_private_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_private_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_private_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_key_backups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "message_public_keys"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      message_public_keys: {
+        Row: {
+          created_at: string
+          fingerprint: string
+          public_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fingerprint: string
+          public_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fingerprint?: string
+          public_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      message_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          intro_template: string | null
+          preview_text: string | null
+          recipient_id: string
+          responded_at: string | null
+          sender_id: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          intro_template?: string | null
+          preview_text?: string | null
+          recipient_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          intro_template?: string | null
+          preview_text?: string | null
+          recipient_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_requests_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_requests_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_requests_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_requests_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          delivery_status: string | null
+          encrypted_content: string | null
+          encryption_version: string
+          federated_activity_id: string | null
+          id: string
+          is_encrypted: boolean | null
+          is_federated: boolean | null
+          job_conversation_id: string | null
+          read_at: string | null
+          recipient_id: string
+          recipient_key_fingerprint: string | null
+          remote_recipient_url: string | null
+          remote_sender_url: string | null
+          sender_id: string
+          sender_key_fingerprint: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          delivery_status?: string | null
+          encrypted_content?: string | null
+          encryption_version?: string
+          federated_activity_id?: string | null
+          id?: string
+          is_encrypted?: boolean | null
+          is_federated?: boolean | null
+          job_conversation_id?: string | null
+          read_at?: string | null
+          recipient_id: string
+          recipient_key_fingerprint?: string | null
+          remote_recipient_url?: string | null
+          remote_sender_url?: string | null
+          sender_id: string
+          sender_key_fingerprint?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          delivery_status?: string | null
+          encrypted_content?: string | null
+          encryption_version?: string
+          federated_activity_id?: string | null
+          id?: string
+          is_encrypted?: boolean | null
+          is_federated?: boolean | null
+          job_conversation_id?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          recipient_key_fingerprint?: string | null
+          remote_recipient_url?: string | null
+          remote_sender_url?: string | null
+          sender_id?: string
+          sender_key_fingerprint?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_job_conversation_id_fkey"
+            columns: ["job_conversation_id"]
+            isOneToOne: false
+            referencedRelation: "job_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mfa_recovery_requests: {
+        Row: {
+          admin_notes: string | null
+          attempted_login_email: string | null
+          created_at: string
+          email: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          ip_address: string | null
+          message: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          attempted_login_email?: string | null
+          created_at?: string
+          email: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          ip_address?: string | null
+          message?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          attempted_login_email?: string | null
+          created_at?: string
+          email?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          ip_address?: string | null
+          message?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      mfa_recovery_tokens: {
+        Row: {
+          created_at: string
+          created_by_admin_id: string | null
+          expires_at: string
+          id: string
+          request_id: string | null
+          token_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_admin_id?: string | null
+          expires_at: string
+          id?: string
+          request_id?: string | null
+          token_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by_admin_id?: string | null
+          expires_at?: string
+          id?: string
+          request_id?: string | null
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mfa_recovery_tokens_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "mfa_recovery_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moderation_actions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_public: boolean | null
+          moderator_id: string
+          reason: string | null
+          target_content_id: string | null
+          target_content_type: string | null
+          target_user_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          moderator_id: string
+          reason?: string | null
+          target_content_id?: string | null
+          target_content_type?: string | null
+          target_user_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          moderator_id?: string
+          reason?: string | null
+          target_content_id?: string | null
+          target_content_type?: string | null
+          target_user_id?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
+      moderation_retention_access: {
+        Row: {
+          accessed_at: string
+          id: string
+          moderator_id: string | null
+          report_id: string
+          request_id: string
+        }
+        Insert: {
+          accessed_at?: string
+          id?: string
+          moderator_id?: string | null
+          report_id: string
+          request_id: string
+        }
+        Update: {
+          accessed_at?: string
+          id?: string
+          moderator_id?: string | null
+          report_id?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_retention_access_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "content_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_retention_access_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "deletion_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_subscribers: {
+        Row: {
+          confirm_token: string | null
+          confirmed: boolean | null
+          created_at: string
+          email: string
+          id: string
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          confirm_token?: string | null
+          confirmed?: boolean | null
+          created_at?: string
+          email: string
+          id?: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          confirm_token?: string | null
+          confirmed?: boolean | null
+          created_at?: string
+          email?: string
+          id?: string
+          unsubscribed_at?: string | null
+        }
+        Relationships: []
+      }
+      notification_digest_tracking: {
+        Row: {
+          created_at: string
+          last_digest_sent_at: string | null
+          last_notification_check_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_digest_sent_at?: string | null
+          last_notification_check_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_digest_sent_at?: string | null
+          last_notification_check_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          content: string | null
+          created_at: string
+          id: string
+          object_id: string | null
+          object_type: string | null
+          read: boolean
+          recipient_id: string
+          type: string
+        }
+        Insert: {
+          actor_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          object_id?: string | null
+          object_type?: string | null
+          read?: boolean
+          recipient_id: string
+          type: string
+        }
+        Update: {
+          actor_id?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          object_id?: string | null
+          object_type?: string | null
+          read?: boolean
+          recipient_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oauth_clients: {
+        Row: {
+          client_id: string
+          client_secret: string
+          created_at: string | null
+          id: string
+          instance_domain: string
+          redirect_uri: string
+          scopes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          client_secret: string
+          created_at?: string | null
+          id?: string
+          instance_domain: string
+          redirect_uri: string
+          scopes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          client_secret?: string
+          created_at?: string | null
+          id?: string
+          instance_domain?: string
+          redirect_uri?: string
+          scopes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      outgoing_follows: {
+        Row: {
+          created_at: string
+          follow_activity_id: string | null
+          id: string
+          local_actor_id: string
+          remote_actor_url: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          follow_activity_id?: string | null
+          id?: string
+          local_actor_id: string
+          remote_actor_url: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          follow_activity_id?: string | null
+          id?: string
+          local_actor_id?: string
+          remote_actor_url?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outgoing_follows_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outgoing_follows_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "outgoing_follows_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      password_reset_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          used: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          used?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
+      poll_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_replies: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          moderation_reason: string | null
+          moderation_revision: string
+          moderation_status: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          moderation_reason?: string | null
+          moderation_revision?: string
+          moderation_status?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          moderation_reason?: string | null
+          moderation_revision?: string
+          moderation_status?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      privacy_worker_lease: {
+        Row: {
+          expires_at: string
+          lease_id: string
+          singleton: boolean
+        }
+        Insert: {
+          expires_at: string
+          lease_id: string
+          singleton?: boolean
+        }
+        Update: {
+          expires_at?: string
+          lease_id?: string
+          singleton?: boolean
+        }
+        Relationships: []
+      }
+      profile_section_visibility: {
+        Row: {
+          id: string
+          section: string
+          updated_at: string
+          user_id: string
+          visibility: Database["public"]["Enums"]["section_visibility"]
+        }
+        Insert: {
+          id?: string
+          section: string
+          updated_at?: string
+          user_id: string
+          visibility?: Database["public"]["Enums"]["section_visibility"]
+        }
+        Update: {
+          id?: string
+          section?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: Database["public"]["Enums"]["section_visibility"]
+        }
+        Relationships: []
+      }
+      profile_views: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          viewer_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          viewer_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_views_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_views_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          auth_type: string | null
+          avatar_url: string | null
+          bio: string | null
+          contact_email: string | null
+          created_at: string
+          deleted_at: string | null
+          dm_privacy: string | null
+          domain: string | null
+          email_digest_enabled: boolean | null
+          freelancer_availability: string | null
+          freelancer_rate: string | null
+          freelancer_skills: string[] | null
+          fullname: string | null
+          header_url: string | null
+          headline: string | null
+          home_instance: string | null
+          id: string
+          is_freelancer: boolean | null
+          is_verified: boolean | null
+          location: string | null
+          phone: string | null
+          profile_views: number | null
+          remote_actor_url: string | null
+          search_vector: unknown
+          updated_at: string
+          username: string | null
+          website: string | null
+        }
+        Insert: {
+          auth_type?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          dm_privacy?: string | null
+          domain?: string | null
+          email_digest_enabled?: boolean | null
+          freelancer_availability?: string | null
+          freelancer_rate?: string | null
+          freelancer_skills?: string[] | null
+          fullname?: string | null
+          header_url?: string | null
+          headline?: string | null
+          home_instance?: string | null
+          id: string
+          is_freelancer?: boolean | null
+          is_verified?: boolean | null
+          location?: string | null
+          phone?: string | null
+          profile_views?: number | null
+          remote_actor_url?: string | null
+          search_vector?: unknown
+          updated_at?: string
+          username?: string | null
+          website?: string | null
+        }
+        Update: {
+          auth_type?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          contact_email?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          dm_privacy?: string | null
+          domain?: string | null
+          email_digest_enabled?: boolean | null
+          freelancer_availability?: string | null
+          freelancer_rate?: string | null
+          freelancer_skills?: string[] | null
+          fullname?: string | null
+          header_url?: string | null
+          headline?: string | null
+          home_instance?: string | null
+          id?: string
+          is_freelancer?: boolean | null
+          is_verified?: boolean | null
+          location?: string | null
+          phone?: string | null
+          profile_views?: number | null
+          remote_actor_url?: string | null
+          search_vector?: unknown
+          updated_at?: string
+          username?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      reactions: {
+        Row: {
+          created_at: string
+          id: string
+          reaction: string
+          target_id: string
+          target_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reaction: string
+          target_id: string
+          target_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reaction?: string
+          target_id?: string
+          target_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          position_at_time: string | null
+          recipient_id: string
+          recommender_id: string
+          relationship: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          position_at_time?: string | null
+          recipient_id: string
+          recommender_id: string
+          relationship: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          position_at_time?: string | null
+          recipient_id?: string
+          recommender_id?: string
+          relationship?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_recommender_id_fkey"
+            columns: ["recommender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_recommender_id_fkey"
+            columns: ["recommender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          converted_at: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_email: string | null
+          referred_user_id: string | null
+          referrer_id: string
+          reward_claimed: boolean | null
+          status: string
+        }
+        Insert: {
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_id: string
+          reward_claimed?: boolean | null
+          status?: string
+        }
+        Update: {
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_id?: string
+          reward_claimed?: boolean | null
+          status?: string
+        }
+        Relationships: []
+      }
+      remote_actors_cache: {
+        Row: {
+          actor_data: Json
+          actor_url: string
+          created_at: string
+          expires_at: string | null
+          hit_count: number | null
+          id: string
+          last_accessed_at: string | null
+        }
+        Insert: {
+          actor_data: Json
+          actor_url: string
+          created_at?: string
+          expires_at?: string | null
+          hit_count?: number | null
+          id?: string
+          last_accessed_at?: string | null
+        }
+        Update: {
+          actor_data?: Json
+          actor_url?: string
+          created_at?: string
+          expires_at?: string | null
+          hit_count?: number | null
+          id?: string
+          last_accessed_at?: string | null
+        }
+        Relationships: []
+      }
+      remote_instances: {
+        Row: {
+          created_at: string
+          error_count_24h: number | null
+          first_seen_at: string
+          health_score: number | null
+          host: string
+          id: string
+          last_error_at: string | null
+          last_seen_at: string | null
+          reason: string | null
+          request_count_24h: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_count_24h?: number | null
+          first_seen_at?: string
+          health_score?: number | null
+          host: string
+          id?: string
+          last_error_at?: string | null
+          last_seen_at?: string | null
+          reason?: string | null
+          request_count_24h?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_count_24h?: number | null
+          first_seen_at?: string
+          health_score?: number | null
+          host?: string
+          id?: string
+          last_error_at?: string | null
+          last_seen_at?: string | null
+          reason?: string | null
+          request_count_24h?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reserved_company_slugs: {
+        Row: {
+          created_at: string
+          reason: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          reason?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          reason?: string | null
+          slug?: string
+        }
+        Relationships: []
+      }
+      retired_usernames: {
+        Row: {
+          retired_at: string
+          username: string
+        }
+        Insert: {
+          retired_at?: string
+          username: string
+        }
+        Update: {
+          retired_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      saved_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      server_keys: {
+        Row: {
+          created_at: string
+          id: string
+          is_current: boolean | null
+          private_key: string
+          public_key: string
+          revoked_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_current?: boolean | null
+          private_key: string
+          public_key: string
+          revoked_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_current?: boolean | null
+          private_key?: string
+          public_key?: string
+          revoked_at?: string | null
+        }
+        Relationships: []
+      }
+      site_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          message: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          message?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      skill_endorsements: {
+        Row: {
+          created_at: string
+          endorser_id: string
+          id: string
+          skill_id: string
+        }
+        Insert: {
+          created_at?: string
+          endorser_id: string
+          id?: string
+          skill_id: string
+        }
+        Update: {
+          created_at?: string
+          endorser_id?: string
+          id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_endorser_id_fkey"
+            columns: ["endorser_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_endorser_id_fkey"
+            columns: ["endorser_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          created_at: string
+          endorsements: number | null
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          endorsements?: number | null
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          endorsements?: number | null
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      starter_pack_members: {
+        Row: {
+          added_at: string | null
+          added_by: string | null
+          id: string
+          pack_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          added_by?: string | null
+          id?: string
+          pack_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          added_by?: string | null
+          id?: string
+          pack_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "starter_pack_members_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "starter_pack_members_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "starter_pack_members_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "starter_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      starter_packs: {
+        Row: {
+          category: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          creator_id: string | null
+          description: string | null
+          follower_count: number | null
+          id: string
+          is_featured: boolean | null
+          member_count: number | null
+          name: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string | null
+          follower_count?: number | null
+          id?: string
+          is_featured?: boolean | null
+          member_count?: number | null
+          name: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string | null
+          follower_count?: number | null
+          id?: string
+          is_featured?: boolean | null
+          member_count?: number | null
+          name?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "starter_packs_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "starter_packs_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_bans: {
+        Row: {
+          banned_by: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          reason: string
+          revoked_at: string | null
+          revoked_by: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_by: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          reason: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_by?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          reason?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_blocks: {
+        Row: {
+          blocked_user_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_user_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_user_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      user_connections: {
+        Row: {
+          connected_user_id: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_user_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_user_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_connections_connected_user_id"
+            columns: ["connected_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_connections_connected_user_id"
+            columns: ["connected_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_connections_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_connections_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_consents: {
+        Row: {
+          consent_type: string
+          consented_at: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+          version: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          consent_type: string
+          consented_at?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+          version: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          consent_type?: string
+          consented_at?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: []
+      }
+      user_feed_preferences: {
+        Row: {
+          created_at: string | null
+          default_feed: string | null
+          id: string
+          infinite_scroll: boolean
+          language_filter: string[] | null
+          muted_words: string[] | null
+          show_replies: boolean | null
+          show_reposts: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_feed?: string | null
+          id?: string
+          infinite_scroll?: boolean
+          language_filter?: string[] | null
+          muted_words?: string[] | null
+          show_replies?: boolean | null
+          show_reposts?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_feed?: string | null
+          id?: string
+          infinite_scroll?: boolean
+          language_filter?: string[] | null
+          muted_words?: string[] | null
+          show_replies?: boolean | null
+          show_reposts?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_followed_packs: {
+        Row: {
+          followed_at: string | null
+          id: string
+          pack_id: string
+          user_id: string
+        }
+        Insert: {
+          followed_at?: string | null
+          id?: string
+          pack_id: string
+          user_id: string
+        }
+        Update: {
+          followed_at?: string | null
+          id?: string
+          pack_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_followed_packs_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "starter_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          id: string
+          show_network_connections: boolean | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          show_network_connections?: boolean | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          show_network_connections?: boolean | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      webfinger_cache: {
+        Row: {
+          acct: string
+          actor_url: string
+          created_at: string | null
+          expires_at: string | null
+          hit_count: number | null
+          id: string
+          inbox_url: string | null
+        }
+        Insert: {
+          acct: string
+          actor_url: string
+          created_at?: string | null
+          expires_at?: string | null
+          hit_count?: number | null
+          id?: string
+          inbox_url?: string | null
+        }
+        Update: {
+          acct?: string
+          actor_url?: string
+          created_at?: string | null
+          expires_at?: string | null
+          hit_count?: number | null
+          id?: string
+          inbox_url?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      federated_feed: {
+        Row: {
+          attributed_to: string | null
+          company_id: string | null
+          content: Json | null
+          id: string | null
+          published_at: string | null
+          source: string | null
+          type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federated_posts_with_moderation: {
+        Row: {
+          attributed_to: string | null
+          content: Json | null
+          id: string | null
+          moderation_status: string | null
+          published_at: string | null
+          source: string | null
+          type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federated_sessions_safe: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          last_verified_at: string | null
+          profile_id: string | null
+          remote_actor_url: string | null
+          remote_instance: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          last_verified_at?: string | null
+          profile_id?: string | null
+          remote_actor_url?: string | null
+          remote_instance?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          last_verified_at?: string | null
+          profile_id?: string | null
+          remote_actor_url?: string | null
+          remote_instance?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federated_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_sessions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federation_public_objects: {
+        Row: {
+          attributed_to: string | null
+          company_id: string | null
+          content: Json | null
+          content_warning: string | null
+          created_at: string | null
+          deleted_at: string | null
+          id: string | null
+          moderation_reason: string | null
+          moderation_revision: string | null
+          moderation_status: string | null
+          published_at: string | null
+          remote_object_id: string | null
+          type: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      federation_queue_stats: {
+        Row: {
+          failed_count: number | null
+          partition_key: number | null
+          pending_count: number | null
+          processed_count: number | null
+          processing_count: number | null
+          total_count: number | null
+        }
+        Relationships: []
+      }
+      follower_batch_stats: {
+        Row: {
+          actor_id: string | null
+          pending_batches: number | null
+          preferred_username: string | null
+          processed_batches: number | null
+          total_batches: number | null
+        }
+        Relationships: []
+      }
+      public_actors: {
+        Row: {
+          also_known_as: string[] | null
+          created_at: string | null
+          follower_count: number | null
+          following_count: number | null
+          id: string | null
+          is_remote: boolean | null
+          moved_to: string | null
+          preferred_username: string | null
+          public_key: string | null
+          remote_actor_url: string | null
+          remote_inbox_url: string | null
+          status: string | null
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          also_known_as?: string[] | null
+          created_at?: string | null
+          follower_count?: number | null
+          following_count?: number | null
+          id?: string | null
+          is_remote?: boolean | null
+          moved_to?: string | null
+          preferred_username?: string | null
+          public_key?: string | null
+          remote_actor_url?: string | null
+          remote_inbox_url?: string | null
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          also_known_as?: string[] | null
+          created_at?: string | null
+          follower_count?: number | null
+          following_count?: number | null
+          id?: string | null
+          is_remote?: boolean | null
+          moved_to?: string | null
+          preferred_username?: string | null
+          public_key?: string | null
+          remote_actor_url?: string | null
+          remote_inbox_url?: string | null
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_actors_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_actors_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_education: {
+        Row: {
+          created_at: string | null
+          degree: string | null
+          end_year: number | null
+          field: string | null
+          id: string | null
+          institution: string | null
+          start_year: number | null
+          updated_at: string | null
+          user_id: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          degree?: string | null
+          end_year?: number | null
+          field?: string | null
+          id?: string | null
+          institution?: string | null
+          start_year?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          degree?: string | null
+          end_year?: number | null
+          field?: string | null
+          id?: string | null
+          institution?: string | null
+          start_year?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?: string | null
+        }
+        Relationships: []
+      }
+      public_experiences: {
+        Row: {
+          company: string | null
+          company_domain: string | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string | null
+          is_current_role: boolean | null
+          location: string | null
+          start_date: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          company?: string | null
+          company_domain?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_current_role?: boolean | null
+          location?: string | null
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          company?: string | null
+          company_domain?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string | null
+          is_current_role?: boolean | null
+          location?: string | null
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          verification_status?: string | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          auth_type: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          freelancer_availability: string | null
+          freelancer_rate: string | null
+          freelancer_skills: string[] | null
+          fullname: string | null
+          header_url: string | null
+          headline: string | null
+          home_instance: string | null
+          id: string | null
+          is_freelancer: boolean | null
+          is_verified: boolean | null
+          location: string | null
+          remote_actor_url: string | null
+          username: string | null
+          website: string | null
+        }
+        Insert: {
+          auth_type?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          freelancer_availability?: string | null
+          freelancer_rate?: string | null
+          freelancer_skills?: string[] | null
+          fullname?: string | null
+          header_url?: string | null
+          headline?: string | null
+          home_instance?: string | null
+          id?: string | null
+          is_freelancer?: boolean | null
+          is_verified?: boolean | null
+          location?: string | null
+          remote_actor_url?: string | null
+          username?: string | null
+          website?: string | null
+        }
+        Update: {
+          auth_type?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          freelancer_availability?: string | null
+          freelancer_rate?: string | null
+          freelancer_skills?: string[] | null
+          fullname?: string | null
+          header_url?: string | null
+          headline?: string | null
+          home_instance?: string | null
+          id?: string | null
+          is_freelancer?: boolean | null
+          is_verified?: boolean | null
+          location?: string | null
+          remote_actor_url?: string | null
+          username?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      server_public_keys: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_current: boolean | null
+          public_key: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          is_current?: boolean | null
+          public_key?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          is_current?: boolean | null
+          public_key?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Functions: {
+      begin_post_image_upload: { Args: Record<PropertyKey, never>; Returns: { id: string; storage_path: string }[] }
+      complete_post_image_upload: { Args: { p_id: string }; Returns: undefined }
+      discard_post_image_upload: { Args: { p_id: string }; Returns: undefined }
 
-export interface CreatePostData {
-  content: string;
-  image?: UploadedPostImage;
-  postId?: string;
-  imageAltText?: string;
-  contentWarning?: string;
-  pollData?: Record<string, unknown>;
+      get_federated_like_counts: {
+        Args: { p_ids: string[] }
+        Returns: { target_id: string; like_count: number }[]
+      }
+      actor_id_to_partition_key: {
+        Args: { actor_uuid: string }
+        Returns: number
+      }
+      are_users_connected: {
+        Args: { user1: string; user2: string }
+        Returns: boolean
+      }
+      are_users_connected_secure: {
+        Args: { user1: string; user2: string }
+        Returns: boolean
+      }
+      assess_public_text: { Args: { p_text: string }; Returns: Json }
+      begin_actor_move: {
+        Args: { actor_uuid: string; move_activity: Json; target_url: string }
+        Returns: undefined
+      }
+      can_message_user: {
+        Args: {
+          p_job_post_id?: string
+          p_recipient_id: string
+          p_sender_id: string
+        }
+        Returns: Json
+      }
+      can_view_connection_list: { Args: { owner_id: string }; Returns: boolean }
+      can_view_own_profile_phone: {
+        Args: { profile_id: string }
+        Returns: boolean
+      }
+      can_view_phone: { Args: { profile_owner_id: string }; Returns: boolean }
+      can_view_profile_section: {
+        Args: { owner_id: string; section_name: string }
+        Returns: boolean
+      }
+      check_account_deletion: { Args: never; Returns: undefined }
+      check_host_rate_limit: {
+        Args: { p_max_requests_per_minute?: number; p_remote_host: string }
+        Returns: boolean
+      }
+      claim_atproto_lock: {
+        Args: { p_key: string; p_lease: string }
+        Returns: boolean
+      }
+      claim_deletion_requests: {
+        Args: { p_limit?: number }
+        Returns: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "deletion_requests"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_federation_items: {
+        Args: { p_limit?: number; p_partition: number }
+        Returns: {
+          activity: Json
+          actor_id: string
+          attempts: number | null
+          created_at: string
+          id: string
+          last_error: string | null
+          max_attempts: number | null
+          next_retry_at: string | null
+          partition_key: number
+          priority: number | null
+          processed_at: string | null
+          scheduled_for: string | null
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "federation_queue_partitioned"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_privacy_worker: { Args: never; Returns: string }
+      cleanup_expired_actor_cache: { Args: never; Returns: undefined }
+      cleanup_expired_reset_codes: { Args: never; Returns: undefined }
+      cleanup_federation_signature_cache: { Args: never; Returns: undefined }
+      create_federation_alert: {
+        Args: {
+          p_message: string
+          p_metadata?: Json
+          p_severity: string
+          p_type: string
+        }
+        Returns: string
+      }
+      create_follow: {
+        Args: { p_local_actor_id: string; p_remote_actor_url: string }
+        Returns: string
+      }
+      create_follower_batches: {
+        Args: { p_actor_id: string; p_batch_size?: number; p_followers: Json }
+        Returns: number
+      }
+      create_mutual_connection_follows: {
+        Args: { user_a: string; user_b: string }
+        Returns: boolean
+      }
+      create_owned_company: {
+        Args: { payload: Json }
+        Returns: {
+          banner_url: string | null
+          claim_status: Database["public"]["Enums"]["company_claim_status"]
+          created_at: string
+          description: string | null
+          employee_count: number
+          follower_count: number
+          founded_year: number | null
+          id: string
+          industry: string | null
+          is_active: boolean
+          last_post_at: string | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          search_vector: unknown
+          size: Database["public"]["Enums"]["company_size"] | null
+          slug: string
+          tagline: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_method: string | null
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "companies"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_post_reply: {
+        Args: {
+          p_company_id?: string
+          p_content: string
+          p_parent_reply_id?: string
+          p_post_id: string
+        }
+        Returns: string
+      }
+      current_session_is_active: { Args: never; Returns: boolean }
+      current_session_is_verified: { Args: never; Returns: boolean }
+      decide_content_review: {
+        Args: {
+          p_action: string
+          p_explanation: string
+          p_id: string
+          p_kind: string
+          p_revision: string
+        }
+        Returns: undefined
+      }
+      ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
+      ensure_actor_keys: {
+        Args: {
+          actor_uuid: string
+          new_private_key: string
+          new_public_key: string
+        }
+        Returns: {
+          private_key: string
+          public_key: string
+        }[]
+      }
+      ensure_local_actor: {
+        Args: {
+          enable_federation?: boolean
+          new_private_key: string
+          new_public_key: string
+          user_uuid: string
+        }
+        Returns: string
+      }
+      finish_content_deletion: {
+        Args: { p_lease_id: string; p_request_id: string }
+        Returns: undefined
+      }
+      generate_referral_code: { Args: never; Returns: string }
+      get_actor_private_key: { Args: { actor_uuid: string }; Returns: string }
+      get_actor_private_key_service: {
+        Args: { actor_uuid: string }
+        Returns: string
+      }
+      get_batch_boost_counts: {
+        Args: { post_ids: string[] }
+        Returns: {
+          boost_count: number
+          post_id: string
+        }[]
+      }
+      get_batch_reply_counts: {
+        Args: { post_ids: string[] }
+        Returns: {
+          post_id: string
+          reply_count: number
+        }[]
+      }
+      get_connection_degree: {
+        Args: { source_user_id: string; target_user_id: string }
+        Returns: number
+      }
+      get_content_review_queue: {
+        Args: { p_offset?: number; p_own?: boolean }
+        Returns: {
+          body: string
+          can_edit: boolean
+          content_id: string
+          content_kind: string
+          created_at: string
+          reason: string
+          revision: string
+          status: string
+        }[]
+      }
+      get_current_public_key: { Args: never; Returns: string }
+      get_event_owner: { Args: { p_event_id: string }; Returns: string }
+      get_federation_health: {
+        Args: never
+        Returns: {
+          avg_processing_time_ms: number
+          oldest_pending_age_minutes: number
+          total_failed: number
+          total_pending: number
+          total_processing: number
+        }[]
+      }
+      get_federation_queue_stats: {
+        Args: never
+        Returns: {
+          failed_count: number
+          partition_key: number
+          pending_count: number
+          processed_count: number
+          processing_count: number
+          total_count: number
+        }[]
+      }
+      get_follower_batch_stats: {
+        Args: never
+        Returns: {
+          pending_batches: number
+          processed_batches: number
+          total_batches: number
+        }[]
+      }
+      get_following_feed: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          attributed_to: string | null
+          company_id: string | null
+          content: Json | null
+          id: string | null
+          published_at: string | null
+          source: string | null
+          type: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "federated_feed"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_member_feed: {
+        Args: { p_feed?: string; p_limit?: number; p_offset?: number }
+        Returns: {
+          attributed_to: string | null
+          company_id: string | null
+          content: Json | null
+          id: string | null
+          published_at: string | null
+          source: string | null
+          type: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "federated_feed"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_onboarding_recommendations: {
+        Args: {
+          p_headline?: string
+          p_interests?: string[]
+          p_limit?: number
+          p_role?: string
+          p_user_id: string
+        }
+        Returns: {
+          avatar_url: string
+          fullname: string
+          headline: string
+          match_reason: string
+          match_score: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_own_review_decisions: {
+        Args: never
+        Returns: {
+          action: string
+          actor_id: string | null
+          content_id: string
+          content_kind: string
+          created_at: string
+          explanation: string
+          id: string
+          revision: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "content_review_decisions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_participant_info: { Args: { participant_id: string }; Returns: Json }
+      get_poll_results: {
+        Args: { poll_uuid: string }
+        Returns: {
+          option_index: number
+          vote_count: number
+          voters_count: number
+        }[]
+      }
+      get_post_replies: {
+        Args: { max_replies?: number; post_id: string }
+        Returns: {
+          actor_user_id: string
+          actor_username: string
+          company_id: string
+          content: Json
+          created_at: string
+          id: string
+        }[]
+      }
+      get_rate_limited_hosts: {
+        Args: { request_threshold: number; window_start: string }
+        Returns: {
+          latest_request: string
+          remote_host: string
+          request_count: number
+        }[]
+      }
+      get_smart_suggestions: {
+        Args: { p_limit?: number; p_user_id: string }
+        Returns: {
+          avatar_url: string
+          fullname: string
+          headline: string
+          is_verified: boolean
+          mutual_count: number
+          suggestion_reason: string
+          user_id: string
+          username: string
+        }[]
+      }
+      get_user_id_by_email: { Args: { _email: string }; Returns: string }
+      has_company_role: {
+        Args: {
+          _company_id: string
+          _roles: Database["public"]["Enums"]["company_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      has_user_voted: {
+        Args: { check_user_id: string; poll_uuid: string }
+        Returns: {
+          option_index: number
+        }[]
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_moderator: { Args: { _user_id: string }; Returns: boolean }
+      is_slug_reserved: { Args: { _slug: string }; Returns: boolean }
+      is_user_banned: { Args: { check_user_id: string }; Returns: boolean }
+      is_user_blocked: {
+        Args: { checker_id: string; target_id: string }
+        Returns: boolean
+      }
+      is_user_invited_to_event: {
+        Args: { p_event_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_username_available: { Args: { candidate: string }; Returns: boolean }
+      list_deletion_owned_files: {
+        Args: { p_owner_id: string }
+        Returns: {
+          bucket_id: string
+          name: string
+        }[]
+      }
+      list_own_storage_objects: {
+        Args: never
+        Returns: {
+          bucket_id: string
+          created_at: string
+          id: string
+          name: string
+          size_bytes: string
+        }[]
+      }
+      list_purge_media: {
+        Args: { p_request_id: string }
+        Returns: {
+          archived_path: string | null
+          bucket_id: string
+          last_attempt_at: string | null
+          name: string
+          object_id: string
+          request_id: string
+          source_removed: boolean
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "deletion_media"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      media_gateway_url: { Args: { p_url: string }; Returns: string }
+      moderation_is_owner: {
+        Args: { p_id: string; p_kind: string }
+        Returns: boolean
+      }
+      moderation_object_text: { Args: { p_body: Json }; Returns: string }
+      pending_account_content: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+          kind: string
+          owner_id: string
+          snapshot: Json
+          updated_at: string
+        }[]
+      }
+      privacy_account_is_active: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      privacy_actor_is_active: {
+        Args: { p_actor_id: string }
+        Returns: boolean
+      }
+      privacy_media_is_hidden: {
+        Args: { p_bucket: string; p_name: string }
+        Returns: boolean
+      }
+      privacy_object_is_active: {
+        Args: { p_object_id: string }
+        Returns: boolean
+      }
+      privacy_publisher_is_active: {
+        Args: { p_actor_id: string; p_company_id: string }
+        Returns: boolean
+      }
+      purge_expired_private_metadata: { Args: never; Returns: undefined }
+      read_reported_deleted_content: {
+        Args: { p_moderator_id: string; p_report_id: string }
+        Returns: {
+          encrypted_payload: string
+          kind: string
+          purge_after: string
+          subject_id: string
+        }[]
+      }
+      readable_poll: { Args: { p_poll_id: string }; Returns: Json }
+      recalc_company_counts: {
+        Args: { _company_id: string }
+        Returns: undefined
+      }
+      register_message_keys: {
+        Args: {
+          p_fingerprint: string
+          p_private_key: string
+          p_public_key: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      request_email_verification: {
+        Args: { target_email: string }
+        Returns: string
+      }
+      request_recommendation: { Args: { recipient: string }; Returns: boolean }
+      resolve_private_media: {
+        Args: { p_bucket: string; p_name: string; p_user_id: string }
+        Returns: {
+          id: string
+          mime_type: string
+        }[]
+      }
+      resolve_public_media: {
+        Args: { p_bucket: string; p_name: string; p_url: string }
+        Returns: {
+          id: string
+          mime_type: string
+        }[]
+      }
+      safe_uuid: { Args: { _text: string }; Returns: string }
+      schedule_account_deletion: {
+        Args: {
+          p_encrypted_payload: string
+          p_updated_at: string
+          p_user_id: string
+        }
+        Returns: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deletion_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      schedule_content_deletion: {
+        Args: {
+          p_encrypted_payload: string
+          p_files?: Json
+          p_id: string
+          p_kind: string
+          p_owner_id: string
+          p_updated_at: string
+        }
+        Returns: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deletion_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      schedule_file_deletion: {
+        Args: {
+          p_bucket: string
+          p_encrypted_payload: string
+          p_name: string
+          p_url: string
+          p_user_id: string
+        }
+        Returns: {
+          attempts: number
+          auth_banned: boolean
+          claimed_at: string | null
+          encrypted_payload: string
+          id: string
+          kind: string
+          last_error: string | null
+          lease_id: string | null
+          owner_id: string
+          purge_after: string
+          requested_at: string
+          state: string
+          subject_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "deletion_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_poll_votes: {
+        Args: { p_option_indices: number[]; p_poll_id: string }
+        Returns: undefined
+      }
+      update_instance_health: {
+        Args: { p_host: string; p_success: boolean }
+        Returns: undefined
+      }
+      valid_personal_feed_rules: { Args: { rules: Json }; Returns: boolean }
+    }
+    Enums: {
+      app_role: "admin" | "moderator" | "user"
+      claim_request_status: "pending" | "approved" | "rejected"
+      company_claim_status: "unclaimed" | "claimed" | "disputed" | "verified"
+      company_role: "owner" | "admin" | "editor"
+      company_size:
+        | "1-10"
+        | "11-50"
+        | "51-200"
+        | "201-500"
+        | "501-1000"
+        | "1001-5000"
+        | "5001-10000"
+        | "10000+"
+      employment_type:
+        | "full_time"
+        | "part_time"
+        | "contract"
+        | "intern"
+        | "freelance"
+      section_visibility: "everyone" | "logged_in" | "connections"
+      verification_status: "unverified" | "pending" | "verified" | "rejected"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
-// Helper to fetch a post along with its owner's user_id
-const getPostOwner = async (postId: string) => {
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-  const { data, error } = await supabase
-    .from('ap_objects')
-    .select('id, attributed_to')
-    .eq('id', postId)
-    .single();
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
-  if (error || !data) {
-    console.error('Error fetching post owner:', error);
-    throw new Error('Post not found');
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
-  const actorId = (data as any).attributed_to as string | null;
-  if (!actorId) {
-
-    return null;
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
-  // Resolve owner via safe public view (actors table is RLS-restricted)
-  const { data: actorData, error: actorError } = await supabase
-    .from('public_actors')
-    .select('user_id')
-    .eq('id', actorId)
-    .maybeSingle();
-
-  if (actorError) {
-    console.error('Error resolving post owner actor:', actorError);
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
-
-  const ownerId = (actorData as any)?.user_id || null;
-
-  return ownerId as string | null;
-};
-
-export const createPost = async (postData: CreatePostData): Promise<boolean> => {
-  try {
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('Authentication error:', authError);
-      toast.error("Du måste vara inloggad för att skapa ett inlägg");
-      return false;
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
     }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
-    // Local posting does not implicitly enable public federation.
-    if (!await createUserActor(user.id, false)) return false;
-    const { data: actor, error: actorError } = await supabase.from('public_actors')
-      .select('id, preferred_username').eq('user_id', user.id).eq('is_remote', false).single();
-    if (actorError || !actor?.id) throw actorError || new Error('Account not ready');
-
-    // Fetch profile to include display name in the post content
-    const { data: profile } = await supabase
-      .from('public_profiles')
-      .select('username, fullname')
-      .eq('id', user.id)
-      .single();
-    const actorName = profile?.fullname || profile?.username || actor.preferred_username;
-
-    const imageUrl = postData.image?.url;
-
-    // Create a "Create" activity that wraps the Note or Question object
-
-    if (!actor.preferred_username) throw new Error("Actor username is missing");
-    const actorUrl = getLocalActorUrl(actor.preferred_username);
-    const baseUrl = `https://${getNoltoInstanceDomain()}`;
-    const followersUrl = `${baseUrl}/functions/v1/followers/${actor.preferred_username}`;
-    const postId = postData.postId || crypto.randomUUID();
-
-    // Determine if this is a poll (Question type) or regular post (Note type)
-    const isPoll = postData.pollData && postData.pollData.type === 'Question';
-
-    let noteObject: Record<string, unknown>;
-
-    if (isPoll && postData.pollData) {
-      // Create a Question object for polls
-      noteObject = {
-        ...postData.pollData,
-        id: `${baseUrl}/functions/v1/objects/${postId}`,
-        attributedTo: actorUrl,
-        published: new Date().toISOString(),
-        to: ['https://www.w3.org/ns/activitystreams#Public'],
-        cc: [followersUrl],
-        actor: {
-          id: actor.id,
-          preferredUsername: actor.preferred_username,
-          name: actorName
-        }
-      };
-    } else {
-      // Create a Note object for regular posts
-      noteObject = {
-        type: 'Note',
-        id: `${baseUrl}/functions/v1/objects/${postId}`,
-        attributedTo: actorUrl,
-        content: postData.content,
-        published: new Date().toISOString(),
-        to: ['https://www.w3.org/ns/activitystreams#Public'],
-        cc: [followersUrl],
-        actor: {
-          id: actor.id,
-          preferredUsername: actor.preferred_username,
-          name: actorName
-        }
-      };
-    }
-
-    if (postData.image) noteObject.attachment = [{ type: 'Image', mediaType: postData.image.mediaType,
-      url: imageUrl, name: postData.imageAltText || '' }];
-
-    // Add content warning (summary in ActivityPub) if provided
-    if (postData.contentWarning) {
-      noteObject.summary = postData.contentWarning;
-      noteObject.sensitive = true;
-    }
-
-    // Process federated mentions - adds Mention tags and cc addresses for remote users
-    try {
-      noteObject = await processFederatedMentions(postData.content, noteObject);
-
-    } catch (mentionError) {
-      // Log but don't block the post - NO DATABASE WRITE
-      console.warn('Mention resolution failed', {
-        error: mentionError instanceof Error ? mentionError.message : 'Unknown error'
-      });
-      // Continue without federated mentions - post still works locally
-    }
-
-    const createActivity = {
-      '@context': 'https://www.w3.org/ns/activitystreams',
-      type: 'Create',
-      id: `${baseUrl}/functions/v1/activities/${postId}`,
-      actor: actorUrl,
-      published: new Date().toISOString(),
-      to: ['https://www.w3.org/ns/activitystreams#Public'],
-      cc: noteObject.cc || [followersUrl],
-      object: noteObject
-    };
-
-    const postObject = {
-      id: postId,
-      type: 'Create' as const,
-      content: createActivity as unknown as import("@/integrations/supabase/types").Json,
-      attributed_to: actor.id,
-      published_at: new Date().toISOString(),
-      content_warning: postData.contentWarning || null,
-    };
-
-    const { data: savedPost, error: postError } = await supabase
-      .from('ap_objects')
-      .insert(postObject)
-      .select()
-      .single();
-
-    if (postError) {
-      const { data: existing } = await supabase.from('ap_objects').select('id,moderation_status').eq('id', postId).eq('attributed_to', actor.id).maybeSingle();
-      if (existing) { notifyPublication(existing.moderation_status || 'published', 'Inlägget skapades!'); return true; }
-      console.error('Post creation error:', postError);
-      toast.error(`Failed to create post: ${postError.message}`);
-      return false;
-    }
-
-    // A database trigger queues federation in the same transaction as this insert.
-
-    notifyPublication(savedPost.moderation_status, "Inlägget skapades!");
-    return true;
-
-  } catch (error) {
-    console.error('Unexpected error creating post:', error);
-    toast.error("Ett oväntat fel uppstod");
-    return false;
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
-};
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
-export const updatePost = async (postId: string, updates: { content: string }): Promise<void> => {
-  try {
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.error('No user found for post update');
-      throw new Error('You must be logged in to update posts');
-    }
-
-    // Get the post owner to check ownership
-    const ownerId = await getPostOwner(postId);
-
-    if (ownerId !== user.id) {
-      console.error('User does not own this post');
-      throw new Error('You can only edit your own posts');
-    }
-
-    // Fetch current content for update
-    const { data: postData, error: fetchError } = await supabase
-      .from('ap_objects')
-      .select('content')
-      .eq('id', postId)
-      .single();
-
-    if (fetchError || !postData) {
-      console.error('Error fetching post for update:', fetchError);
-      throw new Error('Post not found');
-    }
-
-    const currentContent = postData.content as any;
-    let updatedContent;
-
-    // Handle different content structures
-    if (currentContent?.type === 'Create' && currentContent.object) {
-      // ActivityPub Create activity structure
-      updatedContent = {
-        ...currentContent,
-        object: {
-          ...currentContent.object,
-          content: updates.content
-        }
-      };
-    } else if (currentContent?.type === 'Question') {
-      // Poll (Question) type - only update the question text, preserve options
-      updatedContent = {
-        ...currentContent,
-        content: updates.content
-      };
-    } else {
-      // Direct content structure (Note type)
-      updatedContent = {
-        ...currentContent,
-        content: updates.content
-      };
-    }
-
-    const { data: savedPost, error: updateError } = await supabase
-      .from('ap_objects')
-      .update({ content: updatedContent })
-      .eq('id', postId).select('moderation_status').single();
-
-    if (updateError) {
-      console.error('Error updating post:', updateError);
-      throw new Error(`Failed to update post: ${updateError.message}`);
-    }
-
-    notifyPublication(savedPost.moderation_status, 'Inlägget uppdaterades!');
-  } catch (error) {
-    console.error('Error updating post:', error);
-    throw error;
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
   }
-};
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
-export const deletePost = async (postId: string): Promise<void> => {
-  try {
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.error('No user found for post deletion');
-      throw new Error('You must be logged in to delete posts');
-    }
-
-    // Get the post owner to check ownership
-    const ownerId = await getPostOwner(postId);
-
-    if (ownerId !== user.id) {
-      console.error('User does not own this post');
-      throw new Error('You can only delete your own posts');
-    }
-
-    await requestContentDeletion('post', postId);
-    toast.success('Inlägget är dolt och raderas permanent efter 30 dagar.');
-  } catch (error) {
-    console.error('Error deleting post:', error);
-    throw error;
-  }
-};
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      claim_request_status: ["pending", "approved", "rejected"],
+      company_claim_status: ["unclaimed", "claimed", "disputed", "verified"],
+      company_role: ["owner", "admin", "editor"],
+      company_size: [
+        "1-10",
+        "11-50",
+        "51-200",
+        "201-500",
+        "501-1000",
+        "1001-5000",
+        "5001-10000",
+        "10000+",
+      ],
+      employment_type: [
+        "full_time",
+        "part_time",
+        "contract",
+        "intern",
+        "freelance",
+      ],
+      section_visibility: ["everyone", "logged_in", "connections"],
+      verification_status: ["unverified", "pending", "verified", "rejected"],
+    },
+  },
+} as const
