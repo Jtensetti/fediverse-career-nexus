@@ -13,8 +13,10 @@ export async function getOwnProfileForSharing(): Promise<SharedProfile> {
   ]);
   if (profile.error || experience.error || education.error || skills.error) throw new Error('Profilen kunde inte hämtas. Försök igen.');
   const p = profile.data;
+  // Identity-only providers can have an internal, non-deliverable login address.
+  const contactEmail = p.contact_email || (user.email?.endsWith('.invalid') ? '' : user.email) || '';
   return { name: p.fullname || '', headline: p.headline || '', bio: p.bio || '', location: p.location || '',
     profileUrl: p.username ? getLocalProfileUrl(p.username) : '', handle: p.username ? formatFederatedHandle(p.username) : '',
-    email: p.contact_email || user.email || '', phone: p.phone || '', website: p.website || '',
+    email: contactEmail, phone: p.phone || '', website: p.website || '',
     experience: experience.data, education: education.data, skills: skills.data.map(item => item.name) };
 }
