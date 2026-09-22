@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import UnauthenticatedHomepage from "@/components/homepage/UnauthenticatedHomepage";
 import Navbar from "@/components/layout/Navbar";
@@ -12,6 +13,8 @@ import { SEOHead } from "@/components/common";
  * - Unauthed users: see the marketing homepage.
  */
 export default function Index() {
+  const { i18n } = useTranslation();
+  const sv = i18n.language.startsWith("sv");
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -40,8 +43,8 @@ export default function Index() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="Nolto — Det federerade alternativet till LinkedIn"
-        description="Bygg en yrkesprofil, hitta jobb och skapa kontakter i ett öppet professionellt nätverk."
+        title={sv ? "Ett öppnare arbetsliv" : "A more open working life"}
+        description={sv ? "Möt människor, dela det du kan och hitta din nästa möjlighet. Utforska Noltos offentliga flöde utan konto." : "Meet people, share what you know and find your next opportunity. Explore Nolto’s public feed without an account."}
       />
       <Navbar />
       <div className="flex-grow">

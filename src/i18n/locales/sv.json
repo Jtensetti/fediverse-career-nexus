@@ -108,7 +108,7 @@
     "confirmationDeliveryFailed": "Kontot är skapat, men mejlet kunde inte skickas. Använd ”Skicka bekräftelselänken igen” nedanför formuläret om en minut."
   },
   "footer": {
-    "tagline": "Det federerade alternativet till LinkedIn.",
+    "tagline": "Ett öppet nätverk för människor i arbetslivet.",
     "about": "Om oss",
     "ourMission": "Vårt uppdrag",
     "team": "Teamet",
@@ -1906,5 +1906,8 @@
     "later": "Gör detta senare",
     "next": "Fortsätt",
     "finish": "Öppna mitt flöde"
+  },
+  "publicFeed": {
+    "signInToParticipate": "Logga in för att svara eller reagera"
   }
 }

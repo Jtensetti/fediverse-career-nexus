@@ -1,53 +1,79 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, BriefcaseBusiness, Network, UserRound } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Code2, Globe2, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PublicFeed from "@/components/federation/PublicFeed";
+import "./homepage.css";
 
 export default function UnauthenticatedHomepage() {
   const { i18n } = useTranslation();
   const sv = i18n.language.startsWith("sv");
-  const features = sv ? [
-    { icon: UserRound, title: "En profil för ditt arbetsliv", text: "Samla erfarenhet, kompetenser och projekt. Du väljer vad du vill dela.", href: "/auth/signup", link: "Skapa din profil" },
-    { icon: BriefcaseBusiness, title: "Jobb och organisationer", text: "Läs jobbannonser och lär känna organisationerna bakom dem.", href: "/jobs", link: "Se lediga jobb" },
-    { icon: Network, title: "Kontakter över servergränser", text: "Aktivera federation för att göra din Nolto-profil sökbar och följa konton på andra ActivityPub-servrar.", href: "/federation", link: "Läs om federation" },
-  ] : [
-    { icon: UserRound, title: "A profile for your working life", text: "Bring together your experience, skills and projects. Choose what to share.", href: "/auth/signup", link: "Create your profile" },
-    { icon: BriefcaseBusiness, title: "Jobs and organisations", text: "Browse job listings and get to know the organisations behind them.", href: "/jobs", link: "Browse jobs" },
-    { icon: Network, title: "Connect across servers", text: "Enable federation to make your Nolto profile discoverable and follow accounts on other ActivityPub servers.", href: "/federation", link: "Read about federation" },
-  ];
-  return <div>
-    <section className="border-b bg-muted/30">
-      <div className="container mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-[1.4fr_1fr] md:py-28 items-center">
-        <div className="space-y-6">
-          <p className="text-sm font-semibold tracking-wide text-primary">NOLTO · {sv ? "DITT PROFESSIONELLA NÄTVERK" : "YOUR PROFESSIONAL NETWORK"}</p>
-          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">{sv ? "Arbetslivet bygger på människor." : "Working life is built on people."}</h1>
-          <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">{sv ? "Dela det du kan, hitta nästa möjlighet och håll kontakten. Nolto är ett professionellt nätverk med öppen källkod och stöd för ActivityPub." : "Share what you know, find your next opportunity and stay in touch. Nolto is an open source professional network with ActivityPub support."}</p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg"><Link to="/auth/signup">{sv ? "Skapa konto" : "Create account"}<ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
-            <Button asChild variant="outline" size="lg"><Link to="/auth">{sv ? "Logga in" : "Sign in"}</Link></Button>
+  return <div className="nolto-home">
+    <section className="home-hero">
+      <div className="home-container home-hero-grid">
+        <div className="home-intro">
+          <p className="home-eyebrow">{sv ? "DITT PROFESSIONELLA NÄTVERK" : "YOUR PROFESSIONAL NETWORK"}</p>
+          <h1>{sv ? <>Ett öppnare<br /><span>arbetsliv.</span></> : <>A more open<br /><span>working life.</span></>}</h1>
+          <p className="home-lead">{sv ? "Möt människor, dela det du kan och hitta din nästa möjlighet. Ett nätverk som du är med och formar." : "Meet people, share what you know and find your next opportunity. A network you help shape."}</p>
+          <div className="home-actions">
+            <Button asChild size="lg" className="home-join"><Link to="/auth/signup">{sv ? "Gå med i Nolto" : "Join Nolto"}<ArrowUpRight className="ml-2 h-5 w-5" aria-hidden="true" /></Link></Button>
+            <Link to="/feed" className="home-explore">{sv ? "Utforska flödet" : "Explore the feed"}<ArrowRight className="h-5 w-5" aria-hidden="true" /></Link>
           </div>
+          <p className="home-footnote">{sv ? "Titta in. Du behöver inget konto för att läsa." : "Take a look. You don’t need an account to read."}</p>
         </div>
-        <div className="rounded-2xl border bg-background p-7 sm:p-9 space-y-5">
-          <p className="text-sm font-medium text-muted-foreground">{sv ? "Din adress i fediversum" : "Your address in the fediverse"}</p>
-          <p className="break-all font-mono text-xl sm:text-2xl text-primary">{sv ? "dittnamn" : "yourname"}@nolto.social</p>
-          <p className="text-sm leading-relaxed text-muted-foreground">{sv ? "Välj ett ledigt användarnamn när du registrerar dig. När du aktiverar federation kan andra söka efter dig med den här typen av adress, till exempel från Mastodon. Adressen är en social identitet, inte en e-postadress." : "Choose an available username when you register. After you enable federation, others can look you up with an address like this, including from Mastodon. This is a social identity, not an email address."}</p>
-          <Link to="/federation" className="inline-flex items-center gap-2 text-sm font-medium underline underline-offset-4">{sv ? "Så hänger Nolto och Mastodon ihop" : "How Nolto connects with Mastodon"}<ArrowRight className="h-4 w-4" /></Link>
+        <div className="home-product">
+          <div className="home-product-label"><span>Nolto</span><span>{sv ? "En plats för nya perspektiv" : "A place for fresh perspectives"}</span></div>
+          <div className="home-product-body"><PublicFeed /></div>
         </div>
       </div>
     </section>
-    <section aria-label={sv ? "Det här kan du göra" : "What you can do"} className="container mx-auto max-w-6xl grid gap-10 px-6 py-16 md:grid-cols-3">
-      {features.map(feature => <article key={feature.href} className="space-y-4">
-        <feature.icon className="h-6 w-6 text-primary" aria-hidden="true" />
-        <h2 className="text-xl font-semibold">{feature.title}</h2>
-        <p className="text-muted-foreground leading-relaxed">{feature.text}</p>
-        <Link to={feature.href} className="inline-block text-sm font-medium underline underline-offset-4">{feature.link}</Link>
-      </article>)}
+
+    <div className="home-values home-container" aria-label={sv ? "Det Nolto står för" : "What Nolto stands for"}>
+      <span><HeartHandshake aria-hidden="true" />{sv ? "Människor i centrum" : "People come first"}</span>
+      <span><Globe2 aria-hidden="true" />{sv ? "En del av den öppna webben" : "Part of the open web"}</span>
+      <span><Code2 aria-hidden="true" />{sv ? "Öppen källkod" : "Open source"}</span>
+    </div>
+
+    <section className="home-container home-feature">
+      <div className="home-feature-copy">
+        <p className="home-eyebrow">{sv ? "MÄNNISKOR OCH MÖJLIGHETER" : "PEOPLE AND POSSIBILITIES"}</p>
+        <h2>{sv ? "Nästa steg börjar med nyfikenhet." : "Your next step starts with curiosity."}</h2>
+        <p>{sv ? "Hitta jobb och lär känna organisationerna bakom dem. Söker du ett nytt sammanhang, ett samarbete eller någon att utbyta idéer med? Börja här." : "Find jobs and get to know the organisations behind them. Looking for a new role, a collaboration or someone to exchange ideas with? Start here."}</p>
+        <Link to="/jobs" className="home-text-link">{sv ? "Se lediga jobb" : "Browse jobs"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+        <Link to="/organisationer" className="home-text-link">{sv ? "Upptäck organisationer" : "Discover organisations"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+      </div>
+      <div className="home-feature-visual">
+        <img src="/og-image.png" width="1200" height="630" alt={sv ? "Nolto – ett professionellt nätverk" : "Nolto – a professional network"} loading="lazy" decoding="async" />
+      </div>
     </section>
-    <section className="border-t bg-muted/20">
-      <div className="container mx-auto max-w-6xl px-6 py-12 space-y-4">
-        <h2 className="text-xl font-semibold">{sv ? "Har du redan ett Mastodon-konto?" : "Already have a Mastodon account?"}</h2>
-        <p className="max-w-2xl text-muted-foreground leading-relaxed">{sv ? "Du kan använda Mastodon för att logga in eller koppla det till ditt Nolto-konto. Kontona har varsin profil. Historik och privata meddelanden synkroniseras inte automatiskt." : "Use Mastodon to sign in or link it to your Nolto account. Each account has its own profile. History and private messages are not automatically synchronised."}</p>
-        <Link to="/auth" className="inline-block text-sm font-medium underline underline-offset-4">{sv ? "Logga in med Mastodon" : "Sign in with Mastodon"}</Link>
+
+    <section className="home-network">
+      <div className="home-container home-feature">
+        <div className="home-address-visual" aria-hidden="true">
+          <span className="home-address-caption">{sv ? "SAMMA WEBB. FLER KONTAKTER." : "ONE WEB. MORE CONNECTIONS."}</span>
+          <div className="home-address">@{sv ? "dittnamn" : "yourname"}<br /><strong>@nolto.social</strong></div>
+          <div className="home-network-names"><span>Nolto</span><span className="home-network-line" /><Globe2 /><span className="home-network-line" /><span>Mastodon</span></div>
+        </div>
+        <div className="home-feature-copy">
+          <p className="home-eyebrow">{sv ? "DITT NÄTVERK KAN VÄXA VIDARE" : "YOUR NETWORK CAN GROW FURTHER"}</p>
+          <h2>{sv ? "Bra kontakter finns överallt." : "Good connections are everywhere."}</h2>
+          <p>{sv ? "Du och dina kontakter behöver inte välja samma plattform. Aktivera federation för att låta människor på exempelvis Mastodon hitta och följa din Nolto-profil." : "You and your contacts don’t have to choose the same platform. Enable federation so people on services such as Mastodon can find and follow your Nolto profile."}</p>
+          <Link to="/federation" className="home-text-link">{sv ? "Lär känna det öppna nätverket" : "Meet the open network"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+        </div>
+      </div>
+    </section>
+
+    <section className="home-container home-closing">
+      <div>
+        <p className="home-eyebrow">{sv ? "VI SES PÅ NOLTO" : "SEE YOU ON NOLTO"}</p>
+        <h2>{sv ? "Gör plats för nästa samtal." : "Make room for your next conversation."}</h2>
+        <div className="home-actions"><Button asChild size="lg" className="rounded-full px-7"><Link to="/auth/signup">{sv ? "Skapa ditt konto" : "Create your account"}<ArrowUpRight className="ml-2 h-5 w-5" aria-hidden="true" /></Link></Button><Link to="/feed" className="home-text-link">{sv ? "Titta runt först" : "Look around first"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
+      </div>
+      <div className="home-open-source">
+        <Code2 className="mb-4 h-7 w-7 text-primary" aria-hidden="true" />
+        <h3>{sv ? "Öppet att bygga vidare på." : "Open to build upon."}</h3>
+        <p>{sv ? "Läs koden, bidra till Nolto eller utforska vad som behövs för egen drift." : "Read the code, contribute to Nolto or explore what self-hosting involves."}</p>
+        <Link to="/hosting" className="home-text-link">{sv ? "Om egen drift" : "About self-hosting"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
       </div>
     </section>
   </div>;

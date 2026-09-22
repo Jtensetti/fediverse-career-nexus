@@ -1,0 +1,18 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?Set your backend URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:?Set your public key}
+    environment:
+      NOLTO_BACKEND_ORIGIN: ${VITE_SUPABASE_URL:?Set your backend URL}
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /config:uid=1000,gid=1000
+      - /data:uid=1000,gid=1000
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped

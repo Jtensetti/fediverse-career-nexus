@@ -34,3 +34,36 @@ jobs:
           node scripts/test-support/run-identity.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/test-support/run-account-boundaries.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/test-support/run-privacy.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
+  container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Build frontend container
+        run: docker build --build-arg VITE_SUPABASE_URL=https://example.supabase.co --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=ci-placeholder-publishable-key -t nolto-web .
+      - name: Check unprivileged server and deep links
+        run: |
+          trap 'docker logs nolto-web' ERR
+          docker run -d --name nolto-web --read-only --tmpfs /config:uid=1000,gid=1000 --tmpfs /data:uid=1000,gid=1000 --cap-drop ALL --security-opt no-new-privileges:true -p 127.0.0.1:8080:8080 nolto-web
+          curl --retry 10 --retry-all-errors --retry-delay 1 --fail http://127.0.0.1:8080/healthz
+          curl --fail http://127.0.0.1:8080/feed | grep -q 'id="root"'
+          curl --fail http://127.0.0.1:8080/hosting | grep -q 'id="root"'
+          test "$(docker exec nolto-web id -u)" = "1000"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:8080/feed)" = "405"
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run check:types
+      - run: npm run export -- --max-workers 2

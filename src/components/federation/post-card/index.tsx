@@ -61,7 +61,7 @@ export default function FederatedPostCard({
 
   const isQuoteRepost = post.type === 'Announce' || post.content?.isQuoteRepost;
 
-  const rawContent = useMemo(() => getRawContent(post), [post.id]);
+  const rawContent = useMemo(() => getRawContent(post), [post]);
 
   const { displayContent, contentUrls, isTruncated } = useMemo(() => {
     const urls = extractUrls(rawContent);
@@ -84,7 +84,7 @@ export default function FederatedPostCard({
   }, [rawContent, showFullContent]);
 
   const previewUrl = contentUrls.length > 0 ? contentUrls[0] : null;
-  const attachments = useMemo(() => getMediaAttachments(post), [post.id]);
+  const attachments = useMemo(() => getMediaAttachments(post), [post]);
 
   const isOwnPost = !!user?.id && post.source === 'local' && post.user_id === user.id;
 

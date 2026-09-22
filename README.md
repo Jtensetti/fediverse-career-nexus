@@ -17,6 +17,8 @@ npm run dev
 
 The development server listens on `http://localhost:8080`. The backend uses PostgreSQL, Supabase Auth, Storage and Deno Edge Functions. Use a separate development backend; do not run test fixtures or seed scripts against production. Historical migrations have not been verified as a clean installation sequence.
 
+For Nolto’s managed build, `config/public-backend.json` contains only the public backend URL and publishable key. Environment overrides must provide both values together. This prevents builds without a local environment file from failing at startup. Forks must replace these values or supply their own environment.
+
 The application uses React, TypeScript, Vite, Tailwind, TanStack Query and Radix components. Dependencies are pinned in `package.json`, `package-lock.json` and `deno.lock`. Browser configuration is public; service credentials belong only in server secret storage.
 
 ## Checks
@@ -34,6 +36,8 @@ npm audit --audit-level=high
 
 ## Documentation
 
+- [Self-hosting with Docker](docs/self-hosting.md)
+- [Native app foundation](docs/mobile.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security reporting and boundaries](SECURITY.md)
 - [Security and maintenance review](docs/security-review.md)

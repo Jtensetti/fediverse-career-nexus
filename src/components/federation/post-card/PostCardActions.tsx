@@ -1,4 +1,6 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { MessageSquare, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardFooter } from "@/components/ui/card";
@@ -30,6 +32,14 @@ export default function PostCardActions({
   initialReactions,
 }: PostCardActionsProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  if (!user) return <CardFooter className="border-t px-6 py-3" data-interactive="true">
+    <Link to="/auth" state={{ returnTo: `/post/${postId}` }} className="text-sm font-medium text-primary underline underline-offset-4">
+      {t("publicFeed.signInToParticipate", "Logga in för att svara eller reagera")}
+    </Link>
+    <div className="ml-auto"><ShareButton url={`${window.location.origin}/post/${postId}`} title={stripHtml(displayContent).substring(0, 100)} variant="ghost" size="sm" /></div>
+  </CardFooter>;
 
   return (
     <CardFooter className="pt-0 flex items-center gap-1 border-t border-border/50 mx-2 sm:mx-4 py-2" data-interactive="true">

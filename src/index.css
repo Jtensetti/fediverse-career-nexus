@@ -236,7 +236,7 @@
 
   /* Mobile bottom nav spacing */
   @media (max-width: 768px) {
-    body {
+    body:has(nav[aria-label="Mobilnavigering"]) {
       padding-bottom: max(5rem, calc(4rem + env(safe-area-inset-bottom, 0px)));
     }
   }

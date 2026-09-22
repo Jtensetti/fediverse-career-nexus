@@ -108,7 +108,7 @@
     "confirmationDeliveryFailed": "Your account was created, but the email could not be sent. Use “Resend confirmation email” below the form in one minute."
   },
   "footer": {
-    "tagline": "The federated alternative to LinkedIn.",
+    "tagline": "An open network for people in working life.",
     "about": "About",
     "ourMission": "Our Mission",
     "team": "Team",
@@ -1928,5 +1928,8 @@
     "later": "Set up later",
     "next": "Continue",
     "finish": "Open my feed"
+  },
+  "publicFeed": {
+    "signInToParticipate": "Sign in to reply or react"
   }
 }
