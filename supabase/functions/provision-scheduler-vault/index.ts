@@ -4,8 +4,9 @@ import { createClient } from "npm:@supabase/supabase-js@2.89.0";
 
 Deno.serve(async (req) => {
   const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  if (!serviceRole || req.headers.get("authorization") !== `Bearer ${serviceRole}`) {
-    return new Response(JSON.stringify({ error: "Worker credentials required" }), {
+  const oneOff = Deno.env.get("PROVISION_ONE_OFF_TOKEN") ?? "";
+  if (!oneOff || req.headers.get("x-provision-token") !== oneOff) {
+    return new Response(JSON.stringify({ error: "Provisioning token required" }), {
       status: 401, headers: { "Content-Type": "application/json" },
     });
   }
