@@ -2666,6 +2666,65 @@ export type Database = {
           },
         ]
       }
+      post_image_uploads: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          owner_id: string
+          post_id: string | null
+          state: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          owner_id: string
+          post_id?: string | null
+          state?: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          owner_id?: string
+          post_id?: string | null
+          state?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_image_uploads_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_image_uploads_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_image_uploads_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_image_uploads_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_replies: {
         Row: {
           content: string
@@ -4137,6 +4196,13 @@ export type Database = {
         Args: { actor_uuid: string; move_activity: Json; target_url: string }
         Returns: undefined
       }
+      begin_post_image_upload: {
+        Args: never
+        Returns: {
+          id: string
+          storage_path: string
+        }[]
+      }
       can_message_user: {
         Args: {
           p_job_post_id?: string
@@ -4212,10 +4278,18 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_post_image_cleanup: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+          storage_path: string
+        }[]
+      }
       claim_privacy_worker: { Args: never; Returns: string }
       cleanup_expired_actor_cache: { Args: never; Returns: undefined }
       cleanup_expired_reset_codes: { Args: never; Returns: undefined }
       cleanup_federation_signature_cache: { Args: never; Returns: undefined }
+      complete_post_image_upload: { Args: { p_id: string }; Returns: undefined }
       create_federation_alert: {
         Args: {
           p_message: string
@@ -4291,6 +4365,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      discard_post_image_upload: { Args: { p_id: string }; Returns: undefined }
       ensure_actor_has_keys: { Args: { actor_uuid: string }; Returns: boolean }
       ensure_actor_keys: {
         Args: {
@@ -4316,6 +4391,7 @@ export type Database = {
         Args: { p_lease_id: string; p_request_id: string }
         Returns: undefined
       }
+      finish_post_image_cleanup: { Args: { p_id: string }; Returns: undefined }
       generate_referral_code: { Args: never; Returns: string }
       get_actor_private_key: { Args: { actor_uuid: string }; Returns: string }
       get_actor_private_key_service: {
