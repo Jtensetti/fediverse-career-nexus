@@ -14,7 +14,9 @@ const respond = (body: unknown, status = 200) => {
 
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response(null, { headers });
-  const site = getSiteUrl();
+  let site: string;
+  try { site = getSiteUrl(); }
+  catch { return respond({ error: 'The canonical site origin is not configured correctly' }, 503); }
   const path = new URL(req.url).pathname;
   const enabled = Deno.env.get('ATPROTO_AUTH_ENABLED') === 'true';
   if (req.method === 'GET' && path.endsWith('/client-metadata.json')) {

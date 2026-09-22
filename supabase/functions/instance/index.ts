@@ -1,5 +1,6 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { getSiteUrl } from "../_shared/federation-urls.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
       .select("id", { count: 'exact', head: true })
       .not('remote_actor_url', 'is', null);
 
-    const siteUrl = Deno.env.get("SITE_URL") || "https://nolto.social";
+    const siteUrl = getSiteUrl();
 
     // Build instance metadata (Mastodon-compatible format)
     const instanceData = {

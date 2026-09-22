@@ -95,8 +95,9 @@ export function buildProfilePageUrl(username: string): string {
 
 /** OAuth and email links use the UI origin, independently of federation. */
 export function getSiteUrl(): string {
-  const url = new URL(Deno.env.get("SITE_URL") || getFederationBaseUrl());
-  if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+  const raw = (Deno.env.get("SITE_URL") || getFederationBaseUrl()).trim();
+  const url = new URL(raw.includes("://") ? raw : `https://${raw}`);
+  if (url.protocol !== "https:" || url.username || url.password || url.port || url.pathname !== "/" || url.search || url.hash) {
     throw new Error("SITE_URL must be an HTTPS origin");
   }
   return url.origin;
