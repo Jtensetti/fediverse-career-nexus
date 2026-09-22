@@ -43,3 +43,15 @@ The [launch requirements](production-readiness.md) remain open: authenticated br
 Continue replacing broad federation JSON casts with validated domain types and consolidating duplicated profile/feed mappings. Do that around concrete behavior tests; do not weaken type checks or add speculative abstractions to make the code appear cleaner.
 
 Inbox key recovery/rotation, forward secrecy, locked-account approval and full federated interaction parity are not delivered by this cleanup. Earlier actor-key exposure also requires an operational review of the retained signing identity. None of those limits is hidden by removing old documentation or editor branding.
+# Platform-generated authentication files
+
+Lovable Cloud recreates `src/integrations/supabase/client.ts` and
+`previewAuthStorage.ts` during function deployment. Deleting them repeatedly
+does not disable that generator. They remain platform-owned and unused; Nolto
+uses `src/lib/supabase.ts` with its existing session and MFA handling.
+
+The source check tolerates only these two exact generated paths when unreachable
+from the application. It fails if either is imported into the runtime graph or
+loses its generated-file marker. Credential scanning still includes them, and
+other unreachable source files still fail. Do not wire the preview session
+broker into production or delete these files as a deployment workaround.

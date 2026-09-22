@@ -4,6 +4,7 @@ import { HttpError, requireUser, requestBody } from '../_shared/user-auth.ts';
 import { randomToken } from '../_shared/oauth.ts';
 import { atprotoHandle, atprotoMetadata, atprotoCallbackParams, browserProof, ATPROTO_SCOPE } from '../_shared/atproto-policy.ts';
 import { createAtprotoClient, atprotoLock } from '../_shared/atproto-client.ts';
+import { atprotoFailureDetails } from '../_shared/atproto-diagnostics.ts';
 
 const headers = { ...federationHeaders, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
 const respond = (body: unknown, status = 200) => {
@@ -33,6 +34,7 @@ Deno.serve(async req => {
   if (req.method !== 'POST') return respond({ error: 'Method not allowed' }, 405);
   if (!enabled) return respond({ error: 'Bluesky sign-in is not enabled yet' }, 503);
   if (req.headers.get('origin') !== site) return respond({ error: `Start sign-in at ${site}` }, 403);
+  let stage = 'request';
   try {
     const body = await requestBody(req, 10000);
     const proof = browserProof(body.browserProof);
@@ -44,11 +46,13 @@ Deno.serve(async req => {
     if ((count || 0) >= 10) return respond({ error: 'Too many sign-in attempts. Try again shortly.' }, 429);
     const { error: logError } = await db.from('auth_request_logs').insert({ ip, endpoint: 'atproto-auth' });
     if (logError) throw logError;
+    stage = 'client';
     const runtime = await createAtprotoClient(db, proof);
     try {
       if (body.action === 'start') {
         const handle = atprotoHandle(body.handle);
         const linkUserId = body.link === true ? (await requireUser(req)).user.id : null;
+        stage = 'authorize';
         const authorizationUrl = await runtime.client.authorize(handle, {
           scope: ATPROTO_SCOPE, state: JSON.stringify({ linkUserId, handle }),
           signal: AbortSignal.timeout(30000),
@@ -56,6 +60,7 @@ Deno.serve(async req => {
         return respond({ authorizationUrl: authorizationUrl.href, state: runtime.getAuthorizationState() });
       }
       if (body.action !== 'callback') throw new HttpError(400, 'Unknown sign-in action');
+      stage = 'callback';
       const { session, state } = await runtime.client.callback(atprotoCallbackParams(body));
       // The official client validates token sub against DID/PDS/issuer discovery.
       // A handle supplied in a callback or token from another issuer is not proof.
@@ -116,7 +121,7 @@ Deno.serve(async req => {
     } finally { runtime.discardTokens(); }
   } catch (error) {
     if (error instanceof HttpError) return respond({ error: error.message }, error.status);
-    console.error('AT Protocol sign-in failed', error instanceof Error ? error.name : 'Unknown error');
+    console.error('AT Protocol sign-in failed', { stage, ...atprotoFailureDetails(error) });
     return respond({ error: 'Sign-in could not be completed. Start again and check your account address.' }, 400);
   }
 });
