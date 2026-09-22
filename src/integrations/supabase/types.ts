@@ -1347,6 +1347,77 @@ export type Database = {
         }
         Relationships: []
       }
+      federated_likes: {
+        Row: {
+          activity_id: string
+          actor_id: string
+          created_at: string
+          target_id: string
+        }
+        Insert: {
+          activity_id: string
+          actor_id: string
+          created_at?: string
+          target_id: string
+        }
+        Update: {
+          activity_id?: string
+          actor_id?: string
+          created_at?: string
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federated_likes_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_likes_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "federated_likes_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_likes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_likes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_likes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_likes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       federated_oauth_states: {
         Row: {
           code_verifier: string
@@ -1569,6 +1640,109 @@ export type Database = {
           received_at?: string
         }
         Relationships: []
+      }
+      federation_reply_links: {
+        Row: {
+          parent_id: string
+          reply_id: string
+          root_id: string
+        }
+        Insert: {
+          parent_id: string
+          reply_id: string
+          root_id: string
+        }
+        Update: {
+          parent_id?: string
+          reply_id?: string
+          root_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "federation_reply_links_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: true
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: true
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: true
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: true
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_root_id_fkey"
+            columns: ["root_id"]
+            isOneToOne: false
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_root_id_fkey"
+            columns: ["root_id"]
+            isOneToOne: false
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_root_id_fkey"
+            columns: ["root_id"]
+            isOneToOne: false
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_root_id_fkey"
+            columns: ["root_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       federation_request_logs: {
         Row: {
@@ -4181,6 +4355,13 @@ export type Database = {
       }
       get_current_public_key: { Args: never; Returns: string }
       get_event_owner: { Args: { p_event_id: string }; Returns: string }
+      get_federated_like_counts: {
+        Args: { p_ids: string[] }
+        Returns: {
+          like_count: number
+          target_id: string
+        }[]
+      }
       get_federation_health: {
         Args: never
         Returns: {
@@ -4445,6 +4626,10 @@ export type Database = {
         Args: { _company_id: string }
         Returns: undefined
       }
+      record_remote_like: {
+        Args: { p_activity_id: string; p_actor_id: string; p_target_id: string }
+        Returns: undefined
+      }
       register_message_keys: {
         Args: {
           p_fingerprint: string
@@ -4565,6 +4750,10 @@ export type Database = {
       }
       set_poll_votes: {
         Args: { p_option_indices: number[]; p_poll_id: string }
+        Returns: undefined
+      }
+      undo_remote_interaction: {
+        Args: { p_activity_id: string; p_actor_id: string }
         Returns: undefined
       }
       update_instance_health: {
