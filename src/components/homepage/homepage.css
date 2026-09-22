@@ -7,15 +7,17 @@
 .home-intro h1 span { color: #efbf68; }
 .home-lead { font-size: 1.125rem; line-height: 1.8; max-width: 29rem; margin-top: 1.8rem; color: #e0e9ec; }
 .home-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; }
-.home-join { border-radius: 999px; background: #efbf68; color: #213b45; padding-inline: 1.75rem; height: 3.25rem; font-size: .95rem; }
-.home-join:hover { background: #f4cd88; }
+.nolto-home .home-join { border-radius: 999px; background: #efbf68; color: #213b45; padding-inline: 1.75rem; height: 3.25rem; font-size: .95rem; }
+.nolto-home .home-join:hover { background: #f4cd88; }
 .home-explore { display: inline-flex; align-items: center; gap: .65rem; font-size: .9rem; font-weight: 500; padding-block: .75rem; text-underline-offset: .4rem; }
 .home-explore:hover { text-decoration: underline; }
 .home-footnote { font-size: .75rem; color: #c5d6dc; margin-top: 1.4rem; }
 .home-product { transform: rotate(2deg); background: hsl(var(--background)); color: hsl(var(--foreground)); border: 7px solid #456470; border-radius: 1.1rem; box-shadow: 0 24px 60px #102b3640; overflow: hidden; }
 .home-product-label { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid hsl(var(--border)); font-size: .65rem; color: hsl(var(--muted-foreground)); }
 .home-product-label span:first-child { font: 700 1.1rem Montserrat, sans-serif; color: hsl(var(--primary)); }
-.home-product-body { padding: 1.25rem; max-height: 33rem; overflow: auto; }
+.home-product-preview { display: block; padding: 1rem; }
+.home-product-preview:focus-visible { outline: 3px solid hsl(var(--primary)); outline-offset: -4px; }
+.home-product-preview img { display: block; width: 100%; height: auto; }
 .home-values { display: flex; justify-content: space-between; gap: 2rem; padding-block: 2.5rem; border-bottom: 1px solid hsl(var(--border)); }
 .home-values span { display: flex; align-items: center; gap: .75rem; font-size: .8rem; font-weight: 500; color: hsl(var(--muted-foreground)); }
 .home-values svg { width: 1.2rem; height: 1.2rem; color: hsl(var(--primary)); }
@@ -52,7 +54,7 @@
   .home-intro h1 { font-size: clamp(2.8rem, 12vw, 4rem); }
   .home-lead { font-size: 1rem; }
   .home-product { transform: none; }
-  .home-product-body { padding: .75rem; max-height: 28rem; }
+  .home-product-preview { padding: .75rem; }
   .home-values { flex-direction: column; gap: 1.25rem; padding-block: 2rem; }
   .home-feature { grid-template-columns: 1fr; gap: 2rem; padding-block: 3.5rem; }
   .home-feature-visual { padding: 1.5rem 0 1.5rem 1.5rem; }
