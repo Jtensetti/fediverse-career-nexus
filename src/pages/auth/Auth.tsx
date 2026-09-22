@@ -1,3 +1,4 @@
+import SocialSignIn from '@/components/auth/SocialSignIn';
 import BlueskySignIn from '@/components/auth/BlueskySignIn';
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -456,6 +457,7 @@ export default function AuthPage() {
               </div>
             </div>
 
+            <SocialSignIn />
             <BlueskySignIn />
             <Tabs defaultValue={defaultTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mx-6 mt-4" style={{ width: "calc(100% - 48px)" }}>

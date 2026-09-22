@@ -23,7 +23,7 @@ export default function OnboardingFlow({ open, onComplete }: Props) {
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
   const [locked, setLocked] = useState(false);
-  const [federate, setFederate] = useState(false);
+  const [federate, setFederate] = useState(true);
   const [error, setError] = useState("");
   const [profile, setProfile] = useState({ username: "", fullname: "", headline: "", bio: "" });
 
@@ -40,7 +40,7 @@ export default function OnboardingFlow({ open, onComplete }: Props) {
       if (result.error || actor.error) { setError(t("onboardingFlow.loadError")); return; }
       setProfile({ username: result.data.username || "", fullname: result.data.fullname || "", headline: result.data.headline || "", bio: result.data.bio || "" });
       setLocked(!!actor.data?.public_key);
-      setFederate(actor.data ? actor.data.status === "active" : false);
+      setFederate(actor.data ? actor.data.status === "active" : true);
       setReady(true);
     }).catch(() => { if (active) setError(t("onboardingFlow.loadError")); });
     return () => { active = false; };
@@ -49,7 +49,7 @@ export default function OnboardingFlow({ open, onComplete }: Props) {
   const finish = async (enable: boolean) => {
     setBusy(true); setError("");
     try {
-      if (enable && !await createUserActor(user!.id, true)) throw new Error(t("onboardingFlow.federationError"));
+      if (!await createUserActor(user!.id, enable)) throw new Error(t("onboardingFlow.federationError"));
       await onComplete();
     } catch (e) { setError(e instanceof Error ? e.message : t("onboardingFlow.saveError")); }
     finally { setBusy(false); }

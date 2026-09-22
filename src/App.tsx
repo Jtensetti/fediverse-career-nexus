@@ -1,3 +1,4 @@
+import SocialCallback from '@/pages/auth/SocialCallback';
 import React, { lazy, Suspense } from "react";
 
 import {
@@ -192,6 +193,7 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/login" element={<Auth />} />
             <Route path="/auth/signup" element={<Auth />} />
+            <Route path="/auth/social/callback" element={<SocialCallback />} />
             <Route path="/auth/atproto/callback" element={<AtprotoCallback />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/recovery" element={<AuthRecovery />} />
