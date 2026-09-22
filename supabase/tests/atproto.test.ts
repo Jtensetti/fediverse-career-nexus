@@ -1,4 +1,7 @@
 import { strict as assert } from 'node:assert';
+import https from 'node:https';
+import { PassThrough } from 'node:stream';
+import type { IncomingMessage, ClientRequest } from 'node:http';
 import publishedMetadata from '../../public/oauth-client-metadata.json' with { type: 'json' };
 import { atprotoHandle, atprotoMetadata, atprotoCallbackParams, browserProof } from '../functions/_shared/atproto-policy.ts';
 import { atprotoFetch } from '../functions/_shared/atproto-fetch.ts';
@@ -20,30 +23,35 @@ Deno.test('AT Protocol login requests identity only and rejects unsafe discovery
   for (const iss of ['http://example.com', 'https://localhost', 'https://example.com/path']) assert.throws(() => atprotoCallbackParams({ state: 'state', code: 'code', iss }));
 });
 
-Deno.test('OAuth transport pins the checked IP while retaining the HTTPS hostname and blocks unsafe DNS', async () => {
-  const originals = { dns: Deno.resolveDns, client: Deno.createHttpClient, fetch: globalThis.fetch };
-  let addresses = ['8.8.8.8'], connections = 0, closed = 0, body = '{}';
+Deno.test('OAuth transport pins the checked IP, authenticates the hostname and bounds responses', async () => {
+  const originals = { dns: Deno.resolveDns, request: https.request };
+  let addresses = ['8.8.8.8'], connections = 0, body = '{}', status = 200;
   try {
     Deno.resolveDns = (() => Promise.resolve(addresses)) as unknown as typeof Deno.resolveDns;
-    Deno.createHttpClient = ((options: Deno.CreateHttpClientOptions) => {
-      connections++; assert.deepEqual(options.proxy, { transport: 'tcp', hostname: '8.8.8.8', port: 443 });
-      return { close: () => { closed++; } } as Deno.HttpClient;
-    }) as typeof Deno.createHttpClient;
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit & { client?: Deno.HttpClient }) => {
-      assert.equal((input as Request).url, 'https://oauth.example.com/token');
-      assert.equal(init?.redirect, 'error');
-      assert.ok(init?.client); assert.ok(init?.signal);
-      return new Response(body);
-    }) as typeof fetch;
+    https.request = ((options: https.RequestOptions, callback: (response: IncomingMessage) => void) => {
+      connections++;
+      assert.equal(options.hostname, '8.8.8.8'); assert.equal(options.servername, 'oauth.example.com');
+      assert.equal(options.rejectUnauthorized, true); assert.equal(options.agent, false);
+      assert.equal(options.path, '/token'); assert.equal((options.headers as Record<string, string>).host, 'oauth.example.com');
+      assert.ok(options.signal); assert.ok(options.checkServerIdentity);
+      const outgoing = new PassThrough();
+      outgoing.on('finish', () => {
+        const incoming = Object.assign(new PassThrough(), { statusCode: status, rawHeaders: ['content-type', 'application/json'] });
+        callback(incoming as unknown as IncomingMessage);
+        incoming.end(body);
+      });
+      return outgoing as unknown as ClientRequest;
+    }) as typeof https.request;
     assert.equal(await (await atprotoFetch('https://oauth.example.com/token')).text(), '{}');
-    assert.equal(closed, 1);
     addresses = ['8.8.8.8', '127.0.0.1'];
     await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), (error: unknown) => error instanceof AtprotoTransportError && error.stage === 'public-address');
     assert.equal(connections, 1);
     addresses = ['8.8.8.8']; body = 'x'.repeat(2 * 1024 * 1024 + 1);
     await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), (error: unknown) => error instanceof AtprotoTransportError && error.stage === 'response-body');
-    assert.equal(closed, 2);
-  } finally { Deno.resolveDns = originals.dns; Deno.createHttpClient = originals.client; globalThis.fetch = originals.fetch; }
+    body = ''; status = 302;
+    await assert.rejects(() => atprotoFetch('https://oauth.example.com/token'), (error: unknown) => error instanceof AtprotoTransportError && error.stage === 'https');
+    assert.equal(connections, 3);
+  } finally { Deno.resolveDns = originals.dns; https.request = originals.request; }
 });
 
 Deno.test('OAuth diagnostics retain the failing stage without exposing wrapped request secrets', () => {
