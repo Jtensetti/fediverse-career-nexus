@@ -5,10 +5,11 @@
 /.well-known/oauth-authorization-server      https://anknmcmqljejabxbeohv.supabase.co/functions/v1/oauth-authorization-server  200
 /nodeinfo/*                                  https://anknmcmqljejabxbeohv.supabase.co/functions/v1/nodeinfo/:splat  200
 
-# Partial discovery/search API; not a complete Mastodon client API
-/api/v1/instance                             https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/v1/instance  200
-/api/v1/apps                                 https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/v1/apps      200
-/api/v2/search                               https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/v2/search    200
+# Mastodon client subset; /oauth/authorize remains a browser consent page.
+/api/v1/*                                    https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/v1/:splat  200
+/api/v2/*                                    https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/v2/:splat  200
+/oauth/token                                 https://anknmcmqljejabxbeohv.supabase.co/functions/v1/oauth-authorization-server/token  200
+/oauth/revoke                                https://anknmcmqljejabxbeohv.supabase.co/functions/v1/oauth-authorization-server/revoke  200
 
 # Proxy all edge function calls
 /functions/v1/*                              https://anknmcmqljejabxbeohv.supabase.co/functions/v1/:splat  200

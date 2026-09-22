@@ -13,8 +13,11 @@ export default {
       "/.well-known/webfinger": "/functions/v1/webfinger",
       "/.well-known/nodeinfo": "/functions/v1/nodeinfo",
       "/.well-known/host-meta": "/functions/v1/host-meta",
+      "/.well-known/oauth-authorization-server": "/functions/v1/oauth-authorization-server",
     };
     const path = discovery[url.pathname] ||
+      (/^\/api\/v[12](\/|$)/.test(url.pathname) ? '/functions/v1/mastodon-api'+url.pathname : null) ||
+      (['/oauth/token','/oauth/revoke'].includes(url.pathname) ? '/functions/v1/oauth-authorization-server/'+url.pathname.split('/').at(-1) : null) ||
       (/^\/functions\/v1\/(actor|inbox|outbox|followers|following|objects|activities|nodeinfo)(\/|$)/.test(url.pathname) ? url.pathname : null);
     if (path) {
       const target = new URL(path + url.search, backend.origin);
@@ -22,6 +25,7 @@ export default {
       headers.delete("host");
       // Prevent a user-supplied forwarded host from becoming a trusted signature input.
       headers.delete("x-forwarded-host");
+      headers.delete("x-forwarded-for");
       return fetch(target, { method: request.method, headers, body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body, redirect: "manual" });
     }
     // A Worker Route forwards unmatched requests to the existing origin. Keep

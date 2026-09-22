@@ -119,6 +119,10 @@ Deno.serve(workerHandler(async () => {
       const { error } = await db.rpc('purge_expired_private_metadata');
       if (error) throw error;
     }
+    if (hasTime()) {
+      const { error } = await db.rpc('purge_mastodon_metadata');
+      if (error) throw error;
+    }
     return jsonResponse(result, result.failed ? 503 : 200);
   } finally {
     const { error } = await db.from('privacy_worker_lease').delete().eq('lease_id', lease);

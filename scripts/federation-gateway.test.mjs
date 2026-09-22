@@ -18,5 +18,21 @@ test('gateway routes discovery and signed inbox bytes while retaining canonical 
     const callback = new Request('https://nolto.social/auth/social/callback?flow=test');
     await gateway.fetch(callback, env);
     assert.equal(calls.at(-1).input, callback);
+    const consent = new Request('https://nolto.social/oauth/authorize?client_id=example');
+    await gateway.fetch(consent,env);
+    assert.equal(calls.at(-1).input,consent);
+    const broker = new Request('https://nolto.social/~oauth/initiate?provider=google');
+    await gateway.fetch(broker,env);
+    assert.equal(calls.at(-1).input,broker);
+    const token = new Request('https://nolto.social/oauth/token',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded',authorization:'Basic fixture','x-forwarded-for':'forged'},body:'grant_type=authorization_code&code=fixture'});
+    await gateway.fetch(token,env);
+    assert.equal(String(calls.at(-1).input),'https://backend.example.com/functions/v1/oauth-authorization-server/token');
+    assert.equal(calls.at(-1).init.headers.get('authorization'),'Basic fixture');
+    assert.equal(calls.at(-1).init.headers.get('x-forwarded-for'),null);
+    assert.equal(await new Response(calls.at(-1).init.body).text(),'grant_type=authorization_code&code=fixture');
+    await gateway.fetch(new Request('https://nolto.social/api/v1/timelines/home?max_id=9007199254740993'),env);
+    assert.equal(String(calls.at(-1).input),'https://backend.example.com/functions/v1/mastodon-api/api/v1/timelines/home?max_id=9007199254740993');
+    await gateway.fetch(new Request('https://nolto.social/.well-known/oauth-authorization-server'),env);
+    assert.equal(String(calls.at(-1).input),'https://backend.example.com/functions/v1/oauth-authorization-server');
   } finally { globalThis.fetch = original; }
 });

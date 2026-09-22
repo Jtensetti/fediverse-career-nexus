@@ -1150,6 +1150,7 @@ const ProfileEditPage = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <MFASettings />
+                <div className="space-y-2"><h3 className="font-medium">Anslutna appar</h3><p className="text-sm text-muted-foreground">Hantera vilka externa appar som får använda ditt Nolto-konto.</p><Button variant="outline" asChild><a href="/settings/apps">Hantera appåtkomst</a></Button></div>
 
                 <Separator />
 

@@ -31,6 +31,8 @@ try {
     './federated-interaction-assertions.sql',
     '../../supabase/migrations/20260922172019_post_image_drafts.sql',
     './post-image-assertions.sql',
+    '../../supabase/migrations/20260922184945_mastodon_client_access.sql',
+    './mastodon-assertions.sql',
   ]) {
     try {
       if (path !== './cloud-schema.sql') await db.exec('SET check_function_bodies = true');
