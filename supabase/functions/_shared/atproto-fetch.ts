@@ -1,75 +1,70 @@
-import https from 'node:https';
-import { checkServerIdentity } from 'node:tls';
 import { isPublicAddress, remoteUrl } from './remote-fetch.ts';
 import { AtprotoTransportError } from './atproto-diagnostics.ts';
+import { pinnedHttpResponse } from './pinned-http-response.ts';
 
-const MAX_BYTES = 2 * 1024 * 1024;
-
-/** Connect directly to a checked IP, with TLS/SNI and Host for the original
- * hostname. node:https works on the hosted Edge runtime; Deno's TCP proxy
- * option requires a newer runtime. No redirects, second DNS lookup or pooling.
+/** Use stable Deno TCP/TLS APIs. Older node:https polyfills internally call
+ * fetch and ignore servername on an IP URL; the newer TCP proxy API is absent
+ * on hosted Edge. startTls checks the original hostname on the pinned socket.
  */
 export async function atprotoFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
   const request = new Request(input, init);
   let url: URL;
   try { url = remoteUrl(request.url); }
   catch (error) { throw new AtprotoTransportError('url', '', error); }
-  const resolved = await Promise.allSettled([Deno.resolveDns(url.hostname, 'A'), Deno.resolveDns(url.hostname, 'AAAA')]);
-  const addresses = resolved.flatMap(result => result.status === 'fulfilled' ? result.value : []);
-  if (!addresses.length) throw new AtprotoTransportError('dns', url.hostname, resolved.find(result => result.status === 'rejected')?.reason);
-  if (addresses.some(address => !isPublicAddress(address))) throw new AtprotoTransportError('public-address', url.hostname);
-  const body = request.body ? new Uint8Array(await request.arrayBuffer()) : undefined;
-  if (body && body.byteLength > MAX_BYTES) throw new AtprotoTransportError('response-body', url.hostname);
-  const headers = Object.fromEntries(request.headers.entries());
-  headers.host = url.host;
-  headers['accept-encoding'] = 'identity';
-  headers.connection = 'close';
-
-  return new Promise<Response>((resolve, reject) => {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 10000);
-    const abort = () => controller.abort();
-    request.signal.addEventListener('abort', abort, { once: true });
-    if (request.signal.aborted) abort();
-    const cleanup = () => { clearTimeout(timer); request.signal.removeEventListener('abort', abort); };
-    const fail = (error: unknown) => {
-      cleanup(); reject(error instanceof AtprotoTransportError ? error : new AtprotoTransportError('https', url.hostname, error));
-    };
-    try {
-      const outgoing = https.request({
-        hostname: addresses[0], port: 443, servername: url.hostname,
-        checkServerIdentity: (_hostname, certificate) => checkServerIdentity(url.hostname, certificate),
-        rejectUnauthorized: true, agent: false, method: request.method,
-        path: url.pathname + url.search, headers, signal: controller.signal,
-      }, incoming => {
-        const status = incoming.statusCode || 502;
-        if (status >= 300 && status < 400 && status !== 304) {
-          incoming.destroy(); outgoing.destroy();
-          fail(new AtprotoTransportError('https', url.hostname)); return;
-        }
-        const responseHeaders = new Headers();
-        for (let i = 0; i < incoming.rawHeaders.length; i += 2) responseHeaders.append(incoming.rawHeaders[i], incoming.rawHeaders[i + 1]);
-        const chunks: Uint8Array[] = [];
-        let bytes = 0;
-        incoming.on('error', fail);
-        incoming.on('data', (chunk: Uint8Array) => {
-          bytes += chunk.byteLength;
-          if (bytes > MAX_BYTES) {
-            incoming.destroy(); outgoing.destroy();
-            fail(new AtprotoTransportError('response-body', url.hostname));
-          } else chunks.push(chunk);
-        });
-        incoming.on('end', () => {
-          cleanup();
-          const result = new Uint8Array(bytes);
-          let offset = 0;
-          for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.byteLength; }
-          try { resolve(new Response([204, 205, 304].includes(status) || request.method === 'HEAD' ? null : result, { status, headers: responseHeaders })); }
-          catch (error) { fail(error); }
-        });
-      });
-      outgoing.on('error', fail);
-      outgoing.end(body);
-    } catch (error) { fail(error); }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  const abort = () => controller.abort();
+  request.signal.addEventListener('abort', abort, { once: true });
+  if (request.signal.aborted) abort();
+  let connection: Deno.Conn | undefined;
+  const close = () => { try { connection?.close(); } catch { /* Already closed. */ } };
+  const cancelled = new Promise<never>((_, reject) => {
+    const cancel = () => { close(); reject(new AtprotoTransportError('https', url.hostname, new DOMException('Cancelled', 'AbortError'))); };
+    controller.signal.addEventListener('abort', cancel, { once: true });
+    if (controller.signal.aborted) cancel();
   });
+  const run = async () => {
+    const resolved = await Promise.allSettled([Deno.resolveDns(url.hostname, 'A'), Deno.resolveDns(url.hostname, 'AAAA')]);
+    const addresses = resolved.flatMap(result => result.status === 'fulfilled' ? result.value : []);
+    if (!addresses.length) throw new AtprotoTransportError('dns', url.hostname, resolved.find(result => result.status === 'rejected')?.reason);
+    if (addresses.some(address => !isPublicAddress(address))) throw new AtprotoTransportError('public-address', url.hostname);
+    controller.signal.throwIfAborted();
+    try {
+      const tcp = await Deno.connect({ hostname: addresses[0], port: 443, transport: 'tcp' });
+      connection = tcp;
+      if (controller.signal.aborted) { close(); controller.signal.throwIfAborted(); }
+      connection = await Deno.startTls(tcp, { hostname: url.hostname, alpnProtocols: ['http/1.1'] });
+      if (controller.signal.aborted) { close(); controller.signal.throwIfAborted(); }
+      const body = request.body ? new Uint8Array(await request.arrayBuffer()) : new Uint8Array();
+      if (body.length > 2 * 1024 * 1024) throw new Error('Request too large');
+      const headers = new Headers(request.headers);
+      headers.set('host', url.host); headers.set('accept-encoding', 'identity'); headers.set('connection', 'close');
+      headers.delete('transfer-encoding'); headers.delete('expect'); headers.set('content-length', String(body.length));
+      const head = new TextEncoder().encode(`${request.method} ${url.pathname}${url.search} HTTP/1.1\r\n${[...headers].map(([key,value]) => `${key}: ${value}\r\n`).join('')}\r\n`);
+      for (const data of [head, body]) {
+        let offset = 0;
+        while (offset < data.length) {
+          const count = await connection.write(data.subarray(offset));
+          if (count <= 0) throw new Error('Connection closed');
+          offset += count;
+        }
+      }
+      const chunks: Uint8Array[] = []; let size = 0;
+      while (true) {
+        const chunk = new Uint8Array(16384);
+        const count = await connection.read(chunk);
+        if (count === null) break;
+        size += count;
+        if (size > 4 * 1024 * 1024) throw new AtprotoTransportError('response-body', url.hostname);
+        chunks.push(chunk.subarray(0, count));
+      }
+      const bytes = new Uint8Array(size); let offset = 0;
+      for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+      try { return pinnedHttpResponse(bytes, request.method); }
+      catch (error) { throw new AtprotoTransportError('response-body', url.hostname, error); }
+    } catch (error) { throw error instanceof AtprotoTransportError ? error : new AtprotoTransportError('https', url.hostname, error); }
+    finally { close(); }
+  };
+  try { return await Promise.race([run(), cancelled]); }
+  finally { clearTimeout(timer); request.signal.removeEventListener('abort', abort); close(); }
 }
