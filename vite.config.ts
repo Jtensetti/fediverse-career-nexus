@@ -1,15 +1,19 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import publicBackend from "./config/public-backend.json";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   const get = (key: string) => process.env[key] ?? env[key];
 
+  const url = get("VITE_SUPABASE_URL");
+  const key = get("VITE_SUPABASE_PUBLISHABLE_KEY");
+  if (Boolean(url) !== Boolean(key)) throw new Error("Set both public backend environment variables together.");
   const resolved = {
-    VITE_SUPABASE_URL: get("VITE_SUPABASE_URL"),
-    VITE_SUPABASE_PUBLISHABLE_KEY: get("VITE_SUPABASE_PUBLISHABLE_KEY"),
+    VITE_SUPABASE_URL: url || publicBackend.url,
+    VITE_SUPABASE_PUBLISHABLE_KEY: key || publicBackend.publishableKey,
   };
 
   // Build-time safety: forks/self-hosters must provide their own backend env vars.
@@ -27,6 +31,7 @@ export default defineConfig(({ mode }) => {
 
 
   return {
+    define: Object.fromEntries(Object.entries(resolved).map(([name, value]) => [`import.meta.env.${name}`, JSON.stringify(value)])),
     server: {
       host: "::",
       port: 8080,

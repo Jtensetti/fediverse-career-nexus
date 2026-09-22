@@ -1,0 +1,52 @@
+{
+	admin off
+	auto_https off
+}
+
+(backend) {
+	reverse_proxy {$NOLTO_BACKEND_ORIGIN:https://example.invalid} {
+		header_up Host {upstream_hostport}
+	}
+}
+
+:8080 {
+	root * /srv
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+	handle /healthz {
+		respond "ok" 200
+	}
+	@discovery path /.well-known/webfinger /.well-known/nodeinfo /.well-known/host-meta /.well-known/oauth-authorization-server
+	handle @discovery {
+		uri replace /.well-known/ /functions/v1/
+		import backend
+	}
+	handle /nodeinfo/* {
+		uri replace /nodeinfo/ /functions/v1/nodeinfo/
+		import backend
+	}
+	@mastodon path /api/v1/instance /api/v1/apps /api/v2/search
+	handle @mastodon {
+		rewrite * /functions/v1/mastodon-api{uri}
+		import backend
+	}
+	handle /functions/v1/* {
+		import backend
+	}
+	handle /assets/* {
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+	handle {
+		@unsupported not method GET HEAD
+		respond @unsupported 405
+		header Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

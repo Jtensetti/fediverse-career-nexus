@@ -4,7 +4,8 @@ import { Separator } from "@/components/ui/separator";
 import { useTranslation } from "react-i18next";
 
 const Footer = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const sv = i18n.language.startsWith("sv");
 
   return (
     <footer className="bg-muted/50 border-t border-border">
@@ -24,6 +25,8 @@ const Footer = () => {
             <div>
               <h3 className="text-sm font-semibold text-primary mb-4">{t("footer.about", "About")}</h3>
               <ul className="space-y-3">
+                <li><Link to="/feed" className="text-muted-foreground hover:text-primary">{sv ? "Utforska flödet" : "Explore the feed"}</Link></li>
+                <li><Link to="/hosting" className="text-muted-foreground hover:text-primary">{sv ? "Egen drift" : "Self-hosting"}</Link></li>
                 <li><Link to="/mission" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.ourMission", "Our Mission")}</Link></li>
               </ul>
             </div>

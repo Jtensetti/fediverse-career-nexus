@@ -44,6 +44,7 @@ SELECT public.test_assert((SELECT count(*) FROM public.messages)=0,'anonymous us
 SELECT public.test_assert((SELECT count(*) FROM public.public_experiences)=0,'public CV view enforces connections visibility');
 SELECT public.test_assert((SELECT count(*) FROM public.public_education)=0,'public CV view enforces signed-in visibility');
 SELECT public.test_assert((SELECT count(*) FROM public.ap_objects)=1,'anonymous users only read public objects');
+SELECT public.test_assert((SELECT count(*) FROM public.federated_feed)=1,'anonymous feed reads only public top-level posts');
 SELECT public.test_denied('SELECT private_key FROM public.actors');
 SELECT public.test_denied('SELECT public.create_mutual_connection_follows(''11111111-1111-4111-8111-111111111111'',''22222222-2222-4222-8222-222222222222'')');
 SELECT public.test_denied('INSERT INTO public.mfa_recovery_requests(email) VALUES (''attacker@example.invalid'')');
