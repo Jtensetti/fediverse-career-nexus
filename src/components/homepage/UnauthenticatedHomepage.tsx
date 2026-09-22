@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, ArrowUpRight, Code2, Globe2, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PublicArtwork from "@/components/layout/PublicArtwork";
 import "./homepage.css";
 
 export default function UnauthenticatedHomepage() {
@@ -9,10 +10,10 @@ export default function UnauthenticatedHomepage() {
   const sv = i18n.language.startsWith("sv");
   return <div className="nolto-home">
     <section className="home-hero">
-      <div className="home-container home-hero-grid">
+      <div className="home-container home-hero-copy">
         <div className="home-intro">
           <p className="home-eyebrow">{sv ? "DITT PROFESSIONELLA NÄTVERK" : "YOUR PROFESSIONAL NETWORK"}</p>
-          <h1>{sv ? <>Ett öppnare<br /><span>arbetsliv.</span></> : <>A more open<br /><span>working life.</span></>}</h1>
+          <h1>{sv ? <>Ett öppnare <span>arbetsliv.</span></> : <>A more open <span>working life.</span></>}</h1>
           <p className="home-lead">{sv ? "Möt människor, dela det du kan och hitta din nästa möjlighet. Ett nätverk som du är med och formar." : "Meet people, share what you know and find your next opportunity. A network you help shape."}</p>
           <div className="home-actions">
             <Button asChild size="lg" className="home-join"><Link to="/auth/signup">{sv ? "Gå med i Nolto" : "Join Nolto"}<ArrowUpRight className="ml-2 h-5 w-5" aria-hidden="true" /></Link></Button>
@@ -20,20 +21,8 @@ export default function UnauthenticatedHomepage() {
           </div>
           <p className="home-footnote">{sv ? "Titta in. Du behöver inget konto för att läsa." : "Take a look. You don’t need an account to read."}</p>
         </div>
-        <div className="home-product">
-          <div className="home-product-label"><span>Nolto</span><span>{sv ? "En plats för nya perspektiv" : "A place for fresh perspectives"}</span></div>
-          <Link to="/feed" className="home-product-preview">
-            <img
-              src="/screenshots/feed.jpg"
-              width="756"
-              height="696"
-              alt={sv ? "Noltos offentliga flöde med val mellan På Nolto och Hela nätverket. Öppna flödet." : "Nolto’s public feed, with local and network views. Open the feed."}
-              fetchPriority="high"
-              decoding="async"
-            />
-          </Link>
-        </div>
       </div>
+      <PublicArtwork placement="header" />
     </section>
 
     <div className="home-values home-container" aria-label={sv ? "Det Nolto står för" : "What Nolto stands for"}>
@@ -41,6 +30,28 @@ export default function UnauthenticatedHomepage() {
       <span><Globe2 aria-hidden="true" />{sv ? "En del av den öppna webben" : "Part of the open web"}</span>
       <span><Code2 aria-hidden="true" />{sv ? "Öppen källkod" : "Open source"}</span>
     </div>
+
+    <section className="home-container home-feature home-feature--feed">
+      <div className="home-feature-copy">
+        <p className="home-eyebrow">{sv ? "SAMTAL OCH NYA PERSPEKTIV" : "CONVERSATIONS AND NEW PERSPECTIVES"}</p>
+        <h2>{sv ? "Börja med att titta in." : "Start by taking a look."}</h2>
+        <p>{sv ? "Läs det som delas på Nolto och i det öppna nätverket. När du vill svara eller dela något själv skapar du ett konto." : "Read what people share on Nolto and across the open network. Create an account when you want to reply or share something yourself."}</p>
+        <Link to="/feed" className="home-text-link">{sv ? "Utforska flödet" : "Explore the feed"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+      </div>
+      <div className="home-product">
+        <div className="home-product-label"><span>Nolto</span><span>{sv ? "En plats för nya perspektiv" : "A place for fresh perspectives"}</span></div>
+        <Link to="/feed" className="home-product-preview">
+          <img
+            src="/screenshots/feed.jpg"
+            width="756"
+            height="696"
+            alt={sv ? "Noltos offentliga flöde med val mellan På Nolto och Hela nätverket. Öppna flödet." : "Nolto’s public feed, with local and network views. Open the feed."}
+            loading="lazy"
+            decoding="async"
+          />
+        </Link>
+      </div>
+    </section>
 
     <section className="home-container home-feature">
       <div className="home-feature-copy">

@@ -71,7 +71,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
             <Link to={`/organisation/${company?.slug}`}>
               <Avatar className="h-10 w-10">
                 <AvatarImage src={company?.logo_url} alt={company?.name} />
-                <AvatarFallback className="bg-primary/10">
+                <AvatarFallback kind="organisation" className="bg-primary/10">
                   <Building2 className="h-5 w-5 text-primary" />
                 </AvatarFallback>
               </Avatar>

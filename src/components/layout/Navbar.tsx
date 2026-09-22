@@ -62,7 +62,7 @@ function MemberNavbar() {
 
   return <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
     <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-3 px-4">
-      <Link to="/feed" className="flex items-center gap-2 text-primary"><img src="/nolto-logo.png" width="32" height="32" alt="" /><span className="font-display text-xl font-bold">Nolto</span></Link>
+      <Link to="/feed" className="flex items-center gap-2 text-primary"><img src="/brand/mascot.webp" width="32" height="32" alt="" className="h-8 w-8 object-contain" /><span className="font-display text-xl font-bold">Nolto</span></Link>
       <nav className="hidden items-center gap-1 xl:flex" aria-label={t("accessibility.navigationMenu")}>
         {links.map(link => <NavLink key={link.to} to={link.to} className={({ isActive }) => `rounded-md px-3 py-2 text-sm font-medium ${isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}>{link.label}</NavLink>)}
       </nav>

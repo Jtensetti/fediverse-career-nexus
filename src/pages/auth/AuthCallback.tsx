@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
@@ -143,9 +144,10 @@ export default function AuthCallback() {
         {status === 'success' && profile && (
           <CardContent className="text-center">
             <div className="flex items-center justify-center gap-3 p-4 bg-muted rounded-lg">
-              {profile.avatar_url && (
-                <img src={profile.avatar_url} alt={profile.username} className="w-12 h-12 rounded-full" />
-              )}
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                <AvatarFallback>{profile.username}</AvatarFallback>
+              </Avatar>
               <div className="text-left">
                 <p className="font-medium">{profile.fullname}</p>
                 <p className="text-sm text-muted-foreground">@{profile.username}</p>

@@ -198,7 +198,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
           <Link to={comment.company ? `/organisation/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`}>
             <Avatar className="h-6 w-6 aspect-square flex-shrink-0">
               {comment.author.avatar_url && <AvatarImage src={comment.author.avatar_url} />}
-              <AvatarFallback className="text-[10px] bg-muted">
+              <AvatarFallback kind={comment.company ? "organisation" : "person"} className="text-[10px] bg-muted">
                 {(comment.author.fullname || comment.author.username || 'U').charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

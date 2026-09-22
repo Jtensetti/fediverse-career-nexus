@@ -14,6 +14,7 @@ interface AvatarWithStatusProps {
   className?: string;
   ringClassName?: string;
   isFreelancer?: boolean;
+  kind?: "person" | "organisation";
 }
 
 const sizeClasses: Record<SizeType, { avatar: string; ring: string; badge: string; icon: string }> = {
@@ -52,6 +53,7 @@ const AvatarWithStatus = ({
   className,
   ringClassName,
   isFreelancer = false,
+  kind = "person",
 }: AvatarWithStatusProps) => {
   const sizes = sizeClasses[size];
   const displayFallback = fallback || alt?.charAt(0).toUpperCase() || "U";
@@ -71,7 +73,7 @@ const AvatarWithStatus = ({
         )}
       >
         <AvatarImage src={src || undefined} alt={alt} className="object-cover" />
-        <AvatarFallback className="text-sm font-medium bg-muted">
+        <AvatarFallback kind={kind} className="text-sm font-medium bg-muted">
           {displayFallback}
         </AvatarFallback>
       </Avatar>

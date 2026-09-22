@@ -1,17 +1,19 @@
 .home-container { width: min(100% - 4rem, 1200px); margin-inline: auto; }
-.home-hero { background: #294653; color: #f6f9fa; overflow: hidden; border-radius: 0 0 3rem 3rem; }
-.home-hero-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 4rem; padding-block: 6rem; }
+.home-hero { color: hsl(var(--foreground)); }
+.home-hero-copy { padding-block: 4rem 2.5rem; text-align: center; }
+.home-hero .home-actions { justify-content: center; }
 .home-eyebrow { font-size: .7rem; line-height: 1.5; font-weight: 600; letter-spacing: .16em; margin-bottom: 1.5rem; }
-.home-intro .home-eyebrow { color: #b8d4d2; }
+.home-intro .home-eyebrow { color: hsl(var(--muted-foreground)); }
 .home-intro h1 { font-family: Montserrat, sans-serif; font-size: clamp(3.2rem, 5.5vw, 5.1rem); line-height: 1.07; letter-spacing: -.065em; font-weight: 700; }
-.home-intro h1 span { color: #efbf68; }
-.home-lead { font-size: 1.125rem; line-height: 1.8; max-width: 29rem; margin-top: 1.8rem; color: #e0e9ec; }
+.home-intro h1 span { color: #99651c; }
+.dark .home-intro h1 span { color: #efbf68; }
+.home-lead { font-size: 1.125rem; line-height: 1.8; max-width: 37rem; margin: 1.8rem auto 0; color: hsl(var(--muted-foreground)); }
 .home-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1.5rem; margin-top: 2rem; }
 .nolto-home .home-join { border-radius: 999px; background: #efbf68; color: #213b45; padding-inline: 1.75rem; height: 3.25rem; font-size: .95rem; }
 .nolto-home .home-join:hover { background: #f4cd88; }
 .home-explore { display: inline-flex; align-items: center; gap: .65rem; font-size: .9rem; font-weight: 500; padding-block: .75rem; text-underline-offset: .4rem; }
 .home-explore:hover { text-decoration: underline; }
-.home-footnote { font-size: .75rem; color: #c5d6dc; margin-top: 1.4rem; }
+.home-footnote { font-size: .75rem; color: hsl(var(--muted-foreground)); margin-top: 1.4rem; }
 .home-product { transform: rotate(2deg); background: hsl(var(--background)); color: hsl(var(--foreground)); border: 7px solid #456470; border-radius: 1.1rem; box-shadow: 0 24px 60px #102b3640; overflow: hidden; }
 .home-product-label { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid hsl(var(--border)); font-size: .65rem; color: hsl(var(--muted-foreground)); }
 .home-product-label span:first-child { font: 700 1.1rem Montserrat, sans-serif; color: hsl(var(--primary)); }
@@ -22,6 +24,8 @@
 .home-values span { display: flex; align-items: center; gap: .75rem; font-size: .8rem; font-weight: 500; color: hsl(var(--muted-foreground)); }
 .home-values svg { width: 1.2rem; height: 1.2rem; color: hsl(var(--primary)); }
 .home-feature { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; padding-block: 6.5rem; }
+.home-feature--feed .home-product { grid-column: 1; grid-row: 1; }
+.home-feature--feed .home-feature-copy { grid-column: 2; grid-row: 1; }
 .home-feature-copy { max-width: 30rem; }
 .home-feature-copy .home-eyebrow, .home-closing .home-eyebrow { color: hsl(var(--muted-foreground)); }
 .home-feature h2, .home-closing h2 { font-family: Montserrat, sans-serif; font-size: clamp(2rem, 3.2vw, 2.9rem); line-height: 1.2; letter-spacing: -.04em; font-weight: 600; }
@@ -43,20 +47,19 @@
 .home-open-source h3 { font-size: 1.2rem; }
 .home-open-source p { font-size: .875rem; }
 @media (max-width: 1023px) {
-  .home-hero-grid { gap: 2rem; padding-block: 4rem; }
   .home-feature { gap: 3rem; }
   .home-closing { gap: 3rem; }
 }
 @media (max-width: 767px) {
   .home-container { width: calc(100% - 2.5rem); }
-  .home-hero { border-radius: 0 0 1.75rem 1.75rem; }
-  .home-hero-grid { grid-template-columns: 1fr; gap: 3rem; padding-block: 3.5rem; }
+  .home-hero-copy { padding-block: 3rem 2rem; }
   .home-intro h1 { font-size: clamp(2.8rem, 12vw, 4rem); }
   .home-lead { font-size: 1rem; }
   .home-product { transform: none; }
   .home-product-preview { padding: .75rem; }
   .home-values { flex-direction: column; gap: 1.25rem; padding-block: 2rem; }
   .home-feature { grid-template-columns: 1fr; gap: 2rem; padding-block: 3.5rem; }
+  .home-feature--feed .home-feature-copy, .home-feature--feed .home-product { grid-column: auto; grid-row: auto; }
   .home-feature-visual { padding: 1.5rem 0 1.5rem 1.5rem; }
   .home-network .home-feature-copy { grid-row: 1; }
   .home-address-visual { padding: 2rem; }

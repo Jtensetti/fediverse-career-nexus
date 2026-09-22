@@ -383,7 +383,7 @@ export default function AuthPage() {
         <div className="max-w-md w-full space-y-8">
           {/* Logo and Branding */}
           <div className="text-center">
-            <img src="/nolto-logo.png" alt="Nolto" className="mx-auto h-16 w-16 mb-4" />
+            <img src="/brand/mascot.webp" alt="Nolto" width="96" height="96" className="mx-auto mb-4 h-24 w-24 object-contain" />
             <h1 className="text-3xl font-bold text-foreground font-display">
               {t("auth.welcomeTitle", "Welcome to Nolto")}
             </h1>
