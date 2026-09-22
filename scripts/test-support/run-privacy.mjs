@@ -19,6 +19,8 @@ try {
     './rpc-boundary-assertions.sql',
     '../../supabase/migrations/20260922081110_nolto_post_notifications.sql',
     './post-notification-assertions.sql',
+    '../../supabase/migrations/20260922124130_personal_feeds.sql',
+    './personal-feed-assertions.sql',
   ]) {
     try {
       if (path !== './cloud-schema.sql') await db.exec('SET check_function_bodies = true');

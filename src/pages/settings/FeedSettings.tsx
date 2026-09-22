@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Settings, X, Loader2 } from "lucide-react";
-import { getFeedPreferences, updateFeedPreferences, type FeedPreferences } from "@/services/misc/feedPreferencesService";
+import { getFeedPreferences, getCustomFeeds, updateFeedPreferences, type FeedPreferences } from "@/services/misc/feedPreferencesService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SEOHead } from "@/components/common/SEOHead";
@@ -26,8 +26,9 @@ const FeedSettings = () => {
   const [newMutedWord, setNewMutedWord] = useState('');
   const [localPrefs, setLocalPrefs] = useState<Partial<FeedPreferences>>({});
 
-  const { data: preferences, isLoading } = useQuery({
-    queryKey: ['feedPreferences'],
+  const { data: customFeeds = [] } = useQuery({ queryKey: ['customFeeds', user?.id], queryFn: getCustomFeeds, enabled: !!user });
+  const { data: preferences, isLoading, isError, refetch } = useQuery({
+    queryKey: ['feedPreferences', user?.id],
     queryFn: getFeedPreferences,
     enabled: !!user,
   });
@@ -36,6 +37,7 @@ const FeedSettings = () => {
     mutationFn: updateFeedPreferences,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feedPreferences'] });
+      queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
       toast.success(t('feedSettingsPage.saved'));
     },
     onError: () => {
@@ -49,6 +51,7 @@ const FeedSettings = () => {
         default_feed: preferences.default_feed,
         show_reposts: preferences.show_reposts,
         show_replies: preferences.show_replies,
+        infinite_scroll: preferences.infinite_scroll,
         muted_words: preferences.muted_words || [],
         language_filter: preferences.language_filter || []
       });
@@ -56,7 +59,7 @@ const FeedSettings = () => {
   }, [preferences]);
 
   const handleSave = () => {
-    updateMutation.mutate(localPrefs);
+    if (!isError) updateMutation.mutate(localPrefs);
   };
 
   const handleAddMutedWord = () => {
@@ -116,6 +119,7 @@ const FeedSettings = () => {
       <Navbar />
       
       <main className="flex-grow container mx-auto px-4 py-8 max-w-2xl">
+{isError && <div role="alert" className="p-4 text-center"><p>{t('personalFeeds.saveError')}</p><Button onClick={() => refetch()}>{t('feed.tryAgain')}</Button></div>}
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/feed">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -142,7 +146,7 @@ const FeedSettings = () => {
             <CardContent>
               <Select 
                 value={localPrefs.default_feed || 'following'} 
-                onValueChange={(value: string) => setLocalPrefs(prev => ({ ...prev, default_feed: value as 'following' | 'local' | 'federated' }))}
+                onValueChange={(value: string) => setLocalPrefs(prev => ({ ...prev, default_feed: value }))}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -151,6 +155,7 @@ const FeedSettings = () => {
                   <SelectItem value="following">{t('feedSettingsPage.following')}</SelectItem>
                   <SelectItem value="local">{t('feedSettingsPage.local')}</SelectItem>
                   <SelectItem value="federated">{t('feedSettingsPage.federated')}</SelectItem>
+                  {customFeeds.map(feed => <SelectItem key={feed.id} value={feed.id}>{feed.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </CardContent>
@@ -184,7 +189,13 @@ const FeedSettings = () => {
                   onCheckedChange={(checked) => setLocalPrefs(prev => ({ ...prev, show_replies: checked }))}
                 />
               </div>
-            </CardContent>
+              <div className="flex items-center justify-between gap-4 pt-4">
+              <div><Label htmlFor="infinite-scroll">{t('personalFeeds.infiniteScroll')}</Label>
+                <p className="text-sm text-muted-foreground">{t('personalFeeds.infiniteScrollDescription')}</p></div>
+              <Switch id="infinite-scroll" checked={localPrefs.infinite_scroll ?? false}
+                onCheckedChange={checked => setLocalPrefs(previous => ({ ...previous, infinite_scroll: checked }))} />
+            </div>
+          </CardContent>
           </Card>
 
           <Card>
@@ -224,7 +235,7 @@ const FeedSettings = () => {
             <Button variant="outline" onClick={() => navigate('/feed')} className="flex-1">
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleSave} disabled={updateMutation.isPending} className="flex-1">
+            <Button onClick={handleSave} disabled={updateMutation.isPending || isError} className="flex-1">
               {updateMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Home, Users, Globe, Filter, Settings2, Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   getCustomFeeds,
   type FeedType,
-  type CustomFeed
 } from "@/services/misc/feedPreferencesService";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CreateCustomFeedDialog from "./CreateCustomFeedDialog";
 import ManageCustomFeedsDialog from "./ManageCustomFeedsDialog";
 
@@ -32,58 +30,28 @@ export interface FeedSelectorProps {
 export default function FeedSelector({ value, onChange, className }: FeedSelectorProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [customFeeds, setCustomFeeds] = useState<CustomFeed[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
-
-  // Check if user is federated (signed in via Fediverse)
-  const { data: profile } = useQuery({
-    queryKey: ['userAuthType', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from('public_actors')
-        .select('status')
-        .eq('user_id', user.id).eq('is_remote', false)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user?.id,
-    staleTime: Infinity,
+  const { data: customFeeds = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['customFeeds', user?.id], queryFn: getCustomFeeds, enabled: !!user,
   });
-
-  const isFederatedUser = profile?.status === 'active';
-
-  // Build feed tabs - only show federated tab to federated users
   const feedTabs = [
-    { id: 'following', label: t("feed.following", "Following"), icon: Home, description: t("feed.followingDesc", "Posts from people you follow") },
-    { id: 'local', label: t("feed.nolto", "Nolto"), icon: Users, description: t("feed.noltoDesc", "All posts on Nolto") },
-    ...(isFederatedUser ? [{ id: 'federated' as const, label: t("feed.fediverse", "Fediverse"), icon: Globe, description: t("feed.fediverseDesc", "Local + remote follows") }] : []),
+    { id: 'following', label: t('feed.following'), icon: Home, description: t('feed.followingDesc') },
+    { id: 'local', label: t('feed.nolto'), icon: Users, description: t('feed.noltoDesc') },
+    { id: 'federated', label: t('feed.fediverse'), icon: Globe, description: t('feed.fediverseDesc') },
   ];
-
-  useEffect(() => {
-    if (user) {
-      loadCustomFeeds();
-    }
-  }, [user]);
-
-  const loadCustomFeeds = async () => {
-    setIsLoading(true);
-    const feeds = await getCustomFeeds();
-    setCustomFeeds(feeds);
-    setIsLoading(false);
-  };
-
-  const handleFeedsChanged = () => {
-    loadCustomFeeds();
+  const handleFeedsChanged = async () => {
+    const result = await refetch();
+    if (!feedTabs.some(tab => tab.id === value) && !result.data?.some(feed => feed.id === value)) onChange('following');
+    await queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
   };
 
   const selectedFeed = feedTabs.find(tab => tab.id === value);
   const selectedCustomFeed = customFeeds.find(f => f.id === value);
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex min-w-0 flex-wrap items-center gap-2", className)}>
       {/* Main feed tabs */}
       <Tabs value={selectedFeed ? value : 'custom'} onValueChange={(v) => v !== 'custom' && onChange(v as FeedType)}>
         <TabsList className="h-9 p-1 bg-muted/50">
@@ -94,6 +62,7 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
                 <TooltipTrigger asChild>
                   <TabsTrigger 
                     value={tab.id}
+                    aria-label={tab.label}
                     className="gap-1.5 px-3 transition-colors"
                     style={isActive ? {
                       backgroundColor: 'hsl(var(--primary))',
@@ -120,6 +89,7 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
+                aria-label={selectedCustomFeed?.name || t("feed.feeds")}
                 variant={selectedCustomFeed ? "secondary" : "ghost"} 
                 size="sm"
                 className={cn(
@@ -140,6 +110,7 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
+              {isError && <DropdownMenuItem onClick={() => refetch()}>{t('feed.tryAgain')}</DropdownMenuItem>}
               {customFeeds.length > 0 ? (
                 <>
                   {customFeeds.map((feed) => (

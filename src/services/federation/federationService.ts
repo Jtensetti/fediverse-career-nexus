@@ -42,18 +42,13 @@ export type FeedType = "following" | "local" | "federated";
 export const getFederatedFeed = async (
   limit: number = 20,
   offset: number = 0,
-  feedType: FeedType = "following",
+  feedType: string = "following",
   userId?: string
 ): Promise<FederatedPost[]> => {
   try {
 
-    if (feedType === "following" && !userId) return [];
-    let publicQuery = supabase.from("federated_feed")
-      .select("id,content,published_at,source,type,attributed_to,company_id");
-    if (feedType === "local") publicQuery = publicQuery.eq("source", "local").neq("type", "Announce");
-    const query = feedType === "following"
-      ? supabase.rpc("get_following_feed", { p_limit: limit, p_offset: offset })
-      : publicQuery.order("published_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + limit - 1);
+    if (!userId) return [];
+    const query = supabase.rpc("get_member_feed", { p_feed: feedType, p_limit: limit, p_offset: offset });
 
     const { data: apObjects, error: apError } = await query;
 

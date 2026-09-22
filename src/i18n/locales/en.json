@@ -19,7 +19,8 @@
     "saveChanges": "Save changes",
     "saved": "Saved",
     "optional": "Optional",
-    "close": "Close"
+    "close": "Close",
+    "remove": "Remove"
   },
   "errorBoundary": {
     "title": "Something went wrong",
@@ -192,7 +193,9 @@
     "sessionExpired": "Your {{instance}} session has expired. Please re-authenticate to see remote posts.",
     "includingRemote": "Including {{count}} posts from your {{instance}} timeline",
     "couldNotFetch": "Could not fetch from {{instance}}: {{error}}",
-    "fetchingRemote": "Fetching posts from your Fediverse instance..."
+    "fetchingRemote": "Fetching posts from your Fediverse instance...",
+    "people": "People",
+    "keywords": "Keywords"
   },
   "comments": {
     "writeReply": "Write a reply...",
@@ -1931,5 +1934,40 @@
   },
   "publicFeed": {
     "signInToParticipate": "Sign in to reply or react"
+  },
+  "personalFeeds": {
+    "description": "Your private feed shows posts by selected people or organisations, or posts matching any of your tags or keywords. Newest first. Only content you are allowed to read appears.",
+    "tags": "Tags",
+    "searchPlaceholder": "Type at least two characters…",
+    "searchError": "Search failed. Please try again.",
+    "noResults": "No results. Remote accounts must already be known to Nolto.",
+    "keywordPlaceholder": "A word or phrase",
+    "invalidTag": "Use letters, numbers or underscores in tags.",
+    "remove": "Remove {{name}}",
+    "edit": "Edit {{name}}",
+    "unavailablePerson": "Profile unavailable",
+    "unavailableCompany": "Organisation unavailable",
+    "peopleCount": "{{count}} people",
+    "saveError": "Could not load or save this feed. Your choices are still here. Please try again.",
+    "emptyTitle": "No posts to show",
+    "emptyDescription": "No available posts match right now. Change your selection under Feeds or follow more people.",
+    "infiniteScroll": "Load more posts automatically",
+    "infiniteScrollDescription": "Off by default. Choose when to load the next page."
+  },
+  "profileInline": {
+    "hint": "Click what you want to change. Changes are published when you save.",
+    "preview": "Preview",
+    "edit": "Continue editing",
+    "avatar": "Change profile picture",
+    "header": "Change header image",
+    "imageError": "Choose a JPG, PNG or WebP image no larger than 10 MB.",
+    "invalid": "Check the fields. Your name needs 2–100 characters.",
+    "saveError": "Could not save your profile. Your changes are still here so you can try again.",
+    "accountSettings": "Account details and CV",
+    "saved": "Profile saved",
+    "crop": "Crop image",
+    "cropPreview": "Crop preview",
+    "applyCrop": "Apply crop",
+    "processing": "Processing…"
   }
 }

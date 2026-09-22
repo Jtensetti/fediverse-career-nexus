@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ConnectionBadge, { ConnectionDegree } from "@/components/social/ConnectionBadge";
+import ProfileInlineEditor from "@/components/profile/ProfileInlineEditor";
+import { saveProfileAppearance } from "@/services/profile/profileAppearanceService";
 import ProfileBanner from "@/components/profile/ProfileBanner";
 import AvatarWithStatus from "@/components/common/AvatarWithStatus";
 import { supabase } from "@/lib/supabase";
@@ -64,6 +66,7 @@ const ProfilePage = () => {
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
   const { t } = useTranslation();
+  const [editingProfile, setEditingProfile] = useState(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isRespondingToConnection, setIsRespondingToConnection] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -187,27 +190,7 @@ const ProfilePage = () => {
     }
   }, [profile?.username, usernameOrId, navigate]);
 
-  // Handle header image update
-  const handleHeaderChange = async (url: string) => {
-    if (!profile?.id) return;
 
-    try {
-      const { error } = await supabase.from("profiles").update({ header_url: url }).eq("id", profile.id);
-
-      if (error) throw error;
-
-      // Optimistically update the current query cache so the banner updates immediately
-      queryClient.setQueryData(["profile", usernameOrId, currentUserId], (prev: any) => {
-        if (!prev) return prev;
-        return { ...prev, headerUrl: url };
-      });
-
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-    } catch (error) {
-      console.error("Error updating header:", error);
-      toast.error(t("toasts.failedUpdateHeader", "Failed to update header image"));
-    }
-  };
 
   // Handle connect button
   const handleConnect = async () => {
@@ -418,12 +401,16 @@ const ProfilePage = () => {
       </motion.div>
 
       {/* Profile Header with Banner */}
-      <div className="bg-card rounded-lg shadow-sm overflow-hidden mb-6">
+      {editingProfile && viewingOwnProfile ? <ProfileInlineEditor key={profile.id} profile={profile}
+        onCancel={() => setEditingProfile(false)} onSave={async (draft, images) => {
+          await saveProfileAppearance(draft, images);
+          await queryClient.invalidateQueries({ queryKey: ['profile'] });
+          setEditingProfile(false);
+          toast.success(t('profileInline.saved'));
+        }} /> : <div className="bg-card rounded-lg shadow-sm overflow-hidden mb-6">
         {/* Banner */}
         <ProfileBanner
           headerUrl={profile.headerUrl}
-          isOwnProfile={viewingOwnProfile}
-          onHeaderChange={handleHeaderChange}
         />
 
         {/* Profile Info - overlapping the banner */}
@@ -458,12 +445,10 @@ const ProfilePage = () => {
             <div className="flex flex-wrap gap-2 mt-4">
               {viewingOwnProfile ? (
                 <>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/profile/edit">
-                      <Edit className="h-4 w-4 mr-2" />
-                      {t("profile.editProfile", "Edit Profile")}
-                    </Link>
+                  <Button variant="outline" size="sm" onClick={() => setEditingProfile(true)}>
+                    <Edit className="h-4 w-4 mr-2" />{t("profile.editProfile", "Edit Profile")}
                   </Button>
+                  <Button variant="ghost" size="sm" asChild><Link to="/profile/edit">{t('profileInline.accountSettings')}</Link></Button>
                   <Button variant="outline" size="sm" asChild>
                     <Link to="/saved">
                       <Bookmark className="h-4 w-4 mr-2" />
@@ -596,7 +581,7 @@ const ProfilePage = () => {
           {/* Profile Details */}
           <div className="mt-4">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold">{profile.displayName}</h1>
+              <h1 className="text-2xl font-bold break-words">{profile.displayName}</h1>
               {profile.isVerified && (
                 <Badge
                   variant="outline"
@@ -611,7 +596,7 @@ const ProfilePage = () => {
               {connectionDegreeValue && <ConnectionBadge degree={connectionDegreeValue} />}
             </div>
 
-            <h2 className="text-lg text-muted-foreground mb-3">{profile.headline}</h2>
+            <h2 className="text-lg text-muted-foreground mb-3 break-words">{profile.headline}</h2>
 
             <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-4 gap-y-2 mb-4">
               {profile.contact?.location && (
@@ -626,11 +611,6 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Mobile stats - HIDDEN */}
-            <div className="md:hidden mb-4">
-              {/* <ProfileStats userId={profile.id} username={profile.username} /> */}
-            </div>
-
             {profile.bio && (
               <SimpleMarkdown 
                 content={profile.bio} 
@@ -639,7 +619,7 @@ const ProfilePage = () => {
             )}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Profile Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
