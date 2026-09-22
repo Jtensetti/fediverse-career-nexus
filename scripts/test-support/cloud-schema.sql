@@ -5,9 +5,9 @@ SET check_function_bodies = false;
 CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS; CREATE ROLE supabase_auth_admin;
 CREATE SCHEMA auth; CREATE SCHEMA storage;
 
-CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql AS $ SELECT coalesce(nullif(current_setting('request.jwt.claim',true),''),nullif(current_setting('request.jwt.claims',true),''),nullif(current_setting('test.jwt',true),''),'{}')::jsonb $;
-CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $ SELECT coalesce(nullif(current_setting('request.jwt.claim.sub',true),''),auth.jwt()->>'sub',nullif(current_setting('test.uid',true),''))::uuid $;
-CREATE FUNCTION auth.role() RETURNS text LANGUAGE sql AS $ SELECT coalesce(nullif(current_setting('request.jwt.claim.role',true),''),auth.jwt()->>'role',nullif(current_setting('test.role',true),'')) $;
+CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql AS $$ SELECT coalesce(nullif(current_setting('request.jwt.claim',true),''),nullif(current_setting('request.jwt.claims',true),''),nullif(current_setting('test.jwt',true),''),'{}')::jsonb $$;
+CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$ SELECT coalesce(nullif(current_setting('request.jwt.claim.sub',true),''),auth.jwt()->>'sub',nullif(current_setting('test.uid',true),''))::uuid $$;
+CREATE FUNCTION auth.role() RETURNS text LANGUAGE sql AS $$ SELECT coalesce(nullif(current_setting('request.jwt.claim.role',true),''),auth.jwt()->>'role',nullif(current_setting('test.role',true),'')) $$;
 CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, email_confirmed_at timestamptz, raw_user_meta_data jsonb DEFAULT '{}',created_at timestamptz DEFAULT now());
 CREATE TABLE auth.sessions (id uuid PRIMARY KEY,user_id uuid REFERENCES auth.users ON DELETE CASCADE,not_after timestamptz);
 CREATE TABLE auth.mfa_factors (id uuid PRIMARY KEY,user_id uuid REFERENCES auth.users ON DELETE CASCADE,status text);
