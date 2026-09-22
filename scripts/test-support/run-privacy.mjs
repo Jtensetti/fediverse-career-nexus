@@ -13,6 +13,8 @@ try {
     '../../supabase/migrations/20260922041529_nolto_private_messages_and_minimisation.sql',
     '../../supabase/migrations/20260922041921_nolto_deletion_retention.sql',
     './privacy-assertions.sql',
+    '../../supabase/migrations/20260922065026_nolto_reported_deletion_review.sql',
+    './moderation-retention-assertions.sql',
   ]) {
     try {
       if (path !== './cloud-schema.sql') await db.exec('SET check_function_bodies = true');

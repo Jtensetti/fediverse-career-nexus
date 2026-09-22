@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFlaggedContent, updateReportStatus, deleteFlaggedContent, FlaggedContent } from "@/services/moderation/moderationService";
 import { UserBanDialog } from "./UserBanDialog";
+import { RetainedReportReview } from './RetainedReportReview';
 
 const contentTypeLabels: Record<string, string> = {
   post: "inlägg", article: "artikel", user: "användare", job: "jobb", event: "evenemang",
@@ -31,14 +32,17 @@ export function FlaggedContentList() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ reportId, status }: { reportId: string; status: "pending" | "reviewed" | "resolved" | "dismissed" }) =>
-      updateReportStatus(reportId, status),
+    mutationFn: async ({ reportId, status }: { reportId: string; status: "pending" | "reviewed" | "resolved" | "dismissed" }) => {
+      if (!await updateReportStatus(reportId, status)) throw new Error('Ärendets status kunde inte sparas');
+    },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["flagged-content"] }); queryClient.invalidateQueries({ queryKey: ["moderation-stats"] }); },
   });
 
   const deleteContentMutation = useMutation({
-    mutationFn: ({ contentType, contentId, reportId }: { contentType: string; contentId: string; reportId: string }) =>
-      deleteFlaggedContent(contentType, contentId).then(() => updateReportStatus(reportId, "resolved", "delete")),
+    mutationFn: async ({ contentType, contentId, reportId }: { contentType: string; contentId: string; reportId: string }) => {
+      if (!await deleteFlaggedContent(contentType, contentId)) throw new Error('Raderingen misslyckades');
+      if (!await updateReportStatus(reportId, "resolved", "delete")) throw new Error('Ärendets status kunde inte sparas');
+    },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["flagged-content"] }); queryClient.invalidateQueries({ queryKey: ["moderation-stats"] }); },
   });
 
@@ -131,6 +135,9 @@ export function FlaggedContentList() {
                   </div>
                 )}
 
+                {report.content_unavailable && ['pending', 'reviewed'].includes(report.status) && ['post', 'article'].includes(report.content_type) &&
+                  <RetainedReportReview reportId={report.id} />}
+
                 {report.status === "pending" && (
                   <div className="flex flex-wrap gap-2 pt-2">
                     <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ reportId: report.id, status: "dismissed" })} disabled={updateStatusMutation.isPending}>
@@ -146,7 +153,9 @@ export function FlaggedContentList() {
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Ta bort detta {contentTypeLabels[report.content_type] || report.content_type}?</AlertDialogTitle>
-                          <AlertDialogDescription>Detta tar permanent bort det rapporterade innehållet. Åtgärden kan inte ångras.</AlertDialogDescription>
+                          <AlertDialogDescription>{['post', 'article'].includes(report.content_type)
+                            ? 'Innehållet döljs direkt och raderas permanent efter 30 dagar. Anmälan markeras som löst.'
+                            : 'Detta tar permanent bort det rapporterade innehållet. Åtgärden kan inte ångras.'}</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Avbryt</AlertDialogCancel>
