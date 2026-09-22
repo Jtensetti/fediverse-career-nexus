@@ -41,7 +41,7 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="public-homepage min-h-screen flex flex-col">
       <SEOHead
         title={sv ? "Ett öppnare arbetsliv" : "A more open working life"}
         description={sv ? "Möt människor, dela det du kan och hitta din nästa möjlighet. Utforska Noltos offentliga flöde utan konto." : "Meet people, share what you know and find your next opportunity. Explore Nolto’s public feed without an account."}

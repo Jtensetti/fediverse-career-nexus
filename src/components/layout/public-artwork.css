@@ -4,4 +4,10 @@
   height: auto;
   pointer-events: none;
   user-select: none;
+  color-scheme: light;
+}
+
+/* Embedded SVG media queries follow the selected page theme. */
+.dark .public-artwork {
+  color-scheme: dark;
 }
