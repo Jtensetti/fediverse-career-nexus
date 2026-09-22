@@ -25,3 +25,6 @@ dist-ssr
 .dev.vars
 supabase/.temp/
 coverage/
+# npm is the frontend package manager, including in CI.
+bun.lock
+bun.lockb
