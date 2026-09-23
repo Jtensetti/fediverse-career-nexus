@@ -55,6 +55,13 @@ export type Database = {
             foreignKeyName: "activities_actor_id_fkey"
             columns: ["actor_id"]
             isOneToOne: false
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "activities_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
             referencedRelation: "public_actors"
             referencedColumns: ["id"]
           },
@@ -101,6 +108,13 @@ export type Database = {
             columns: ["local_actor_id"]
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "actor_followers_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_accounts"
             referencedColumns: ["actor_id"]
           },
           {
@@ -249,6 +263,13 @@ export type Database = {
             columns: ["attributed_to"]
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "mastodon_accounts"
             referencedColumns: ["actor_id"]
           },
           {
@@ -1385,6 +1406,13 @@ export type Database = {
             foreignKeyName: "federated_likes_actor_id_fkey"
             columns: ["actor_id"]
             isOneToOne: false
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "federated_likes_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
             referencedRelation: "public_actors"
             referencedColumns: ["id"]
           },
@@ -1415,6 +1443,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "federation_public_objects"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federated_likes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
           },
         ]
       }
@@ -1618,6 +1653,13 @@ export type Database = {
             foreignKeyName: "federation_queue_partitioned_actor_id_fkey"
             columns: ["actor_id"]
             isOneToOne: false
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "federation_queue_partitioned_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
             referencedRelation: "public_actors"
             referencedColumns: ["id"]
           },
@@ -1687,6 +1729,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "federation_reply_links_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
+          },
+          {
             foreignKeyName: "federation_reply_links_reply_id_fkey"
             columns: ["reply_id"]
             isOneToOne: true
@@ -1715,6 +1764,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "federation_reply_links_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: true
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
+          },
+          {
             foreignKeyName: "federation_reply_links_root_id_fkey"
             columns: ["root_id"]
             isOneToOne: false
@@ -1741,6 +1797,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "federation_public_objects"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "federation_reply_links_root_id_fkey"
+            columns: ["root_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
           },
         ]
       }
@@ -1848,6 +1911,13 @@ export type Database = {
             foreignKeyName: "follower_batches_actor_id_fkey"
             columns: ["actor_id"]
             isOneToOne: false
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "follower_batches_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
             referencedRelation: "public_actors"
             referencedColumns: ["id"]
           },
@@ -1897,6 +1967,13 @@ export type Database = {
             columns: ["recipient_id"]
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "inbox_items_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_accounts"
             referencedColumns: ["actor_id"]
           },
           {
@@ -2038,6 +2115,313 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      mastodon_account_ids: {
+        Row: {
+          actor_id: string
+          id: number
+        }
+        Insert: {
+          actor_id: string
+          id?: never
+        }
+        Update: {
+          actor_id?: string
+          id?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mastodon_account_ids_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: true
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_account_ids_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: true
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "mastodon_account_ids_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: true
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "mastodon_account_ids_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: true
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mastodon_clients: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          redirect_uris: string[]
+          scopes: string[]
+          secret_hash: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          redirect_uris: string[]
+          scopes: string[]
+          secret_hash: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          redirect_uris?: string[]
+          scopes?: string[]
+          secret_hash?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      mastodon_codes: {
+        Row: {
+          aal: string
+          challenge: string | null
+          client_id: string
+          code_hash: string
+          consumed_at: string | null
+          expires_at: string
+          redirect_uri: string
+          scopes: string[]
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          aal: string
+          challenge?: string | null
+          client_id: string
+          code_hash: string
+          consumed_at?: string | null
+          expires_at?: string
+          redirect_uri: string
+          scopes: string[]
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          aal?: string
+          challenge?: string | null
+          client_id?: string
+          code_hash?: string
+          consumed_at?: string | null
+          expires_at?: string
+          redirect_uri?: string
+          scopes?: string[]
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mastodon_codes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mastodon_grants: {
+        Row: {
+          aal: string | null
+          client_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          revoked_at: string | null
+          scopes: string[]
+          session_id: string | null
+          token_hash: string
+          user_id: string | null
+        }
+        Insert: {
+          aal?: string | null
+          client_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          revoked_at?: string | null
+          scopes: string[]
+          session_id?: string | null
+          token_hash: string
+          user_id?: string | null
+        }
+        Update: {
+          aal?: string | null
+          client_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          revoked_at?: string | null
+          scopes?: string[]
+          session_id?: string | null
+          token_hash?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mastodon_grants_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mastodon_rate_limits: {
+        Row: {
+          key_hash: string
+          requests: number
+          window_start: string
+        }
+        Insert: {
+          key_hash: string
+          requests?: number
+          window_start: string
+        }
+        Update: {
+          key_hash?: string
+          requests?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
+      mastodon_status_ids: {
+        Row: {
+          id: number
+          object_id: string
+        }
+        Insert: {
+          id?: never
+          object_id: string
+        }
+        Update: {
+          id?: never
+          object_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mastodon_status_ids_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: true
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_ids_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: true
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_ids_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: true
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_ids_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: true
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_ids_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: true
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
+          },
+        ]
+      }
+      mastodon_status_requests: {
+        Row: {
+          body_hash: string
+          client_id: string
+          expires_at: string
+          key_hash: string
+          object_id: string
+          user_id: string
+        }
+        Insert: {
+          body_hash: string
+          client_id: string
+          expires_at?: string
+          key_hash: string
+          object_id: string
+          user_id: string
+        }
+        Update: {
+          body_hash?: string
+          client_id?: string
+          expires_at?: string
+          key_hash?: string
+          object_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mastodon_status_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_requests_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "ap_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_requests_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "federated_feed"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_requests_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "federated_posts_with_moderation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_requests_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "federation_public_objects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mastodon_status_requests_object_id_fkey"
+            columns: ["object_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
           },
         ]
       }
@@ -2581,6 +2965,13 @@ export type Database = {
             foreignKeyName: "outgoing_follows_local_actor_id_fkey"
             columns: ["local_actor_id"]
             isOneToOne: false
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "outgoing_follows_local_actor_id_fkey"
+            columns: ["local_actor_id"]
+            isOneToOne: false
             referencedRelation: "public_actors"
             referencedColumns: ["id"]
           },
@@ -2664,6 +3055,13 @@ export type Database = {
             referencedRelation: "federation_public_objects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
+          },
         ]
       }
       post_image_uploads: {
@@ -2722,6 +3120,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "federation_public_objects"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_image_uploads_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
           },
         ]
       }
@@ -2790,6 +3195,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "federation_public_objects"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "mastodon_statuses"
+            referencedColumns: ["object_id"]
           },
         ]
       }
@@ -3774,6 +4186,13 @@ export type Database = {
             foreignKeyName: "ap_objects_attributed_to_fkey"
             columns: ["attributed_to"]
             isOneToOne: false
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
             referencedRelation: "public_actors"
             referencedColumns: ["id"]
           },
@@ -3809,6 +4228,13 @@ export type Database = {
             columns: ["attributed_to"]
             isOneToOne: false
             referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "mastodon_accounts"
             referencedColumns: ["actor_id"]
           },
           {
@@ -3904,6 +4330,13 @@ export type Database = {
             foreignKeyName: "ap_objects_attributed_to_fkey"
             columns: ["attributed_to"]
             isOneToOne: false
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
             referencedRelation: "public_actors"
             referencedColumns: ["id"]
           },
@@ -3936,6 +4369,85 @@ export type Database = {
           total_batches: number | null
         }
         Relationships: []
+      }
+      mastodon_accounts: {
+        Row: {
+          actor_id: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          follower_count: number | null
+          following_count: number | null
+          fullname: string | null
+          header_url: string | null
+          id: string | null
+          is_remote: boolean | null
+          preferred_username: string | null
+          remote_actor_url: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_actors_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_actors_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mastodon_statuses: {
+        Row: {
+          account_id: string | null
+          attributed_to: string | null
+          content: Json | null
+          content_warning: string | null
+          created_at: string | null
+          id: string | null
+          object_id: string | null
+          published_at: string | null
+          remote_object_id: string | null
+          sort_id: number | null
+          type: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "actors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "follower_batch_stats"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "mastodon_accounts"
+            referencedColumns: ["actor_id"]
+          },
+          {
+            foreignKeyName: "ap_objects_attributed_to_fkey"
+            columns: ["attributed_to"]
+            isOneToOne: false
+            referencedRelation: "public_actors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       public_actors: {
         Row: {
@@ -4651,6 +5163,131 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      mastodon_account_counts: {
+        Args: { p_ids: string[] }
+        Returns: {
+          actor_id: string
+          statuses_count: number
+        }[]
+      }
+      mastodon_check_session: {
+        Args: { p_aal: string; p_session_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      mastodon_exchange_code: {
+        Args: {
+          p_challenge: string
+          p_client: string
+          p_code: string
+          p_redirect: string
+          p_secret: string
+          p_token: string
+        }
+        Returns: Json
+      }
+      mastodon_favourites: {
+        Args: {
+          p_hash: string
+          p_limit?: number
+          p_max?: number
+          p_since?: number
+        }
+        Returns: {
+          account_id: string | null
+          attributed_to: string | null
+          content: Json | null
+          content_warning: string | null
+          created_at: string | null
+          id: string | null
+          object_id: string | null
+          published_at: string | null
+          remote_object_id: string | null
+          sort_id: number | null
+          type: string | null
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "mastodon_statuses"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      mastodon_has_scope: {
+        Args: { p_required: string; p_scopes: string[] }
+        Returns: boolean
+      }
+      mastodon_home: {
+        Args: {
+          p_hash: string
+          p_limit?: number
+          p_max?: number
+          p_since?: number
+        }
+        Returns: {
+          account_id: string | null
+          attributed_to: string | null
+          content: Json | null
+          content_warning: string | null
+          created_at: string | null
+          id: string | null
+          object_id: string | null
+          published_at: string | null
+          remote_object_id: string | null
+          sort_id: number | null
+          type: string | null
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "mastodon_statuses"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      mastodon_identity: {
+        Args: { p_hash: string; p_scope?: string }
+        Returns: Json
+      }
+      mastodon_instance_stats: { Args: never; Returns: Json }
+      mastodon_issue_code: {
+        Args: {
+          p_aal: string
+          p_challenge?: string
+          p_client: string
+          p_hash: string
+          p_redirect: string
+          p_scopes: string[]
+          p_session: string
+          p_user: string
+        }
+        Returns: undefined
+      }
+      mastodon_rate_limit: {
+        Args: { p_key: string; p_limit: number; p_seconds: number }
+        Returns: boolean
+      }
+      mastodon_revoke_app: {
+        Args: { p_client: string; p_user: string }
+        Returns: undefined
+      }
+      mastodon_status_counts: {
+        Args: { p_ids: string[] }
+        Returns: {
+          favourites_count: number
+          object_id: string
+          replies_count: number
+        }[]
+      }
+      mastodon_write: {
+        Args: {
+          p_base: string
+          p_hash: string
+          p_operation: string
+          p_payload: Json
+        }
+        Returns: Json
+      }
       media_gateway_url: { Args: { p_url: string }; Returns: string }
       moderation_is_owner: {
         Args: { p_id: string; p_kind: string }
@@ -4688,6 +5325,7 @@ export type Database = {
         Returns: boolean
       }
       purge_expired_private_metadata: { Args: never; Returns: undefined }
+      purge_mastodon_metadata: { Args: never; Returns: undefined }
       read_reported_deleted_content: {
         Args: { p_moderator_id: string; p_report_id: string }
         Returns: {
