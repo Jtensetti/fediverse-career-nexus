@@ -1,6 +1,7 @@
 import SocialSignIn from '@/components/auth/SocialSignIn';
 import BlueskySignIn from '@/components/auth/BlueskySignIn';
-import { useState, useEffect } from "react";
+import { consumeAppAuthorization } from '@/lib/appAuthorizationReturn';
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -92,11 +93,14 @@ export default function AuthPage() {
 
   const requestedReturn = location.state?.returnTo;
   const returnTo = typeof requestedReturn === "string" && /^\/(?![\\/])/.test(requestedReturn) && !requestedReturn.startsWith("/auth") ? requestedReturn : "/feed";
+  const signedInReturn = useRef<string | null>(null);
 
   // Redirect if already authenticated
   useEffect(() => {
     if (user || (!loading && session && mfaPending && returnTo.startsWith("/aterstall-mfa?"))) {
-      navigate(returnTo, { replace: true });
+      // StrictMode can replay the effect; consume the saved consent route once.
+      if (user) signedInReturn.current ??= consumeAppAuthorization() || returnTo;
+      navigate(user ? signedInReturn.current! : returnTo, { replace: true });
     }
   }, [user, session, loading, mfaPending, navigate, returnTo]);
 

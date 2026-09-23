@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { ATPROTO_LOGIN_STORAGE, readAtprotoLogin, clearAtprotoLogin } from '@/lib/atprotoLogin';
 import { Button } from '@/components/ui/button';
+import { consumeAppAuthorization } from '@/lib/appAuthorizationReturn';
 
 export default function AtprotoCallback() {
   const { t } = useTranslation();
@@ -36,7 +37,7 @@ export default function AtprotoCallback() {
     exchange.current.then(linked => {
       if (cancelled) return;
       void client.invalidateQueries({ queryKey: ['atproto-identity'] });
-      navigate(linked ? '/profile/edit' : '/', { replace: true });
+      navigate(linked ? '/profile/edit' : consumeAppAuthorization() || '/', { replace: true });
     }).catch(() => { if (!cancelled) setFailed(true); });
     return () => { cancelled = true; };
   }, [client, navigate]);

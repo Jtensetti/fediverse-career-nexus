@@ -6,7 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { SEOHead } from '@/components/common/SEOHead';
 import { Button } from '@/components/ui/button';
 
-const snippet = `<form>
+const snippetFor = (origin: string) => `<form>
   <label>Namn <input name="name" data-nolto-field="name"></label>
   <label>E-post <input type="email" name="email" data-nolto-field="email"></label>
   <label>Yrkesrubrik <input name="headline" data-nolto-field="headline"></label>
@@ -16,7 +16,7 @@ const snippet = `<form>
     Hämta från Nolto
   </button>
 </form>
-<script src="https://nolto.social/embed/nolto-profile.js" defer></script>`;
+<script src="${origin}/embed/nolto-profile.js" defer></script>`;
 const advanced = `const profile = await Nolto.requestProfile({
   fields: ['name', 'email', 'profileUrl', 'experience', 'education', 'skills']
 });
@@ -24,6 +24,7 @@ const advanced = `const profile = await Nolto.requestProfile({
 // Använd profile för att fylla ert formulär.`;
 
 export default function Integrations() {
+  const snippet = snippetFor(window.location.origin);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const copy = async () => { try { await navigator.clipboard.writeText(snippet); setCopied(true); setCopyError(false); } catch { setCopyError(true); } };

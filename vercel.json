@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/api/:version(v1|v2)/:path*",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/mastodon-api/api/:version/:path*"
+    },
+    {
+      "source": "/oauth/:endpoint(token|revoke)",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/oauth-authorization-server/:endpoint"
+    },
+    {
+      "source": "/.well-known/oauth-authorization-server",
+      "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/oauth-authorization-server"
+    },
+    {
       "source": "/.well-known/webfinger",
       "destination": "https://anknmcmqljejabxbeohv.supabase.co/functions/v1/webfinger"
     },

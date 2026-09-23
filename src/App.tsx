@@ -61,6 +61,9 @@ const Mission = lazy(() => import("./pages/info/Mission"));
 const Documentation = lazy(() => import("./pages/info/Documentation"));
 const Integrations = lazy(() => import("./pages/info/Integrations"));
 const ShareProfile = lazy(() => import("./pages/auth/ShareProfile"));
+const AuthorizeApp = lazy(() => import("./pages/auth/AuthorizeApp"));
+const ConnectedApps = lazy(() => import("./pages/settings/ConnectedApps"));
+const MastodonApps = lazy(() => import("./pages/info/MastodonApps"));
 const Hosting = lazy(() => import("./pages/info/Hosting"));
 const FederationGuide = lazy(() => import("./pages/federation/FederationGuide"));
 const HelpCenter = lazy(() => import("./pages/info/HelpCenter"));
@@ -360,6 +363,9 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
+                    <Route path="/oauth/authorize" element={<AuthorizeApp />} />
+                    <Route path="/mastodon-apps" element={<MastodonApps />} />
+                    <Route path="/settings/apps" element={<ProtectedRoute><ConnectedApps /></ProtectedRoute>} />
                     {/* Catch-all for 404 */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

@@ -36,3 +36,7 @@ Scalar fields: `name`, `headline`, `location`, `bio`, `profileUrl`, `handle`, `e
 The SDK checks the exact Nolto origin, popup window and a random request ID before accepting a response. The consent page only sends to the displayed origin, never `*`. Host your form over HTTPS; localhost HTTP is accepted for development. Load the script from your own trusted Nolto instance for self-hosting; it derives its origin from the script URL. Your CSP must permit that script and a popup to the same origin. A restrictive Cross-Origin-Opener-Policy can sever the popup relationship; test the integration with your actual headers.
 
 If sign-in is needed it opens a separate tab, preserving the relationship between the form and consent window. The candidate returns to the consent window after signing in. No third-party cookies, API key, backend credential or account at Nolto is required for the recruiting site. How the recipient stores the submitted application remains its responsibility.
+
+## Website origin
+
+Load the script directly from the same origin that serves `/share-profile`. The guide at `/integrations` generates that address from the current website origin. If the website moves from the apex to www, copy the updated snippet and replace older embedded script URLs; a redirected script retains its original `src` origin while the popup would run on www. Keep exact origin, popup-source and request-ID validation.

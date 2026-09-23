@@ -30,9 +30,14 @@
 		uri replace /nodeinfo/ /functions/v1/nodeinfo/
 		import backend
 	}
-	@mastodon path /api/v1/instance /api/v1/apps /api/v2/search
+	@mastodon path /api/v1/* /api/v2/*
 	handle @mastodon {
 		rewrite * /functions/v1/mastodon-api{uri}
+		import backend
+	}
+	@oauth path /oauth/token /oauth/revoke
+	handle @oauth {
+		uri replace /oauth/ /functions/v1/oauth-authorization-server/
 		import backend
 	}
 	handle /functions/v1/* {

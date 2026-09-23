@@ -1,6 +1,6 @@
 # Deployment and launch requirements
 
-Updated 22 September 2026. The service is not yet cleared for an unrestricted public launch. Passing local checks does not establish hosted-service behavior.
+Updated 23 September 2026. The service is not yet cleared for an unrestricted public launch. Passing local checks does not establish hosted-service behavior.
 
 ## Existing deployment
 
@@ -49,13 +49,13 @@ Account exports fail above their configured size/row limits and require assisted
 
 ## Federation routing
 
-Keep `FEDERATION_DOMAIN=nolto.social` stable. The gateway in `deploy/nolto-gateway.mjs` is configured as a Worker Route on the existing domain, with `SUPABASE_ORIGIN` for the backend. It forwards discovery and ActivityPub requests and lets other requests continue to the existing website. Installing and verifying this gateway remains an operational task.
+Keep `FEDERATION_DOMAIN=nolto.social` stable. The gateway supports two explicit modes: Worker Routes over an existing frontend origin, or a Custom Domain on the apex that redirects browser navigation to www. See [the activation guide](nolto-activation.md) for the matching DNS, Lovable primary-domain, SITE_URL and Worker settings. Installing and verifying a gateway remains an operational task.
 
 ## Federation routing on the hosted nolto.social domain
 
 The 2026-09-22 production probes returned 404 for WebFinger and the SPA HTML for the canonical actor URL. The backend WebFinger endpoint resolves the real local handle correctly. Lovable's static hosting does not apply the repository's `_redirects`, Vercel rewrites or Caddy configuration. A backend deployment alone cannot fix this routing.
 
-`deploy/wrangler.toml` and `deploy/nolto-gateway.mjs` are ready for a Cloudflare Worker Route on the existing proxied domain. With an authenticated Cloudflare account that controls the `nolto.social` zone:
+`deploy/wrangler.toml` is the same-domain Worker Route configuration. It requires a proxied domain and Lovable's supported proxy connection mode. `deploy/wrangler.split.toml` is the separate configuration for an apex Custom Domain and a www website; it does not proxy Lovable traffic. The observed www → apex redirect must be removed by setting www as the primary Lovable domain before using that mode. With the matching domain setup and an authenticated Cloudflare account, the same-domain example is:
 
 ```sh
 npx wrangler deploy --config deploy/wrangler.toml
@@ -75,3 +75,7 @@ The matching inbox, federation, outbox, objects, activities, public-media and pr
 Post composers compress to JPEG, at most 1920 pixels per dimension and 500 KiB, then upload immediately on selection. The storage path starts with the authenticated owner's UUID. Original files are never uploaded if compression fails. Publication attaches a ready upload in the same database transaction; retry uses the same post ID. The private media gateway only releases published, visible content. Unattached uploads expire after 24 hours and the existing privacy worker removes them; discarded uploads become eligible immediately. Remote media remains a linked/proxied resource with no copy in Storage, although delivery consumes bandwidth.
 
 The profile-import guide is `/integrations`, linked from `/hosting`. `public/embed/nolto-profile.js` requests explicit, one-time consent in `/share-profile`. The recipient origin, popup source and random request ID are checked. Only selected fields are sent, without any session credentials. See `docs/profile-import.md` for the contract.
+
+## Experimental native client implementation
+
+The repository now includes a gated Mastodon client API subset and OAuth server, explicit consent and app revocation UI. It is not deployed or enabled on nolto.social. The public Worker/Caddy/Netlify/Vercel examples also route `/api/v1/*`, `/api/v2/*`, `/oauth/token` and `/oauth/revoke`; `/oauth/authorize`, `/~oauth/*` and browser callbacks stay on the frontend. The domain currently uses One.com nameservers; a Cloudflare Worker still needs a suitable proxied zone setup and administration access. See [Mastodon client access](mastodon-client-access.md) for the security model, exact supported subset, limitations and deployment acceptance gate. Supabase project access remains denied for the connected account. Production probes still return 410 from the backend stubs, 404 from WebFinger, and SPA HTML from `/api/v1/instance` on the public domain.
