@@ -9,9 +9,10 @@ Kontrollerat 23 september 2026. Webbappen och federeringen ligger nu på `nolto.
 - `check-gateway` klarar 8/8 kontroller och `check-federation` klarar publik upptäckt, actor och samlingar för `jonatan_tensetti@nolto.social`. Signerade utbyten med en oberoende Mastodon-server återstår att verifiera.
 - `www` har proxad A-post `192.0.2.1` och Cloudflare-regeln **WWW to nolto.social** ger 308 till roten med bevarad sökväg och frågesträng. Detta är verifierat över både HTTP och HTTPS.
 - Cloudflares DNSSEC-signering är aktiverad. DS med key tag `2371`, algoritm `13`, digesttyp `2` och digest `88CB3066E95EE5EFE31545CF9F419075C154A7051DFE1511EA3C8B18AD043071` är tillagd hos One.com. Matchande DS och validerade A-svar med AD-flagga verifierades via Google och Cloudflare den 23 september kl. 06:46 UTC.
-- Mastodon-klientens operatörspilot är aktiverad med fullflaggan `false`. Migration `20260922184945` och matchande funktioner är driftsatta; sju tabeller, två invoker-vyer, två ID-triggers och städnings-RPC är verifierade. Upptäckt ger 200, kontooperationer utan token 401. Phanpy har verifierat inloggning, rätt profil och tomt hemflöde efter omladdning. Skrivningar och federerat utbyte återstår. `ATPROTO_DID` är osatt och ingen PDS är driftsatt.
+- Det experimentella Mastodon-klientstödet är öppet för alla Nolto-konton med `MASTODON_CLIENT_ENABLED=true`; varje användare godkänner appens åtkomst. Migration `20260922184945` och matchande funktioner är driftsatta; sju tabeller, två invoker-vyer, två ID-triggers och städnings-RPC är verifierade. Phanpy har verifierat inloggning, rätt identitet, profil och hemflöde efter omladdning, offentligt textinlägg, svar, like och unlike. Båda testinläggen raderades via Nolto. Återkallning blockerade hemflödet och tog bort aktiva behörigheter; återanslutning lyckades. Signerat Follow/Accept med en oberoende server är fortfarande overifierat. `ATPROTO_DID` är osatt och ingen PDS är driftsatt.
 - PR 78 är mergad som `d4c91e3905fa93c7120ea7bc3940e3b3895de52e`. Migration `20260923065928` rättar onboardingfelets obehöriga databasläsning; den är applicerad och registrerad. Onboarding kunde därefter slutföras i den inloggade webbläsaren med den befintliga aktiva federationsprofilen bevarad.
-- Supabase-kopplingen saknar administrativ åtkomst till backendprojektet. Lovable-krediterna är påfyllda och den avstängda backenddriftsättningen har genomförts via Lovable; läsning och databasfrågor fungerar.
+- Efter öppningen verifierades även anonymt offentligt flöde och en tillfällig apps egen token. Den kunde verifiera appen och läsa offentliga data men fick 401 för användaridentitet och hemflöde. Efter återkallning fick token 401 även för flöde och appverifiering. Testregistreringen och dess behörigheter är borttagna; användarens återanslutna Phanpy-behörighet finns kvar.
+- Supabase-kopplingen saknar administrativ åtkomst till backendprojektet. Lovable-krediterna är påfyllda och backenddriftsättning samt inställningar har genomförts via Lovable; läsning och databasfrågor fungerar.
 
 Budgeten för en egen PDS är noll. Ingen betald server har beställts eller planeras inom denna driftsättning.
 
@@ -79,20 +80,21 @@ Workerverktygen installeras separat med `npm --prefix deploy ci`; `npm --prefix 
 
 ## Backend och Mastodon-appar
 
-Följ [mastodon-client-access.md](mastodon-client-access.md) för migration, funktioner och acceptanstester. Driftsätt först med `MASTODON_CLIENT_ENABLED` frånvarande eller `false` och `MASTODON_CLIENT_PILOT_USER_IDS` tom: upptäckt och kontooperationer ska då svara 503 utan databasåtkomst. Befintliga behörigheter kan fortfarande listas och återkallas med ordinarie autentisering. `privacy-maintenance` behöver den nya migrationen innan den version som anropar `purge_mastodon_metadata` driftsätts.
+`MASTODON_CLIENT_ENABLED=true` öppnar den befintliga experimentella delmängden för alla Nolto-konton. Det ger inte stöd för hela Mastodon-API:t. Följ [mastodon-client-access.md](mastodon-client-access.md) för det exakta kontraktet, driftsättningsordning och acceptanstester. Migration och funktioner är redan driftsatta; migrationen ska inte köras igen.
 
-När migration och backend är verifierade, testa helst i en isolerad miljö. Om sådan saknas kan en samtyckande operatör provas via `MASTODON_CLIENT_PILOT_USER_IDS`: en kommaseparerad lista med högst 100 riktiga Auth-UUID:n medan fullflaggan förblir `false`. Pilotens läsningar och skrivningar kräver en tillåten användartoken; endast upptäckt, appregistrering och förhandsvisning av samtyckesbegäran är publika. Felaktig lista stänger åtkomst. Borttagning ur listan blockerar gamla koder och tokens vid följande anrop, men redan pågående åtgärder kan slutföras. Pilotinlägg och sociala åtgärder är verkliga. Se klientguiden för hela kontraktet. Testa riktiga klienter och kör:
+Operatörslistan `MASTODON_CLIENT_PILOT_USER_IDS` behålls för återgång. Med fullflaggan `false` begränsas kontoåtkomst och befintliga tokens till den validerade listan; tas listan också bort svarar upptäckt och kontooperationer 503. Behörigheter kan fortfarande listas och återkallas med ordinarie autentisering. Pilotläget är också lämpligt för framtida begränsade tester om en isolerad miljö saknas, men dess inlägg och sociala åtgärder är verkliga.
+
+Kontrollera den publika klientkopplingen med:
 
 ```sh
 node scripts/check-mastodon.mjs https://nolto.social
 ```
 
-Kommandot ovan gäller den aktiva samma-domän-konfigurationen. Vid en framtida flytt till www läggs `https://www.nolto.social` till som andra argument. Slå inte på produktionsflaggan förrän inloggning, godkännande, återkallning och faktiska klientoperationer har verifierats. Ett 410-svar betyder den gamla stubben; det avsiktliga 503-svaret från den nya funktionen betyder att stödet fortfarande är avstängt.
+Kommandot ovan gäller den aktiva samma-domän-konfigurationen. Vid en framtida flytt till www läggs `https://www.nolto.social` till som andra argument. Kontrollen ersätter inte ett riktigt klienttest. Vid kommande ändringar ska sessioner, MFA, scopes, kodåterspelning, återkallning och klientoperationer fortsatt verifieras. Ett 410-svar betyder den gamla stubben; det avsiktliga 503-svaret betyder att stödet är avstängt.
 
-## Det som kräver ägarens medverkan
+## Fortsatt verifiering
 
-1. Backendåtkomst för att driftsätta rätt funktioner och sätta klient-API:ts flagga när dess migration och tester är klara. Domänens Cloudflare-konfiguration är redan genomförd. Dela inga lösenord eller API-nycklar i chatten.
-2. En riktig inloggning med önskad leverantör och senare ett test från en Mastodon-app. Verktygstester kan inte verifiera ett personligt Apple-/Google-/Bluesky-godkännande eller verklig appkompatibilitet.
+Phanpys provade funktioner anges ovan. Andra klienter och ett signerat Follow/Accept/Note/reply/Like/Undo-utbyte med en samtyckande oberoende server återstår. Detta begränsar vad som kan sägas om kompatibiliteten, även när klientstödet är öppet för alla konton. Personliga godkännanden hos Apple, Google eller Bluesky måste alltid göras av användaren.
 
 Ett eget Nolto-konto som kan logga in direkt i Blueskys app kräver fortfarande AT Protocol PDS och kontoprovisionering. Domänkopplingen ensam skapar inte detta och är inte en fullständig brygga mellan protokollen.
 
