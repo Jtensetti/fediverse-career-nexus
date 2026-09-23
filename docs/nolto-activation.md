@@ -20,7 +20,7 @@ Detta beskriver dagens konfiguration. Det fastställer inte exakt varför ett ti
 | Backend `SITE_URL` och Auth Site URL | `https://www.nolto.social` | `https://nolto.social` |
 | Backend `FEDERATION_DOMAIN` | `nolto.social` | `nolto.social` |
 | Frontend `VITE_FEDERATION_DOMAIN` | `nolto.social` (standardvärde) | `nolto.social` (standardvärde) |
-| Worker-konfiguration | `deploy/wrangler.split.toml` | `deploy/wrangler.toml` |
+| Worker-konfiguration | `deploy/wrangler.split.jsonc` | `deploy/wrangler.jsonc` |
 | Cloudflare-koppling | Custom Domain på `nolto.social` | Worker Routes på en proxad `nolto.social` |
 | Vanliga sidbesök på roten | 302 till samma sökväg på www | Fortsätter till befintlig webbserver |
 | WebFinger, ActivityPub, klient-API och tokenutbyte | Proxy direkt till backend, utan omdirigering | Proxy direkt till backend, utan omdirigering |
@@ -37,7 +37,9 @@ Detta bygger vidare på upplägget där Lovable bara serverar webbappen på www.
 4. **Driftsätt split-konfigurationen i Cloudflare.** Kontrollera eventuell befintlig root-CNAME eller gammal Worker Route innan en Custom Domain kopplas. Cloudflare kan inte lägga en Custom Domain ovanpå en befintlig CNAME. Följ dess domändialog och ersätt endast root-kopplingen som ska tas över. Låt www- och e-postposterna vara kvar. Konfigurationen innehåller endast publika adresser, ingen backendhemlighet:
 
    ```sh
-   npx wrangler deploy --config deploy/wrangler.split.toml
+   npm --prefix deploy ci
+   npm --prefix deploy run check
+   npm --prefix deploy run deploy:split
    ```
 
 5. **Verifiera trafiken före aktivering av klient-API:t.** Kör från rätt Git-revision:
@@ -54,9 +56,19 @@ Behåll den tidigare DNS-konfigurationen för en kontrollerad återgång. Om web
 
 ## Alternativet med allt på nolto.social
 
-Lovables officiella dokumentation beskriver **Uses Cloudflare or similar proxy** under **Advanced** i domänanslutningen. Då används den CNAME-adress Lovable visar och en proxad Cloudflare-post, tillsammans med `deploy/wrangler.toml`.
+Lovables officiella dokumentation beskriver **Uses Cloudflare or similar proxy** under **Advanced** i domänanslutningen. Då används den CNAME-adress Lovable visar och en proxad Cloudflare-post, tillsammans med `deploy/wrangler.jsonc`.
 
 Det är inte samma sak som att slå på Cloudflare ovanpå Lovables vanliga A/TXT-koppling. Verktygen här bekräftar inte att läget kan ändras på en redan ansluten domän utan återanslutning. Kontrollera den möjligheten i domäninställningarna innan en fungerande koppling tas bort. Det här alternativet kräver inte att webbappen flyttas till www.
+
+## Bluesky-adressen @nolto.social
+
+Workern kan verifiera `nolto.social` som handle för ett **befintligt** Bluesky-konto. Sätt den publika variabeln `ATPROTO_DID` i den valda JSONC-konfigurationen till kontots verkliga DID först efter ägarens uttryckliga val och verifierad kontroll över kontot. Standardvärdet är tomt: `/.well-known/atproto-did` svarar då 404. Ange inga exempelidentifierare i produktion. Ett giltigt värde ger GET/HEAD 200 med enbart DID i `text/plain`; andra värdar och okända sökvägsvarianter får ingen identitet.
+
+Ägaren slutför därefter **Change handle → I have my own domain** i Bluesky med `nolto.social`. Kontrollera både `https://nolto.social/.well-known/atproto-did` och att DID-dokumentets `alsoKnownAs` innehåller `at://nolto.social`. Kontrollera även att DNS inte har en motstridig `_atproto.nolto.social`-TXT-post. DID måste vara `did:plc:` med 24 gemena base32-tecken eller ett giltigt publikt `did:web:`-värdnamn utan port eller sökväg. Se [AT Protocols handle-specifikation](https://atproto.com/specs/handle) och [DID-specifikation](https://atproto.com/specs/did).
+
+Detta skapar inget Bluesky-konto, ingen PDS och ingen synkronisering av inlägg. Mastodon-adresserna `@namn@nolto.social` använder separat WebFinger/ActivityPub. Inga användarsubdomäner behöver skapas. Hemsidan kan fortsätta på roten med Route-konfigurationen.
+
+Workerverktygen installeras separat med `npm --prefix deploy ci`; `npm --prefix deploy run check` gör dry-run för båda konfigurationerna utan driftsättning. Kör sedan `npm --prefix deploy run deploy` för samma domän eller `deploy:split` för www-alternativet. Välj bara en konfiguration. Invocation-loggar och tracing är avstängda, och frågesträngar maskeras för att undvika att OAuth-parametrar sparas i Worker-loggar.
 
 ## Backend och Mastodon-appar
 

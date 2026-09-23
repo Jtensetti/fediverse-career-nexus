@@ -7,12 +7,42 @@ function httpsOrigin(value) {
   if (url.protocol !== 'https:' || url.username || url.password || url.port || url.pathname !== '/' || url.search || url.hash) throw new Error('Invalid origin');
   return url;
 }
+const dnsHostname = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+const reservedTlds = new Set(['alt', 'arpa', 'example', 'internal', 'invalid', 'local', 'localhost', 'onion', 'test']);
+function publicHostname(value) {
+  return typeof value === 'string' && value === value.trim() && value.length <= 253 && dnsHostname.test(value) && !reservedTlds.has(value.split('.').at(-1));
+}
+function validDid(value) {
+  // AT Protocol permits production did:web identities at a hostname only.
+  // Do not normalize an operator's identifier or accept ports/path escapes.
+  return typeof value === 'string' && value === value.trim() && (/^did:plc:[a-z2-7]{24}$/.test(value) ||
+    (value.startsWith('did:web:') && publicHostname(value.slice(8))));
+}
+function identityResponse(request, body, status, extra = {}) {
+  return new Response(request.method === 'HEAD' ? null : body, {
+    status, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...extra },
+  });
+}
 const unavailable = () => new Response('Invalid gateway configuration', { status: 503, headers: { 'Cache-Control': 'no-store' } });
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const mode = env.GATEWAY_MODE || 'route';
     if (!['route', 'split'].includes(mode)) return unavailable();
+    const domain = env.FEDERATION_DOMAIN === undefined ? 'nolto.social' : env.FEDERATION_DOMAIN;
+    if (!publicHostname(domain)) return unavailable();
+    // A misconfigured extra route must never publish the apex identity on a
+    // different host, or forward its requests to the federation backend.
+    if (url.protocol !== 'https:' || url.port || url.hostname !== domain) return identityResponse(request, 'Not found', 404);
+    if (url.pathname.startsWith('/.well-known/atproto-did')) {
+      if (url.pathname !== '/.well-known/atproto-did') return identityResponse(request, 'Not found', 404);
+      if (!['GET', 'HEAD'].includes(request.method)) return identityResponse(request, 'Method not allowed', 405, { Allow: 'GET, HEAD' });
+      const did = env.ATPROTO_DID;
+      if (did === undefined || did === '') return identityResponse(request, 'No AT Protocol identity configured', 404);
+      if (!validDid(did)) return identityResponse(request, 'Invalid gateway configuration', 503);
+      // This is public handle verification, not a PDS or an account bridge.
+      return identityResponse(request, did, 200);
+    }
     const discovery = {
       "/.well-known/webfinger": "/functions/v1/webfinger",
       "/.well-known/nodeinfo": "/functions/v1/nodeinfo",
