@@ -115,7 +115,8 @@ export const handleMastodonRequest = mastodonHandler(async req => {
     }
     if (operation === 'statuses' && req.method === 'GET') {
       const { limit,max,since } = page(url);
-      if (url.searchParams.get('pinned') === 'true' || url.searchParams.get('pinned') === '1') throw new HttpError(501,'Pinned statuses are not supported');
+      // No pinning feature exists, so clients requesting the pinned collection get an empty list.
+      if (url.searchParams.get('pinned') === 'true' || url.searchParams.get('pinned') === '1') return response([]);
       let query = publicDb.from('mastodon_statuses').select('*').eq('attributed_to',row.actor_id).order('sort_id',{ ascending:false }).limit(limit);
       if (max) query=query.lt('sort_id',max); if (since) query=query.gt('sort_id',since);
       const { data,error } = await query; if (error) throw error;

@@ -113,6 +113,37 @@ function pilot(ids=userId) { Deno.env.set('MASTODON_CLIENT_ENABLED','false'); De
 const apiGet=(path:string,token?:string)=>new Request('https://fixture.example/functions/v1/mastodon-api/api/v1/'+path,{headers:token ? {authorization:'Bearer '+token} : {}});
 const tokenInput={client_id:clientId,client_secret:'a'.repeat(64),grant_type:'authorization_code',redirect_uri:'tusky://oauth',code:'b'.repeat(64)};
 
+Deno.test('pinned account collections are empty without querying statuses and retain access and account checks', async()=> {
+  let accountExists=true; let tokenValid=true;
+  await withBackend(async calls=> {
+    pilot();
+    const query=(suffix:string)=>handleMastodonRequest(apiGet('accounts/42/statuses'+suffix,'c'.repeat(64)));
+    for (const value of ['true','1']) {
+      const result=await query('?pinned='+value);
+      assert.equal(result.status,200);
+      assert.deepEqual(await result.json(),[]);
+      assert.equal(result.headers.get('link'),null);
+    }
+    assert.ok(!calls.some(call=>call.url.pathname==='/rest/v1/mastodon_statuses'));
+    assert.ok(calls.some(call=>call.url.pathname==='/rest/v1/mastodon_accounts'),'account existence is checked');
+    accountExists=false;
+    assert.equal((await query('?pinned=true')).status,404);
+    accountExists=true; tokenValid=false;
+    const before=calls.filter(call=>call.url.pathname==='/rest/v1/mastodon_accounts').length;
+    assert.equal((await query('?pinned=1')).status,401);
+    assert.equal(calls.filter(call=>call.url.pathname==='/rest/v1/mastodon_accounts').length,before);
+    tokenValid=true;
+    for (const suffix of ['','?pinned=false','?pinned=0']) assert.equal((await query(suffix)).status,200);
+    assert.equal(calls.filter(call=>call.url.pathname==='/rest/v1/mastodon_statuses').length,3,'ordinary posts still use the existing query');
+  },call=> {
+    if (call.url.pathname.endsWith('/mastodon_identity')) return tokenValid ? {id:'grant',client_id:clientId,user_id:userId,actor_id:actorId,scopes:['read']} : new Response(JSON.stringify({code:'PT401',message:'Invalid access token'}),{status:401,headers:{'content-type':'application/json'}});
+    if (call.url.pathname.endsWith('/mastodon_rate_limit')) return true;
+    if (call.url.pathname==='/rest/v1/mastodon_accounts') return accountExists ? {id:'42',actor_id:actorId} : null;
+    if (call.url.pathname==='/rest/v1/mastodon_statuses') return [];
+    throw new Error('Unexpected request '+call.url.pathname);
+  });
+});
+
 Deno.test('pilot config fails closed before backend access; only valid nonempty UUID lists expose discovery', async()=> {
   await withBackend(async calls=> {
     for (const configured of ['', ' ', '*', userId+',', userId+',not-a-uuid', JSON.stringify([userId]), Array(101).fill(userId).join(','), userId+'\nextra']) {
