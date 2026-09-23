@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .dev.vars
+.wrangler/
 supabase/.temp/
 coverage/
 # npm is the frontend package manager, including in CI.

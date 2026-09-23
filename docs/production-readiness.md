@@ -55,10 +55,12 @@ Keep `FEDERATION_DOMAIN=nolto.social` stable. The gateway supports two explicit 
 
 The 2026-09-22 production probes returned 404 for WebFinger and the SPA HTML for the canonical actor URL. The backend WebFinger endpoint resolves the real local handle correctly. Lovable's static hosting does not apply the repository's `_redirects`, Vercel rewrites or Caddy configuration. A backend deployment alone cannot fix this routing.
 
-`deploy/wrangler.toml` is the same-domain Worker Route configuration. It requires a proxied domain and Lovable's supported proxy connection mode. `deploy/wrangler.split.toml` is the separate configuration for an apex Custom Domain and a www website; it does not proxy Lovable traffic. The observed www → apex redirect must be removed by setting www as the primary Lovable domain before using that mode. With the matching domain setup and an authenticated Cloudflare account, the same-domain example is:
+`deploy/wrangler.jsonc` is the same-domain Worker Route configuration. It requires a proxied domain and Lovable's supported proxy connection mode. `deploy/wrangler.split.jsonc` is the separate configuration for an apex Custom Domain and a www website; it does not proxy Lovable traffic. The observed www → apex redirect must be removed by setting www as the primary Lovable domain before using that mode. With the matching domain setup and an authenticated Cloudflare account, the same-domain example is:
 
 ```sh
-npx wrangler deploy --config deploy/wrangler.toml
+npm --prefix deploy ci
+npm --prefix deploy run check
+npm --prefix deploy run deploy
 node scripts/check-federation.mjs jonatan_tensetti@nolto.social
 ```
 

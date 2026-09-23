@@ -40,9 +40,9 @@ test('gateway routes discovery and signed inbox bytes while retaining canonical 
 });
 
 test('the deployed Worker routes cover every protocol path, including token queries, without taking over browser sign-in', async () => {
-  const config = await readFile(new URL('../deploy/wrangler.toml', import.meta.url), 'utf8');
-  const patterns = [...config.matchAll(/pattern\s*=\s*"([^"]+)"/g)].map(match =>
-    new RegExp('^' + match[1].split('*').map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$'));
+  const config = JSON.parse(await readFile(new URL('../deploy/wrangler.jsonc', import.meta.url), 'utf8'));
+  const patterns = config.routes.map(({ pattern }) =>
+    new RegExp('^' + pattern.split('*').map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$'));
   assert.ok(patterns.length > 0);
   const routes = url => patterns.some(pattern => pattern.test(url.replace(/^https:\/\//, '')));
   const env = { SUPABASE_ORIGIN: 'https://backend.example.com' };
@@ -74,6 +74,8 @@ test('the deployed Worker routes cover every protocol path, including token quer
       assert.equal(routes('https://nolto.social'+path), false, 'Browser path must remain on the existing host');
     }
     assert.equal(routes('https://elsewhere.example/api/v1/instance'), false);
+    assert.ok(routes('https://nolto.social/.well-known/atproto-did?probe=1'));
+    assert.equal(routes('https://alice.nolto.social/.well-known/atproto-did'), false);
     const similar = new Request('https://nolto.social/oauth/token-unrelated');
     await gateway.fetch(similar, env);
     assert.equal(calls.at(-1).input, similar, 'Wildcard route must not broaden the backend endpoint');
@@ -121,9 +123,99 @@ test('split-domain gateway keeps protocol requests on the apex and sends browser
     assert.equal(String(calls.at(-1).input), 'https://backend.example.com/functions/v1/oauth-authorization-server/token');
     assert.equal(await new Response(calls.at(-1).init.body).text(), 'code=fixture');
     assert.equal(calls.length, 2);
-    const config = await readFile(new URL('../deploy/wrangler.split.toml', import.meta.url), 'utf8');
-    assert.match(config, /pattern = "nolto.social", custom_domain = true/);
-    assert.match(config, /GATEWAY_MODE = "split"/);
-    assert.match(config, /FRONTEND_ORIGIN = "https:\/\/www.nolto.social"/);
+    const config = JSON.parse(await readFile(new URL('../deploy/wrangler.split.jsonc', import.meta.url), 'utf8'));
+    assert.deepEqual(config.routes, [{ pattern: 'nolto.social', custom_domain: true }]);
+    assert.equal(config.vars.GATEWAY_MODE, 'split');
+    assert.equal(config.vars.FRONTEND_ORIGIN, 'https://www.nolto.social');
   } finally { globalThis.fetch = original; }
+});
+
+test('AT Protocol resolves only the configured apex DID without upstream requests or redirects', async () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => assert.fail('Handle verification must not contact an upstream');
+  try {
+    for (const mode of ['route', 'split']) {
+      for (const did of ['did:plc:abcdefghijklmnopqrstuvwx', 'did:web:identity.example.org']) {
+        const env = { GATEWAY_MODE: mode, ATPROTO_DID: did };
+        const response = await gateway.fetch(new Request('https://nolto.social/.well-known/atproto-did?probe=1'), env);
+        assert.equal(response.status, 200);
+        assert.equal(response.headers.get('content-type'), 'text/plain; charset=utf-8');
+        assert.equal(response.headers.get('location'), null);
+        assert.equal(response.headers.get('cache-control'), 'no-store');
+        assert.equal(await response.text(), did);
+        const head = await gateway.fetch(new Request('https://nolto.social/.well-known/atproto-did', { method: 'HEAD' }), env);
+        assert.equal(head.status, 200);
+        assert.equal(await head.text(), '');
+      }
+      for (const did of [undefined, '']) {
+        const response = await gateway.fetch(new Request('https://nolto.social/.well-known/atproto-did'), { GATEWAY_MODE: mode, ATPROTO_DID: did });
+        assert.equal(response.status, 404);
+        assert.equal(response.headers.get('location'), null);
+      }
+    }
+    for (const method of ['POST', 'PUT', 'DELETE', 'OPTIONS']) {
+      const response = await gateway.fetch(new Request('https://nolto.social/.well-known/atproto-did', { method }), { ATPROTO_DID: 'did:plc:abcdefghijklmnopqrstuvwx' });
+      assert.equal(response.status, 405);
+      assert.equal(response.headers.get('allow'), 'GET, HEAD');
+    }
+    for (const url of [
+      'https://alice.nolto.social/.well-known/atproto-did',
+      'https://www.nolto.social/.well-known/atproto-did',
+      'https://admin.nolto.social/.well-known/atproto-did',
+      'https://nolto.social.attacker.com/.well-known/atproto-did',
+      'https://nolto.social./.well-known/atproto-did',
+      'https://nolto.social:8443/.well-known/atproto-did',
+      'http://nolto.social/.well-known/atproto-did',
+      'https://nolto.social/.well-known/atproto-did/unexpected',
+      'https://nolto.social/.well-known/atproto-did-unexpected',
+      'https://attacker.com/functions/v1/inbox/alice',
+    ]) {
+      const response = await gateway.fetch(new Request(url), { ATPROTO_DID: 'did:plc:abcdefghijklmnopqrstuvwx' });
+      assert.equal(response.status, 404, url);
+      assert.equal(response.headers.get('location'), null);
+    }
+  } finally { globalThis.fetch = original; }
+});
+
+test('invalid AT Protocol identifiers and canonical host configuration fail closed', async () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => assert.fail('Invalid identity configuration must not contact an upstream');
+  const request = new Request('https://nolto.social/.well-known/atproto-did');
+  try {
+    for (const did of [null, {}, [], 42, ' ', 'did:plc:short', 'did:plc:ABCDEFGHIJKLMNOPQRSTUVWX', 'did:plc:012345678901234567890123',
+      'did:plc:abcdefghijklmnopqrstuvwx\n', 'did:web:identity.example.org:users:alice', 'did:web:identity.example.org%3A443',
+      'did:web:identity.example.org/path', 'did:web:identity.example.org?x=1', 'did:web:identity.example.org#key',
+      'did:web:Identity.example.org', 'did:web:localhost', 'did:web:127.0.0.1', 'did:web:identity.test', 'did:key:z6Mk123',
+    ]) {
+      assert.equal((await gateway.fetch(request, { ATPROTO_DID: did })).status, 503, JSON.stringify(did));
+    }
+    for (const domain of ['', null, {}, 'https://nolto.social', 'NOLTO.social', 'nolto.social.', 'nolto.social/path',
+      'nolto.social:443', 'nolto.social@attacker.com', '*.nolto.social', 'localhost', '127.0.0.1', 'nolto.invalid',
+      'nolto.social\n', 'a'.repeat(64)+'.social',
+    ]) {
+      assert.equal((await gateway.fetch(request, { FEDERATION_DOMAIN: domain })).status, 503, JSON.stringify(domain));
+    }
+    const configured = await gateway.fetch(new Request('https://identity.example.org/.well-known/atproto-did'), {
+      FEDERATION_DOMAIN: 'identity.example.org', ATPROTO_DID: 'did:web:identity.example.org',
+    });
+    assert.equal(configured.status, 200);
+    assert.equal(await configured.text(), 'did:web:identity.example.org');
+    const head = await gateway.fetch(new Request(request.url, { method: 'HEAD' }), { ATPROTO_DID: 'malformed' });
+    assert.equal(head.status, 503);
+    assert.equal(await head.text(), '');
+  } finally { globalThis.fetch = original; }
+});
+
+test('both deployment modes leave AT Protocol identity unassigned and redact invocation URLs', async () => {
+  for (const filename of ['wrangler.jsonc', 'wrangler.split.jsonc']) {
+    const config = JSON.parse(await readFile(new URL('../deploy/'+filename, import.meta.url), 'utf8'));
+    assert.equal(config.vars.ATPROTO_DID, '');
+    assert.equal(config.vars.FEDERATION_DOMAIN, 'nolto.social');
+    assert.equal(config.observability.enabled, true);
+    assert.equal(config.observability.logs.invocation_logs, false);
+    assert.equal(config.observability.redact_query_string, true);
+    assert.equal(config.observability.traces.enabled, false);
+    assert.ok(config.compatibility_flags.includes('nodejs_compat'));
+    assert.ok(config.routes.every(route => !route.pattern.startsWith('*')));
+  }
 });

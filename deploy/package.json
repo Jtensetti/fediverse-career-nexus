@@ -1,0 +1,16 @@
+{
+  "name": "nolto-federation-gateway",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "wrangler deploy --dry-run && wrangler deploy --dry-run --config wrangler.split.jsonc",
+    "deploy": "wrangler deploy",
+    "deploy:split": "wrangler deploy --config wrangler.split.jsonc",
+    "types": "wrangler types --include-runtime=false"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260923.1",
+    "wrangler": "4.136.3"
+  },
+  "engines": { "node": ">=22.0.0" }
+}
