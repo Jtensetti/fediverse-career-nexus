@@ -10,6 +10,7 @@ Updated 23 September 2026. The service is not yet cleared for an unrestricted pu
 | Cloud project name | `fediverse-career-newest` |
 | Backend reference | `anknmcmqljejabxbeohv` |
 | Federation domain | `nolto.social` |
+| Cloudflare Worker | `nolto-federation` |
 | Operator | Jonatan Tensetti |
 
 Use this existing backend. The historical projects referenced during setup are not production. `scripts/inspect-production.sql` is the read-only database preflight. Do not copy production records or secrets into test fixtures.
@@ -31,8 +32,7 @@ The moderation and AT Protocol identity migrations `20260922141011`, `2026092214
 ## Required before public launch
 
 - Complete signup, confirmation, recovery, MFA, onboarding, profile editing, messaging, company ownership, export and deletion journeys using separate test accounts on desktop and mobile.
-- Verify DNS, TLS, redirects and discovery on `nolto.social`. The browser host redirect was removed; hosting rules still need confirmation. A direct backend response does not verify public-domain routing.
-- Complete the [Mastodon interoperability checks](federation-launch-checklist.md). Public discovery has been checked directly against the backend, not end to end through another server.
+- Complete the [Mastodon interoperability checks](federation-launch-checklist.md). Public-domain discovery passes for `jonatan_tensetti@nolto.social`; signed exchanges with an independent server remain unverified.
 - Restore the retained backup into an isolated backend with Auth and Storage. Establish backup expiry, key custody and a deletion manifest that prevents restored data from becoming visible again.
 - Confirm gateway rate limits, private-network egress restrictions, alert delivery and the person responsible for incident response. Database request logs are not an abuse-prevention layer.
 - Review the retained actor signing identity: earlier client-readable key paths were closed, but copied keys cannot be recalled. Rotate an exposed key pair through a controlled server procedure while preserving actor URLs.
@@ -47,15 +47,19 @@ Inbox E2EE has no forward secrecy or key-rotation/recovery workflow. Losing the 
 
 Account exports fail above their configured size/row limits and require assisted handling; they are not a single cross-table point-in-time snapshot. Large federation fan-out, independent Auth/Storage failures and deletion backlog need hosted load and recovery tests.
 
+True per-user Bluesky accounts such as `name.nolto.social` require a PDS and account provisioning. No PDS is deployed. The operator has a zero budget and has ruled out a server that costs money; no paid hosting purchase is planned. Existing Bluesky sign-in remains a separate identity-linking feature. `ATPROTO_DID` is unset.
+
 ## Federation routing
 
-Keep `FEDERATION_DOMAIN=nolto.social` stable. The gateway supports two explicit modes: Worker Routes over an existing frontend origin, or a Custom Domain on the apex that redirects browser navigation to www. See [the activation guide](nolto-activation.md) for the matching DNS, Lovable primary-domain, SITE_URL and Worker settings. Installing and verifying a gateway remains an operational task.
+Keep `FEDERATION_DOMAIN=nolto.social` stable. Worker Routes over the existing frontend origin are active; the website and federation both use the apex, and www redirects to it. The alternative mode uses a Custom Domain on the apex and a website on www. See [the activation guide](nolto-activation.md) for the current deployment and the different DNS, Lovable primary-domain, SITE_URL and Worker settings required for that alternative.
 
 ## Federation routing on the hosted nolto.social domain
 
-The 2026-09-22 production probes returned 404 for WebFinger and the SPA HTML for the canonical actor URL. The backend WebFinger endpoint resolves the real local handle correctly. Lovable's static hosting does not apply the repository's `_redirects`, Vercel rewrites or Caddy configuration. A backend deployment alone cannot fix this routing.
+On 23 September, Worker `nolto-federation` version `6604260d-58eb-4f31-b56f-a629d586ba83` is live with seven routes. Gateway changes were merged in PR #77 at `bb5c0d474a588af531a67bdf8d1c0e67c4935f80`. The zone uses `corey.ns.cloudflare.com` and `dawn.ns.cloudflare.com`; the proxied apex CNAME points to `fediverse-career-newest.lovable.app`. Full (strict) TLS and website HTTP 200 are verified. All eight gateway checks and public federation discovery for `jonatan_tensetti@nolto.social` pass.
 
-`deploy/wrangler.jsonc` is the same-domain Worker Route configuration. It requires a proxied domain and Lovable's supported proxy connection mode. `deploy/wrangler.split.jsonc` is the separate configuration for an apex Custom Domain and a www website; it does not proxy Lovable traffic. The observed www → apex redirect must be removed by setting www as the primary Lovable domain before using that mode. With the matching domain setup and an authenticated Cloudflare account, the same-domain example is:
+The proxied www A record is `192.0.2.1`; Cloudflare rule **WWW to nolto.social** returns HTTP 308 to the apex with path and query preserved, verified over HTTP and HTTPS. Cloudflare DNSSEC signing is enabled and its new DS record was added successfully at one.com. At 06:46 UTC on 23 September the matching DS and A responses were validated with the AD flag through Google and Cloudflare. See the activation guide for the DS details.
+
+`deploy/wrangler.jsonc` is the active same-domain Worker Route configuration. `deploy/wrangler.split.jsonc` is the alternative configuration for an apex Custom Domain and a www website; it does not proxy Lovable traffic. Before adopting that alternative, replace the www redirect DNS record, disable the Cloudflare www-to-apex rule and set www as the primary Lovable domain. With an authenticated Cloudflare account, the same-domain deployment commands are:
 
 ```sh
 npm --prefix deploy ci
@@ -64,15 +68,15 @@ npm --prefix deploy run deploy
 node scripts/check-federation.mjs jonatan_tensetti@nolto.social
 ```
 
-The Worker only intercepts discovery and `/functions/v1/` paths; the rest goes to the existing origin without changing the browser's canonical origin. This keeps OAuth callbacks and browser-bound state on nolto.social. Signed inbox request bodies and Signature/Digest headers are preserved; untrusted forwarded-host input is dropped. No Supabase service key belongs in the Worker. The repo's connected tools do not currently have access to that Cloudflare zone, so this routing has not been deployed.
+The Worker intercepts discovery, nodeinfo, `/functions/v1/*`, `/api/v1/*`, `/api/v2/*`, `/oauth/token` and `/oauth/revoke`; other navigation goes to the existing origin without changing the browser's canonical origin. This keeps OAuth callbacks and browser-bound state on nolto.social. Signed inbox request bodies and Signature/Digest headers are preserved; untrusted forwarded-host input is dropped. No Supabase service key belongs in the Worker.
 
-Do not report Mastodon compatibility until the public-domain probe passes and a signed Follow / Accept / Note / reply / Like / Undo exchange is exercised with a real peer. WebFinger is discovery, not a login protocol. Logging into a Mastodon client as a Nolto account additionally requires the Mastodon client API and OAuth server; their endpoints currently return 410. A Nolto AT Protocol account usable in Bluesky requires PDS hosting and domain-handle provisioning. Bluesky sign-in establishes identity in Nolto; it does not by itself publish posts or bridge likes between protocols.
+Do not report full Mastodon compatibility until a signed Follow / Accept / Note / reply / Like / Undo exchange is exercised with a real peer. WebFinger is discovery, not a login protocol. Logging into a Mastodon client as a Nolto account additionally requires the Mastodon client API and OAuth server; their endpoints currently return the disabled-feature HTTP 503 even though the matching migration and handlers are deployed. Bluesky sign-in establishes identity in Nolto; it does not by itself provision a PDS account, publish posts or bridge likes between protocols.
 
 ## Prepared post images and profile import
 
 The two migrations `20260922172010` and `20260922172019` were deployed on 22 September and their canonical versions recorded after comparing the hosted SQL with the repository. The managed deployment also recorded copies as `20260922182138` and `20260922182332`; those files are retained as tracking markers so replay executes the schema once. The platform skipped the bucket SQL, so the private posts bucket was separately verified and set to 512,000 bytes and JPEG only. The regression runner now replays all later migration files to catch duplicated DDL.
 
-The matching inbox, federation, outbox, objects, activities, public-media and privacy-maintenance functions were deployed. The minute-by-minute cleanup schedule remains active. The repaired Bluesky start endpoint returned HTTP 200 with a Bluesky authorization URL and reports ready; full interactive sign-in still needs a user session. Managed Google and Apple starts were verified through their real provider redirects. These checks do not establish the domain routing or native client support described above.
+The matching inbox, federation, outbox, objects, activities, public-media and privacy-maintenance functions were deployed. The minute-by-minute cleanup schedule remains active. The repaired Bluesky start endpoint returned HTTP 200 with a Bluesky authorization URL and reports ready; full interactive sign-in still needs a user session. Managed Google and Apple starts were verified through their real provider redirects. Public-domain routing was verified separately as described above; native client compatibility remains untested.
 
 Post composers compress to JPEG, at most 1920 pixels per dimension and 500 KiB, then upload immediately on selection. The storage path starts with the authenticated owner's UUID. Original files are never uploaded if compression fails. Publication attaches a ready upload in the same database transaction; retry uses the same post ID. The private media gateway only releases published, visible content. Unattached uploads expire after 24 hours and the existing privacy worker removes them; discarded uploads become eligible immediately. Remote media remains a linked/proxied resource with no copy in Storage, although delivery consumes bandwidth.
 
@@ -80,4 +84,6 @@ The profile-import guide is `/integrations`, linked from `/hosting`. `public/emb
 
 ## Experimental native client implementation
 
-The repository now includes a gated Mastodon client API subset and OAuth server, explicit consent and app revocation UI. It is not deployed or enabled on nolto.social. The public Worker/Caddy/Netlify/Vercel examples also route `/api/v1/*`, `/api/v2/*`, `/oauth/token` and `/oauth/revoke`; `/oauth/authorize`, `/~oauth/*` and browser callbacks stay on the frontend. The domain currently uses One.com nameservers; a Cloudflare Worker still needs a suitable proxied zone setup and administration access. See [Mastodon client access](mastodon-client-access.md) for the security model, exact supported subset, limitations and deployment acceptance gate. Supabase project access remains denied for the connected account. Production probes still return 410 from the backend stubs, 404 from WebFinger, and SPA HTML from `/api/v1/instance` on the public domain.
+The repository includes a gated Mastodon client API subset and OAuth server, explicit consent and app revocation UI. Canonical routes and frontend pages are present, but native access is disabled: public API/OAuth probes return HTTP 503. Migration `20260922184945` and matching handlers are deployed; seven tables, two invoker views, two ID triggers and the cleanup RPC are verified. `/oauth/authorize`, `/~oauth/*` and browser callbacks stay on the frontend. See [Mastodon client access](mastodon-client-access.md) for the supported subset, security model, limitations and acceptance gate. Supabase control-plane access remains denied for the connected account. Replenished Lovable credits allowed the gated deployment; its read/query functions also work. Deploy the pilot code and verify its runtime configuration before a consenting test user performs real native-client acceptance checks.
+
+The optional operator pilot keeps full access off while allowing only configured Auth user UUIDs to consent, exchange codes and use account tokens. Public discovery/registration remains available during a pilot; other API operations require an allowed user token. This permits acceptance on the live backend when isolated staging is unavailable, but creates real posts and social actions and does not establish compatibility for all clients. Default configuration remains off; see the client guide for parsing, revocation and removal behavior.
