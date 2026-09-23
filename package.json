@@ -12,6 +12,7 @@
     "test": "node --experimental-strip-types --test scripts/*.test.mjs && npm run test:deno",
     "test:deno": "deno test --config deno.json --allow-env=FEDERATION_DOMAIN,SITE_URL,TOKEN_ENCRYPTION_KEY,SUPABASE_URL,SUPABASE_ANON_KEY,SUPABASE_SERVICE_ROLE_KEY,MASTODON_CLIENT_ENABLED supabase/tests",
     "check:federation": "node scripts/check-federation.mjs",
+    "check:gateway": "node scripts/check-gateway.mjs",
     "check:edge": "node scripts/check-edge-functions.mjs",
     "check:types": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit",
     "check:source": "node scripts/check-source.mjs"

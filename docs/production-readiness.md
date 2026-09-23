@@ -1,6 +1,6 @@
 # Deployment and launch requirements
 
-Updated 22 September 2026. The service is not yet cleared for an unrestricted public launch. Passing local checks does not establish hosted-service behavior.
+Updated 23 September 2026. The service is not yet cleared for an unrestricted public launch. Passing local checks does not establish hosted-service behavior.
 
 ## Existing deployment
 
@@ -49,13 +49,13 @@ Account exports fail above their configured size/row limits and require assisted
 
 ## Federation routing
 
-Keep `FEDERATION_DOMAIN=nolto.social` stable. The gateway in `deploy/nolto-gateway.mjs` is configured as a Worker Route on the existing domain, with `SUPABASE_ORIGIN` for the backend. It forwards discovery and ActivityPub requests and lets other requests continue to the existing website. Installing and verifying this gateway remains an operational task.
+Keep `FEDERATION_DOMAIN=nolto.social` stable. The gateway supports two explicit modes: Worker Routes over an existing frontend origin, or a Custom Domain on the apex that redirects browser navigation to www. See [the activation guide](nolto-activation.md) for the matching DNS, Lovable primary-domain, SITE_URL and Worker settings. Installing and verifying a gateway remains an operational task.
 
 ## Federation routing on the hosted nolto.social domain
 
 The 2026-09-22 production probes returned 404 for WebFinger and the SPA HTML for the canonical actor URL. The backend WebFinger endpoint resolves the real local handle correctly. Lovable's static hosting does not apply the repository's `_redirects`, Vercel rewrites or Caddy configuration. A backend deployment alone cannot fix this routing.
 
-`deploy/wrangler.toml` and `deploy/nolto-gateway.mjs` are ready for a Cloudflare Worker Route on the existing proxied domain. With an authenticated Cloudflare account that controls the `nolto.social` zone:
+`deploy/wrangler.toml` is the same-domain Worker Route configuration. It requires a proxied domain and Lovable's supported proxy connection mode. `deploy/wrangler.split.toml` is the separate configuration for an apex Custom Domain and a www website; it does not proxy Lovable traffic. The observed www → apex redirect must be removed by setting www as the primary Lovable domain before using that mode. With the matching domain setup and an authenticated Cloudflare account, the same-domain example is:
 
 ```sh
 npx wrangler deploy --config deploy/wrangler.toml

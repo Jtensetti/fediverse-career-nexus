@@ -8,6 +8,7 @@ import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/common/SEOHead";
+import { consumeAppAuthorization } from '@/lib/appAuthorizationReturn';
 
 type CallbackStatus = 'processing' | 'success' | 'error';
 
@@ -91,7 +92,7 @@ export default function AuthCallback() {
         }
 
         navigateTimer = window.setTimeout(() => {
-          if (!cancelled) navigate('/', { replace: true });
+          if (!cancelled) navigate(consumeAppAuthorization() || '/', { replace: true });
         }, 2000);
 
       } catch (error: any) {

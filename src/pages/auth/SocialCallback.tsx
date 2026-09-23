@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { readSocialLogin, SOCIAL_LOGIN_STORAGE } from '@/lib/socialLogin';
 import { Button } from '@/components/ui/button';
+import { consumeAppAuthorization } from '@/lib/appAuthorizationReturn';
 
 export default function SocialCallback() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function SocialCallback() {
       const { error } = await supabase.auth.setSession(tokens);
       if (error) throw error;
     })();
-    exchange.current.then(() => { if (active) navigate('/feed', { replace: true }); })
+    exchange.current.then(() => { if (active) navigate(consumeAppAuthorization() || '/feed', { replace: true }); })
       .catch(() => { if (active) setFailed(true); });
     return () => { active = false; };
   }, [navigate]);

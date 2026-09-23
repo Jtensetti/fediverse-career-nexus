@@ -2,7 +2,7 @@
 
 This is an opt-in, experimental subset of the Mastodon client API. It is **not deployed or enabled on nolto.social**. The implementation is gated by MASTODON_CLIENT_ENABLED=true; missing/false returns 503 before reading the database. Do not enable it until backend deployment, canonical-domain routes and a real client have passed acceptance checks.
 
-Users select nolto.social as their server, sign in on Nolto with their existing method, then explicitly approve the app. Google, Apple, Bluesky and password sign-ins authorize the same local identity. Browser consent is at /oauth/authorize; /settings/apps lists and revokes app access and is linked from profile privacy settings. /mastodon-apps describes the limits.
+Users select nolto.social as their server, sign in on Nolto with their existing method, then explicitly approve the app. Google, Apple, Bluesky and password sign-ins authorize the same local identity. Browser consent is at /oauth/authorize on SITE_URL. A same-tab return restores the consent request after password, Google, Apple, Bluesky or federated sign-in, without approving the app automatically. The saved return expires after 15 minutes and only permits the consent route. The website can be on www while the federation identity stays on the apex; /settings/apps lists and revokes app access and is linked from profile privacy settings. /mastodon-apps describes the limits.
 
 ## Implemented contract
 
@@ -43,7 +43,7 @@ Unsupported endpoints return explicit errors. Native image/video uploads, editin
 1. Apply migration 20260922184945_mastodon_client_access.sql once; record its canonical version instead of generating a second executable copy.
 2. Deploy mastodon-api, oauth-authorization-server and privacy-maintenance with all shared dependencies. The two public endpoints retain verify_jwt=false because their bodies implement scoped opaque-token authorization. Leave MASTODON_CLIENT_ENABLED unset.
 3. Publish consent, connected-apps and guide pages. Keep SITE_URL on the canonical browser HTTPS origin and FEDERATION_DOMAIN on the permanent federation domain.
-4. Install canonical-domain proxy routes. Cloudflare Worker, Caddy, Netlify and Vercel examples forward /api/v1/*, /api/v2/*, /oauth/token, /oauth/revoke and discovery. /oauth/authorize, /~oauth/* and browser callbacks stay on the website. Lovable hosting does not apply these repository configurations automatically. Current One.com nameservers do not themselves install a Cloudflare Worker; a suitable proxied zone/domain configuration and administrator access are needed.
+4. Install the domain configuration described in [nolto-activation.md](nolto-activation.md). Use `wrangler.toml` for Worker Routes over an existing origin, or `wrangler.split.toml` for a Custom Domain on the apex with the website on www. In split mode www must be the primary Lovable domain; the default route-mode fallback must never run as the Custom Domain origin. Install canonical-domain proxy routes. Cloudflare Worker, Caddy, Netlify and Vercel examples forward /api/v1/*, /api/v2/*, /oauth/token, /oauth/revoke and discovery. /oauth/authorize, /~oauth/* and browser callbacks stay on the website. Lovable hosting does not apply these repository configurations automatically. Current One.com nameservers do not themselves install a Cloudflare Worker; a suitable proxied zone/domain configuration and administrator access are needed.
 5. Enable MASTODON_CLIENT_ENABLED=true in an isolated staging deployment and run:
 
        node scripts/check-mastodon.mjs https://staging.example.com
@@ -56,9 +56,9 @@ Unsupported endpoints return explicit errors. Native image/video uploads, editin
    Exercise signed Follow/Accept/Note/reply/Like/Undo with a real peer.
 8. Enable production only after these checks and update the guide's activation status. HTTP 410 means the old stub; HTTP 503 saying access is not enabled means the new gated function; SPA HTML at an API URL means incorrect domain routing.
 
-The connected Supabase account currently rejects access to the hosted project. The previous Lovable agent deployment was blocked by exhausted credits; the workspace-details tool does not expose a current balance. Domain/proxy administration is also unavailable in the connected tools. GitHub commits do not resolve these deployment dependencies.
+On 23 September the connected Supabase account still rejects access to the hosted project, while the Lovable connector responds again. The earlier credit error is no longer a confirmed current blocker. Domain/proxy administration remains unavailable in the connected tools. Git synchronization does not establish migration, Edge Function or DNS deployment. See the dated activation guide for observed domain state.
 
-The local implementation passed 28 Node tests, 43 Deno tests, TypeScript/Edge checks, a production build and all three isolated SQL suites before the workspace disconnected. The changes were recovered through GitHub afterward. The current GitHub commit must pass the repository's CI as its own acceptance check; the older local results are not a substitute.
+The recovered implementation passed all GitHub checks at commit 0399607, including the isolated SQL suites. Later gateway and sign-in fixes add regression tests for deployed route coverage, split-domain redirects, real signed inbox bytes through the proxy, website-origin consent, and one-time browser returns. Each current commit must pass CI independently; code tests do not establish hosted native-client compatibility.
 
 ## AT Protocol is a separate deliverable
 

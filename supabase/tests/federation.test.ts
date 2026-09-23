@@ -6,6 +6,7 @@ import { generateRsaKeyPair, signRequest, verifySignature, parseSignatureHeader,
 import { remoteUrl, isPublicAddress, readBody } from "../functions/_shared/remote-fetch.ts";
 import { pkceChallenge } from "../functions/_shared/oauth.ts";
 import { isPublic, localCreate, PUBLIC } from "../functions/_shared/local-content.ts";
+import gateway from '../../deploy/nolto-gateway.mjs';
 
 Deno.env.set("FEDERATION_DOMAIN", "nolto.social");
 Deno.env.set("SITE_URL", "https://nolto.tensetti.io");
@@ -100,6 +101,31 @@ Deno.test("Local Create wrappers become resolvable public objects, without reusi
   assert.equal(activity.object.attributedTo, activity.actor);
   assert.equal(activity.object.content, "<p>Hello &lt;script&gt;<br>World</p>");
   assert.equal(activity.object.actor, undefined);
+});
+
+Deno.test('a real signed inbox request survives the split-domain gateway with its canonical host and exact bytes', async () => {
+  const keys = await generateRsaKeyPair();
+  const url = 'https://nolto.social/functions/v1/inbox/alice?delivery=one%2Btwo';
+  const body = JSON.stringify({ type: 'Follow', actor: 'https://peer.example/users/bob', object: buildActorUrl('alice'), summary: 'åäö' });
+  const headers = new Headers({ 'x-forwarded-host': 'forged.example' });
+  await signRequest(url, 'POST', headers, body, keys.privateKey, 'https://peer.example/users/bob#main-key');
+  const original = globalThis.fetch;
+  let received = false;
+  globalThis.fetch = async (input, init) => {
+    const request = new Request(input, init);
+    assert.equal(request.url, 'https://backend.example/functions/v1/inbox/alice?delivery=one%2Btwo');
+    const bytes = await request.text();
+    assert.equal(bytes, body);
+    assert.equal(request.headers.get('x-forwarded-host'), null);
+    assert.equal(await verifySignature(request, bytes, () => Promise.resolve(keys.publicKey)), true);
+    received = true;
+    return new Response(null, { status: 202 });
+  };
+  try {
+    const result = await gateway.fetch(new Request(url, { method: 'POST', headers, body }), { GATEWAY_MODE: 'split', FRONTEND_ORIGIN: 'https://www.nolto.social', SUPABASE_ORIGIN: 'https://backend.example' });
+    assert.equal(result.status, 202);
+    assert.equal(received, true);
+  } finally { globalThis.fetch = original; }
 });
 
 Deno.test("Partial delivery failures are retried without resending successful inboxes", async () => {

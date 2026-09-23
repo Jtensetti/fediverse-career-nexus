@@ -84,3 +84,24 @@ Deno.test('deployment gate disables endpoints before touching database or accept
     assert.equal(calls.length,0);
   },()=>{throw new Error('Unexpected database request');});
 });
+
+Deno.test('split-domain OAuth keeps its issuer on the federation domain and accepts consent only on the website origin', async()=> {
+  await withBackend(async()=> {
+    Deno.env.set('SITE_URL','https://www.nolto.social');
+    const result=await handleOAuthRequest(new Request('https://fixture.example/functions/v1/oauth-authorization-server'));
+    const metadata=await result.json();
+    assert.equal(metadata.issuer,'https://nolto.social');
+    assert.equal(metadata.authorization_endpoint,'https://www.nolto.social/oauth/authorize');
+    assert.equal(metadata.token_endpoint,'https://nolto.social/oauth/token');
+    const input={response_type:'code',client_id:clientId,redirect_uri:'tusky://oauth',scope:'read',state:'preserved',decision:'deny'};
+    assert.equal((await handleOAuthRequest(jsonRequest('oauth-authorization-server','consent',input,{origin:'https://nolto.social'}))).status,403);
+    const denied=await handleOAuthRequest(jsonRequest('oauth-authorization-server','consent',input,{origin:'https://www.nolto.social'}));
+    assert.equal(denied.status,200);
+    const callback=new URL((await denied.json()).redirect);
+    assert.equal(callback.searchParams.get('error'),'access_denied');
+    assert.equal(callback.searchParams.get('state'),'preserved');
+  },call=> {
+    if (call.url.pathname==='/rest/v1/mastodon_clients') return client;
+    throw new Error('Unexpected request '+call.url.pathname);
+  });
+});

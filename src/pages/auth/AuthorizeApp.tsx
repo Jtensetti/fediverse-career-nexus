@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { mastodonRequest, scopeDescription, type AppRequest } from '@/services/auth/mastodonClientService';
+import { rememberAppAuthorization } from '@/lib/appAuthorizationReturn';
+import { formatFederatedHandle } from '@/lib/federation';
 
 export default function AuthorizeApp() {
   const { user, loading, mfaPending } = useAuth();
   const { search } = useLocation();
+  const navigate = useNavigate();
   const input = useMemo(() => Object.fromEntries(new URLSearchParams(search)),[search]);
   const request = useQuery({ queryKey:['mastodon-consent',search],queryFn:()=>mastodonRequest<AppRequest>('request'+search),retry:false });
   const profile = useQuery({ queryKey:['app-consent-profile',user?.id], enabled:!!user, queryFn:async()=> {
@@ -18,6 +21,13 @@ export default function AuthorizeApp() {
   } });
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState('');
+  const signIn = () => {
+    try {
+      const returnTo = '/oauth/authorize'+search;
+      rememberAppAuthorization(returnTo);
+      navigate('/auth', { state: { returnTo } });
+    } catch { setError('Webbläsaren behöver tillåta sessionslagring för att återvända från inloggningen. Öppna Nolto i din vanliga webbläsare och försök igen.'); }
+  };
   const decide = async (decision:'allow'|'deny') => {
     setBusy(true); setError('');
     try {
@@ -39,8 +49,8 @@ export default function AuthorizeApp() {
       <div><p className="font-medium">Appen begär att få:</p><ul className="mt-3 list-disc space-y-2 pl-5">{request.data.scopes.map(scope=><li key={scope}>{scopeDescription(scope)}</li>)}</ul></div>
       <p className="text-sm text-muted-foreground">Åtkomsten gäller i högst 30 dagar och kan återkallas under Anslutna appar. Den upphör även när inloggningssessionen återkallas. Nya inlägg följer Noltós regler för moderering.</p>
       <p className="text-sm">Mastodon-appstödet är under utprovning. Textinlägg, svar, likes och följningar ingår. Bild- och videouppladdning, privata meddelanden, boostar och pushnotiser ingår ännu inte.</p>
-      {loading ? <p role="status">Kontrollerar inloggningen…</p> : !user || mfaPending ? <div className="space-y-3"><Button asChild><a href="/auth" target="_blank" rel="noopener noreferrer">Logga in på Nolto</a></Button><p className="text-sm">Slutför inloggningen i den nya fliken och återvänd sedan hit.</p></div>
-        : <p className="rounded-lg bg-muted p-4">Ansluter som <strong>{profile.data?.username ? '@'+profile.data.username+'@'+window.location.hostname : 'ditt Nolto-konto'}</strong>.</p>}
+      {loading ? <p role="status">Kontrollerar inloggningen…</p> : !user || mfaPending ? <div className="space-y-3"><Button onClick={signIn}>Logga in på Nolto</Button><p className="text-sm">Efter inloggningen kommer du tillbaka hit och väljer om appen ska få åtkomst.</p></div>
+        : <p className="rounded-lg bg-muted p-4">Ansluter som <strong>{profile.data?.username ? formatFederatedHandle(profile.data.username) : 'ditt Nolto-konto'}</strong>.</p>}
       {error && <p role="alert" className="text-destructive">{error}</p>}
       {profile.isError && <p role="alert">Kunde inte läsa ditt konto. Ladda om sidan och försök igen.</p>}
       <div className="flex gap-3"><Button variant="outline" disabled={busy} onClick={()=>void decide('deny')}>Avbryt</Button><Button disabled={busy || !user || loading || mfaPending || !profile.data} onClick={()=>void decide('allow')}>{busy ? 'Ansluter…' : 'Godkänn och anslut'}</Button></div>
