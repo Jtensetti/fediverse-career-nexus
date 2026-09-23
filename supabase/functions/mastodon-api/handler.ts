@@ -2,7 +2,7 @@ import { serviceClient } from '../_shared/local-actor.ts';
 import { functionPath, getFederationBaseUrl } from '../_shared/federation-urls.ts';
 import { randomToken, tokenHash } from '../_shared/oauth.ts';
 import { HttpError } from '../_shared/user-auth.ts';
-import { access, decimalId, instanceInfo, mastodonHandler, parameters, publicClient, rateLimit, redirectUri, requestIp, response, rpc, safeUrl, scopes, type Grant } from '../_shared/mastodon.ts';
+import { access, decimalId, instanceInfo, mastodonAccessPolicy, mastodonHandler, parameters, publicClient, rateLimit, redirectUri, requestIp, response, rpc, safeUrl, scopes, type Grant } from '../_shared/mastodon.ts';
 import { accounts, noteBody, relationships, statuses, type AccountRow, type StatusRow } from '../_shared/mastodon-entities.ts';
 
 async function oneAccount(id: string) {
@@ -56,6 +56,9 @@ export const handleMastodonRequest = mastodonHandler(async req => {
     if (error) throw error;
     return response({ ...data, client_id: data.id, client_secret: secret, client_secret_expires_at: 0, redirect_uri: uris.join('\n') });
   }
+  // Check pilot membership before any account/status lookup, even for invalid methods.
+  // Individual operations below still enforce their own scopes and user requirements.
+  if (mastodonAccessPolicy().mode === 'pilot') await access(req,db,undefined,true,{ countRequest: false });
   if (path === '/api/v1/apps/verify_credentials' && req.method === 'GET') {
     const { grant } = await access(req,db);
     const { data,error } = await db.from('mastodon_clients').select('id,name,website,redirect_uris,scopes').eq('id',grant.client_id).single();

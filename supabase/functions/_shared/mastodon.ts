@@ -10,6 +10,28 @@ export type Db = ReturnType<typeof serviceClient>;
 export type Grant = { id: string; client_id: string; user_id: string | null; actor_id: string | null; scopes: string[] };
 export const publicClient = () => createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { auth: { persistSession: false, autoRefreshToken: false } });
 
+type MastodonAccessPolicy = { mode: 'full' | 'off' } | { mode: 'pilot'; userIds: ReadonlySet<string> };
+export function mastodonAccessPolicy(): MastodonAccessPolicy {
+  const enabled = Deno.env.get('MASTODON_CLIENT_ENABLED');
+  if (enabled === 'true') return { mode: 'full' };
+  if (enabled && enabled !== 'false') throw new HttpError(503, 'Mastodon client access configuration is invalid');
+  const configured = Deno.env.get('MASTODON_CLIENT_PILOT_USER_IDS') || '';
+  if (!configured.trim()) return { mode: 'off' };
+  const ids = configured.split(',').map(value => value.trim().toLowerCase());
+  if (configured.length > 4096 || ids.length > 100 || ids.some(id => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id))) {
+    throw new HttpError(503, 'Mastodon client access configuration is invalid');
+  }
+  return { mode: 'pilot', userIds: new Set(ids) };
+}
+export function requireMastodonUser(userId: string | null) {
+  const policy = mastodonAccessPolicy();
+  if (policy.mode === 'off') throw new HttpError(503, 'Mastodon client access is not enabled on this instance');
+  // Only verified Auth/database identities reach this check; never request fields.
+  if (policy.mode === 'pilot' && (!userId || !policy.userIds.has(userId.toLowerCase()))) {
+    throw new HttpError(403, 'Mastodon client access is limited to operator-selected pilot accounts');
+  }
+}
+
 export function scopes(value: unknown, fallback = 'read'): string[] {
   if (value !== undefined && typeof value !== 'string') throw new HttpError(400, 'Invalid scope');
   const result = [...new Set((value === undefined ? fallback : value as string).trim().split(/\s+/).filter(Boolean))];
@@ -78,23 +100,27 @@ export function requestIp(req: Request) {
   // Supabase appends the peer address. Never trust the caller's first XFF entry.
   return req.headers.get('x-forwarded-for')?.split(',').at(-1)?.trim().slice(0,128) || 'unknown';
 }
-export async function access(req: Request, db: Db, required?: string, userRequired = false): Promise<{ grant: Grant; hash: string }> {
+export async function access(req: Request, db: Db, required?: string, userRequired = false, options: { countRequest?: boolean } = {}): Promise<{ grant: Grant; hash: string }> {
   const raw = req.headers.get('authorization')?.match(/^Bearer ([0-9a-f]{64})$/i)?.[1];
   if (!raw) throw new HttpError(401, 'Access token required');
   const hash = await tokenHash(raw);
   const grant = await rpc<Grant>(db, 'mastodon_identity', { p_hash: hash, p_scope: required || null });
+  requireMastodonUser(grant.user_id);
   if (userRequired && !grant.user_id) throw new HttpError(401, 'User authorization required');
-  await rateLimit(db, 'api:'+grant.id, 300);
+  if (options.countRequest !== false) await rateLimit(db, 'api:'+grant.id, 300);
   return { grant, hash };
 }
 export function browserOrigin(req: Request) {
   if (req.headers.get('origin') !== getSiteUrl()) throw new HttpError(403, 'Open this page on Nolto');
 }
-export function mastodonHandler(handler: (req: Request) => Promise<Response>) {
+export function mastodonHandler(handler: (req: Request) => Promise<Response>, allowWhenDisabled: (req: Request) => boolean = () => false) {
   return async (req: Request) => {
     if (req.method === 'OPTIONS') return response(null);
-    if (Deno.env.get('MASTODON_CLIENT_ENABLED') !== 'true') return response({ error: 'Mastodon client access is not enabled on this instance' }, 503);
-    try { return await handler(req); }
+    try {
+      // Existing grants can still be inspected/revoked when pilot access is removed.
+      if (!allowWhenDisabled(req) && mastodonAccessPolicy().mode === 'off') throw new HttpError(503, 'Mastodon client access is not enabled on this instance');
+      return await handler(req);
+    }
     catch (error) {
       if (error instanceof HttpError) return response({ error: error.message }, error.status, error.status === 429 ? { 'Retry-After': '300' } : {});
       console.error('Mastodon request failed', error instanceof Error ? error.name : 'UnknownError');

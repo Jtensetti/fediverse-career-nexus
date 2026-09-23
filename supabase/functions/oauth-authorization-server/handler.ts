@@ -2,7 +2,7 @@ import { serviceClient } from '../_shared/local-actor.ts';
 import { functionPath, getFederationBaseUrl, getSiteUrl } from '../_shared/federation-urls.ts';
 import { randomToken, tokenHash, pkceChallenge } from '../_shared/oauth.ts';
 import { HttpError, requireUser, uuid } from '../_shared/user-auth.ts';
-import { browserOrigin, hasScope, MASTODON_SCOPES, mastodonHandler, parameters, rateLimit, requestIp, response, rpc, scopes } from '../_shared/mastodon.ts';
+import { browserOrigin, hasScope, MASTODON_SCOPES, mastodonAccessPolicy, mastodonHandler, parameters, rateLimit, requestIp, requireMastodonUser, response, rpc, scopes } from '../_shared/mastodon.ts';
 
 const db = () => serviceClient(10000);
 async function authorizationRequest(input: Record<string, unknown>) {
@@ -25,7 +25,7 @@ export const handleOAuthRequest = mastodonHandler(async req => {
   if (!path && req.method === 'GET') {
     const origin = getFederationBaseUrl();
     return response({ issuer: origin, authorization_endpoint: getSiteUrl()+'/oauth/authorize', token_endpoint: origin+'/oauth/token', revocation_endpoint: origin+'/oauth/revoke', registration_endpoint: origin+'/api/v1/apps',
-      scopes_supported: MASTODON_SCOPES, response_types_supported: ['code'], grant_types_supported: ['authorization_code','client_credentials'], token_endpoint_auth_methods_supported: ['client_secret_post','client_secret_basic'], code_challenge_methods_supported: ['S256'], service_documentation: getSiteUrl()+'/mastodon-apps' });
+      scopes_supported: MASTODON_SCOPES, response_types_supported: ['code'], grant_types_supported: mastodonAccessPolicy().mode === 'pilot' ? ['authorization_code'] : ['authorization_code','client_credentials'], token_endpoint_auth_methods_supported: ['client_secret_post','client_secret_basic'], code_challenge_methods_supported: ['S256'], service_documentation: getSiteUrl()+'/mastodon-apps' });
   }
   if (path === 'request' && req.method === 'GET') {
     const request = await authorizationRequest(Object.fromEntries(url.searchParams));
@@ -40,6 +40,7 @@ export const handleOAuthRequest = mastodonHandler(async req => {
     if (input.decision === 'deny') { redirect.searchParams.set('error','access_denied'); return response({ redirect: redirect.href }); }
     if (input.decision !== 'allow') throw new HttpError(400, 'Choose allow or deny');
     const { user, token } = await requireUser(req);
+    requireMastodonUser(user.id);
     await rateLimit(db(),'consent:'+user.id,20);
     // requireUser verified this exact JWT with Auth and the session/MFA RPCs.
     const segment = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
@@ -90,8 +91,17 @@ export const handleOAuthRequest = mastodonHandler(async req => {
     if (input.grant_type === 'authorization_code') {
       if (typeof input.code !== 'string' || !/^[0-9a-f]{64}$/.test(input.code) || typeof input.redirect_uri !== 'string') throw new HttpError(400,'Invalid authorization code request');
       if (input.code_verifier !== undefined && (typeof input.code_verifier !== 'string' || !/^[A-Za-z0-9._~-]{43,128}$/.test(input.code_verifier))) throw new HttpError(400,'Invalid PKCE verifier');
-      issued = await rpc(db(),'mastodon_exchange_code',{ p_client: clientId, p_secret: secretHash, p_code: await tokenHash(input.code), p_redirect: input.redirect_uri, p_challenge: input.code_verifier ? await pkceChallenge(input.code_verifier as string) : null, p_token: await tokenHash(accessToken) });
+      const codeHash = await tokenHash(input.code);
+      if (mastodonAccessPolicy().mode === 'pilot') {
+        const { data: code, error } = await db().from('mastodon_codes').select('user_id').eq('code_hash',codeHash).eq('client_id',clientId).maybeSingle();
+        if (error) throw error;
+        if (!code) throw new HttpError(401,'Invalid authorization code');
+        requireMastodonUser(code.user_id);
+      }
+      // The atomic exchange still validates session, MFA, expiry, replay and PKCE.
+      issued = await rpc(db(),'mastodon_exchange_code',{ p_client: clientId, p_secret: secretHash, p_code: codeHash, p_redirect: input.redirect_uri, p_challenge: input.code_verifier ? await pkceChallenge(input.code_verifier as string) : null, p_token: await tokenHash(accessToken) });
     } else if (input.grant_type === 'client_credentials') {
+      requireMastodonUser(null);
       const requested = scopes(input.scope);
       if (requested.some(scope => !hasScope(client.scopes,scope))) throw new HttpError(400,'Invalid scope');
       const { data, error } = await db().from('mastodon_grants').insert({ token_hash: await tokenHash(accessToken), client_id: clientId, scopes: requested }).select('created_at').single();
@@ -101,4 +111,7 @@ export const handleOAuthRequest = mastodonHandler(async req => {
     return response({ access_token: accessToken, token_type: 'Bearer', scope: issued.scopes.join(' '), created_at: issued.created_at, expires_in: issued.expires_in });
   }
   throw new HttpError(404,'Unknown OAuth endpoint');
+}, req => {
+  const path = functionPath(new URL(req.url),'oauth-authorization-server')?.join('/') ?? '';
+  return (path === 'revoke' && req.method === 'POST') || (path === 'grants' && ['GET','DELETE'].includes(req.method));
 });
