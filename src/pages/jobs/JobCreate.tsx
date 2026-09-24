@@ -17,7 +17,7 @@ const JobCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<{ message: string; details?: string } | null>(null);
   const [isDirty, setIsDirty] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("profileEdit.unsavedChanges") });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty, message: t("ux.leaveDescription") });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -41,6 +41,7 @@ const JobCreate = () => {
   if (!user) return null;
 
   const handleSubmit = async (values: any) => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
@@ -48,7 +49,7 @@ const JobCreate = () => {
       const result = await createJobPost(jobData);
       if (result.ok) {
         toast.success(t(values.is_active ? "jobCreate.published" : "jobCreate.draftSaved"));
-        navigate(`/jobs/${result.id}`);
+        confirmDiscard.afterSave(() => navigate(`/jobs/${result.id}`));
       } else {
         const errorResult = result as { ok: false; message: string; details?: string };
         setSubmitError({ message: errorResult.message, details: errorResult.details });

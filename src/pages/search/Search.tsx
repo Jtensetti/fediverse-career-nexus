@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search as SearchIcon, MapPin, Building2, GraduationCap, Globe, User, Loader2, X } from "lucide-react";
@@ -19,13 +19,13 @@ export default function Search() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
-  
+
   const [query, setQuery] = useState(initialQuery);
   const [location, setLocation] = useState('');
   const [company, setCompany] = useState('');
   const [institution, setInstitution] = useState('');
   const [homeInstance, setHomeInstance] = useState('');
-  
+
   const [results, setResults] = useState<AdvancedProfileResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchError, setSearchError] = useState(false);
@@ -35,8 +35,18 @@ export default function Search() {
   const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
   const [contentRequest, setContentRequest] = useState(0);
   const searchRequest = useRef(0);
-  const submittedUrlQuery = useRef<string | null>(null);
-  const [activeTab, setActiveTab] = useState('people');
+  const [peopleRequest, setPeopleRequest] = useState(0);
+  const activeTab = ['people', 'jobs', 'articles', 'events'].includes(searchParams.get('tab') || '') ? searchParams.get('tab')! : 'people';
+  const filterKey = JSON.stringify(['q', 'location', 'company', 'institution', 'instance'].map(key => searchParams.get(key) || ''));
+  const urlFilters = useMemo<AdvancedSearchFilters>(() => {
+    const [query, location, company, institution, homeInstance] = JSON.parse(filterKey) as string[];
+    return { query, location, company, institution, homeInstance: homeInstance === 'all' ? '' : homeInstance };
+  }, [filterKey]);
+  const setActiveTab = (tab: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (tab === 'people') next.delete('tab'); else next.set('tab', tab);
+    setSearchParams(next, { replace: true, preventScrollReset: true });
+  };
   const [filterOptions, setFilterOptions] = useState<{ locations: string[]; instances: string[] }>({ locations: [], instances: [] });
 
   useEffect(() => {
@@ -44,18 +54,17 @@ export default function Search() {
   }, []);
 
   useEffect(() => {
-    if (submittedUrlQuery.current === initialQuery) {
-      submittedUrlQuery.current = null;
-      return;
-    }
     const request = ++searchRequest.current;
-    setQuery(initialQuery);
-    setSubmittedQuery(initialQuery);
+    setQuery(urlFilters.query || '');
+    setLocation(urlFilters.location || '');
+    setCompany(urlFilters.company || '');
+    setInstitution(urlFilters.institution || '');
+    setHomeInstance(urlFilters.homeInstance || '');
+    setSubmittedQuery(urlFilters.query || '');
     setSearchError(false);
-    setLocation(''); setCompany(''); setInstitution(''); setHomeInstance('');
-    if (!initialQuery) { setResults([]); setIsLoading(false); return; }
+    if (!Object.values(urlFilters).some(Boolean)) { setResults([]); setIsLoading(false); return; }
     setIsLoading(true);
-    advancedSearchService.searchPeople({ query: initialQuery }).then(data => {
+    advancedSearchService.searchPeople(urlFilters).then(data => {
       if (request === searchRequest.current) setResults(data);
     }).catch(() => {
       if (request === searchRequest.current) { setResults([]); setSearchError(true); }
@@ -63,7 +72,7 @@ export default function Search() {
       if (request === searchRequest.current) setIsLoading(false);
     });
     return () => { if (request === searchRequest.current) searchRequest.current++; };
-  }, [initialQuery]);
+  }, [urlFilters, peopleRequest]);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,26 +90,13 @@ export default function Search() {
     return () => { cancelled = true; };
   }, [submittedQuery, contentRequest]);
 
-  const handleSearch = async () => {
-    if (query.trim() !== initialQuery) {
-      submittedUrlQuery.current = query.trim();
-      setSearchParams(query.trim() ? { q: query.trim() } : {});
-    }
-    const request = ++searchRequest.current;
-    setSubmittedQuery(query.trim());
+  const handleSearch = () => {
+    const next = new URLSearchParams(searchParams);
+    const values = { q: query.trim(), location: location.trim(), company: company.trim(), institution: institution.trim(), instance: homeInstance === 'all' ? '' : homeInstance };
+    Object.entries(values).forEach(([key, value]) => value ? next.set(key, value) : next.delete(key));
+    if (next.toString() === searchParams.toString()) setPeopleRequest(value => value + 1);
+    else setSearchParams(next, { replace: true, preventScrollReset: true });
     setContentRequest(value => value + 1);
-    setSearchError(false);
-    setIsLoading(true);
-    try {
-      const filters: AdvancedSearchFilters = { query, location, homeInstance, company, institution };
-      const searchResults = await advancedSearchService.searchPeople(filters);
-      if (request === searchRequest.current) setResults(searchResults);
-    } catch (error) {
-      console.error('Search error:', error);
-      if (request === searchRequest.current) { setResults([]); setSearchError(true); }
-    } finally {
-      if (request === searchRequest.current) setIsLoading(false);
-    }
   };
 
   const clearFilters = () => {
@@ -122,7 +118,7 @@ export default function Search() {
     <>
       <SEOHead title={t("search.seoTitle")} description={t("search.seoDescription")} />
       <Navbar />
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <main id="main-content" tabIndex={-1} className="container max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{t("search.title")}</h1>
           <p className="text-muted-foreground">{t("search.description")}</p>
@@ -144,41 +140,41 @@ export default function Search() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-query" className="text-sm font-medium flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     {t(activeTab === 'people' ? "search.nameOrUsername" : "search.searchButton")}
                   </label>
-                  <Input aria-label={activeTab === 'people' ? t("search.nameOrUsername") : t("search.searchLabel")} placeholder={activeTab === 'people' ? t("search.nameOrUsernamePlaceholder") : t("globalSearch.placeholder")} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
+                  <Input id="search-query" aria-label={activeTab === 'people' ? t("search.nameOrUsername") : t("search.searchLabel")} placeholder={activeTab === 'people' ? t("search.nameOrUsernamePlaceholder") : t("globalSearch.placeholder")} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 {activeTab === 'people' && <>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-location" className="text-sm font-medium flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     {t("search.locationLabel")}
                   </label>
-                  <Input aria-label={t("search.locationLabel")} placeholder={t("search.locationPlaceholder")} value={location} onChange={(e) => setLocation(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
+                  <Input id="search-location" aria-label={t("search.locationLabel")} placeholder={t("search.locationPlaceholder")} value={location} onChange={(e) => setLocation(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-company" className="text-sm font-medium flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                     {t("search.worksAt")}
                   </label>
-                  <Input aria-label={t("search.worksAt")} placeholder={t("search.worksAtPlaceholder")} value={company} onChange={(e) => setCompany(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
+                  <Input id="search-company" aria-label={t("search.worksAt")} placeholder={t("search.worksAtPlaceholder")} value={company} onChange={(e) => setCompany(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-institution" className="text-sm font-medium flex items-center gap-2">
                     <GraduationCap className="h-4 w-4 text-muted-foreground" />
                     {t("search.studiedAt")}
                   </label>
-                  <Input aria-label={t("search.studiedAt")} placeholder={t("search.studiedAtPlaceholder")} value={institution} onChange={(e) => setInstitution(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
+                  <Input id="search-institution" aria-label={t("search.studiedAt")} placeholder={t("search.studiedAtPlaceholder")} value={institution} onChange={(e) => setInstitution(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-instance" className="text-sm font-medium flex items-center gap-2">
                     <Globe className="h-4 w-4 text-muted-foreground" />
                     {t("search.instance")}
                   </label>
                   <Select value={homeInstance} onValueChange={setHomeInstance}>
-                    <SelectTrigger aria-label={t("search.instance")}>
+                    <SelectTrigger id="search-instance" aria-label={t("search.instance")}>
                       <SelectValue placeholder={t("search.allInstances")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -286,7 +282,7 @@ export default function Search() {
             </Tabs>
           </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

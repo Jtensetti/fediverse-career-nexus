@@ -4029,5 +4029,21 @@
         ]
       ]
     }
+  },
+  "ux": {
+    "leaveTitle": "Ohne Speichern verlassen?",
+    "leaveDescription": "Beim Verlassen dieser Seite gehen ungespeicherte Änderungen verloren. Ein bereits laufender Versand kann trotzdem abgeschlossen werden.",
+    "keepEditing": "Weiter bearbeiten",
+    "discardAndLeave": "Ohne Speichern verlassen",
+    "loadFailed": "Der Inhalt konnte nicht geladen werden. Prüfe die Verbindung und versuche es erneut.",
+    "refreshFailed": "Die Aktualisierung konnte nicht geladen werden. Der zuletzt geladene Inhalt wird angezeigt und kann veraltet sein.",
+    "refreshing": "Inhalt wird aktualisiert …",
+    "noJobs": "Noch keine Stellen veröffentlicht",
+    "noJobsDescription": "Hier findest du Stellenangebote, sobald sie auf Nolto veröffentlicht werden. Schau gerne wieder vorbei.",
+    "noOrganisations": "Noch keine Organisationen",
+    "noOrganisationsDescription": "Hier kannst du Organisationen entdecken, sobald sie ihre Seiten erstellt haben.",
+    "saveUnconfirmed": "Wir konnten nicht bestätigen, dass die Änderung gespeichert wurde. Dein Inhalt ist noch hier. Prüfe das Ergebnis, bevor du es erneut versuchst.",
+    "unsaved": "Du hast ungespeicherte Änderungen.",
+    "sending": "Wird gesendet …"
   }
 }

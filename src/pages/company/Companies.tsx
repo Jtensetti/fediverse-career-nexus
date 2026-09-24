@@ -1,3 +1,4 @@
+import QueryFeedback from "@/components/common/QueryFeedback";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
@@ -18,16 +19,17 @@ export default function Companies() {
   const filters = useMemo<CompanyFilters>(() => ({
     search: searchParams.get('q') || undefined,
     industry: searchParams.get('type') || undefined,
-    size: (searchParams.get('size') as CompanyFilters['size']) || undefined,
+    size: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5001-10000', '10000+'].includes(searchParams.get('size') || '') ? searchParams.get('size') as CompanyFilters['size'] : undefined,
     location: searchParams.get('location') || undefined,
   }), [searchParams]);
 
   const hasFilters = Object.keys(filters).some(k => !!filters[k as keyof CompanyFilters]);
 
-  const { data: companies = [], isLoading, isError, refetch } = useQuery({
+  const { data: loadedData, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['companies', filters],
     queryFn: () => hasFilters ? searchCompanies(filters) : getCompanies(),
   });
+  const companies = loadedData ?? [];
 
   const handleFilterChange = useCallback((newFilters: CompanyFilters) => {
     const next = new URLSearchParams();
@@ -35,7 +37,7 @@ export default function Companies() {
     if (newFilters.industry) next.set('type', newFilters.industry);
     if (newFilters.size) next.set('size', newFilters.size);
     if (newFilters.location) next.set('location', newFilters.location);
-    setSearchParams(next, { replace: true });
+    setSearchParams(next, { replace: true, preventScrollReset: true });
   }, [setSearchParams]);
 
   return (
@@ -45,7 +47,7 @@ export default function Companies() {
         description={t("companies.subtitle")}
       />
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
         <div>
           <p className="text-muted-foreground">
             {t("companies.subtitle")}
@@ -63,6 +65,7 @@ export default function Companies() {
 
       <CompanySearchFilter filters={filters} onFilterChange={handleFilterChange} />
 
+      <QueryFeedback failed={isError} hasData={loadedData !== undefined} busy={isFetching} retry={refetch} />
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
@@ -81,12 +84,7 @@ export default function Companies() {
             </div>
           ))}
         </div>
-      ) : isError ? (
-        <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
-          <p className="font-medium">{t("common.error")}</p>
-          <Button variant="outline" className="mt-4" onClick={() => void refetch()}>{t("common.retry")}</Button>
-        </div>
-      ) : companies.length > 0 ? (
+      ) : isError && !loadedData ? null : companies.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {companies.map((company) => (
             <CompanyCard key={company.id} company={company} />
@@ -95,24 +93,16 @@ export default function Companies() {
       ) : (
         <EmptyState
           icon={Building2}
-          title={hasFilters 
+          title={hasFilters
             ? t("companies.noMatching")
-            : t("companies.beFirst")
+            : t("ux.noOrganisations")
           }
           description={hasFilters
             ? t("companies.adjustFilters")
-            : t("companies.createDescription")
+            : t("ux.noOrganisationsDescription")
           }
-          action={
-            user
-              ? { label: t("companies.create"), link: "/organisationer/skapa" }
-              : { label: t("auth.signUp"), link: "/auth/signup" }
-          }
-          secondaryAction={
-            hasFilters
-              ? { label: t("common.clearFilters"), onClick: () => handleFilterChange({}) }
-              : undefined
-          }
+          action={hasFilters ? { label: t("common.clearFilters"), onClick: () => handleFilterChange({}) } : undefined}
+          secondaryAction={!hasFilters && user ? { label: t("companies.create"), link: "/organisationer/skapa" } : undefined}
         />
       )}
     </DashboardLayout>

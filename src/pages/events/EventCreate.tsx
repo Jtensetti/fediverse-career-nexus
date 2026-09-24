@@ -1,3 +1,4 @@
+import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -16,19 +17,22 @@ export default function EventCreate() {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('profileEdit.unsavedChanges') });
+  const [submitError, setSubmitError] = useState(false);
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty, message: t('ux.leaveDescription') });
 
   const createMutation = useMutation({
     mutationFn: (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => createEvent(eventData),
     onSuccess: (event) => {
+      if (!event) { setSubmitError(true); return; }
       if (event) {
         queryClient.setQueryData(['event', event.id], { ...event, rsvp_count: 0 });
         void queryClient.invalidateQueries({ queryKey: ['events'] });
         toast.success(t('eventCreate.success'));
-        navigate(`/events/${event.id}`);
+        confirmDiscard.afterSave(() => navigate(`/events/${event.id}`));
       }
     },
     onError: (error) => {
+      setSubmitError(true);
       console.error('Failed to create event:', error);
       toast.error(t('eventCreate.failed'));
     },
@@ -36,6 +40,8 @@ export default function EventCreate() {
   });
 
   const handleSubmit = (data: Omit<Event, "id" | "created_at" | "updated_at" | "user_id">) => {
+    if (isSubmitting) return;
+    setSubmitError(false);
     setIsSubmitting(true);
     createMutation.mutate(data);
   };
@@ -51,7 +57,8 @@ export default function EventCreate() {
             <p className="text-muted-foreground mt-2">{t("eventCreate.description")}</p>
           </div>
           <div className="bg-card rounded-lg border p-6">
-            <EventForm onSubmit={handleSubmit} isSubmitting={isSubmitting} submitButtonText={t("eventCreate.title")} onDirtyChange={setIsDirty} onCancel={() => confirmDiscard(() => navigate('/events'))} />
+            {submitError && <InlineErrorBanner message={t("ux.saveUnconfirmed")} className="mb-4" />}
+        <EventForm onSubmit={handleSubmit} isSubmitting={isSubmitting} submitButtonText={t("eventCreate.title")} onDirtyChange={setIsDirty} onCancel={() => confirmDiscard(() => navigate('/events'))} />
           </div>
         </div>
       </main>

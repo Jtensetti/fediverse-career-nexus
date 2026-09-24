@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 import BlueskySignIn from '@/components/auth/BlueskySignIn';
 import MastodonConnection from "@/components/settings/MastodonConnection";
 import { useState, useEffect, useRef } from "react";
@@ -91,6 +92,8 @@ const ProfileEditPage = () => {
 
   // State for experiences, education, and skills
   const [experiences, setExperiences] = useState<Experience[]>([]);
+  const savedExperiences = useRef(new Map<string, string>());
+  const savedEducation = useRef(new Map<string, string>());
   const [education, setEducation] = useState<Education[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [newSkill, setNewSkill] = useState("");
@@ -132,6 +135,14 @@ const ProfileEditPage = () => {
       phone: "",
       location: ""
     }
+  });
+
+  useUnsavedChanges({
+    ignoreQueryChanges: true,
+    dirty: form.formState.isDirty || !!newSkill.trim()
+      || experiences.some(item => !item.id || savedExperiences.current.get(item.id) !== JSON.stringify(item))
+      || education.some(item => !item.id || savedEducation.current.get(item.id) !== JSON.stringify(item)),
+    message: t("ux.leaveDescription"),
   });
 
   // Get current user and profile data
@@ -185,12 +196,14 @@ const ProfileEditPage = () => {
     // Fetch experiences
     setIsLoading(prev => ({ ...prev, experiences: true }));
     const userExperiences = await getUserExperiences();
+    savedExperiences.current = new Map(userExperiences.filter(item => item.id).map(item => [item.id!, JSON.stringify(item)]));
     setExperiences(userExperiences);
     setIsLoading(prev => ({ ...prev, experiences: false }));
 
     // Fetch education
     setIsLoading(prev => ({ ...prev, education: true }));
     const userEducation = await getUserEducation();
+    savedEducation.current = new Map(userEducation.filter(item => item.id).map(item => [item.id!, JSON.stringify(item)]));
     setEducation(userEducation);
     setIsLoading(prev => ({ ...prev, education: false }));
 
@@ -330,6 +343,7 @@ const ProfileEditPage = () => {
     try {
       const saved = exp.id ? await updateExperience(exp.id, exp) : await createExperience(exp);
       if (saved) {
+        if (saved.id) savedExperiences.current.set(saved.id, JSON.stringify(saved));
         setExperiences(current => current.map((item, row) => row === index ? saved : item));
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         setRecentlySaved(current => ({ ...current, [index]: true }));
@@ -418,6 +432,7 @@ const ProfileEditPage = () => {
     try {
       const saved = edu.id ? await updateEducation(edu.id, edu) : await createEducation(edu);
       if (saved) {
+        if (saved.id) savedEducation.current.set(saved.id, JSON.stringify(saved));
         setEducation(current => current.map((item, row) => row === index ? saved : item));
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         setRecentlySavedEducation(current => ({ ...current, [index]: true }));

@@ -1,3 +1,4 @@
+import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -16,9 +17,12 @@ export default function CompanyCreate() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("profileEdit.unsavedChanges") });
+  const [submitError, setSubmitError] = useState(false);
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty, message: t("ux.leaveDescription") });
 
   const handleSubmit = async (data: CompanyFormData) => {
+    if (isSubmitting) return;
+    setSubmitError(false);
     setIsSubmitting(true);
     try {
       const company = await createCompany({
@@ -32,12 +36,14 @@ export default function CompanyCreate() {
         location: data.location || null,
         founded_year: data.founded_year || null,
       });
-      
+
+      if (!company) { setSubmitError(true); return; }
       if (company) {
         toast.success(t("companies.createSuccess", "Company created successfully!"));
-        navigate(`/organisation/${company.slug}`);
+        confirmDiscard.afterSave(() => navigate(`/organisation/${company.slug}`));
       }
     } catch (error: any) {
+      setSubmitError(true);
       console.error("Failed to create company:", error);
       toast.error(error.message || t("companies.createError", "Failed to create company"));
     } finally {
@@ -67,6 +73,7 @@ export default function CompanyCreate() {
             </p>
           </div>
 
+          {submitError && <InlineErrorBanner message={t("ux.saveUnconfirmed")} className="mb-4" />}
           <CompanyForm
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}

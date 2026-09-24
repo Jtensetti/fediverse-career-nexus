@@ -73,6 +73,7 @@ export interface ArticleAuthor {
 }
 
 export interface ArticleFormData {
+  cover_image_url?: string | null;
   title: string;
   content: string;
   excerpt?: string;
@@ -85,12 +86,12 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
   try {
     // Get the current user
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) {
       toast.error(i18n.t('toasts.loginRequiredArticle'));
       return null;
     }
-    
+
     const { data, error } = await supabase
       .from('articles')
       .insert({
@@ -99,7 +100,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
       })
       .select()
       .single();
-    
+
     if (error) {
       const isDuplicate = error.code === '23505' || /duplicate key/i.test(error.message);
       toast.error(
@@ -109,7 +110,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
       );
       return null;
     }
-    
+
     // Ensure article_authors entry exists (fallback if trigger fails)
     const { error: authorError } = await supabase
       .from('article_authors')
@@ -119,12 +120,12 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
         is_primary: true,
         can_edit: true
       }, { onConflict: 'article_id,user_id' });
-    
+
     if (authorError) {
       console.warn('Failed to create article_authors entry:', authorError);
       // Don't fail the whole operation, the article was created
     }
-    
+
     notifyPublication(data.moderation_status, i18n.t('toasts.articleCreated'));
     return normalizeArticle(data);
   } catch (error) {
@@ -146,12 +147,12 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) {
       toast.error(`${i18n.t('toasts.articleUpdateFailed')}: ${error.message}`);
       return null;
     }
-    
+
     notifyPublication(data.moderation_status, i18n.t('toasts.articleUpdated'));
     return normalizeArticle(data);
   } catch (error) {
@@ -169,12 +170,12 @@ export const getArticleById = async (id: string): Promise<Article | null> => {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) {
       console.error('Error fetching article:', error);
       return null;
     }
-    
+
     return normalizeArticle(data);
   } catch (error) {
     console.error('Error fetching article:', error);
@@ -187,7 +188,7 @@ export const getArticleBySlug = async (slugOrId: string): Promise<Article | null
   try {
     // Check if the input looks like a UUID
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
-    
+
     if (isUuid) {
       // Try fetching by ID first
       const { data: byId, error: idError } = await supabase
@@ -195,24 +196,24 @@ export const getArticleBySlug = async (slugOrId: string): Promise<Article | null
         .select('*')
         .eq('id', slugOrId)
         .single();
-      
+
       if (!idError && byId) {
         return normalizeArticle(byId);
       }
     }
-    
+
     // Fall back to slug lookup
     const { data, error } = await supabase
       .from('articles')
       .select('*')
       .eq('slug', slugOrId)
       .single();
-    
+
     if (error) {
       console.error('Error fetching article:', error);
       return null;
     }
-    
+
     return normalizeArticle(data);
   } catch (error) {
     console.error('Error fetching article:', error);
@@ -229,9 +230,9 @@ export const getPublishedArticles = async (): Promise<Article[]> => {
       .eq('moderation_status', 'published')
       .order('published_at', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
-    
+
     return (data || []).map(normalizeArticle);
 };
 
@@ -246,16 +247,16 @@ export const getUserArticles = async (): Promise<Article[]> => {
       `)
       .eq('user_id', (await supabase.auth.getUser()).data.user?.id || '')
       .eq('can_edit', true);
-    
+
     if (authorError) {
       console.error('Error fetching authored articles:', authorError);
       return [];
     }
-    
+
     if (!authoredArticles || authoredArticles.length === 0) {
       return [];
     }
-    
+
     // Get the full article data
     const articleIds = authoredArticles.map(article => article.article_id);
     const { data, error } = await supabase
@@ -263,12 +264,12 @@ export const getUserArticles = async (): Promise<Article[]> => {
       .select('*')
       .in('id', articleIds)
       .order('created_at', { ascending: false });
-    
+
     if (error) {
       console.error('Error fetching user articles:', error);
       return [];
     }
-    
+
     return (data || []).map(normalizeArticle);
   } catch (error) {
     console.error('Error fetching user articles:', error);
@@ -287,16 +288,16 @@ export const getUserDraftArticles = async (): Promise<Article[]> => {
       `)
       .eq('user_id', (await supabase.auth.getUser()).data.user?.id || '')
       .eq('can_edit', true);
-    
+
     if (authorError) {
       console.error('Error fetching authored articles:', authorError);
       return [];
     }
-    
+
     if (!authoredArticles || authoredArticles.length === 0) {
       return [];
     }
-    
+
     // Get the full article data filtered to drafts only
     const articleIds = authoredArticles.map(article => article.article_id);
     const { data, error } = await supabase
@@ -305,12 +306,12 @@ export const getUserDraftArticles = async (): Promise<Article[]> => {
       .in('id', articleIds)
       .eq('published', false)
       .order('updated_at', { ascending: false });
-    
+
     if (error) {
       console.error('Error fetching user draft articles:', error);
       return [];
     }
-    
+
     return (data || []).map(normalizeArticle);
   } catch (error) {
     console.error('Error fetching user draft articles:', error);
@@ -340,7 +341,7 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
       .from('article_authors')
       .select('id, article_id, user_id, is_primary, can_edit, created_at')
       .eq('article_id', articleId);
-    
+
     if (authorsError) {
       console.error('Error fetching article authors:', authorsError);
       return [];
@@ -363,7 +364,7 @@ export const getArticleAuthors = async (articleId: string): Promise<ArticleAutho
 
     // Map profiles to authors
     const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-    
+
     return authors.map(author => ({
       ...author,
       profile: profileMap.get(author.user_id) || null
@@ -385,12 +386,12 @@ export const addCoAuthor = async (articleId: string, userId: string, canEdit: bo
         is_primary: false,
         can_edit: canEdit
       });
-    
+
     if (error) {
       toast.error(`${i18n.t('toasts.coAuthorAddFailed')}: ${error.message}`);
       return false;
     }
-    
+
     toast.success(i18n.t('toasts.coAuthorAdded'));
     return true;
   } catch (error) {
@@ -409,12 +410,12 @@ export const removeCoAuthor = async (articleId: string, userId: string): Promise
       .eq('article_id', articleId)
       .eq('user_id', userId)
       .eq('is_primary', false);
-    
+
     if (error) {
       toast.error(`${i18n.t('toasts.coAuthorRemoveFailed')}: ${error.message}`);
       return false;
     }
-    
+
     toast.success(i18n.t('toasts.coAuthorRemoved'));
     return true;
   } catch (error) {
@@ -431,12 +432,12 @@ export const updateAuthorPermissions = async (authorId: string, canEdit: boolean
       .from('article_authors')
       .update({ can_edit: canEdit })
       .eq('id', authorId);
-    
+
     if (error) {
       toast.error(`${i18n.t('toasts.authorPermissionsFailed')}: ${error.message}`);
       return false;
     }
-    
+
     toast.success(i18n.t('toasts.authorPermissionsUpdated'));
     return true;
   } catch (error) {
@@ -460,18 +461,18 @@ export const generateSlug = (title: string): string => {
 export const searchUsers = async (query: string): Promise<any[]> => {
   try {
     if (!query || query.length < 3) return [];
-    
+
     const { data, error } = await supabase
       .from('public_profiles')
       .select('id, username, fullname, avatar_url')
       .or(`username.ilike.%${query}%,fullname.ilike.%${query}%`)
       .limit(10);
-    
+
     if (error) {
       console.error('Error searching users:', error);
       return [];
     }
-    
+
     return data || [];
   } catch (error) {
     console.error('Error searching users:', error);
