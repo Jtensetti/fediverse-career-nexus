@@ -48,7 +48,7 @@ export default function CommentEditDialog({ open, onOpenChange, commentId, initi
             <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{t("commentEdit.title")}</DialogTitle></DialogHeader>
         <div className="space-y-4">
-          <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={t("commentEdit.placeholder")} className="min-h-[120px] resize-none" disabled={contentCheck.checking || loading} maxLength={500} />
+          <Textarea aria-label={t("commentEdit.title")} value={content} onChange={(e) => setContent(e.target.value)} placeholder={t("commentEdit.placeholder")} className="min-h-[120px] resize-none" disabled={contentCheck.checking || loading} maxLength={500} />
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">{content.length}/500</span>
             <div className="flex gap-2">

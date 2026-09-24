@@ -8,12 +8,15 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import EventForm from '@/components/events/EventForm';
 import { SEOHead } from '@/components/common/SEOHead';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 export default function EventCreate() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('common.discardChangesConfirm') });
 
   const createMutation = useMutation({
     mutationFn: (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => createEvent(eventData),
@@ -48,7 +51,7 @@ export default function EventCreate() {
             <p className="text-muted-foreground mt-2">{t("eventCreate.description")}</p>
           </div>
           <div className="bg-card rounded-lg border p-6">
-            <EventForm onSubmit={handleSubmit} isSubmitting={isSubmitting} submitButtonText={t("eventCreate.title")} />
+            <EventForm onSubmit={handleSubmit} isSubmitting={isSubmitting} submitButtonText={t("eventCreate.title")} onDirtyChange={setIsDirty} onCancel={() => confirmDiscard(() => navigate('/events'))} />
           </div>
         </div>
       </main>

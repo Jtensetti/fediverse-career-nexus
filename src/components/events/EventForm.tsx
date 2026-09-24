@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,6 +65,8 @@ interface EventFormProps {
   onSubmit: (data: Omit<Event, "id" | "created_at" | "updated_at" | "user_id">) => void;
   isSubmitting: boolean;
   submitButtonText?: string;
+  onCancel?: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const EventForm = ({
@@ -72,6 +74,8 @@ const EventForm = ({
   onSubmit,
   isSubmitting,
   submitButtonText,
+  onCancel,
+  onDirtyChange,
 }: EventFormProps) => {
   const { t } = useTranslation();
   const eventFormSchema = createEventFormSchema(t);
@@ -102,6 +106,8 @@ const EventForm = ({
     resolver: zodResolver(eventFormSchema),
     defaultValues: formattedDefaultValues,
   });
+  const { isDirty } = form.formState;
+  useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
 
   const handleSubmit = (values: z.infer<typeof eventFormSchema>) => {
     const startDateTime = localDateTime(values.start_date, values.start_time);
@@ -284,7 +290,7 @@ const EventForm = ({
         </div>
 
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => window.history.back()}>
+          <Button type="button" variant="outline" onClick={onCancel || (() => window.history.back())} disabled={isSubmitting}>
             {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>

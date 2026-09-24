@@ -59,7 +59,7 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
       onUpdated();
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || "Kunde inte uppdatera inlägget");
+      toast.error(err.message || tx("ui.postEditDialog.updateFailed"));
     } finally {
       setLoading(false);
     }
@@ -73,6 +73,7 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
         </DialogHeader>
         <div className="space-y-4">
           <Textarea
+            aria-label={tx("ui.postEditDialog.redigeraInlagg")}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={postIsPoll ? tx("ui.postEditDialog.redigeraDinOmrostningsfraga") : tx("ui.postEditDialog.vadTankerDuPa")}

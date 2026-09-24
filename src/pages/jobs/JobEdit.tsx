@@ -7,6 +7,8 @@ import JobForm from "@/components/jobs/JobForm";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toast } from "sonner";
+import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 
 const JobEdit = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +18,9 @@ const JobEdit = () => {
   const [job, setJob] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("common.discardChangesConfirm") });
   
   useEffect(() => {
     if (!loading && !user) {
@@ -48,6 +53,7 @@ const JobEdit = () => {
   const handleSubmit = async (values: any) => {
     if (!id) return;
     setIsSubmitting(true);
+    setSubmitError(null);
     const jobData = {
       ...values,
       application_url: values.application_url || null,
@@ -56,7 +62,10 @@ const JobEdit = () => {
     const success = await updateJobPost(id, jobData);
     setIsSubmitting(false);
     if (success) {
+      setIsDirty(false);
       navigate(`/jobs/${id}`);
+    } else {
+      setSubmitError(t("jobEdit.updateFailed"));
     }
   };
   
@@ -80,11 +89,14 @@ const JobEdit = () => {
           <h1 className="text-3xl font-bold tracking-tight mb-2">{t('jobEdit.title')}</h1>
           <p className="text-muted-foreground">{t('jobEdit.subtitle')}</p>
         </div>
+        {submitError && <InlineErrorBanner message={submitError} onDismiss={() => setSubmitError(null)} className="mb-6" />}
         <JobForm 
           defaultValues={job}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           submitButtonText={t('jobEdit.updateButton')}
+          onDirtyChange={setIsDirty}
+          onCancel={() => confirmDiscard(() => navigate(`/jobs/${id}`))}
         />
       </main>
       <Footer />
