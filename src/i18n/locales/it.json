@@ -3883,7 +3883,8 @@
     "invalid": "Valore non valido"
   },
   "language": {
-    "label": "Lingua"
+    "label": "Lingua",
+    "loadFailed": "Impossibile caricare la lingua. Controlla la connessione e riprova."
   },
   "legalDocs": {
     "privacy": {

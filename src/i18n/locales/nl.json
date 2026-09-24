@@ -3883,7 +3883,8 @@
     "invalid": "Ongeldige waarde"
   },
   "language": {
-    "label": "Taal"
+    "label": "Taal",
+    "loadFailed": "De taal kon niet worden geladen. Controleer je verbinding en probeer het opnieuw."
   },
   "legalDocs": {
     "privacy": {

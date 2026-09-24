@@ -1,5 +1,6 @@
 import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -41,6 +42,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
   const isMultipleChoice = Array.isArray(pollContent?.anyOf);
   const rawOptions = pollContent?.oneOf || pollContent?.anyOf;
   
+  const { i18n: i18nInstance } = useTranslation();
   const options = useMemo(() => {
     if (!Array.isArray(rawOptions)) return [];
     return rawOptions.map((opt: unknown) => {
@@ -50,7 +52,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
       }
       return { name: tx("ui.pollDisplay.okantAlternativ") };
     });
-  }, [rawOptions]);
+  }, [rawOptions, i18nInstance.language]);
   
   const endTime = pollContent?.endTime as string | undefined;
   const isClosed = endTime ? new Date(endTime) < new Date() : false;

@@ -1,4 +1,5 @@
 import { useState, useEffect, memo } from "react";
+import { useTranslation } from "react-i18next";
 import { ExternalLink, Globe, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -69,6 +70,8 @@ async function fetchLinkPreview(url: string): Promise<LinkPreviewData | null> {
 }
 
 export const LinkPreview = memo(function LinkPreview({ url, onRemove, className, compact = false }: LinkPreviewProps) {
+  // Subscribe so the memoized preview re-renders its copy on language change.
+  useTranslation();
   const [preview, setPreview] = useState<LinkPreviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
