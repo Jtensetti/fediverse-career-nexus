@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useBlocker } from "react-router-dom";
 
 interface UnsavedChangesOptions {
@@ -11,8 +11,10 @@ interface UnsavedChangesOptions {
  * It intentionally does not persist form contents in browser storage.
  */
 export function useUnsavedChanges({ dirty, message }: UnsavedChangesOptions) {
+  const explicitNavigationApproved = useRef(false);
   const blocker = useBlocker(({ currentLocation, nextLocation }) =>
-    dirty && (currentLocation.pathname !== nextLocation.pathname || currentLocation.search !== nextLocation.search)
+    !explicitNavigationApproved.current && dirty &&
+    (currentLocation.pathname !== nextLocation.pathname || currentLocation.search !== nextLocation.search)
   );
 
   useEffect(() => {
@@ -34,6 +36,9 @@ export function useUnsavedChanges({ dirty, message }: UnsavedChangesOptions) {
   }, [blocker, message]);
 
   return useCallback((action: () => void) => {
-    if (!dirty || window.confirm(message)) action();
+    if (!dirty || window.confirm(message)) {
+      explicitNavigationApproved.current = true;
+      action();
+    }
   }, [dirty, message]);
 }
