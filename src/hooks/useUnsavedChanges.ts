@@ -35,8 +35,8 @@ export function useUnsavedChanges({ dirty, message }: UnsavedChangesOptions) {
     else blocker.reset();
   }, [blocker, message]);
 
-  return useCallback((action: () => void) => {
-    if (!dirty || window.confirm(message)) {
+  return useCallback((action: () => void, saved = false) => {
+    if (saved || !dirty || window.confirm(message)) {
       explicitNavigationApproved.current = true;
       action();
     }

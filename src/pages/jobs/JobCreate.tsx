@@ -48,7 +48,7 @@ const JobCreate = () => {
       const result = await createJobPost(jobData);
       if (result.ok) {
         toast.success(t(values.is_active ? "jobCreate.published" : "jobCreate.draftSaved"));
-        confirmDiscard(() => navigate(`/jobs/${result.id}`));
+        confirmDiscard(() => navigate(`/jobs/${result.id}`), true);
       } else {
         const errorResult = result as { ok: false; message: string; details?: string };
         setSubmitError({ message: errorResult.message, details: errorResult.details });

@@ -62,7 +62,7 @@ const JobEdit = () => {
     const success = await updateJobPost(id, jobData);
     setIsSubmitting(false);
     if (success) {
-      confirmDiscard(() => navigate(`/jobs/${id}`));
+      confirmDiscard(() => navigate(`/jobs/${id}`), true);
     } else {
       setSubmitError(t("common.error"));
     }

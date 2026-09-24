@@ -34,7 +34,7 @@ export default function EventEdit() {
           ...previous, ...event, rsvp_count: previous?.rsvp_count ?? 0,
         }));
         void queryClient.invalidateQueries({ queryKey: ['events'] });
-        confirmDiscard(() => navigate(`/events/${event.id}`));
+        confirmDiscard(() => navigate(`/events/${event.id}`), true);
       }
     },
     onError: () => toast.error(t('common.error')),
