@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserRoundPlus, Search, Filter, UsersRound, Loader2, UserCheck, Bell, Clock } from "lucide-react";
+import { UserRoundPlus, Search, UsersRound, Loader2, UserCheck, Bell, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import ConnectionBadge from "@/components/social/ConnectionBadge";
 import {
@@ -138,24 +138,25 @@ const ConnectionsPage = () => {
   return (
     <DashboardLayout title={t("connections.title", "My Network")} description={t("connections.description", "Manage your professional connections")}>
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-        <div className="mt-4 md:mt-0 flex gap-2">
+        <div className="mt-4 md:mt-0 flex w-full flex-wrap gap-2">
           <div className="relative w-full md:w-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
             <Input 
               placeholder={t("connections.searchPlaceholder", "Search connections...")} 
+              aria-label={t("connections.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 w-full md:w-64"
             />
           </div>
-          <Button variant="outline" size="icon">
-            <Filter size={18} />
+          <Button variant="outline" asChild>
+            <Link to="/search"><UserRoundPlus size={18} className="mr-2" />{t("connections.findPeople")}</Link>
           </Button>
         </div>
       </div>
       
       <Tabs defaultValue="connections" className="mb-6">
-        <TabsList className="mb-4">
+        <TabsList className="mb-4 flex h-auto flex-wrap justify-start">
           <TabsTrigger value="connections" className="flex items-center gap-2">
             <UsersRound size={16} />
             <span>{t("connections.myConnections", "My Connections")}</span>

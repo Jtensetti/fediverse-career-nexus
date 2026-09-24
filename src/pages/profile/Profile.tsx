@@ -201,10 +201,13 @@ const ProfilePage = () => {
 
     setIsConnecting(true);
     try {
-      await sendConnectionRequest(profile.id);
-      queryClient.invalidateQueries({ queryKey: ["connectionRelationship", currentUserId, profile.id] });
-      queryClient.invalidateQueries({ queryKey: ["connections"] });
-      queryClient.invalidateQueries({ queryKey: ["userConnections"] });
+      const sent = await sendConnectionRequest(profile.id);
+      if (!sent) return;
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["connectionRelationship", currentUserId, profile.id] }),
+        queryClient.invalidateQueries({ queryKey: ["connections"] }),
+        queryClient.invalidateQueries({ queryKey: ["userConnections"] }),
+      ]);
     } catch (error) {
       console.error("Error sending connection request:", error);
       toast.error(t("connections.errorLoading", "Failed to send connection request"));
@@ -369,9 +372,9 @@ const ProfilePage = () => {
                   <Check size={12} /> {t("profile.connected", "Connected")}
                 </Badge>
               ) : connectionRelationship?.status === "pending_outgoing" ? (
-                <Button size="sm" variant="secondary" disabled>
-                  <Clock className="h-4 w-4 mr-1" /> {t("profile.pending", "Pending")}
-                </Button>
+                <Badge variant="secondary" role="status" className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" /> {t("toasts.connectionRequestSent")}
+                </Badge>
               ) : connectionRelationship?.status === "pending_incoming" ? (
                 <div className="flex gap-1">
                   <Button
@@ -488,9 +491,9 @@ const ProfilePage = () => {
                     </>
                   ) : connectionRelationship?.status === "pending_outgoing" ? (
                     <>
-                      <Button variant="secondary" disabled>
-                        <Clock className="h-4 w-4 mr-2" /> {t("profile.pending", "Pending")}
-                      </Button>
+                      <Badge variant="secondary" role="status" className="flex items-center gap-1 px-3 py-1.5">
+                        <Clock className="h-4 w-4" /> {t("toasts.connectionRequestSent")}
+                      </Badge>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>

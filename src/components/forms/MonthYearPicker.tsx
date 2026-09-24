@@ -1,138 +1,65 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, type ComponentPropsWithoutRef } from "react";
+import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
+import { sv, enGB } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { calendarSelectClassName } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { parseLocalDate } from "@/lib/localDate";
 
-interface MonthYearPickerProps {
-  value?: string; // YYYY-MM-DD format
+interface MonthYearPickerProps extends Omit<ComponentPropsWithoutRef<typeof Button>, 'value' | 'onChange'> {
+  value?: string; // YYYY-MM-DD, stored as the first day of the selected month.
   onChange: (value: string | undefined) => void;
   placeholder?: string;
   fromYear?: number;
   toYear?: number;
-  disabled?: boolean;
 }
 
-const MONTHS = [
-  "Januari", "Februari", "Mars", "April", "Maj", "Juni",
-  "Juli", "Augusti", "September", "Oktober", "November", "December"
-];
-
 export function MonthYearPicker({
-  value,
-  onChange,
-  placeholder = "Välj datum",
-  fromYear = 1960,
-  toYear = new Date().getFullYear(),
-  disabled = false,
+  value, onChange, placeholder, fromYear = 1960,
+  toYear = new Date().getFullYear(), className, ...props
 }: MonthYearPickerProps) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language.startsWith('sv') ? sv : enGB;
+  const parsedValue = parseLocalDate(value);
+  const valueYear = parsedValue?.getFullYear();
+  const minYear = Math.min(fromYear, valueYear ?? fromYear);
+  const maxYear = Math.max(toYear, valueYear ?? toYear);
+  const currentYear = Math.min(maxYear, Math.max(minYear, valueYear ?? new Date().getFullYear()));
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<"month" | "year">("month");
-  
-  // Parse the current value
-  const parsedValue = useMemo(() => {
-    if (!value) return { year: new Date().getFullYear(), month: new Date().getMonth() };
-    const date = new Date(value);
-    return {
-      year: date.getFullYear(),
-      month: date.getMonth(),
-    };
-  }, [value]);
-  
-  const [selectedYear, setSelectedYear] = useState(parsedValue.year);
-  
-  // Generate years array
-  const years = useMemo(() => {
-    const result = [];
-    for (let y = toYear; y >= fromYear; y--) {
-      result.push(y);
-    }
-    return result;
-  }, [fromYear, toYear]);
-  
-  const handleYearSelect = (year: number) => {
-    setSelectedYear(year);
-    setView("month");
-  };
-  
-  const handleMonthSelect = (monthIndex: number) => {
-    // Create date as first of month in YYYY-MM-DD format
-    const dateStr = `${selectedYear}-${String(monthIndex + 1).padStart(2, '0')}-01`;
-    onChange(dateStr);
-    setOpen(false);
-  };
-  
-  const displayValue = useMemo(() => {
-    if (!value) return null;
-    const date = new Date(value);
-    return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
-  }, [value]);
-  
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  useEffect(() => { setSelectedYear(currentYear); }, [value, currentYear]);
+  const years = Array.from({ length: maxYear - minYear + 1 }, (_, index) => maxYear - index);
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={next => { setOpen(next); if (next) setSelectedYear(currentYear); }}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          disabled={disabled}
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground"
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {displayValue || placeholder}
+        <Button {...props} type="button" variant="outline"
+          className={cn("w-full justify-start text-left font-normal", !parsedValue && "text-muted-foreground", className)}>
+          <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+          {parsedValue ? format(parsedValue, 'LLLL yyyy', { locale }) : placeholder || t('datePicker.pickMonth')}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-0" align="start">
-        <div className="p-3 pointer-events-auto">
-          {/* Header with year selector */}
-          <div className="flex items-center justify-between mb-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="font-semibold"
-              onClick={() => setView(view === "year" ? "month" : "year")}
-            >
-              {view === "month" ? selectedYear : "Välj år"}
-            </Button>
-          </div>
-          
-          {view === "year" ? (
-            <ScrollArea className="h-[240px]">
-              <div className="grid grid-cols-3 gap-2 p-1">
-                {years.map((year) => (
-                  <Button
-                    key={year}
-                    variant={year === selectedYear ? "default" : "ghost"}
-                    size="sm"
-                    className="h-9"
-                    onClick={() => handleYearSelect(year)}
-                  >
-                    {year}
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
-          ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {MONTHS.map((month, index) => (
-                <Button
-                  key={month}
-                  variant={
-                    value && parsedValue.year === selectedYear && parsedValue.month === index
-                      ? "default"
-                      : "ghost"
-                  }
-                  size="sm"
-                  className="h-9"
-                  onClick={() => handleMonthSelect(index)}
-                >
-                  {month.slice(0, 3)}
-                </Button>
-              ))}
-            </div>
-          )}
+      <PopoverContent className="w-[280px] p-3" align="start">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="text-sm font-medium">{t('datePicker.pickMonth')}</span>
+          <select aria-label={t('datePicker.year')} className={calendarSelectClassName} value={selectedYear}
+            onChange={event => setSelectedYear(Number(event.target.value))}>
+            {years.map(year => <option key={year} value={year}>{year}</option>)}
+          </select>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {Array.from({ length: 12 }, (_, month) => {
+            const date = new Date(selectedYear, month, 1);
+            const selected = valueYear === selectedYear && parsedValue?.getMonth() === month;
+            return <Button key={month} type="button" variant={selected ? 'default' : 'ghost'} size="sm" className="h-9"
+              aria-label={format(date, 'LLLL yyyy', { locale })} aria-pressed={selected}
+              onClick={() => { onChange(`${selectedYear}-${String(month + 1).padStart(2, '0')}-01`); setOpen(false); }}>
+              {format(date, 'LLL', { locale })}
+            </Button>;
+          })}
         </div>
       </PopoverContent>
     </Popover>

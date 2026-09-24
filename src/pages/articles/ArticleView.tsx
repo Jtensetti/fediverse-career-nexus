@@ -1,6 +1,6 @@
 import { ArticleContent } from "@/components/content/ArticleContent";
 import { useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { getArticleBySlug } from "@/services/articles/articleService";
@@ -9,22 +9,24 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format } from "date-fns";
 import NewsletterSubscribe from "@/components/social/NewsletterSubscribe";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Edit } from "lucide-react";
 import ArticleReactions from "@/components/articles/ArticleReactions";
 import ContentGate from "@/components/content/ContentGate";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MediaImage } from "@/components/content/MediaImage";
+import { stripHtml } from "@/lib/linkify";
 
 const ArticleView = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const { data: article, isLoading, isError } = useQuery({
     queryKey: ['article', slug, user?.id],
@@ -59,6 +61,12 @@ const ArticleView = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    if (location.hash === '#reactions' && article && hasAccess && !accessLoading) {
+      document.getElementById('reactions')?.scrollIntoView({ block: 'start' });
+    }
+  }, [location.hash, article, hasAccess, accessLoading]);
 
   const handleAccessGranted = () => {
     queryClient.invalidateQueries({ queryKey: ['articleAccess', article?.user_id] });
@@ -104,9 +112,9 @@ const ArticleView = () => {
     );
   }
 
-  const publishDate = article.published_at 
-    ? format(new Date(article.published_at), 'MMMM d, yyyy')
-    : format(new Date(article.created_at), 'MMMM d, yyyy');
+  const publishDate = new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, {
+    day: 'numeric', month: 'long', year: 'numeric',
+  }).format(new Date(article.published_at || article.created_at));
 
   const authorName = authorProfile?.fullname || authorProfile?.username || t('articleView.author');
   const authorInitials = authorName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
@@ -118,7 +126,7 @@ const ArticleView = () => {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title={article.title}
-        description={article.excerpt || article.content.substring(0, 160)}
+        description={article.excerpt || stripHtml(article.content).substring(0, 160)}
         type="article"
         publishedTime={article.published_at || article.created_at}
         modifiedTime={article.updated_at}
@@ -137,6 +145,9 @@ const ArticleView = () => {
             <Link className="text-primary underline" to="/my-reviews">{t('contentCare.myReviews')}</Link>
           </div>}
           <article className="prose prose-sm sm:prose max-w-none dark:prose-invert overflow-x-hidden">
+            {article.cover_image_url && (
+              <MediaImage src={article.cover_image_url} alt="" className="w-full max-h-[28rem] object-cover rounded-lg mb-6" />
+            )}
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 break-words">{article.title}</h1>
             
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-muted-foreground mb-6 not-prose">
@@ -156,7 +167,15 @@ const ArticleView = () => {
                 </div>
               </Link>
               
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {user?.id === article.user_id && (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/articles/edit/${article.id}`}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      {t('articleView.editArticle', 'Redigera artikel')}
+                    </Link>
+                  </Button>
+                )}
                 <ShareButton title={article.title} description={article.excerpt || undefined} />
                 <ReportDialog contentType="article" contentId={article.id} contentTitle={article.title} />
               </div>
@@ -188,7 +207,7 @@ const ArticleView = () => {
           </article>
           
           {showFullContent && article.moderation_status === 'published' && (
-            <div className="my-8 p-4 border rounded-md bg-background/50">
+            <div id="reactions" className="my-8 p-4 border rounded-md bg-background/50 scroll-mt-20">
               <h3 className="text-lg font-medium mb-2">{t('articleView.reactions')}</h3>
               <ArticleReactions articleId={article.id} />
             </div>

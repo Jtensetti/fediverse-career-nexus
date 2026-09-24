@@ -102,18 +102,18 @@ export default function PostCardHeader({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity" aria-label={t('postCard.postOptions')}>
+            <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 data-[state=open]:opacity-100 transition-opacity" aria-label={t('postCard.postOptions')}>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {isOwnPost && (
               <>
-                <DropdownMenuItem onClick={onEdit}>
+                <DropdownMenuItem onSelect={onEdit}>
                   <Edit className="mr-2 h-4 w-4" />
                   {t('postCard.edit')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onDeleteRequest} className="text-destructive">
+                <DropdownMenuItem onSelect={onDeleteRequest} className="text-destructive">
                   <Trash2 className="mr-2 h-4 w-4" />
                   {t('postCard.deletePost')}
                 </DropdownMenuItem>
@@ -122,11 +122,11 @@ export default function PostCardHeader({
             )}
             {!isOwnPost && hasUser && (
               <>
-                <DropdownMenuItem onClick={onReportRequest}>
+                <DropdownMenuItem onSelect={onReportRequest}>
                   <Flag className="mr-2 h-4 w-4" />
                   {t('postCard.reportPost')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive" onClick={onBlockRequest}>
+                <DropdownMenuItem className="text-destructive" onSelect={onBlockRequest}>
                   <UserX className="mr-2 h-4 w-4" />
                   {t('postCard.blockUser')}
                 </DropdownMenuItem>

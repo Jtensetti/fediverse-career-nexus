@@ -15,6 +15,7 @@ export interface Event {
   max_attendees: number | null; // renamed from capacity
   is_online: boolean; // renamed from is_virtual
   meeting_url: string | null; // renamed from stream_url
+  visibility?: 'public' | 'connections' | 'private' | null;
   created_at: string;
   updated_at: string;
   // Legacy fields for compatibility
@@ -65,12 +66,12 @@ export async function getEvents(options: {
     const { limit = 10, page = 0, upcoming = true, userId } = options;
     // Avoid milliseconds in OR filters (can be brittle in some PostgREST parsers)
     const nowISO = new Date().toISOString().split('.')[0] + 'Z';
-    
+
     let query = supabase
       .from('events')
       .select('*, rsvp_count:event_rsvps(count)')
       .neq('visibility', 'archived'); // Exclude archived events
-    
+
     // Filter by upcoming or past events
     if (upcoming) {
       // Upcoming = end_date >= now OR (end_date is null AND start_date >= now)
@@ -79,18 +80,18 @@ export async function getEvents(options: {
       // Past = end_date < now OR (end_date is null AND start_date < now)
       query = query.or(`end_date.lt.${nowISO},and(end_date.is.null,start_date.lt.${nowISO})`);
     }
-    
+
     // Filter by user_id if provided
     if (userId) {
       query = query.eq('user_id', userId);
     }
-    
+
     const { data, error } = await query
       .order('start_date', { ascending: true })
       .range(page * limit, (page + 1) * limit - 1);
-    
+
     if (error) throw error;
-    
+
     // Transform the data to match our expected type
     const eventsWithCount: EventWithRSVPCount[] = (data || []).map((item: any) => {
       const { rsvp_count, ...event } = item ?? {};
@@ -99,29 +100,29 @@ export async function getEvents(options: {
         rsvp_count: extractEmbeddedCount(rsvp_count),
       };
     });
-    
+
     // Get current user's RSVP status for each event
     const currentUser = (await supabase.auth.getSession()).data.session?.user;
-    
+
     if (currentUser && eventsWithCount.length > 0) {
       const eventIds = eventsWithCount.map(event => event.id);
-      
+
       const { data: rsvpData } = await supabase
         .from('event_rsvps')
         .select('event_id, status')
         .eq('user_id', currentUser.id)
         .in('event_id', eventIds);
-      
+
       if (rsvpData) {
         const rsvpMap = new Map(rsvpData.map(rsvp => [rsvp.event_id, rsvp.status]));
-        
+
         return eventsWithCount.map(event => ({
           ...event,
           user_rsvp_status: rsvpMap.get(event.id) as 'attending' | 'maybe' | 'declined' | undefined
         }));
       }
     }
-    
+
     return eventsWithCount;
   } catch (error) {
     console.error('Error fetching events:', error);
@@ -137,19 +138,19 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
       .select('*, rsvp_count:event_rsvps(count)')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
-    
+
     // Transform the data to match our expected type
     const { rsvp_count, ...event } = (data as any) ?? {};
     const eventWithCount: EventWithRSVPCount = {
       ...event,
       rsvp_count: extractEmbeddedCount(rsvp_count)
     };
-    
+
     // Get current user's RSVP status
     const currentUser = (await supabase.auth.getSession()).data.session?.user;
-    
+
     if (currentUser) {
       const { data: rsvpData } = await supabase
         .from('event_rsvps')
@@ -157,7 +158,7 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
         .eq('user_id', currentUser.id)
         .eq('event_id', id)
         .maybeSingle();
-      
+
       if (rsvpData) {
         return {
           ...eventWithCount,
@@ -165,7 +166,7 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
         };
       }
     }
-    
+
     return eventWithCount;
   } catch (error) {
     console.error('Error fetching event:', error);
@@ -178,50 +179,51 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
   try {
     const session = await supabase.auth.getSession();
     const user_id = session.data.session?.user.id;
-    
+
     if (!user_id) {
       toast.error(i18n.t('toasts.loginRequiredEvent'));
       return null;
     }
-    
+
     // Default end_date to start_date if not provided
     const finalEventData = {
       ...eventData,
       end_date: eventData.end_date || eventData.start_date,
       user_id
     };
-    
+
     const { data, error } = await supabase
       .from('events')
       .insert(finalEventData)
       .select()
       .single();
-    
+
     if (error) throw error;
-    
+
     const event = data as Event;
-    
-    // Auto-post event announcement to feed
-    try {
+
+    // Feed posts are public; never announce a restricted event there.
+    if (event.visibility === 'public') try {
       const { createPost } = await import('../posts/postService');
       const eventDate = new Date(event.start_date);
-      const formattedDate = eventDate.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'long', 
+      const formattedDate = eventDate.toLocaleString(i18n.resolvedLanguage || i18n.language, {
+        weekday: 'long',
+        month: 'long',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit'
       });
-      
+
       const eventUrl = `${window.location.origin}/events/${event.id}`;
-      const postContent = `🎉 Just created an event: <strong>${event.title}</strong><br><br>📅 ${formattedDate}${event.location ? `<br>📍 ${event.location}` : ''}${event.is_online ? '<br>💻 Online event' : ''}<br><br>Join us! <a href="${eventUrl}">${eventUrl}</a>`;
-      
+      const escapeText = (value: string) => value.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]!));
+      const postContent = `🎉 ${i18n.t('eventAnnouncement.created')}: <strong>${escapeText(event.title)}</strong><br><br>📅 ${formattedDate}${event.location ? `<br>📍 ${escapeText(event.location)}` : ''}${event.is_online ? `<br>💻 ${i18n.t('eventAnnouncement.online')}` : ''}<br><br>${i18n.t('eventAnnouncement.details')} <a href="${eventUrl}">${eventUrl}</a>`;
+
       await createPost({ content: postContent });
     } catch (postError) {
       console.warn('Could not create event announcement post:', postError);
       // Don't fail event creation if post fails
     }
-    
+
     toast.success(i18n.t('toasts.eventCreated'));
     return event;
   } catch (error) {
@@ -235,16 +237,16 @@ export async function updateEvent(id: string, eventData: Partial<Omit<Event, 'id
   try {
     const { data, error } = await supabase
       .from('events')
-      .update({ 
-        ...eventData, 
-        updated_at: new Date().toISOString() 
+      .update({
+        ...eventData,
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
-    
+
     toast.success(i18n.t('toasts.eventUpdated'));
     return data as Event;
   } catch (error) {
@@ -260,9 +262,9 @@ export async function deleteEvent(id: string): Promise<boolean> {
       .from('events')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
-    
+
     toast.success(i18n.t('toasts.eventDeleted'));
     return true;
   } catch (error) {
@@ -276,12 +278,12 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
   try {
     const session = await supabase.auth.getSession();
     const user_id = session.data.session?.user.id;
-    
+
     if (!user_id) {
       toast.error(i18n.t('toasts.loginRequiredRsvp'));
       return null;
     }
-    
+
     const { data, error } = await supabase
       .from('event_rsvps')
       .upsert(
@@ -294,9 +296,9 @@ export async function createRSVP(eventId: string, status: 'attending' | 'maybe' 
       )
       .select()
       .single();
-    
+
     if (error) throw error;
-    
+
     toast.success(i18n.t('toasts.rsvpSubmitted'));
     return data as EventRSVP;
   } catch (error) {
@@ -312,9 +314,9 @@ export async function getEventRSVPs(eventId: string): Promise<EventRSVP[]> {
       .from('event_rsvps')
       .select('*')
       .eq('event_id', eventId);
-    
+
     if (error) throw error;
-    
+
     return data as EventRSVP[];
   } catch (error) {
     console.error('Error fetching RSVPs:', error);
@@ -332,7 +334,7 @@ export function generateICalEvent(event: Event): string {
   const startDate = formatDate(event.start_date);
   const endDate = formatDate(event.end_date || event.start_date);
   const now = formatDate(new Date().toISOString());
-  
+
   let location = event.location || '';
   if (event.is_online && event.meeting_url) {
     location = location ? `${location} and ${event.meeting_url}` : event.meeting_url;

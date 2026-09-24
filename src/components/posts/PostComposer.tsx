@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
@@ -29,12 +29,20 @@ const MAX_CHARACTERS = 500;
 
 interface PostComposerProps {
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onPostCreated?: () => void;
 }
 
-export default function PostComposer({ className = "" }: PostComposerProps) {
+export default function PostComposer({ className = "", open, onOpenChange, onPostCreated }: PostComposerProps) {
   const { t } = useTranslation();
   const contentCheck = useContentCheck();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setIsOpen = (value: boolean) => {
+    setInternalOpen(value);
+    onOpenChange?.(value);
+  };
   const [postContent, setPostContent] = useState("");
   const imageDraft = usePostImageDraft();
   const imagePreview = imageDraft.preview;
@@ -82,6 +90,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
       resetForm();
       setIsOpen(false);
       queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
+      onPostCreated?.();
     },
     onError: (error: Error) => {
       console.error('Failed to create post:', error);
@@ -178,10 +187,12 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
         <CardContent className="pt-6">
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <motion.div 
+              <motion.button
+                type="button"
+                aria-label={t("posts.whatsOnMind")}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className="flex items-center gap-3 w-full p-4 text-left border rounded-xl bg-muted/30 cursor-pointer hover:bg-muted/50 transition-all duration-200"
+                className="flex items-center gap-3 w-full p-4 text-left border rounded-xl bg-muted/30 cursor-pointer hover:bg-muted/50 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Avatar className="h-11 w-11 ring-2 ring-offset-2 ring-offset-background ring-primary/20">
                   <AvatarImage src={profile?.avatarUrl} alt={profile?.displayName} />
@@ -190,7 +201,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-muted-foreground flex-1">{t("posts.whatsOnMind", "What's on your mind?")}</span>
-              </motion.div>
+              </motion.button>
             </DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden p-0">
               <DialogHeader className="p-6 pb-0">
@@ -203,14 +214,16 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                   </Avatar>
                   <div>
                     <span className="font-semibold">{profile?.displayName || 'User'}</span>
-                    <p className="text-xs text-muted-foreground font-normal">{t("posts.postingToFeed", "Posting to your feed")}</p>
+                    <p className="text-xs text-muted-foreground font-normal">{t("posts.publicAudience")}</p>
                   </div>
                 </DialogTitle>
+                <DialogDescription>{t("posts.publicAudienceDescription")}</DialogDescription>
               </DialogHeader>
               
               <div className="p-6 pt-4 space-y-4 overflow-y-auto max-h-[60vh]">
                 <Textarea
                   ref={textareaRef}
+                  aria-label={t("posts.contentLabel")}
                   placeholder={t("posts.whatsOnMind", "What's on your mind?")}
                   value={postContent}
                   onChange={(e) => setPostContent(e.target.value)}
@@ -239,6 +252,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                         <Button
                           variant="secondary"
                           size="icon"
+                          aria-label={t("posts.removeImage")}
                           className="absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm"
                           onClick={() => {
                             imageDraft.clear();
@@ -343,6 +357,7 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={t("posts.addImage")}
                       onClick={() => document.getElementById('image-upload')?.click()}
                       className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
                       disabled={isLoading}
@@ -352,6 +367,8 @@ export default function PostComposer({ className = "" }: PostComposerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={t(showPollCreator ? "posts.removePoll" : "posts.addPoll")}
+                      aria-pressed={showPollCreator}
                       onClick={() => setShowPollCreator(!showPollCreator)}
                       className={cn(
                         "h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10",

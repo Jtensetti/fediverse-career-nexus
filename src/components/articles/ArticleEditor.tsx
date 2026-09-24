@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
@@ -13,14 +14,19 @@ interface ArticleEditorProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  id?: string;
+  label?: string;
 }
 
 export function ArticleEditor({
   value,
   onChange,
-  placeholder = "Skriv din artikel...",
+  placeholder,
   className,
+  id = "article-content",
+  label,
 }: ArticleEditorProps) {
+  const { t } = useTranslation();
   const [hasSelection, setHasSelection] = useState(false);
   const [showLinkSheet, setShowLinkSheet] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -91,7 +97,7 @@ export function ArticleEditor({
           break;
         case "image-url":
           // Prompt for URL as fallback
-          const url = prompt("Ange bild-URL:");
+          const url = prompt(t("articleForm.imageUrl"));
           if (url) {
             editor.insertImage(url);
           }
@@ -109,10 +115,10 @@ export function ArticleEditor({
 
   // Handle link insertion
   const handleLinkInsert = useCallback(
-    (url: string, _text?: string) => {
+    (url: string, text?: string) => {
       const editor = getEditor();
       if (editor) {
-        editor.setLink(url);
+        editor.setLink(url, text || editor.getSelectedText() || url);
       }
       setShowLinkSheet(false);
     },
@@ -160,21 +166,21 @@ export function ArticleEditor({
 
     const editor = getEditor();
     if (!editor) {
-      toast.error("Editorn är inte redo");
+      toast.error(t("articleForm.editorNotReady"));
       return;
     }
 
     const url = await uploadImage(file);
     if (url) {
       editor.insertImage(url);
-      toast.success("Bild infogad");
+      toast.success(t("articleForm.imageInserted"));
     }
 
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [getEditor, uploadImage]);
+  }, [getEditor, uploadImage, t]);
 
   // Show toolbar when keyboard is open on mobile, or always on desktop
   const showToolbar = isMobile ? (isFocused || isKeyboardOpen) : true;
@@ -186,10 +192,12 @@ export function ArticleEditor({
     )}>
       {/* TipTap Rich Text Editor */}
       <TipTapEditor
+        id={id}
+        label={label ?? t("articleForm.editorLabel")}
         ref={editorRef}
         value={value}
         onChange={onChange}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("articleForm.editorPlaceholder")}
         onFocus={handleFocus}
         onBlur={handleBlur}
         onSelectionChange={handleSelectionChange}

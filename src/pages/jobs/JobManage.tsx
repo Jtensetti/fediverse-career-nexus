@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { getUserJobPosts, type JobPost, deleteJobPost, toggleJobPostPublished } from "@/services/misc/jobPostsService";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
@@ -14,7 +15,6 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,16 +31,19 @@ import { toast } from "sonner";
 
 const JobManage = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const { user, loading } = useAuth();
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [pendingJobIds, setPendingJobIds] = useState<Set<string>>(new Set());
   
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!loading && !user) {
-      toast.error("Logga in för att hantera jobbannonser");
+      toast.error(t("jobManage.signInRequired"));
       navigate("/auth");
       return;
     }
@@ -55,7 +58,7 @@ const JobManage = () => {
     };
     
     fetchJobs();
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, t]);
   
   const handleDeleteClick = (jobId: string) => {
     setJobToDelete(jobId);
@@ -63,54 +66,58 @@ const JobManage = () => {
   };
   
   const confirmDelete = async () => {
-    if (!jobToDelete) return;
+    if (!jobToDelete || isDeleting) return;
+    setIsDeleting(true);
     
     const success = await deleteJobPost(jobToDelete);
     if (success) {
       setJobs((prevJobs) => prevJobs.filter(job => job.id !== jobToDelete));
+      setDeleteDialogOpen(false);
+      setJobToDelete(null);
     }
-    
-    setDeleteDialogOpen(false);
-    setJobToDelete(null);
+    setIsDeleting(false);
   };
   
   const handleTogglePublished = async (jobId: string, isActive: boolean) => {
+    if (pendingJobIds.has(jobId)) return;
+    setPendingJobIds(ids => new Set(ids).add(jobId));
     const success = await toggleJobPostPublished(jobId, isActive);
     if (success) {
       setJobs((prevJobs) => prevJobs.map(job => 
         job.id === jobId ? { ...job, is_active: isActive } : job
       ));
     }
+    setPendingJobIds(ids => { const next = new Set(ids); next.delete(jobId); return next; });
   };
   
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Hantera jobbannonser</h1>
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">{t("jobManage.title")}</h1>
           <Button asChild>
             <Link to="/jobs/create">
               <Plus className="mr-2 h-4 w-4" />
-              Skapa jobbannons
+              {t("jobFormLabels.createJobPost")}
             </Link>
           </Button>
         </div>
         
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
-            <p className="text-lg text-muted-foreground">Laddar dina jobbannonser...</p>
+            <p className="text-lg text-muted-foreground">{t("jobManage.loading")}</p>
           </div>
         ) : jobs.length > 0 ? (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Jobbtitel</TableHead>
-                  <TableHead>Företag</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Skapad</TableHead>
-                  <TableHead>Åtgärder</TableHead>
+                  <TableHead>{t("jobManage.jobTitle")}</TableHead>
+                  <TableHead>{t("jobManage.company")}</TableHead>
+                  <TableHead>{t("jobManage.status")}</TableHead>
+                  <TableHead>{t("jobView.created")}</TableHead>
+                  <TableHead>{t("jobManage.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -124,30 +131,34 @@ const JobManage = () => {
                     <TableCell>{job.company}</TableCell>
                     <TableCell>
                       <Badge variant={job.is_active ? "default" : "outline"}>
-                        {job.is_active ? "Publicerad" : "Utkast"}
+                        {t(job.is_active ? "jobView.published" : "jobView.draft")}
                       </Badge>
                     </TableCell>
-                    <TableCell>{format(new Date(job.created_at), "MMM d, yyyy")}</TableCell>
+                    <TableCell className="whitespace-nowrap">{new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(job.created_at))}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <Link to={`/jobs/edit/${job.id}`}>
+                          <Link to={`/jobs/edit/${job.id}`} aria-label={t("jobManage.editLabel", { title: job.title })}>
                             <Edit className="h-4 w-4" />
+                            <span className="ml-2">{t("jobManage.edit")}</span>
                           </Link>
                         </Button>
                         <Button 
                           variant={job.is_active ? "outline" : "default"} 
                           size="sm"
+                          disabled={pendingJobIds.has(job.id)}
                           onClick={() => handleTogglePublished(job.id, !job.is_active)}
                         >
-                          {job.is_active ? "Unpublish" : "Publish"}
+                          {t(job.is_active ? "jobManage.unpublish" : "jobManage.publish")}
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
+                          aria-label={t("jobManage.deleteLabel", { title: job.title })}
                           onClick={() => handleDeleteClick(job.id)}
                         >
                           <Trash className="h-4 w-4 text-destructive" />
+                          <span className="ml-2">{t("jobManage.delete")}</span>
                         </Button>
                       </div>
                     </TableCell>
@@ -158,31 +169,31 @@ const JobManage = () => {
           </div>
         ) : (
           <div className="py-12 text-center">
-            <h2 className="text-2xl font-semibold mb-2">Inga jobbannonser ännu</h2>
+            <h2 className="text-2xl font-semibold mb-2">{t("jobManage.emptyTitle")}</h2>
             <p className="text-muted-foreground mb-6">
-              Du har inte skapat några jobbannonser ännu. Kom igång genom att skapa din första.
+              {t("jobManage.emptyDescription")}
             </p>
             <Button asChild>
               <Link to="/jobs/create">
                 <Plus className="mr-2 h-4 w-4" />
-                Skapa jobbannons
+                {t("jobFormLabels.createJobPost")}
               </Link>
             </Button>
           </div>
         )}
         
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={open => { if (!isDeleting) setDeleteDialogOpen(open); }}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Är du säker?</AlertDialogTitle>
+              <AlertDialogTitle>{t("jobManage.deleteTitle")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Denna åtgärd kan inte ångras. Jobbannonsen raderas permanent.
+                {t("jobManage.deleteDescription", { title: jobs.find(job => job.id === jobToDelete)?.title })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-                Delete
+              <AlertDialogCancel disabled={isDeleting}>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction disabled={isDeleting} onClick={event => { event.preventDefault(); void confirmDelete(); }} className="bg-destructive text-destructive-foreground">
+                {t(isDeleting ? "jobManage.deleting" : "jobManage.delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -7,14 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DatePicker } from "@/components/forms/DatePicker";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import { sv } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
 import { Event } from "@/services/misc/eventService";
+import { endAfterStartChange, localDateTime, nextEventRange } from "@/lib/localDate";
 
 const timeOptions = () => {
   const times = [];
@@ -30,6 +28,7 @@ const timeOptions = () => {
 };
 
 function createEventFormSchema(t: any) {
+  const optionalUrl = z.string().trim().nullish().transform(value => value || null);
   return z
     .object({
       title: z.string().min(3, t("eventFormLabels.titleValidation")),
@@ -39,17 +38,22 @@ function createEventFormSchema(t: any) {
       start_time: z.string({ required_error: t("eventFormLabels.startTimeRequired") }),
       end_date: z.date({ required_error: t("eventFormLabels.endDateRequired") }),
       end_time: z.string({ required_error: t("eventFormLabels.endTimeRequired") }),
-      timezone: z.string().default("UTC"),
       is_online: z.boolean().default(false),
-      meeting_url: z.string().url(t("eventFormLabels.invalidUrl")).optional().nullable(),
+      meeting_url: optionalUrl,
       max_attendees: z.coerce.number().int().positive().optional().nullable(),
-      cover_image_url: z.string().url(t("eventFormLabels.invalidUrl")).optional().nullable(),
+      cover_image_url: optionalUrl,
       visibility: z.enum(["public", "connections", "private"]).default("public"),
+    })
+    .refine(data => !data.is_online || !data.meeting_url || z.string().url().safeParse(data.meeting_url).success, {
+      message: t("eventFormLabels.invalidUrl"), path: ["meeting_url"],
+    })
+    .refine(data => !data.cover_image_url || z.string().url().safeParse(data.cover_image_url).success, {
+      message: t("eventFormLabels.invalidUrl"), path: ["cover_image_url"],
     })
     .refine(
       (data) => {
-        const startDateTime = new Date(data.start_date.getFullYear(), data.start_date.getMonth(), data.start_date.getDate(), ...data.start_time.split(":").map(Number));
-        const endDateTime = new Date(data.end_date.getFullYear(), data.end_date.getMonth(), data.end_date.getDate(), ...data.end_time.split(":").map(Number));
+        const startDateTime = localDateTime(data.start_date, data.start_time);
+        const endDateTime = localDateTime(data.end_date, data.end_time);
         return endDateTime > startDateTime;
       },
       { message: t("eventFormLabels.endAfterStart"), path: ["end_time"] },
@@ -71,6 +75,8 @@ const EventForm = ({
 }: EventFormProps) => {
   const { t } = useTranslation();
   const eventFormSchema = createEventFormSchema(t);
+  const [initialRange] = useState(() => nextEventRange());
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const startDate = defaultValues.start_date ? new Date(defaultValues.start_date) : undefined;
   const endDate = defaultValues.end_date ? new Date(defaultValues.end_date) : undefined;
@@ -79,11 +85,10 @@ const EventForm = ({
     title: defaultValues.title || "",
     description: defaultValues.description || "",
     location: defaultValues.location || "",
-    start_date: startDate || new Date(),
-    start_time: startDate ? format(startDate, "HH:mm") : "09:00",
-    end_date: endDate || new Date(),
-    end_time: endDate ? format(endDate, "HH:mm") : "10:00",
-    timezone: "UTC",
+    start_date: startDate || initialRange.start,
+    start_time: format(startDate || initialRange.start, "HH:mm"),
+    end_date: endDate || initialRange.end,
+    end_time: format(endDate || initialRange.end, "HH:mm"),
     is_online: defaultValues.is_online || false,
     meeting_url: defaultValues.meeting_url || null,
     max_attendees: defaultValues.max_attendees || null,
@@ -99,8 +104,8 @@ const EventForm = ({
   });
 
   const handleSubmit = (values: z.infer<typeof eventFormSchema>) => {
-    const startDateTime = new Date(values.start_date.getFullYear(), values.start_date.getMonth(), values.start_date.getDate(), ...values.start_time.split(":").map(Number));
-    const endDateTime = new Date(values.end_date.getFullYear(), values.end_date.getMonth(), values.end_date.getDate(), ...values.end_time.split(":").map(Number));
+    const startDateTime = localDateTime(values.start_date, values.start_time);
+    const endDateTime = localDateTime(values.end_date, values.end_time);
     const eventData: Omit<Event, "id" | "created_at" | "updated_at" | "user_id"> = {
       title: values.title, description: values.description,
       location: values.location || null,
@@ -112,6 +117,20 @@ const EventForm = ({
       visibility: values.visibility,
     } as any;
     onSubmit(eventData);
+  };
+
+  const changeStart = (field: 'start_date' | 'start_time', value: Date | string) => {
+    const previous = form.getValues();
+    const oldStart = localDateTime(previous.start_date, previous.start_time);
+    const oldEnd = localDateTime(previous.end_date, previous.end_time);
+    form.setValue(field, value, { shouldDirty: true });
+    const current = form.getValues();
+    const nextEnd = endAfterStartChange(oldStart, oldEnd, localDateTime(current.start_date, current.start_time));
+    if (nextEnd !== oldEnd) {
+      form.setValue('end_date', nextEnd, { shouldDirty: true });
+      form.setValue('end_time', format(nextEnd, 'HH:mm'), { shouldDirty: true });
+    }
+    if (form.formState.isSubmitted) void form.trigger(['start_date', 'start_time', 'end_date', 'end_time']);
   };
 
   const finalSubmitText = submitButtonText || t("eventFormLabels.createEvent");
@@ -153,30 +172,19 @@ const EventForm = ({
 
         <div className="space-y-6">
           <h3 className="text-lg font-medium">{t("eventFormLabels.dateTime")}</h3>
+          <p className="text-sm text-muted-foreground">{t('eventFormLabels.localTimezone', { timezone })}</p>
           <div className="grid gap-6 md:grid-cols-2">
             <FormField control={form.control} name="start_date" render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>{t("eventFormLabels.startDate")}</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button variant="outline" className="w-full pl-3 text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "PPP", { locale: sv }) : <span>{t("eventFormLabels.pickDate")}</span>}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                  </PopoverContent>
-                </Popover>
+                <FormControl><DatePicker {...field} onChange={date => changeStart('start_date', date)} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="start_time" render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("eventFormLabels.startTime")}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={time => changeStart('start_time', time)} value={field.value}>
                   <FormControl><SelectTrigger><SelectValue placeholder={t("eventFormLabels.selectTime")} /></SelectTrigger></FormControl>
                   <SelectContent>{timeOptions().map((time) => (<SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>))}</SelectContent>
                 </Select>
@@ -188,26 +196,14 @@ const EventForm = ({
             <FormField control={form.control} name="end_date" render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>{t("eventFormLabels.endDate")}</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button variant="outline" className="w-full pl-3 text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "PPP", { locale: sv }) : <span>{t("eventFormLabels.pickDate")}</span>}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                  </PopoverContent>
-                </Popover>
+                <FormControl><DatePicker {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="end_time" render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("eventFormLabels.endTime")}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl><SelectTrigger><SelectValue placeholder={t("eventFormLabels.selectTime")} /></SelectTrigger></FormControl>
                   <SelectContent>{timeOptions().map((time) => (<SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>))}</SelectContent>
                 </Select>

@@ -89,8 +89,11 @@ export default function FederatedPostCard({
   const isOwnPost = !!user?.id && post.source === 'local' && post.user_id === user.id;
 
   const handleCardClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('button, a, [role="button"], [data-interactive]')) return;
+    const target = e.target;
+    // React portal events still bubble through the card's React ancestors,
+    // even though menu/dialog content is outside its DOM subtree.
+    if (e.defaultPrevented || !(target instanceof Element) || !e.currentTarget.contains(target)) return;
+    if (target.closest('button, a, input, textarea, select, label, summary, [role="button"], [role="link"], [role^="menuitem"], [data-interactive], [contenteditable]:not([contenteditable="false"])')) return;
     navigate(`/post/${post.id}`);
   };
 

@@ -1,5 +1,6 @@
 import { hasRecordId } from "@/lib/records";
 import { supabase } from "@/lib/supabase";
+import { profileSearchFilter } from "@/lib/searchQuery";
 
 export interface AdvancedSearchFilters {
   query?: string;
@@ -27,15 +28,16 @@ export const advancedSearchService = {
       .limit(limit);
     
     if (filters.query && filters.query.trim()) {
-      const pattern = `%${filters.query.trim()}%`;
-      query = query.or(`username.ilike.${pattern},fullname.ilike.${pattern},headline.ilike.${pattern}`);
+      const filter = profileSearchFilter(filters.query);
+      if (!filter) return [];
+      query = query.or(filter);
     }
     
     if (filters.location && filters.location.trim()) {
       query = query.ilike('location', `%${filters.location.trim()}%`);
     }
     
-    if (filters.homeInstance && filters.homeInstance.trim()) {
+    if (filters.homeInstance && filters.homeInstance.trim() && filters.homeInstance.trim() !== 'all') {
       const instance = filters.homeInstance.trim().replace('@', '');
       if (instance.toLowerCase() === 'local') {
         query = query.is('home_instance', null);
@@ -43,12 +45,29 @@ export const advancedSearchService = {
         query = query.ilike('home_instance', `%${instance}%`);
       }
     }
+
+    // Apply CV filters in addition to name, location and instance, not instead.
+    if (filters.company?.trim()) {
+      const { data, error } = await supabase.from('experiences').select('user_id')
+        .ilike('company', `%${filters.company.trim()}%`);
+      if (error) throw new Error('Company search failed');
+      const userIds = [...new Set((data || []).map(row => row.user_id))];
+      if (!userIds.length) return [];
+      query = query.in('id', userIds);
+    }
+    if (filters.institution?.trim()) {
+      const { data, error } = await supabase.from('education').select('user_id')
+        .ilike('institution', `%${filters.institution.trim()}%`);
+      if (error) throw new Error('Education search failed');
+      const userIds = [...new Set((data || []).map(row => row.user_id))];
+      if (!userIds.length) return [];
+      query = query.in('id', userIds);
+    }
     
     const { data, error } = await query;
     
     if (error) {
-      console.error('Advanced search error:', error);
-      return [];
+      throw new Error('Profile search failed');
     }
     
     return (data || []).filter(hasRecordId);
@@ -82,21 +101,23 @@ export const advancedSearchService = {
     if (!company || company.trim().length < 1) return [];
     
     // Search experiences table then join with profiles
-    const { data: experiences } = await supabase
+    const { data: experiences, error: experienceError } = await supabase
       .from('experiences')
       .select('user_id')
       .ilike('company', `%${company.trim()}%`)
       .limit(limit);
     
+    if (experienceError) throw new Error('Company search failed');
     if (!experiences || experiences.length === 0) return [];
     
     const userIds = [...new Set(experiences.map(e => e.user_id))];
     
-    const { data: profiles } = await supabase
+    const { data: profiles, error: profileError } = await supabase
       .from('public_profiles')
       .select('id, username, fullname, headline, avatar_url, location, home_instance')
       .in('id', userIds);
     
+    if (profileError) throw new Error('Profile search failed');
     return (profiles || []).filter(hasRecordId);
   },
 
@@ -104,21 +125,23 @@ export const advancedSearchService = {
     if (!institution || institution.trim().length < 1) return [];
     
     // Search education table then join with profiles
-    const { data: education } = await supabase
+    const { data: education, error: educationError } = await supabase
       .from('education')
       .select('user_id')
       .ilike('institution', `%${institution.trim()}%`)
       .limit(limit);
     
+    if (educationError) throw new Error('Education search failed');
     if (!education || education.length === 0) return [];
     
     const userIds = [...new Set(education.map(e => e.user_id))];
     
-    const { data: profiles } = await supabase
+    const { data: profiles, error: profileError } = await supabase
       .from('public_profiles')
       .select('id, username, fullname, headline, avatar_url, location, home_instance')
       .in('id', userIds);
     
+    if (profileError) throw new Error('Profile search failed');
     return (profiles || []).filter(hasRecordId);
   },
 };

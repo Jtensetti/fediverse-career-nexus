@@ -50,7 +50,7 @@ export default function SectionVisibilityToggle({ section, currentVisibility, on
                 size="icon"
                 className="h-7 w-7 text-muted-foreground hover:text-foreground"
                 disabled={updating}
-                aria-label={t("visibility.whoCanSee")}
+                aria-label={t("visibility.currentSetting", { audience: t(current.labelKey, current.fallback) })}
               >
                 {updating ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

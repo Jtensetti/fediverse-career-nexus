@@ -1,4 +1,5 @@
 import { SaveButton } from "@/components/common/SaveButton";
+import { useTranslation } from "react-i18next";
 
 import { JobPost } from "@/services/misc/jobPostsService";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Calendar, MapPin, Globe, Building2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+import { sv, enUS } from "date-fns/locale";
 import { motion } from "framer-motion";
 import TransparencyScore from "@/components/social/TransparencyScore";
 
@@ -33,17 +34,19 @@ const formatSalary = (min: number | null, max: number | null, currency: string |
   return `Upp till ${currencySymbol}${max?.toLocaleString()}`;
 };
 
-const JobTypeLabels: Record<string, string> = {
-  full_time: "Heltid",
-  part_time: "Deltid",
-  contract: "Kontrakt",
-  internship: "Praktik",
-  temporary: "Tillfällig"
+const JobTypeKeys: Record<string, string> = {
+  full_time: "fullTime", "full-time": "fullTime",
+  part_time: "partTime", "part-time": "partTime",
+  contract: "contract", internship: "internship", temporary: "temporary",
+  permanent: "permanent", substitute: "substitute", "fixed-term": "fixedTerm",
+  project: "project", consultant: "consultant", seasonal: "seasonal"
 };
 
 const JobCard = ({ job }: JobCardProps) => {
+  const { t, i18n } = useTranslation();
   const salary = formatSalary(job.salary_min, job.salary_max, job.salary_currency);
   const skills = job.skills || [];
+  const employmentType = job.employment_type || job.job_type || "";
 
   return (
     <motion.div
@@ -71,13 +74,13 @@ const JobCard = ({ job }: JobCardProps) => {
         </CardHeader>
         <CardContent className="pb-3">
           <div className="flex flex-wrap gap-2 mb-3">
-            <Badge variant={job.job_type === "full_time" ? "default" : "outline"} className="text-xs">
-              {job.job_type ? JobTypeLabels[job.job_type] || job.job_type : "Anställning"}
+            <Badge variant={JobTypeKeys[employmentType] === "fullTime" ? "default" : "outline"} className="text-xs">
+              {JobTypeKeys[employmentType] ? t(`jobFormLabels.${JobTypeKeys[employmentType]}`) : employmentType || t("jobs.jobType")}
             </Badge>
             {job.remote_allowed && (
               <Badge variant="secondary" className="text-xs">
                 <Globe className="h-3 w-3 mr-1" />
-                Distans
+                {t(job.remote_policy === "hybrid" ? "jobView.hybrid" : "jobView.remote")}
               </Badge>
             )}
           </div>
@@ -89,7 +92,7 @@ const JobCard = ({ job }: JobCardProps) => {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
-              <span>Publicerad {job.published_at ? formatDistanceToNow(new Date(job.published_at), { addSuffix: true, locale: sv }) : "nyligen"}</span>
+              <span>{t("jobView.created")} {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: i18n.language.startsWith("sv") ? sv : enUS })}</span>
             </div>
           </div>
           
@@ -138,7 +141,7 @@ const JobCard = ({ job }: JobCardProps) => {
         </CardContent>
         <CardFooter className="pt-0">
           <Button asChild className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="outline">
-            <Link to={`/jobs/${job.id}`}>Visa detaljer</Link>
+            <Link to={`/jobs/${job.id}`}>{t("jobs.viewDetails")}</Link>
           </Button>
         </CardFooter>
       </Card>

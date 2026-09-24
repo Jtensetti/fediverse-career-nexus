@@ -36,12 +36,24 @@ import { Badge } from '@/components/ui/badge';
 import { getEvent, createRSVP, deleteEvent, downloadICalFile } from '@/services/misc/eventService';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/common/SEOHead';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+
+const EventLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="min-h-screen flex flex-col">
+    <Navbar />
+    <main className="flex-grow container max-w-4xl mx-auto py-10 px-4 sm:px-6">{children}</main>
+    <Footer />
+  </div>
+);
 
 export default function EventView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [videoOpen, setVideoOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteFailed, setDeleteFailed] = useState(false);
   const { t } = useTranslation();
 
   const { data: event, isLoading } = useQuery({
@@ -68,10 +80,17 @@ export default function EventView() {
 
   const deleteMutation = useMutation({
     mutationFn: (eventId: string) => deleteEvent(eventId),
-    onSuccess: () => {
+    onSuccess: (deleted) => {
+      if (!deleted) {
+        setDeleteFailed(true);
+        return;
+      }
+      setDeleteDialogOpen(false);
+      queryClient.removeQueries({ queryKey: ['event', id], exact: true });
       queryClient.invalidateQueries({ queryKey: ['events'] });
       navigate('/events');
-    }
+    },
+    onError: () => setDeleteFailed(true),
   });
 
   const handleRSVP = (status: 'attending' | 'maybe' | 'declined') => {
@@ -84,7 +103,8 @@ export default function EventView() {
   };
 
   const handleDelete = () => {
-    if (id) {
+    if (id && !deleteMutation.isPending) {
+      setDeleteFailed(false);
       deleteMutation.mutate(id);
     }
   };
@@ -116,15 +136,17 @@ export default function EventView() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
+      <EventLayout>
+        <SEOHead title={t('eventView.loading')} />
         <div className="text-center">{t('eventView.loading')}</div>
-      </div>
+      </EventLayout>
     );
   }
 
   if (!event) {
     return (
-      <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
+      <EventLayout>
+        <SEOHead title={t('eventView.notFound')} />
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">{t('eventView.notFound')}</h2>
           <p className="text-muted-foreground mb-6">
@@ -134,7 +156,7 @@ export default function EventView() {
             <Link to="/events">{t('eventView.backToEvents')}</Link>
           </Button>
         </div>
-      </div>
+      </EventLayout>
     );
   }
 
@@ -149,7 +171,7 @@ export default function EventView() {
   const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return (
-    <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
+    <EventLayout>
       <SEOHead 
         title={event.title} 
         description={event.description?.slice(0, 160) || t('eventView.seoDescription')} 
@@ -348,6 +370,7 @@ export default function EventView() {
                       variant="outline" 
                       size="icon"
                       onClick={handleShare}
+                      aria-label={t('eventView.shareEvent')}
                     >
                       <Share className="h-4 w-4" />
                     </Button>
@@ -365,7 +388,11 @@ export default function EventView() {
                   <Link to={`/events/edit/${event.id}`}>{t('eventView.editEvent')}</Link>
                 </Button>
                 
-                <AlertDialog>
+                <AlertDialog open={deleteDialogOpen} onOpenChange={open => {
+                  if (deleteMutation.isPending) return;
+                  setDeleteDialogOpen(open);
+                  setDeleteFailed(false);
+                }}>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive">{t('eventView.deleteEvent')}</Button>
                   </AlertDialogTrigger>
@@ -376,9 +403,10 @@ export default function EventView() {
                         {t('eventView.deleteConfirmDescription')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
+                    {deleteFailed && <p role="alert" className="text-sm text-destructive">{t('toasts.eventDeleteFailed')}</p>}
                     <AlertDialogFooter>
-                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>
+                      <AlertDialogCancel disabled={deleteMutation.isPending}>{t('common.cancel')}</AlertDialogCancel>
+                      <AlertDialogAction disabled={deleteMutation.isPending} onClick={event => { event.preventDefault(); handleDelete(); }}>
                         {t('common.delete')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -389,6 +417,6 @@ export default function EventView() {
           </div>
         </div>
       </div>
-    </div>
+    </EventLayout>
   );
 }

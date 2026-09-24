@@ -25,7 +25,7 @@ export interface TipTapEditorHandle {
   toggleCodeBlock: () => void;
   toggleBulletList: () => void;
   toggleOrderedList: () => void;
-  setLink: (url: string) => void;
+  setLink: (url: string, text?: string) => void;
   insertImage: (url: string, alt?: string) => void;
   insertHorizontalRule: () => void;
   undo: () => void;
@@ -41,6 +41,8 @@ interface TipTapEditorProps {
   onFocus?: () => void;
   onBlur?: () => void;
   onSelectionChange?: (hasSelection: boolean) => void;
+  id?: string;
+  label?: string;
 }
 
 export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(function TipTapEditor(
@@ -52,6 +54,8 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
     onFocus,
     onBlur,
     onSelectionChange,
+    id,
+    label = "Artikelinnehåll",
   },
   ref
 ) {
@@ -60,6 +64,7 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        link: false,
         heading: {
           levels: [1, 2, 3, 4, 5],
         },
@@ -82,6 +87,10 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
     content: value,
     editorProps: {
       attributes: {
+        ...(id ? { id } : {}),
+        role: "textbox",
+        "aria-label": label,
+        "aria-multiline": "true",
         class: cn(
           "prose prose-sm sm:prose dark:prose-invert max-w-none",
           "focus:outline-none min-h-[300px] sm:min-h-[400px]",
@@ -153,9 +162,17 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
     editor?.chain().focus().toggleOrderedList().run();
   }, [editor]);
 
-  const setLink = useCallback((url: string) => {
+  const setLink = useCallback((url: string, text?: string) => {
     if (url) {
-      editor?.chain().focus().setLink({ href: url }).run();
+      if (text) {
+        editor?.chain().focus().insertContent({
+          type: "text",
+          text,
+          marks: [{ type: "link", attrs: { href: url } }],
+        }).run();
+      } else {
+        editor?.chain().focus().setLink({ href: url }).run();
+      }
     } else {
       editor?.chain().focus().unsetLink().run();
     }

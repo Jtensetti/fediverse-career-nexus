@@ -186,15 +186,17 @@ export function generateSlug(name: string): string {
 // Check if slug is available
 export async function isSlugAvailable(slug: string): Promise<boolean> {
   // Check reserved slugs first
-  const { data: reserved } = await supabase.rpc('is_slug_reserved', { _slug: slug });
+  const { data: reserved, error: reservedError } = await supabase.rpc('is_slug_reserved', { _slug: slug });
+  if (reservedError) throw new Error('Could not check organization address');
   if (reserved) return false;
 
   // Check existing companies
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('companies')
     .select('id')
     .eq('slug', slug)
     .limit(1);
 
+  if (error) throw new Error('Could not check organization address');
   return !data || data.length === 0;
 }

@@ -23,6 +23,7 @@ interface CompanyContext {
 interface InlineReplyComposerProps {
   postId: string;
   parentReplyId?: string;
+  replyingTo?: string;
   onReplyCreated: () => void;
   onCancel?: () => void;
   placeholder?: string;
@@ -34,6 +35,7 @@ interface InlineReplyComposerProps {
 export default function InlineReplyComposer({
   postId,
   parentReplyId,
+  replyingTo,
   onReplyCreated,
   onCancel,
   placeholder,
@@ -51,11 +53,13 @@ export default function InlineReplyComposer({
 
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
-      setTimeout(() => textareaRef.current?.focus(), 50);
+      const timeout = window.setTimeout(() => textareaRef.current?.focus({ preventScroll: true }), 50);
+      return () => window.clearTimeout(timeout);
     }
   }, [autoFocus]);
 
   const handleSubmit = async () => {
+    if (loading || contentCheck.checking) return;
     if (!user) {
       toast.error(t("comments.signInToReply", "Please sign in to reply"));
       return;
@@ -129,6 +133,9 @@ export default function InlineReplyComposer({
       onKeyDown={(e) => e.stopPropagation()}
     >
       {contentCheck.dialog}
+      {replyingTo && <p className="px-3 pt-2 text-xs font-medium text-muted-foreground">
+        {t("comments.replyTo")} {replyingTo}
+      </p>}
       {/* Company toggle indicator */}
       {replyAsCompany && companyContext && (
         <div className="flex items-center gap-1.5 px-3 pt-2 text-xs text-primary font-medium">
@@ -139,6 +146,7 @@ export default function InlineReplyComposer({
 
       <Textarea
         ref={textareaRef}
+        aria-label={replyingTo ? `${t("comments.replyTo")} ${replyingTo}` : placeholder || t("comments.writeReply")}
         placeholder={
           replyAsCompany && companyContext
             ? t("comments.writeReplyAsCompany", "Reply as {{name}}...", { name: companyContext.name })

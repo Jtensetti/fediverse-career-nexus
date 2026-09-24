@@ -44,6 +44,7 @@ const JobCreate = () => {
       const jobData = { ...values, application_url: values.application_url || null, contact_email: values.contact_email || null };
       const result = await createJobPost(jobData);
       if (result.ok) {
+        toast.success(t(values.is_active ? "jobCreate.published" : "jobCreate.draftSaved"));
         navigate(`/jobs/${result.id}`);
       } else {
         const errorResult = result as { ok: false; message: string; details?: string };

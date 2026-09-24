@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getJobPostById, type JobPost } from "@/services/misc/jobPostsService";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Globe, Link as LinkIcon, Bookmark, Building2, DollarSign, Clock, Users, TrendingUp, Plane } from "lucide-react";
+import { Calendar, MapPin, Globe, Link as LinkIcon, Bookmark, Building2, DollarSign, Clock, Users, TrendingUp, Plane, Pencil } from "lucide-react";
 import { format } from "date-fns";
-import { sv } from "date-fns/locale";
+import { sv, enUS } from "date-fns/locale";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
 import { toast } from "sonner";
 import TransparencyScore from "@/components/social/TransparencyScore";
@@ -18,9 +18,8 @@ import { isItemSaved, toggleSaveItem } from "@/services/content/savedItemsServic
 
 const JobView = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { t } = useTranslation();
+  const { user, loading: authLoading } = useAuth();
+  const { t, i18n } = useTranslation();
   const [job, setJob] = useState<JobPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
@@ -33,7 +32,13 @@ const JobView = () => {
     "part_time": t("jobView.partTime"),
     contract: t("jobView.contract"),
     internship: t("jobView.internship"),
-    temporary: t("jobView.temporary")
+    temporary: t("jobView.temporary"),
+    permanent: t("jobFormLabels.permanent"),
+    substitute: t("jobFormLabels.substitute"),
+    "fixed-term": t("jobFormLabels.fixedTerm"),
+    project: t("jobFormLabels.project"),
+    consultant: t("jobFormLabels.consultant"),
+    seasonal: t("jobFormLabels.seasonal")
   };
 
   const formatSalary = (min: number | null, max: number | null, currency: string | null) => {
@@ -55,21 +60,20 @@ const JobView = () => {
   };
   
   useEffect(() => {
+    let active = true;
     const fetchJob = async () => {
-      if (!id) return;
+      if (!id || authLoading) return;
       
       setIsLoading(true);
       const jobData = await getJobPostById(id);
-      setJob(jobData);
+      if (!active) return;
+      setJob(jobData && (jobData.is_active || jobData.user_id === user?.id) ? jobData : null);
       setIsLoading(false);
-      
-      if (!jobData) {
-        navigate("/jobs", { replace: true });
-      }
     };
     
     fetchJob();
-  }, [id, navigate]);
+    return () => { active = false; };
+  }, [id, authLoading, user?.id]);
 
   useEffect(() => {
     let active = true;
@@ -111,7 +115,7 @@ const JobView = () => {
     return JobTypeLabels[type] || type;
   };
   
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -123,7 +127,7 @@ const JobView = () => {
     );
   }
   
-  if (!job) {
+  if (!job || (!job.is_active && job.user_id !== user?.id)) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -144,6 +148,9 @@ const JobView = () => {
   const companyName = getCompanyName(job);
   const isRemote = isRemoteAllowed(job);
   const employmentType = getEmploymentType(job);
+  const isOwner = user?.id === job.user_id;
+  const isPublished = job.is_active === true;
+  const dateLocale = i18n.language.startsWith("sv") ? sv : enUS;
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -151,6 +158,7 @@ const JobView = () => {
         title={`${job.title} - ${companyName}`}
         description={job.description?.substring(0, 160) || `${job.title} - ${companyName}`}
         type="website"
+        noindex={!isPublished}
       />
       <Navbar />
       <main className="flex-grow container py-8">
@@ -161,6 +169,12 @@ const JobView = () => {
         </div>
         
         <div className="mb-8">
+          {!isPublished && (
+            <div role="status" className="rounded-lg border bg-muted/50 p-4 mb-6">
+              <p className="font-semibold">{t("jobView.draft")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("jobView.draftDescription")}</p>
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
             <div className="flex items-start gap-4">
               <div className="h-16 w-16 shrink-0 rounded-lg bg-muted flex items-center justify-center">
@@ -172,6 +186,7 @@ const JobView = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {isOwner && <Badge variant={isPublished ? "secondary" : "outline"}>{t(isPublished ? "jobView.published" : "jobView.draft")}</Badge>}
               <Badge variant={employmentType === t("jobView.fullTime") ? "default" : "outline"} className="text-sm whitespace-nowrap">
                 {employmentType}
               </Badge>
@@ -191,7 +206,7 @@ const JobView = () => {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>{t("jobView.posted")} {job.created_at ? format(new Date(job.created_at), "PPP", { locale: sv }) : ""}</span>
+              <span>{t("jobView.created")} {job.created_at ? format(new Date(job.created_at), "PPP", { locale: dateLocale }) : ""}</span>
             </div>
           </div>
           
@@ -223,18 +238,26 @@ const JobView = () => {
           </div>
           
           <div className="flex flex-wrap gap-3">
-            <JobInquiryButton 
+            {isOwner && (
+              <>
+                <Button asChild size="sm">
+                  <Link to={`/jobs/edit/${job.id}`}><Pencil className="h-4 w-4 mr-2" />{t("jobView.editJob")}</Link>
+                </Button>
+                <Button asChild size="sm" variant="outline"><Link to="/jobs/manage">{t("jobs.manage")}</Link></Button>
+              </>
+            )}
+            {isPublished && <JobInquiryButton
               jobId={job.id}
               jobTitle={job.title}
               posterId={job.user_id}
               companyName={companyName}
-            />
-            <ShareButton title={`${job.title} - ${companyName}`} description={job.description?.substring(0, 100)} />
-            <Button variant="outline" size="sm" onClick={handleSaveJob}>
+            />}
+            {isPublished && <ShareButton title={`${job.title} - ${companyName}`} description={job.description?.substring(0, 100)} />}
+            {isPublished && !isOwner && <Button variant="outline" size="sm" disabled={isSavePending} aria-pressed={isSaved} onClick={handleSaveJob}>
               <Bookmark className={`h-4 w-4 mr-2 ${isSaved ? 'fill-current' : ''}`} />
               {isSaved ? t("jobView.saved") : t("jobView.saveJob")}
-            </Button>
-            <ReportDialog contentType="job" contentId={job.id} contentTitle={job.title} />
+            </Button>}
+            {isPublished && !isOwner && <ReportDialog contentType="job" contentId={job.id} contentTitle={job.title} />}
           </div>
         </div>
         
@@ -317,7 +340,9 @@ const JobView = () => {
         
         <div className="border rounded-lg p-6 bg-card">
           <h3 className="text-xl font-semibold mb-4">{t("jobView.howToApply")}</h3>
-          <div className="flex flex-wrap gap-4">
+          {!isPublished ? (
+            <p className="text-muted-foreground">{t("jobView.draftApplications")}</p>
+          ) : <div className="flex flex-wrap gap-4">
             <JobInquiryButton 
               jobId={job.id}
               jobTitle={job.title}
@@ -337,11 +362,11 @@ const JobView = () => {
                 </a>
               </Button>
             ) : null}
-          </div>
+          </div>}
           
-          {!job.application_url && !job.contact_email && user?.id !== job.user_id && (
+          {isPublished && !job.application_url && !job.contact_email && (
             <p className="text-muted-foreground mt-4">
-              {t("jobView.messageHiringManager")}
+              {t(isOwner ? "jobView.ownerApplicationHelp" : "jobView.applicationHelp")}
             </p>
           )}
         </div>

@@ -6,22 +6,22 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { processReferralCode } from "@/services/social/referralService";
-import { Globe, Loader2, Shield, Users, Zap, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { Globe, Loader2, ArrowLeft, CheckCircle, Mail, Cloud, ChevronRight } from "lucide-react";
 import { SEOHead } from "@/components/common/SEOHead";
 import ResendConfirmation from "@/components/auth/ResendConfirmation";
 
 export default function AuthPage() {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const pendingAuth = useRef(false);
   const [isFederatedLoading, setIsFederatedLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,20 +30,39 @@ export default function AuthPage() {
   const [username, setUsername] = useState("");
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
+  const [fediError, setFediError] = useState("");
   const [fediHandle, setFediHandle] = useState("");
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [formError, setFormError] = useState("");
+  const [confirmation, setConfirmation] = useState<{ email: string; deliveryFailed: boolean } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{
     firstName?: string;
     lastName?: string;
     email?: string;
     password?: string;
+    username?: string;
   }>({});
   const navigate = useNavigate();
   const location = useLocation();
   const { user, session, loading, mfaPending } = useAuth();
 
   // Determine default tab based on URL path
-  const defaultTab = location.pathname === "/auth/signup" ? "signup" : "signin";
+  const activeTab = location.pathname === "/auth/signup" ? "signup" : "signin";
+  const requestedMethod = new URLSearchParams(location.search).get('method');
+  const method = location.pathname === '/auth/login' || location.pathname === '/auth/signup'
+    ? 'email' : requestedMethod === 'mastodon' || requestedMethod === 'bluesky' ? requestedMethod : null;
+  const chooseMethod = (next: 'email' | 'mastodon' | 'bluesky' | null) => {
+    const params = new URLSearchParams(location.search);
+    params.delete('method');
+    if (next && next !== 'email') params.set('method', next);
+    setFormError(''); setFediError(''); setFieldErrors({}); setPassword('');
+    navigate({ pathname: next === 'email' ? '/auth/login' : '/auth', search: params.toString() }, { state: location.state });
+  };
+
+  const changeTab = (tab: string) => {
+    setFieldErrors({}); setFormError(""); setPassword("");
+    navigate({ pathname: tab === "signup" ? "/auth/signup" : "/auth/login", search: location.search, hash: location.hash }, { state: location.state });
+  };
 
   // Capture referral code from URL or localStorage (24h expiry)
   useEffect(() => {
@@ -109,7 +128,7 @@ export default function AuthPage() {
     const trimmed = name.trim();
     // Allow single character names (many cultures have them, also initials like "J.")
     if (trimmed.length < 1) {
-      return t("auth.firstNameRequired", `${field} is required`);
+      return t(field === t("auth.lastName") ? "auth.lastNameRequired" : "auth.firstNameRequired");
     }
     if (trimmed.length > 50) {
       return t("auth.nameTooLong");
@@ -144,6 +163,7 @@ export default function AuthPage() {
 
   // Username validation
   const validateUsername = (value: string): string | null => {
+    if (!value) return t("auth.usernameRequired");
     if (value.length < 3) return t("auth.usernameMinChars");
     if (value.length > 30) return t("auth.usernameMaxChars");
     if (!/^[a-z0-9_]*$/.test(value)) return t("auth.usernameCharsOnly");
@@ -178,9 +198,11 @@ export default function AuthPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (pendingAuth.current) return;
 
     // Clear previous errors
     setFieldErrors({});
+    setFormError("");
 
     // Validate all fields BEFORE setting loading state (fixes mobile stuck button)
     if (!email || !password || !firstName || !lastName) {
@@ -189,6 +211,7 @@ export default function AuthPage() {
       if (!lastName) errors.lastName = t("auth.lastNameRequired");
       if (!email) errors.email = t("auth.emailRequired");
       if (!password) errors.password = t("auth.passwordRequired");
+      if (!username) errors.username = t("auth.usernameRequired");
       setFieldErrors(errors);
       toast.error(t("toasts.fillAllFields"));
       return;
@@ -224,22 +247,25 @@ export default function AuthPage() {
     }
 
     // Only set loading AFTER all validation passes
+    pendingAuth.current = true;
     setIsLoading(true);
     try {
       const trimmedFirstName = firstName.trim();
       const trimmedLastName = lastName.trim();
       const preferredUsername = username.trim().toLowerCase();
 
-      // Validate username if provided
+      // Validate the required username
       {
         const usernameError = validateUsername(preferredUsername);
         if (usernameError) {
-          toast.error(`Username: ${usernameError}`);
+          setFieldErrors(prev => ({ ...prev, username: usernameError }));
+          document.getElementById('signup-username')?.focus();
           setIsLoading(false);
           return;
         }
         if (usernameAvailable === false) {
-          toast.error(t("toasts.usernameAlreadyTaken"));
+          setFieldErrors(prev => ({ ...prev, username: t("auth.usernameTaken") }));
+          document.getElementById('signup-username')?.focus();
           setIsLoading(false);
           return;
         }
@@ -256,12 +282,9 @@ export default function AuthPage() {
         },
       });
 
-      if (error) {
-        throw new Error(error.message || 'Failed to create account');
-      }
-
-      if (data?.error) {
-        throw new Error(data.error);
+      if (error || data?.success !== true) {
+        const status = error?.context?.status;
+        throw new Error(t(status === 429 ? "auth.tooManyAttempts" : status === 503 ? "auth.signupUnavailable" : "auth.createFailed"));
       }
 
       // Process referral code if exists
@@ -275,8 +298,7 @@ export default function AuthPage() {
         }
       }
 
-      if (data?.emailSent === false) toast.warning(t("auth.confirmationDeliveryFailed"));
-      else toast.success(t("toasts.checkEmail"));
+      setConfirmation({ email, deliveryFailed: data?.emailSent === false });
       // Clear the form
       setFirstName("");
       setLastName("");
@@ -284,19 +306,25 @@ export default function AuthPage() {
       setPassword("");
       setUsername("");
     } catch (error: any) {
-      toast.error(error.message || t("toasts.failedCreateAccount"));
+      setFormError(error instanceof Error ? error.message : t("auth.createFailed"));
     } finally {
+      pendingAuth.current = false;
       setIsLoading(false);
     }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (pendingAuth.current) return;
+    setFormError("");
     if (!email || !password) {
-      toast.error(t("toasts.fillAllFields"));
+      setFieldErrors({ email: !email ? t("auth.emailRequired") : undefined, password: !password ? t("auth.passwordRequired") : undefined });
+      document.getElementById(!email ? "signin-email" : "signin-password")?.focus();
       return;
     }
+    if (!validateField("email", email)) return;
 
+    pendingAuth.current = true;
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -310,8 +338,10 @@ export default function AuthPage() {
 
       // AuthProvider owns the single MFA challenge and releases user only after verification.
     } catch (error: any) {
-      toast.error(error.message || t("toasts.failedSignIn", "Failed to sign in"));
+      setFormError(t(error?.code === "email_not_confirmed" ? "auth.emailNotConfirmed"
+        : error?.code === "invalid_credentials" ? "auth.invalidCredentials" : "auth.signInFailed"));
     } finally {
+      pendingAuth.current = false;
       setIsLoading(false);
     }
   };
@@ -319,15 +349,16 @@ export default function AuthPage() {
   const handleFederatedLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setFediError("");
     if (!fediHandle) {
-      toast.error(t("toasts.invalidHandle"));
+      setFediError(t("auth.invalidFediHandle"));
       return;
     }
 
     // Validate handle format
     const handlePattern = /^@?[a-zA-Z0-9_]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!handlePattern.test(fediHandle)) {
-      toast.error(t("toasts.invalidHandle"));
+      setFediError(t("auth.invalidFediHandle"));
       return;
     }
 
@@ -360,314 +391,141 @@ export default function AuthPage() {
         window.location.href = authorizationUrl;
       }
     } catch (error: any) {
-      toast.error(error.message || t("toasts.failedFederatedLogin"));
+      setFediError(t("auth.fediFailed"));
     } finally {
       setIsFederatedLoading(false);
     }
   };
 
-  const trustFeatures = [
-    { icon: Shield, text: t("auth.noTracking", "No tracking or data selling") },
-    { icon: Users, text: t("auth.ownIdentity", "Own your professional identity") },
-    { icon: Zap, text: t("auth.connectFediverse", "Connect across the Fediverse") },
-  ];
-
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <SEOHead title={t("auth.welcomeTitle")} description={t("auth.welcomeSubtitle")} />
-      {/* Header */}
-      <div className="p-4">
-        <Button variant="ghost" asChild>
-          <Link to="/">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t("auth.backToHome", "Back to Home")}
-          </Link>
-        </Button>
-      </div>
-
-      <div className="flex-grow flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          {/* Logo and Branding */}
-          <div className="text-center">
-            <img src="/brand/mascot.webp" alt="Nolto" width="96" height="96" className="mx-auto mb-4 h-24 w-24 object-contain" />
-            <h1 className="text-3xl font-bold text-foreground font-display">
-              {t("auth.welcomeTitle", "Welcome to Nolto")}
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              {t("auth.welcomeSubtitle", "The federated professional network that puts you in control")}
-            </p>
-
-            {/* Referral badge */}
-            {refCode && (
-              <Badge variant="secondary" className="mt-2">
-                {t("auth.invitedWithCode", "Invited with code")}: {refCode}
-              </Badge>
-            )}
-
-            {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center gap-2 mt-4">
-              {trustFeatures.map((feature, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  <feature.icon className="h-3 w-3" />
-                  <span className="text-xs">{feature.text}</span>
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          <Card className="shadow-lg border-2">
-            {/* Fediverse Login - Prominent at top */}
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Globe className="h-5 w-5 text-primary" />
-                {t("auth.fediLogin", "Login with Fediverse")}
-              </CardTitle>
-              <CardDescription>
-                {t("auth.fediLoginDesc", "Use your existing Mastodon, Pleroma, or other Fediverse account")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pb-6">
-              <form onSubmit={handleFederatedLogin} className="space-y-4">
-                <div>
-                  <Input
-                    type="text"
-                    value={fediHandle}
-                    onChange={(e) => setFediHandle(e.target.value)}
-                    placeholder="@username@mastodon.social"
-                  />
+  return <div className="min-h-screen bg-background">
+    <SEOHead title={t("auth.welcomeTitle")} description={t("auth.welcomeSubtitle")} />
+    <div className="mx-auto max-w-md px-4 py-4 sm:py-8">
+      <Button variant="ghost" className="mb-4 -ml-3" asChild><Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />{t("auth.backToHome")}</Link></Button>
+      <header className="mb-5 flex items-center gap-3">
+        <img src="/brand/mascot.webp" alt="" width="48" height="48" className="h-12 w-12 object-contain" />
+        <div><h1 className="text-2xl font-semibold">{t("auth.welcomeTitle")}</h1><p className="text-sm text-muted-foreground">{t(method ? "auth.compactIntro" : "auth.chooseMethod")}</p></div>
+      </header>
+      {refCode && <Badge variant="secondary" className="mb-3">{t("auth.invitedWithCode")}: {refCode}</Badge>}
+      <Card><CardContent className="space-y-5 p-5 sm:p-6">
+        {confirmation ? <section className="space-y-4" aria-labelledby="confirmation-title">
+          <CheckCircle className="h-8 w-8 text-primary" aria-hidden="true" />
+          <h2 id="confirmation-title" className="text-xl font-semibold">{t("auth.confirmationTitle")}</h2>
+          <p role="status">{t("auth.confirmationIntro", { email: confirmation.email })}</p>
+          {confirmation.deliveryFailed && <p role="alert" className="text-sm text-destructive">{t("auth.confirmationDeliveryFailed")}</p>}
+          <p className="text-sm text-muted-foreground">{t("auth.confirmationNext")}</p>
+          <ResendConfirmation initialEmail={confirmation.email} expanded />
+          <Button className="w-full" onClick={() => { setEmail(confirmation.email); setConfirmation(null); changeTab("signin"); }}>{t("auth.confirmationSignIn")}</Button>
+        </section> : !method ? <section aria-label={t("auth.chooseMethod")} className="space-y-3">
+          <Button type="button" variant="outline" className="h-auto min-h-14 w-full justify-start gap-3 rounded-xl px-4 py-3 text-left whitespace-normal" onClick={() => chooseMethod('email')}>
+            <Mail className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="flex-1">{t("auth.continueEmail")}</span><ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Button>
+          <SocialSignIn chooser />
+          <Button type="button" variant="outline" className="h-auto min-h-14 w-full justify-start gap-3 rounded-xl px-4 py-3 text-left whitespace-normal" onClick={() => chooseMethod('mastodon')}>
+            <Globe className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="flex-1">{t("auth.socialContinue", { provider: 'Mastodon' })}</span><ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Button>
+          <Button type="button" variant="outline" className="h-auto min-h-14 w-full justify-start gap-3 rounded-xl px-4 py-3 text-left whitespace-normal" onClick={() => chooseMethod('bluesky')}>
+            <Cloud className="h-5 w-5 shrink-0" aria-hidden="true" /><span className="flex-1">{t("auth.socialContinue", { provider: 'Bluesky' })}</span><ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Button>
+          <p className="pt-2 text-center text-xs leading-relaxed text-muted-foreground">{t("auth.chooseMethodHelp")}</p>
+        </section> : <>
+          <Button variant="ghost" size="sm" className="-ml-2" onClick={() => chooseMethod(null)} disabled={isLoading || isFederatedLoading}>
+            <ArrowLeft className="mr-2 h-4 w-4" />{t("auth.allMethods")}
+          </Button>
+          {method === 'email' && <>
+          <Tabs value={activeTab} onValueChange={changeTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin" disabled={isLoading}>{t("auth.signIn")}</TabsTrigger>
+              <TabsTrigger value="signup" disabled={isLoading}>{t("auth.signUp")}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="signin" className="pt-3">
+              <form onSubmit={handleSignIn} noValidate className="space-y-4">
+                <div className="space-y-1.5"><Label htmlFor="signin-email">{t("auth.email")}</Label>
+                  <Input id="signin-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required value={email} disabled={isLoading}
+                    onChange={event => { setEmail(event.target.value); setFieldErrors(prev => ({ ...prev, email: undefined })); }}
+                    aria-invalid={!!fieldErrors.email} aria-describedby={fieldErrors.email ? "signin-email-error" : undefined} />
+                  {fieldErrors.email && <p id="signin-email-error" role="alert" className="text-sm text-destructive">{fieldErrors.email}</p>}
                 </div>
-                <Button type="submit" className="w-full" disabled={isFederatedLoading}>
-                  {isFederatedLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t("auth.connecting", "Connecting...")}
-                    </>
-                  ) : (
-                    <>
-                      <Globe className="mr-2 h-4 w-4" />
-                      {t("auth.continueWithFediverse", "Continue with Fediverse")}
-                    </>
-                  )}
-                </Button>
+                <div className="space-y-1.5"><Label htmlFor="signin-password">{t("auth.password")}</Label>
+                  <Input id="signin-password" type="password" autoComplete="current-password" required value={password} disabled={isLoading}
+                    onChange={event => { setPassword(event.target.value); setFieldErrors(prev => ({ ...prev, password: undefined })); }}
+                    aria-invalid={!!fieldErrors.password} aria-describedby={fieldErrors.password ? "signin-password-error" : undefined} />
+                  {fieldErrors.password && <p id="signin-password-error" role="alert" className="text-sm text-destructive">{fieldErrors.password}</p>}
+                  <Link to="/auth/recovery" className="inline-block pt-1 text-sm underline">{t("auth.forgotPassword")}</Link>
+                </div>
+                {formError && <p role="alert" className="text-sm text-destructive">{formError}</p>}
+                <Button type="submit" className="w-full" disabled={isLoading}>{t(isLoading ? "auth.signingIn" : "auth.signInWithEmail")}</Button>
               </form>
-            </CardContent>
-
-            <div className="relative px-6">
-              <div className="absolute inset-0 flex items-center px-6">
-                <Separator className="w-full" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">{t("auth.orUseEmail", "Or use email")}</span>
-              </div>
-            </div>
-
-            <SocialSignIn />
-            <BlueskySignIn />
-            <Tabs defaultValue={defaultTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mx-6 mt-4" style={{ width: "calc(100% - 48px)" }}>
-                <TabsTrigger value="signin">{t("auth.signIn", "Sign In")}</TabsTrigger>
-                <TabsTrigger value="signup">{t("auth.signUp", "Sign Up")}</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="signin">
-                <CardContent className="space-y-4 pt-4">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div>
-                      <Label htmlFor="signin-email">{t("auth.email", "Email")}</Label>
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder={t("auth.enterEmail", "Enter your email")}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="signin-password">{t("auth.password", "Password")}</Label>
-                      <Input
-                        id="signin-password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder={t("auth.enterPassword", "Enter your password")}
-                        required
-                      />
-                      <div className="flex justify-end mt-1">
-                        <Link
-                          to="/auth/recovery"
-                          className="text-sm text-muted-foreground hover:text-primary underline"
-                        >
-                          {t("auth.forgotPassword", "Forgot password?")}
-                        </Link>
-                      </div>
-                    </div>
-                    <Button type="submit" variant="outline" className="w-full" disabled={isLoading}>
-                      {isLoading
-                        ? t("auth.signingIn", "Signing in...")
-                        : t("auth.signInWithEmail", "Sign In with Email")}
-                    </Button>
-                  </form>
-                </CardContent>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <CardContent className="space-y-4 pt-4">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="signup-firstname">{t("auth.firstName", "First Name")} *</Label>
-                        <Input
-                          id="signup-firstname"
-                          type="text"
-                          value={firstName}
-                          onChange={(e) => {
-                            setFirstName(e.target.value);
-                            if (fieldErrors.firstName) {
-                              setFieldErrors(prev => ({ ...prev, firstName: undefined }));
-                            }
-                          }}
-                          onBlur={() => validateField('firstName', firstName)}
-                          placeholder={t("auth.firstNamePlaceholder")}
-                          required
-                          maxLength={50}
-                          className={fieldErrors.firstName ? "border-destructive" : ""}
-                        />
-                        {fieldErrors.firstName && (
-                          <p className="text-xs text-destructive mt-1">{fieldErrors.firstName}</p>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="signup-lastname">{t("auth.lastName", "Last Name")} *</Label>
-                        <Input
-                          id="signup-lastname"
-                          type="text"
-                          value={lastName}
-                          onChange={(e) => {
-                            setLastName(e.target.value);
-                            if (fieldErrors.lastName) {
-                              setFieldErrors(prev => ({ ...prev, lastName: undefined }));
-                            }
-                          }}
-                          onBlur={() => validateField('lastName', lastName)}
-                          placeholder={t("auth.lastNamePlaceholder")}
-                          required
-                          maxLength={50}
-                          className={fieldErrors.lastName ? "border-destructive" : ""}
-                        />
-                        {fieldErrors.lastName && (
-                          <p className="text-xs text-destructive mt-1">{fieldErrors.lastName}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="signup-username">
-                        {t("auth.username", "Username")}{" "}
-                        <span className="text-muted-foreground text-xs">({t("auth.optional", "optional")})</span>
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="signup-username"
-                          type="text"
-                          value={username}
-                          onChange={(e) => {
-                            const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
-                            setUsername(val);
-                          }}
-                          placeholder={t("auth.usernamePlaceholder")}
-                          maxLength={30}
-                          className="pr-9"
-                        />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          {checkingUsername && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                          {!checkingUsername && usernameAvailable === true && (
-                            <CheckCircle className="h-4 w-4 text-primary" />
-                          )}
-                          {!checkingUsername && usernameAvailable === false && (
-                            <XCircle className="h-4 w-4 text-destructive" />
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {username
-                          ? `@${username}@nolto.social`
-                          : t("auth.usernameHint", "Your @username@nolto.social handle")}
-                      </p>
-                      {usernameAvailable === false && (
-                        <p className="text-xs text-destructive mt-1">
-                          {t("auth.usernameTaken", "This username is taken")}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="signup-email">{t("auth.email", "Email")} *</Label>
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          if (fieldErrors.email) {
-                            setFieldErrors(prev => ({ ...prev, email: undefined }));
-                          }
-                        }}
-                        onBlur={() => validateField('email', email)}
-                        placeholder={t("auth.enterEmail", "Enter your email")}
-                        required
-                        className={fieldErrors.email ? "border-destructive" : ""}
-                      />
-                      {fieldErrors.email && (
-                        <p className="text-xs text-destructive mt-1">{fieldErrors.email}</p>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="signup-password">{t("auth.password", "Password")} *</Label>
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => {
-                          setPassword(e.target.value);
-                          if (fieldErrors.password) {
-                            setFieldErrors(prev => ({ ...prev, password: undefined }));
-                          }
-                        }}
-                        onBlur={() => validateField('password', password)}
-                        placeholder={t("auth.createPassword", "Create a password (min 12 characters)")}
-                        required
-                        minLength={12}
-                        className={fieldErrors.password ? "border-destructive" : ""}
-                      />
-                      {fieldErrors.password && (
-                        <p className="text-xs text-destructive mt-1">{fieldErrors.password}</p>
-                      )}
-                    </div>
-                    <Button type="submit" variant="outline" className="w-full" disabled={isLoading}>
-                      {isLoading
-                        ? t("auth.creatingAccount", "Creating account...")
-                        : t("auth.createAccountWithEmail", "Create Account with Email")}
-                    </Button>
-                  </form>
-                </CardContent>
-              </TabsContent>
-            </Tabs>
-            <CardContent className="pt-2"><ResendConfirmation /></CardContent>
-          </Card>
-
-          {/* Footer note */}
-          <p className="text-center text-xs text-muted-foreground">
-            {t("auth.termsAgreement", "By signing up, you agree to our")}{" "}
-            <Link to="/terms" className="underline hover:text-foreground">
-              {t("auth.termsOfService", "Terms of Service")}
-            </Link>{" "}
-            {t("auth.and", "and")}{" "}
-            <Link to="/privacy" className="underline hover:text-foreground">
-              {t("auth.privacyPolicy", "Privacy Policy")}
-            </Link>
-          </p>
-        </div>
-      </div>
-
+            </TabsContent>
+            <TabsContent value="signup" className="pt-3">
+              <form onSubmit={handleSignUp} noValidate className="space-y-4">
+                <p className="text-xs text-muted-foreground">{t("auth.requiredFields")}</p>
+                <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
+                  <div className="space-y-1.5"><Label htmlFor="signup-firstname">{t("auth.firstName")}</Label>
+                    <Input id="signup-firstname" autoComplete="given-name" required maxLength={50} value={firstName} disabled={isLoading}
+                      onChange={event => { setFirstName(event.target.value); setFieldErrors(prev => ({ ...prev, firstName: undefined })); }}
+                      onBlur={() => validateField("firstName", firstName)} aria-invalid={!!fieldErrors.firstName} aria-describedby={fieldErrors.firstName ? "signup-firstname-error" : undefined} />
+                    {fieldErrors.firstName && <p id="signup-firstname-error" role="alert" className="text-sm text-destructive">{fieldErrors.firstName}</p>}
+                  </div>
+                  <div className="space-y-1.5"><Label htmlFor="signup-lastname">{t("auth.lastName")}</Label>
+                    <Input id="signup-lastname" autoComplete="family-name" required maxLength={50} value={lastName} disabled={isLoading}
+                      onChange={event => { setLastName(event.target.value); setFieldErrors(prev => ({ ...prev, lastName: undefined })); }}
+                      onBlur={() => validateField("lastName", lastName)} aria-invalid={!!fieldErrors.lastName} aria-describedby={fieldErrors.lastName ? "signup-lastname-error" : undefined} />
+                    {fieldErrors.lastName && <p id="signup-lastname-error" role="alert" className="text-sm text-destructive">{fieldErrors.lastName}</p>}
+                  </div>
+                </div>
+                <div className="space-y-1.5"><Label htmlFor="signup-username">{t("auth.username")}</Label>
+                  <Input id="signup-username" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required maxLength={30}
+                    value={username} disabled={isLoading} onChange={event => { setUsername(event.target.value.toLowerCase()); setUsernameAvailable(null); setFieldErrors(prev => ({ ...prev, username: undefined })); }}
+                    onBlur={() => setFieldErrors(prev => ({ ...prev, username: validateUsername(username.trim().toLowerCase()) || undefined }))}
+                    aria-invalid={!!fieldErrors.username || usernameAvailable === false} aria-describedby="signup-username-help signup-username-status" />
+                  <p id="signup-username-help" className="text-xs text-muted-foreground">{t("auth.usernameRules")}</p>
+                  <div id="signup-username-status" aria-live="polite" className="text-sm">
+                    {fieldErrors.username ? <p role="alert" className="text-destructive">{fieldErrors.username}</p>
+                      : usernameAvailable === false ? <p className="text-destructive">{t("auth.usernameTaken")}</p>
+                      : checkingUsername ? <p className="text-muted-foreground">{t("auth.checkingUsername")}</p>
+                      : username && !validateUsername(username) ? <p className="break-all text-muted-foreground">@{username}@nolto.social{usernameAvailable === true ? " · " + t("auth.usernameAvailable") : ""}</p> : null}
+                  </div>
+                </div>
+                <div className="space-y-1.5"><Label htmlFor="signup-email">{t("auth.email")}</Label>
+                  <Input id="signup-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required value={email} disabled={isLoading}
+                    onChange={event => { setEmail(event.target.value); setFieldErrors(prev => ({ ...prev, email: undefined })); }}
+                    onBlur={() => validateField("email", email)} aria-invalid={!!fieldErrors.email} aria-describedby={fieldErrors.email ? "signup-email-error" : undefined} />
+                  {fieldErrors.email && <p id="signup-email-error" role="alert" className="text-sm text-destructive">{fieldErrors.email}</p>}
+                </div>
+                <div className="space-y-1.5"><Label htmlFor="signup-password">{t("auth.password")}</Label>
+                  <Input id="signup-password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required value={password} disabled={isLoading}
+                    onChange={event => { setPassword(event.target.value); setFieldErrors(prev => ({ ...prev, password: undefined })); }}
+                    onBlur={() => validateField("password", password)} aria-invalid={!!fieldErrors.password} aria-describedby={fieldErrors.password ? "signup-password-help signup-password-error" : "signup-password-help"} />
+                  <p id="signup-password-help" className="text-xs text-muted-foreground">{t("auth.passwordHelp")}</p>
+                  {fieldErrors.password && <p id="signup-password-error" role="alert" className="text-sm text-destructive">{fieldErrors.password}</p>}
+                </div>
+                {formError && <p role="alert" className="text-sm text-destructive">{formError}</p>}
+                <Button type="submit" className="w-full" disabled={isLoading || checkingUsername}>{t(isLoading ? "auth.creatingAccount" : "auth.createAccountWithEmail")}</Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+          <ResendConfirmation initialEmail={email} />
+          </>}
+          {method === 'mastodon' && <section className="space-y-4">
+                <h2 className="text-lg font-semibold">{t("auth.socialContinue", { provider: 'Mastodon' })}</h2>
+                <form onSubmit={handleFederatedLogin} noValidate className="space-y-3">
+                  <div className="space-y-1.5"><Label htmlFor="mastodon-handle">{t("auth.mastodonAccount")}</Label>
+                    <p id="mastodon-help" className="text-xs text-muted-foreground">{t("auth.fediLoginDesc")}</p>
+                    <Input id="mastodon-handle" value={fediHandle} onChange={event => { setFediHandle(event.target.value); setFediError(""); }} placeholder="@name@mastodon.social"
+                      autoComplete="username" autoCapitalize="none" spellCheck={false} disabled={isFederatedLoading} aria-invalid={!!fediError} aria-describedby="mastodon-help mastodon-error" />
+                    <p id="mastodon-error" role={fediError ? "alert" : undefined} className="text-sm text-destructive">{fediError}</p>
+                  </div>
+                  <Button type="submit" variant="outline" className="w-full" disabled={isFederatedLoading}>
+                    {isFederatedLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Globe className="mr-2 h-4 w-4" />}{t(isFederatedLoading ? "auth.connecting" : "auth.continueWithFediverse")}
+                  </Button>
+                </form>
+          </section>}
+          {method === 'bluesky' && <BlueskySignIn showUnavailable />}
+        </>}
+      </CardContent></Card>
+      <p className="mt-5 text-center text-xs leading-relaxed text-muted-foreground">
+        {t("auth.termsAgreement")} <Link to="/terms" className="underline">{t("auth.termsOfService")}</Link> {t("auth.and")} <Link to="/privacy" className="underline">{t("auth.privacyPolicy")}</Link>
+      </p>
     </div>
-  );
+  </div>;
 }

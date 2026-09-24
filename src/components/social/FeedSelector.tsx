@@ -63,15 +63,15 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
                   <TabsTrigger 
                     value={tab.id}
                     aria-label={tab.label}
-                    className="gap-1.5 px-3 transition-colors"
+                    className="gap-1.5 px-2 text-xs sm:px-3 sm:text-sm transition-colors"
                     style={isActive ? {
                       backgroundColor: 'hsl(var(--primary))',
                       color: 'hsl(var(--primary-foreground))',
                       boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)'
                     } : undefined}
                   >
-                    <tab.icon className="h-4 w-4" />
-                    <span className="hidden sm:inline">{tab.label}</span>
+                    <tab.icon className="hidden h-4 w-4 sm:block" />
+                    <span>{tab.label}</span>
                   </TabsTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
@@ -103,9 +103,9 @@ export default function FeedSelector({ value, onChange, className }: FeedSelecto
                   <Filter className="h-4 w-4" />
                 )}
                 {selectedCustomFeed ? (
-                  <span className="hidden sm:inline max-w-24 truncate">{selectedCustomFeed.name}</span>
+                  <span className="max-w-24 truncate">{selectedCustomFeed.name}</span>
                 ) : (
-                  <span className="hidden sm:inline">{t("feed.feeds", "Feeds")}</span>
+                  <span>{t("feed.feeds", "Feeds")}</span>
                 )}
               </Button>
             </DropdownMenuTrigger>

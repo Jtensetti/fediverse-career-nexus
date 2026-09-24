@@ -1,30 +1,54 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
-import { sv } from "date-fns/locale";
+import { DayPicker, type DropdownProps } from "react-day-picker";
+import { sv, enGB } from "date-fns/locale";
+import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
+export const calendarSelectClassName = "h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
+
+function CalendarDropdown({ caption: _caption, className: _className, ...props }: DropdownProps) {
+  return <select {...props} className={calendarSelectClassName} />;
+}
+
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  labels,
+  components,
   ...props
 }: CalendarProps) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language.startsWith('sv') ? sv : enGB;
   return (
     <DayPicker
-      locale={sv}
+      locale={locale}
       weekStartsOn={1}
+      captionLayout="dropdown-buttons"
+      fromYear={1960}
+      toYear={new Date().getFullYear() + 10}
+      labels={{
+        labelMonthDropdown: () => t('datePicker.month'),
+        labelYearDropdown: () => t('datePicker.year'),
+        labelPrevious: () => t('datePicker.previousMonth'),
+        labelNext: () => t('datePicker.nextMonth'),
+        labelWeekday: date => format(date, 'EEEE', { locale }),
+        labelWeekNumber: number => t('datePicker.weekNumber', { number }),
+        ...labels,
+      }}
       showOutsideDays={showOutsideDays}
       className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
-        caption: "flex justify-center pt-1 relative items-center gap-1",
-        caption_label: "text-sm font-medium hidden",
+        caption: "flex justify-center px-8 pt-1 relative items-center gap-1",
+        caption_label: "text-sm font-medium",
         caption_dropdowns: "flex gap-1",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
@@ -63,6 +87,8 @@ function Calendar({
       components={{
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
+        Dropdown: CalendarDropdown,
+        ...components,
       }}
       {...props}
     />

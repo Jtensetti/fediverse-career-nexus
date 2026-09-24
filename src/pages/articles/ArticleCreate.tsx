@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,33 +18,38 @@ import { supabase } from "@/lib/supabase";
 import { SEOHead } from "@/components/common/SEOHead";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CoverImageUpload from "@/components/content/CoverImageUpload";
-
-// Validation schema
-const articleSchema = z.object({
-  title: z
-    .string()
-    .min(5, "Titeln måste vara minst 5 tecken")
-    .max(200, "Titeln får vara max 200 tecken"),
-  content: z
-    .string()
-    .min(50, "Innehållet måste vara minst 50 tecken"),
-  excerpt: z
-    .string()
-    .max(300, "Sammanfattningen får vara max 300 tecken")
-    .optional()
-    .or(z.literal("")),
-  slug: z
-    .string()
-    .min(3, "Slug måste vara minst 3 tecken")
-    .max(100, "Slug får vara max 100 tecken")
-    .regex(/^[a-z0-9-]+$/, "Slug kan bara innehålla små bokstäver, siffror och bindestreck"),
-  published: z.boolean().default(false),
-});
+import { stripHtml } from "@/lib/linkify";
+import { useQueryClient } from "@tanstack/react-query";
 
 type ValidationErrors = Partial<Record<keyof ArticleFormData, string>>;
 
 const ArticleCreate = () => {
+  const { t } = useTranslation();
+  // Validation schema
+  const articleSchema = z.object({
+    title: z
+      .string()
+      .min(5, t("articleForm.titleMin"))
+      .max(200, t("articleForm.titleMax")),
+    content: z
+      .string()
+      .refine((content) => stripHtml(content).length >= 50, t("articleForm.contentMin")),
+    excerpt: z
+      .string()
+      .max(300, t("articleForm.excerptMax"))
+      .optional()
+      .or(z.literal("")),
+    slug: z
+      .string()
+      .min(3, t("articleForm.addressMin"))
+      .max(100, t("articleForm.addressMax"))
+      .regex(/^[a-z0-9-]+$/, t("articleForm.addressCharacters")),
+    published: z.boolean().default(false),
+  });
+
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [customSlug, setCustomSlug] = useState(false);
   const contentCheck = useContentCheck();
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,7 +80,7 @@ const ArticleCreate = () => {
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
-    const slug = generateSlug(title);
+    const slug = customSlug ? article.slug : generateSlug(title).slice(0, 100);
     setArticle({ ...article, title, slug });
     validateField("title", title);
     if (slug) validateField("slug", slug);
@@ -82,6 +88,7 @@ const ArticleCreate = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    if (name === "slug") setCustomSlug(true);
     setArticle({ ...article, [name]: value });
     validateField(name as keyof ArticleFormData, value);
   };
@@ -109,7 +116,8 @@ const ArticleCreate = () => {
         }
       });
       setErrors(fieldErrors);
-      toast.error("Vänligen åtgärda valideringsfelen innan du skickar");
+      if (isEditing && (fieldErrors.title || fieldErrors.slug || fieldErrors.excerpt)) setIsEditing(false);
+      toast.error(t("articleForm.checkFields"));
       return;
     }
 
@@ -125,14 +133,15 @@ const ArticleCreate = () => {
       if (existing && existing.length > 0) {
         setErrors((prev) => ({
           ...prev,
-          slug: "Den titeln/slugen används redan. Välj en annan.",
+          slug: t("articleForm.addressTaken"),
         }));
-        toast.error("Den titeln har redan använts. Välj en annan.");
+        setIsEditing(false);
+        toast.error(t("articleForm.addressTakenToast"));
         return;
       }
     } catch (error) {
       console.error('Error checking slug uniqueness:', error);
-      toast.error('Kunde inte validera titelns unikhet. Försök igen.');
+      toast.error(t("articleForm.addressCheckFailed"));
       return;
     }
 
@@ -148,6 +157,8 @@ const ArticleCreate = () => {
             .update({ cover_image_url: coverImageUrl })
             .eq('id', articleResult.id);
         }
+        queryClient.invalidateQueries({ queryKey: ['user-articles'] });
+        queryClient.invalidateQueries({ queryKey: ['articles'] });
         navigate("/articles/manage");
       }
     } finally {
@@ -160,20 +171,21 @@ const ArticleCreate = () => {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         {contentCheck.dialog}
-        <SEOHead title="Skapa ny artikel" description="Skriv och publicera en ny artikel på Nolto." />
-        
+        <SEOHead title={t("articleForm.createTitle")} description={t("articleForm.createDescription")} />
+
         <div className="flex items-center justify-between p-3 border-b border-border bg-background/95 backdrop-blur-sm">
           <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Avsluta artikelläge
-          </Button>
+            {t("articleForm.settings")}</Button>
         </div>
 
         <div className="px-4 pt-4">
           <Input
+            aria-label={t("articleForm.titleAccessible")}
+            maxLength={200}
             value={article.title}
             onChange={handleTitleChange}
-            placeholder="Lägg till en titel"
+            placeholder={t("articleForm.titleShortPlaceholder")}
             className="border-0 text-2xl font-bold placeholder:text-muted-foreground/60 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
@@ -182,7 +194,7 @@ const ArticleCreate = () => {
           <ArticleEditor
             value={article.content}
             onChange={handleContentChange}
-            placeholder="Börja skriva en artikel..."
+            placeholder={t("articleForm.contentStart")}
             className="flex-1"
           />
         </div>
@@ -199,11 +211,11 @@ const ArticleCreate = () => {
                 onCheckedChange={handlePublishedChange}
                 className="scale-90"
               />
-              <Label htmlFor="published-mobile" className="text-sm">Publicera direkt</Label>
+              <Label htmlFor="published-mobile" className="text-sm">{t("articleForm.publishNow")}</Label>
             </div>
             <Button size="sm" onClick={handleSubmit} disabled={isSubmitting || contentCheck.checking}>
               <Save className="h-4 w-4 mr-1" />
-              {isSubmitting ? "..." : "Spara"}
+              {isSubmitting ? t("articleForm.saving") : article.published ? t("articleForm.publish") : t("articleForm.saveDraft")}
             </Button>
           </div>
         </div>
@@ -213,90 +225,43 @@ const ArticleCreate = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead title="Skapa ny artikel" description="Skriv och publicera en ny artikel på Nolto." />
+      <SEOHead title={t("articleForm.createTitle")} description={t("articleForm.createDescription")} />
       <Navbar />
       {contentCheck.dialog}
-      
+
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className={isMobile ? "w-full" : "max-w-3xl mx-auto"}>
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Skapa ny artikel</h1>
+            <h1 className="text-2xl font-bold">{t("articleForm.createTitle")}</h1>
             <Button variant="outline" onClick={() => navigate("/articles/manage")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Avbryt
-            </Button>
+              {t("articleForm.cancel")}</Button>
           </div>
-          
+
           <Card>
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Titel</Label>
+                  <Label htmlFor="title">{t("articleForm.titleLabel")}</Label>
                   <Input
                     id="title"
                     name="title"
                     value={article.title}
                     onChange={handleTitleChange}
-                    placeholder="Ange artikelns titel"
+                    placeholder={t("articleForm.titlePlaceholder")}
                     maxLength={200}
                     aria-invalid={!!errors.title}
                     className={errors.title ? "border-destructive" : ""}
                   />
                   {errors.title && <p className="text-sm text-destructive">{errors.title}</p>}
-                  <p className="text-xs text-muted-foreground">{article.title.length}/200 tecken</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Slug</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="slug"
-                      name="slug"
-                      value={article.slug}
-                      onChange={handleChange}
-                      placeholder="artikel-url-slug"
-                      maxLength={100}
-                      aria-invalid={!!errors.slug}
-                      className={errors.slug ? "border-destructive" : ""}
-                    />
-                  </div>
-                  {errors.slug && <p className="text-sm text-destructive">{errors.slug}</p>}
-                  <p className="text-xs text-muted-foreground">
-                    Slugen används i artikelns URL. Den genereras automatiskt från titeln, men du kan redigera den vid behov.
-                  </p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="excerpt">Sammanfattning (valfritt)</Label>
-                  <Input
-                    id="excerpt"
-                    name="excerpt"
-                    value={article.excerpt || ""}
-                    onChange={handleChange}
-                    placeholder="Kort sammanfattning av artikeln"
-                    maxLength={300}
-                    aria-invalid={!!errors.excerpt}
-                    className={errors.excerpt ? "border-destructive" : ""}
-                  />
-                  {errors.excerpt && <p className="text-sm text-destructive">{errors.excerpt}</p>}
-                  <p className="text-xs text-muted-foreground">
-                    {(article.excerpt || "").length}/300 tecken. En kort sammanfattning som visas i artikellistor.
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t("articleForm.titleCount", { count: article.title.length })}</p>
                 </div>
 
-                {/* Cover Image */}
-                <div className="space-y-2">
-                  <Label>Omslagsbild (valfritt)</Label>
-                  <CoverImageUpload value={coverImageUrl} onChange={setCoverImageUrl} />
-                  <p className="text-xs text-muted-foreground">
-                    Denna bild visas högst upp i din artikel och i förhandsvisningar.
-                  </p>
-                </div>
-                
                 {isMobile ? (
                   <div className="space-y-2">
-                    <Label>Innehåll</Label>
+                    <Label htmlFor="article-content-button">{t("articleForm.content")}</Label>
                     <Button
+                      id="article-content-button"
                       type="button"
                       variant="outline"
                       className="w-full h-32 border-dashed"
@@ -304,34 +269,84 @@ const ArticleCreate = () => {
                     >
                       {article.content ? (
                         <span className="text-left line-clamp-3 text-muted-foreground">
-                          {article.content.substring(0, 150)}...
+                          {stripHtml(article.content).substring(0, 150)}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">Tryck för att skriva din artikel...</span>
+                        <span className="text-muted-foreground">{t("articleForm.contentMobile")}</span>
                       )}
                     </Button>
                     {errors.content && <p className="text-sm text-destructive">{errors.content}</p>}
                   </div>
                 ) : (
                   <div className="space-y-2">
+                    <Label htmlFor="article-content">{t("articleForm.content")}</Label>
                     <ArticleEditor
                       value={article.content}
                       onChange={handleContentChange}
-                      placeholder="Skriv ditt artikelinnehåll här..."
+                      placeholder={t("articleForm.contentPlaceholder")}
                     />
                     {errors.content && <p className="text-sm text-destructive">{errors.content}</p>}
                   </div>
                 )}
-                
+
+                <div className="space-y-2">
+                  <Label htmlFor="excerpt">{t("articleForm.excerpt")}</Label>
+                  <Input
+                    id="excerpt"
+                    name="excerpt"
+                    value={article.excerpt || ""}
+                    onChange={handleChange}
+                    placeholder={t("articleForm.excerptPlaceholder")}
+                    maxLength={300}
+                    aria-invalid={!!errors.excerpt}
+                    className={errors.excerpt ? "border-destructive" : ""}
+                  />
+                  {errors.excerpt && <p className="text-sm text-destructive">{errors.excerpt}</p>}
+                  <p className="text-xs text-muted-foreground">
+                    {t("articleForm.excerptCount", { count: (article.excerpt || "").length })}
+                  </p>
+                </div>
+
+                {/* Cover Image */}
+                <div className="space-y-2">
+                  <Label>{t("articleForm.cover")}</Label>
+                  <CoverImageUpload value={coverImageUrl} onChange={setCoverImageUrl} />
+                  <p className="text-xs text-muted-foreground">
+                    {t("articleForm.coverHelp")}</p>
+                </div>
+
+                <details open={!!errors.slug || undefined} className="rounded-md border p-4">
+                  <summary className="cursor-pointer font-medium text-sm">{t("articleForm.customizeAddress")}</summary>
+                  <div className="space-y-2 mt-4">
+                    <Label htmlFor="slug">{t("articleForm.address")}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="slug"
+                        name="slug"
+                        value={article.slug}
+                        onChange={handleChange}
+                        placeholder={t("articleForm.addressPlaceholder")}
+                        maxLength={100}
+                        aria-invalid={!!errors.slug}
+                        className={errors.slug ? "border-destructive" : ""}
+                      />
+                    </div>
+                    {errors.slug && <p className="text-sm text-destructive">{errors.slug}</p>}
+                    <p className="text-xs text-muted-foreground">
+                      {t("articleForm.addressHelp")}</p>
+                  </div>
+
+                </details>
+
                 <div className="flex items-center space-x-2">
                   <Switch id="published" checked={article.published} onCheckedChange={handlePublishedChange} />
-                  <Label htmlFor="published">Publicera direkt</Label>
+                  <Label htmlFor="published">{t("articleForm.publishToggle")}</Label>
                 </div>
-                
+
                 <div className="pt-4 flex justify-end">
                   <Button type="submit" disabled={isSubmitting || contentCheck.checking} className="flex items-center gap-2">
                     <Save size={16} />
-                    {isSubmitting ? "Sparar..." : "Spara artikel"}
+                    {isSubmitting ? t("articleForm.saving") : article.published ? t("articleForm.publish") : t("articleForm.saveDraft")}
                   </Button>
                 </div>
               </form>
@@ -339,7 +354,7 @@ const ArticleCreate = () => {
           </Card>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

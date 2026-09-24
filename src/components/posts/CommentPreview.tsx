@@ -39,6 +39,7 @@ export interface CommentPreviewHandle {
 interface CommentWithState extends PostReply {
   isSaved: boolean;
   reactions?: ReactionCount[];
+  depth: number;
 }
 
 const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
@@ -48,6 +49,8 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showReplyComposer, setShowReplyComposer] = useState(false);
+  const [replyTarget, setReplyTarget] = useState<CommentWithState | null>(null);
+  const [replySaved, setReplySaved] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,6 +63,8 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
         toast.error(t("commentPreview.signInToComment"));
         return;
       }
+      setReplyTarget(null);
+      setReplySaved(false);
       setShowReplyComposer(true);
       const t1 = window.setTimeout(() => {
         composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -91,6 +96,8 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
 
   useEffect(() => {
     if (autoOpenComposer && user) {
+      setReplyTarget(null);
+      setReplySaved(false);
       setShowReplyComposer(true);
       onComposerOpened?.();
       if (!hasLoaded) loadComments();
@@ -99,14 +106,43 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
     }
   }, [autoOpenComposer, user]);
 
-  const loadComments = async () => {
-    setIsLoading(true);
+  const loadComments = async (keepParentId?: string) => {
+    if (!hasLoaded) setIsLoading(true);
     setHasLoaded(true);
     try {
       const replies = await getPostReplies(postId);
       const topLevelReplies = replies.filter(r => !r.parent_reply_id);
-      setTotalCount(topLevelReplies.length);
-      const previewReplies = topLevelReplies.slice(0, maxComments);
+      setTotalCount(replies.length);
+      const roots = topLevelReplies.slice(0, maxComments);
+      // Keep the branch just answered visible even if a newer top-level comment arrived.
+      const byId = new Map(replies.map(reply => [reply.id, reply]));
+      let keptRoot = keepParentId ? byId.get(keepParentId) : undefined;
+      const ancestors = new Set<string>();
+      while (keptRoot?.parent_reply_id && !ancestors.has(keptRoot.id)) {
+        ancestors.add(keptRoot.id);
+        keptRoot = byId.get(keptRoot.parent_reply_id);
+      }
+      if (keptRoot && !keptRoot.parent_reply_id && !roots.some(reply => reply.id === keptRoot.id)) {
+        roots.splice(Math.max(0, roots.length - 1), 1, keptRoot);
+      }
+      const previewReplies: (PostReply & { depth: number })[] = [];
+      const latestChild = (parentId: string) => {
+        const children = replies.filter(reply => reply.parent_reply_id === parentId);
+        return children.reduce<PostReply | undefined>((latest, reply) =>
+          !latest || reply.created_at > latest.created_at ? reply : latest, undefined);
+      };
+      roots.forEach(root => {
+        previewReplies.push({ ...root, depth: 0 });
+        // Keep previews compact, while showing the conversation just answered.
+        const answeredParent = root.id === keptRoot?.id && keepParentId ? byId.get(keepParentId) : undefined;
+        if (answeredParent && answeredParent.id !== root.id) {
+          previewReplies.push({ ...answeredParent, depth: 1 });
+        }
+        const child = latestChild(answeredParent?.id || root.id);
+        if (child && child.id !== root.id) {
+          previewReplies.push({ ...child, depth: answeredParent && answeredParent.id !== root.id ? 2 : 1 });
+        }
+      });
       const replyIds = previewReplies.map(r => r.id);
       const reactionsMap = await getBatchReplyReactions(replyIds);
       const commentsWithState = previewReplies.map(reply => ({
@@ -115,7 +151,6 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
       setComments(commentsWithState);
     } catch (error) {
       console.error('Error loading comment preview:', error);
-      setComments([]);
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +173,9 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
 
   const handleReplyCreated = () => {
     setShowReplyComposer(false);
-    loadComments();
+    setReplySaved(true);
+    void loadComments(replyTarget?.id);
+    setReplyTarget(null);
   };
 
   if (!isVisible && !hasLoaded) {
@@ -168,6 +205,7 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
   if (comments.length === 0 && totalCount === 0) {
     return (
       <div ref={containerRef} className="pt-2 border-t border-border/50" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+        {replySaved && <p role="status" className="text-xs text-muted-foreground">{t("comments.replySaved")}</p>}
         {showReplyComposer ? (
           <div ref={composerRef}>
             <InlineReplyComposer
@@ -193,8 +231,9 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
 
   return (
     <div ref={containerRef} className="pt-2 border-t border-border/50 space-y-2" data-interactive="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+      {replySaved && <p role="status" className="text-xs text-muted-foreground">{t("comments.replySaved")}</p>}
       {comments.map((comment) => (
-        <div key={comment.id} className="flex gap-2 group/comment">
+        <div key={comment.id} className={cn("flex gap-2 group/comment", comment.depth > 0 && "ml-8 border-l border-border/50 pl-2")}>
           <Link to={comment.company ? `/organisation/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`}>
             <Avatar className="h-6 w-6 aspect-square flex-shrink-0">
               {comment.author.avatar_url && <AvatarImage src={comment.author.avatar_url} />}
@@ -222,11 +261,22 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
             </div>
             <div className="flex items-center gap-1 mt-0.5 ml-1">
               <EnhancedCommentReactions replyId={comment.id} className="scale-90 origin-left" initialReactions={comment.reactions} />
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs"
+                aria-label={`${t("comments.replyTo")} ${comment.author.fullname || comment.author.username}`}
+                onClick={() => {
+                  if (!user) { toast.error(t("commentPreview.signInToComment")); return; }
+                  setReplySaved(false);
+                  setShowReplyComposer(false);
+                  setReplyTarget(comment);
+                }}>
+                {t("comments.reply")}
+              </Button>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost" size="sm"
+                      aria-label={comment.isSaved ? t("commentPreview.removeFromSaved") : t("commentPreview.saveComment")}
                       className={cn("h-5 px-1.5 text-[10px] rounded-full", comment.isSaved ? "text-primary" : "text-muted-foreground hover:text-primary")}
                       onClick={() => handleSaveComment(comment.id)}
                     >
@@ -239,11 +289,17 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
                 </Tooltip>
               </TooltipProvider>
             </div>
+            {replyTarget?.id === comment.id && <div className="mt-2">
+              <InlineReplyComposer postId={postId} parentReplyId={comment.id}
+                replyingTo={comment.author.fullname || comment.author.username}
+                onReplyCreated={handleReplyCreated} onCancel={() => setReplyTarget(null)}
+                autoFocus companyContext={companyContext} />
+            </div>}
           </div>
         </div>
       ))}
       
-      {totalCount > maxComments && (
+      {totalCount > comments.length && (
         <Link to={`/post/${postId}`} className="block text-xs text-primary hover:underline pl-8" onClick={onCommentClick}>
           {t("commentPreview.viewAllComments", { count: totalCount })}
         </Link>
@@ -262,7 +318,12 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
         </div>
       ) : (
         <button
-          onClick={() => user ? setShowReplyComposer(true) : toast.error(t("commentPreview.signInToComment"))}
+          onClick={() => {
+            if (!user) { toast.error(t("commentPreview.signInToComment")); return; }
+            setReplyTarget(null);
+            setReplySaved(false);
+            setShowReplyComposer(true);
+          }}
           className="w-full text-left text-xs text-muted-foreground hover:text-foreground py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-2"
         >
           <MessageSquare className="h-3 w-3" />

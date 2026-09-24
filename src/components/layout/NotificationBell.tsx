@@ -267,7 +267,8 @@ export function NotificationBell() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative"
+          aria-label={unreadCount > 0 ? t("notifications.openUnread", { count: unreadCount }) : t("notifications.title")}>
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge
@@ -298,14 +299,18 @@ export function NotificationBell() {
           ) : (
             <div>
               {notifications.map((notification) => (
-                <button
+                <div
                   key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
                   className={cn(
-                    "w-full flex items-start gap-3 p-3 hover:bg-accent transition-colors text-left border-b last:border-0",
+                    "w-full flex items-start border-b last:border-0",
                     !notification.read && "bg-accent/50"
                   )}
                 >
+                  <button
+                    type="button"
+                    onClick={() => handleNotificationClick(notification)}
+                    className="flex flex-1 min-w-0 items-start gap-3 p-3 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                  >
                   <Avatar className="h-10 w-10 flex-shrink-0">
                     <AvatarImage src={notification.actor?.avatar_url || ''} />
                     <AvatarFallback>
@@ -320,15 +325,17 @@ export function NotificationBell() {
                       {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: sv })}
                     </p>
                   </div>
+                  </button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 flex-shrink-0 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                    className="h-8 w-8 p-0 mt-2 mr-2 flex-shrink-0"
+                    aria-label={t("notifications.deleteNotification")}
                     onClick={(e) => handleDelete(e, notification.id)}
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
-                </button>
+                </div>
               ))}
             </div>
           )}

@@ -20,21 +20,24 @@ const Jobs = () => {
   const isAuthenticated = !!user;
   
   useEffect(() => {
+    let active = true;
     const fetchJobs = async () => {
       setIsLoading(true);
       const jobsData = await getPublishedJobPosts(filters);
+      if (!active) return;
       setJobs(jobsData);
       setIsLoading(false);
     };
     
     fetchJobs();
+    return () => { active = false; };
   }, [filters]);
   
   const handleFilterChange = (newFilters: JobPostFilter) => {
     setFilters(newFilters);
   };
 
-  const hasFilters = Object.keys(filters).length > 0;
+  const hasFilters = Object.values(filters).some(value => value !== undefined && value !== "");
   
   return (
     <DashboardLayout title={t("jobs.title")}>
@@ -50,7 +53,7 @@ const Jobs = () => {
         )}
       </div>
       
-      <JobSearchFilter onFilterChange={handleFilterChange} />
+      <JobSearchFilter filters={filters} onFilterChange={handleFilterChange} />
       
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

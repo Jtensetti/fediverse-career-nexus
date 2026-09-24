@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { createEvent, Event } from '@/services/misc/eventService';
 import { toast } from 'sonner';
@@ -12,12 +12,15 @@ import { SEOHead } from '@/components/common/SEOHead';
 export default function EventCreate() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createMutation = useMutation({
     mutationFn: (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => createEvent(eventData),
     onSuccess: (event) => {
       if (event) {
+        queryClient.setQueryData(['event', event.id], { ...event, rsvp_count: 0 });
+        void queryClient.invalidateQueries({ queryKey: ['events'] });
         toast.success(t('eventCreate.success'));
         navigate(`/events/${event.id}`);
       }

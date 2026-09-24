@@ -93,7 +93,8 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener"
                 className="text-muted-foreground hover:text-secondary transition-colors"
-                title="View source on GitHub"
+                title={t("footer.viewSource")}
+                aria-label={t("footer.viewSource")}
               >
                 <Github size={20} />
               </a>

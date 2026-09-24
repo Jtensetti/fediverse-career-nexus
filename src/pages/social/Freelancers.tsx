@@ -77,6 +77,7 @@ const FreelancersPage = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                aria-label={t('freelancers.searchPlaceholder')}
                 placeholder={t("freelancers.searchPlaceholder", "Search by name, skills, or expertise...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -86,6 +87,8 @@ const FreelancersPage = () => {
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
+              aria-expanded={showFilters}
+              aria-controls="freelancer-filters"
               className={cn(showFilters && "bg-muted")}
             >
               <Filter className="h-4 w-4 mr-2" />
@@ -100,29 +103,29 @@ const FreelancersPage = () => {
 
           {/* Expandable Filters */}
           {showFilters && (
-            <div className="flex flex-wrap gap-3 p-4 rounded-lg border bg-card">
-              <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger className="w-[180px]">
+            <div id="freelancer-filters" className="flex flex-wrap gap-3 p-4 rounded-lg border bg-card">
+              <Select value={locationFilter || '__all__'} onValueChange={value => setLocationFilter(value === '__all__' ? '' : value)}>
+                <SelectTrigger className="w-full sm:w-[180px]" aria-label={t('freelancers.location')}>
                   <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
                   <SelectValue placeholder={t("freelancers.location", "Location")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">
+                  <SelectItem value="__all__">
                     {t("freelancers.anyLocation", "Any Location")}
                   </SelectItem>
-                  {locations?.map((loc) => (
+                  {locations?.filter(loc => loc.trim()).map((loc) => (
                     <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-                <SelectTrigger className="w-[180px]">
+              <Select value={availabilityFilter || '__all__'} onValueChange={value => setAvailabilityFilter(value === '__all__' ? '' : value)}>
+                <SelectTrigger className="w-full sm:w-[180px]" aria-label={t('freelancers.availability')}>
                   <Briefcase className="h-4 w-4 mr-2 text-muted-foreground" />
                   <SelectValue placeholder={t("freelancers.availability", "Availability")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t("freelancers.anyAvailability", "Any Availability")}</SelectItem>
+                  <SelectItem value="__all__">{t("freelancers.anyAvailability", "Any Availability")}</SelectItem>
                   <SelectItem value="full-time">{t("freelancer.fullTime", "Full-time")}</SelectItem>
                   <SelectItem value="part-time">{t("freelancer.partTime", "Part-time")}</SelectItem>
                   <SelectItem value="project-based">{t("freelancer.projectBased", "Project-based")}</SelectItem>

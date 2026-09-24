@@ -3,15 +3,17 @@ import { Home, Search, Plus, MessageSquare, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const navItems = [
-  { to: "/feed", icon: Home, label: "Flöde" },
-  { to: "/jobs", icon: Search, label: "Jobb" },
-  { to: "/messages", icon: MessageSquare, label: "Meddelanden" },
-  { to: "/profile", icon: User, label: "Profil" },
+  { to: "/feed", icon: Home, label: "nav.feed" },
+  { to: "/jobs", icon: Search, label: "nav.jobs" },
+  { to: "/messages", icon: MessageSquare, label: "nav.messages" },
+  { to: "/profile", icon: User, label: "nav.profileShort" },
 ];
 
 export default function MobileBottomNav() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const location = useLocation();
 
@@ -25,7 +27,7 @@ export default function MobileBottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border md:hidden"
       role="navigation"
-      aria-label="Mobilnavigering"
+      aria-label={t('nav.mobile')}
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0.5rem)' }}
     >
       <div className="flex items-center justify-around h-16 px-2">
@@ -41,7 +43,7 @@ export default function MobileBottomNav() {
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
-              aria-label={label}
+              aria-label={t(label)}
               aria-current={isActive ? "page" : undefined}
             >
               {isActive && (
@@ -59,15 +61,15 @@ export default function MobileBottomNav() {
                 fill={isActive ? "currentColor" : "none"}
                 strokeWidth={isActive ? 2.5 : 2}
               />
-              <span className="text-xs font-medium">{label}</span>
+              <span className="text-xs font-medium">{t(label)}</span>
             </NavLink>
           );
         })}
 
         <NavLink
-          to="/articles/create"
+          to="/feed?compose=1"
           className="relative flex items-center justify-center -mt-6"
-          aria-label="Skapa nytt inlägg"
+          aria-label={t('feed.createPost')}
         >
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -90,7 +92,7 @@ export default function MobileBottomNav() {
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
-              aria-label={label}
+              aria-label={t(label)}
               aria-current={isActive ? "page" : undefined}
             >
               {isActive && (
@@ -108,7 +110,7 @@ export default function MobileBottomNav() {
                 fill={isActive ? "currentColor" : "none"}
                 strokeWidth={isActive ? 2.5 : 2}
               />
-              <span className="text-xs font-medium">{label}</span>
+              <span className="text-xs font-medium">{t(label)}</span>
             </NavLink>
           );
         })}

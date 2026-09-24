@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useContentCheck } from '@/hooks/useContentCheck';
 
 import { useState, useEffect } from "react";
@@ -12,7 +13,6 @@ import {
   ArticleFormData,
   updateArticle,
   getArticleById,
-  generateSlug,
   getArticleAuthors,
   addCoAuthor,
   removeCoAuthor,
@@ -44,8 +44,11 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { SEOHead } from "@/components/common/SEOHead";
+import { stripHtml } from "@/lib/linkify";
 
 const ArticleEdit = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const contentCheck = useContentCheck();
   const queryClient = useQueryClient();
@@ -95,8 +98,7 @@ const ArticleEdit = () => {
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
-    const shouldUpdateSlug = !article.slug || article.slug === generateSlug(originalArticle?.title || '');
-    setArticle({ ...article, title, slug: shouldUpdateSlug ? generateSlug(title) : article.slug });
+    setArticle({ ...article, title });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -114,23 +116,23 @@ const ArticleEdit = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!id) {
-      toast.error("Artikel-ID saknas");
+      toast.error(t("articleForm.missingId"));
       return;
     }
     if (!article.title) {
-      toast.error("Ange en titel för din artikel");
+      toast.error(t("articleForm.missingTitle"));
       return;
     }
-    if (!article.content) {
-      toast.error("Ange innehåll för din artikel");
+    if (!stripHtml(article.content)) {
+      toast.error(t("articleForm.missingContent"));
       return;
     }
-    
+
     if (article.published && !await contentCheck.check([article.title, article.content, article.excerpt || ''].join('\n'))) return;
     setIsSubmitting(true);
-    
+
     try {
       const result = await updateArticle(id, article);
       if (result) {
@@ -140,7 +142,9 @@ const ArticleEdit = () => {
             .update({ cover_image_url: coverImageUrl })
             .eq('id', id);
         }
-        queryClient.invalidateQueries({ queryKey: ['article', id] });
+        queryClient.invalidateQueries({ queryKey: ['article'] });
+        queryClient.invalidateQueries({ queryKey: ['articles'] });
+        queryClient.invalidateQueries({ queryKey: ['userArticles'] });
         queryClient.invalidateQueries({ queryKey: ['user-articles'] });
         navigate("/articles/manage");
       }
@@ -152,7 +156,7 @@ const ArticleEdit = () => {
   const handleSearchUsers = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchTerm(query);
-    
+
     if (query.length >= 3) {
       const results = await searchUsers(query);
       const filteredResults = results.filter(
@@ -185,11 +189,12 @@ const ArticleEdit = () => {
   if (articleLoading) {
     return (
       <div className="min-h-screen flex flex-col">
+        <SEOHead title={t("articleForm.editTitle")} description={t("articleForm.editDescription")} />
         <Navbar />
-      {contentCheck.dialog}
+        {contentCheck.dialog}
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <p>Laddar artikel...</p>
+            <p>{t("articleForm.loadingArticle")}</p>
           </div>
         </main>
         <Footer />
@@ -200,15 +205,15 @@ const ArticleEdit = () => {
   if (!originalArticle) {
     return (
       <div className="min-h-screen flex flex-col">
+        <SEOHead title={t("articleForm.editTitle")} description={t("articleForm.editDescription")} />
         <Navbar />
-      {contentCheck.dialog}
+        {contentCheck.dialog}
         <main className="flex-grow container mx-auto px-4 py-8">
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-4">Artikeln hittades inte</h2>
-            <p className="mb-6">Artikeln du försöker redigera finns inte eller så har du inte behörighet att redigera den.</p>
+            <h2 className="text-2xl font-bold mb-4">{t("articleForm.notFound")}</h2>
+            <p className="mb-6">{t("articleForm.notFoundHelp")}</p>
             <Button onClick={() => navigate("/articles/manage")}>
-              Tillbaka till mina artiklar
-            </Button>
+              {t("articleForm.back")}</Button>
           </div>
         </main>
         <Footer />
@@ -218,56 +223,54 @@ const ArticleEdit = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead title={t("articleForm.editTitle")} description={t("articleForm.editDescription")} />
       <Navbar />
       {contentCheck.dialog}
-      
+
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Redigera artikel</h1>
+            <h1 className="text-2xl font-bold">{t("articleForm.editTitle")}</h1>
             <Button variant="outline" onClick={() => navigate("/articles/manage")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Avbryt
-            </Button>
+              {t("articleForm.cancel")}</Button>
           </div>
-          
+
           <Card className="mb-6">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-medium flex items-center gap-2">
                   <Users size={18} />
-                  Författare
-                </h2>
+                  {t("articleForm.authors")}</h2>
                 <Dialog open={showAddCoAuthorDialog} onOpenChange={setShowAddCoAuthorDialog}>
                   <DialogTrigger asChild>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="flex items-center gap-1"
                       disabled={!isPrimaryAuthor && authors.length > 0}
                     >
                       <UserPlus size={16} />
-                      Lägg till medförfattare
-                    </Button>
+                      {t("articleForm.addAuthor")}</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Lägg till medförfattare</DialogTitle>
+                      <DialogTitle>{t("articleForm.addAuthor")}</DialogTitle>
                       <DialogDescription>
-                        Sök efter användare att lägga till som medförfattare till denna artikel.
-                      </DialogDescription>
+                        {t("articleForm.authorHelp")}</DialogDescription>
                     </DialogHeader>
-                    
+
                     <div className="relative mt-2">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-                      <Input 
-                        placeholder="Sök användare efter namn eller användarnamn..." 
+                      <Input
+                        aria-label={t("articleForm.authorSearchLabel")}
+                        placeholder={t("articleForm.authorSearch")}
                         value={searchTerm}
                         onChange={handleSearchUsers}
                         className="pl-10"
                       />
                     </div>
-                    
+
                     <div className="max-h-60 overflow-y-auto">
                       {searchResults.length > 0 ? (
                         <div className="space-y-2">
@@ -277,47 +280,45 @@ const ArticleEdit = () => {
                                 <Avatar>
                                   <AvatarImage src={user.avatar_url} />
                                   <AvatarFallback className="bg-primary/10">
-                                    {user.fullname ? user.fullname.substring(0, 2).toUpperCase() : 
+                                    {user.fullname ? user.fullname.substring(0, 2).toUpperCase() :
                                      user.username ? user.username.substring(0, 2).toUpperCase() : '??'}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <p className="font-medium">{user.fullname || user.username || "Namnlös användare"}</p>
+                                  <p className="font-medium">{user.fullname || user.username || t("articleForm.unnamed")}</p>
                                   {user.username && <p className="text-sm text-muted-foreground">@{user.username}</p>}
                                 </div>
                               </div>
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 onClick={() => {
                                   handleAddCoAuthor(user.id);
                                   setShowAddCoAuthorDialog(false);
                                 }}
                               >
-                                Lägg till
-                              </Button>
+                                {t("articleForm.add")}</Button>
                             </div>
                           ))}
                         </div>
                       ) : searchTerm.length >= 3 ? (
-                        <p className="text-center py-4 text-muted-foreground">Inga användare hittades</p>
+                        <p className="text-center py-4 text-muted-foreground">{t("articleForm.noUsers")}</p>
                       ) : searchTerm.length > 0 ? (
-                        <p className="text-center py-4 text-muted-foreground">Skriv minst 3 tecken för att söka</p>
+                        <p className="text-center py-4 text-muted-foreground">{t("articleForm.minimumSearch")}</p>
                       ) : (
-                        <p className="text-center py-4 text-muted-foreground">Sök efter användare att lägga till som medförfattare</p>
+                        <p className="text-center py-4 text-muted-foreground">{t("articleForm.authorSearchHelp")}</p>
                       )}
                     </div>
-                    
+
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setShowAddCoAuthorDialog(false)}>
-                        Avbryt
-                      </Button>
+                        {t("articleForm.cancel")}</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </div>
-              
+
               {authorsLoading ? (
-                <p className="text-center py-2 text-muted-foreground">Laddar författare...</p>
+                <p className="text-center py-2 text-muted-foreground">{t("articleForm.loadingAuthors")}</p>
               ) : authors.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {authors.map((author) => (
@@ -325,31 +326,32 @@ const ArticleEdit = () => {
                       <Avatar className="h-6 w-6">
                         <AvatarImage src={author.profile?.avatar_url || undefined} />
                         <AvatarFallback className="text-xs">
-                          {author.profile?.fullname ? author.profile.fullname.substring(0, 2).toUpperCase() : 
+                          {author.profile?.fullname ? author.profile.fullname.substring(0, 2).toUpperCase() :
                            author.profile?.username ? author.profile.username.substring(0, 2).toUpperCase() : '??'}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm">
-                        {author.profile?.fullname || author.profile?.username || "Namnlös användare"}
+                        {author.profile?.fullname || author.profile?.username || t("articleForm.unnamed")}
                       </span>
                       {author.is_primary && (
-                        <Badge variant="outline" className="text-xs ml-1">Primär</Badge>
+                        <Badge variant="outline" className="text-xs ml-1">{t("articleForm.primary")}</Badge>
                       )}
                       {!author.is_primary && isPrimaryAuthor && (
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-5 w-5 ml-1 text-muted-foreground hover:text-destructive"
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 ml-1 text-muted-foreground hover:text-destructive"
+                                aria-label={t("articleForm.removeAuthorNamed", { name: author.profile?.fullname || author.profile?.username || t("articleForm.coAuthor") })}
                                 onClick={() => handleRemoveCoAuthor(author.user_id)}
                               >
                                 <X size={12} />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Ta bort medförfattare</p>
+                              <p>{t("articleForm.removeAuthor")}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -358,86 +360,88 @@ const ArticleEdit = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-center py-2 text-muted-foreground">Inga författare hittades</p>
+                <p className="text-center py-2 text-muted-foreground">{t("articleForm.noAuthors")}</p>
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Titel</Label>
+                  <Label htmlFor="title">{t("articleForm.titleLabel")}</Label>
                   <Input
                     id="title"
                     name="title"
                     value={article.title}
                     onChange={handleTitleChange}
-                    placeholder="Ange artikelns titel"
+                    placeholder={t("articleForm.titlePlaceholder")}
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
-                  <Label htmlFor="slug">Slug</Label>
+                  <Label htmlFor="article-content">{t("articleForm.content")}</Label>
+                  <ArticleEditor
+                    value={article.content}
+                    onChange={handleContentChange}
+                    placeholder={t("articleForm.contentPlaceholder")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="excerpt">{t("articleForm.excerpt")}</Label>
+                  <Textarea
+                    id="excerpt"
+                    name="excerpt"
+                    value={article.excerpt || ""}
+                    onChange={handleChange}
+                    placeholder={t("articleForm.excerptPlaceholder")}
+                    rows={3}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("articleForm.excerptHelp")}</p>
+                </div>
+
+                {/* Cover Image */}
+                <div className="space-y-2">
+                  <Label>{t("articleForm.cover")}</Label>
+                  <CoverImageUpload value={coverImageUrl} onChange={setCoverImageUrl} />
+                  <p className="text-xs text-muted-foreground">
+                    {t("articleForm.coverHelp")}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="slug">{t("articleForm.address")}</Label>
                   <div className="flex gap-2">
                     <Input
                       id="slug"
                       name="slug"
                       value={article.slug}
                       onChange={handleChange}
-                      placeholder="artikel-url-slug"
+                      placeholder={t("articleForm.addressPlaceholder")}
                       required
+                      pattern="[a-z0-9-]{3,100}"
+                      maxLength={100}
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Slugen används i artikelns URL.
-                  </p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="excerpt">Sammanfattning (valfritt)</Label>
-                  <Textarea
-                    id="excerpt"
-                    name="excerpt"
-                    value={article.excerpt || ""}
-                    onChange={handleChange}
-                    placeholder="Kort sammanfattning av artikeln"
-                    rows={3}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    En kort sammanfattning som visas i artikellistor. Om den inte anges används början av innehållet.
-                  </p>
+                    {t("articleForm.addressWarning")}</p>
                 </div>
 
-                {/* Cover Image */}
-                <div className="space-y-2">
-                  <Label>Omslagsbild (valfritt)</Label>
-                  <CoverImageUpload value={coverImageUrl} onChange={setCoverImageUrl} />
-                  <p className="text-xs text-muted-foreground">
-                    Denna bild visas högst upp i din artikel och i förhandsvisningar.
-                  </p>
-                </div>
-                
-                <ArticleEditor
-                  value={article.content}
-                  onChange={handleContentChange}
-                  placeholder="Skriv ditt artikelinnehåll här..."
-                />
-                
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="published"
                     checked={article.published}
                     onCheckedChange={handlePublishedChange}
                   />
-                  <Label htmlFor="published">{article.published ? "Publicerad" : "Utkast"}</Label>
+                  <Label htmlFor="published">{t("articleForm.publishToggle")}</Label>
                 </div>
-                
+
                 <div className="pt-4 flex justify-end">
                   <Button type="submit" disabled={isSubmitting || contentCheck.checking} className="flex items-center gap-2">
                     <Save size={16} />
-                    {isSubmitting ? "Sparar..." : "Uppdatera artikel"}
+                    {isSubmitting ? t("articleForm.saving") : article.published ? (originalArticle.published ? t("articleForm.saveChanges") : t("articleForm.publish")) : (originalArticle.published ? t("articleForm.unpublish") : t("articleForm.saveDraft"))}
                   </Button>
                 </div>
               </form>
@@ -445,7 +449,7 @@ const ArticleEdit = () => {
           </Card>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

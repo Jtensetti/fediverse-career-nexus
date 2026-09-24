@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -35,10 +36,11 @@ const companySizeOptions: { value: CompanySize; label: string }[] = [
   { value: '1-10', label: '1–10 anställda' },
   { value: '11-50', label: '11–50 anställda' },
   { value: '51-200', label: '51–200 anställda' },
-  { value: '201-500', label: '201–1 000 anställda' },
+  { value: '201-500', label: '201–500 anställda' },
+  { value: '501-1000', label: '501–1 000 anställda' },
   { value: '1001-5000', label: '1 001–5 000 anställda' },
-  { value: '5001-10000', label: '5 001–20 000 anställda' },
-  { value: '10000+', label: '20 000+ anställda' },
+  { value: '5001-10000', label: '5 001–10 000 anställda' },
+  { value: '10000+', label: '10 001+ anställda' },
 ];
 
 // Strukturerade organisationstyper.
@@ -57,20 +59,20 @@ export const ORGANISATION_TYPES = [
   'Annat',
 ] as const;
 
-const companyFormSchema = z.object({
-  name: z.string().min(2, "Company name must be at least 2 characters").max(100),
-  slug: z.string().min(2, "URL must be at least 2 characters").max(50)
-    .regex(/^[a-z0-9-]+$/, "URL can only contain lowercase letters, numbers, and hyphens"),
-  tagline: z.string().max(140, "Tagline must be 140 characters or less").optional(),
+const createCompanyFormSchema = (t: TFunction) => z.object({
+  name: z.string().trim().min(2, t("companyForm.nameTooShort")).max(100, t("companyForm.nameTooLong")),
+  slug: z.string().min(2, t("companyForm.urlTooShort")).max(50, t("companyForm.urlTooLong"))
+    .regex(/^[a-z0-9-]+$/, t("companyForm.urlCharacters")),
+  tagline: z.string().max(140, t("companyForm.taglineTooLong")).optional(),
   description: z.string().max(5000).optional(),
-  website: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  website: z.string().url(t("companyForm.invalidWebsite")).optional().or(z.literal("")),
   industry: z.string().max(50).optional(),
   size: z.enum(['1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5001-10000', '10000+'] as const).optional().nullable(),
   location: z.string().max(100).optional(),
   founded_year: z.coerce.number().min(1800).max(new Date().getFullYear()).optional().nullable(),
 });
 
-export type CompanyFormData = z.infer<typeof companyFormSchema>;
+export type CompanyFormData = z.infer<ReturnType<typeof createCompanyFormSchema>>;
 
 interface CompanyFormProps {
   defaultValues?: Partial<CompanyFormData>;
@@ -92,7 +94,7 @@ export default function CompanyForm({
   const [checkingSlug, setCheckingSlug] = useState(false);
 
   const form = useForm<CompanyFormData>({
-    resolver: zodResolver(companyFormSchema),
+    resolver: zodResolver(createCompanyFormSchema(t)),
     defaultValues: {
       name: "",
       slug: "",
@@ -120,6 +122,9 @@ export default function CompanyForm({
 
   // Check slug availability with debounce
   useEffect(() => {
+    let cancelled = false;
+    setSlugAvailable(null);
+    setCheckingSlug(false);
     if (!watchSlug || watchSlug.length < 2) {
       setSlugAvailable(null);
       return;
@@ -131,14 +136,19 @@ export default function CompanyForm({
       return;
     }
 
+    setCheckingSlug(true);
     const timer = setTimeout(async () => {
-      setCheckingSlug(true);
-      const available = await isSlugAvailable(watchSlug);
-      setSlugAvailable(available);
-      setCheckingSlug(false);
+      try {
+        const available = await isSlugAvailable(watchSlug);
+        if (!cancelled) setSlugAvailable(available);
+      } catch {
+        if (!cancelled) setSlugAvailable(null);
+      } finally {
+        if (!cancelled) setCheckingSlug(false);
+      }
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [watchSlug, isEdit, defaultValues?.slug]);
 
   const handleSubmit = async (data: CompanyFormData) => {
@@ -190,15 +200,16 @@ export default function CompanyForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("companyForm.companyUrl", "Company URL")} *</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-sm">/organisation/</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-muted-foreground text-sm">nolto.social/organisation/</span>
+                      <FormControl>
                       <Input 
                         placeholder="organisationsnamn" 
                         {...field} 
                         disabled={isEdit}
-                        className={isEdit ? "bg-muted" : ""}
+                        className={`min-w-0 flex-1 ${isEdit ? "bg-muted" : ""}`}
                       />
+                      </FormControl>
                       {checkingSlug && <Loader2 className="h-4 w-4 animate-spin" />}
                       {!checkingSlug && slugAvailable === true && (
                         <span className="text-sm text-success">{t("companyForm.available", "Available")}</span>
@@ -207,7 +218,6 @@ export default function CompanyForm({
                         <span className="text-sm text-destructive">{t("companyForm.taken", "Taken")}</span>
                       )}
                     </div>
-                  </FormControl>
                   {isEdit ? (
                     <FormDescription>{t("companyForm.urlImmutable", "Company URL cannot be changed after creation")}</FormDescription>
                   ) : (
@@ -378,7 +388,7 @@ export default function CompanyForm({
         <div className="flex justify-end gap-3">
           <Button 
             type="submit" 
-            disabled={isSubmitting || (!isEdit && slugAvailable === false)}
+            disabled={isSubmitting || checkingSlug || (!isEdit && slugAvailable === false)}
           >
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {resolvedButtonText}

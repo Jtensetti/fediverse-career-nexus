@@ -2,7 +2,7 @@ import { MediaImage } from "@/components/content/MediaImage";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bookmark, MessageCircle, Repeat2, Share } from "lucide-react";
+import { ShareButton } from "@/components/common/ShareButton";
 import { format } from "date-fns";
 import { sv } from "date-fns/locale";
 import { Article } from "@/services/articles/articleService";
@@ -136,26 +136,21 @@ const ArticlePreviewCard = ({
                 {article.title}
               </h3>
               
-              <Bookmark className={cn(
-                "absolute top-4 right-4 h-5 w-5 opacity-70 hover:opacity-100 transition-opacity",
-                article.cover_image_url ? "text-white" : "text-muted-foreground"
-              )} />
             </div>
           </div>
         </Link>
       </Card>
 
       <div className="flex items-center gap-4 px-1 text-muted-foreground">
-        <ArticleCardReactions articleId={article.id} />
-        <button className="flex items-center gap-1 hover:text-foreground transition-colors">
-          <MessageCircle className="h-4 w-4" />
-        </button>
-        <button className="flex items-center gap-1 hover:text-foreground transition-colors">
-          <Repeat2 className="h-4 w-4" />
-        </button>
-        <button className="flex items-center gap-1 hover:text-foreground transition-colors">
-          <Share className="h-4 w-4" />
-        </button>
+        <Link to={`/articles/${article.slug}#reactions`} aria-label={`Visa reaktioner på ${article.title}`} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <ArticleCardReactions articleId={article.id} />
+        </Link>
+        <ShareButton
+          url={`${window.location.origin}/articles/${article.slug}`}
+          title={article.title}
+          description={article.excerpt || undefined}
+          variant="ghost"
+        />
       </div>
     </motion.div>
   );
