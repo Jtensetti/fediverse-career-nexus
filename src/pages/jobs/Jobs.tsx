@@ -75,21 +75,18 @@ const Jobs = () => {
       ) : (
         <EmptyState
           icon={Briefcase}
-          title={hasFilters ? t("jobs.noMatching") : t("jobs.beFirst")}
+           title={hasFilters ? t("jobs.noMatching") : t("jobs.noneAvailable")}
           description={
             hasFilters 
               ? t("jobs.adjustFilters")
-              : t("jobs.reachProfessionals")
+               : t("jobs.noneAvailableDescription")
           }
           action={
-            isAuthenticated 
+             hasFilters
+               ? { label: t("jobs.clearFilters"), onClick: () => handleFilterChange({}) }
+               : isAuthenticated
               ? { label: t("jobs.postJob"), link: "/jobs/create" }
               : { label: t("jobs.signUpToPost"), link: "/auth/signup" }
-          }
-          secondaryAction={
-            hasFilters 
-              ? { label: t("jobs.clearFilters"), onClick: () => handleFilterChange({}) }
-              : undefined
           }
         />
       )}
