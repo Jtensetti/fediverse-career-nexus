@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,7 +14,7 @@ import type { CompanyFilters } from "@/services/company/companyService";
 import { ORGANISATION_TYPES } from "./CompanyForm";
 import type { Database } from "@/integrations/supabase/types";
 
-import { tx } from "@/i18n/tx";
+import { useTranslation } from "react-i18next";
 type CompanySize = Database['public']['Enums']['company_size'];
 
 const companySizeOptions: { value: CompanySize; label: string }[] = [
@@ -32,6 +33,7 @@ interface CompanySearchFilterProps {
 }
 
 export default function CompanySearchFilter({ onFilterChange, filters = {} }: CompanySearchFilterProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState(filters.search || "");
   const [industry, setIndustry] = useState<string>(filters.industry || "");
   const [size, setSize] = useState<string>(filters.size || "");
@@ -69,24 +71,29 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
 
   return (
     <div className="space-y-4 mb-6">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          aria-label={tx("ui.companySearchFilter.sokForetag")}
-          placeholder={tx("ui.companySearchFilter.sokForetag")}
+      <div>
+        <Label htmlFor="company-search">{t("ui.companySearchFilter.sokForetag")}</Label>
+        <div className="relative mt-2">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+          id="company-search"
+          placeholder={t("ui.companySearchFilter.sokForetag")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
-        />
+          />
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div>
+        <Label htmlFor="company-type">{t("ui.companySearchFilter.typAvOrganisation")}</Label>
         <Select value={industry} onValueChange={setIndustry}>
-          <SelectTrigger className="w-full sm:w-[220px]" aria-label={tx("ui.companySearchFilter.typAvOrganisation")}>
-            <SelectValue placeholder={tx("ui.companySearchFilter.typAvOrganisation")} />
+          <SelectTrigger id="company-type" className="mt-2 w-full">
+            <SelectValue placeholder={t("ui.companySearchFilter.typAvOrganisation")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{tx("ui.companySearchFilter.allaTyper")}</SelectItem>
+            <SelectItem value="all">{t("ui.companySearchFilter.allaTyper")}</SelectItem>
             {ORGANISATION_TYPES.map((type) => (
               <SelectItem key={type} value={type}>
                 {type}
@@ -94,33 +101,40 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
             ))}
           </SelectContent>
         </Select>
+        </div>
 
+        <div>
+        <Label htmlFor="company-size">{t("ui.companySearchFilter.storlek")}</Label>
         <Select value={size} onValueChange={setSize}>
-          <SelectTrigger className="w-full sm:w-[180px]" aria-label={tx("ui.companySearchFilter.storlek")}>
-            <SelectValue placeholder={tx("ui.companySearchFilter.storlek")} />
+          <SelectTrigger id="company-size" className="mt-2 w-full">
+            <SelectValue placeholder={t("ui.companySearchFilter.storlek")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{tx("ui.companySearchFilter.allaStorlekar")}</SelectItem>
+            <SelectItem value="all">{t("ui.companySearchFilter.allaStorlekar")}</SelectItem>
             {companySizeOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}{' '}{tx("ui.companySearchFilter.anstallda")}
+                {opt.label}{' '}{t("ui.companySearchFilter.anstallda")}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        </div>
 
+        <div>
+        <Label htmlFor="company-location">{t("ui.companySearchFilter.plats")}</Label>
         <Input
-          aria-label={tx("ui.companySearchFilter.plats")}
-          placeholder={tx("ui.companySearchFilter.plats")}
+          id="company-location"
+          placeholder={t("ui.companySearchFilter.plats")}
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-full sm:w-[180px]"
+          className="mt-2 w-full"
         />
+        </div>
 
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             <X className="h-4 w-4 mr-1" />
-            {tx("ui.companySearchFilter.clear")}
+             {t("ui.companySearchFilter.clear")}
           </Button>
         )}
       </div>

@@ -397,7 +397,7 @@ export default function AuthPage() {
     }
   };
 
-  return <div className="min-h-screen bg-background">
+  return <main className="min-h-screen bg-background">
     <SEOHead title={t("auth.welcomeTitle")} description={t("auth.welcomeSubtitle")} />
     <div className="mx-auto max-w-md px-4 py-4 sm:py-8">
       <Button variant="ghost" className="mb-4 -ml-3" asChild><Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />{t("auth.backToHome")}</Link></Button>

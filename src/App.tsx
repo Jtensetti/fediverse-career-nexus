@@ -162,7 +162,7 @@ function App() {
                 <Toaster {...toasterConfig} />
                 <SessionExpiryWarning />
                 <AlertBanner />
-                <div id="main-content">
+                <div id="main-content" tabIndex={-1} className="outline-none">
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     {/* Public routes */}

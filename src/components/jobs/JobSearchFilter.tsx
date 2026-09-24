@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { JobPostFilter } from "@/services/misc/jobPostsService";
 
 interface JobSearchFilterProps {
@@ -58,12 +58,13 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
         {/* Search input */}
         <div className="min-w-0 sm:col-span-2 xl:col-span-3">
-          <div className="relative">
+          <Label htmlFor="job-search">{t("jobs.searchLabel", t("jobs.searchPlaceholder"))}</Label>
+          <div className="relative mt-2">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
+              id="job-search"
               type="text"
               placeholder={t("jobs.searchPlaceholder")}
-              aria-label={t("jobs.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -73,6 +74,7 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
         
         {/* Job type filter */}
         <div className="min-w-0">
+          <Label htmlFor="job-type-filter">{t("jobs.jobType")}</Label>
           <Select 
             value={jobType || "all"}
             onValueChange={(value) => {
@@ -80,7 +82,7 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
               if (value === "full_time" || value === "part_time" || value === "contract" || value === "internship" || value === "temporary") setJobType(value);
             }}
           >
-            <SelectTrigger aria-label={t("jobs.jobType")}>
+            <SelectTrigger id="job-type-filter" className="mt-2">
               <SelectValue placeholder={t("jobs.jobType")} />
             </SelectTrigger>
             <SelectContent>
@@ -99,12 +101,14 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
         
         {/* Location filter */}
         <div className="min-w-0">
+          <Label htmlFor="job-location-filter">{t("jobs.location")}</Label>
           <Input
+            id="job-location-filter"
             type="text"
             placeholder={t("jobs.location")}
-            aria-label={t("jobs.location")}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+            className="mt-2"
           />
         </div>
         
@@ -122,12 +126,11 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
       
       {/* Remote option */}
       <div className="flex items-center space-x-2">
-        <Switch 
+        <Checkbox
           id="remote-allowed"
           checked={remoteAllowed === true}
-          onCheckedChange={(checked) => {
-            setRemoteAllowed(checked ? true : undefined);
-          }}
+          onCheckedChange={(checked) => setRemoteAllowed(checked === true ? true : undefined)}
+          className="h-5 w-5"
         />
         <Label htmlFor="remote-allowed">{t("jobs.remoteAllowed")}</Label>
       </div>

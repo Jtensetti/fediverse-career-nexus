@@ -28,10 +28,10 @@ export default function Index() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></main>
           <p className="text-muted-foreground">{tx("ui.index.laddar")}</p>
-        </div>
-      </div>
+        </main>
+      </main>
     );
   }
 
@@ -47,10 +47,10 @@ export default function Index() {
         description={t("ui.index.meetPeopleShareWhat")}
       />
       <Navbar />
-      <div className="flex-grow">
+      <main className="flex-grow">
         <UnauthenticatedHomepage />
-      </div>
+      </main>
       <Footer />
-    </div>
+    </main>
   );
 }

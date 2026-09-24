@@ -122,7 +122,7 @@ export default function Search() {
     <>
       <SEOHead title={t("search.seoTitle")} description={t("search.seoDescription")} />
       <Navbar />
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <main className="container max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{t("search.title")}</h1>
           <p className="text-muted-foreground">{t("search.description")}</p>
@@ -286,7 +286,7 @@ export default function Search() {
             </Tabs>
           </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

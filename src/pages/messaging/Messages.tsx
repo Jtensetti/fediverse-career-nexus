@@ -71,7 +71,7 @@ export default function Messages() {
     <div className="min-h-dvh flex flex-col">
       <SEOHead title={t("messagesPage.title")} description={t("messagesPage.title")} />
       <Navbar />
-      <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
+      <main className="flex-grow container max-w-4xl mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">{t("messages.title")}</h1>
           <Button asChild>
@@ -198,7 +198,7 @@ export default function Messages() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
       <Footer />
     </div>
   );
