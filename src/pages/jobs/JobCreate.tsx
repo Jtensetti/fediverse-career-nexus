@@ -55,10 +55,9 @@ const JobCreate = () => {
         setSubmitError({ message: errorResult.message, details: errorResult.details });
         toast.error(errorResult.message, { description: errorResult.details, duration: 5000 });
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t("common.error");
-      setSubmitError({ message: t("jobCreate.failed"), details: errorMessage });
-      toast.error(t("jobCreate.failed"), { description: errorMessage });
+    } catch {
+      setSubmitError({ message: t("ux.saveUnconfirmed") });
+      toast.error(t("ux.saveUnconfirmed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -73,7 +72,7 @@ const JobCreate = () => {
           <p className="text-muted-foreground">{t("jobCreate.description")}</p>
         </div>
         {submitError && (
-          <InlineErrorBanner message={submitError.message} details={submitError.details} onRetry={() => setSubmitError(null)} onDismiss={() => setSubmitError(null)} className="mb-6" />
+          <InlineErrorBanner message={submitError.message} details={submitError.details} onDismiss={() => setSubmitError(null)} className="mb-6" />
         )}
         <JobForm onSubmit={handleSubmit} isSubmitting={isSubmitting} onDirtyChange={setIsDirty} onCancel={() => confirmDiscard(() => navigate("/jobs/manage"))} />
       </main>

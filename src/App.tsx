@@ -1,5 +1,5 @@
 import SocialCallback from '@/pages/auth/SocialCallback';
-import React,{ lazy,Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 
 import {
   createBrowserRouter,
@@ -11,7 +11,7 @@ import {
   useParams,
   useLocation,
 } from "react-router-dom";
-import { QueryClient,QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "framer-motion";
@@ -30,74 +30,74 @@ import { UnsavedChangesProvider } from "@/contexts/UnsavedChangesContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { tx } from "@/i18n/tx";
-const Auth=lazy(() => import("./pages/auth/Auth"));
+const Auth = lazy(() => import("./pages/auth/Auth"));
 
 // Lazy-loaded routes — split into per-route chunks
-const Profile=lazy(() => import("./pages/profile/Profile"));
-const ProfileEdit=lazy(() => import("./pages/profile/ProfileEdit"));
-const Jobs=lazy(() => import("./pages/jobs/Jobs"));
-const JobView=lazy(() => import("./pages/jobs/JobView"));
-const JobCreate=lazy(() => import("./pages/jobs/JobCreate"));
-const JobEdit=lazy(() => import("./pages/jobs/JobEdit"));
-const JobManage=lazy(() => import("./pages/jobs/JobManage"));
-const FederatedFeedPage=lazy(() => import("./pages/federation/FederatedFeed"));
-const ConversationGuide=lazy(() => import('./pages/legal/ConversationGuide'));
-const MyContentReviews=lazy(() => import('./pages/moderation/MyContentReviews'));
-const AtprotoCallback=lazy(() => import('./pages/auth/AtprotoCallback'));
-const AuthCallback=lazy(() => import("./pages/auth/AuthCallback"));
-const AuthRecovery=lazy(() => import("./pages/auth/AuthRecovery"));
-const UpdatePassword=lazy(() => import("./pages/auth/UpdatePassword"));
-const ConfirmEmail=lazy(() => import("./pages/auth/ConfirmEmail"));
-const MfaRecover=lazy(() => import("./pages/auth/MfaRecover"));
-const Events=lazy(() => import("./pages/events/Events"));
-const EventCreate=lazy(() => import("./pages/events/EventCreate"));
-const EventView=lazy(() => import("./pages/events/EventView"));
-const EventEdit=lazy(() => import("./pages/events/EventEdit"));
-const Articles=lazy(() => import("./pages/articles/Articles"));
-const ArticleView=lazy(() => import("./pages/articles/ArticleView"));
-const ArticleCreate=lazy(() => import("./pages/articles/ArticleCreate"));
-const ArticleManage=lazy(() => import("./pages/articles/ArticleManage"));
-const ArticleEdit=lazy(() => import("./pages/articles/ArticleEdit"));
-const Connections=lazy(() => import("./pages/profile/Connections"));
-const Messages=lazy(() => import("./pages/messaging/Messages"));
-const MessageConversation=lazy(() => import("./pages/messaging/MessageConversation"));
-const Notifications=lazy(() => import("./pages/social/Notifications"));
-const Mission=lazy(() => import("./pages/info/Mission"));
-const Documentation=lazy(() => import("./pages/info/Documentation"));
-const Integrations=lazy(() => import("./pages/info/Integrations"));
-const ShareProfile=lazy(() => import("./pages/auth/ShareProfile"));
-const AuthorizeApp=lazy(() => import("./pages/auth/AuthorizeApp"));
-const ConnectedApps=lazy(() => import("./pages/settings/ConnectedApps"));
-const MastodonApps=lazy(() => import("./pages/info/MastodonApps"));
-const Hosting=lazy(() => import("./pages/info/Hosting"));
-const FederationGuide=lazy(() => import("./pages/federation/FederationGuide"));
-const HelpCenter=lazy(() => import("./pages/info/HelpCenter"));
-const PrivacyPolicy=lazy(() => import("./pages/legal/PrivacyPolicy"));
-const TermsOfService=lazy(() => import("./pages/legal/TermsOfService"));
-const CodeOfConductPage=lazy(() => import("./pages/legal/CodeOfConductPage"));
-const InstanceGuidelinesPage=lazy(() => import("./pages/legal/InstanceGuidelines"));
-const CookiesPage=lazy(() => import("./pages/legal/CookiesPage"));
-const Instances=lazy(() => import("./pages/federation/Instances"));
-const AdminFederationHealth=lazy(() => import("./pages/federation/AdminFederationHealth"));
-const AdminInstances=lazy(() => import("./pages/federation/AdminInstances"));
-const ModerationDashboard=lazy(() => import("./pages/moderation/ModerationDashboard"));
-const PostView=lazy(() => import("./pages/posts/PostView"));
-const SavedItemsPage=lazy(() => import("./pages/social/SavedItems"));
-const StarterPacks=lazy(() => import("./pages/social/StarterPacks"));
-const StarterPackView=lazy(() => import("./pages/social/StarterPackView"));
-const StarterPackCreate=lazy(() => import("./pages/social/StarterPackCreate"));
-const FeedSettings=lazy(() => import("./pages/settings/FeedSettings"));
-const Search=lazy(() => import("./pages/search/Search"));
-const Freelancers=lazy(() => import("./pages/social/Freelancers"));
-const Followers=lazy(() => import("./pages/profile/Followers"));
-const Following=lazy(() => import("./pages/profile/Following"));
-const Companies=lazy(() => import("./pages/company/Companies"));
-const CompanyProfile=lazy(() => import("./pages/company/CompanyProfile"));
-const CompanyCreate=lazy(() => import("./pages/company/CompanyCreate"));
-const CompanyEdit=lazy(() => import("./pages/company/CompanyEdit"));
-const CompanyAdmin=lazy(() => import("./pages/company/CompanyAdmin"));
+const Profile = lazy(() => import("./pages/profile/Profile"));
+const ProfileEdit = lazy(() => import("./pages/profile/ProfileEdit"));
+const Jobs = lazy(() => import("./pages/jobs/Jobs"));
+const JobView = lazy(() => import("./pages/jobs/JobView"));
+const JobCreate = lazy(() => import("./pages/jobs/JobCreate"));
+const JobEdit = lazy(() => import("./pages/jobs/JobEdit"));
+const JobManage = lazy(() => import("./pages/jobs/JobManage"));
+const FederatedFeedPage = lazy(() => import("./pages/federation/FederatedFeed"));
+const ConversationGuide = lazy(() => import('./pages/legal/ConversationGuide'));
+const MyContentReviews = lazy(() => import('./pages/moderation/MyContentReviews'));
+const AtprotoCallback = lazy(() => import('./pages/auth/AtprotoCallback'));
+const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
+const AuthRecovery = lazy(() => import("./pages/auth/AuthRecovery"));
+const UpdatePassword = lazy(() => import("./pages/auth/UpdatePassword"));
+const ConfirmEmail = lazy(() => import("./pages/auth/ConfirmEmail"));
+const MfaRecover = lazy(() => import("./pages/auth/MfaRecover"));
+const Events = lazy(() => import("./pages/events/Events"));
+const EventCreate = lazy(() => import("./pages/events/EventCreate"));
+const EventView = lazy(() => import("./pages/events/EventView"));
+const EventEdit = lazy(() => import("./pages/events/EventEdit"));
+const Articles = lazy(() => import("./pages/articles/Articles"));
+const ArticleView = lazy(() => import("./pages/articles/ArticleView"));
+const ArticleCreate = lazy(() => import("./pages/articles/ArticleCreate"));
+const ArticleManage = lazy(() => import("./pages/articles/ArticleManage"));
+const ArticleEdit = lazy(() => import("./pages/articles/ArticleEdit"));
+const Connections = lazy(() => import("./pages/profile/Connections"));
+const Messages = lazy(() => import("./pages/messaging/Messages"));
+const MessageConversation = lazy(() => import("./pages/messaging/MessageConversation"));
+const Notifications = lazy(() => import("./pages/social/Notifications"));
+const Mission = lazy(() => import("./pages/info/Mission"));
+const Documentation = lazy(() => import("./pages/info/Documentation"));
+const Integrations = lazy(() => import("./pages/info/Integrations"));
+const ShareProfile = lazy(() => import("./pages/auth/ShareProfile"));
+const AuthorizeApp = lazy(() => import("./pages/auth/AuthorizeApp"));
+const ConnectedApps = lazy(() => import("./pages/settings/ConnectedApps"));
+const MastodonApps = lazy(() => import("./pages/info/MastodonApps"));
+const Hosting = lazy(() => import("./pages/info/Hosting"));
+const FederationGuide = lazy(() => import("./pages/federation/FederationGuide"));
+const HelpCenter = lazy(() => import("./pages/info/HelpCenter"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
+const CodeOfConductPage = lazy(() => import("./pages/legal/CodeOfConductPage"));
+const InstanceGuidelinesPage = lazy(() => import("./pages/legal/InstanceGuidelines"));
+const CookiesPage = lazy(() => import("./pages/legal/CookiesPage"));
+const Instances = lazy(() => import("./pages/federation/Instances"));
+const AdminFederationHealth = lazy(() => import("./pages/federation/AdminFederationHealth"));
+const AdminInstances = lazy(() => import("./pages/federation/AdminInstances"));
+const ModerationDashboard = lazy(() => import("./pages/moderation/ModerationDashboard"));
+const PostView = lazy(() => import("./pages/posts/PostView"));
+const SavedItemsPage = lazy(() => import("./pages/social/SavedItems"));
+const StarterPacks = lazy(() => import("./pages/social/StarterPacks"));
+const StarterPackView = lazy(() => import("./pages/social/StarterPackView"));
+const StarterPackCreate = lazy(() => import("./pages/social/StarterPackCreate"));
+const FeedSettings = lazy(() => import("./pages/settings/FeedSettings"));
+const Search = lazy(() => import("./pages/search/Search"));
+const Freelancers = lazy(() => import("./pages/social/Freelancers"));
+const Followers = lazy(() => import("./pages/profile/Followers"));
+const Following = lazy(() => import("./pages/profile/Following"));
+const Companies = lazy(() => import("./pages/company/Companies"));
+const CompanyProfile = lazy(() => import("./pages/company/CompanyProfile"));
+const CompanyCreate = lazy(() => import("./pages/company/CompanyCreate"));
+const CompanyEdit = lazy(() => import("./pages/company/CompanyEdit"));
+const CompanyAdmin = lazy(() => import("./pages/company/CompanyAdmin"));
 
-const queryClient=new QueryClient({
+const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60_000, // 1 minute before data is considered stale
@@ -111,26 +111,26 @@ const queryClient=new QueryClient({
 
 // Redirect component for referral join links
 function JoinRedirect() {
-  const { code }=useParams();
+  const { code } = useParams();
   return <Navigate to={`/auth/signup?ref=${code}`} replace />;
 }
 
 function JobRedirect() {
-  const { id }=useParams();
-  return <Navigate to={`/jobs/${encodeURIComponent(id||"")}`} replace />;
+  const { id } = useParams();
+  return <Navigate to={`/jobs/${encodeURIComponent(id || "")}`} replace />;
 }
 
 // Redirect components for old company URLs
 function CompanySlugRedirect() {
-  const { slug }=useParams();
+  const { slug } = useParams();
   return <Navigate to={`/organisation/${slug}`} replace />;
 }
 function CompanySlugEditRedirect() {
-  const { slug }=useParams();
+  const { slug } = useParams();
   return <Navigate to={`/organisation/${slug}/redigera`} replace />;
 }
 function CompanySlugAdminRedirect() {
-  const { slug }=useParams();
+  const { slug } = useParams();
   return <Navigate to={`/organisation/${slug}/admin`} replace />;
 }
 
@@ -146,7 +146,7 @@ function RouteFallback() {
 }
 
 function AppRoutes() {
-  const toasterConfig={ position: "top-center" as const,duration: 3000,className: "z-[100]" };
+  const toasterConfig = { position: "top-center" as const, duration: 3000, className: "z-[100]" };
   return (
     <AuthProvider>
       <UnsavedChangesProvider>
@@ -373,7 +373,7 @@ function AppRoutes() {
   );
 }
 
-const router=createBrowserRouter([{ path: "*",element: <AppRoutes /> }]);
+const router = createBrowserRouter([{ path: "*", element: <AppRoutes /> }]);
 
 function App() {
 
@@ -395,10 +395,10 @@ function App() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user,loading,mfaPending }=useAuth();
-  const location=useLocation();
+  const { user, loading, mfaPending } = useAuth();
+  const location = useLocation();
 
-  if(loading||mfaPending) {
+  if (loading || mfaPending) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
         <div className="text-center">
@@ -409,8 +409,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if(!user) {
-    return <Navigate to="/auth" state={{ returnTo: location.pathname+location.search+location.hash }} replace />;
+  if (!user) {
+    return <Navigate to="/auth" state={{ returnTo: location.pathname + location.search + location.hash }} replace />;
   }
 
   return <>{children}</>;
