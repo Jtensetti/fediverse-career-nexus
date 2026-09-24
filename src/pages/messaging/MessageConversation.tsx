@@ -1,3 +1,5 @@
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
+import { useReducedMotion } from "framer-motion";
 import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -49,6 +51,8 @@ export default function MessageConversation() {
   const currentUserId = user?.id || null;
   const inboxReady = useUnlockedInbox();
   const [newMessage, setNewMessage] = useState('');
+  const reduceMotion = useReducedMotion();
+  useUnsavedChanges({ dirty: !!newMessage.trim(), message: tx('ux.leaveDescription') });
   const [otherUser, setOtherUser] = useState<ParticipantInfo | null>(null);
   const [canMessage, setCanMessage] = useState<boolean | null>(null);
   const [isFederated, setIsFederated] = useState<boolean>(false);
@@ -73,10 +77,10 @@ export default function MessageConversation() {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
-        behavior: smooth ? 'smooth' : 'auto'
+        behavior: smooth && !reduceMotion ? 'smooth' : 'auto'
       });
     }
-  }, []);
+  }, [reduceMotion]);
 
   // Check if user is near bottom of messages
   const checkIfNearBottom = useCallback(() => {
@@ -169,9 +173,9 @@ export default function MessageConversation() {
       if (!conversationId) throw new Error('No conversation ID');
       return sendMessage(conversationId, messageContent);
     },
-    onSuccess: (message) => {
+    onSuccess: (message, sentContent) => {
       queryClient.setQueryData(['conversation', currentUserId, conversationId], (previous: ConversationWithMessages | undefined) => previous ? { ...previous, messages: [...previous.messages.filter(item => item.id !== message.id), message] } : previous);
-      setNewMessage('');
+      setNewMessage(current => current.trim() === sentContent.trim() ? '' : current);
       // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -425,9 +429,13 @@ export default function MessageConversation() {
                 <span>{isFederated ? tx("ui.messageConversation.privataMeddelandenTillAndra") : tx("ui.messageConversation.duKanInteSkicka")}</span>
               </div>
             ) : (
-              <form onSubmit={handleSendMessage} className="w-full">
+              <form onSubmit={handleSendMessage} className="w-full" aria-busy={sendMessageMutation.isPending}>
+                {sendMessageMutation.isError && <p role="alert" className="mb-3 text-destructive">{tx("ux.saveUnconfirmed")}</p>}
+                {sendMessageMutation.isPending && <p role="status" className="mb-2 text-sm text-muted-foreground">{tx("ux.sending")}</p>}
+                <label htmlFor="message-text" className="mb-2 block text-sm font-medium">{tx("ui.messageConversation.skrivDittMeddelande")}</label>
                 <div className="flex space-x-2 items-end">
                   <Textarea
+                    id="message-text"
                     ref={textareaRef}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
@@ -442,10 +450,10 @@ export default function MessageConversation() {
                     type="submit"
                     size="icon"
                     aria-label={tx("ui.messageConversation.skickaMeddelande")}
-                    className="h-10 w-10 flex-shrink-0"
+                    className="h-11 w-11 flex-shrink-0"
                     disabled={!newMessage.trim() || sendMessageMutation.isPending || canMessage !== true}
                   >
-                    <Send className="h-4 w-4" />
+                    {sendMessageMutation.isPending ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Send aria-hidden="true" className="h-4 w-4" />}
                   </Button>
                 </div>
               </form>

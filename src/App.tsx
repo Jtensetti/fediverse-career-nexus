@@ -2,7 +2,9 @@ import SocialCallback from '@/pages/auth/SocialCallback';
 import React, { lazy, Suspense } from "react";
 
 import {
-  BrowserRouter,
+  createBrowserRouter,
+  RouterProvider,
+  ScrollRestoration,
   Routes,
   Route,
   Navigate,
@@ -22,6 +24,7 @@ import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { AlertBanner } from "@/components/layout/AlertBanner";
 import { useAuth } from "./contexts/AuthContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { UnsavedChangesProvider } from "@/contexts/UnsavedChangesContext";
 
 // Eager-loaded critical routes (landing, auth, 404)
 import Index from "./pages/Index";
@@ -133,7 +136,7 @@ function CompanySlugAdminRedirect() {
 
 function RouteFallback() {
   return (
-    <div className="min-h-[40vh] flex items-center justify-center">
+    <div role="status" aria-live="polite" className="min-h-[40vh] flex items-center justify-center">
       <div
         className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
         aria-label={tx("ui.app.laddarSida")}
@@ -142,243 +145,249 @@ function RouteFallback() {
   );
 }
 
+function AppRoutes() {
+  const toasterConfig = { position: "top-center" as const, duration: 3000, className: "z-[100]" };
+  return (
+    <AuthProvider>
+      <UnsavedChangesProvider>
+        <SkipToContent />
+        <Toaster {...toasterConfig} />
+        <SessionExpiryWarning />
+        <AlertBanner />
+        <div id="route-content">
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/mission" element={<Mission />} />
+              <Route path="/documentation" element={<Documentation />} />
+              <Route path="/hosting" element={<Hosting />} />
+              <Route path="/integrations" element={<Integrations />} />
+              <Route path="/share-profile" element={<ShareProfile />} />
+              <Route path="/help" element={<HelpCenter />} />
+              <Route path="/federation" element={<FederationGuide />} />
+              <Route path="/conversation-guide" element={<ConversationGuide />} />
+              <Route path="/my-reviews" element={<ProtectedRoute><MyContentReviews /></ProtectedRoute>} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
+              <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
+              <Route path="/cookies" element={<CookiesPage />} />
+              <Route path="/instances" element={<Instances />} />
+              <Route path="/packs" element={<StarterPacks />} />
+              <Route path="/packs/:slug" element={<StarterPackView />} />
+              <Route path="/packs/create" element={<ProtectedRoute><StarterPackCreate /></ProtectedRoute>} />
+              <Route path="/settings/feeds" element={<ProtectedRoute><FeedSettings /></ProtectedRoute>} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/freelancers" element={<Freelancers />} />
+              {/* Organisation routes */}
+              <Route path="/organisationer" element={<Companies />} />
+              <Route path="/organisation/:slug" element={<CompanyProfile />} />
+              <Route path="/organisationer/skapa" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
+              <Route path="/organisation/:slug/redigera" element={<ProtectedRoute><CompanyEdit /></ProtectedRoute>} />
+              <Route path="/organisation/:slug/admin" element={<ProtectedRoute><CompanyAdmin /></ProtectedRoute>} />
+              {/* Redirects from old company URLs */}
+              <Route path="/companies" element={<Navigate to="/organisationer" replace />} />
+              <Route path="/companies/create" element={<Navigate to="/organisationer/skapa" replace />} />
+              <Route path="/company/:slug" element={<CompanySlugRedirect />} />
+              <Route path="/company/:slug/edit" element={<CompanySlugEditRedirect />} />
+              <Route path="/company/:slug/admin" element={<CompanySlugAdminRedirect />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/login" element={<Auth />} />
+              <Route path="/auth/signup" element={<Auth />} />
+              <Route path="/auth/social/callback" element={<SocialCallback />} />
+              <Route path="/auth/atproto/callback" element={<AtprotoCallback />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/recovery" element={<AuthRecovery />} />
+              <Route path="/auth/update-password" element={<UpdatePassword />} />
+              <Route path="/confirm-email" element={<ConfirmEmail />} />
+              <Route path="/aterstall-mfa" element={<MfaRecover />} />
+              {/* Referral join route - redirects to signup with ref param */}
+              <Route path="/join/:code" element={<JoinRedirect />} />
+              <Route path="/jobs" element={<Jobs />} />
+              <Route path="/jobs/:id" element={<JobView />} />
+              <Route path="/jobs/create" element={<ProtectedRoute><JobCreate /></ProtectedRoute>} />
+              <Route path="/jobs/manage" element={<ProtectedRoute><JobManage /></ProtectedRoute>} />
+              <Route path="/jobs/edit/:id" element={<ProtectedRoute><JobEdit /></ProtectedRoute>} />
+              {/* Route aliases for common typos - singular /job → /jobs */}
+              <Route path="/job/create" element={<Navigate to="/jobs/create" replace />} />
+              <Route path="/job/:id" element={<JobRedirect />} />
+              <Route path="/job" element={<Navigate to="/jobs" replace />} />
+              <Route path="/articles/:slug" element={<ArticleView />} />
+              <Route path="/post/:postId" element={<PostView />} />
+
+              {/* Protected routes */}
+              <Route
+                path="/feed"
+                element={
+                  <FederatedFeedPage />
+                }
+              />
+              <Route
+                path="/profile/edit"
+                element={
+                  <ProtectedRoute>
+                    <ProfileEdit />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Public profile routes - anyone can view profiles */}
+              <Route path="/profile/:usernameOrId" element={<Profile />} />
+              <Route path="/profile/:userId/followers" element={<Followers />} />
+              <Route path="/profile/:userId/following" element={<Following />} />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/saved"
+                element={
+                  <ProtectedRoute>
+                    <SavedItemsPage />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Events - list and detail are public, create/edit are protected */}
+              <Route path="/events" element={<Events />} />
+              <Route path="/events/:id" element={<EventView />} />
+              <Route
+                path="/events/create"
+                element={
+                  <ProtectedRoute>
+                    <EventCreate />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events/edit/:id"
+                element={
+                  <ProtectedRoute>
+                    <EventEdit />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/articles"
+                element={
+                  <ProtectedRoute>
+                    <Articles />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/articles/create"
+                element={
+                  <ProtectedRoute>
+                    <ArticleCreate />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/articles/manage"
+                element={
+                  <ProtectedRoute>
+                    <ArticleManage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/articles/edit/:id"
+                element={
+                  <ProtectedRoute>
+                    <ArticleEdit />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/connections"
+                element={
+                  <ProtectedRoute>
+                    <Connections />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedRoute>
+                    <Messages />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/messages/:conversationId"
+                element={
+                  <ProtectedRoute>
+                    <MessageConversation />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <Notifications />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/federation-health"
+                element={
+                  <ProtectedRoute>
+                    <AdminFederationHealth />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/instances"
+                element={
+                  <ProtectedRoute>
+                    <AdminInstances />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/moderation"
+                element={
+                  <ProtectedRoute>
+                    <ModerationDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/oauth/authorize" element={<AuthorizeApp />} />
+              <Route path="/mastodon-apps" element={<MastodonApps />} />
+              <Route path="/settings/apps" element={<ProtectedRoute><ConnectedApps /></ProtectedRoute>} />
+              {/* Catch-all for 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </div>
+        <MobileBottomNav />
+        <ScrollRestoration />
+      </UnsavedChangesProvider>
+    </AuthProvider>
+  );
+}
+
+// Keep route rendering failures inside Nolto's translated recovery UI.
+const router = createBrowserRouter([{ path: "*", element: <ErrorBoundary><AppRoutes /></ErrorBoundary> }]);
+
 function App() {
-  const toasterConfig = {
-    position: "top-center" as const,
-    duration: 3000,
-    className: "z-[100]",
-  };
 
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <MotionConfig reducedMotion="user">
-          <TooltipProvider>
-            <ErrorBoundary>
-              <BrowserRouter>
-                <AuthProvider>
-                <SkipToContent />
-                <Toaster {...toasterConfig} />
-                <SessionExpiryWarning />
-                <AlertBanner />
-                <div id="main-content">
-                  <Suspense fallback={<RouteFallback />}>
-                  <Routes>
-                    {/* Public routes */}
-                    <Route path="/" element={<Index />} />
-                    <Route path="/mission" element={<Mission />} />
-                    <Route path="/documentation" element={<Documentation />} />
-                    <Route path="/hosting" element={<Hosting />} />
-                    <Route path="/integrations" element={<Integrations />} />
-                    <Route path="/share-profile" element={<ShareProfile />} />
-                    <Route path="/help" element={<HelpCenter />} />
-                    <Route path="/federation" element={<FederationGuide />} />
-                    <Route path="/conversation-guide" element={<ConversationGuide />} />
-                    <Route path="/my-reviews" element={<ProtectedRoute><MyContentReviews /></ProtectedRoute>} />
-                    <Route path="/privacy" element={<PrivacyPolicy />} />
-                    <Route path="/terms" element={<TermsOfService />} />
-                    <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
-                    <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
-                    <Route path="/cookies" element={<CookiesPage />} />
-                    <Route path="/instances" element={<Instances />} />
-                    <Route path="/packs" element={<StarterPacks />} />
-                    <Route path="/packs/:slug" element={<StarterPackView />} />
-                    <Route path="/packs/create" element={<ProtectedRoute><StarterPackCreate /></ProtectedRoute>} />
-                    <Route path="/settings/feeds" element={<ProtectedRoute><FeedSettings /></ProtectedRoute>} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/freelancers" element={<Freelancers />} />
-                    {/* Organisation routes */}
-                    <Route path="/organisationer" element={<Companies />} />
-                    <Route path="/organisation/:slug" element={<CompanyProfile />} />
-                    <Route path="/organisationer/skapa" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
-                    <Route path="/organisation/:slug/redigera" element={<ProtectedRoute><CompanyEdit /></ProtectedRoute>} />
-                    <Route path="/organisation/:slug/admin" element={<ProtectedRoute><CompanyAdmin /></ProtectedRoute>} />
-                    {/* Redirects from old company URLs */}
-                    <Route path="/companies" element={<Navigate to="/organisationer" replace />} />
-                    <Route path="/companies/create" element={<Navigate to="/organisationer/skapa" replace />} />
-                    <Route path="/company/:slug" element={<CompanySlugRedirect />} />
-                    <Route path="/company/:slug/edit" element={<CompanySlugEditRedirect />} />
-                    <Route path="/company/:slug/admin" element={<CompanySlugAdminRedirect />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/login" element={<Auth />} />
-            <Route path="/auth/signup" element={<Auth />} />
-            <Route path="/auth/social/callback" element={<SocialCallback />} />
-            <Route path="/auth/atproto/callback" element={<AtprotoCallback />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/auth/recovery" element={<AuthRecovery />} />
-            <Route path="/auth/update-password" element={<UpdatePassword />} />
-            <Route path="/confirm-email" element={<ConfirmEmail />} />
-            <Route path="/aterstall-mfa" element={<MfaRecover />} />
-            {/* Referral join route - redirects to signup with ref param */}
-            <Route path="/join/:code" element={<JoinRedirect />} />
-                    <Route path="/jobs" element={<Jobs />} />
-                    <Route path="/jobs/:id" element={<JobView />} />
-                    <Route path="/jobs/create" element={<ProtectedRoute><JobCreate /></ProtectedRoute>} />
-                    <Route path="/jobs/manage" element={<ProtectedRoute><JobManage /></ProtectedRoute>} />
-                    <Route path="/jobs/edit/:id" element={<ProtectedRoute><JobEdit /></ProtectedRoute>} />
-                    {/* Route aliases for common typos - singular /job → /jobs */}
-                    <Route path="/job/create" element={<Navigate to="/jobs/create" replace />} />
-                    <Route path="/job/:id" element={<JobRedirect />} />
-                    <Route path="/job" element={<Navigate to="/jobs" replace />} />
-                    <Route path="/articles/:slug" element={<ArticleView />} />
-                    <Route path="/post/:postId" element={<PostView />} />
-
-                    {/* Protected routes */}
-                    <Route
-                      path="/feed"
-                      element={
-                        <FederatedFeedPage />
-                      }
-                    />
-                    <Route
-                      path="/profile/edit"
-                      element={
-                        <ProtectedRoute>
-                          <ProfileEdit />
-                        </ProtectedRoute>
-                      }
-                    />
-                    {/* Public profile routes - anyone can view profiles */}
-                    <Route path="/profile/:usernameOrId" element={<Profile />} />
-                    <Route path="/profile/:userId/followers" element={<Followers />} />
-                    <Route path="/profile/:userId/following" element={<Following />} />
-                    <Route
-                      path="/profile"
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/saved"
-                      element={
-                        <ProtectedRoute>
-                          <SavedItemsPage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    {/* Events - list and detail are public, create/edit are protected */}
-                    <Route path="/events" element={<Events />} />
-                    <Route path="/events/:id" element={<EventView />} />
-                    <Route
-                      path="/events/create"
-                      element={
-                        <ProtectedRoute>
-                          <EventCreate />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/events/edit/:id"
-                      element={
-                        <ProtectedRoute>
-                          <EventEdit />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/articles"
-                      element={
-                        <ProtectedRoute>
-                          <Articles />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/articles/create"
-                      element={
-                        <ProtectedRoute>
-                          <ArticleCreate />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/articles/manage"
-                      element={
-                        <ProtectedRoute>
-                          <ArticleManage />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/articles/edit/:id"
-                      element={
-                        <ProtectedRoute>
-                          <ArticleEdit />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/connections"
-                      element={
-                        <ProtectedRoute>
-                          <Connections />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/messages"
-                      element={
-                        <ProtectedRoute>
-                          <Messages />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/messages/:conversationId"
-                      element={
-                        <ProtectedRoute>
-                          <MessageConversation />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/notifications"
-                      element={
-                        <ProtectedRoute>
-                          <Notifications />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/admin/federation-health"
-                      element={
-                        <ProtectedRoute>
-                          <AdminFederationHealth />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/admin/instances"
-                      element={
-                        <ProtectedRoute>
-                          <AdminInstances />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/moderation"
-                      element={
-                        <ProtectedRoute>
-                          <ModerationDashboard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="/oauth/authorize" element={<AuthorizeApp />} />
-                    <Route path="/mastodon-apps" element={<MastodonApps />} />
-                    <Route path="/settings/apps" element={<ProtectedRoute><ConnectedApps /></ProtectedRoute>} />
-                    {/* Catch-all for 404 */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  </Suspense>
-                </div>
-                <MobileBottomNav />
-                </AuthProvider>
-              </BrowserRouter>
-            </ErrorBoundary>
-          </TooltipProvider>
+            <TooltipProvider>
+              <ErrorBoundary>
+                <RouterProvider router={router} />
+              </ErrorBoundary>
+            </TooltipProvider>
           </MotionConfig>
         </ThemeProvider>
       </HelmetProvider>

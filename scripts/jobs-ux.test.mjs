@@ -144,9 +144,9 @@ test('job form displays its full-time default, follows publication choice and re
   try {
     assert.ok(document.querySelector('[role="combobox"]').textContent.includes(translate('jobFormLabels.fullTime')));
     assert.equal(submitButton().textContent, translate('jobFormLabels.saveDraft'));
-    await act(async () => document.querySelector('[role="switch"]').click());
+    await act(async () => document.querySelector('[role="checkbox"]').click());
     assert.equal(submitButton().textContent, translate('jobFormLabels.publishJob'));
-    await act(async () => document.querySelector('[role="switch"]').click());
+    await act(async () => document.querySelector('[role="checkbox"]').click());
     await act(async () => document.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
     assert.equal(submitted.is_active, false);
     assert.equal(submitted.employment_type, 'full-time');
@@ -169,7 +169,7 @@ test('job search submits from the keyboard and clearing parent filters resets th
     assert.deepEqual(result, { search: 'designer', job_type: 'full_time', location: 'Stockholm', remote_allowed: true });
     await view.rerender(h(JobSearchFilter, { filters: {}, onFilterChange }));
     assert.ok([...document.querySelectorAll('input[type="text"]')].every(input => input.value === ''));
-    assert.equal(document.querySelector('[role="switch"]').getAttribute('aria-checked'), 'false');
+    assert.equal(document.querySelector('[role="checkbox"]').getAttribute('aria-checked'), 'false');
     assert.ok(document.querySelector('[role="combobox"]').textContent.includes(translate('jobs.allJobTypes')));
   } finally { await view.cleanup(); }
 });

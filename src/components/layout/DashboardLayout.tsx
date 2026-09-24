@@ -12,9 +12,9 @@ interface DashboardLayoutProps {
   disableSEO?: boolean;
 }
 
-const DashboardLayout = ({ 
-  children, 
-  title, 
+const DashboardLayout = ({
+  children,
+  title,
   description,
   showHeader = true,
   disableSEO = false,
@@ -23,10 +23,10 @@ const DashboardLayout = ({
     <div className="min-h-dvh flex flex-col bg-background">
       {/* Auto-set SEO if title is provided and not disabled */}
       {!disableSEO && title && <SEOHead title={title} description={description} />}
-      
+
       <Navbar />
-      
-      <main className="flex-grow">
+
+      <main id="main-content" tabIndex={-1} className="flex-grow">
         {showHeader && (title || description) && (
           <div className="bg-card border-b">
             <div className="container mx-auto px-4 py-8">
@@ -35,12 +35,12 @@ const DashboardLayout = ({
             </div>
           </div>
         )}
-        
+
         <div className="container mx-auto px-4 py-8">
           {children}
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

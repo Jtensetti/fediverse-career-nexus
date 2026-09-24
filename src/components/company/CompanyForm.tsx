@@ -174,7 +174,8 @@ export default function CompanyForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" aria-busy={isSubmitting}>
+        <fieldset disabled={isSubmitting} className="contents">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -400,6 +401,7 @@ export default function CompanyForm({
             {resolvedButtonText}
           </Button>
         </div>
+        </fieldset>
       </form>
     </Form>
   );

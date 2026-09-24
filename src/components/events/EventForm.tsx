@@ -6,7 +6,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/forms/DatePicker";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -149,7 +149,8 @@ const EventForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8" aria-busy={isSubmitting}>
+        <fieldset disabled={isSubmitting} className="contents">
         <div className="space-y-6">
           <h3 className="text-lg font-medium">{t("eventFormLabels.eventDetails")}</h3>
           <FormField control={form.control} name="title" render={({ field }) => (
@@ -227,7 +228,7 @@ const EventForm = ({
                 <FormLabel>{t("eventFormLabels.onlineEvent")}</FormLabel>
                 <FormDescription>{t("eventFormLabels.onlineEventDesc")}</FormDescription>
               </div>
-              <FormControl><Switch checked={field.value} onCheckedChange={(checked) => { field.onChange(checked); setIsOnline(checked); }} /></FormControl>
+              <FormControl><Checkbox checked={field.value} onCheckedChange={(checked) => { field.onChange(checked === true); setIsOnline(checked === true); }} /></FormControl>
             </FormItem>
           )} />
           {!isOnline && (
@@ -297,6 +298,7 @@ const EventForm = ({
             {isSubmitting ? t("eventFormLabels.submitting") : finalSubmitText}
           </Button>
         </div>
+        </fieldset>
       </form>
     </Form>
   );

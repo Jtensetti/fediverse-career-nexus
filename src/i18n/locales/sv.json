@@ -4037,5 +4037,21 @@
   "language": {
     "label": "Språk",
     "loadFailed": "Språket kunde inte laddas. Kontrollera anslutningen och försök igen."
+  },
+  "ux": {
+    "leaveTitle": "Lämna utan att spara?",
+    "leaveDescription": "Dina osparade ändringar försvinner om du lämnar sidan. Om en sändning pågår kan den ändå slutföras.",
+    "keepEditing": "Fortsätt redigera",
+    "discardAndLeave": "Lämna utan att spara",
+    "loadFailed": "Innehållet kunde inte hämtas. Kontrollera anslutningen och försök igen.",
+    "refreshFailed": "Uppdateringen kunde inte hämtas. Det senast hämtade innehållet visas och kan vara inaktuellt.",
+    "refreshing": "Uppdaterar innehållet …",
+    "noJobs": "Inga jobb publicerade ännu",
+    "noJobsDescription": "Här hittar du lediga jobb när de publiceras på Nolto. Kom gärna tillbaka.",
+    "noOrganisations": "Inga organisationer ännu",
+    "noOrganisationsDescription": "Här kan du upptäcka organisationer när de har skapat sina sidor.",
+    "saveUnconfirmed": "Vi kunde inte bekräfta att ändringen sparades. Ditt innehåll finns kvar här. Kontrollera resultatet innan du försöker igen.",
+    "unsaved": "Du har osparade ändringar.",
+    "sending": "Skickar …"
   }
 }

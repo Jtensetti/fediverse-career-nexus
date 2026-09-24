@@ -4029,5 +4029,21 @@
         ]
       ]
     }
+  },
+  "ux": {
+    "leaveTitle": "Quitter sans enregistrer ?",
+    "leaveDescription": "Vos modifications non enregistrées seront perdues si vous quittez cette page. Un envoi déjà en cours peut toutefois aboutir.",
+    "keepEditing": "Continuer à modifier",
+    "discardAndLeave": "Quitter sans enregistrer",
+    "loadFailed": "Le contenu n’a pas pu être chargé. Vérifiez votre connexion et réessayez.",
+    "refreshFailed": "La mise à jour n’a pas pu être chargée. Le dernier contenu chargé reste affiché et peut être obsolète.",
+    "refreshing": "Mise à jour du contenu…",
+    "noJobs": "Aucune offre publiée pour le moment",
+    "noJobsDescription": "Vous trouverez ici les offres publiées sur Nolto. Revenez bientôt.",
+    "noOrganisations": "Aucune organisation pour le moment",
+    "noOrganisationsDescription": "Vous pourrez découvrir les organisations ici une fois leurs pages créées.",
+    "saveUnconfirmed": "Nous n’avons pas pu confirmer l’enregistrement. Votre contenu est toujours ici. Vérifiez le résultat avant de réessayer.",
+    "unsaved": "Vous avez des modifications non enregistrées.",
+    "sending": "Envoi en cours…"
   }
 }

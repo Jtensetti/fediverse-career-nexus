@@ -4029,5 +4029,21 @@
         ]
       ]
     }
+  },
+  "ux": {
+    "leaveTitle": "¿Salir sin guardar?",
+    "leaveDescription": "Si sales de esta página, se perderán los cambios sin guardar. Un envío que ya esté en curso podría completarse.",
+    "keepEditing": "Seguir editando",
+    "discardAndLeave": "Salir sin guardar",
+    "loadFailed": "No se pudo cargar el contenido. Comprueba tu conexión e inténtalo de nuevo.",
+    "refreshFailed": "No se pudo cargar la actualización. Se muestra el último contenido cargado y podría estar desactualizado.",
+    "refreshing": "Actualizando el contenido…",
+    "noJobs": "Todavía no hay ofertas publicadas",
+    "noJobsDescription": "Aquí encontrarás ofertas cuando se publiquen en Nolto. Vuelve pronto.",
+    "noOrganisations": "Todavía no hay organizaciones",
+    "noOrganisationsDescription": "Aquí podrás descubrir organizaciones cuando hayan creado sus páginas.",
+    "saveUnconfirmed": "No pudimos confirmar que se guardara el cambio. Tu contenido sigue aquí. Comprueba el resultado antes de volver a intentarlo.",
+    "unsaved": "Tienes cambios sin guardar.",
+    "sending": "Enviando…"
   }
 }
