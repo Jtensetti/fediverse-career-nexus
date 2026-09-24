@@ -58,7 +58,7 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
         {/* Search input */}
         <div className="min-w-0 sm:col-span-2 xl:col-span-3">
-          <Label htmlFor="job-search">{t("jobs.searchLabel", t("jobs.searchPlaceholder"))}</Label>
+          <Label htmlFor="job-search">{t("jobs.searchPlaceholder")}</Label>
           <div className="relative mt-2">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
