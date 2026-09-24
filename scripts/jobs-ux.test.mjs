@@ -169,7 +169,7 @@ test('job search submits from the keyboard and clearing parent filters resets th
     assert.deepEqual(result, { search: 'designer', job_type: 'full_time', location: 'Stockholm', remote_allowed: true });
     await view.rerender(h(JobSearchFilter, { filters: {}, onFilterChange }));
     assert.ok([...document.querySelectorAll('input[type="text"]')].every(input => input.value === ''));
-    assert.equal(document.querySelector('[role="switch"]').getAttribute('aria-checked'), 'false');
+    assert.equal(document.querySelector('input[type="checkbox"]').checked, false);
     assert.ok(document.querySelector('[role="combobox"]').textContent.includes(translate('jobs.allJobTypes')));
   } finally { await view.cleanup(); }
 });

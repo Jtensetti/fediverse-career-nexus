@@ -526,6 +526,6 @@ export default function AuthPage() {
       <p className="mt-5 text-center text-xs leading-relaxed text-muted-foreground">
         {t("auth.termsAgreement")} <Link to="/terms" className="underline">{t("auth.termsOfService")}</Link> {t("auth.and")} <Link to="/privacy" className="underline">{t("auth.privacyPolicy")}</Link>
       </p>
-    </main>
-  </div>;  </div>;
+    </div>
+  </main>;
 }
