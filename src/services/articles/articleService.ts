@@ -163,23 +163,16 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
 
 // Get an article by ID
 export const getArticleById = async (id: string): Promise<Article | null> => {
-  try {
     const { data, error } = await supabase
       .from('articles')
       .select('*')
       .eq('id', id)
       .single();
     
-    if (error) {
-      console.error('Error fetching article:', error);
-      return null;
-    }
+    if (error?.code === 'PGRST116') return null;
+    if (error) throw error;
     
     return normalizeArticle(data);
-  } catch (error) {
-    console.error('Error fetching article:', error);
-    return null;
-  }
 };
 
 // Get an article by slug or ID (for notification links that use IDs)
@@ -237,7 +230,6 @@ export const getPublishedArticles = async (): Promise<Article[]> => {
 
 // Get user's articles (both drafts and published)
 export const getUserArticles = async (): Promise<Article[]> => {
-  try {
     // Get articles where user is an author (either primary or collaborator)
     const { data: authoredArticles, error: authorError } = await supabase
       .from('article_authors')
@@ -247,10 +239,7 @@ export const getUserArticles = async (): Promise<Article[]> => {
       .eq('user_id', (await supabase.auth.getUser()).data.user?.id || '')
       .eq('can_edit', true);
     
-    if (authorError) {
-      console.error('Error fetching authored articles:', authorError);
-      return [];
-    }
+    if (authorError) throw authorError;
     
     if (!authoredArticles || authoredArticles.length === 0) {
       return [];
@@ -264,16 +253,9 @@ export const getUserArticles = async (): Promise<Article[]> => {
       .in('id', articleIds)
       .order('created_at', { ascending: false });
     
-    if (error) {
-      console.error('Error fetching user articles:', error);
-      return [];
-    }
+    if (error) throw error;
     
     return (data || []).map(normalizeArticle);
-  } catch (error) {
-    console.error('Error fetching user articles:', error);
-    return [];
-  }
 };
 
 // Get user's draft articles

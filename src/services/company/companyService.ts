@@ -39,8 +39,7 @@ export async function getCompanyBySlug(slug: string): Promise<Company | null> {
 
   if (error) {
     if (error.code === 'PGRST116') return null; // Not found
-    console.error('Error fetching company by slug:', error);
-    return null;
+    throw error;
   }
 
   return data;
@@ -57,8 +56,7 @@ export async function getCompanyById(id: string): Promise<Company | null> {
 
   if (error) {
     if (error.code === 'PGRST116') return null;
-    console.error('Error fetching company by ID:', error);
-    return null;
+    throw error;
   }
 
   return data;
