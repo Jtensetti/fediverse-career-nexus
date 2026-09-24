@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/lib/supabase";
 
 export default function DataExportSection() {
-  const { i18n } = useTranslation();
-  const sv = i18n.language.startsWith("sv");
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [downloaded, setDownloaded] = useState(false);
@@ -23,16 +22,16 @@ export default function DataExportSection() {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       setDownloaded(true);
     } catch {
-      setError(sv ? "Exporten kunde inte slutföras. Försök igen eller kontakta jtensetti@protonmail.com för hjälp med ett registerutdrag." : "The export could not be completed. Retry or contact jtensetti@protonmail.com for help with your data request.");
+      setError(t("ui.dataExportSection.theExportCouldNot"));
     } finally { setBusy(false); }
   }
   return <Card><CardHeader>
-    <CardTitle>{sv ? "Ladda ner dina uppgifter" : "Download your data"}</CardTitle>
-    <CardDescription>{sv ? "Profil, inlägg, meddelanden, kontakter och inställningar i en JSON-fil." : "Your profile, posts, messages, connections and settings in a JSON file."}</CardDescription>
+    <CardTitle>{t("ui.dataExportSection.downloadYourData")}</CardTitle>
+    <CardDescription>{t("ui.dataExportSection.yourProfilePostsMessages")}</CardDescription>
   </CardHeader><CardContent className="space-y-4">
-    <p className="text-sm text-muted-foreground">{sv ? "Uppladdade filer listas i exporten; själva filerna laddar du ner separat. Nya privata meddelanden exporteras krypterade. Spara även din nyckelbackup från inkorgen. Lösenord och inloggningstoken ingår inte. Exporten kan inte importeras direkt i Mastodon." : "The export lists uploaded files; download the files themselves separately. New private messages are exported as ciphertext. Save your encrypted key backup from the inbox too. Passwords and login tokens are excluded. This archive cannot be imported directly into Mastodon."}</p>
-    <Button onClick={download} disabled={busy}>{busy ? (sv ? "Förbereder export…" : "Preparing export…") : (sv ? "Ladda ner JSON" : "Download JSON")}</Button>
+    <p className="text-sm text-muted-foreground">{t("ui.dataExportSection.theExportListsUploaded")}</p>
+    <Button onClick={download} disabled={busy}>{busy ? (t("ui.dataExportSection.preparingExport")) : (t("ui.dataExportSection.downloadJson"))}</Button>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-    {downloaded && <p role="status" className="text-sm">{sv ? "Exporten är klar. Förvara den säkert; den innehåller privata meddelanden och kontaktuppgifter." : "Your export is ready. Store it securely; it contains private messages and contact details."}</p>}
+    {downloaded && <p role="status" className="text-sm">{t("ui.dataExportSection.yourExportIsReady")}</p>}
   </CardContent></Card>;
 }

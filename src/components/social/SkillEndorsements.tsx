@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 interface SkillEndorsementsProps {
   userId: string;
   isOwnProfile: boolean;
@@ -133,7 +134,7 @@ export function SkillEndorsements({ userId, isOwnProfile }: SkillEndorsementsPro
                     <div className="text-sm">
                       {skill.endorsement_list.slice(0, 5).map((e) => (
                         <div key={e.id}>
-                          {e.endorser?.fullname || e.endorser?.username || 'Unknown'}
+                          {e.endorser?.fullname || e.endorser?.username || tx("ui.skillEndorsements.unknown")}
                         </div>
                       ))}
                       {skill.endorsements > 5 && (

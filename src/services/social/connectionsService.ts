@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import i18n from "@/i18n";
 import { ConnectionDegree } from "@/components/social/ConnectionBadge";
 
+import { tx } from "@/i18n/tx";
 export interface NetworkConnection {
   id: string;           // User's profile ID (for messaging)
   connectionId: string; // Connection record ID (for removal)
@@ -90,7 +91,7 @@ export const getUserConnections = async (targetUserId?: string): Promise<Network
       .filter(Boolean) as NetworkConnection[];
   } catch (error) {
     console.error("Error fetching connections:", error);
-    toast.error("Kunde inte ladda kontakter");
+    toast.error(tx("ui.connectionsService.kundeInteLaddaKontakter"));
     return [];
   }
 };
@@ -128,7 +129,7 @@ export const getConnectionSuggestions = async (): Promise<NetworkSuggestion[]> =
     }));
   } catch (error) {
     console.error("Error fetching connection suggestions:", error);
-    toast.error("Kunde inte ladda kontaktförslag");
+    toast.error(tx("ui.connectionsService.kundeInteLaddaKontaktforslag"));
     return [];
   }
 };
@@ -183,12 +184,12 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("Du måste vara inloggad för att ansluta till andra");
+      toast.error(tx("ui.connectionsService.duMasteVaraInloggad"));
       return false;
     }
 
     if (user.id === userId) {
-      toast.error("You can't connect with yourself");
+      toast.error(tx("ui.connectionsService.youCanTConnect"));
       return false;
     }
 
@@ -241,7 +242,7 @@ export const sendConnectionRequest = async (userId: string): Promise<boolean> =>
 
     const rejected = rows.find((r: any) => r.status === "rejected");
     if (rejected) {
-      toast.info('Den tidigare förfrågan avslogs. Mottagaren kan ta initiativ till en ny kontakt.');
+      toast.info(tx("ui.connectionsService.denTidigareForfraganAvslogs"));
       return false;
     }
 

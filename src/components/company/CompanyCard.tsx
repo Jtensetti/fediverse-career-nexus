@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { Company } from "@/services/company/companyService";
 
+import { tx } from "@/i18n/tx";
 interface CompanyCardProps {
   company: Company;
 }
@@ -63,7 +64,7 @@ export default function CompanyCard({ company }: CompanyCardProps) {
             <span className="flex items-center gap-1.5">
               <Users className="h-4 w-4" />
               <span className="font-medium text-foreground">{company.follower_count}</span>
-              <span>följare</span>
+              <span>{tx("ui.companyCard.foljare")}</span>
             </span>
             {company.size && (
               <span className="flex items-center gap-1.5">

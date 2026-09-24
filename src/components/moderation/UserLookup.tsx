@@ -12,6 +12,7 @@ import { searchUsers } from "@/services/moderation/moderationService";
 import { UserBanDialog } from "./UserBanDialog";
 import { supabase } from "@/lib/supabase";
 
+import { tx } from "@/i18n/tx";
 interface UserDetails {
   id: string;
   username: string;
@@ -99,7 +100,7 @@ export function UserLookup() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Search className="h-5 w-5" />
-        <h3 className="text-lg font-semibold">Användaruppslag</h3>
+        <h3 className="text-lg font-semibold">{tx("ui.userLookup.anvandaruppslag")}</h3>
       </div>
 
       <Card>
@@ -107,7 +108,7 @@ export function UserLookup() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Sök efter användare med användarnamn eller namn..."
+              placeholder={tx("ui.userLookup.sokEfterAnvandareMed")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -115,7 +116,7 @@ export function UserLookup() {
           </div>
 
           {isSearching && (
-            <p className="text-sm text-muted-foreground mt-4">Söker...</p>
+            <p className="text-sm text-muted-foreground mt-4">{tx("ui.userLookup.soker")}</p>
           )}
 
           {searchResults.length > 0 && (
@@ -136,7 +137,7 @@ export function UserLookup() {
                     <p className="text-sm font-medium truncate flex items-center gap-2">
                       @{user.username}
                       {user.is_banned && (
-                        <Badge variant="destructive" className="text-xs">Avstängd</Badge>
+                        <Badge variant="destructive" className="text-xs">{tx("ui.userLookup.avstangd")}</Badge>
                       )}
                     </p>
                     {user.fullname && (
@@ -155,7 +156,7 @@ export function UserLookup() {
       {selectedUserId && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Användardetaljer</CardTitle>
+            <CardTitle className="text-base">{tx("ui.userLookup.anvandardetaljer")}</CardTitle>
           </CardHeader>
           <CardContent>
             {loadingDetails ? (
@@ -182,7 +183,7 @@ export function UserLookup() {
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold">@{userDetails.username}</h4>
                       {userDetails.is_banned && (
-                        <Badge variant="destructive">Avstängd</Badge>
+                        <Badge variant="destructive">{tx("ui.userLookup.avstangd")}</Badge>
                       )}
                     </div>
                     {userDetails.fullname && (
@@ -198,14 +199,14 @@ export function UserLookup() {
                   <div className="border rounded-lg p-3">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <AlertTriangle className="h-4 w-4" />
-                      Rapporter
+                      {tx("ui.userLookup.rapporter")}
                     </div>
                     <p className="text-2xl font-semibold">{userDetails.report_count}</p>
                   </div>
                   <div className="border rounded-lg p-3">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Ban className="h-4 w-4" />
-                      Åtgärder
+                      {tx("ui.userLookup.atgarder")}
                     </div>
                     <p className="text-2xl font-semibold">{userDetails.moderation_action_count}</p>
                   </div>
@@ -215,13 +216,13 @@ export function UserLookup() {
                   <Button variant="outline" size="sm" asChild>
                     <Link to={`/profile/${userDetails.username}`} target="_blank">
                       <ExternalLink className="h-4 w-4 mr-1" />
-                      Visa profil
+                      {tx("ui.userLookup.visaProfil")}
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
                     <Link to={`/messages?user=${userDetails.id}`}>
                       <MessageSquare className="h-4 w-4 mr-1" />
-                      Meddelande
+                      {tx("ui.userLookup.meddelande")}
                     </Link>
                   </Button>
                   {!userDetails.is_banned && (
@@ -231,13 +232,13 @@ export function UserLookup() {
                       onClick={() => setBanDialogOpen(true)}
                     >
                       <Ban className="h-4 w-4 mr-1" />
-                      Stäng av användare
+                      {tx("ui.userLookup.stangAvAnvandare")}
                     </Button>
                   )}
                 </div>
               </div>
             ) : (
-              <p className="text-muted-foreground">Användaren hittades inte</p>
+              <p className="text-muted-foreground">{tx("ui.userLookup.anvandarenHittadesInte")}</p>
             )}
           </CardContent>
         </Card>

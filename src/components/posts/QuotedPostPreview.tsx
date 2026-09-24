@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Repeat2 } from "lucide-react";
 import { stripHtml } from "@/lib/linkify";
 
+import { tx } from "@/i18n/tx";
 interface ActorInfo {
   id?: string;
   preferredUsername?: string;
@@ -99,7 +100,7 @@ export function QuotedPostPreview({ quotedPost, className }: QuotedPostPreviewPr
               <div className="mt-2 rounded-md overflow-hidden max-h-32">
                 <img 
                   src={firstImage} 
-                  alt="Post attachment" 
+                  alt={tx("ui.quotedPostPreview.postAttachment")} 
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -126,7 +127,7 @@ export function RepostIndicator({ reposterName }: { reposterName: string }) {
   return (
     <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2 px-1">
       <Repeat2 className="h-3.5 w-3.5" />
-      <span>{reposterName} reposted</span>
+      <span>{reposterName}{' '}{tx("ui.quotedPostPreview.reposted")}</span>
     </div>
   );
 }

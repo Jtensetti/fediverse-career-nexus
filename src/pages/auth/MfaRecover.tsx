@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
+import { tx } from "@/i18n/tx";
 export default function MfaRecover() {
   const { session, loading } = useAuth();
   const location = useLocation();
@@ -26,18 +27,18 @@ export default function MfaRecover() {
     } finally { setPending(false); }
   }
   return <div className="mx-auto max-w-md space-y-5 px-6 py-16">
-    <h1 className="text-2xl font-bold">Återställ tvåfaktorsautentisering</h1>
-    {loading ? <p role="status">Kontrollerar inloggning…</p> : done ? <>
-      <p role="status">Tvåfaktorsautentiseringen har återställts. Aktivera den igen i dina kontoinställningar.</p>
-      <Link to="/profile/edit" className="underline">Öppna kontoinställningar</Link>
-    </> : !valid ? <p role="alert">Länken är ogiltig. Kontakta jtensetti@protonmail.com om du behöver hjälp.</p> : !session ? <>
-      <p>Logga in med ditt lösenord för att använda återställningslänken.</p>
-      <Button asChild><Link to="/auth" state={{ returnTo: location.pathname + location.search }}>Logga in</Link></Button>
+    <h1 className="text-2xl font-bold">{tx("ui.mfaRecover.aterstallTvafaktorsautentisering")}</h1>
+    {loading ? <p role="status">{tx("ui.mfaRecover.kontrollerarInloggning")}</p> : done ? <>
+      <p role="status">{tx("ui.mfaRecover.tvafaktorsautentiseringenHarAterstalltsAktivera")}</p>
+      <Link to="/profile/edit" className="underline">{tx("ui.mfaRecover.oppnaKontoinstallningar")}</Link>
+    </> : !valid ? <p role="alert">{tx("ui.mfaRecover.lankenArOgiltigKontakta")}</p> : !session ? <>
+      <p>{tx("ui.mfaRecover.loggaInMedDitt")}</p>
+      <Button asChild><Link to="/auth" state={{ returnTo: location.pathname + location.search }}>{tx("ui.mfaRecover.loggaIn")}</Link></Button>
     </> : <>
-      <p>Detta tar bort dina befintliga tvåfaktorsmetoder och loggar ut dina andra sessioner. Länken fungerar endast för det konto som den utfärdades till.</p>
-      <Button disabled={pending} onClick={recover}>{pending ? "Återställer…" : "Återställ tvåfaktorsautentisering"}</Button>
+      <p>{tx("ui.mfaRecover.dettaTarBortDina")}</p>
+      <Button disabled={pending} onClick={recover}>{pending ? tx("ui.mfaRecover.aterstaller") : tx("ui.mfaRecover.aterstallTvafaktorsautentisering")}</Button>
     </>}
     {error && <p role="alert" className="text-destructive">{error}</p>}
-    <p><Link to="/" className="underline">Tillbaka till Nolto</Link></p>
+    <p><Link to="/" className="underline">{tx("ui.mfaRecover.tillbakaTillNolto")}</Link></p>
   </div>;
 }

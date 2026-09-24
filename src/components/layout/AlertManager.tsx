@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
  
+import { tx } from "@/i18n/tx";
  interface SiteAlert {
    id: string;
    message: string;
@@ -61,10 +62,10 @@ import { cn } from "@/lib/utils";
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ["allSiteAlerts"] });
        queryClient.invalidateQueries({ queryKey: ["siteAlerts"] });
-       toast.success("Avisering skapad");
+       toast.success(tx("ui.alertManager.aviseringSkapad"));
        closeDialog();
      },
-     onError: () => toast.error("Kunde inte skapa avisering"),
+     onError: () => toast.error(tx("ui.alertManager.kundeInteSkapaAvisering")),
    });
  
    const updateMutation = useMutation({
@@ -76,10 +77,10 @@ import { cn } from "@/lib/utils";
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ["allSiteAlerts"] });
        queryClient.invalidateQueries({ queryKey: ["siteAlerts"] });
-       toast.success("Avisering uppdaterad");
+       toast.success(tx("ui.alertManager.aviseringUppdaterad"));
        closeDialog();
      },
-     onError: () => toast.error("Kunde inte uppdatera avisering"),
+     onError: () => toast.error(tx("ui.alertManager.kundeInteUppdateraAvisering")),
    });
  
    const deleteMutation = useMutation({
@@ -90,9 +91,9 @@ import { cn } from "@/lib/utils";
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ["allSiteAlerts"] });
        queryClient.invalidateQueries({ queryKey: ["siteAlerts"] });
-       toast.success("Avisering borttagen");
+       toast.success(tx("ui.alertManager.aviseringBorttagen"));
      },
-     onError: () => toast.error("Kunde inte ta bort avisering"),
+     onError: () => toast.error(tx("ui.alertManager.kundeInteTaBort")),
    });
  
    const openCreate = () => {
@@ -117,7 +118,7 @@ import { cn } from "@/lib/utils";
  
    const handleSubmit = () => {
      if (!message.trim()) {
-       toast.error("Meddelande krävs");
+       toast.error(tx("ui.alertManager.meddelandeKravs"));
        return;
      }
      if (editingAlert) {
@@ -134,17 +135,17 @@ import { cn } from "@/lib/utils";
    return (
      <Card>
        <CardHeader className="flex flex-row items-center justify-between">
-         <CardTitle>Webbplatsaviseringar</CardTitle>
+         <CardTitle>{tx("ui.alertManager.webbplatsaviseringar")}</CardTitle>
          <Button onClick={openCreate} size="sm">
            <Plus className="h-4 w-4 mr-2" />
-           Ny avisering
+           {tx("ui.alertManager.nyAvisering")}
          </Button>
        </CardHeader>
        <CardContent>
          {isLoading ? (
-           <p className="text-muted-foreground">Laddar...</p>
+           <p className="text-muted-foreground">{tx("ui.alertManager.laddar")}</p>
          ) : alerts.length === 0 ? (
-           <p className="text-muted-foreground">Inga aviseringar konfigurerade</p>
+           <p className="text-muted-foreground">{tx("ui.alertManager.ingaAviseringarKonfigurerade")}</p>
          ) : (
            <div className="space-y-3">
              {alerts.map((alert) => (
@@ -163,14 +164,14 @@ import { cn } from "@/lib/utils";
                    )}
                    <span className="truncate">{alert.message}</span>
                    <Badge variant={alert.type === "error" ? "destructive" : "secondary"}>
-                     {alert.type === "error" ? "Fel" : "Info"}
+                     {alert.type === "error" ? tx("ui.alertManager.fel") : tx("ui.alertManager.info")}
                    </Badge>
                  </div>
                  <div className="flex items-center gap-2 shrink-0">
                    <Switch
                      checked={alert.is_active}
                      onCheckedChange={() => toggleActive(alert)}
-                     aria-label="Växla aktiv"
+                     aria-label={tx("ui.alertManager.vaxlaAktiv")}
                    />
                    <Button variant="ghost" size="icon" onClick={() => openEdit(alert)}>
                      <Pencil className="h-4 w-4" />
@@ -192,20 +193,20 @@ import { cn } from "@/lib/utils";
          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
            <DialogContent>
              <DialogHeader>
-               <DialogTitle>{editingAlert ? "Redigera avisering" : "Skapa avisering"}</DialogTitle>
+               <DialogTitle>{editingAlert ? tx("ui.alertManager.redigeraAvisering") : tx("ui.alertManager.skapaAvisering")}</DialogTitle>
              </DialogHeader>
              <div className="space-y-4 py-4">
                <div className="space-y-2">
-                 <Label htmlFor="message">Meddelande</Label>
+                 <Label htmlFor="message">{tx("ui.alertManager.meddelande")}</Label>
                  <Input
                    id="message"
                    value={message}
                    onChange={(e) => setMessage(e.target.value)}
-                   placeholder="Ange aviseringsmeddelande..."
+                   placeholder={tx("ui.alertManager.angeAviseringsmeddelande")}
                  />
                </div>
                <div className="space-y-2">
-                 <Label htmlFor="type">Typ</Label>
+                 <Label htmlFor="type">{tx("ui.alertManager.typ")}</Label>
                  <Select value={type} onValueChange={(v) => setType(v as "error" | "success")}>
                    <SelectTrigger>
                      <SelectValue />
@@ -214,13 +215,13 @@ import { cn } from "@/lib/utils";
                      <SelectItem value="success">
                        <span className="flex items-center gap-2">
                          <CheckCircle className="h-4 w-4 text-primary" />
-                         Info (Grön)
+                         {tx("ui.alertManager.infoGron")}
                        </span>
                      </SelectItem>
                      <SelectItem value="error">
                        <span className="flex items-center gap-2">
                          <AlertTriangle className="h-4 w-4 text-destructive" />
-                         Fel (Röd)
+                         {tx("ui.alertManager.felRod")}
                        </span>
                      </SelectItem>
                    </SelectContent>
@@ -229,10 +230,10 @@ import { cn } from "@/lib/utils";
              </div>
              <DialogFooter>
                <Button variant="outline" onClick={closeDialog}>
-                 Avbryt
+                 {tx("ui.alertManager.avbryt")}
                </Button>
                <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
-                 {editingAlert ? "Spara" : "Skapa"}
+                 {editingAlert ? tx("ui.alertManager.spara") : tx("ui.alertManager.skapa")}
                </Button>
              </DialogFooter>
            </DialogContent>

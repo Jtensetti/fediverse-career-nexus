@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { tx } from "@/i18n/tx";
 interface ActorEntry {
   actor_url: string;
   reason: string;
@@ -76,7 +77,7 @@ export default function ActorModeration() {
         setActorUrl("");
         setReason("");
         fetchActors();
-        toast("Aktör blockerad", { description: `${actorUrl} har lagts till` });
+        toast(tx("ui.actorModeration.aktorBlockerad"), { description: `${actorUrl} har lagts till` });
       } else {
         setError("Kunde inte blockera aktör");
       }
@@ -93,13 +94,13 @@ export default function ActorModeration() {
       if (result.success) {
         setIsEditDialogOpen(false);
         fetchActors();
-        toast("Aktör uppdaterad", { description: `${currentActor.actor_url} uppdaterad` });
+        toast(tx("ui.actorModeration.aktorUppdaterad"), { description: `${currentActor.actor_url} uppdaterad` });
       } else {
-        toast.error("Uppdatering misslyckades", { description: "Kunde inte uppdatera aktör" });
+        toast.error(tx("ui.actorModeration.uppdateringMisslyckades"), { description: tx("ui.actorModeration.kundeInteUppdateraAktor") });
       }
     } catch (err) {
       console.error(err);
-      toast.error("Uppdatering misslyckades", { description: "Ett fel inträffade" });
+      toast.error(tx("ui.actorModeration.uppdateringMisslyckades"), { description: tx("ui.actorModeration.ettFelIntraffade") });
     }
   };
 
@@ -110,13 +111,13 @@ export default function ActorModeration() {
       if (result.success) {
         setIsDeleteDialogOpen(false);
         fetchActors();
-        toast("Aktör borttagen", { description: `${actorToDelete} borttagen` });
+        toast(tx("ui.actorModeration.aktorBorttagen"), { description: `${actorToDelete} borttagen` });
       } else {
-        toast.error("Borttagning misslyckades", { description: "Kunde inte ta bort aktör" });
+        toast.error(tx("ui.actorModeration.borttagningMisslyckades"), { description: tx("ui.actorModeration.kundeInteTaBort") });
       }
     } catch (err) {
       console.error(err);
-      toast.error("Borttagning misslyckades", { description: "Ett fel inträffade" });
+      toast.error(tx("ui.actorModeration.borttagningMisslyckades"), { description: tx("ui.actorModeration.ettFelIntraffade") });
     } finally {
       setActorToDelete(null);
     }
@@ -137,11 +138,11 @@ export default function ActorModeration() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'blocked':
-        return <Badge variant="destructive">Blockerad</Badge>;
+        return <Badge variant="destructive">{tx("ui.actorModeration.blockerad")}</Badge>;
       case 'probation':
-        return <Badge variant="outline" className="text-amber-500 border-amber-500">Prövotid</Badge>;
+        return <Badge variant="outline" className="text-amber-500 border-amber-500">{tx("ui.actorModeration.provotid")}</Badge>;
       default:
-        return <Badge variant="secondary">Normal</Badge>;
+        return <Badge variant="secondary">{tx("ui.actorModeration.normal")}</Badge>;
     }
   };
 
@@ -149,32 +150,32 @@ export default function ActorModeration() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Lägg till aktörblockering</CardTitle>
+          <CardTitle>{tx("ui.actorModeration.laggTillAktorblockering")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="actor" className="block text-sm font-medium mb-1">Aktör-URL</label>
+                <label htmlFor="actor" className="block text-sm font-medium mb-1">{tx("ui.actorModeration.aktorUrl")}</label>
                 <Input id="actor" placeholder="https://example.social/users/alice" value={actorUrl} onChange={(e) => setActorUrl(e.target.value)} />
               </div>
               <div>
-                <label htmlFor="status" className="block text-sm font-medium mb-1">Status</label>
+                <label htmlFor="status" className="block text-sm font-medium mb-1">{tx("ui.actorModeration.status")}</label>
                 <Select value={status} onValueChange={(value) => setStatus(value as any)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Välj status" />
+                    <SelectValue placeholder={tx("ui.actorModeration.valjStatus")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="probation">Prövotid</SelectItem>
-                    <SelectItem value="blocked">Blockerad</SelectItem>
+                    <SelectItem value="normal">{tx("ui.actorModeration.normal")}</SelectItem>
+                    <SelectItem value="probation">{tx("ui.actorModeration.provotid")}</SelectItem>
+                    <SelectItem value="blocked">{tx("ui.actorModeration.blockerad")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label htmlFor="reason" className="block text-sm font-medium mb-1">Anledning</label>
-              <Textarea id="reason" placeholder="Anledning" value={reason} onChange={(e) => setReason(e.target.value)} rows={3} />
+              <label htmlFor="reason" className="block text-sm font-medium mb-1">{tx("ui.actorModeration.anledning")}</label>
+              <Textarea id="reason" placeholder={tx("ui.actorModeration.anledning")} value={reason} onChange={(e) => setReason(e.target.value)} rows={3} />
             </div>
           </div>
           {error && (
@@ -193,13 +194,13 @@ export default function ActorModeration() {
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={fetchActors} disabled={loading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Uppdatera
+            {tx("ui.actorModeration.uppdatera")}
           </Button>
-          <Button onClick={handleAddActor} disabled={loading || !actorUrl || !reason}>Lägg till aktör</Button>
+          <Button onClick={handleAddActor} disabled={loading || !actorUrl || !reason}>{tx("ui.actorModeration.laggTillAktor")}</Button>
         </CardFooter>
       </Card>
       <div>
-        <h3 className="text-lg font-medium mb-4">Blockerade aktörer</h3>
+        <h3 className="text-lg font-medium mb-4">{tx("ui.actorModeration.blockeradeAktorer")}</h3>
         {loading ? (
           <div className="animate-pulse space-y-3">
             <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -207,13 +208,13 @@ export default function ActorModeration() {
           </div>
         ) : actors.length > 0 ? (
           <Table>
-            <TableCaption>Lista över blockerade aktörer</TableCaption>
+            <TableCaption>{tx("ui.actorModeration.listaOverBlockeradeAktorer")}</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Aktör</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Anledning</TableHead>
-                <TableHead className="w-[180px]">Åtgärder</TableHead>
+                <TableHead>{tx("ui.actorModeration.aktor")}</TableHead>
+                <TableHead>{tx("ui.actorModeration.status")}</TableHead>
+                <TableHead>{tx("ui.actorModeration.anledning")}</TableHead>
+                <TableHead className="w-[180px]">{tx("ui.actorModeration.atgarder")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -225,7 +226,7 @@ export default function ActorModeration() {
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => openEditDialog(actor)}>
-                        Redigera
+                        {tx("ui.actorModeration.redigera")}
                       </Button>
                       <Button variant="destructive" size="sm" onClick={() => confirmDelete(actor.actor_url)}>
                         <Trash2 className="h-4 w-4" />
@@ -238,50 +239,50 @@ export default function ActorModeration() {
           </Table>
         ) : (
           <div className="text-center p-8 border border-dashed rounded-md">
-            <p className="text-muted-foreground">Inga aktörblockeringar hittades</p>
+            <p className="text-muted-foreground">{tx("ui.actorModeration.ingaAktorblockeringarHittades")}</p>
           </div>
         )}
       </div>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Redigera aktörblockering</DialogTitle>
-            <DialogDescription>Uppdatera modereringsinställningar för {currentActor?.actor_url}</DialogDescription>
+            <DialogTitle>{tx("ui.actorModeration.redigeraAktorblockering")}</DialogTitle>
+            <DialogDescription>{tx("ui.actorModeration.uppdateraModereringsinstallningarFor")}{' '}{currentActor?.actor_url}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <label htmlFor="edit-status">Status</label>
+              <label htmlFor="edit-status">{tx("ui.actorModeration.status")}</label>
               <Select value={editStatus} onValueChange={(value) => setEditStatus(value as any)}>
                 <SelectTrigger id="edit-status">
-                  <SelectValue placeholder="Välj status" />
+                  <SelectValue placeholder={tx("ui.actorModeration.valjStatus")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="probation">Prövotid</SelectItem>
-                  <SelectItem value="blocked">Blockerad</SelectItem>
+                  <SelectItem value="normal">{tx("ui.actorModeration.normal")}</SelectItem>
+                  <SelectItem value="probation">{tx("ui.actorModeration.provotid")}</SelectItem>
+                  <SelectItem value="blocked">{tx("ui.actorModeration.blockerad")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <label htmlFor="edit-reason">Anledning</label>
+              <label htmlFor="edit-reason">{tx("ui.actorModeration.anledning")}</label>
               <Textarea id="edit-reason" value={editReason} onChange={(e) => setEditReason(e.target.value)} rows={3} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Avbryt</Button>
-            <Button onClick={handleEditActor}>Spara ändringar</Button>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>{tx("ui.actorModeration.avbryt")}</Button>
+            <Button onClick={handleEditActor}>{tx("ui.actorModeration.sparaAndringar")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bekräfta borttagning</DialogTitle>
-            <DialogDescription>Är du säker på att du vill ta bort {actorToDelete} från modereringen?</DialogDescription>
+            <DialogTitle>{tx("ui.actorModeration.bekraftaBorttagning")}</DialogTitle>
+            <DialogDescription>{tx("ui.actorModeration.arDuSakerPa")}{' '}{actorToDelete}{' '}{tx("ui.actorModeration.franModereringen")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Avbryt</Button>
-            <Button variant="destructive" onClick={handleDeleteActor}>Ta bort</Button>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>{tx("ui.actorModeration.avbryt")}</Button>
+            <Button variant="destructive" onClick={handleDeleteActor}>{tx("ui.actorModeration.taBort")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,7 +1,8 @@
+import { dateLocale } from "@/lib/locale";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { Flag, Check, X, Trash2, AlertTriangle, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import { getFlaggedContent, updateReportStatus, deleteFlaggedContent, FlaggedCon
 import { UserBanDialog } from "./UserBanDialog";
 import { RetainedReportReview } from './RetainedReportReview';
 
+import { tx } from "@/i18n/tx";
 const contentTypeLabels: Record<string, string> = {
   post: "inlägg", article: "artikel", user: "användare", job: "jobb", event: "evenemang",
 };
@@ -83,21 +85,21 @@ export function FlaggedContentList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold flex items-center gap-2"><Flag className="h-5 w-5" />Flaggat innehåll</h3>
+        <h3 className="text-lg font-semibold flex items-center gap-2"><Flag className="h-5 w-5" />{tx("ui.flaggedContentList.flaggatInnehall")}</h3>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="pending">Väntande</SelectItem>
-            <SelectItem value="reviewed">Granskade</SelectItem>
-            <SelectItem value="resolved">Lösta</SelectItem>
-            <SelectItem value="dismissed">Avfärdade</SelectItem>
-            <SelectItem value="all">Alla rapporter</SelectItem>
+            <SelectItem value="pending">{tx("ui.flaggedContentList.vantande")}</SelectItem>
+            <SelectItem value="reviewed">{tx("ui.flaggedContentList.granskade")}</SelectItem>
+            <SelectItem value="resolved">{tx("ui.flaggedContentList.losta")}</SelectItem>
+            <SelectItem value="dismissed">{tx("ui.flaggedContentList.avfardade")}</SelectItem>
+            <SelectItem value="all">{tx("ui.flaggedContentList.allaRapporter")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {!reports || reports.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground"><Flag className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>Inga {statusFilter !== "all" ? (statusLabels[statusFilter]?.toLowerCase() || "") + " " : ""}rapporter hittades</p></CardContent></Card>
+        <Card><CardContent className="py-8 text-center text-muted-foreground"><Flag className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>{tx("ui.flaggedContentList.inga")}{' '}{statusFilter !== "all" ? (statusLabels[statusFilter]?.toLowerCase() || "") + " " : ""}{tx("ui.flaggedContentList.rapporterHittades")}</p></CardContent></Card>
       ) : (
         <div className="space-y-4">
           {reports.map((report) => (
@@ -107,8 +109,8 @@ export function FlaggedContentList() {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8"><AvatarImage src={report.reporter?.avatar_url || undefined} /><AvatarFallback>{report.reporter?.username?.charAt(0).toUpperCase() || "?"}</AvatarFallback></Avatar>
                     <div>
-                      <CardTitle className="text-sm">Rapporterad av @{report.reporter?.username || "okänd"}</CardTitle>
-                      <CardDescription className="text-xs">{formatDistanceToNow(new Date(report.created_at), { addSuffix: true, locale: sv })}</CardDescription>
+                      <CardTitle className="text-sm">{tx("ui.flaggedContentList.rapporteradAv")}{report.reporter?.username || "okänd"}</CardTitle>
+                      <CardDescription className="text-xs">{formatDistanceToNow(new Date(report.created_at), { addSuffix: true, locale: dateLocale() })}</CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -130,7 +132,7 @@ export function FlaggedContentList() {
 
                 {report.content_preview && (
                   <div className="border rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Förhandsvisning</p>
+                    <p className="text-xs text-muted-foreground mb-1">{tx("ui.flaggedContentList.forhandsvisning")}</p>
                     <p className="text-sm">{report.content_preview}</p>
                   </div>
                 )}
@@ -141,30 +143,30 @@ export function FlaggedContentList() {
                 {report.status === "pending" && (
                   <div className="flex flex-wrap gap-2 pt-2">
                     <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ reportId: report.id, status: "dismissed" })} disabled={updateStatusMutation.isPending}>
-                      <X className="h-4 w-4 mr-1" />Avfärda
+                      <X className="h-4 w-4 mr-1" />{tx("ui.flaggedContentList.avfarda")}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => updateStatusMutation.mutate({ reportId: report.id, status: "reviewed" })} disabled={updateStatusMutation.isPending}>
-                      <Check className="h-4 w-4 mr-1" />Markera granskad
+                      <Check className="h-4 w-4 mr-1" />{tx("ui.flaggedContentList.markeraGranskad")}
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="destructive"><Trash2 className="h-4 w-4 mr-1" />Ta bort innehåll</Button>
+                        <Button size="sm" variant="destructive"><Trash2 className="h-4 w-4 mr-1" />{tx("ui.flaggedContentList.taBortInnehall")}</Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Ta bort detta {contentTypeLabels[report.content_type] || report.content_type}?</AlertDialogTitle>
+                          <AlertDialogTitle>{tx("ui.flaggedContentList.taBortDetta")}{' '}{contentTypeLabels[report.content_type] || report.content_type}?</AlertDialogTitle>
                           <AlertDialogDescription>{['post', 'article'].includes(report.content_type)
-                            ? 'Innehållet döljs direkt och raderas permanent efter 30 dagar. Anmälan markeras som löst.'
-                            : 'Detta tar permanent bort det rapporterade innehållet. Åtgärden kan inte ångras.'}</AlertDialogDescription>
+                            ? tx("ui.flaggedContentList.innehalletDoljsDirektOch")
+                            : tx("ui.flaggedContentList.dettaTarPermanentBort")}</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteContentMutation.mutate({ contentType: report.content_type, contentId: report.content_id, reportId: report.id })}>Ta bort</AlertDialogAction>
+                          <AlertDialogCancel>{tx("ui.flaggedContentList.avbryt")}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteContentMutation.mutate({ contentType: report.content_type, contentId: report.content_id, reportId: report.id })}>{tx("ui.flaggedContentList.taBort")}</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
                     <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => handleBanUser(report)}>
-                      <Ban className="h-4 w-4 mr-1" />Blockera användare
+                      <Ban className="h-4 w-4 mr-1" />{tx("ui.flaggedContentList.blockeraAnvandare")}
                     </Button>
                   </div>
                 )}

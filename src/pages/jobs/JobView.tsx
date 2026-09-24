@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Globe, Link as LinkIcon, Bookmark, Building2, DollarSign, Clock, Users, TrendingUp, Plane, Pencil } from "lucide-react";
 import { format } from "date-fns";
-import { sv, enUS } from "date-fns/locale";
+import { dateLocale as localeFor } from "@/lib/locale";
 import { SEOHead, ShareButton, ReportDialog } from "@/components/common";
 import { toast } from "sonner";
 import TransparencyScore from "@/components/social/TransparencyScore";
@@ -150,7 +150,7 @@ const JobView = () => {
   const employmentType = getEmploymentType(job);
   const isOwner = user?.id === job.user_id;
   const isPublished = job.is_active === true;
-  const dateLocale = i18n.language.startsWith("sv") ? sv : enUS;
+  const dateLocale = localeFor(i18n.language);
   
   return (
     <div className="min-h-screen flex flex-col">

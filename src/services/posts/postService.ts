@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { processFederatedMentions } from "../federation/federationMentionService";
 
+import { tx } from "@/i18n/tx";
 export interface CreatePostData {
   content: string;
   image?: UploadedPostImage;
@@ -59,7 +60,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       console.error('Authentication error:', authError);
-      toast.error("Du måste vara inloggad för att skapa ett inlägg");
+      toast.error(tx("ui.postService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -187,7 +188,7 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
   } catch (error) {
     console.error('Unexpected error creating post:', error);
-    toast.error("Ett oväntat fel uppstod");
+    toast.error(tx("ui.postService.ettOvantatFelUppstod"));
     return false;
   }
 };
@@ -283,7 +284,7 @@ export const deletePost = async (postId: string): Promise<void> => {
     }
 
     await requestContentDeletion('post', postId);
-    toast.success('Inlägget är dolt och raderas permanent efter 30 dagar.');
+    toast.success(tx("ui.postService.inlaggetArDoltOch"));
   } catch (error) {
     console.error('Error deleting post:', error);
     throw error;

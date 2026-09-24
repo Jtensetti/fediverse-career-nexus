@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { tx } from "@/i18n/tx";
 interface QueueStats {
   partition_key: number;
   total_count: number;
@@ -32,7 +33,7 @@ const ShardedQueueStats = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Federation Queue Statistics</CardTitle>
+          <CardTitle>{tx("ui.shardedQueueStats.federationQueueStatistics")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-32 w-full" />
@@ -45,10 +46,10 @@ const ShardedQueueStats = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Federation Queue Statistics</CardTitle>
+          <CardTitle>{tx("ui.shardedQueueStats.federationQueueStatistics")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-red-500">Error loading queue statistics</p>
+          <p className="text-red-500">{tx("ui.shardedQueueStats.errorLoadingQueueStatistics")}</p>
         </CardContent>
       </Card>
     );
@@ -79,29 +80,29 @@ const ShardedQueueStats = () => {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Federation Queue Overview</CardTitle>
+          <CardTitle>{tx("ui.shardedQueueStats.federationQueueOverview")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold">{totalStats.total_count}</div>
-              <div className="text-sm text-muted-foreground">Total</div>
+              <div className="text-sm text-muted-foreground">{tx("ui.shardedQueueStats.total")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">{totalStats.pending_count}</div>
-              <div className="text-sm text-muted-foreground">Pending</div>
+              <div className="text-sm text-muted-foreground">{tx("ui.shardedQueueStats.pending")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{totalStats.processing_count}</div>
-              <div className="text-sm text-muted-foreground">Processing</div>
+              <div className="text-sm text-muted-foreground">{tx("ui.shardedQueueStats.processing")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">{totalStats.failed_count}</div>
-              <div className="text-sm text-muted-foreground">Failed</div>
+              <div className="text-sm text-muted-foreground">{tx("ui.shardedQueueStats.failed")}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{totalStats.processed_count}</div>
-              <div className="text-sm text-muted-foreground">Processed</div>
+              <div className="text-sm text-muted-foreground">{tx("ui.shardedQueueStats.processed")}</div>
             </div>
           </div>
         </CardContent>
@@ -109,19 +110,19 @@ const ShardedQueueStats = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Queue Statistics by Partition</CardTitle>
+          <CardTitle>{tx("ui.shardedQueueStats.queueStatisticsByPartition")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {queueStats.map((stat) => (
               <div key={stat.partition_key} className="flex items-center justify-between p-3 border rounded">
-                <div className="font-medium">Partition {stat.partition_key}</div>
+                <div className="font-medium">{tx("ui.shardedQueueStats.partition")}{' '}{stat.partition_key}</div>
                 <div className="flex gap-6 text-sm">
-                  <span>Total: {stat.total_count}</span>
-                  <span className="text-yellow-600">Pending: {stat.pending_count}</span>
-                  <span className="text-blue-600">Processing: {stat.processing_count}</span>
-                  <span className="text-red-600">Failed: {stat.failed_count}</span>
-                  <span className="text-green-600">Processed: {stat.processed_count}</span>
+                  <span>{tx("ui.shardedQueueStats.total2")}{' '}{stat.total_count}</span>
+                  <span className="text-yellow-600">{tx("ui.shardedQueueStats.pending2")}{' '}{stat.pending_count}</span>
+                  <span className="text-blue-600">{tx("ui.shardedQueueStats.processing2")}{' '}{stat.processing_count}</span>
+                  <span className="text-red-600">{tx("ui.shardedQueueStats.failed2")}{' '}{stat.failed_count}</span>
+                  <span className="text-green-600">{tx("ui.shardedQueueStats.processed2")}{' '}{stat.processed_count}</span>
                 </div>
               </div>
             ))}

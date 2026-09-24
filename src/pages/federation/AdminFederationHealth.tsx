@@ -20,6 +20,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
+import { tx } from "@/i18n/tx";
 interface FederationHealth {
   total_pending: number;
   total_processing: number;
@@ -98,7 +99,7 @@ export default function AdminFederationHealth() {
 
     } catch (error) {
       console.error("Error loading health data:", error);
-      toast.error("Kunde inte ladda hälsodata");
+      toast.error(tx("ui.adminFederationHealth.kundeInteLaddaHalsodata"));
     } finally {
       setLoading(false);
     }
@@ -112,7 +113,7 @@ export default function AdminFederationHealth() {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
-    toast.success("Data uppdaterad");
+    toast.success(tx("ui.adminFederationHealth.dataUppdaterad"));
   };
 
   const handleCleanup = async (dryRun: boolean) => {
@@ -130,7 +131,7 @@ export default function AdminFederationHealth() {
         await loadData();
       }
     } catch (error) {
-      toast.error("Rensning misslyckades");
+      toast.error(tx("ui.adminFederationHealth.rensningMisslyckades"));
     }
   };
 
@@ -144,7 +145,7 @@ export default function AdminFederationHealth() {
       toast.success(`Pre-warmed ${data.refreshed} actor caches`);
       await loadData();
     } catch (error) {
-      toast.error("Cache-förvärmning misslyckades");
+      toast.error(tx("ui.adminFederationHealth.cacheForvarmningMisslyckades"));
     }
   };
 
@@ -156,9 +157,9 @@ export default function AdminFederationHealth() {
         .eq("id", alertId);
       
       setAlerts(prev => prev.filter(a => a.id !== alertId));
-      toast.success("Varning bekräftad");
+      toast.success(tx("ui.adminFederationHealth.varningBekraftad"));
     } catch (error) {
-      toast.error("Kunde inte bekräfta varning");
+      toast.error(tx("ui.adminFederationHealth.kundeInteBekraftaVarning"));
     }
   };
 
@@ -191,12 +192,12 @@ export default function AdminFederationHealth() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Federation Health</h1>
-            <p className="text-muted-foreground">Monitor and manage federation infrastructure</p>
+            <h1 className="text-2xl font-bold">{tx("ui.adminFederationHealth.federationHealth")}</h1>
+            <p className="text-muted-foreground">{tx("ui.adminFederationHealth.monitorAndManageFederation")}</p>
           </div>
           <Button onClick={handleRefresh} disabled={refreshing} variant="outline">
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            {tx("ui.adminFederationHealth.refresh")}
           </Button>
         </div>
 
@@ -209,7 +210,7 @@ export default function AdminFederationHealth() {
                   <Clock className="h-5 w-5 text-yellow-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.pending")}</p>
                   <p className="text-2xl font-bold">{health?.total_pending || 0}</p>
                 </div>
               </div>
@@ -223,7 +224,7 @@ export default function AdminFederationHealth() {
                   <Activity className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Processing</p>
+                  <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.processing")}</p>
                   <p className="text-2xl font-bold">{health?.total_processing || 0}</p>
                 </div>
               </div>
@@ -237,7 +238,7 @@ export default function AdminFederationHealth() {
                   <AlertTriangle className="h-5 w-5 text-red-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Failed</p>
+                  <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.failed")}</p>
                   <p className="text-2xl font-bold">{health?.total_failed || 0}</p>
                 </div>
               </div>
@@ -251,7 +252,7 @@ export default function AdminFederationHealth() {
                   <Database className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Cache Entries</p>
+                  <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.cacheEntries")}</p>
                   <p className="text-2xl font-bold">{cacheStats?.activeEntries || 0}</p>
                 </div>
               </div>
@@ -261,11 +262,11 @@ export default function AdminFederationHealth() {
 
         <Tabs defaultValue="queue">
           <TabsList>
-            <TabsTrigger value="queue">Queue Health</TabsTrigger>
-            <TabsTrigger value="cache">Cache</TabsTrigger>
-            <TabsTrigger value="instances">Instances</TabsTrigger>
+            <TabsTrigger value="queue">{tx("ui.adminFederationHealth.queueHealth")}</TabsTrigger>
+            <TabsTrigger value="cache">{tx("ui.adminFederationHealth.cache")}</TabsTrigger>
+            <TabsTrigger value="instances">{tx("ui.adminFederationHealth.instances")}</TabsTrigger>
             <TabsTrigger value="alerts">
-              Alerts
+              {tx("ui.adminFederationHealth.alerts")}
               {alerts.length > 0 && (
                 <Badge variant="destructive" className="ml-2">{alerts.length}</Badge>
               )}
@@ -277,28 +278,28 @@ export default function AdminFederationHealth() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="h-5 w-5" />
-                  Queue Status
+                  {tx("ui.adminFederationHealth.queueStatus")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Oldest Pending Item</p>
+                    <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.oldestPendingItem")}</p>
                     <p className="text-lg font-medium">
                       {health?.oldest_pending_age_minutes 
                         ? `${Math.round(health.oldest_pending_age_minutes)} minutes` 
-                        : "No pending items"}
+                        : tx("ui.adminFederationHealth.noPendingItems")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Queue Partitions</p>
-                    <p className="text-lg font-medium">16 active</p>
+                    <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.queuePartitions")}</p>
+                    <p className="text-lg font-medium">{tx("ui.adminFederationHealth.16Active")}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Queue Utilization</span>
+                    <span>{tx("ui.adminFederationHealth.queueUtilization")}</span>
                     <span>{Math.min(((health?.total_pending || 0) / 1000) * 100, 100).toFixed(1)}%</span>
                   </div>
                   <Progress value={Math.min(((health?.total_pending || 0) / 1000) * 100, 100)} />
@@ -307,11 +308,11 @@ export default function AdminFederationHealth() {
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => handleCleanup(true)}>
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Preview Cleanup
+                    {tx("ui.adminFederationHealth.previewCleanup")}
                   </Button>
                   <Button variant="destructive" size="sm" onClick={() => handleCleanup(false)}>
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Run Cleanup
+                    {tx("ui.adminFederationHealth.runCleanup")}
                   </Button>
                 </div>
               </CardContent>
@@ -323,25 +324,25 @@ export default function AdminFederationHealth() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Database className="h-5 w-5" />
-                  Cache Statistics
+                  {tx("ui.adminFederationHealth.cacheStatistics")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Entries</p>
+                    <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.activeEntries")}</p>
                     <p className="text-lg font-medium">{cacheStats?.activeEntries || 0}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Expired Entries</p>
+                    <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.expiredEntries")}</p>
                     <p className="text-lg font-medium">{cacheStats?.expiredEntries || 0}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Hits</p>
+                    <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.totalHits")}</p>
                     <p className="text-lg font-medium">{cacheStats?.totalHits || 0}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Avg Hits/Entry</p>
+                    <p className="text-sm text-muted-foreground">{tx("ui.adminFederationHealth.avgHitsEntry")}</p>
                     <p className="text-lg font-medium">{cacheStats?.averageHitsPerEntry || "0"}</p>
                   </div>
                 </div>
@@ -349,7 +350,7 @@ export default function AdminFederationHealth() {
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleCachePrewarm}>
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Pre-warm Popular Actors
+                    {tx("ui.adminFederationHealth.preWarmPopularActors")}
                   </Button>
                 </div>
               </CardContent>
@@ -361,13 +362,13 @@ export default function AdminFederationHealth() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Server className="h-5 w-5" />
-                  Remote Instances
+                  {tx("ui.adminFederationHealth.remoteInstances")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {instances.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-4">No instance data yet</p>
+                    <p className="text-muted-foreground text-center py-4">{tx("ui.adminFederationHealth.noInstanceDataYet")}</p>
                   ) : (
                     instances.map((instance) => (
                       <div key={instance.host} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
@@ -378,9 +379,9 @@ export default function AdminFederationHealth() {
                           <span className="font-mono text-sm">{instance.host}</span>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{instance.request_count_24h} req/24h</span>
+                          <span>{instance.request_count_24h}{' '}{tx("ui.adminFederationHealth.req24h")}</span>
                           {(instance.error_count_24h ?? 0) > 0 && (
-                            <Badge variant="destructive">{instance.error_count_24h} errors</Badge>
+                            <Badge variant="destructive">{instance.error_count_24h}{' '}{tx("ui.adminFederationHealth.errors")}</Badge>
                           )}
                           <Badge variant={instance.status === "active" ? "default" : "secondary"}>
                             {instance.status}
@@ -399,7 +400,7 @@ export default function AdminFederationHealth() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Bell className="h-5 w-5" />
-                  Active Alerts
+                  {tx("ui.adminFederationHealth.activeAlerts")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -407,7 +408,7 @@ export default function AdminFederationHealth() {
                   {alerts.length === 0 ? (
                     <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
                       <CheckCircle className="h-5 w-5 text-green-500" />
-                      <span>No active alerts</span>
+                      <span>{tx("ui.adminFederationHealth.noActiveAlerts")}</span>
                     </div>
                   ) : (
                     alerts.map((alert) => (

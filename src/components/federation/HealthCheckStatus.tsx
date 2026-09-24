@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CircleCheck, CircleAlert, RefreshCw } from 'lucide-react';
 
+import { tx } from "@/i18n/tx";
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
   timestamp: string;
@@ -98,7 +99,7 @@ export default function HealthCheckStatus() {
     <Card className="shadow-sm border-border">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-display text-primary">System Health</CardTitle>
+          <CardTitle className="text-xl font-display text-primary">{tx("ui.healthCheckStatus.systemHealth")}</CardTitle>
           {data && (
             <Badge variant="outline" className={`${getStatusColor(data.status)}`}>
               <span className="flex items-center gap-1">
@@ -109,7 +110,7 @@ export default function HealthCheckStatus() {
           )}
         </div>
         <CardDescription>
-          Monitor the health of the system components
+          {tx("ui.healthCheckStatus.monitorTheHealthOf")}
         </CardDescription>
       </CardHeader>
       <CardContent className="pb-3">
@@ -121,20 +122,20 @@ export default function HealthCheckStatus() {
           </div>
         ) : error ? (
           <div className="p-4 border border-destructive/20 bg-destructive/10 text-destructive rounded-md">
-            Failed to load health status. Please try again.
+            {tx("ui.healthCheckStatus.failedToLoadHealth")}
           </div>
         ) : data ? (
           <div className="space-y-4">
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-muted-foreground">Database</span>
+                <span className="text-sm font-medium text-muted-foreground">{tx("ui.healthCheckStatus.database")}</span>
                 <Badge variant="outline" className={getStatusColor(data.checks.database.status)}>
-                  {data.checks.database.status === 'pass' ? 'Connected' : 
-                   data.checks.database.status === 'warn' ? 'Slow' : 'Error'}
+                  {data.checks.database.status === 'pass' ? tx("ui.healthCheckStatus.connected") : 
+                   data.checks.database.status === 'warn' ? tx("ui.healthCheckStatus.slow") : tx("ui.healthCheckStatus.error")}
                 </Badge>
               </div>
               <div className="text-sm text-muted-foreground">
-                Latency: {data.checks.database.latency_ms}ms
+                {tx("ui.healthCheckStatus.latency")}{' '}{data.checks.database.latency_ms}{tx("ui.healthCheckStatus.ms")}
                 {data.checks.database.message && (
                   <div className="text-xs mt-1 text-muted-foreground/70">{data.checks.database.message}</div>
                 )}
@@ -143,14 +144,14 @@ export default function HealthCheckStatus() {
             
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-muted-foreground">Queue Depth</span>
+                <span className="text-sm font-medium text-muted-foreground">{tx("ui.healthCheckStatus.queueDepth")}</span>
                 <Badge variant="outline" className={getStatusColor(data.checks.queue.status)}>
-                  {data.checks.queue.status === 'pass' ? 'Normal' : 
-                   data.checks.queue.status === 'warn' ? 'High' : 'Critical'}
+                  {data.checks.queue.status === 'pass' ? tx("ui.healthCheckStatus.normal") : 
+                   data.checks.queue.status === 'warn' ? tx("ui.healthCheckStatus.high") : tx("ui.healthCheckStatus.critical")}
                 </Badge>
               </div>
               <div className="text-sm text-muted-foreground">
-                {data.checks.queue.pending_count} / {data.checks.queue.max_allowed} messages
+                {data.checks.queue.pending_count} / {data.checks.queue.max_allowed}{' '}{tx("ui.healthCheckStatus.messages")}
                 {data.checks.queue.message && (
                   <div className="text-xs mt-1 text-muted-foreground/70">{data.checks.queue.message}</div>
                 )}
@@ -158,11 +159,11 @@ export default function HealthCheckStatus() {
             </div>
             
             <div className="text-xs text-muted-foreground">
-              Last checked: {new Date(data.timestamp).toLocaleString()}
+              {tx("ui.healthCheckStatus.lastChecked")}{' '}{new Date(data.timestamp).toLocaleString()}
             </div>
             
             <div className="text-xs text-muted-foreground">
-              Trace ID: {data.traceId}
+              {tx("ui.healthCheckStatus.traceId")}{' '}{data.traceId}
             </div>
           </div>
         ) : null}
@@ -176,7 +177,7 @@ export default function HealthCheckStatus() {
           className="w-full text-primary hover:text-primary/80 border-primary/30"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
-          {isFetching ? 'Refreshing...' : 'Refresh'}
+          {isFetching ? tx("ui.healthCheckStatus.refreshing") : tx("ui.healthCheckStatus.refresh")}
         </Button>
       </CardFooter>
     </Card>

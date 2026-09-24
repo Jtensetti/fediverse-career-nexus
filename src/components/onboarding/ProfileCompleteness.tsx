@@ -15,6 +15,7 @@ import {
   ArrowRight
 } from "lucide-react";
 
+import { tx } from "@/i18n/tx";
 interface ProfileSection {
   id: string;
   label: string;
@@ -60,35 +61,35 @@ const ProfileCompleteness = () => {
         const completedSections: ProfileSection[] = [
           {
             id: "basic",
-            label: "Grundläggande info (namn, rubrik, bio)",
+            label: tx("ui.profileCompleteness.grundlaggandeInfoNamnRubrik"),
             icon: User,
             completed: !!(profile?.fullname && profile?.headline && profile?.bio),
             link: "/profile/edit?tab=basic",
           },
           {
             id: "avatar",
-            label: "Profilbild",
+            label: tx("ui.profileCompleteness.profilbild"),
             icon: Image,
             completed: !!profile?.avatar_url,
             link: "/profile/edit?tab=basic",
           },
           {
             id: "experience",
-            label: "Arbetslivserfarenhet",
+            label: tx("ui.profileCompleteness.arbetslivserfarenhet"),
             icon: Briefcase,
             completed: (experiences?.length || 0) > 0,
             link: "/profile/edit?tab=experience",
           },
           {
             id: "education",
-            label: "Utbildning",
+            label: tx("ui.profileCompleteness.utbildning"),
             icon: GraduationCap,
             completed: (education?.length || 0) > 0,
             link: "/profile/edit?tab=education",
           },
           {
             id: "skills",
-            label: "Kompetenser",
+            label: tx("ui.profileCompleteness.kompetenser"),
             icon: FileText,
             completed: (skills?.length || 0) > 0,
             link: "/profile/edit?tab=skills",
@@ -124,7 +125,7 @@ const ProfileCompleteness = () => {
     <Card className="border-0 shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Fyll i din profil</CardTitle>
+          <CardTitle className="text-lg">{tx("ui.profileCompleteness.fyllIDinProfil")}</CardTitle>
           <span className="text-2xl font-bold text-primary">{percentage}%</span>
         </div>
         <Progress value={percentage} className="h-2" />
@@ -163,7 +164,7 @@ const ProfileCompleteness = () => {
         {nextIncomplete && (
           <Button asChild className="w-full gap-2">
             <Link to={nextIncomplete.link}>
-              Lägg till {nextIncomplete.label.split(" ")[0].toLowerCase()}
+              {tx("ui.profileCompleteness.laggTill")}{' '}{nextIncomplete.label.split(" ")[0].toLowerCase()}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>

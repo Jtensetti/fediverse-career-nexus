@@ -6,9 +6,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import PublicArtwork from "./PublicArtwork";
 import "./footer.css";
 
+import { tx } from "@/i18n/tx";
+import LanguageSelector from "@/components/common/LanguageSelector";
 const Footer = () => {
-  const { t, i18n } = useTranslation();
-  const sv = i18n.language.startsWith("sv");
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const isPublic = !loading && !user;
   const brand = (
@@ -40,8 +41,8 @@ const Footer = () => {
               <div>
                 <h3 className="text-sm font-semibold text-primary mb-4">{t("footer.about", "About")}</h3>
                 <ul className="space-y-3">
-                  <li><Link to="/feed" className="text-muted-foreground hover:text-primary">{sv ? "Utforska flödet" : "Explore the feed"}</Link></li>
-                  <li><Link to="/hosting" className="text-muted-foreground hover:text-primary">{sv ? "Egen drift" : "Self-hosting"}</Link></li>
+                  <li><Link to="/feed" className="text-muted-foreground hover:text-primary">{t("ui.footer.exploreTheFeed")}</Link></li>
+                  <li><Link to="/hosting" className="text-muted-foreground hover:text-primary">{t("ui.footer.selfhosting")}</Link></li>
                   <li><Link to="/mission" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.ourMission", "Our Mission")}</Link></li>
                 </ul>
               </div>
@@ -49,7 +50,7 @@ const Footer = () => {
               <div>
                 <h3 className="text-sm font-semibold text-primary mb-4">{t("footer.resources", "Resources")}</h3>
                 <ul className="space-y-3">
-                  <li><Link to="/integrations" className="text-muted-foreground hover:text-primary">{sv ? "Hämta från Nolto-knapp" : "Import from Nolto button"}</Link></li>
+                  <li><Link to="/integrations" className="text-muted-foreground hover:text-primary">{t("ui.footer.importFromNoltoButton")}</Link></li>
                   <li><Link to="/documentation" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.documentation", "Documentation")}</Link></li>
                   <li><Link to="/help" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.helpCenter", "Help Center")}</Link></li>
                   <li><Link to="/federation" className="text-muted-foreground hover:text-secondary transition-colors">{t("footer.howFederationWorks", "How Federation Works")}</Link></li>
@@ -74,7 +75,7 @@ const Footer = () => {
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-muted-foreground text-center md:text-left">
-              © {new Date().getFullYear()} Nolto. {t("footer.copyright", "Open source under the")}{" "}
+              © {new Date().getFullYear()}{' '}{tx("ui.footer.nolto")}{' '}{t("footer.copyright", "Open source under the")}{" "}
               <a
                 href="https://opensource.org/licenses/MIT"
                 target="_blank"
@@ -85,6 +86,7 @@ const Footer = () => {
               </a>.
             </div>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6 items-center">
+              <LanguageSelector />
               <Link to="/terms" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.terms", "Terms")}</Link>
               <Link to="/privacy" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.privacy", "Privacy")}</Link>
               <Link to="/cookies" className="text-sm text-muted-foreground hover:text-secondary transition-colors">{t("footer.cookies", "Cookies")}</Link>

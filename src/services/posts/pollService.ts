@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface PollOption {
   name: string;
   voteCount?: number;
@@ -56,7 +57,7 @@ export const votePoll = async (
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session) {
-      toast.error("Du måste vara inloggad för att rösta");
+      toast.error(tx("ui.pollService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -66,15 +67,15 @@ export const votePoll = async (
 
     if (error) {
       console.error("Error voting:", error);
-      toast.error("Kunde inte skicka röst");
+      toast.error(tx("ui.pollService.kundeInteSkickaRost"));
       return false;
     }
 
-    toast.success("Röst registrerad!");
+    toast.success(tx("ui.pollService.rostRegistrerad"));
     return true;
   } catch (error) {
     console.error("Error in votePoll:", error);
-    toast.error("Kunde inte rösta");
+    toast.error(tx("ui.pollService.kundeInteRosta"));
     return false;
   }
 };

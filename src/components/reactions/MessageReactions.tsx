@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
 
+import { tx } from "@/i18n/tx";
 interface MessageReactionsProps {
   messageId: string;
   isOwnMessage: boolean;
@@ -225,8 +226,8 @@ export default function MessageReactions({
                 "hover:bg-muted text-muted-foreground hover:text-foreground",
                 "opacity-60 hover:opacity-100"
               )}
-              aria-label="Add reaction"
-              title="React to this message"
+              aria-label={tx("ui.messageReactions.addReaction")}
+              title={tx("ui.messageReactions.reactToThisMessage")}
             >
               <Heart className="h-4 w-4" />
             </button>

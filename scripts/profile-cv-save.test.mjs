@@ -16,6 +16,7 @@ globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} 
 const translations = JSON.parse(readFileSync(new URL('../src/i18n/locales/sv.json', import.meta.url)));
 const mocks = {
   'react-i18next': 'export const useTranslation=()=>({t:globalThis.cvTest.translate,i18n:{language:"sv"}});',
+  '@/i18n': 'export default {language:"sv",resolvedLanguage:"sv",t:(k,v)=>globalThis.cvTest.translate(k,v),on(){}}; export const changeLanguage=async()=>{};',
   '@tanstack/react-query': 'export const useQueryClient=()=>({invalidateQueries(){}});',
   '@/lib/supabase': 'export const supabase={auth:{getUser:async()=>({data:{user:{id:"owner"}}})}};',
   '@/components/common/SEOHead': 'export const SEOHead=()=>null;',

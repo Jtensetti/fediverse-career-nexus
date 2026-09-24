@@ -2,6 +2,7 @@ import { hasRecordId } from "@/lib/records";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface MessageRequest {
   id: string;
   sender_id: string;
@@ -35,14 +36,14 @@ export async function sendMessageRequest(
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('Du måste vara inloggad');
+      toast.error(tx("ui.messageRequestService.duMasteVaraInloggad"));
       return false;
     }
 
     const senderId = session.session.user.id;
     
     if (senderId === recipientId) {
-      toast.error('Du kan inte skicka en förfrågan till dig själv');
+      toast.error(tx("ui.messageRequestService.duKanInteSkicka"));
       return false;
     }
 
@@ -56,10 +57,10 @@ export async function sendMessageRequest(
 
     if (existing) {
       if (existing.status === 'pending') {
-        toast.error('Du har redan en väntande förfrågan till denna person');
+        toast.error(tx("ui.messageRequestService.duHarRedanEn"));
         return false;
       } else if (existing.status === 'declined') {
-        toast.error('Din tidigare förfrågan avslogs');
+        toast.error(tx("ui.messageRequestService.dinTidigareForfraganAvslogs"));
         return false;
       }
     }
@@ -74,11 +75,11 @@ export async function sendMessageRequest(
 
     if (error) throw error;
 
-    toast.success('Meddelandeförfrågan skickad!');
+    toast.success(tx("ui.messageRequestService.meddelandeforfraganSkickad"));
     return true;
   } catch (error) {
     console.error('Error sending message request:', error);
-    toast.error('Kunde inte skicka förfrågan');
+    toast.error(tx("ui.messageRequestService.kundeInteSkickaForfragan"));
     return false;
   }
 }
@@ -168,11 +169,11 @@ export async function acceptMessageRequest(requestId: string): Promise<boolean> 
       .eq('id', requestId);
 
     if (error) throw error;
-    toast.success('Förfrågan accepterad! Ni kan nu skicka meddelanden till varandra.');
+    toast.success(tx("ui.messageRequestService.forfraganAccepteradNiKan"));
     return true;
   } catch (error) {
     console.error('Error accepting request:', error);
-    toast.error('Kunde inte acceptera förfrågan');
+    toast.error(tx("ui.messageRequestService.kundeInteAccepteraForfragan"));
     return false;
   }
 }
@@ -189,11 +190,11 @@ export async function declineMessageRequest(requestId: string): Promise<boolean>
       .eq('id', requestId);
 
     if (error) throw error;
-    toast.success('Förfrågan avvisad');
+    toast.success(tx("ui.messageRequestService.forfraganAvvisad"));
     return true;
   } catch (error) {
     console.error('Error declining request:', error);
-    toast.error('Kunde inte avvisa förfrågan');
+    toast.error(tx("ui.messageRequestService.kundeInteAvvisaForfragan"));
     return false;
   }
 }
@@ -251,7 +252,7 @@ export async function updateDmPrivacy(privacy: DmPrivacy): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('Du måste vara inloggad');
+      toast.error(tx("ui.messageRequestService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -261,11 +262,11 @@ export async function updateDmPrivacy(privacy: DmPrivacy): Promise<boolean> {
       .eq('id', session.session.user.id);
 
     if (error) throw error;
-    toast.success('Meddelandeinställningar uppdaterade');
+    toast.success(tx("ui.messageRequestService.meddelandeinstallningarUppdaterade"));
     return true;
   } catch (error) {
     console.error('Error updating DM privacy:', error);
-    toast.error('Kunde inte uppdatera inställningar');
+    toast.error(tx("ui.messageRequestService.kundeInteUppdateraInstallningar"));
     return false;
   }
 }

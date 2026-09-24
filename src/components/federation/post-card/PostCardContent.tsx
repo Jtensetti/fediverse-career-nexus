@@ -14,6 +14,7 @@ import { getProxiedMediaUrl } from "@/services/federation/federationService";
 import type { FederatedPost } from "@/services/federation/federationService";
 import type { MediaAttachment } from "./postCardUtils";
 
+import { tx } from "@/i18n/tx";
 interface PostCardContentProps {
   post: FederatedPost;
   displayContent: string;
@@ -153,7 +154,7 @@ export default function PostCardContent({
                 >
                   <img
                     src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url}
-                    alt={att.altText || att.name || 'Media attachment'}
+                    alt={att.altText || att.name || tx("ui.postCardContent.mediaAttachment")}
                     className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;

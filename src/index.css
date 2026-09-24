@@ -646,3 +646,11 @@
 .dark .article-content code {
   background-color: hsl(222 47% 15%) !important;
 }
+
+/* Localization: script-aware wrapping without truncating actions. */
+@layer base {
+  html:lang(ja) body { line-break: strict; overflow-wrap: anywhere; word-break: normal; }
+  html:lang(ja) :is(h1, h2, h3, h4, button, a, label) { word-break: auto-phrase; }
+  html:lang(de) :is(p, li, dd, label), html:lang(nl) :is(p, li, dd, label) { hyphens: auto; }
+  html:is(:lang(de), :lang(nl), :lang(fr), :lang(es), :lang(it)) :is(h1, h2, h3) { overflow-wrap: break-word; hyphens: auto; }
+}

@@ -1,8 +1,9 @@
+import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, useRef, lazy, Suspense, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { deletePost } from "@/services/posts/postService";
@@ -151,7 +152,7 @@ export default function FederatedPostCard({
           publishedDate={(() => {
             if (!publishedAt) return '';
             try {
-              return formatDistanceToNow(new Date(publishedAt), { addSuffix: true, locale: sv });
+              return formatDistanceToNow(new Date(publishedAt), { addSuffix: true, locale: dateLocale() });
             } catch { return ''; }
           })()}
           displayContent={displayContent}

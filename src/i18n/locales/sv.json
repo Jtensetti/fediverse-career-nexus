@@ -625,7 +625,8 @@
       "education": "Utbildning",
       "skills": "Färdigheter",
       "privacy": "Sekretess",
-      "freelance": "Frilans"
+      "freelance": "Frilans",
+      "personal": "Personligt"
     },
     "personalInfo": "Personlig information",
     "displayName": "Visningsnamn",
@@ -654,7 +655,14 @@
     "saving": "Sparar...",
     "present": "Nuvarande",
     "freelance": {
-      "title": "Frilansinställningar"
+      "title": "Frilansinställningar",
+      "available": "Tillgänglig för frilansuppdrag",
+      "rate": "Timpris",
+      "ratePlaceholder": "t.ex. 500 SEK",
+      "services": "Tjänster",
+      "servicesPlaceholder": "t.ex. Webb-utveckling, Design",
+      "portfolio": "Portfölj-URL",
+      "portfolioPlaceholder": "https://din-portfolj.com"
     },
     "profileSchema": {
       "usernameMin": "Användarnamnet måste vara minst 3 tecken",
@@ -688,7 +696,9 @@
       "noExperience": "Ingen erfarenhet tillagd ännu",
       "titleRequired": "Yrkestitel krävs",
       "startDateRequired": "Startdatum krävs",
-      "remove": "Ta bort erfarenheten {{name}}"
+      "remove": "Ta bort erfarenheten {{name}}",
+      "current": "Jag arbetar här för närvarande",
+      "companyRequired": "Organisation är obligatorisk"
     },
     "education": {
       "title": "Utbildning",
@@ -719,10 +729,17 @@
       "loading": "Laddar färdigheter...",
       "noSkills": "Inga färdigheter tillagda ännu",
       "name": "Ny färdighet",
-      "remove": "Ta bort färdigheten {{name}}"
+      "remove": "Ta bort färdigheten {{name}}",
+      "addSkill": "Lägg till färdighet"
     },
     "privacy": {
-      "title": "Sekretess & Säkerhet"
+      "title": "Sekretess & Säkerhet",
+      "profileVisibility": "Profilsynlighet",
+      "showEmail": "Visa e-post",
+      "showPhone": "Visa telefonnummer",
+      "showLocation": "Visa plats",
+      "allowMessages": "Tillåt direktmeddelanden",
+      "showActivity": "Visa aktivitetsstatus"
     },
     "viewProfile": "Visa min profil",
     "savedChanges": "Ändringarna är sparade.",
@@ -751,7 +768,13 @@
     "openSettings": "Inställningar",
     "dmReminder": "Låt kunder skicka meddelanden till dig",
     "dmReminderDesc": "Se till att dina DM-inställningar tillåter meddelanden från icke-anslutningar.",
-    "checkDmSettings": "Kontrollera DM-inställningar →"
+    "checkDmSettings": "Kontrollera DM-inställningar →",
+    "title": "Frilansare",
+    "subtitle": "Hitta frilansande proffs",
+    "available": "Tillgänglig",
+    "services": "Tjänster",
+    "noFreelancers": "Inga frilansare hittades",
+    "viewProfile": "Visa profil"
   },
   "articles": {
     "title": "Artiklar",
@@ -2444,5 +2467,1574 @@
     "tryDifferentSearch": "Prova andra sökord eller filter",
     "beFirst": "Visa i din profil att du är tillgänglig för uppdrag.",
     "viewProfile": "Visa profil"
+  },
+  "ui": {
+    "mission": {
+      "whyNolto": "Varför Nolto?",
+      "aPlaceForProfessional": "En plats för yrkesliv, kunskapsutbyte och kontakt över servergränser.",
+      "aProfessionalNetworkNolto": [
+        [
+          "Ett professionellt nätverk",
+          "Nolto samlar profiler, kompetenser, jobb och offentliga inlägg. Målet är att göra det enklare att hitta människor att arbeta med och dela det man kan."
+        ],
+        [
+          "Öppna protokoll",
+          "ActivityPub ger Nolto en väg till andra tjänster i fediversum, bland annat Mastodon. En beständig adress på nolto.social gör att andra servrar kan hitta profilen. Konton på olika tjänster förblir separata, med olika funktioner och regler."
+        ],
+        [
+          "Tydliga val",
+          "Du väljer vilka CV-uppgifter du fyller i, vem som får se dem och om federation ska aktiveras. Offentligt material som skickas vidare kan lagras av andra. Integritetspolicyn beskriver behandlingen och hur du kontaktar operatören."
+        ]
+      ]
+    },
+    "hosting": {
+      "selfhosting": "Egen drift",
+      "sourceCodeAndDeployment": "Källkod och installationsunderlag för att driva Nolto själv.",
+      "openSource": "ÖPPEN KÄLLKOD",
+      "aNetworkToBuild": "Ett nätverk att bygga vidare på.",
+      "noltosCodeIsOpen": "Noltos kod är öppen. Du kan granska den, bidra och anpassa den till ett eget sammanhang.",
+      "runTheWebApp": "Kör webbappen med Docker",
+      "buildAndServeThe": "Bygg webbappen och servera den med den medföljande Docker-konfigurationen. Du ansluter den till en redan konfigurerad backend.",
+      "readTheInstallationGuide": "Läs installationsguiden",
+      "contributeToNolto": "Bidra till Nolto",
+      "improveATranslationReport": "Förbättra en översättning, rapportera ett fel eller arbeta vidare med en funktion. Källkoden och utvecklingsguiden finns på GitHub.",
+      "viewTheSource": "Öppna källkoden",
+      "addANoltoButton": "Lägg till en Nolto-knapp",
+      "letCandidatesFillYour": "Låt kandidater fylla ert ansökningsformulär med sin Nolto-profil. De väljer själva vilka uppgifter som delas. Kopiera några rader kod för att komma igång.",
+      "getTheButtonAnd": "Hämta knapp och instruktioner",
+      "whatDoesYourOwn": "Vad behövs för en egen server?",
+      "theDockerPackageContains": "Docker-paketet innehåller webbappen och dess proxy. Databas, inloggning, lagring, e-post och bakgrundsjobb behöver sättas upp separat. En komplett nyinstallation av hela Nolto är ännu inte verifierad. Guiden beskriver vad som återstår.",
+      "justCuriousExploreNolto": "Vill du bara titta in? Utforska Nolto"
+    },
+    "helpCenter": {
+      "help": "Hjälp",
+      "commonQuestionsAboutAccounts": "Svar på vanliga frågor om kontot, federation och integritet.",
+      "iForgotMyPassword": [
+        [
+          "Jag har glömt lösenordet",
+          "Välj Glömt lösenord på inloggningssidan. Du får en länk via e-post om ett konto finns för adressen. Använd den senaste länken. Loggar du in enbart med Mastodon återställer du lösenordet på din Mastodon-server."
+        ],
+        [
+          "Jag har förlorat min autentiseringsapp",
+          "Använd återställningsvägen i MFA-dialogen eller kontakta operatören. Återställning kräver att kontots ägare verifieras. Dela aldrig lösenord, engångskoder eller återställningslänkar i ett offentligt ärende."
+        ],
+        [
+          "Varför hittar Mastodon inte min Nolto-adress?",
+          "Kontrollera att federation är aktiverad i profilinställningarna och sök på hela adressen, användarnamn@nolto.social. WebFinger behöver nås på Nolto-domänen. Om profilen fortfarande inte hittas, kontakta operatören med adressen och vilken server du söker från."
+        ],
+        [
+          "Synkas mina två konton automatiskt?",
+          "Nej. Mastodon-inloggning och kontokoppling identifierar dig. En koppling slår inte samman följare, inlägg, lösenord, bokmärken eller privata meddelanden. Läs federationsguiden innan du importerar följningar eller flyttar följare."
+        ],
+        [
+          "Vad innebär profilens integritetsval?",
+          "Erfarenhet, utbildning och kompetenser begränsas efter den synlighet du väljer. Att dölja aktivitet eller artiklar på profilen avpublicerar inte innehåll som redan är offentligt i flödet eller på en egen länk. Nya privata Nolto-meddelanden helsträckskrypteras efter att båda har aktiverat sin inkorg. Äldre meddelanden markeras och kan vara läsbara för servern."
+        ],
+        [
+          "Jag har glömt nyckelfrasen till inkorgen",
+          "Kontolösenord och nyckelfras är olika saker. Du kan låsa upp på en annan enhet med samma nyckelfras eller använda din nedladdade krypterade nyckelbackup tillsammans med frasen. Nolto kan inte återskapa en förlorad nyckelfras. Skicka aldrig frasen eller nyckelbackupen till support."
+        ],
+        [
+          "Vad händer när jag raderar?",
+          "Kontot eller innehållet döljs direkt och permanent radering planeras till 30 dagar efter begäran. Kontakta operatören om radering behövs tidigare. Redan mottagna kopior på andra servrar kan finnas kvar."
+        ],
+        [
+          "Hur anmäler jag ett problem?",
+          "Använd Rapportera där funktionen finns, eller kontakta operatören nedan med en länk och en kort beskrivning. Radering på Nolto kan inte garantera att andra servrar eller personer tar bort sina kopior."
+        ]
+      ]
+    },
+    "documentation": {
+      "gettingStartedWithNolto": "Kom igång med Nolto",
+      "fromYourFirstAccount": "Från ditt första konto till en adress i fediversum.",
+      "createAndConfirmYour": [
+        [
+          "1. Skapa och bekräfta kontot",
+          "Välj ett användarnamn och registrera dig med e-post. Följ bekräftelselänken innan du loggar in. Du kan också logga in med ett Mastodon-konto; Nolto och Mastodon har då fortfarande separata profiler."
+        ],
+        [
+          "2. Fyll i det du vill visa",
+          "Lägg till en presentation, erfarenhet, utbildning och kompetenser under Redigera profil. Välj vem som får se dina CV-sektioner. Profilens grunduppgifter och det du publicerar offentligt kan läsas av andra."
+        ],
+        [
+          "3. Välj om du vill federera",
+          "Onboardingen låter dig aktivera federation eller vänta. När federation är aktiverad använder andra servrar WebFinger för att hitta din adress, användarnamn@nolto.social, och ActivityPub för att följa och utbyta offentliga inlägg. Användarnamnet låses när identiteten publiceras."
+        ],
+        [
+          "4. Hitta människor och jobb",
+          "Sök efter profiler och organisationer, skicka kontaktförfrågningar och bläddra bland jobb. En Nolto-kontakt och en följare i fediversum är olika relationer. Privata meddelanden skickas mellan Nolto-konton enligt mottagarens inställningar."
+        ],
+        [
+          "5. Hantera konto och data",
+          "I profilinställningarna kan du hantera MFA, koppla ett befintligt Mastodon-konto, exportera kontodata eller begära radering. Exporten innehåller JSON och filmetadata; uppladdade filer behöver hämtas separat. Den kan inte importeras som ett komplett Mastodon-konto."
+        ]
+      ]
+    },
+    "federationGuide": {
+      "findYourProfileSearch": [
+        [
+          "Hitta din profil",
+          "Sök efter @användarnamn@nolto.social i Mastodon. WebFinger översätter adressen till din offentliga ActivityPub-profil."
+        ],
+        [
+          "Följa och dela",
+          "Aktivera federation på din Nolto-profil. ActivityPub används sedan för följningar och offentliga inlägg mellan servrarna."
+        ],
+        [
+          "Logga in med Mastodon",
+          "Du identifierar dig på din Mastodon-server och kommer tillbaka till Nolto. Kontona är fortfarande separata, och du väljer en egen Nolto-adress."
+        ],
+        [
+          "Importera följningar",
+          "Exportera en följlista som CSV från Mastodon och importera den i profilinställningarna. Det skickar följförfrågningar; vissa konton behöver godkänna dem."
+        ],
+        [
+          "Flytta ett konto",
+          "Alias och ActivityPub Move kan användas för att begära flytt av följare till en kompatibel server. Mottagande servrar avgör om flytten godtas. Inlägg, filer och privata meddelanden flyttas inte med."
+        ]
+      ],
+      "backToHome": "Till startsidan",
+      "noltoAndMastodon": "Nolto och Mastodon",
+      "yourNoltoAddressLets": "En Nolto-adress gör det möjligt att hitta och följa dig från andra tjänster i fediversum. Den är inte en e-postadress.",
+      "whatIsNotSynchronized": "Vad synkroniseras inte?",
+      "accountsAreNotFully": "Fullständig tvåvägssynk mellan konton ingår inte. Privat meddelandehistorik, sparade inlägg och alla Mastodon-inställningar speglas inte i Nolto. Federerade direktmeddelanden stöds inte. AT Protocol, som används av Bluesky, är ett separat protokoll och ersätter inte Mastodon-kompatibilitet.",
+      "otherServersMayRetain": "Offentligt innehåll kan lagras på andra servrar. Att stänga av federation tar inte bort redan mottagna kopior. När din federerade adress har publicerats är användarnamnet beständigt.",
+      "readThePrivacyPolicy": "Läs integritetspolicyn",
+      "mastodonAccountMigrationGuide": "Mastodons guide till kontoflytt",
+      "openProfileSettings": "Till profilinställningar",
+      "createYourNoltoAddress": "Skapa din Nolto-adress"
+    },
+    "explore": {
+      "exploreNolto": "Utforska Nolto",
+      "readPublicConversationsOn": "Läs offentliga samtal på Nolto. Inget konto behövs för att titta in.",
+      "aLookInsideNolto": "EN INBLICK I NOLTO",
+      "conversationsAboutWorkingLife": "Samtal om arbetslivet.",
+      "takeALookAround": "Läs i lugn och ro. Gå med när du vill vara med i samtalet.",
+      "itStartsWithHello": "Det börjar med ett hej.",
+      "findPeopleToLearn": "Hitta människor att lära av, arbeta med och hålla kontakten med.",
+      "createYourAccount": "Skapa ditt konto",
+      "alreadyAMemberSign": "Har du redan ett konto? Logga in",
+      "discoverMore": "Upptäck mer",
+      "browseJobs": "Se lediga jobb",
+      "meetOrganisations": "Lär känna organisationer",
+      "noltoIsAnOpen": "Nolto är ett professionellt nätverk med öppen källkod. Du väljer vad du delar och vem du följer."
+    },
+    "index": {
+      "aMoreOpenWorking": "Ett öppnare arbetsliv",
+      "meetPeopleShareWhat": "Möt människor, dela det du kan och hitta din nästa möjlighet. Utforska Noltos offentliga flöde utan konto.",
+      "laddar": "Laddar..."
+    },
+    "publicFeed": {
+      "publicPosts": "Offentliga inlägg",
+      "chooseFeed": "Välj flöde",
+      "onNolto": "På Nolto",
+      "acrossTheNetwork": "Hela nätverket",
+      "refreshFeed": "Uppdatera flödet",
+      "loadingPosts": "Laddar inlägg",
+      "theFeedCouldNot": "Flödet kunde inte laddas",
+      "pleaseTryAgainIn": "Försök igen om en stund.",
+      "tryAgain": "Försök igen",
+      "conversationsStartHere": "Här börjar samtalen.",
+      "thereAreNoPublic": "Det finns inga offentliga inlägg här än. Dela en tanke, ställ en fråga eller berätta vad du arbetar med.",
+      "startAConversation": "Starta ett samtal",
+      "loading": "Laddar…",
+      "showMorePosts": "Visa fler inlägg",
+      "youHaveSeenAll": "Du har sett alla inlägg i det här flödet.",
+      "couldNotLoadMore": "Fler inlägg kunde inte hämtas. Försök igen.",
+      "publicPostsNewestFirst": "Offentliga inlägg · Senaste först"
+    },
+    "encryptedInbox": {
+      "couldNotLoadYour": "Kunde inte läsa nyckeln. Ladda om sidan.",
+      "theRecipientsKeyCould": "Mottagarens nyckel kunde inte verifieras.",
+      "theBackupFileIs": "Backupfilen är för stor.",
+      "theKeyPhrasesMust": "Nyckelfraserna måste vara lika.",
+      "pleaseRetry": "Försök igen.",
+      "inboxUnlockedNewMessages": "Inkorgen är upplåst. Nya meddelanden krypteras mellan deltagarna.",
+      "lockInbox": "Lås inkorgen",
+      "keysAndBackup": "Nycklar och säkerhetskopiering",
+      "compareTheseFingerprintsUsing": "Jämför dessa fingeravtryck med varandra via en annan betrodd kanal. Nolto kan inte garantera identiteten vid första kontakten.",
+      "yourKey": "Din nyckel: ",
+      "recipientKey": "Mottagarens nyckel: ",
+      "notActivated": "Inte aktiverad",
+      "downloadEncryptedKeyBackup": "Ladda ner krypterad nyckelbackup",
+      "unlockYourInbox": "Lås upp din inkorg",
+      "enableEncryptedMessages": "Aktivera krypterade meddelanden",
+      "yourKeyPhraseIs": "Nyckelfrasen används bara i din webbläsare. Nolto kan inte läsa nya meddelanden eller återställa dem om du förlorar frasen. Använd en separat lång fras, gärna minst fem slumpmässiga ord.",
+      "loadingEncryptionSettings": "Läser krypteringsinställningar…",
+      "keyPhrase": "Nyckelfras",
+      "repeatKeyPhrase": "Upprepa nyckelfrasen",
+      "useADownloadedKey": "Använd en nedladdad nyckelbackup",
+      "encryptedKeyBackup": "Krypterad nyckelbackup",
+      "iHaveStoredThe": "Jag har sparat backupen och nyckelfrasen på en säker plats.",
+      "working": "Arbetar…",
+      "unlock": "Lås upp",
+      "activateInbox": "Aktivera inkorgen",
+      "createMessageKey": "Skapa meddelandenyckel",
+      "publicPostsAreExcluded": "Offentliga inlägg omfattas inte. Äldre meddelanden kan ha serverkryptering. ",
+      "readAboutPrivacyAnd": "Läs om integritet och begränsningar"
+    },
+    "unauthenticatedHomepage": {
+      "yourProfessionalNetwork": "DITT PROFESSIONELLA NÄTVERK",
+      "meetPeopleShareWhat": "Möt människor, dela det du kan och hitta din nästa möjlighet. Ett nätverk som du är med och formar.",
+      "joinNolto": "Gå med i Nolto",
+      "exploreTheFeed": "Utforska flödet",
+      "takeALookYou": "Titta in. Du behöver inget konto för att läsa.",
+      "whatNoltoStandsFor": "Det Nolto står för",
+      "peopleComeFirst": "Människor i centrum",
+      "partOfTheOpen": "En del av den öppna webben",
+      "openSource": "Öppen källkod",
+      "conversationsAndNewPerspectives": "SAMTAL OCH NYA PERSPEKTIV",
+      "startByTakingA": "Börja med att titta in.",
+      "readWhatPeopleShare": "Läs det som delas på Nolto och i det öppna nätverket. När du vill svara eller dela något själv skapar du ett konto.",
+      "aPlaceForFresh": "En plats för nya perspektiv",
+      "noltosPublicFeedWith": "Noltos offentliga flöde med val mellan På Nolto och Hela nätverket. Öppna flödet.",
+      "peopleAndPossibilities": "MÄNNISKOR OCH MÖJLIGHETER",
+      "yourNextStepStarts": "Nästa steg börjar med nyfikenhet.",
+      "findJobsAndGet": "Hitta jobb och lär känna organisationerna bakom dem. Söker du ett nytt sammanhang, ett samarbete eller någon att utbyta idéer med? Börja här.",
+      "browseJobs": "Se lediga jobb",
+      "discoverOrganisations": "Upptäck organisationer",
+      "noltosJobSearchWith": "Noltos jobbsökning med filter för jobbtyp, plats och distansarbete.",
+      "oneWebMoreConnections": "SAMMA WEBB. FLER KONTAKTER.",
+      "yourname": "dittnamn",
+      "yourNetworkCanGrow": "DITT NÄTVERK KAN VÄXA VIDARE",
+      "goodConnectionsAreEverywhere": "Bra kontakter finns överallt.",
+      "youAndYourContacts": "Du och dina kontakter behöver inte välja samma plattform. Aktivera federation för att låta människor på exempelvis Mastodon hitta och följa din Nolto-profil.",
+      "meetTheOpenNetwork": "Lär känna det öppna nätverket",
+      "seeYouOnNolto": "VI SES PÅ NOLTO",
+      "makeRoomForYour": "Gör plats för nästa samtal.",
+      "createYourAccount": "Skapa ditt konto",
+      "lookAroundFirst": "Titta runt först",
+      "openToBuildUpon": "Öppet att bygga vidare på.",
+      "readTheCodeContribute": "Läs koden, bidra till Nolto eller utforska vad som behövs för egen drift.",
+      "aboutSelfhosting": "Om egen drift",
+      "heroTitleStart": "Ett öppnare",
+      "heroTitleEmphasis": "arbetsliv."
+    },
+    "legalDocument": {
+      "contact": "Kontakt",
+      "backToHome": "Till startsidan",
+      "lastRevised": "Senast reviderad",
+      "policies": "Villkor och integritet",
+      "howNoltoAndMastodon": "Så fungerar Nolto och Mastodon",
+      "translationNotice": "Denna översättning tillhandahålls för din bekvämlighet. Vid skillnader gäller den svenska versionen."
+    },
+    "publicNavbar": {
+      "explore": "Utforska",
+      "jobs": "Jobb",
+      "anOpenNetwork": "Ett öppet nätverk",
+      "selfhosting": "Egen drift",
+      "noltoHome": "Nolto – startsida",
+      "mainNavigation": "Huvudmeny",
+      "signIn": "Logga in",
+      "joinNolto": "Gå med",
+      "openMenu": "Öppna menyn",
+      "mobileNavigation": "Mobilmeny",
+      "createAccount": "Skapa konto"
+    },
+    "footer": {
+      "exploreTheFeed": "Utforska flödet",
+      "selfhosting": "Egen drift",
+      "importFromNoltoButton": "Hämta från Nolto-knapp",
+      "nolto": "Nolto."
+    },
+    "informationPage": {
+      "backToHome": "Till startsidan",
+      "helpAndInformation": "Hjälp och information",
+      "gettingStarted": "Kom igång",
+      "help": "Hjälp",
+      "privacy": "Integritet",
+      "questions": "Frågor?"
+    },
+    "dataExportSection": {
+      "theExportCouldNot": "Exporten kunde inte slutföras. Försök igen eller kontakta jtensetti@protonmail.com för hjälp med ett registerutdrag.",
+      "downloadYourData": "Ladda ner dina uppgifter",
+      "yourProfilePostsMessages": "Profil, inlägg, meddelanden, kontakter och inställningar i en JSON-fil.",
+      "theExportListsUploaded": "Uppladdade filer listas i exporten; själva filerna laddar du ner separat. Nya privata meddelanden exporteras krypterade. Spara även din nyckelbackup från inkorgen. Lösenord och inloggningstoken ingår inte. Exporten kan inte importeras direkt i Mastodon.",
+      "preparingExport": "Förbereder export…",
+      "downloadJson": "Ladda ner JSON",
+      "yourExportIsReady": "Exporten är klar. Förvara den säkert; den innehåller privata meddelanden och kontaktuppgifter."
+    },
+    "mastodonConnection": {
+      "couldNotConnectCheck": "Kunde inte ansluta. Kontrollera adressen och försök igen.",
+      "linkMastodon": "Koppla Mastodon",
+      "linkAnAccountTo": "Koppla ett konto så att du kan logga in på samma Nolto-konto med Mastodon. Din Nolto-adress och profil behålls. Inlägg och privata meddelanden speglas inte automatiskt.",
+      "mastodonAddress": "Mastodon-adress",
+      "continueToMastodon": "Fortsätt till Mastodon"
+    },
+    "sectionVisibilityToggle": {
+      "publicLinksNote": "Styr visningen i profilen. Publicerade inlägg och artiklar är fortfarande offentliga via sina egna länkar och i flöden."
+    },
+    "starterPackService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad för att följa ett paket",
+      "kundeInteFoljaPaket": "Kunde inte följa paket",
+      "slutadeFoljaPaket": "Slutade följa paket",
+      "kundeInteSlutaFolja": "Kunde inte sluta följa paket",
+      "duMasteVaraInloggad2": "Du måste vara inloggad för att skapa ett paket",
+      "kundeInteTaBort": "Kunde inte ta bort medlem",
+      "startpaketSkapat": "Startpaket skapat!",
+      "aPackWithThis": "Ett paket med denna URL finns redan",
+      "failedToCreatePack": "Kunde inte skapa paket",
+      "userIsAlreadyIn": "Användaren finns redan i detta paket",
+      "failedToAddMember": "Kunde inte lägga till medlem"
+    },
+    "profileEditService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad för att uppdatera din profil",
+      "kundeInteUppdateraProfil": "Kunde inte uppdatera profil",
+      "duMasteVaraInloggad2": "Du måste vara inloggad för att ladda upp en avatar",
+      "kundeInteLaddaUpp": "Kunde inte ladda upp avatar",
+      "profilUppdaterad": "Profil uppdaterad",
+      "avatarUppdaterad": "Avatar uppdaterad"
+    },
+    "postService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad för att skapa ett inlägg",
+      "ettOvantatFelUppstod": "Ett oväntat fel uppstod",
+      "inlaggetArDoltOch": "Inlägget är dolt och raderas permanent efter 30 dagar."
+    },
+    "postReplyService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad för att svara",
+      "svaretHarSparatsLadda": "Svaret har sparats. Ladda om för att se dess status.",
+      "svaretKundeIntePubliceras": "Svaret kunde inte publiceras. Kontrollera att inlägget finns kvar och att du har behörighet."
+    },
+    "pollService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad för att rösta",
+      "kundeInteSkickaRost": "Kunde inte skicka röst",
+      "rostRegistrerad": "Röst registrerad!",
+      "kundeInteRosta": "Kunde inte rösta"
+    },
+    "connectionsService": {
+      "kundeInteLaddaKontakter": "Kunde inte ladda kontakter",
+      "kundeInteLaddaKontaktforslag": "Kunde inte ladda kontaktförslag",
+      "duMasteVaraInloggad": "Du måste vara inloggad för att ansluta till andra",
+      "denTidigareForfraganAvslogs": "Den tidigare förfrågan avslogs. Mottagaren kan ta initiativ till en ny kontakt.",
+      "youCanTConnect": "Du kan inte ansluta med dig själv"
+    },
+    "companyPostService": {
+      "inlaggetArDoltOch": "Inlägget är dolt och raderas permanent efter 30 dagar.",
+      "youMustBeLogged": "Du måste vara inloggad för att skapa ett inlägg",
+      "youDonTHave": "Du har inte behörighet att posta för detta företag",
+      "companyNotFound": "Företag hittades inte",
+      "failedToCreatePost": "Kunde inte skapa inlägg",
+      "anUnexpectedErrorOccurred": "Ett oväntat fel uppstod",
+      "youMustBeLogged2": "Du måste vara inloggad",
+      "youDonTHave2": "Du har inte behörighet att radera det här inlägget"
+    },
+    "reactionsService": {
+      "loggaInForAtt": "Logga in för att reagera",
+      "kundeInteHanteraReaktion": "Kunde inte hantera reaktion",
+      "kundeInteTaBort": "Kunde inte ta bort reaktion",
+      "kundeInteUppdateraReaktion": "Kunde inte uppdatera reaktion",
+      "kundeInteLaggaTill": "Kunde inte lägga till reaktion"
+    },
+    "messageService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad för att visa konversationer",
+      "kundeInteLaddaKonversationer": "Kunde inte ladda konversationer",
+      "failedToLoadConversations": "Kunde inte ladda konversationer"
+    },
+    "messageRequestService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad",
+      "duKanInteSkicka": "Du kan inte skicka en förfrågan till dig själv",
+      "duHarRedanEn": "Du har redan en väntande förfrågan till denna person",
+      "dinTidigareForfraganAvslogs": "Din tidigare förfrågan avslogs",
+      "meddelandeforfraganSkickad": "Meddelandeförfrågan skickad!",
+      "kundeInteSkickaForfragan": "Kunde inte skicka förfrågan",
+      "forfraganAccepteradNiKan": "Förfrågan accepterad! Ni kan nu skicka meddelanden till varandra.",
+      "kundeInteAccepteraForfragan": "Kunde inte acceptera förfrågan",
+      "forfraganAvvisad": "Förfrågan avvisad",
+      "kundeInteAvvisaForfragan": "Kunde inte avvisa förfrågan",
+      "meddelandeinstallningarUppdaterade": "Meddelandeinställningar uppdaterade",
+      "kundeInteUppdateraInstallningar": "Kunde inte uppdatera inställningar"
+    },
+    "newsletterService": {
+      "kundeIntePrenumereraForsok": "Kunde inte prenumerera. Försök igen.",
+      "kundeInteAvprenumereraForsok": "Kunde inte avprenumerera. Försök igen.",
+      "prenumerationLyckades": "Prenumeration lyckades!",
+      "avprenumerationLyckades": "Avprenumeration lyckades."
+    },
+    "jobPostsService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad för att skapa en jobbannons",
+      "kundeInteSkapaJobbannons": "Kunde inte skapa jobbannons",
+      "kundeInteUppdateraJobbannons": "Kunde inte uppdatera jobbannons",
+      "kundeInteRaderaJobbannons": "Kunde inte radera jobbannons",
+      "signInRequired": "Du måste vara inloggad",
+      "createFailed": "Kunde inte skapa jobbannons",
+      "unexpectedError": "Ett oväntat fel uppstod",
+      "jobbannonsUppdaterad": "Jobbannons uppdaterad",
+      "jobbannonsRaderad": "Jobbannons raderad"
+    },
+    "moderationService": {
+      "duMasteVaraInloggad": "Du måste vara inloggad",
+      "kundeInteUppdateraRapport": "Kunde inte uppdatera rapport",
+      "kundeInteStangaAv": "Kunde inte stänga av användare",
+      "avstangningUpphavd": "Avstängning upphävd",
+      "kundeInteUpphavaAvstangning": "Kunde inte upphäva avstängning",
+      "anvandarenHarRedanDenna": "Användaren har redan denna roll",
+      "kundeInteLaggaTill": "Kunde inte lägga till moderator",
+      "kundeInteTaBort": "Kunde inte ta bort moderator",
+      "kundeInteRaderaInnehall": "Kunde inte radera innehåll",
+      "varningSkickadTillAnvandare": "Varning skickad till användare",
+      "kundeInteSkickaVarning": "Kunde inte skicka varning",
+      "moderatorsrollTillagd": "Moderatorsroll tillagd",
+      "moderatorsrollBorttagen": "Moderatorsroll borttagen"
+    },
+    "notifications": {
+      "dinaAviseringarPaNolto": "Dina aviseringar på Nolto.",
+      "olasta": "olästa)",
+      "markeraAllaSomLasta": "Markera alla som lästa",
+      "olasta2": "Olästa",
+      "ingaOlastaAviseringar": "Inga olästa aviseringar",
+      "ingaAviseringarAnnu": "Inga aviseringar ännu",
+      "duArHeltIkapp": "Du är helt ikapp!",
+      "narDuFarAviseringar": "När du får aviseringar visas de här",
+      "aviseringar": "Aviseringar",
+      "alla": "Alla"
+    },
+    "messageConversation": {
+      "kundeInteSkickaMeddelande": "Kunde inte skicka meddelande",
+      "kundeInteLasaAldre": "Kunde inte läsa äldre meddelanden",
+      "loggaInForAtt": "Logga in för att visa dina meddelanden",
+      "tillMeddelanden": "← Till meddelanden",
+      "tillbakaTillMeddelanden": "Tillbaka till meddelanden",
+      "laddar": "Laddar...",
+      "ingaMeddelandenAnnu": "Inga meddelanden ännu",
+      "laddar2": "Laddar…",
+      "visaAldreMeddelanden": "Visa äldre meddelanden",
+      "aldreMeddelandeMedServerkryptering": " · Äldre meddelande med serverkryptering",
+      "privataMeddelandenTillAndra": "Privata meddelanden till andra servrar stöds inte ännu.",
+      "duKanInteSkicka": "Du kan inte skicka meddelanden till den här personen. Kontrollera er anslutning och era integritetsinställningar.",
+      "skrivDittMeddelande": "Skriv ditt meddelande...",
+      "loggaIn": "Logga in",
+      "felVidLaddningAv": "Fel vid laddning av konversation",
+      "privateConversationOnNolto": "Privat konversation på Nolto.",
+      "startaKonversationen": "Starta konversationen!",
+      "skickaMeddelande": "Skicka meddelande",
+      "un": "Olästa",
+      "kontrollerarAnslutning": "Kontrollerar anslutning..."
+    },
+    "connectedApps": {
+      "harKanDuAterkalla": "Här kan du återkalla en extern apps åtkomst till ditt Nolto-konto. För att använda appen igen behöver du ansluta den på nytt.",
+      "hamtarAnslutningar": "Hämtar anslutningar…",
+      "duHarIngaGodkanda": "Du har inga godkända appanslutningar.",
+      "anslutningArSenastGodkand": "anslutning(ar). Senast godkänd",
+      "aterkallar": "Återkallar…",
+      "aterkallaAtkomst": "Återkalla åtkomst",
+      "omMastodonAppar": "Om Mastodon-appar",
+      "anslutnaAppar": "Anslutna appar"
+    },
+    "sessionExpiryWarning": {
+      "dinSessionHarGatt": "Din session har gått ut. Logga in igen.",
+      "sessionenHarForlangts": "Sessionen har förlängts",
+      "kundeInteForlangaSessionen": "Kunde inte förlänga sessionen. Logga in igen.",
+      "sessionenGarUtSnart": "Sessionen går ut snart",
+      "dinSessionGarUt": "Din session går ut om",
+      "villDuForlangaSessionen": ". Vill du förlänga sessionen?",
+      "avfarda": "Avfärda",
+      "forlanger": "Förlänger...",
+      "forlangSession": "Förläng session"
+    },
+    "userLookup": {
+      "anvandaruppslag": "Användaruppslag",
+      "sokEfterAnvandareMed": "Sök efter användare med användarnamn eller namn...",
+      "soker": "Söker...",
+      "avstangd": "Avstängd",
+      "anvandardetaljer": "Användardetaljer",
+      "atgarder": "Åtgärder",
+      "visaProfil": "Visa profil",
+      "stangAvAnvandare": "Stäng av användare",
+      "anvandarenHittadesInte": "Användaren hittades inte",
+      "rapporter": "Rapporter",
+      "meddelande": "Meddelande"
+    },
+    "shareProfileCard": {
+      "profillankKopierad": "Profillänk kopierad!",
+      "kundeInteKopieraLanken": "Kunde inte kopiera länken",
+      "delaDinProfil": "Dela din profil",
+      "kopieraProfillank": "Kopiera profillänk",
+      "xTwitter": "X/Twitter"
+    },
+    "userActivityList": {
+      "kundeInteLaddaAktivitet": "Kunde inte ladda aktivitet",
+      "ingenAktivitetAnnu": "Ingen aktivitet ännu"
+    },
+    "postView": {
+      "laddarInlagg": "Laddar inlägg",
+      "laddarInlaggsdetaljer": "Laddar inläggsdetaljer...",
+      "inlaggHittadesInte": "Inlägg hittades inte",
+      "inlaggetKundeInteHittas": "Inlägget kunde inte hittas.",
+      "tillbakaTillFlodet": "Tillbaka till flödet",
+      "visaInlaggOchSvar": "Visa inlägg och svar på Nolto.",
+      "ingaSvarAnnuBli": "Inga svar ännu. Bli först att svara!",
+      "inlaggetHittadesInte": "Inlägget hittades inte",
+      "inlagg": "Inlägg",
+      "skrivEttSvar": "Skriv ett svar..."
+    },
+    "instances": {
+      "utforskaNatverketAvAnslutna": "Utforska nätverket av anslutna instanser som samverkar med Nolto.",
+      "anslutetNatverk": "Anslutet nätverk",
+      "noltoSamverkarMedInstanser": "Nolto samverkar med instanser inom nätverket. Ditt professionella nätverk sträcker sig bortom en enskild plattform.",
+      "sakerNolto": "Säker nolto",
+      "sokInstanser": "Sök instanser...",
+      "besokInstans": "Besök instans",
+      "anslutDinOrganisation": "Anslut din organisation",
+      "kompatiblaOrganisationerKanAnsluta": "Kompatibla organisationer kan ansluta till Nolto-nätverket. Följ användare och anslutningen upprättas automatiskt.",
+      "gaMedINolto": "Gå med i Nolto",
+      "lasMerOmNolto": "Läs mer om nolto",
+      "ingaInstanserHittades": "Inga instanser hittades",
+      "ingaInstanserAnslutnaAnnu": "Inga instanser anslutna ännu",
+      "provaEttAnnatSokord": "Prova ett annat sökord",
+      "bliDenForstaAtt": "Bli den första att ansluta! Registrera dig och börja bygga ditt nätverk.",
+      "anslutnaInstanser": "Anslutna instanser",
+      "anslutnaInstanser2": "anslutna instanser",
+      "verifieradeAnslutningar": "Verifierade anslutningar",
+      "aktiv": "Aktiv",
+      "anslutna": "anslutna",
+      "kompatibelNolto": "Kompatibel Nolto"
+    },
+    "federatedFeed": {
+      "laddar": "Laddar"
+    },
+    "pollDisplay": {
+      "omrostningsdataEjTillganglig": "Omröstningsdata ej tillgänglig",
+      "loggaInForAtt": "Logga in för att rösta",
+      "andraRost": "Ändra röst",
+      "okantAlternativ": "Okänt alternativ",
+      "rostar": "Röstar...",
+      "rosta": "Rösta"
+    },
+    "pollCreator": {
+      "omrostningsalternativ": "Omröstningsalternativ",
+      "laggTillAlternativ": "Lägg till alternativ",
+      "varaktighet": "Varaktighet",
+      "flerval": "Flerval"
+    },
+    "moderationDashboard": {
+      "verifierarAtkomst": "Verifierar åtkomst...",
+      "atkomstBegransad": "Åtkomst begränsad",
+      "dettaOmradeArBegransat": "Detta område är begränsat till behöriga moderatorer. Om du anser att du borde ha åtkomst, kontakta administratören.",
+      "verktygForAttHantera": "Verktyg för att hantera innehåll och användare i nätverket.",
+      "overvakaGranskaOchHantera": "Övervaka, granska och hantera aktivitet",
+      "vantande": "Väntande",
+      "oversikt": "Översikt",
+      "anvandare": "Användare",
+      "avstangningar": "Avstängningar",
+      "mfaArenden": "MFA-ärenden",
+      "sokAnvandareRapporter": "Sök användare, rapporter...",
+      "vantandeRapporter": "Väntande rapporter",
+      "aktivaAvstangningar": "Aktiva avstängningar",
+      "atgarderIdag": "Åtgärder idag",
+      "snabbatgarder": "Snabbåtgärder",
+      "kontrolleraVantandeRapporter": "Kontrollera väntande rapporter",
+      "sokAnvandare": "Sök användare",
+      "sokOchGranskaAnvandare": "Sök och granska användare",
+      "senasteModereringsatgarder": "Senaste modereringsåtgärder",
+      "innehallsrapporter": "Innehållsrapporter",
+      "granskaOchVidtaAtgarder": "Granska och vidta åtgärder för rapporterat innehåll",
+      "anvandarhantering": "Användarhantering",
+      "sokOchHanteraAnvandarkonton": "Sök och hantera användarkonton",
+      "anvandaravstangningar": "Användaravstängningar",
+      "visaOchHanteraAktiva": "Visa och hantera aktiva och historiska avstängningar",
+      "domanmoderering": "Domänmoderering",
+      "hanteraBlockeradeOchBegransade": "Hantera blockerade och begränsade domäner",
+      "aktorsmoderering": "Aktörsmoderering",
+      "hanteraBlockeradeAktorer": "Hantera blockerade aktörer",
+      "visaBegransadeInstanserOch": "Visa begränsade instanser och noltoshälsa",
+      "oppnaInstanshanteraren": "Öppna instanshanteraren",
+      "fullstandigHistorikOverModereringsatgarder": "Fullständig historik över modereringsåtgärder",
+      "tillbakaHem": "Tillbaka hem",
+      "modereringscenter": "Modereringscenter",
+      "systemOnline": "System online",
+      "rapporter": "Rapporter",
+      "loggar": "Loggar",
+      "varningar": "Varningar",
+      "moderatorer": "Moderatorer",
+      "vanligaModereringsuppgifter": "Vanliga modereringsuppgifter",
+      "granskaRapporter": "Granska rapporter",
+      "instanshantering": "Instanshantering",
+      "hanteraAnslutnaInstanser": "Hantera anslutna instanser",
+      "senasteAktivitet": "Senaste aktivitet",
+      "modereringslogg": "Modereringslogg"
+    },
+    "adminFederationHealth": {
+      "kundeInteLaddaHalsodata": "Kunde inte ladda hälsodata",
+      "cacheForvarmningMisslyckades": "Cache-förvärmning misslyckades",
+      "varningBekraftad": "Varning bekräftad",
+      "kundeInteBekraftaVarning": "Kunde inte bekräfta varning",
+      "dataUppdaterad": "Data uppdaterad",
+      "rensningMisslyckades": "Rensning misslyckades",
+      "federationHealth": "Federationshälsa",
+      "monitorAndManageFederation": "Övervaka och hantera federationsinfrastruktur",
+      "refresh": "Uppdatera",
+      "pending": "Väntande",
+      "processing": "Bearbetar",
+      "failed": "Misslyckades",
+      "cacheEntries": "Cacheposter",
+      "queueHealth": "Köstatus",
+      "cache": "Cache",
+      "instances": "Instanser",
+      "alerts": "Varningar",
+      "queueStatus": "Köstatus",
+      "oldestPendingItem": "Äldsta väntande objekt",
+      "queuePartitions": "Köpartitioner",
+      "16Active": "16 aktiva",
+      "queueUtilization": "Köutnyttjande",
+      "previewCleanup": "Förhandsgranska rensning",
+      "runCleanup": "Kör rensning",
+      "cacheStatistics": "Cachestatistik",
+      "activeEntries": "Aktiva poster",
+      "expiredEntries": "Utgångna poster",
+      "totalHits": "Totalt antal träffar",
+      "avgHitsEntry": "Genomsnittligt antal träffar/post",
+      "preWarmPopularActors": "Förladda populära aktörer",
+      "remoteInstances": "Fjärrinstanser",
+      "noInstanceDataYet": "Ingen instansdata ännu",
+      "req24h": "förfrågningar/24h",
+      "errors": "fel",
+      "activeAlerts": "Aktiva varningar",
+      "noActiveAlerts": "Inga aktiva varningar",
+      "noPendingItems": "Inga väntande objekt"
+    },
+    "newsletterSubscribe": {
+      "prenumereraPaVartNyhetsbrev": "Prenumerera på vårt nyhetsbrev",
+      "loggaInForAtt": "Logga in för att prenumerera på vårt nyhetsbrev.",
+      "duPrenumererarMed": "Du prenumererar med:",
+      "duPrenumererarPaUppdateringar": "Du prenumererar på uppdateringar om nya artiklar.",
+      "prenumereraForAttFa": "Prenumerera för att få uppdateringar om nya artiklar.",
+      "nyhetsbrev": "Nyhetsbrev",
+      "bearbetar": "Bearbetar...",
+      "avprenumerera": "Avprenumerera",
+      "prenumerera": "Prenumerera"
+    },
+    "profileEdit": {
+      "hanteraVilkaExternaAppar": "Hantera vilka externa appar som får använda ditt Nolto-konto.",
+      "hanteraAppatkomst": "Hantera appåtkomst",
+      "anslutnaAppar": "Anslutna appar"
+    },
+    "userBanDialog": {
+      "blockeraAnvandare": "Blockera användare",
+      "blockeraEnAnvandareFran": "Blockera en användare från plattformen. De kommer inte kunna logga in under blockeringsperioden.",
+      "sokEfterAnvandare": "Sök efter användare",
+      "sokPaAnvandarnamnEller": "Sök på användarnamn eller namn...",
+      "soker": "Söker...",
+      "valdAnvandare": "Vald användare",
+      "andra": "Ändra",
+      "1Manad": "1 månad",
+      "3Manader": "3 månader",
+      "1Ar": "1 år",
+      "beskrivVarforAnvandarenBlockeras": "Beskriv varför användaren blockeras...",
+      "anledningenLoggasOchKan": "Anledningen loggas och kan visas för användaren.",
+      "avbryt": "Avbryt",
+      "redanBlockerad": "Redan blockerad",
+      "blockeringstid": "Blockeringstid",
+      "1Dag": "1 dag",
+      "3Dagar": "3 dagar",
+      "1Vecka": "1 vecka",
+      "2Veckor": "2 veckor",
+      "permanent": "Permanent",
+      "anledning": "Anledning",
+      "blockerar": "Blockerar..."
+    },
+    "domainModeration": {
+      "domanTillagd": "Domän tillagd",
+      "domanUppdaterad": "Domän uppdaterad",
+      "kundeInteUppdateraDomanstatus": "Kunde inte uppdatera domänstatus",
+      "domanBorttagen": "Domän borttagen",
+      "kundeInteTaBort": "Kunde inte ta bort domän",
+      "provotid": "Prövotid",
+      "laggTillDomanmoderering": "Lägg till domänmoderering",
+      "domanvard": "Domänvärd",
+      "valjStatus": "Välj status",
+      "anledningTillModerering": "Anledning till moderering",
+      "domanmoderationslista": "Domänmoderationslista",
+      "listaOverDomanerMed": "Lista över domäner med modereringsstatus",
+      "doman": "Domän",
+      "atgarder": "Åtgärder",
+      "ingaDomanmodereringsposternaHittades": "Inga domänmodereringsposterna hittades",
+      "redigeraDomanmoderering": "Redigera domänmoderering",
+      "uppdateraModereringsinstallningarFor": "Uppdatera modereringsinställningar för",
+      "bekraftaBorttagning": "Bekräfta borttagning",
+      "arDuSakerPa": "Är du säker på att du vill ta bort",
+      "franModerering": "från moderering?",
+      "uppdateringMisslyckades": "Uppdatering misslyckades",
+      "ettFelUppstodVid": "Ett fel uppstod vid uppdatering",
+      "borttagningMisslyckades": "Borttagning misslyckades",
+      "ettFelUppstodVid2": "Ett fel uppstod vid borttagning",
+      "blockerad": "Blockerad",
+      "normal": "Normal",
+      "exempelSocial": "exempel.social",
+      "status": "Status",
+      "reason": "Anledning",
+      "refresh": "Uppdatera",
+      "addDomain": "Lägg till domän",
+      "anledning": "Anledning",
+      "edit": "Redigera",
+      "cancel": "Avbryt",
+      "saveChanges": "Spara ändringar",
+      "delete": "Ta bort"
+    },
+    "retainedReportReview": {
+      "anmaltInnehallSomHar": "Anmält innehåll som har raderats",
+      "atkomstenLoggasTextKan": "Åtkomsten loggas. Text kan granskas om anmälan gjordes före raderingen och ärendet fortfarande är öppet. Bilder och privata meddelanden visas inte här.",
+      "textenArInteTillganglig": "Texten är inte tillgänglig. Ärendet kan vara avslutat, lagringstiden slut eller åtkomsten nekad.",
+      "granskningenForlangerInteLagringstiden": ". Granskningen förlänger inte lagringstiden.",
+      "hamtarTexten": "Hämtar texten…",
+      "inlaggetInnehallerIngenGranskbar": "Inlägget innehåller ingen granskbar text.",
+      "granskaRaderadText": "Granska raderad text",
+      "raderasPermanent": "Raderas permanent"
+    },
+    "actorModeration": {
+      "aktorBlockerad": "Aktör blockerad",
+      "aktorUppdaterad": "Aktör uppdaterad",
+      "kundeInteUppdateraAktor": "Kunde inte uppdatera aktör",
+      "ettFelIntraffade": "Ett fel inträffade",
+      "aktorBorttagen": "Aktör borttagen",
+      "kundeInteTaBort": "Kunde inte ta bort aktör",
+      "provotid": "Prövotid",
+      "laggTillAktorblockering": "Lägg till aktörblockering",
+      "aktorUrl": "Aktör-URL",
+      "valjStatus": "Välj status",
+      "laggTillAktor": "Lägg till aktör",
+      "blockeradeAktorer": "Blockerade aktörer",
+      "listaOverBlockeradeAktorer": "Lista över blockerade aktörer",
+      "aktor": "Aktör",
+      "atgarder": "Åtgärder",
+      "ingaAktorblockeringarHittades": "Inga aktörblockeringar hittades",
+      "redigeraAktorblockering": "Redigera aktörblockering",
+      "uppdateraModereringsinstallningarFor": "Uppdatera modereringsinställningar för",
+      "avbryt": "Avbryt",
+      "sparaAndringar": "Spara ändringar",
+      "bekraftaBorttagning": "Bekräfta borttagning",
+      "arDuSakerPa": "Är du säker på att du vill ta bort",
+      "franModereringen": "från modereringen?",
+      "taBort": "Ta bort",
+      "uppdateringMisslyckades": "Uppdatering misslyckades",
+      "borttagningMisslyckades": "Borttagning misslyckades",
+      "blockerad": "Blockerad",
+      "normal": "Normal",
+      "status": "Status",
+      "anledning": "Anledning",
+      "uppdatera": "Uppdatera",
+      "redigera": "Redigera"
+    },
+    "mastodonApps": {
+      "duKanAnvandaDitt": "Du kan använda ditt Nolto-konto i en Mastodon-app. Stödet är experimentellt och öppet för alla Nolto-konton. Inloggning, profil, hemflöde, textinlägg, svar och likes har testats i Phanpy.",
+      "valjNoltoSocialSom": "Välj nolto.social som server i appen. Du loggar in på Noltos webbplats med din vanliga inloggningsmetod och väljer om appen ska få åtkomst. Din Nolto-adress är densamma även när du använder Google, Apple eller Bluesky för inloggningen.",
+      "vadIngarIForsta": "Vad ingår i första versionen?",
+      "offentligaProfilerHemflodeOffentligt": "Offentliga profiler, hemflöde, offentligt flöde, textinlägg, svar och likes. Följningar av konton som Nolto redan känner till ingår också, men följningar mellan servrar är ännu inte verifierade. Befintliga bilder visas från sina källor.",
+      "bildOchVideouppladdningFran": "Bild- och videouppladdning från externa appar, privata meddelanden, boostar, omröstningar och pushnotiser saknas. Redigera eller radera inlägg på Noltos webbplats. Andra appar kan ha begränsningar som ännu inte har testats.",
+      "duKanNarSom": "Du kan när som helst återkalla en apps åtkomst nedan. Därefter behöver appen anslutas och godkännas på nytt.",
+      "egnaNoltoKontonI": "Egna Nolto-konton i Blueskys app är ännu inte tillgängliga. Du kan fortfarande använda ett befintligt Bluesky-konto för att logga in på Nolto.",
+      "noltoIEnMastodon": "Nolto i en Mastodon-app",
+      "hanteraAnslutnaAppar": "Hantera anslutna appar"
+    },
+    "integrations": {
+      "hamtaFranNoltoFor": "Hämta från Nolto – för rekryterare",
+      "laggTillEnNolto": "Lägg till en Nolto-knapp i ert ansökningsformulär. Kandidaten väljer själv vilka profiluppgifter som delas.",
+      "forRekryterareOchUtvecklare": "FÖR REKRYTERARE OCH UTVECKLARE",
+      "latKandidatenBorjaMed": "Låt kandidaten börja med sin Nolto-profil.",
+      "enKnappFyllerI": "En knapp fyller i de uppgifter kandidaten vill dela. Personen slipper skriva samma sak igen, och ni kan behålla ert vanliga ansökningsformulär.",
+      "hamtaFranNolto": "Hämta från Nolto",
+      "kopieraOchKlistraIn": "Kopiera och klistra in",
+      "ingenApiNyckelEller": "Ingen API-nyckel eller registrering krävs. Exemplet fungerar på en HTTPS-sida och i lokal utveckling.",
+      "markeraOchKopieraKoden": "Markera och kopiera koden i rutan.",
+      "valjVilkaUppgifterNi": "Välj vilka uppgifter ni behöver",
+      "listaFaltenIData": "Lista fälten i data-nolto-fields. Kontaktdetaljer, erfarenhet och utbildning är avmarkerade från början. Uppgifter som kandidaten inte godkänner lämnas utanför svaret.",
+      "falt": "Fält",
+      "innehall": "Innehåll",
+      "forEttEgetFlode": "För ett eget flöde eller rekryteringssystem",
+      "laddaSammaScriptOch": "Ladda samma script och anropa requestProfile när användaren klickar på er knapp. Textfält kommer som strängar och CV-delar som listor. Avbruten delning ger ett fel som ni kan fånga med try/catch.",
+      "importenDelarEnKopia": "Importen delar en kopia vid ett tillfälle. Den ger ingen fortsatt åtkomst till kontot eller automatiska uppdateringar. Uppgifterna är kandidatens egna profiluppgifter, inte ett verifieringsintyg eller en inloggning till ert system.",
+      "tekniskReferensOchExempel": "Teknisk referens och exempel",
+      "kallkodOchEgenDrift": "Källkod och egen drift",
+      "kodenArKopierad": "Koden är kopierad",
+      "kopieraKoden": "Kopiera koden"
+    },
+    "remoteInstancesTable": {
+      "domanstatusUppdaterad": "Domänstatus uppdaterad",
+      "kundeInteUppdateraDomanstatus": "Kunde inte uppdatera domänstatus",
+      "ettFelIntraffadeForsok": "Ett fel inträffade. Försök igen.",
+      "kundeInteLaddaData": "Kunde inte ladda data",
+      "troskelvardeForForfragningar": "Tröskelvärde för förfrågningar",
+      "tidsfonsterMinuter": "Tidsfönster (minuter)",
+      "antalForfragningar": "Antal förfrågningar",
+      "senasteForfragan": "Senaste förfrågan",
+      "atgarder": "Åtgärder",
+      "tillat": "Tillåt",
+      "tillatInstans": "Tillåt instans?",
+      "dettaTarBortAlla": "Detta tar bort alla restriktioner för",
+      "avbryt": "Avbryt",
+      "bekrafta": "Bekräfta",
+      "begransa": "Begränsa",
+      "begransaInstans": "Begränsa instans?",
+      "dettaSatter": "Detta sätter",
+      "underBegransningMedReducerad": "under begränsning med reducerad funktionalitet.",
+      "angeEnAnledningFor": "Ange en anledning för begränsningen",
+      "dettaBlockerarAllTrafik": "Detta blockerar all trafik från",
+      "angeEnAnledningFor2": "Ange en anledning för blockeringen",
+      "ingaInstanserHittadesSom": "Inga instanser hittades som överskrider tröskelvärdet.",
+      "uppdatera": "Uppdatera",
+      "instans": "Instans",
+      "status": "Status",
+      "anledning": "Anledning",
+      "blockera": "Blockera",
+      "blockeraInstans": "Blockera instans?"
+    },
+    "quoteRepostDialog": {
+      "loggaInForAtt": "Logga in för att dela vidare",
+      "inlaggetDeladesTillDin": "Inlägget delades till din profil!",
+      "kundeInteDelaVidare": "Kunde inte dela vidare. Försök igen.",
+      "delaTillDinProfil": "Dela till din profil",
+      "laggTillDinaTankar": "Lägg till dina tankar (valfritt)...",
+      "avbryt": "Avbryt",
+      "delar": "Delar...",
+      "delaVidare": "Dela vidare"
+    },
+    "flaggedContentList": {
+      "flaggatInnehall": "Flaggat innehåll",
+      "vantande": "Väntande",
+      "losta": "Lösta",
+      "avfardade": "Avfärdade",
+      "inga": "Inga",
+      "forhandsvisning": "Förhandsvisning",
+      "avfarda": "Avfärda",
+      "taBortInnehall": "Ta bort innehåll",
+      "taBortDetta": "Ta bort detta",
+      "avbryt": "Avbryt",
+      "taBort": "Ta bort",
+      "blockeraAnvandare": "Blockera användare",
+      "innehalletDoljsDirektOch": "Innehållet döljs direkt och raderas permanent efter 30 dagar. Anmälan markeras som löst.",
+      "dettaTarPermanentBort": "Detta tar permanent bort det rapporterade innehållet. Åtgärden kan inte ångras.",
+      "granskade": "Granskade",
+      "allaRapporter": "Alla rapporter",
+      "rapporterHittades": "rapporter hittades",
+      "rapporteradAv": "Rapporterad av @",
+      "markeraGranskad": "Markera granskad"
+    },
+    "blockUserDialog": {
+      "kundeInteBlockeraAnvandaren": "Kunde inte blockera användaren",
+      "attBlockeraDennaAnvandare": "Att blockera denna användare kommer att:",
+      "doljaDerasInlaggFran": "Dölja deras inlägg från ditt flöde",
+      "forhindraDemFranAtt": "Förhindra dem från att skicka meddelanden till dig",
+      "taBortDemFran": "Ta bort dem från sökresultat",
+      "varforBlockerarDuDenna": "Varför blockerar du denna användare?",
+      "avbryt": "Avbryt",
+      "blockeraAnvandare": "Blockera användare",
+      "blockera": "Blockera",
+      "anledningValfritt": "Anledning (valfritt)",
+      "blockerar": "Blockerar..."
+    },
+    "linkedInImportButton": {
+      "importeraFranLinkedin": "Importera från LinkedIn"
+    },
+    "app": {
+      "laddarSida": "Laddar sida",
+      "laddar": "Laddar..."
+    },
+    "postReplyThread": {
+      "kundeInteSparaKommentaren": "Kunde inte spara kommentaren",
+      "okand": "Okänd",
+      "kommentarEjTillganglig": "Kommentar ej tillgänglig"
+    },
+    "uploadStep": {
+      "bearbetarDinData": "Bearbetar din data...",
+      "dettaKanTaEn": "Detta kan ta en stund",
+      "slappDinLinkedinZip": "Släpp din LinkedIn ZIP-fil här",
+      "ellerKlickaForAtt": "eller klicka för att bläddra",
+      "forvantadeFilerIDin": "Förväntade filer i din export:",
+      "profileCsvGrundlaggandeProfilinfo": "• Profile.csv – Grundläggande profilinfo",
+      "sharesCsvInlaggOch": "• Shares.csv – Inlägg och artiklar (valfritt)",
+      "narDuExporterarFran": "När du exporterar från LinkedIn, välj \"The larger data archive\" för mer komplett data.",
+      "maxFilstorlek100mb": "Max filstorlek: 100 MB",
+      "tillbaka": "Tillbaka",
+      "positionsCsvArbetslivserfarenhet": "• Positions.csv – Arbetslivserfarenhet",
+      "educationCsvUtbildningshistorik": "• Education.csv – Utbildningshistorik",
+      "skillsCsvKompetenser": "• Skills.csv – Kompetenser",
+      "tips": "Tips:"
+    },
+    "postEditDialog": {
+      "omrostningsalternativKanInteRedigeras": "Omröstningsalternativ kan inte redigeras efter att de skapats för att bevara rösternas integritet. Du kan bara redigera frågetexten ovan.",
+      "avbryt": "Avbryt",
+      "redigeraOmrostning": "Redigera omröstning",
+      "redigeraInlagg": "Redigera inlägg",
+      "redigeraDinOmrostningsfraga": "Redigera din omröstningsfråga...",
+      "vadTankerDuPa": "Vad tänker du på?",
+      "sparaAndringar": "Spara ändringar",
+      "sparar": "Sparar..."
+    },
+    "companySearchFilter": {
+      "sokForetag": "Sök företag...",
+      "anstallda": "anställda",
+      "typAvOrganisation": "Typ av organisation",
+      "allaTyper": "Alla typer",
+      "storlek": "Storlek",
+      "allaStorlekar": "Alla storlekar",
+      "plats": "Plats",
+      "clear": "Rensa"
+    },
+    "updatePassword": {
+      "valjNyttLosenord": "Välj nytt lösenord",
+      "dittLosenordHarAndrats": "Ditt lösenord har ändrats.",
+      "fortsattTillNolto": "Fortsätt till Nolto",
+      "aterstallningslankenSaknasHarGatt": "Återställningslänken saknas, har gått ut eller har redan använts.",
+      "begarEnNyLank": "Begär en ny länk",
+      "nyttLosenordMinst12": "Nytt lösenord, minst 12 tecken",
+      "bekraftaLosenord": "Bekräfta lösenord",
+      "andraLosenord": "Ändra lösenord",
+      "verifierarInloggning": "Verifierar inloggning…",
+      "sparar": "Sparar…"
+    },
+    "socialCallback": {
+      "loggaInPaNolto": "Logga in på Nolto",
+      "inloggningenKundeInteSlutforas": "Inloggningen kunde inte slutföras. Starta ett nytt försök i samma webbläsare.",
+      "forsokIgen": "Försök igen",
+      "slutforInloggningen": "Slutför inloggningen…"
+    },
+    "previewStep": {
+      "ingenDataHittadesI": "Ingen data hittades i din export. Det kan bero på att ZIP-filens struktur är annorlunda än förväntat. Klicka \"Visa detaljer\" nedan för att se vilka filer som upptäcktes.",
+      "ingaCsvFilerHittades": "Inga CSV-filer hittades",
+      "inlaggsDelningskolumner": "Inläggs-/delningskolumner:",
+      "seTillAttDu": "Se till att du använder \"Get a copy of your data\" från LinkedIn-inställningar. Välj \"The larger data archive\" för mer komplett data.",
+      "inlagg": "Inlägg",
+      "ingenProfildataHittadesI": "Ingen profildata hittades i exporten",
+      "forvantadFilProfileCsv": "Förväntad fil: Profile.csv",
+      "ingenArbetslivserfarenhetHittades": "Ingen arbetslivserfarenhet hittades",
+      "forvantadFilPositionsCsv": "Förväntad fil: Positions.csv",
+      "ingenUtbildningHittades": "Ingen utbildning hittades",
+      "forvantadFilEducationCsv": "Förväntad fil: Education.csv",
+      "ingaKompetenserHittades": "Inga kompetenser hittades",
+      "forvantadFilSkillsCsv": "Förväntad fil: Skills.csv",
+      "importeraSomUtkast": "Importera som utkast",
+      "ingaInlaggEllerArtiklar": "Inga inlägg eller artiklar hittades",
+      "forvantadFilSharesCsv": "Förväntad fil: Shares.csv",
+      "doljDetaljer": "Dölj detaljer",
+      "visaDetaljer": "Visa detaljer",
+      "okant": "Okänt",
+      "csvFilerHittade": "CSV-filer hittades (",
+      "profilkolumner": "Profilkolumner:",
+      "positionskolumner": "Arbetslivserfarenhetskolumner:",
+      "utbildningskolumner": "Utbildningskolumner:",
+      "kompetenskolumner": "Kompetenskolumner:",
+      "tips": "Tips:",
+      "profil": "Profil",
+      "arbete": "Arbetslivserfarenhet",
+      "utbildning": "Utbildning",
+      "kompetenser": "Kompetenser",
+      "importeraProfilinfo": "Importera profilinfo",
+      "hittad": "Hittad",
+      "namn": "Namn",
+      "rubrik": "Rubrik",
+      "bio": "Bio",
+      "plats": "Plats",
+      "importeraArbetslivserfarenhet": "Importera arbetslivserfarenhet",
+      "hittade": "hittades",
+      "importeraUtbildning": "Importera utbildning",
+      "importeraKompetenser": "Importera kompetenser",
+      "tillbaka": "Tillbaka",
+      "importerar": "Importerar...",
+      "ejAngivet": "Ej angivet",
+      "nuvarande": "Nuvarande"
+    },
+    "companyCard": {
+      "foljare": "följare"
+    },
+    "contentWarningInput": {
+      "innehallsvarningarHjalperAndraAtt": "Innehållsvarningar hjälper andra att välja vad de vill se. Inlägg med varning döljs som standard.",
+      "laggTillInnehallsvarning": "Lägg till innehållsvarning",
+      "tExPolitikSpoilers": "t.ex. politik, spoilers, mat..."
+    },
+    "shareProfile": {
+      "valjVadDuVill": "Välj vad du vill dela",
+      "oppnaDelningenMedNolto": "Öppna delningen med Nolto-knappen på sidan där du vill fylla i ett formulär.",
+      "klartDuKanStanga": "Klart. Du kan stänga det här fönstret.",
+      "baraDeUppgifterDu": "Bara de uppgifter du markerar skickas när du trycker på Dela. Mottagaren kan spara dem. Du behöver fortfarande kontrollera och skicka formuläret på deras sida.",
+      "loggaInPaNolto": "Logga in på Nolto",
+      "loggaInIDen": "Logga in i den nya fliken och återvänd sedan hit.",
+      "hamtarDinProfil": "Hämtar din profil…",
+      "forsokIgen": "Försök igen",
+      "avbryt": "Avbryt",
+      "inteIfyllt": "Inte ifyllt",
+      "mottagare": "Mottagare",
+      "kontrollerarInloggningen": "Kontrollerar inloggningen…",
+      "delaValdaUppgifter": "Dela valda uppgifter"
+    },
+    "bannedUsersList": {
+      "upphavd": "Upphävd",
+      "utgangen": "Utgången",
+      "upphavBlockering": "Upphäv blockering",
+      "upphavDennaBlockering": "Upphäv denna blockering?",
+      "dettaAterstallerOmedelbartAnvandarens": "Detta återställer omedelbart användarens åtkomst till plattformen. Är du säker?",
+      "avbryt": "Avbryt",
+      "ingaAktivaBlockeringar": "Inga aktiva blockeringar",
+      "ingenBlockeringshistorik": "Ingen blockeringshistorik",
+      "okandAnvandare": "Okänd användare",
+      "utgar": "Utgår",
+      "permanent": "Permanent",
+      "kvar": "kvar",
+      "blockerad": "Blockerad",
+      "blockeringar": "Blockeringar",
+      "aktiva": "Aktiva (",
+      "historik": "Historik (",
+      "utgick": "Utgick"
+    },
+    "mfaRecover": {
+      "aterstallTvafaktorsautentisering": "Återställ tvåfaktorsautentisering",
+      "tvafaktorsautentiseringenHarAterstalltsAktivera": "Tvåfaktorsautentiseringen har återställts. Aktivera den igen i dina kontoinställningar.",
+      "oppnaKontoinstallningar": "Öppna kontoinställningar",
+      "lankenArOgiltigKontakta": "Länken är ogiltig. Kontakta jtensetti@protonmail.com om du behöver hjälp.",
+      "loggaInMedDitt": "Logga in med ditt lösenord för att använda återställningslänken.",
+      "dettaTarBortDina": "Detta tar bort dina befintliga tvåfaktorsmetoder och loggar ut dina andra sessioner. Länken fungerar endast för det konto som den utfärdades till.",
+      "tillbakaTillNolto": "Tillbaka till Nolto",
+      "aterstaller": "Återställer…",
+      "kontrollerarInloggning": "Kontrollerar inloggning…",
+      "loggaIn": "Logga in"
+    },
+    "instructionsStep": {
+      "oppnaLinkedinsDataexport": "Öppna LinkedIns dataexport",
+      "eller": "eller",
+      "jagHarRedanMin": "Jag har redan min export",
+      "dinIntegritetSkyddas": "Din integritet skyddas",
+      "dataBearbetasIDin": "Data bearbetas i din webbläsare. Vi lagrar eller skickar aldrig din fil till någon server.",
+      "klickaPaKnappenNedan": "Klicka på knappen nedan för att gå till LinkedIns nedladdningsinställningar.",
+      "begarDinData": "Begär din data",
+      "valjDownloadLargerData": "Välj \"Download larger data archive\" och markera den data du vill exportera.",
+      "vantaPaEPost": "Vänta på e-post",
+      "linkedinSkickarEttMejl": "LinkedIn skickar ett mejl när din data är klar. Vanligtvis några minuter, upp till 24 timmar.",
+      "laddaNerZipFilen": "Ladda ner ZIP-filen från LinkedIn och ladda upp den här.",
+      "laddaUppZipFilen": "Ladda upp ZIP-filen"
+    },
+    "confirmStep": {
+      "objektImporteradesTillDin": "objekt importerades till din profil",
+      "slutfordMedProblem": "Slutförd med problem",
+      "nagraFelUppstod": "Några fel uppstod:",
+      "visaProfil": "Visa profil",
+      "importLyckades": "Import lyckades",
+      "vissaObjektImporteradesMen": "Vissa objekt importerades, men det uppstod fel",
+      "importsammanfattning": "Importsammanfattning",
+      "profil": "Profil",
+      "arbetslivserfarenhet": "Arbetslivserfarenhet",
+      "utbildning": "Utbildning",
+      "kompetenser": "Kompetenser",
+      "artiklar": "Artiklar"
+    },
+    "authorizeApp": {
+      "oppnaAppanslutningenIEtt": "Öppna appanslutningen i ett eget fönster på Nolto.",
+      "villDuAnslutaDen": "Vill du ansluta den här appen?",
+      "kontrollerarAppensForfragan": "Kontrollerar appens förfrågan…",
+      "appensNamnOchWebbplats": "Appens namn och webbplats anges av utvecklaren och är inte verifierade av Nolto. Godkänn bara en app du själv har valt att ansluta.",
+      "appenBegarAttFa": "Appen begär att få:",
+      "atkomstenGallerIHogst": "Åtkomsten gäller i högst 30 dagar och kan återkallas under Anslutna appar. Den upphör även när inloggningssessionen återkallas. Nya inlägg följer Noltós regler för moderering.",
+      "mastodonAppstodetArUnder": "Mastodon-appstödet är under utprovning. Textinlägg, svar, likes och följningar ingår. Bild- och videouppladdning, privata meddelanden, boostar och pushnotiser ingår ännu inte.",
+      "loggaInPaNolto": "Logga in på Nolto",
+      "efterInloggningenKommerDu": "Efter inloggningen kommer du tillbaka hit och väljer om appen ska få åtkomst.",
+      "ansluterSom": "Ansluter som",
+      "kundeInteLasaDitt": "Kunde inte läsa ditt konto. Ladda om sidan och försök igen.",
+      "avbryt": "Avbryt",
+      "dittNoltoKonto": "ditt Nolto-konto",
+      "godkannOchAnslut": "Godkänn och anslut",
+      "anslutEnAppNolto": "Anslut en app · Nolto",
+      "kontrollerarInloggningen": "Kontrollerar inloggningen…",
+      "ansluter": "Ansluter…"
+    },
+    "companyForm": {
+      "viByggerFramtidenFor": "Vi bygger framtiden för...",
+      "berattaOmDinOrganisation": "Berätta om din organisation...",
+      "size110Anstallda": "1–10 anställda",
+      "size1150Anstallda": "11–50 anställda",
+      "size51200Anstallda": "51–200 anställda",
+      "size201500Anstallda": "201–500 anställda",
+      "size5011000Anstallda": "501–1 000 anställda",
+      "size10015000": "1 001–5 000 anställda",
+      "size500110000": "5 001–10 000 anställda",
+      "size10001Anstallda": "10 001+ anställda",
+      "organisationsnamn": "Organisationsnamn",
+      "noltoSocialOrganisation": "nolto.social/organisation/",
+      "organisationsnamn2": "organisationsnamn",
+      "stockholmSverige": "Stockholm, Sverige"
+    },
+    "messageRequestCard": {
+      "avboj": "Avböj",
+      "avbojDennaForfragan": "Avböj denna förfrågan?",
+      "kommerInteKunnaSkicka": "kommer inte kunna skicka en ny meddelandeförfrågan. Du kan alltid ansluta med dem senare om du ändrar dig.",
+      "avbryt": "Avbryt",
+      "avbojForfragan": "Avböj förfrågan",
+      "acceptera": "Acceptera",
+      "unknown": "Okänd"
+    },
+    "authRecovery": {
+      "tillbakaTillInloggning": "Tillbaka till inloggning",
+      "aterstallLosenord": "Återställ lösenord",
+      "omAdressenTillhorEtt": "Om adressen tillhör ett konto får du ett mejl med en länk för att välja ett nytt lösenord. Kontrollera även skräpposten.",
+      "angeEPostadressenFor": "Ange e-postadressen för ditt Nolto-konto. Loggar du in via Mastodon återställer du lösenordet hos din Mastodon-server.",
+      "skickaAterstallningslank": "Skicka återställningslänk",
+      "ePostadress": "E-postadress",
+      "skickar": "Skickar…"
+    },
+    "reportDialog": {
+      "valjEnAnledningFor": "Välj en anledning för rapporteringen",
+      "kundeInteSkickaRapport": "Kunde inte skicka rapport. Försök igen.",
+      "anledningTillRapportering": "Anledning till rapportering",
+      "avbryt": "Avbryt",
+      "spamEllerVilseledande": "Spam eller vilseledande",
+      "trakasserierEllerMobbning": "Trakasserier eller mobbning",
+      "hatretorikEllerDiskriminering": "Hatretorik eller diskriminering",
+      "olampligtInnehall": "Olämpligt innehåll",
+      "identitetsstold": "Identitetsstöld",
+      "annat": "Annat",
+      "rapportInskickadViGranskar": "Rapport inskickad. Vi granskar den inom kort.",
+      "rapportera": "Rapportera",
+      "ytterligareDetaljerValfritt": "Ytterligare detaljer (valfritt)",
+      "geYtterligareSammanhang": "Ge ytterligare sammanhang...",
+      "skickar": "Skickar...",
+      "skickaRapport": "Skicka rapport"
+    },
+    "profileCompleteness": {
+      "fyllIDinProfil": "Fyll i din profil",
+      "laggTill": "Lägg till",
+      "grundlaggandeInfoNamnRubrik": "Grundläggande info (namn, rubrik, bio)",
+      "profilbild": "Profilbild",
+      "arbetslivserfarenhet": "Arbetslivserfarenhet",
+      "utbildning": "Utbildning",
+      "kompetenser": "Kompetenser"
+    },
+    "profileHoverCard": {
+      "profilenHittadesInte": "Profilen hittades inte",
+      "pa": "på",
+      "visaProfil": "Visa profil",
+      "okandAnvandare": "Okänd användare",
+      "verifierad": "Verifierad",
+      "kontakter": "kontakter"
+    },
+    "shareButton": {
+      "lankKopieradTillUrklipp": "Länk kopierad till urklipp!",
+      "kundeInteKopieraLank": "Kunde inte kopiera länk",
+      "kopieraLank": "Kopiera länk",
+      "laddaNerSomBild": "Ladda ner som bild",
+      "delaPaBluesky": "Dela på Bluesky",
+      "delaPaMastodon": "Dela på Mastodon",
+      "delaPaLinkedin": "Dela på LinkedIn",
+      "delaPaXTwitter": "Dela på X/Twitter",
+      "delaSomBild": "Dela som bild",
+      "dela": "Dela",
+      "flerAlternativ": "Fler alternativ..."
+    },
+    "alertManager": {
+      "kundeInteSkapaAvisering": "Kunde inte skapa avisering",
+      "kundeInteUppdateraAvisering": "Kunde inte uppdatera avisering",
+      "kundeInteTaBort": "Kunde inte ta bort avisering",
+      "meddelandeKravs": "Meddelande krävs",
+      "laddar": "Laddar...",
+      "ingaAviseringarKonfigurerade": "Inga aviseringar konfigurerade",
+      "vaxlaAktiv": "Växla aktiv",
+      "infoGron": "Info (Grön)",
+      "felRod": "Fel (Röd)",
+      "avbryt": "Avbryt",
+      "skapaAvisering": "Skapa avisering",
+      "spara": "Spara",
+      "skapa": "Skapa",
+      "aviseringSkapad": "Avisering skapad",
+      "aviseringUppdaterad": "Avisering uppdaterad",
+      "aviseringBorttagen": "Avisering borttagen",
+      "webbplatsaviseringar": "Webbplatsaviseringar",
+      "nyAvisering": "Ny avisering",
+      "meddelande": "Meddelande",
+      "angeAviseringsmeddelande": "Ange aviseringsmeddelande...",
+      "typ": "Typ",
+      "fel": "Fel",
+      "info": "Info",
+      "redigeraAvisering": "Redigera avisering"
+    },
+    "deleteAccountSection": {
+      "kontotDoljsDirektOch": "Kontot döljs direkt och uppgifterna raderas permanent efter 30 dagar.",
+      "dinProfilOchDina": "Din profil och dina kontaktuppgifter",
+      "allaDinaInlaggKommentarer": "Alla dina inlägg, kommentarer och reaktioner",
+      "dinaKontakterOchMeddelanden": "Dina kontakter och meddelanden",
+      "dinErfarenhetUtbildningOch": "Din erfarenhet, utbildning och kompetenser",
+      "allaSparadeObjektOch": "Alla sparade objekt och notiser",
+      "laddaNerDinaUppgifter": "Ladda ner dina uppgifter först om du vill behålla dem. Kopior hos andra servrar och mottagare kan finnas kvar. Organisationer och deras filer behöver överlåtas innan kontot raderas.",
+      "loggaUtOchLogga": "Logga ut och logga in igen för att bekräfta din identitet",
+      "jagForstarAttKontot": "Jag förstår att kontot stängs direkt och raderas permanent efter 30 dagar",
+      "forAttBekrafta": "för att bekräfta",
+      "arDuHeltSaker": "Är du helt säker?",
+      "dinProfilOchDitt": "Din profil och ditt innehåll på Nolto döljs direkt. Du loggas ut och kan inte använda kontot. Uppgifterna raderas permanent efter 30 dagar. Kopior som andra redan har tagit emot kan finnas kvar.",
+      "avbryt": "Avbryt",
+      "raderaKonto": "Radera konto",
+      "efter30DagarRaderas": "Efter 30 dagar raderas:",
+      "skriv": "Skriv",
+      "radera": "RADERA",
+      "raderaMittKonto": "Radera mitt konto",
+      "raderar": "Raderar...",
+      "jaRaderaMittKonto": "Ja, radera mitt konto"
+    },
+    "notFound": {
+      "sidanHittadesInte": "Sidan hittades inte",
+      "sidanDuLetarEfter": "Sidan du letar efter finns inte eller har flyttats.",
+      "tillbakaTillStartsidan": "Tillbaka till startsidan"
+    },
+    "saveButton": {
+      "loggaInForAtt": "Logga in för att spara objekt",
+      "kundeInteSparaObjektet": "Kunde inte spara objektet"
+    },
+    "emailNotificationPreferences": {
+      "duMasteVaraInloggad": "Du måste vara inloggad",
+      "kundeInteUppdateraInstallningar": "Kunde inte uppdatera inställningar",
+      "sammanfattningsmailForNotifieringar": "Sammanfattningsmail för notifieringar",
+      "taEmotEPostsammanfattningar": "Ta emot e-postsammanfattningar av olästa notifieringar",
+      "ePostnotifieringar": "E-postnotifieringar"
+    },
+    "profileService": {
+      "failedToLoadProfile": "Kunde inte ladda profildata"
+    },
+    "articleReactionsService": {
+      "youMustBeLogged": "Du måste vara inloggad för att reagera på en artikel",
+      "failedToProcessYour": "Kunde inte bearbeta din reaktion. Försök igen."
+    },
+    "useArticleImageUpload": {
+      "pleaseSelectAnImage": "Vänligen välj en bildfil",
+      "imageMustBeSmaller": "Bilden måste vara mindre än 5MB",
+      "youMustBeLogged": "Du måste vara inloggad för att ladda upp bilder",
+      "failedToUploadImage": "Kunde inte ladda upp bild"
+    },
+    "inlineErrorBanner": {
+      "retry": "Försök igen",
+      "dismiss": "Avvisa"
+    },
+    "starterPackCard": {
+      "followed": "Följer",
+      "follow": "Följ"
+    },
+    "adminInstances": {
+      "verifyingAccess": "Verifierar åtkomst...",
+      "accessRestricted": "Begränsad åtkomst",
+      "thisAreaIsRestricted": "Detta område är endast för behöriga moderatorer.",
+      "returnHome": "Återgå hem",
+      "instanceManagementAdmin": "Instanshantering - Admin",
+      "manageRateLimitedInstances": "Hantera hastighetsbegränsade instanser och federationsköer.",
+      "back": "Tillbaka",
+      "instanceManagement": "Instanshantering",
+      "rateLimitedInstances": "Hastighetsbegränsade instanser",
+      "federationQueue": "Federationskö",
+      "federationLogs": "Federationsloggar",
+      "federationLogsFunctionalityWill": "Federationsloggar kommer att läggas till i en framtida uppdatering."
+    },
+    "moderationLog": {
+      "loadingModerationActions": "Laddar modereringsåtgärder..."
+    },
+    "blueskySignIn": {
+      "namnBskySocial": "namn.bsky.social"
+    },
+    "contentWarningDisplay": {
+      "contentWarning": "Innehållsvarning:",
+      "hide": "Dölj",
+      "show": "Visa"
+    },
+    "shardedQueueStats": {
+      "federationQueueStatistics": "Federationskököstatistik",
+      "errorLoadingQueueStatistics": "Fel vid laddning av köstatistik",
+      "federationQueueOverview": "Översikt över federationskö",
+      "total": "Totalt",
+      "pending": "Väntande",
+      "processing": "Bearbetas",
+      "failed": "Misslyckades",
+      "processed": "Bearbetade",
+      "queueStatisticsByPartition": "Köstatistik per partition",
+      "partition": "Partition",
+      "total2": "Totalt:",
+      "pending2": "Väntande:",
+      "processing2": "Bearbetas:",
+      "failed2": "Misslyckades:",
+      "processed2": "Bearbetade:"
+    },
+    "quotedPostPreview": {
+      "postAttachment": "Bifogad post",
+      "reposted": "delade vidare"
+    },
+    "healthCheckStatus": {
+      "systemHealth": "Systemhälsa",
+      "monitorTheHealthOf": "Övervaka hälsostatusen för systemkomponenterna",
+      "failedToLoadHealth": "Kunde inte ladda hälsostatus. Försök igen.",
+      "database": "Databas",
+      "latency": "Latens:",
+      "ms": "ms",
+      "queueDepth": "Ködjup",
+      "messages": "meddelanden",
+      "lastChecked": "Senast kontrollerad:",
+      "traceId": "Spårnings-ID:",
+      "connected": "Ansluten",
+      "slow": "Långsam",
+      "error": "Fel",
+      "normal": "Normal",
+      "high": "Hög",
+      "critical": "Kritisk",
+      "refreshing": "Uppdaterar...",
+      "refresh": "Uppdatera"
+    },
+    "fediverseBadge": {
+      "verifiedVia": "Verifierad via",
+      "thisUserSIdentity": "Denna användares identitet är verifierad via hens Fediverse-konto på"
+    },
+    "quoteCardGenerator": {
+      "imageDownloaded": "Bild nedladdad!",
+      "failedToGenerateImage": "Misslyckades med att generera bild. Försök igen.",
+      "shareAsImage": "Dela som bild",
+      "downloadAsImage": "Ladda ner som bild",
+      "verticalStories": "Vertikala (Stories)",
+      "generating": "Genererar...",
+      "downloadImage": "Ladda ner bild"
+    },
+    "linkPreview": {
+      "loadingPreview": "Laddar förhandsvisning..."
+    },
+    "companyPostCard": {
+      "cw": "Varning:",
+      "postImage": "Inläggsbild"
+    },
+    "coverImageUpload": {
+      "cover": "Omslag"
+    },
+    "imageLightbox": {
+      "imageViewer": "Bildvisare",
+      "close": "Stäng",
+      "previousImage": "Föregående bild",
+      "nextImage": "Nästa bild",
+      "zoomOut": "Zooma ut",
+      "zoomIn": "Zooma in",
+      "image": "Bild"
+    },
+    "alertBanner": {
+      "dismissAlert": "Stäng avisering"
+    },
+    "modeToggle": {
+      "failedToSaveTheme": "Det gick inte att spara tema-preferenser"
+    },
+    "jobForm": {
+      "tEx50000": "t.ex. 50000",
+      "tEx80000": "t.ex. 80000"
+    },
+    "messageReactions": {
+      "addReaction": "Lägg till reaktion",
+      "reactToThisMessage": "Reagera på detta meddelande"
+    },
+    "starterPackView": {
+      "unknown": "Okänd"
+    },
+    "freelancers": {
+      "freelancer": "Frilansare"
+    },
+    "messages": {
+      "un": "UN"
+    },
+    "search": {
+      "unknown": "Okänd"
+    },
+    "addRoleForm": {
+      "unknown": "Okänd"
+    },
+    "companyPostComposer": {
+      "preview": "Förhandsgranska"
+    },
+    "skillEndorsements": {
+      "unknown": "Okänd"
+    },
+    "companyPeopleTab": {
+      "user": "Användare"
+    },
+    "postCardContent": {
+      "mediaAttachment": "Medial bifogad fil"
+    },
+    "commentPreview": {
+      "unknown": "Okänd"
+    },
+    "postComposer": {
+      "user": "Användare",
+      "preview": "Förhandsgranska"
+    },
+    "companyEmployeeForm": {
+      "fullTime": "Heltid",
+      "partTime": "Deltid",
+      "contract": "Kontrakt",
+      "intern": "Praktikant",
+      "freelance": "Frilans"
+    }
+  },
+  "legalDocs": {
+    "privacy": {
+      "title": "Integritetspolicy",
+      "intro": "Vilka uppgifter Nolto använder, vad federation innebär och hur du utövar dina rättigheter.",
+      "sections": [
+        [
+          "Ansvar och kontakt",
+          "Jonatan Tensetti driver Nolto.social och är personuppgiftsansvarig för behandlingen av personuppgifter inom tjänsten. Kontakta operatören via e-postadressen nedan om dina personuppgifter eller en begäran enligt dataskyddsförordningen. Andra servrar i fediversum drivs av självständiga operatörer som ansvarar för sin egen behandling av personuppgifter och har egna villkor."
+        ],
+        [
+          "Uppgifter och ändamål",
+          "Vi behandlar e-postadress och autentiseringsuppgifter för inloggning, de frivilliga profilfält du fyller i, innehåll och kontakter för de funktioner du använder. Vi säljer inte personuppgifter. Vi registrerar inte profilbesök och lagrar inte meddelandetext i kontaktförfrågningar. Samtyckesposter och begäran om MFA-återställning innehåller inte IP-adress eller webbläsaridentifiering. Driftleverantörer kan fortfarande behandla tekniska anslutningsuppgifter. Säkerhetsloggar och modereringsärenden används för att skydda tjänsten och hantera anmälningar."
+        ],
+        [
+          "Rättslig grund",
+          "Kontohantering och de funktioner du begär behandlas för att fullgöra avtalet med dig. Säkerhet och moderering grundas på ett berättigat intresse av en fungerande och trygg tjänst, efter avvägning mot din integritet. När lag kräver behandling grundas den på en rättslig förpliktelse. Om en funktion kräver samtycke ska det inhämtas särskilt och kunna återkallas."
+        ],
+        [
+          "Offentlig profil och federation",
+          "Profilen och offentliga inlägg kan läsas av andra. Om du aktiverar federation kan profil, profilbilder, inlägg, reaktioner och följarrelationer skickas till andra servrar via ActivityPub. Din adress, användarnamn@nolto.social, gör profilen sökbar via WebFinger. Mottagare kan finnas utanför EU/EES. Offentlig publicering är inte en garanti för att andra servrar raderar sina kopior när du ändrar eller tar bort något i Nolto."
+        ],
+        [
+          "Inloggning via Bluesky",
+          "När Bluesky-inloggning är tillgänglig kan du godkänna den hos din kontoleverantör. Nolto sparar ditt beständiga AT Protocol-ID (DID) kopplat till ditt Nolto-konto. Vi begär endast behörighet för inloggning och hämtar inte följlistor, inlägg eller privata meddelanden. Tillfälliga inloggningsuppgifter på servern krypteras, gäller i tio minuter och gallras därefter. Åtkomsttoken sparas inte efter inloggningen. Ditt Bluesky-lösenord lämnas aldrig till Nolto. Koppla ett befintligt Nolto-konto från profilinställningarna för att undvika två separata konton."
+        ],
+        [
+          "Språkpåminnelser och granskning",
+          "Vid publicering kontrolleras text mot ett begränsat antal svenska och engelska språkregler i Noltos databas. Förhandskontrollen sparar inte utkastet och skickar det inte till en extern analystjänst. Personangrepp kan ge en påminnelse som du kan gå vidare från. Vissa uttryckliga hot och uppmaningar till gruppvåld hålls undan för mänsklig granskning. Reglerna kan missa innehåll eller misstolka sammanhang och bedömer inte bilder. I Mina granskningar ser du status, kan lämna sammanhang eller begära omprövning. Granskningsanteckningar raderas när det berörda innehållet raderas permanent. Privata meddelanden omfattas inte av textkontrollen."
+        ],
+        [
+          "Inloggning via Mastodon",
+          "Väljer du Mastodon-inloggning kontaktar Nolto den server du anger och hämtar de kontouppgifter som behövs för att identifiera dig. Nolto får inte ditt Mastodon-lösenord. En behörighetstoken kan lagras krypterat på servern. Kontona förblir separata: inloggningen innebär inte att all historik eller alla privata meddelanden synkroniseras."
+        ],
+        [
+          "Leverantörer och säkerhet",
+          "Backend drivs i Lovable Cloud med Supabase-teknik för databas, autentisering och filer. E-post kan skickas genom Resend. Leverantörerna behöver behandla vissa uppgifter för driften. Andra federerade servrar är självständiga operatörer. Offentliga profiler, inlägg och filer måste vara läsbara för tjänsten och mottagande servrar. Krypterad överföring och kryptering med servernyckel är inte helsträckskryptering och eliminerar inte risken för intrång."
+        ],
+        [
+          "Privata meddelanden",
+          "Nya privata meddelanden mellan Nolto-konton helsträckskrypteras och signeras i webbläsaren. Båda behöver aktivera sin krypterade inkorg. Nyckelfrasen skickas inte till Nolto; den privata nyckeln sparas enbart i krypterad form. En upplåst nyckel används i webbläsarens minne och låses vid utloggning, sidans stängning eller 15 minuters inaktivitet. Avsändare, mottagare och tidpunkter är fortfarande synliga för servern. Äldre meddelanden markeras separat och kan dekrypteras av servern. Offentligt innehåll och meddelanden på andra tjänster omfattas inte. Spara nyckelfras och krypterad nyckelbackup säkert: ett återställt kontolösenord återställer inte nyckelfrasen. Jämför nycklarnas fingeravtryck via en annan betrodd kanal. En angripare som kontrollerar din enhet eller tjänstens levererade programkod kan fortfarande komma åt innehåll när du använder inkorgen."
+        ],
+        [
+          "Lagring och radering",
+          "När du begär att radera ett konto, inlägg, en kommentar eller artikel döljs det direkt i Noltos vanliga gränssnitt och API. För konton spärras åtkomsten samtidigt. Permanent radering är schemalagd till 30 dagar efter begäran. Under väntetiden är uppgifterna avskilda från vanlig åtkomst; innehållsarkivet krypteras med en separat servernyckel och filer flyttas till ett privat, krypterat arkiv av bakgrundsjobbet. Det är inte helsträckskryptering. Om ett inlägg eller en artikel anmäldes före raderingen kan behöriga moderatorer granska den arkiverade texten i det öppna ärendet under väntetiden. Åtkomsten loggas och förlänger inte lagringstiden. Privata meddelanden öppnas inte för moderatorer genom detta flöde. Inloggningens begränsningslogg gallras efter ett dygn, federationsloggar efter sju dagar och MFA-återställningsärenden efter 30 dagar. Begränsade identifikatorer kan behållas för att markera raderade federationsobjekt och förhindra att någon tar över en gammal federationsadress. Säkerhetskopior hos driftleverantörer och kopior som mottagare redan har hämtat kan finnas kvar enligt andra förlopp. En begäran enligt GDPR prövas utan onödigt dröjsmål och kan kräva tidigare radering; 30-dagarsflödet begränsar inte dina rättigheter. Kontakta oss om en skyndsam eller mer omfattande radering behövs."
+        ],
+        [
+          "Dina rättigheter",
+          "Du kan begära information, tillgång, rättelse, radering, begränsning och, när förutsättningarna är uppfyllda, dataportabilitet. Du kan invända mot behandling som grundas på berättigat intresse och återkalla samtycke. Kontakta oss via adressen nedan; vi kan behöva kontrollera din identitet utan att begära mer än nödvändigt. Du kan också lämna klagomål till Integritetsskyddsmyndigheten, imy.se."
+        ]
+      ]
+    },
+    "terms": {
+      "title": "Användarvillkor",
+      "intro": "Ramarna för ditt konto, ditt innehåll och samspelet med andra servrar.",
+      "sections": [
+        [
+          "Tjänstens operatör",
+          "Nolto har skapats av Jonatan Tensetti, som också driver tjänsten Nolto.social. Dessa villkor gäller mellan dig och tjänstens operatör. Du når operatören via e-postadressen under Kontakt."
+        ],
+        [
+          "Ditt konto",
+          "Nolto är ett professionellt nätverk. Du ska vara minst 16 år för att använda tjänsten. Skydda dina inloggningsuppgifter och använd tvåfaktorsautentisering när det är möjligt. Utge dig inte för att vara någon annan eller företräda en organisation utan rätt att göra det. Kontakta oss om du misstänker att någon kommit åt ditt konto."
+        ],
+        [
+          "Ditt innehåll",
+          "Du behåller rättigheterna till material du publicerar. Du ger Nolto den icke-exklusiva rätt att lagra, visa och överföra materialet som behövs för de funktioner du använder, inklusive federation när den är aktiverad. Du ansvarar för att du får publicera materialet och att du respekterar andras integritet och rättigheter."
+        ],
+        [
+          "En adress i fediversum",
+          "En Nolto-adress är en social identitet, inte en e-postadress. När den publicerats i federationen behöver den vara beständig. Mastodon och andra tjänster har egna konton och regler. Att följa ett konto, importera en följlista eller flytta följare innebär inte att all kontodata, inläggshistorik och privata meddelanden flyttas eller hålls synkroniserade."
+        ],
+        [
+          "Moderering och överklagande",
+          "Trakasserier, hot, hat, bedrägerier, spam och olagligt innehåll är inte tillåtna. Nolto kan begränsa innehåll, konton eller kontakt med andra servrar vid missbruk. Vi eftersträvar proportionerliga åtgärder och en begriplig motivering där den kan lämnas utan att försvåra säkerhet eller rättsliga skyldigheter. Anmäl via tjänstens funktioner eller kontakta oss. Du kan begära att ett beslut omprövas genom att beskriva beslutet och skälen för din invändning."
+        ],
+        [
+          "Tillgänglighet och ansvar",
+          "Tjänsten kan behöva avbrytas för underhåll eller på grund av fel. Jobbannonser, erbjudanden och uppgifter från användare behöver kontrolleras av den som använder dem. Dessa villkor begränsar inte rättigheter som följer av tvingande lag och innebär ingen utfästelse om en viss drifttid eller full kompatibilitet med varje extern server."
+        ],
+        [
+          "Avslut och ändringar",
+          "Du kan sluta använda tjänsten och begära att kontot raderas. Offentligt material som redan tagits emot av andra kan finnas kvar hos dem. Väsentliga villkorsändringar ska meddelas innan de börjar gälla när det är möjligt. Den gällande versionen och dess revisionsdatum finns på denna sida."
+        ]
+      ]
+    },
+    "cookies": {
+      "title": "Cookies och lokal lagring",
+      "intro": "Vad webbläsaren sparar när du använder Nolto.",
+      "sections": [
+        [
+          "Meddelandenycklar",
+          "Webbläsaren sparar nyckelfingeravtryck för att upptäcka nyckelbyten. Varken nyckelfrasen eller upplåsta privata nycklar sparas i lokal lagring. Rensad webbläsarlagring tar bort tidigare jämförelser; kontrollera då fingeravtrycken igen."
+        ],
+        [
+          "Inloggning",
+          "Supabase-klienten sparar sessionsuppgifter i webbläsarens localStorage så att du kan förbli inloggad. Dessa uppgifter används vid autentiserade anrop till tjänsten. De är alltså inte enbart information som stannar i din webbläsare. Logga ut på delade enheter."
+        ],
+        [
+          "Inställningar och tillfälliga uppgifter",
+          "Nolto sparar bland annat språk, tema och vissa gränssnittsinställningar lokalt. Mastodon- och Bluesky-inloggningen använder sessionStorage för att knyta återkomsten till det inloggningsförsök du startade. En inbjudningskod kan lagras tillfälligt, med 24 timmars giltighet. Du kan radera webbplatsdata i webbläsaren; då kan du behöva logga in och göra om inställningar."
+        ],
+        [
+          "Tredje parter",
+          "Koden innehåller ingen annonseringsspårning eller Google Analytics. Drift- och säkerhetsleverantörer kan använda teknisk lagring beroende på driftsättningen. När du hämtar externa bilder eller följer en extern länk kan din webbläsare kontakta en annan tjänst, vars egna regler gäller där. Samtycke ska inhämtas innan eventuell lagring som kräver det aktiveras."
+        ]
+      ]
+    },
+    "conduct": {
+      "title": "Uppförandekod",
+      "intro": "Det ska gå att mötas, samarbeta och vara oense utan att bli utsatt.",
+      "sections": [
+        [
+          "Bemöt människor sakligt",
+          "Kritisera gärna idéer och beslut. Trakasserier, hot, diskriminerande påhopp, sexuella närmanden utan samtycke och samordnade angrepp är inte tillåtna. Respektera när någon inte vill fortsätta en kontakt."
+        ],
+        [
+          "Var tydlig med avsändare och avsikt",
+          "Utge dig inte för att vara någon annan. Märk kommersiella erbjudanden och rekrytering så att syftet framgår. Undvik massutskick, vilseledande annonser och påhittade meriter. Automatisering ska inte användas för att spamma eller manipulera synlighet."
+        ],
+        [
+          "Skydda andras uppgifter",
+          "Publicera inte privata kontaktuppgifter, konversationer eller känsliga personuppgifter utan rätt att göra det. Respektera upphovsrätt. Länka till källor när det hjälper andra att bedöma ett påstående."
+        ],
+        [
+          "Anmäl och begär omprövning",
+          "Använd anmälningsfunktionen eller kontakta oss med en länk och en kort beskrivning. Du behöver inte ta en offentlig konflikt för att anmäla. Om en åtgärd berör dig kan du be om en förklaring och omprövning. Andra servrar har egna moderatorer; Nolto kan begränsa kontakten med en server men styr inte dess innehåll."
+        ]
+      ]
+    },
+    "instances": {
+      "title": "Instansriktlinjer",
+      "intro": "Ansvar för dig som driver en egen installation eller ansluter en server.",
+      "sections": [
+        [
+          "En självständig tjänst",
+          "En egen installation behöver en tydlig operatör, kontaktväg, egna villkor och en dataskyddsbedömning. Att använda Noltos kod innebär inte att Nolto.social ansvarar för installationen eller garanterar dess säkerhet. Följ repositoryts licens."
+        ],
+        [
+          "Beständig identitet",
+          "Välj en domän för federerade identiteter innan konton publiceras. WebFinger, aktörsdokument, nyckelidentifierare och signaturer måste ange samma beständiga identitet. En vanlig omdirigering av hemsidan är inte tillräcklig för att upprätthålla federation."
+        ],
+        [
+          "Drift och moderering",
+          "Operatören ansvarar för uppdateringar, åtkomstkontroll, nycklar, säkerhetskopior, återställningsprov och uppföljning av leveransfel. Ha rutiner för anmälningar, blockerade servrar och incidenter. Skicka inte privata uppgifter som offentliga ActivityPub-objekt."
+        ],
+        [
+          "Kompatibilitet",
+          "Testa upptäckt, följningar, publicering, redigering och radering mot en separat federerad server före öppning. AT Protocol och ActivityPub är olika protokoll; stöd för det ena ger inte automatiskt stöd för det andra. Beskriv de funktioner som faktiskt fungerar."
+        ]
+      ]
+    }
+  },
+  "notificationText": {
+    "someone": "Någon",
+    "connectionRequest": "{{name}} skickade en kontaktförfrågan",
+    "connectionAccepted": "{{name}} accepterade din kontaktförfrågan",
+    "endorsement": "{{name}} rekommenderade din kompetens",
+    "withText": "{{name}}: {{text}}",
+    "message": "{{name}} skickade ett meddelande",
+    "follow": "{{name}} började följa dig",
+    "reactedPost": "{{name}} reagerade {{emoji}} på ditt inlägg",
+    "reactedComment": "{{name}} reagerade {{emoji}} på din kommentar",
+    "boost": "{{name}} delade ditt inlägg",
+    "repliedPost": "{{name}} svarade på ditt inlägg",
+    "repliedComment": "{{name}} svarade på din kommentar",
+    "mention": "{{name}} nämnde dig",
+    "recommendationRequest": "{{name}} begärde en rekommendation",
+    "recommendationReceived": "{{name}} skrev en rekommendation till dig",
+    "reactedMessage": "{{name}} reagerade {{emoji}} på ditt meddelande",
+    "articlePublished": "{{name}} publicerade en ny artikel",
+    "fallback": "Ny avisering"
+  },
+  "validation": {
+    "required": "Obligatoriskt fält",
+    "tooShort": "Ange minst {{min}} tecken",
+    "tooLong": "Ange högst {{max}} tecken",
+    "invalidEmail": "Ange en giltig e-postadress",
+    "invalidUrl": "Ange en giltig webbadress",
+    "invalid": "Ogiltigt värde"
+  },
+  "language": {
+    "label": "Språk"
   }
 }

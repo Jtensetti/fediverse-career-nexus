@@ -1,9 +1,10 @@
+import { dateLocale } from "@/lib/locale";
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
-import { sv } from 'date-fns/locale';
+
 import DOMPurify from 'dompurify';
 import {
   Calendar, MapPin,
@@ -165,7 +166,7 @@ export default function EventView() {
   const isCreator = session?.user?.id === event.user_id;
   const isPastEvent = new Date(event.end_date || event.start_date) < new Date();
 
-  const formattedDate = format(startDate, 'EEEE d MMMM yyyy', { locale: sv });
+  const formattedDate = format(startDate, 'EEEE d MMMM yyyy', { locale: dateLocale() });
   const formattedStartTime = format(startDate, 'HH:mm');
   const formattedEndTime = format(endDate, 'HH:mm');
   const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;

@@ -1,8 +1,9 @@
+import { dateLocale } from "@/lib/locale";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import DOMPurify from "dompurify";
 import { cn } from "@/lib/utils";
 import type { FederatedPost } from "@/services/federation/federationService";
 
+import { tx } from "@/i18n/tx";
 interface CompanyPostCardProps {
   post: FederatedPost;
   canDelete?: boolean;
@@ -44,7 +46,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
 
   const publishedDate = post.published_at || post.created_at;
   const formattedDate = publishedDate 
-    ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true, locale: sv })
+    ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true, locale: dateLocale() })
     : '';
 
   const handleDelete = async () => {
@@ -115,7 +117,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
           {/* Content Warning */}
           {post.content_warning && (
             <div className="mb-3 p-2 rounded-md bg-accent border border-border text-sm">
-              <strong>CW:</strong> {post.content_warning}
+              <strong>{tx("ui.companyPostCard.cw")}</strong> {post.content_warning}
             </div>
           )}
 
@@ -135,7 +137,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
                 <img
                   key={idx}
                   src={att.url}
-                  alt={att.name || 'Post image'}
+                  alt={att.name || tx("ui.companyPostCard.postImage")}
                   className="rounded-lg w-full object-cover max-h-80"
                   loading="lazy"
                 />

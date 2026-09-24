@@ -10,6 +10,7 @@ import { StarterPack, followStarterPack } from "@/services/social/starterPackSer
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
+import { tx } from "@/i18n/tx";
 interface StarterPackCardProps {
   pack: StarterPack;
   memberPreviews?: Array<{
@@ -142,12 +143,12 @@ export default function StarterPackCard({
                   ) : isFollowed ? (
                     <>
                       <Check className="h-4 w-4 mr-1" />
-                      Followed
+                      {tx("ui.starterPackCard.followed")}
                     </>
                   ) : (
                     <>
                       <UserPlus className="h-4 w-4 mr-1" />
-                      Follow
+                      {tx("ui.starterPackCard.follow")}
                     </>
                   )}
                 </Button>

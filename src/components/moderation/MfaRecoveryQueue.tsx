@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+import { dateLocale } from "@/lib/locale";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ const statusVariant: Record<string, "default" | "secondary" | "destructive" | "o
 export default function MfaRecoveryQueue() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const locale = i18n.language === "sv" ? sv : undefined;
+  const locale = dateLocale(i18n.language);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 

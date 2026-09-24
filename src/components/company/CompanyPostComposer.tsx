@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Company } from "@/services/company/companyService";
 
+import { tx } from "@/i18n/tx";
 const MAX_CHARACTERS = 500;
 
 interface CompanyPostComposerProps {
@@ -168,7 +169,7 @@ export default function CompanyPostComposer({ company, className = "" }: Company
                   <div className="relative rounded-lg overflow-hidden bg-muted">
                     <img 
                       src={imagePreview} 
-                      alt={imageAltText || "Preview"} 
+                      alt={imageAltText || tx("ui.companyPostComposer.preview")} 
                       className="w-full max-h-48 object-cover"
                     />
                     <Button

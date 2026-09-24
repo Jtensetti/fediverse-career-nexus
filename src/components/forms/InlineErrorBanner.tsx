@@ -1,6 +1,7 @@
 import { AlertTriangle, XCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import { tx } from "@/i18n/tx";
 interface InlineErrorBannerProps {
   message: string;
   details?: string;
@@ -47,7 +48,7 @@ export function InlineErrorBanner({
               className={textColor}
             >
               <RefreshCw className="h-4 w-4 mr-1" />
-              Retry
+              {tx("ui.inlineErrorBanner.retry")}
             </Button>
           )}
           {onDismiss && (
@@ -57,7 +58,7 @@ export function InlineErrorBanner({
               size="icon"
               onClick={onDismiss}
               className={textColor}
-              aria-label="Dismiss"
+              aria-label={tx("ui.inlineErrorBanner.dismiss")}
             >
               <XCircle className="h-4 w-4" />
             </Button>

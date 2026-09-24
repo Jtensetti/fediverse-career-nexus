@@ -1,8 +1,9 @@
+import { dateLocale } from "@/lib/locale";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { MessageSquare, Bookmark, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { toggleSaveItem, isItemSaved } from "@/services/content/savedItemsServic
 import { deletePostReply } from "@/services/posts/postReplyService";
 import type { PostReply } from "@/services/posts/postReplyService";
 
+import { tx } from "@/i18n/tx";
 interface PostReplyThreadProps {
   reply: PostReply;
   postId: string;
@@ -91,7 +93,7 @@ export default function PostReplyThread({
     const result = await toggleSaveItem("comment", reply.id);
     if (!result.success) {
       setIsSaved(prevSaved);
-      toast.error('Kunde inte spara kommentaren');
+      toast.error(tx("ui.postReplyThread.kundeInteSparaKommentaren"));
     } else {
       toast.success(result.saved ? t("comments.saved", "Kommentar sparad") : t("comments.removedFromSaved", "Borttagen från sparade"));
     }
@@ -99,7 +101,7 @@ export default function PostReplyThread({
 
   const getPublishedDate = () => {
     try {
-      return formatDistanceToNow(new Date(reply.created_at), { addSuffix: true, locale: sv });
+      return formatDistanceToNow(new Date(reply.created_at), { addSuffix: true, locale: dateLocale() });
     } catch {
       return '';
     }
@@ -183,7 +185,7 @@ export default function PostReplyThread({
                     to={`/profile/${reply.author.username || reply.user_id}`}
                     className="font-medium text-sm hover:underline"
                   >
-                    {reply.author.fullname || reply.author.username || 'Okänd'}
+                    {reply.author.fullname || reply.author.username || tx("ui.postReplyThread.okand")}
                   </Link>
                 </ProfileHoverCard>
                 {reply.author.username && (
@@ -197,7 +199,7 @@ export default function PostReplyThread({
               </div>
 
               <p className="mt-1 text-sm whitespace-pre-wrap break-words">
-                {typeof reply.content === 'string' ? reply.content : 'Kommentar ej tillgänglig'}
+                {typeof reply.content === 'string' ? reply.content : tx("ui.postReplyThread.kommentarEjTillganglig")}
               </p>
 
               <div className="flex items-center gap-1 mt-2">

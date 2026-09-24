@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,8 +9,9 @@ import { cn } from "@/lib/utils";
 import { getPollResults, votePoll, PollResults } from "@/services/posts/pollService";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
 
+
+import { tx } from "@/i18n/tx";
 interface PollDisplayProps {
   pollId: string;
   content: Record<string, unknown>;
@@ -46,7 +48,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
         const name = (opt as { name: unknown }).name;
         return { name: typeof name === 'string' ? name : String(name) };
       }
-      return { name: 'Okänt alternativ' };
+      return { name: tx("ui.pollDisplay.okantAlternativ") };
     });
   }, [rawOptions]);
   
@@ -73,7 +75,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
   if (!hasValidOptions) {
     return (
       <div className={cn("p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground", className)}>
-        Omröstningsdata ej tillgänglig
+        {tx("ui.pollDisplay.omrostningsdataEjTillganglig")}
       </div>
     );
   }
@@ -112,7 +114,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
     if (!endTime) return null;
     const end = new Date(endTime);
     if (end < new Date()) return "Avslutad";
-    return formatDistanceToNow(end, { addSuffix: true, locale: sv });
+    return formatDistanceToNow(end, { addSuffix: true, locale: dateLocale() });
   };
 
   return (
@@ -231,12 +233,12 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
             onClick={handleVote}
             disabled={selectedOptions.length === 0 || isVoting}
           >
-            {isVoting ? "Röstar..." : "Rösta"}
+            {isVoting ? tx("ui.pollDisplay.rostar") : tx("ui.pollDisplay.rosta")}
           </Button>
         )}
 
         {!showResults && !isClosed && !user && (
-          <span className="text-xs text-muted-foreground">Logga in för att rösta</span>
+          <span className="text-xs text-muted-foreground">{tx("ui.pollDisplay.loggaInForAtt")}</span>
         )}
 
         {hasVoted && !isClosed && (
@@ -249,7 +251,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
             }}
             className="text-xs h-7"
           >
-            Ändra röst
+            {tx("ui.pollDisplay.andraRost")}
           </Button>
         )}
       </div>

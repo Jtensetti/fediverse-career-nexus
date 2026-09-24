@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Link2, Copy, Check, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 interface ShareProfileCardProps {
   username: string;
   displayName: string;
@@ -18,10 +19,10 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
     try {
       await navigator.clipboard.writeText(profileUrl);
       setCopied(true);
-      toast.success("Profillänk kopierad!");
+      toast.success(tx("ui.shareProfileCard.profillankKopierad"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Kunde inte kopiera länken");
+      toast.error(tx("ui.shareProfileCard.kundeInteKopieraLanken"));
     }
   };
 
@@ -62,7 +63,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Link2 className="h-4 w-4 text-primary" />
-          Dela din profil
+          {tx("ui.shareProfileCard.delaDinProfil")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -76,7 +77,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
             variant="outline"
             size="icon"
             onClick={copyToClipboard}
-            aria-label="Kopiera profillänk"
+            aria-label={tx("ui.shareProfileCard.kopieraProfillank")}
           >
             {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
           </Button>
@@ -89,7 +90,7 @@ export function ShareProfileCard({ username, displayName }: ShareProfileCardProp
           </Button>
           <Button variant="outline" size="sm" onClick={shareToTwitter} className="text-xs">
             <ExternalLink className="h-3 w-3 mr-1" />
-            X/Twitter
+            {tx("ui.shareProfileCard.xTwitter")}
           </Button>
           <Button variant="outline" size="sm" onClick={shareToMastodon} className="text-xs">
             <ExternalLink className="h-3 w-3 mr-1" />

@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/locale";
 
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,10 +11,11 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { useState, useEffect } from 'react';
 import { supabase } from "@/lib/supabase";
 
+import { tx } from "@/i18n/tx";
 export interface ModerationAction {
   id: string;
   type: 'block' | 'silence' | 'warn';
@@ -103,7 +105,7 @@ const ModerationLog = ({ isAdmin = false }: ModerationLogProps) => {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading moderation actions...</div>;
+    return <div className="p-8 text-center">{tx("ui.moderationLog.loadingModerationActions")}</div>;
   }
   
   if (error) {
@@ -136,7 +138,7 @@ const ModerationLog = ({ isAdmin = false }: ModerationLogProps) => {
                 <TableCell>{action.target_user_id}</TableCell>
                 <TableCell>{action.reason}</TableCell>
                 <TableCell>{action.moderator_id}</TableCell>
-                <TableCell>{formatDistanceToNow(action.timestamp, { addSuffix: true, locale: sv })}</TableCell>
+                <TableCell>{formatDistanceToNow(action.timestamp, { addSuffix: true, locale: dateLocale() })}</TableCell>
               </TableRow>
             ))}
           </TableBody>

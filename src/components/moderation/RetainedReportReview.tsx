@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/locale";
 import { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
 import { supabase } from '@/lib/supabase';
@@ -5,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+import { tx } from "@/i18n/tx";
 type RetainedText = { title: string; content: string; purge_after: string };
 const textOnly = (value: string) => DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
 
@@ -33,19 +35,19 @@ export function RetainedReportReview({ reportId }: { reportId: string }) {
     return () => clearTimeout(timer);
   }, [value]);
   return <>
-    <Button size="sm" variant="outline" onClick={() => setOpen(true)}>Granska raderad text</Button>
+    <Button size="sm" variant="outline" onClick={() => setOpen(true)}>{tx("ui.retainedReportReview.granskaRaderadText")}</Button>
     <Dialog open={open && !!user} onOpenChange={setOpen}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Anmält innehåll som har raderats</DialogTitle>
-          <DialogDescription>Åtkomsten loggas. Text kan granskas om anmälan gjordes före raderingen och ärendet fortfarande är öppet. Bilder och privata meddelanden visas inte här.</DialogDescription>
+          <DialogTitle>{tx("ui.retainedReportReview.anmaltInnehallSomHar")}</DialogTitle>
+          <DialogDescription>{tx("ui.retainedReportReview.atkomstenLoggasTextKan")}</DialogDescription>
         </DialogHeader>
-        {error ? <p role="alert">Texten är inte tillgänglig. Ärendet kan vara avslutat, lagringstiden slut eller åtkomsten nekad.</p>
+        {error ? <p role="alert">{tx("ui.retainedReportReview.textenArInteTillganglig")}</p>
           : value ? <div className="max-h-[60vh] overflow-y-auto space-y-4">
-            <p className="text-sm text-muted-foreground">Raderas permanent {new Date(value.purge_after).toLocaleString('sv-SE')}. Granskningen förlänger inte lagringstiden.</p>
+            <p className="text-sm text-muted-foreground">{tx("ui.retainedReportReview.raderasPermanent")}{' '}{new Date(value.purge_after).toLocaleString(intlLocale())}{tx("ui.retainedReportReview.granskningenForlangerInteLagringstiden")}</p>
             {value.title && <h3 className="font-semibold">{textOnly(value.title)}</h3>}
-            <p className="whitespace-pre-wrap break-words">{textOnly(value.content) || 'Inlägget innehåller ingen granskbar text.'}</p>
-          </div> : <p role="status">Hämtar texten…</p>}
+            <p className="whitespace-pre-wrap break-words">{textOnly(value.content) || tx("ui.retainedReportReview.inlaggetInnehallerIngenGranskbar")}</p>
+          </div> : <p role="status">{tx("ui.retainedReportReview.hamtarTexten")}</p>}
       </DialogContent>
     </Dialog>
   </>;

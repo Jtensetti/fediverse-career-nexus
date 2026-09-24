@@ -22,6 +22,7 @@ globalThis.jobsTestUser = { id: 'owner' };
 const mocks = {
   '@/contexts/AuthContext': 'export const useAuth=()=>({user:globalThis.jobsTestUser,loading:false});',
   'react-i18next': 'export const useTranslation=()=>({t:globalThis.jobsTestTranslate,i18n:{language:"sv"}});',
+  '@/i18n': 'export default {language:"sv",resolvedLanguage:"sv",t:(k,v)=>globalThis.jobsTestTranslate(k,v),on(){}}; export const changeLanguage=async()=>{};',
   '@/services/misc/jobPostsService': 'export const getJobPostById=async()=>globalThis.jobsTestJob;',
   '@/services/company/companyRolesService': 'export const getUserCompanies=async()=>[];',
   '@/services/company/companyService': 'export const getCompanyById=async()=>null;',

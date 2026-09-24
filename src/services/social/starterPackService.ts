@@ -2,6 +2,7 @@ import { hasRecordId } from "@/lib/records";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface StarterPack {
   id: string;
   creator_id: string | null;
@@ -178,7 +179,7 @@ export async function followStarterPack(packId: string): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('Du måste vara inloggad för att följa ett paket');
+      toast.error(tx("ui.starterPackService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -222,7 +223,7 @@ export async function followStarterPack(packId: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('Error following starter pack:', error);
-    toast.error('Kunde inte följa paket');
+    toast.error(tx("ui.starterPackService.kundeInteFoljaPaket"));
     return false;
   }
 }
@@ -242,11 +243,11 @@ export async function unfollowStarterPack(packId: string): Promise<boolean> {
       .eq('pack_id', packId);
 
     if (error) throw error;
-    toast.success('Slutade följa paket');
+    toast.success(tx("ui.starterPackService.slutadeFoljaPaket"));
     return true;
   } catch (error) {
     console.error('Error unfollowing pack:', error);
-    toast.error('Kunde inte sluta följa paket');
+    toast.error(tx("ui.starterPackService.kundeInteSlutaFolja"));
     return false;
   }
 }
@@ -281,7 +282,7 @@ export async function createStarterPack(data: {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error('Du måste vara inloggad för att skapa ett paket');
+      toast.error(tx("ui.starterPackService.duMasteVaraInloggad2"));
       return null;
     }
 
@@ -295,14 +296,14 @@ export async function createStarterPack(data: {
       .single();
 
     if (error) throw error;
-    toast.success('Startpaket skapat!');
+    toast.success(tx("ui.starterPackService.startpaketSkapat"));
     return normalizePack(pack);
   } catch (error: any) {
     console.error('Error creating starter pack:', error);
     if (error.message?.includes('duplicate')) {
-      toast.error('A pack with this URL already exists');
+      toast.error(tx("ui.starterPackService.aPackWithThis"));
     } else {
-      toast.error('Failed to create pack');
+      toast.error(tx("ui.starterPackService.failedToCreatePack"));
     }
     return null;
   }
@@ -326,9 +327,9 @@ export async function addPackMember(packId: string, userId: string): Promise<boo
   } catch (error: any) {
     console.error('Error adding pack member:', error);
     if (error.message?.includes('duplicate')) {
-      toast.error('User is already in this pack');
+      toast.error(tx("ui.starterPackService.userIsAlreadyIn"));
     } else {
-      toast.error('Failed to add member');
+      toast.error(tx("ui.starterPackService.failedToAddMember"));
     }
     return false;
   }
@@ -347,7 +348,7 @@ export async function removePackMember(packId: string, userId: string): Promise<
     return true;
   } catch (error) {
     console.error('Error removing pack member:', error);
-    toast.error('Kunde inte ta bort medlem');
+    toast.error(tx("ui.starterPackService.kundeInteTaBort"));
     return false;
   }
 }

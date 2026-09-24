@@ -1,7 +1,8 @@
+import { dateLocale } from "@/lib/locale";
 import { forwardRef, useState, type ComponentPropsWithoutRef } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { sv, enGB } from "date-fns/locale";
+
 import { CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -21,7 +22,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
 ) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
-  const locale = i18n.language.startsWith('sv') ? sv : enGB;
+  const locale = dateLocale(i18n.language);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

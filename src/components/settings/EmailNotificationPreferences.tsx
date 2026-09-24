@@ -5,6 +5,7 @@ import { Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 const EmailNotificationPreferences = () => {
   const [digestEnabled, setDigestEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,7 +41,7 @@ const EmailNotificationPreferences = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Du måste vara inloggad");
+        toast.error(tx("ui.emailNotificationPreferences.duMasteVaraInloggad"));
         return;
       }
 
@@ -58,7 +59,7 @@ const EmailNotificationPreferences = () => {
       toast.success(enabled ? "E-postnotifieringar aktiverade" : "E-postnotifieringar inaktiverade");
     } catch (error) {
       console.error("Error updating email preferences:", error);
-      toast.error("Kunde inte uppdatera inställningar");
+      toast.error(tx("ui.emailNotificationPreferences.kundeInteUppdateraInstallningar"));
     } finally {
       setSaving(false);
     }
@@ -80,16 +81,16 @@ const EmailNotificationPreferences = () => {
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm font-medium">
         <Mail size={16} className="text-primary" />
-        <span>E-postnotifieringar</span>
+        <span>{tx("ui.emailNotificationPreferences.ePostnotifieringar")}</span>
       </div>
       
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <Label htmlFor="digest-toggle" className="font-normal">
-            Sammanfattningsmail för notifieringar
+            {tx("ui.emailNotificationPreferences.sammanfattningsmailForNotifieringar")}
           </Label>
           <p className="text-sm text-muted-foreground">
-            Ta emot e-postsammanfattningar av olästa notifieringar
+            {tx("ui.emailNotificationPreferences.taEmotEPostsammanfattningar")}
           </p>
         </div>
         <Switch

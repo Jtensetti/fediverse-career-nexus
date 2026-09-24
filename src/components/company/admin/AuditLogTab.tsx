@@ -1,9 +1,10 @@
+import { dateLocale } from "@/lib/locale";
 import { useTranslation } from "react-i18next";
 import { ScrollText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/common";
 import { format } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import type { AuditLogWithActor } from "@/services/company/companyAuditService";
 
 interface AuditLogTabProps {
@@ -39,7 +40,7 @@ export default function AuditLogTab({ auditLog }: AuditLogTabProps) {
                 <span className="text-muted-foreground">{entry.action}</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                {format(new Date(entry.created_at), "PPp", { locale: sv })}
+                {format(new Date(entry.created_at), "PPp", { locale: dateLocale() })}
               </p>
             </div>
           </CardContent>

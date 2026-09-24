@@ -28,19 +28,20 @@ import { Loader2, Building2 } from "lucide-react";
 import { generateSlug, isSlugAvailable } from "@/services/company/companyService";
 import type { Database } from "@/integrations/supabase/types";
 
+import { tx } from "@/i18n/tx";
 type CompanySize = Database['public']['Enums']['company_size'];
 
 // Storleksspann för organisationer av olika storlekar.
 // Mappar till befintliga enum-värden i DB (ingen schemaändring).
 const companySizeOptions: { value: CompanySize; label: string }[] = [
-  { value: '1-10', label: '1–10 anställda' },
-  { value: '11-50', label: '11–50 anställda' },
-  { value: '51-200', label: '51–200 anställda' },
-  { value: '201-500', label: '201–500 anställda' },
-  { value: '501-1000', label: '501–1 000 anställda' },
-  { value: '1001-5000', label: '1 001–5 000 anställda' },
-  { value: '5001-10000', label: '5 001–10 000 anställda' },
-  { value: '10000+', label: '10 001+ anställda' },
+  { value: '1-10', get label() { return tx("ui.companyForm.size110Anstallda"); } },
+  { value: '11-50', get label() { return tx("ui.companyForm.size1150Anstallda"); } },
+  { value: '51-200', get label() { return tx("ui.companyForm.size51200Anstallda"); } },
+  { value: '201-500', get label() { return tx("ui.companyForm.size201500Anstallda"); } },
+  { value: '501-1000', get label() { return tx("ui.companyForm.size5011000Anstallda"); } },
+  { value: '1001-5000', get label() { return tx("ui.companyForm.size10015000"); } },
+  { value: '5001-10000', get label() { return tx("ui.companyForm.size500110000"); } },
+  { value: '10000+', get label() { return tx("ui.companyForm.size10001Anstallda"); } },
 ];
 
 // Strukturerade organisationstyper.
@@ -187,7 +188,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.companyName", "Company Name")} *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Organisationsnamn" {...field} />
+                    <Input placeholder={tx("ui.companyForm.organisationsnamn")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -201,10 +202,10 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.companyUrl", "Company URL")} *</FormLabel>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-muted-foreground text-sm">nolto.social/organisation/</span>
+                      <span className="text-muted-foreground text-sm">{tx("ui.companyForm.noltoSocialOrganisation")}</span>
                       <FormControl>
                       <Input 
-                        placeholder="organisationsnamn" 
+                        placeholder={tx("ui.companyForm.organisationsnamn2")} 
                         {...field} 
                         disabled={isEdit}
                         className={`min-w-0 flex-1 ${isEdit ? "bg-muted" : ""}`}
@@ -236,7 +237,7 @@ export default function CompanyForm({
                   <FormLabel>{t("companyForm.tagline", "Tagline")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Vi bygger framtiden för..." 
+                      placeholder={tx("ui.companyForm.viByggerFramtidenFor")} 
                       maxLength={140}
                       {...field} 
                     />
@@ -257,7 +258,7 @@ export default function CompanyForm({
                   <FormLabel>{t("companyForm.about", "About")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Berätta om din organisation..."
+                      placeholder={tx("ui.companyForm.berattaOmDinOrganisation")}
                       className="min-h-[120px]"
                       {...field} 
                     />
@@ -354,7 +355,7 @@ export default function CompanyForm({
                 <FormItem>
                   <FormLabel>{t("companyForm.headquarters", "Headquarters")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Stockholm, Sverige" {...field} />
+                    <Input placeholder={tx("ui.companyForm.stockholmSverige")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

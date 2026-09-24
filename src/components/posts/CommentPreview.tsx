@@ -1,8 +1,9 @@
+import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { MessageSquare, Bookmark } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 import InlineReplyComposer from "./InlineReplyComposer";
 import { EnhancedCommentReactions } from "../reactions/EnhancedCommentReactions";
 
+import { tx } from "@/i18n/tx";
 interface CompanyContext {
   id: string;
   name: string;
@@ -246,13 +248,13 @@ const CommentPreview = forwardRef<CommentPreviewHandle, CommentPreviewProps>(
             <div className="bg-muted/50 rounded-lg px-3 py-1.5">
               <div className="flex items-center gap-1.5">
                 <Link to={comment.company ? `/organisation/${comment.company.slug}` : `/profile/${comment.author.username || comment.user_id}`} className="text-xs font-medium hover:underline">
-                  {comment.author.fullname || comment.author.username || 'Unknown'}
+                  {comment.author.fullname || comment.author.username || tx("ui.commentPreview.unknown")}
                 </Link>
                 {comment.company && (
                   <span className="text-[10px] text-primary font-medium">· {t("commentPreview.companyReply")}</span>
                 )}
                 <span className="text-[10px] text-muted-foreground">
-                  · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: sv })}
+                  · {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: dateLocale() })}
                 </span>
               </div>
               <p className="text-sm text-foreground/90 line-clamp-2">

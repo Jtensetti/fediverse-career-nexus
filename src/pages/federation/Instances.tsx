@@ -19,6 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEOHead } from "@/components/common/SEOHead";
 
+import { tx } from "@/i18n/tx";
 interface FederatedInstance {
   host: string;
   actor_count: number;
@@ -82,8 +83,8 @@ const Instances = () => {
   return (
     <>
       <SEOHead 
-        title="Anslutna instanser" 
-        description="Utforska nätverket av anslutna instanser som samverkar med Nolto." 
+        title={tx("ui.instances.anslutnaInstanser")} 
+        description={tx("ui.instances.utforskaNatverketAvAnslutna")} 
       />
 
       <div className="min-h-screen flex flex-col bg-background">
@@ -95,25 +96,24 @@ const Instances = () => {
             <div className="container mx-auto px-4 text-center">
               <Globe className="h-16 w-16 mx-auto mb-6 opacity-80" />
               <h1 className="text-3xl md:text-4xl font-bold font-display mb-4">
-                Anslutet nätverk
+                {tx("ui.instances.anslutetNatverk")}
               </h1>
               <p className="text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-8">
-                Nolto samverkar med instanser inom nätverket. 
-                Ditt professionella nätverk sträcker sig bortom en enskild plattform.
+                {tx("ui.instances.noltoSamverkarMedInstanser")}
               </p>
               
               <div className="flex flex-wrap justify-center gap-6 text-sm">
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <Server className="h-4 w-4" />
-                  <span>{instances.length} anslutna instanser</span>
+                  <span>{instances.length}{' '}{tx("ui.instances.anslutnaInstanser2")}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <Shield className="h-4 w-4" />
-                  <span>Säker nolto</span>
+                  <span>{tx("ui.instances.sakerNolto")}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <CheckCircle className="h-4 w-4" />
-                  <span>Verifierade anslutningar</span>
+                  <span>{tx("ui.instances.verifieradeAnslutningar")}</span>
                 </div>
               </div>
             </div>
@@ -127,7 +127,7 @@ const Instances = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder="Sök instanser..."
+                    placeholder={tx("ui.instances.sokInstanser")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -159,12 +159,12 @@ const Instances = () => {
                 <div className="text-center py-16">
                   <Globe className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
                   <h3 className="text-xl font-semibold text-foreground mb-2">
-                    {searchQuery ? "Inga instanser hittades" : "Inga instanser anslutna ännu"}
+                    {searchQuery ? tx("ui.instances.ingaInstanserHittades") : tx("ui.instances.ingaInstanserAnslutnaAnnu")}
                   </h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
                     {searchQuery 
-                      ? "Prova ett annat sökord"
-                      : "Bli den första att ansluta! Registrera dig och börja bygga ditt nätverk."
+                      ? tx("ui.instances.provaEttAnnatSokord")
+                      : tx("ui.instances.bliDenForstaAtt")
                     }
                   </p>
                 </div>
@@ -193,7 +193,7 @@ const Instances = () => {
                             className="bg-secondary/10 text-secondary border-secondary/30"
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            Aktiv
+                            {tx("ui.instances.aktiv")}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -201,11 +201,11 @@ const Instances = () => {
                         <div className="space-y-3">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Users className="h-4 w-4" />
-                            <span>{instance.actor_count} {instance.actor_count === 1 ? 'användare' : 'användare'} anslutna</span>
+                            <span>{instance.actor_count} {instance.actor_count === 1 ? 'användare' : 'användare'}{' '}{tx("ui.instances.anslutna")}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Shield className="h-4 w-4" />
-                            <span>Kompatibel nolto</span>
+                            <span>{tx("ui.instances.kompatibelNolto")}</span>
                           </div>
                         </div>
                         <Button 
@@ -219,7 +219,7 @@ const Instances = () => {
                             target="_blank" 
                             rel="noopener noreferrer"
                           >
-                            Besök instans
+                            {tx("ui.instances.besokInstans")}
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         </Button>
@@ -236,18 +236,17 @@ const Instances = () => {
             <div className="container mx-auto px-4">
               <div className="max-w-3xl mx-auto text-center">
                 <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-4">
-                  Anslut din organisation
+                  {tx("ui.instances.anslutDinOrganisation")}
                 </h2>
                 <p className="text-muted-foreground mb-8">
-                  Kompatibla organisationer kan ansluta till Nolto-nätverket. 
-                  Följ användare och anslutningen upprättas automatiskt.
+                  {tx("ui.instances.kompatiblaOrganisationerKanAnsluta")}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild>
-                    <Link to="/auth/signup">Gå med i Nolto</Link>
+                    <Link to="/auth/signup">{tx("ui.instances.gaMedINolto")}</Link>
                   </Button>
                   <Button variant="outline" asChild>
-                    <Link to="/federation">Läs mer om nolto</Link>
+                    <Link to="/federation">{tx("ui.instances.lasMerOmNolto")}</Link>
                   </Button>
                 </div>
               </div>

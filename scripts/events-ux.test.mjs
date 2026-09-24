@@ -18,6 +18,7 @@ globalThis.eventsTestTranslate = translate;
 const mocks = {
   'sonner': 'export const toast={success(){},error(){}};',
   'react-i18next': 'export const useTranslation=()=>({t:globalThis.eventsTestTranslate,i18n:{language:"sv"}});',
+  '@/i18n': 'export default {language:"sv",resolvedLanguage:"sv",t:(k,v)=>globalThis.eventsTestTranslate(k,v),on(){}}; export const changeLanguage=async()=>{};',
   '@/lib/supabase': 'export const supabase={auth:{getSession:async()=>({data:{session:{user:{id:"owner"}}}})}};',
   '@/lib/linkify': 'export const linkifyText=text=>text;',
   '@/services/misc/eventService': `export const getEvent=async()=>globalThis.eventsTestEvent;

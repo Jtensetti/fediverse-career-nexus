@@ -9,6 +9,7 @@ import { mastodonRequest, scopeDescription, type AppRequest } from '@/services/a
 import { rememberAppAuthorization } from '@/lib/appAuthorizationReturn';
 import { formatFederatedHandle } from '@/lib/federation';
 
+import { tx } from "@/i18n/tx";
 export default function AuthorizeApp() {
   const { user, loading, mfaPending } = useAuth();
   const { search } = useLocation();
@@ -36,24 +37,24 @@ export default function AuthorizeApp() {
       window.location.assign(result.redirect);
     } catch(error) { setError(error instanceof Error ? error.message : 'Anslutningen misslyckades.'); setBusy(false); }
   };
-  if (window.top !== window.self) return <p role="alert">Öppna appanslutningen i ett eget fönster på Nolto.</p>;
+  if (window.top !== window.self) return <p role="alert">{tx("ui.authorizeApp.oppnaAppanslutningenIEtt")}</p>;
   return <div className="mx-auto max-w-lg space-y-6 px-5 py-12">
-    <Helmet><title>Anslut en app · Nolto</title><meta name="referrer" content="no-referrer" /></Helmet>
+    <Helmet><title>{tx("ui.authorizeApp.anslutEnAppNolto")}</title><meta name="referrer" content="no-referrer" /></Helmet>
     <a href="/" className="font-display text-2xl text-primary">Nolto</a>
-    <h1 className="text-2xl font-semibold">Vill du ansluta den här appen?</h1>
-    {request.isPending ? <p role="status">Kontrollerar appens förfrågan…</p> : request.isError ? <p role="alert">{request.error.message}</p> : <>
+    <h1 className="text-2xl font-semibold">{tx("ui.authorizeApp.villDuAnslutaDen")}</h1>
+    {request.isPending ? <p role="status">{tx("ui.authorizeApp.kontrollerarAppensForfragan")}</p> : request.isError ? <p role="alert">{request.error.message}</p> : <>
       <div className="space-y-2 rounded-xl border p-5"><p className="text-xl font-semibold break-words">{request.data.client.name}</p>
         {request.data.client.website && <p className="text-sm break-all text-muted-foreground">{request.data.client.website}</p>}
-        <p className="text-sm text-muted-foreground">Appens namn och webbplats anges av utvecklaren och är inte verifierade av Nolto. Godkänn bara en app du själv har valt att ansluta.</p>
+        <p className="text-sm text-muted-foreground">{tx("ui.authorizeApp.appensNamnOchWebbplats")}</p>
       </div>
-      <div><p className="font-medium">Appen begär att få:</p><ul className="mt-3 list-disc space-y-2 pl-5">{request.data.scopes.map(scope=><li key={scope}>{scopeDescription(scope)}</li>)}</ul></div>
-      <p className="text-sm text-muted-foreground">Åtkomsten gäller i högst 30 dagar och kan återkallas under Anslutna appar. Den upphör även när inloggningssessionen återkallas. Nya inlägg följer Noltós regler för moderering.</p>
-      <p className="text-sm">Mastodon-appstödet är under utprovning. Textinlägg, svar, likes och följningar ingår. Bild- och videouppladdning, privata meddelanden, boostar och pushnotiser ingår ännu inte.</p>
-      {loading ? <p role="status">Kontrollerar inloggningen…</p> : !user || mfaPending ? <div className="space-y-3"><Button onClick={signIn}>Logga in på Nolto</Button><p className="text-sm">Efter inloggningen kommer du tillbaka hit och väljer om appen ska få åtkomst.</p></div>
-        : <p className="rounded-lg bg-muted p-4">Ansluter som <strong>{profile.data?.username ? formatFederatedHandle(profile.data.username) : 'ditt Nolto-konto'}</strong>.</p>}
+      <div><p className="font-medium">{tx("ui.authorizeApp.appenBegarAttFa")}</p><ul className="mt-3 list-disc space-y-2 pl-5">{request.data.scopes.map(scope=><li key={scope}>{scopeDescription(scope)}</li>)}</ul></div>
+      <p className="text-sm text-muted-foreground">{tx("ui.authorizeApp.atkomstenGallerIHogst")}</p>
+      <p className="text-sm">{tx("ui.authorizeApp.mastodonAppstodetArUnder")}</p>
+      {loading ? <p role="status">{tx("ui.authorizeApp.kontrollerarInloggningen")}</p> : !user || mfaPending ? <div className="space-y-3"><Button onClick={signIn}>{tx("ui.authorizeApp.loggaInPaNolto")}</Button><p className="text-sm">{tx("ui.authorizeApp.efterInloggningenKommerDu")}</p></div>
+        : <p className="rounded-lg bg-muted p-4">{tx("ui.authorizeApp.ansluterSom")}{' '}<strong>{profile.data?.username ? formatFederatedHandle(profile.data.username) : tx("ui.authorizeApp.dittNoltoKonto")}</strong>.</p>}
       {error && <p role="alert" className="text-destructive">{error}</p>}
-      {profile.isError && <p role="alert">Kunde inte läsa ditt konto. Ladda om sidan och försök igen.</p>}
-      <div className="flex gap-3"><Button variant="outline" disabled={busy} onClick={()=>void decide('deny')}>Avbryt</Button><Button disabled={busy || !user || loading || mfaPending || !profile.data} onClick={()=>void decide('allow')}>{busy ? 'Ansluter…' : 'Godkänn och anslut'}</Button></div>
+      {profile.isError && <p role="alert">{tx("ui.authorizeApp.kundeInteLasaDitt")}</p>}
+      <div className="flex gap-3"><Button variant="outline" disabled={busy} onClick={()=>void decide('deny')}>{tx("ui.authorizeApp.avbryt")}</Button><Button disabled={busy || !user || loading || mfaPending || !profile.data} onClick={()=>void decide('allow')}>{busy ? tx("ui.authorizeApp.ansluter") : tx("ui.authorizeApp.godkannOchAnslut")}</Button></div>
     </>}
   </div>;
 }

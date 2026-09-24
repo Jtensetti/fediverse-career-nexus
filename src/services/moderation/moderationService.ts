@@ -3,6 +3,7 @@ import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface FlaggedContent {
   id: string;
   reporter_id: string;
@@ -170,7 +171,7 @@ export async function updateReportStatus(
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("Du måste vara inloggad");
+      toast.error(tx("ui.moderationService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -199,7 +200,7 @@ export async function updateReportStatus(
     return true;
   } catch (error) {
     console.error("Error updating report status:", error);
-    toast.error("Kunde inte uppdatera rapport");
+    toast.error(tx("ui.moderationService.kundeInteUppdateraRapport"));
     return false;
   }
 }
@@ -213,7 +214,7 @@ export async function banUser(
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("Du måste vara inloggad");
+      toast.error(tx("ui.moderationService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -245,7 +246,7 @@ export async function banUser(
     return true;
   } catch (error) {
     console.error("Error banning user:", error);
-    toast.error("Kunde inte stänga av användare");
+    toast.error(tx("ui.moderationService.kundeInteStangaAv"));
     return false;
   }
 }
@@ -255,7 +256,7 @@ export async function revokeBan(banId: string): Promise<boolean> {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("Du måste vara inloggad");
+      toast.error(tx("ui.moderationService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -269,11 +270,11 @@ export async function revokeBan(banId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Avstängning upphävd");
+    toast.success(tx("ui.moderationService.avstangningUpphavd"));
     return true;
   } catch (error) {
     console.error("Error revoking ban:", error);
-    toast.error("Kunde inte upphäva avstängning");
+    toast.error(tx("ui.moderationService.kundeInteUpphavaAvstangning"));
     return false;
   }
 }
@@ -348,14 +349,14 @@ export async function addModerator(userId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Moderatorsroll tillagd");
+    toast.success(tx("ui.moderationService.moderatorsrollTillagd"));
     return true;
   } catch (error: any) {
     console.error("Error adding moderator:", error);
     if (error.code === "23505") {
-      toast.error("Användaren har redan denna roll");
+      toast.error(tx("ui.moderationService.anvandarenHarRedanDenna"));
     } else {
-      toast.error("Kunde inte lägga till moderator");
+      toast.error(tx("ui.moderationService.kundeInteLaggaTill"));
     }
     return false;
   }
@@ -372,11 +373,11 @@ export async function removeModerator(userId: string): Promise<boolean> {
 
     if (error) throw error;
 
-    toast.success("Moderatorsroll borttagen");
+    toast.success(tx("ui.moderationService.moderatorsrollBorttagen"));
     return true;
   } catch (error) {
     console.error("Error removing moderator:", error);
-    toast.error("Kunde inte ta bort moderator");
+    toast.error(tx("ui.moderationService.kundeInteTaBort"));
     return false;
   }
 }
@@ -438,7 +439,7 @@ export async function deleteFlaggedContent(
     return true;
   } catch (error) {
     console.error("Error deleting content:", error);
-    toast.error("Kunde inte radera innehåll");
+    toast.error(tx("ui.moderationService.kundeInteRaderaInnehall"));
     return false;
   }
 }
@@ -536,7 +537,7 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      toast.error("Du måste vara inloggad");
+      toast.error(tx("ui.moderationService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -558,11 +559,11 @@ export async function warnUser(userId: string, reason: string): Promise<boolean>
       object_type: "warning",
     });
 
-    toast.success("Varning skickad till användare");
+    toast.success(tx("ui.moderationService.varningSkickadTillAnvandare"));
     return true;
   } catch (error) {
     console.error("Error warning user:", error);
-    toast.error("Kunde inte skicka varning");
+    toast.error(tx("ui.moderationService.kundeInteSkickaVarning"));
     return false;
   }
 }

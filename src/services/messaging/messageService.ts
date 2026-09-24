@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { decryptIncomingMessage, encryptOutgoingMessage, inboxRevision } from './inboxKeysService';
 import { MESSAGE_ENCRYPTION, type SealedMessage } from '@/lib/privateMessages';
 
+import { tx } from "@/i18n/tx";
 // Simple message interface matching our database schema
 export interface Message {
   id: string;
@@ -132,7 +133,7 @@ export async function getConversations(): Promise<Conversation[]> {
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      toast.error('Du måste vara inloggad för att visa konversationer');
+      toast.error(tx("ui.messageService.duMasteVaraInloggad"));
       return [];
     }
 
@@ -155,7 +156,7 @@ export async function getConversations(): Promise<Conversation[]> {
 
     if (error) {
       console.error('Error fetching messages:', error);
-      toast.error('Failed to load conversations');
+      toast.error(tx("ui.messageService.failedToLoadConversations"));
       return [];
     }
 
@@ -183,7 +184,7 @@ export async function getConversations(): Promise<Conversation[]> {
     return conversations;
   } catch (error) {
     console.error('Error in getConversations:', error);
-    toast.error('Kunde inte ladda konversationer');
+    toast.error(tx("ui.messageService.kundeInteLaddaKonversationer"));
     return [];
   }
 }

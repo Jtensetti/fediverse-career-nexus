@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Linkedin } from 'lucide-react';
 
+import { tx } from "@/i18n/tx";
 // Lazy: the modal pulls in jszip (~100kB). Only load when the user clicks.
 const LinkedInImportModal = lazy(() => import('./LinkedInImportModal'));
 
@@ -40,7 +41,7 @@ export default function LinkedInImportButton({
         className={`gap-2 ${className}`}
       >
         <Linkedin className="h-4 w-4" />
-        Importera från LinkedIn
+        {tx("ui.linkedInImportButton.importeraFranLinkedin")}
       </Button>
 
       {hasOpenedOnce && (

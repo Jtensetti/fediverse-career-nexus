@@ -1,3 +1,5 @@
+import { notificationText } from "@/lib/notificationText";
+import { dateLocale } from "@/lib/locale";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -13,7 +15,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { notificationService, Notification, NotificationType } from "@/services/misc/notificationService";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -182,85 +184,7 @@ export function NotificationBell() {
     }
   };
 
-  const getNotificationText = (notification: Notification) => {
-    const actorName = notification.actor?.fullname || notification.actor?.username || 'Someone';
-    
-    // For like notifications, try to extract reaction type and target type
-    if (notification.type === 'like') {
-      const targetType = notification.object_type === 'reply' 
-        ? t("notifications.yourComment", "your comment") 
-        : t("notifications.yourPost", "your post");
-      
-      // Try to parse reaction from content
-      let reactionText = t("notifications.liked", "liked");
-      try {
-        const contentData = notification.content ? JSON.parse(notification.content) : {};
-        const reaction = contentData.reaction;
-        
-        switch (reaction) {
-          case 'love':
-            reactionText = t("notifications.loved", "loved");
-            break;
-          case 'celebrate':
-            reactionText = t("notifications.celebrated", "celebrated");
-            break;
-          case 'support':
-            reactionText = t("notifications.supported", "supported");
-            break;
-          case 'insightful':
-            reactionText = t("notifications.foundInsightful", "found insightful");
-            break;
-          case 'empathy':
-            reactionText = t("notifications.empathizedWith", "empathized with");
-            break;
-          default:
-            reactionText = t("notifications.liked", "liked");
-        }
-      } catch {
-        // Default to "liked" if parsing fails
-      }
-      
-      return `${actorName} ${reactionText} ${targetType}`;
-    }
-    
-    switch (notification.type) {
-      case 'connection_request':
-        return `${actorName} ${t("notifications.connectionRequest", "sent you a connection request")}`;
-      case 'connection_accepted':
-        return `${actorName} ${t("notifications.connectionAccepted", "accepted your connection request")}`;
-      case 'endorsement':
-        return `${actorName} ${notification.content || t("notifications.endorsedSkill", "endorsed your skill")}`;
-      case 'message':
-        return `${actorName} ${t("notifications.sentMessage", "sent you a message")}`;
-      case 'follow':
-        return `${actorName} ${t("notifications.startedFollowing", "started following you")}`;
-      case 'boost':
-        return `${actorName} ${t("notifications.boostedPost", "boosted your post")}`;
-      case 'reply':
-        return `${actorName} ${t("notifications.repliedToPost", "replied to your post")}`;
-      case 'mention':
-        return `${actorName} ${t("notifications.mentionedYou", "mentioned you")}`;
-      case 'recommendation_request':
-        return `${actorName} ${t("notifications.recommendationRequest", "requested a recommendation")}`;
-      case 'recommendation_received':
-        return `${actorName} ${t("notifications.recommendationReceived", "wrote you a recommendation")}`;
-      case 'article_published':
-        return `${actorName} ${notification.content || t("notifications.publishedArticle", "published a new article")}`;
-      case 'message_reaction': {
-        // Parse reaction from content
-        try {
-          const contentData = notification.content ? JSON.parse(notification.content) : {};
-          const reaction = contentData.reaction || 'like';
-          const reactionEmoji = reaction === 'love' ? '❤️' : reaction === 'celebrate' ? '🎉' : reaction === 'support' ? '👏' : reaction === 'insightful' ? '💡' : reaction === 'empathy' ? '💜' : '👍';
-          return `${actorName} ${t("notifications.reactedToMessage", "reacted")} ${reactionEmoji} ${t("notifications.toYourMessage", "to your message")}`;
-        } catch {
-          return `${actorName} ${t("notifications.reactedToMessage", "reacted to your message")}`;
-        }
-      }
-      default:
-        return notification.content || 'New notification';
-    }
-  };
+  const getNotificationText = (notification: Notification) => notificationText(notification);
 
   if (!user) return null;
 
@@ -322,7 +246,7 @@ export function NotificationBell() {
                       {getNotificationText(notification)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: sv })}
+                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: dateLocale() })}
                     </p>
                   </div>
                   </button>

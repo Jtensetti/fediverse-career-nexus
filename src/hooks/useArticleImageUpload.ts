@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 interface UseArticleImageUploadResult {
   uploadImage: (file: File) => Promise<string | null>;
   isUploading: boolean;
@@ -18,13 +19,13 @@ export function useArticleImageUpload(): UseArticleImageUploadResult {
   const uploadImage = useCallback(async (file: File): Promise<string | null> => {
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+      toast.error(tx("ui.useArticleImageUpload.pleaseSelectAnImage"));
       return null;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be smaller than 5MB");
+      toast.error(tx("ui.useArticleImageUpload.imageMustBeSmaller"));
       return null;
     }
 
@@ -33,7 +34,7 @@ export function useArticleImageUpload(): UseArticleImageUploadResult {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("You must be logged in to upload images");
+        toast.error(tx("ui.useArticleImageUpload.youMustBeLogged"));
         return null;
       }
 
@@ -46,7 +47,7 @@ export function useArticleImageUpload(): UseArticleImageUploadResult {
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        toast.error("Failed to upload image");
+        toast.error(tx("ui.useArticleImageUpload.failedToUploadImage"));
         return null;
       }
 
@@ -55,7 +56,7 @@ export function useArticleImageUpload(): UseArticleImageUploadResult {
       return publicUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error("Failed to upload image");
+      toast.error(tx("ui.useArticleImageUpload.failedToUploadImage"));
       return null;
     } finally {
       setIsUploading(false);

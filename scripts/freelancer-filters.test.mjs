@@ -14,6 +14,7 @@ const copy = JSON.parse(readFileSync(new URL('../src/i18n/locales/sv.json', impo
 globalThis.freelancerCopy = key => key.split('.').reduce((value, part) => value?.[part], copy) ?? key;
 const mocks = {
   'react-i18next': 'export const useTranslation=()=>({t:globalThis.freelancerCopy});',
+  '@/i18n': 'export default {language:"sv",resolvedLanguage:"sv",t:(k,v)=>globalThis.freelancerCopy(k,v),on(){}}; export const changeLanguage=async()=>{};',
   '@tanstack/react-query': 'export const useQuery=({queryKey})=>({data:queryKey[0]==="freelancer-locations"?["", "Stockholm"]:[],isLoading:false});',
   '@/components/layout/DashboardLayout': 'export default ({children})=>children;',
   '@/components/common/SEOHead': 'export const SEOHead=()=>null;',

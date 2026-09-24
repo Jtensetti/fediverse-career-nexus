@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import { tx } from "@/i18n/tx";
 const SESSION_WARNING_THRESHOLD = 2 * 60 * 1000;
 const DISMISS_COOLDOWN = 10 * 60 * 1000;
 const ACTIVITY_THRESHOLD = 2 * 60 * 1000;
@@ -73,7 +74,7 @@ export default function SessionExpiryWarning() {
         setShowWarning(true);
       } else if (remaining <= 0) {
         setShowWarning(false);
-        toast.error("Din session har gått ut. Logga in igen.");
+        toast.error(tx("ui.sessionExpiryWarning.dinSessionHarGatt"));
       } else {
         setShowWarning(false);
       }
@@ -106,10 +107,10 @@ export default function SessionExpiryWarning() {
     try {
       const { error } = await supabase.auth.refreshSession();
       if (error) throw error;
-      toast.success("Sessionen har förlängts");
+      toast.success(tx("ui.sessionExpiryWarning.sessionenHarForlangts"));
       setShowWarning(false);
     } catch {
-      toast.error("Kunde inte förlänga sessionen. Logga in igen.");
+      toast.error(tx("ui.sessionExpiryWarning.kundeInteForlangaSessionen"));
     } finally {
       setIsRefreshing(false);
     }
@@ -134,22 +135,22 @@ export default function SessionExpiryWarning() {
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-warning" />
-            Sessionen går ut snart
+            {tx("ui.sessionExpiryWarning.sessionenGarUtSnart")}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Din session går ut om{" "}
+            {tx("ui.sessionExpiryWarning.dinSessionGarUt")}{" "}
             <span className="font-bold text-foreground">
               {formatTime(timeRemaining)}
             </span>
-            . Vill du förlänga sessionen?
+            {tx("ui.sessionExpiryWarning.villDuForlangaSessionen")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <Button variant="outline" onClick={handleDismiss}>
-            Avfärda
+            {tx("ui.sessionExpiryWarning.avfarda")}
           </Button>
           <Button onClick={handleExtendSession} disabled={isRefreshing}>
-            {isRefreshing ? "Förlänger..." : "Förläng session"}
+            {isRefreshing ? tx("ui.sessionExpiryWarning.forlanger") : tx("ui.sessionExpiryWarning.forlangSession")}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

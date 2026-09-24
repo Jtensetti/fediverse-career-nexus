@@ -25,7 +25,7 @@ const VISIBILITY_OPTIONS: { value: SectionVisibility; icon: typeof Globe; labelK
 ];
 
 export default function SectionVisibilityToggle({ section, currentVisibility, onChanged }: SectionVisibilityToggleProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [updating, setUpdating] = useState(false);
 
   const current = VISIBILITY_OPTIONS.find(o => o.value === currentVisibility) || VISIBILITY_OPTIONS[0];
@@ -64,7 +64,7 @@ export default function SectionVisibilityToggle({ section, currentVisibility, on
             <p className="text-xs">{t('visibility.whoCanSee', 'Who can see this section')}</p>
           </TooltipContent>
           <DropdownMenuContent align="end" className="w-64">
-            {(section === 'activity' || section === 'articles') && <p className="px-2 py-2 text-xs text-muted-foreground">{i18n.language.startsWith('sv') ? 'Styr visningen i profilen. Publicerade inlägg och artiklar är fortfarande offentliga via sina egna länkar och i flöden.' : 'Controls display on your profile. Published posts and articles remain public through their own links and feeds.'}</p>}
+            {(section === 'activity' || section === 'articles') && <p className="px-2 py-2 text-xs text-muted-foreground">{t('ui.sectionVisibilityToggle.publicLinksNote')}</p>}
             {VISIBILITY_OPTIONS.map(opt => {
               const Icon = opt.icon;
               return (

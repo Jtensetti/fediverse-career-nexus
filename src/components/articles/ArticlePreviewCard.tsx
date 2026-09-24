@@ -1,10 +1,11 @@
+import { dateLocale } from "@/lib/locale";
 import { MediaImage } from "@/components/content/MediaImage";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ShareButton } from "@/components/common/ShareButton";
 import { format } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { Article } from "@/services/articles/articleService";
 import FollowAuthorButton from "../social/FollowAuthorButton";
 import ArticleCardReactions from "./ArticleCardReactions";
@@ -30,8 +31,8 @@ const ArticlePreviewCard = ({
   onFollowChange 
 }: ArticlePreviewCardProps) => {
   const publishDate = article.published_at 
-    ? format(new Date(article.published_at), 'd MMM yyyy', { locale: sv })
-    : format(new Date(article.created_at), 'd MMM yyyy', { locale: sv });
+    ? format(new Date(article.published_at), 'd MMM yyyy', { locale: dateLocale() })
+    : format(new Date(article.created_at), 'd MMM yyyy', { locale: dateLocale() });
 
   const initials = authorInfo?.fullname
     ? authorInfo.fullname.split(' ').map(n => n[0]).join('').toUpperCase()

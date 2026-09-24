@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImageCropDialog } from "./ImageCropDialog";
 
+import { tx } from "@/i18n/tx";
 interface CoverImageUploadProps {
   value?: string | null;
   onChange: (url: string | null) => void;
@@ -122,7 +123,7 @@ const CoverImageUpload = ({ value, onChange, className }: CoverImageUploadProps)
         <div className="relative aspect-[2/1] w-full rounded-lg overflow-hidden border">
           <MediaImage
             src={value}
-            alt="Cover"
+            alt={tx("ui.coverImageUpload.cover")}
             className="w-full h-full object-cover"
           />
           <div className="absolute top-2 right-2 flex gap-2">
