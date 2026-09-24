@@ -36,6 +36,7 @@ const mocks = {
   '@/services/content/savedItemsService': 'export const toggleSaveItem=async()=>({success:true,saved:true});',
   '@/hooks/useContentCheck': 'export const useContentCheck=()=>({check:async()=>true,checking:false,dialog:null});',
   'react-i18next': 'export const useTranslation=()=>({t:globalThis.postCardTest.translate});',
+  '@/i18n': 'export default {language:"sv",resolvedLanguage:"sv",t:(k,v)=>globalThis.postCardTest.translate(k,v),on(){}}; export const changeLanguage=async()=>{};',
   'sonner': 'export const toast={error:message=>{throw new Error(message);}};',
   '@/components/content/LinkPreview': 'export const extractUrls=()=>[];',
   '@/components/common/ProfileHoverCard': 'export const ProfileHoverCard=({children})=>children;',

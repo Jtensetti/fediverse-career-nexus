@@ -21,6 +21,7 @@ const translate = (key, opts = {}) => {
 };
 const mocks = {
   'react-i18next': 'export const useTranslation=()=>({t:globalThis.feedTest.translate});',
+  '@/i18n': 'export default {language:"sv",resolvedLanguage:"sv",t:(k,v)=>globalThis.feedTest.translate(k,v),on(){}}; export const changeLanguage=async()=>{};',
   '@/contexts/AuthContext': 'export const useAuth=()=>({user:globalThis.feedTest.user,loading:false});',
   '@/lib/supabase': 'export const supabase=globalThis.feedTest.supabase;',
   '@/hooks/useContentCheck': 'export const useContentCheck=()=>({check:async()=>true,checking:false,dialog:null});',
