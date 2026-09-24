@@ -4,7 +4,7 @@
 
 ## Uppgiftsmönster och tokens
 
-- Behåll Noltos varma, professionella identitet, befintliga konst, typografiska karaktär och semantiska färgtokens. Använd `background`, `foreground`, `primary`, `muted`, `destructive`, `warning` och `success` i stället för sidunika färger.
+- Behåll exakt Noltos teal-/petrolbaserade identitet med blek aqua, varm guldgul accent, mammutkonst, befintlig typografisk karaktär och nuvarande semantiska färgtokens som enda grundsanning. Inför ingen lila/plommonfärgad omprofilering. Använd `background`, `foreground`, `primary`, `muted`, `destructive`, `warning` och `success` i stället för sidunika färger.
 - Sidor har en tydlig rubrik, ett primärt nästa steg och stabil navigation. Länkar används för destinationer; knappar används för handlingar.
 - Fristående kontroller har minst 44 × 44 CSS-pixlar. Text kan radbrytas och kritiska handlingar får inte klippas vid 320 px eller i långa översättningar.
 - Formulär har synliga kopplade etiketter, närliggande hjälp/fel och konkret knapptext. Omedelbara inställningar använder switch; val som sparas senare använder checkbox eller formulärkontroll.

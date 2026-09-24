@@ -2,6 +2,8 @@
 
 Utgångspunkt: main `da70086fd1c1c12a1ad1fe90cb81bd9b6af92394`. Ingen publicering, backendändring, produktionsdata eller ny betaltjänst ingår.
 
+Färggrund: den befintliga källan och livewebbplatsens teal/petrol, bleka aqua och varma guldgula accent med mammutkonsten. Ingen lila/plommonfärgad omprofilering har införts.
+
 ## Implementerat
 
 - Globala statusmeddelanden är åter synliga; mobilnavigeringens säkra bottenyta använder strukturell markör i stället för svensk `aria-label`; forced-colors tillåts använda användarens färger.
