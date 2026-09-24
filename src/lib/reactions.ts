@@ -1,4 +1,4 @@
-import { Heart, PartyPopper, ThumbsUp, Smile, Lightbulb, LucideIcon } from "lucide-react";
+import { Heart, PartyPopper, ThumbsUp, Smile, Lightbulb, type LucideIcon } from "lucide-react";
 
 // Canonical reaction keys used throughout the app
 export const REACTIONS = ['love', 'celebrate', 'support', 'empathy', 'insightful'] as const;
