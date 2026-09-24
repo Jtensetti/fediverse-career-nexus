@@ -1,6 +1,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 
 // =============== Payload Helpers ===============
 // Normalize text: trim and convert empty strings to null
@@ -81,7 +82,7 @@ export const getUserExperiences = async (userId?: string) => {
     return data || [];
   } catch (error) {
     console.error('Error fetching user experiences:', error);
-    toast.error("Failed to load experiences", { description: "There was an error loading your experience data." });
+    toast.error(i18n.t("profileCV.experienceLoadFailed"));
     return [];
   }
 };
@@ -129,12 +130,12 @@ export const createExperience = async (experience: Experience) => {
       throw new Error(error.message || 'Database error');
     }
 
-    toast("Experience added", { description: "Your experience has been successfully added to your profile." });
+    toast(i18n.t("profileCV.experienceAdded"));
 
     return data;
   } catch (error: any) {
     console.error('Error creating experience:', error);
-    toast.error("Failed to add experience", { description: error?.message || "There was an error adding your experience." });
+    toast.error(i18n.t("profileCV.experienceAddFailed"));
     return null;
   }
 };
@@ -167,12 +168,12 @@ export const updateExperience = async (id: string, experience: Partial<Experienc
       throw new Error(error.message || 'Database error');
     }
 
-    toast("Experience updated", { description: "Your experience has been successfully updated." });
+    toast(i18n.t("profileCV.experienceUpdated"));
 
     return data;
   } catch (error: any) {
     console.error('Error updating experience:', error);
-    toast.error("Failed to update experience", { description: error?.message || "There was an error updating your experience." });
+    toast.error(i18n.t("profileCV.experienceUpdateFailed"));
     return null;
   }
 };
@@ -186,12 +187,12 @@ export const deleteExperience = async (id: string) => {
 
     if (error) throw error;
 
-    toast("Experience deleted", { description: "Your experience has been successfully removed." });
+    toast(i18n.t("profileCV.experienceDeleted"));
 
     return true;
   } catch (error) {
     console.error('Error deleting experience:', error);
-    toast.error("Failed to delete experience", { description: "There was an error removing your experience." });
+    toast.error(i18n.t("profileCV.experienceDeleteFailed"));
     return false;
   }
 };
@@ -221,7 +222,7 @@ export const getUserEducation = async (userId?: string) => {
     return data || [];
   } catch (error) {
     console.error('Error fetching user education:', error);
-    toast.error("Failed to load education", { description: "There was an error loading your education data." });
+    toast.error(i18n.t("profileCV.educationLoadFailed"));
     return [];
   }
 };
@@ -260,12 +261,12 @@ export const createEducation = async (education: Education) => {
       throw new Error(error.message || 'Database error');
     }
 
-    toast("Education added", { description: "Your education has been successfully added to your profile." });
+    toast(i18n.t("profileCV.educationAdded"));
 
     return data;
   } catch (error: any) {
     console.error('Error creating education:', error);
-    toast.error("Failed to add education", { description: error?.message || "There was an error adding your education." });
+    toast.error(i18n.t("profileCV.educationAddFailed"));
     return null;
   }
 };
@@ -293,12 +294,12 @@ export const updateEducation = async (id: string, education: Partial<Education>)
       throw new Error(error.message || 'Database error');
     }
 
-    toast("Education updated", { description: "Your education has been successfully updated." });
+    toast(i18n.t("profileCV.educationUpdated"));
 
     return data;
   } catch (error: any) {
     console.error('Error updating education:', error);
-    toast.error("Failed to update education", { description: error?.message || "There was an error updating your education." });
+    toast.error(i18n.t("profileCV.educationUpdateFailed"));
     return null;
   }
 };
@@ -312,12 +313,12 @@ export const deleteEducation = async (id: string) => {
 
     if (error) throw error;
 
-    toast("Education deleted", { description: "Your education has been successfully removed." });
+    toast(i18n.t("profileCV.educationDeleted"));
 
     return true;
   } catch (error) {
     console.error('Error deleting education:', error);
-    toast.error("Failed to delete education", { description: "There was an error removing your education." });
+    toast.error(i18n.t("profileCV.educationDeleteFailed"));
     return false;
   }
 };
@@ -347,7 +348,7 @@ export const getUserSkills = async (userId?: string) => {
     return data || [];
   } catch (error) {
     console.error('Error fetching user skills:', error);
-    toast.error("Failed to load skills", { description: "There was an error loading your skills data." });
+    toast.error(i18n.t("profileCV.skillsLoadFailed"));
     return [];
   }
 };
@@ -373,19 +374,19 @@ export const createSkill = async (skill: Skill) => {
     if (error) {
       // Check if error is due to unique constraint violation
       if (error.code === '23505') {
-        toast.error("Duplicate skill", { description: "This skill already exists in your profile." });
+        toast.error(i18n.t("profileCV.skillDuplicate"));
       } else {
         throw error;
       }
       return null;
     }
 
-    toast("Skill added", { description: "Your skill has been successfully added to your profile." });
+    toast(i18n.t("profileCV.skillAdded"));
 
     return data;
   } catch (error) {
     console.error('Error creating skill:', error);
-    toast.error("Failed to add skill", { description: "There was an error adding your skill." });
+    toast.error(i18n.t("profileCV.skillAddFailed"));
     return null;
   }
 };
@@ -399,12 +400,12 @@ export const deleteSkill = async (id: string) => {
 
     if (error) throw error;
 
-    toast("Skill deleted", { description: "Your skill has been successfully removed." });
+    toast(i18n.t("profileCV.skillDeleted"));
 
     return true;
   } catch (error) {
     console.error('Error deleting skill:', error);
-    toast.error("Failed to delete skill", { description: "There was an error removing your skill." });
+    toast.error(i18n.t("profileCV.skillDeleteFailed"));
     return false;
   }
 };

@@ -1,4 +1,5 @@
 import { CheckCircle2, AlertCircle, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,20 +25,20 @@ interface TransparencyScoreProps {
 }
 
 const scoreLabels = [
-  { min: 0, max: 25, label: 'Low', color: 'text-red-500', bgColor: 'bg-red-500' },
-  { min: 26, max: 50, label: 'Fair', color: 'text-amber-500', bgColor: 'bg-amber-500' },
-  { min: 51, max: 75, label: 'Good', color: 'text-blue-500', bgColor: 'bg-blue-500' },
-  { min: 76, max: 100, label: 'Excellent', color: 'text-green-500', bgColor: 'bg-green-500' },
+  { min: 0, max: 25, label: 'low', color: 'text-red-500' },
+  { min: 26, max: 50, label: 'fair', color: 'text-amber-500' },
+  { min: 51, max: 75, label: 'good', color: 'text-blue-500' },
+  { min: 76, max: 100, label: 'excellent', color: 'text-green-500' },
 ];
 
 const criteriaList = [
-  { key: 'hasSalary', label: 'Salary range', points: 25 },
-  { key: 'hasInterviewProcess', label: 'Interview process', points: 20 },
-  { key: 'hasRemotePolicy', label: 'Remote policy', points: 15 },
-  { key: 'hasResponseTime', label: 'Response time', points: 15 },
-  { key: 'hasTeamSize', label: 'Team size', points: 10 },
-  { key: 'hasGrowthPath', label: 'Growth path', points: 10 },
-  { key: 'hasVisaInfo', label: 'Visa sponsorship info', points: 5 },
+  { key: 'hasSalary', points: 25 },
+  { key: 'hasInterviewProcess', points: 20 },
+  { key: 'hasRemotePolicy', points: 15 },
+  { key: 'hasResponseTime', points: 15 },
+  { key: 'hasTeamSize', points: 10 },
+  { key: 'hasGrowthPath', points: 10 },
+  { key: 'hasVisaInfo', points: 5 },
 ];
 
 export default function TransparencyScore({
@@ -46,12 +47,13 @@ export default function TransparencyScore({
   showDetails = false,
   className
 }: TransparencyScoreProps) {
+  const { t } = useTranslation();
   const scoreInfo = scoreLabels.find(s => score >= s.min && score <= s.max) || scoreLabels[0];
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className={cn("flex items-center gap-2", className)}>
+        <div tabIndex={0} className={cn("flex items-center gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}>
           <Badge 
             variant="secondary"
             className={cn(
@@ -61,14 +63,14 @@ export default function TransparencyScore({
           >
             <TrendingUp className={cn("h-3 w-3", scoreInfo.color)} />
             <span className={scoreInfo.color}>{score}%</span>
-            <span className="text-muted-foreground">Transparency</span>
+            <span className="text-muted-foreground">{t("jobTransparency.label")}</span>
           </Badge>
         </div>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="w-64 p-3">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="font-medium">Transparency Score</span>
+            <span className="font-medium">{t("jobTransparency.title")}</span>
             <span className={cn("font-bold", scoreInfo.color)}>{score}%</span>
           </div>
           
@@ -78,18 +80,12 @@ export default function TransparencyScore({
           />
 
           <p className="text-xs text-muted-foreground">
-            {scoreInfo.label === 'Excellent' 
-              ? 'This job listing provides comprehensive information to candidates.'
-              : scoreInfo.label === 'Good'
-              ? 'Good transparency. A few more details would help candidates.'
-              : scoreInfo.label === 'Fair'
-              ? 'Consider adding more details about compensation and process.'
-              : 'More transparency helps attract quality candidates.'}
+            {t(`jobTransparency.${scoreInfo.label}`)}
           </p>
 
           {showDetails && details && (
             <div className="pt-2 border-t space-y-1">
-              {criteriaList.map(({ key, label, points }) => {
+              {criteriaList.map(({ key, points }) => {
                 const hasItem = details[key as keyof typeof details];
                 return (
                   <div key={key} className="flex items-center gap-2 text-xs">
@@ -98,7 +94,7 @@ export default function TransparencyScore({
                     ) : (
                       <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
                     )}
-                    <span className={hasItem ? "" : "text-muted-foreground"}>{label}</span>
+                    <span className={hasItem ? "" : "text-muted-foreground"}>{t(`jobTransparency.criteria.${key}`)}</span>
                     <span className="ml-auto text-muted-foreground">+{points}%</span>
                   </div>
                 );

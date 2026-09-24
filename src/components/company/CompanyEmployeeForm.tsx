@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/forms/DatePicker";
+import { formatLocalDate, parseLocalDate } from "@/lib/localDate";
 import {
   Dialog,
   DialogContent,
@@ -39,13 +41,13 @@ const employmentTypes: { value: EmploymentType; label: string }[] = [
   { value: "freelance", label: "Freelance" },
 ];
 
-const schema = z.object({
-  title: z.string().min(2, "Title must be at least 2 characters").max(100),
+const createSchema = (t: (key: string) => string) => z.object({
+  title: z.string().min(2, t('companies.jobTitleValidation')).max(100, t('companies.jobTitleValidation')),
   employment_type: z.enum(["full_time", "part_time", "contract", "intern", "freelance"]),
-  start_date: z.string().min(1, "Start date is required"),
+  start_date: z.string().refine(value => !!parseLocalDate(value), t('companies.startDateRequired')),
 });
 
-type FormData = z.infer<typeof schema>;
+type FormData = z.infer<ReturnType<typeof createSchema>>;
 
 interface CompanyEmployeeFormProps {
   companyId: string;
@@ -64,11 +66,11 @@ export default function CompanyEmployeeForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(createSchema(t)),
     defaultValues: {
       title: "",
       employment_type: "full_time",
-      start_date: new Date().toISOString().split("T")[0],
+      start_date: formatLocalDate(new Date()),
     },
   });
 
@@ -86,7 +88,7 @@ export default function CompanyEmployeeForm({
       form.reset();
       onSuccess();
     } catch (error: any) {
-      toast.error(error.message || "Failed to submit employment claim");
+      toast.error(t('companies.employmentClaimFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -114,7 +116,7 @@ export default function CompanyEmployeeForm({
                 <FormItem>
                   <FormLabel>{t("companies.jobTitle", "Job Title")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Software Engineer" {...field} />
+                    <Input placeholder={t('companies.jobTitlePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -136,7 +138,7 @@ export default function CompanyEmployeeForm({
                     <SelectContent>
                       {employmentTypes.map((et) => (
                         <SelectItem key={et.value} value={et.value}>
-                          {et.label}
+                          {t(`companies.employmentTypes.${et.value}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -153,7 +155,8 @@ export default function CompanyEmployeeForm({
                 <FormItem>
                   <FormLabel>{t("companies.startDate", "Start Date")}</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <DatePicker {...field} value={parseLocalDate(field.value)}
+                      onChange={date => field.onChange(formatLocalDate(date))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FederatedFeed from "@/components/federation/FederatedFeed";
@@ -19,10 +21,23 @@ import { useAuth } from "@/contexts/AuthContext";
 import Explore from "./Explore";
 
 function MemberFeed() {
+  const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedFeed, setActiveFeed] = useState<string>();
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [postsCreated, setPostsCreated] = useState(0);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { showOnboarding, completeOnboarding, hasChecked } = useOnboarding();
+
+  useEffect(() => {
+    if (searchParams.get('compose') === '1') {
+      setComposerOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete('compose');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   // Load user's feed preferences
   const { data: preferences } = useQuery({
@@ -38,7 +53,7 @@ function MemberFeed() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead title="Feed" description="Your personalized feed on Nolto - the federated professional network." />
+      <SEOHead title={t('nav.feed')} description={t('feed.pageDescription')} />
       <Navbar />
       
       {/* Onboarding Flow */}
@@ -52,9 +67,9 @@ function MemberFeed() {
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Feed Column */}
-          <div className="flex-grow max-w-2xl">
+          <div className="min-w-0 w-full flex-grow max-w-2xl">
             {/* Feed Header with Selector */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-start justify-between gap-1 mb-6">
               <FeedSelector
                 value={activeFeed}
                 onChange={setActiveFeed}
@@ -63,7 +78,7 @@ function MemberFeed() {
               <Button 
                 variant="ghost" 
                 size="icon"
-                aria-label="Uppdatera flödet"
+                aria-label={t('feed.refresh')}
                 onClick={handleRefresh}
                 className="shrink-0"
               >
@@ -71,11 +86,13 @@ function MemberFeed() {
               </Button>
             </div>
             
-            <PostComposer className="mb-6" />
+            <PostComposer className="mb-6" open={composerOpen} onOpenChange={setComposerOpen}
+              onPostCreated={() => setPostsCreated(count => count + 1)} />
             
             <FederatedFeed 
               className="mb-8" 
               feedType={activeFeed}
+              onExploreNolto={() => setActiveFeed('local')}
             />
           </div>
           
@@ -83,7 +100,7 @@ function MemberFeed() {
           <aside className="lg:w-80 space-y-6 lg:sticky lg:top-4 lg:self-start">
             <ProfileCompleteness />
             <ReferralWidget />
-            <SuggestedActions />
+            <SuggestedActions onCreatePost={() => setComposerOpen(true)} refreshKey={postsCreated} />
           </aside>
         </div>
       </main>

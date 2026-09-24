@@ -121,7 +121,8 @@ const Articles = () => {
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
-              type="text"
+              type="search"
+              aria-label={t("articles.search")}
               placeholder={t("articles.search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

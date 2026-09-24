@@ -24,7 +24,7 @@ interface SuggestedAction {
   completed: boolean;
 }
 
-const SuggestedActions = () => {
+const SuggestedActions = ({ onCreatePost, refreshKey = 0 }: { onCreatePost: () => void; refreshKey?: number }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [actions, setActions] = useState<SuggestedAction[]>([]);
@@ -37,12 +37,14 @@ const SuggestedActions = () => {
 
       try {
         // Check for first post
-        const { data: posts } = await supabase
+        const { data: actor } = await supabase.from("public_actors")
+          .select("id").eq("user_id", user.id).eq("is_remote", false).maybeSingle();
+        const { data: posts } = actor?.id ? await supabase
           .from("ap_objects")
           .select("id")
-          .eq("attributed_to", user.id)
-          .eq("type", "Note")
-          .limit(1);
+          .eq("attributed_to", actor.id)
+          .in("type", ["Create", "Note", "Question"])
+          .limit(1) : { data: [] };
 
         // Check for first article
         const { data: articles } = await supabase
@@ -131,7 +133,7 @@ const SuggestedActions = () => {
     };
 
     checkActions();
-  }, [user]);
+  }, [user, refreshKey]);
 
   const dismissAction = (actionId: string) => {
     const newDismissed = [...dismissedActions, actionId];
@@ -181,14 +183,21 @@ const SuggestedActions = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-8 w-8 p-0"
+                  aria-label={t("suggestions.dismissAction", { action: t(action.titleKey) })}
                   onClick={() => dismissAction(action.id)}
                 >
                   <X className="h-4 w-4" />
                 </Button>
-                <Button asChild size="sm" variant="secondary">
-                  <Link to={action.link}>{t("suggestions.doIt")}</Link>
-                </Button>
+                {action.id === "first-post" ? (
+                  <Button size="sm" variant="secondary" onClick={onCreatePost} aria-label={t(action.titleKey)}>
+                    {t("suggestions.doIt")}
+                  </Button>
+                ) : (
+                  <Button asChild size="sm" variant="secondary">
+                    <Link to={action.link} aria-label={t(action.titleKey)}>{t("suggestions.doIt")}</Link>
+                  </Button>
+                )}
               </div>
             </div>
           ))}

@@ -1,7 +1,8 @@
 import BlueskySignIn from '@/components/auth/BlueskySignIn';
 import MastodonConnection from "@/components/settings/MastodonConnection";
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { SEOHead } from "@/components/common/SEOHead";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import Navbar from "../../components/layout/Navbar";
@@ -64,7 +65,7 @@ import {
 const createProfileSchema = (t: any) => z.object({
   username: z.string()
     .min(3, t("profileEdit.profileSchema.usernameMin"))
-    .max(20, t("profileEdit.profileSchema.usernameMax"))
+    .max(30, t("profileEdit.profileSchema.usernameMax"))
     .regex(/^[a-z0-9_]+$/, t("profileEdit.profileSchema.usernameRegex"))
     .optional(),
   displayName: z.string().min(2, t("profileEdit.profileSchema.displayNameMin")),
@@ -84,12 +85,18 @@ const ProfileEditPage = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+  const [skillSaving, setSkillSaving] = useState(false);
 
   // State for experiences, education, and skills
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [education, setEducation] = useState<Education[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [newSkill, setNewSkill] = useState("");
+  const experiencePending = useRef(false);
+  const educationPending = useRef(false);
+  const [experienceBusyIndex, setExperienceBusyIndex] = useState<number | null>(null);
+  const [educationBusyIndex, setEducationBusyIndex] = useState<number | null>(null);
 
   // State for validation errors on experience fields
   const [experienceErrors, setExperienceErrors] = useState<Record<number, string[]>>({});
@@ -196,12 +203,15 @@ const ProfileEditPage = () => {
   const onSubmit = async (data: z.infer<typeof profileSchema>) => {
     try {
       setIsLoading(prev => ({ ...prev, saving: true }));
+      setSaveStatus('idle');
 
       // Check if username changed and validate uniqueness
       if (data.username && data.username !== profile?.username) {
         const isAvailable = await checkUsernameAvailability(data.username);
         if (!isAvailable) {
           toast.error(t("toasts.usernameAlreadyTaken"));
+          form.setError('username', { message: t("toasts.usernameAlreadyTaken") });
+          setSaveStatus('error');
           setIsLoading(prev => ({ ...prev, saving: false }));
           return;
         }
@@ -220,6 +230,8 @@ const ProfileEditPage = () => {
       const success = await updateUserProfile(profileData);
 
       if (success) {
+        form.reset(data);
+        setSaveStatus('saved');
         // Invalidate profile cache
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         // Refresh the profile data
@@ -227,10 +239,13 @@ const ProfileEditPage = () => {
         if (updatedProfile) {
           setProfile(updatedProfile);
         }
+      } else {
+        setSaveStatus('error');
       }
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error(t("toasts.profileUpdateFailed"));
+      setSaveStatus('error');
     } finally {
       setIsLoading(prev => ({ ...prev, saving: false }));
     }
@@ -256,23 +271,23 @@ const ProfileEditPage = () => {
       description: "",
       user_id: userId
     };
-    setExperiences([...experiences, newExperience]);
+    setExperiences(current => [...current, newExperience]);
   };
 
   const removeExperience = async (index: number) => {
-    const exp = experiences[index];
-
-    // If this experience has an ID (stored in DB), delete it
-    if (exp.id) {
-      const success = await deleteExperience(exp.id);
-      if (success) {
-        setExperiences(experiences.filter((_, i) => i !== index));
-        // Invalidate profile cache so Profile page shows updated data
+    if (experiencePending.current) return;
+    const item = experiences[index];
+    if (!item) return;
+    experiencePending.current = true;
+    setExperienceBusyIndex(index);
+    try {
+      if (!item.id || await deleteExperience(item.id)) {
+        setExperiences(current => current.filter((_, row) => row !== index));
         queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
-    } else {
-      // If not yet saved, just remove from state
-      setExperiences(experiences.filter((_, i) => i !== index));
+    } finally {
+      experiencePending.current = false;
+      setExperienceBusyIndex(null);
     }
   };
 
@@ -286,7 +301,10 @@ const ProfileEditPage = () => {
   };
 
   const saveExperience = async (index: number) => {
-    const exp = experiences[index];
+    if (experiencePending.current || !experiences[index]) return;
+    const ownerId = experiences[index].user_id || userId;
+    if (!ownerId) { toast.error(t("toasts.loginRequiredProfile")); return; }
+    const exp = { ...experiences[index], user_id: ownerId };
 
     // Validate required fields - only title and start_date are required (company is optional for freelancers)
     const errors: string[] = [];
@@ -295,7 +313,7 @@ const ProfileEditPage = () => {
 
     if (errors.length > 0) {
       setExperienceErrors(prev => ({ ...prev, [index]: errors }));
-      toast.error(`${t("toasts.experienceFillIn")}${errors.map(e => e === 'start_date' ? t("profileEdit.experience.startDate", 'start date') : e).join(', ')}`);
+      toast.error(`${t("toasts.experienceFillIn")}${errors.map(e => e === 'start_date' ? t("profileEdit.experience.startDate") : t("profileEdit.experience.jobTitle")).join(', ')}`);
       return;
     }
 
@@ -306,48 +324,19 @@ const ProfileEditPage = () => {
       return newErrors;
     });
 
-    // Ensure user_id is set
-    if (!exp.user_id && userId) {
-      exp.user_id = userId;
-    }
-
-    // If experience has an ID, update it, otherwise create new
-    if (exp.id) {
-      const updated = await updateExperience(exp.id, exp);
-      if (updated) {
-        const updatedExperiences = [...experiences];
-        updatedExperiences[index] = updated;
-        setExperiences(updatedExperiences);
-        // Invalidate profile cache
+    experiencePending.current = true;
+    setExperienceBusyIndex(index);
+    try {
+      const saved = exp.id ? await updateExperience(exp.id, exp) : await createExperience(exp);
+      if (saved) {
+        setExperiences(current => current.map((item, row) => row === index ? saved : item));
         queryClient.invalidateQueries({ queryKey: ["profile"] });
-        // Show saved confirmation
-        setRecentlySaved(prev => ({ ...prev, [index]: true }));
-        setTimeout(() => {
-          setRecentlySaved(prev => {
-            const newState = { ...prev };
-            delete newState[index];
-            return newState;
-          });
-        }, 2000);
+        setRecentlySaved(current => ({ ...current, [index]: true }));
+        window.setTimeout(() => setRecentlySaved(current => ({ ...current, [index]: false })), 2000);
       }
-    } else {
-      const created = await createExperience(exp);
-      if (created) {
-        const updatedExperiences = [...experiences];
-        updatedExperiences[index] = created;
-        setExperiences(updatedExperiences);
-        // Invalidate profile cache
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-        // Show saved confirmation
-        setRecentlySaved(prev => ({ ...prev, [index]: true }));
-        setTimeout(() => {
-          setRecentlySaved(prev => {
-            const newState = { ...prev };
-            delete newState[index];
-            return newState;
-          });
-        }, 2000);
-      }
+    } finally {
+      experiencePending.current = false;
+      setExperienceBusyIndex(null);
     }
   };
 
@@ -365,23 +354,23 @@ const ProfileEditPage = () => {
       start_year: new Date().getFullYear(),
       user_id: userId
     };
-    setEducation([...education, newEducation]);
+    setEducation(current => [...current, newEducation]);
   };
 
   const removeEducation = async (index: number) => {
-    const edu = education[index];
-
-    // If this education has an ID (stored in DB), delete it
-    if (edu.id) {
-      const success = await deleteEducation(edu.id);
-      if (success) {
-        setEducation(education.filter((_, i) => i !== index));
-        // Invalidate profile cache so Profile page shows updated data
+    if (educationPending.current) return;
+    const item = education[index];
+    if (!item) return;
+    educationPending.current = true;
+    setEducationBusyIndex(index);
+    try {
+      if (!item.id || await deleteEducation(item.id)) {
+        setEducation(current => current.filter((_, row) => row !== index));
         queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
-    } else {
-      // If not yet saved, just remove from state
-      setEducation(education.filter((_, i) => i !== index));
+    } finally {
+      educationPending.current = false;
+      setEducationBusyIndex(null);
     }
   };
 
@@ -395,7 +384,10 @@ const ProfileEditPage = () => {
   };
 
   const saveEducation = async (index: number) => {
-    const edu = education[index];
+    if (educationPending.current || !education[index]) return;
+    const ownerId = education[index].user_id || userId;
+    if (!ownerId) { toast.error(t("toasts.loginRequiredProfile")); return; }
+    const edu = { ...education[index], user_id: ownerId };
 
     // Validate required fields and track errors
     const errors: { institution?: boolean; degree?: boolean; start_year?: boolean } = {};
@@ -409,7 +401,7 @@ const ProfileEditPage = () => {
       if (errors.institution) missingFields.push(t("profileEdit.education.institution", "institution"));
       if (errors.degree) missingFields.push(t("profileEdit.education.degree", "examen"));
       if (errors.start_year) missingFields.push(t("profileEdit.education.startYear", "startår"));
-      toast.error(`Fyll i obligatoriska fält: ${missingFields.join(", ")}`);
+      toast.error(t("profileEdit.requiredFields", { fields: missingFields.join(", ") }));
       return;
     }
 
@@ -420,48 +412,19 @@ const ProfileEditPage = () => {
       return newErrors;
     });
 
-    // Ensure user_id is set
-    if (!edu.user_id && userId) {
-      edu.user_id = userId;
-    }
-
-    // If education has an ID, update it, otherwise create new
-    if (edu.id) {
-      const updated = await updateEducation(edu.id, edu);
-      if (updated) {
-        const updatedEducation = [...education];
-        updatedEducation[index] = updated;
-        setEducation(updatedEducation);
-        // Invalidate profile cache
+    educationPending.current = true;
+    setEducationBusyIndex(index);
+    try {
+      const saved = edu.id ? await updateEducation(edu.id, edu) : await createEducation(edu);
+      if (saved) {
+        setEducation(current => current.map((item, row) => row === index ? saved : item));
         queryClient.invalidateQueries({ queryKey: ["profile"] });
-        // Show saved confirmation
-        setRecentlySavedEducation(prev => ({ ...prev, [index]: true }));
-        setTimeout(() => {
-          setRecentlySavedEducation(prev => {
-            const newState = { ...prev };
-            delete newState[index];
-            return newState;
-          });
-        }, 2000);
+        setRecentlySavedEducation(current => ({ ...current, [index]: true }));
+        window.setTimeout(() => setRecentlySavedEducation(current => ({ ...current, [index]: false })), 2000);
       }
-    } else {
-      const created = await createEducation(edu);
-      if (created) {
-        const updatedEducation = [...education];
-        updatedEducation[index] = created;
-        setEducation(updatedEducation);
-        // Invalidate profile cache
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-        // Show saved confirmation
-        setRecentlySavedEducation(prev => ({ ...prev, [index]: true }));
-        setTimeout(() => {
-          setRecentlySavedEducation(prev => {
-            const newState = { ...prev };
-            delete newState[index];
-            return newState;
-          });
-        }, 2000);
-      }
+    } finally {
+      educationPending.current = false;
+      setEducationBusyIndex(null);
     }
   };
 
@@ -472,19 +435,23 @@ const ProfileEditPage = () => {
       return;
     }
 
-    if (newSkill.trim() === "") return;
+    if (newSkill.trim() === "" || skillSaving) return;
 
     const newSkillItem: Skill = {
       name: newSkill.trim(),
       user_id: userId
     };
 
-    const createdSkill = await createSkill(newSkillItem);
-    if (createdSkill) {
-      setSkills([...skills, createdSkill]);
-      setNewSkill("");
-      // Invalidate profile cache
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    setSkillSaving(true);
+    try {
+      const createdSkill = await createSkill(newSkillItem);
+      if (createdSkill) {
+        setSkills(current => [...current, createdSkill]);
+        setNewSkill("");
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+      }
+    } finally {
+      setSkillSaving(false);
     }
   };
 
@@ -500,6 +467,7 @@ const ProfileEditPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-muted/30">
+        <SEOHead title={t("profileEdit.title")} noindex />
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
           <div className="animate-pulse flex flex-col items-center">
@@ -514,18 +482,24 @@ const ProfileEditPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
+      <SEOHead title={t("profileEdit.title")} noindex />
       <Navbar />
 
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">{t("profileEdit.title")}</h1>
-          <LinkedInImportButton
-            onImportComplete={() => {
-              // Invalidate profile cache to refresh data without full page reload
-              queryClient.invalidateQueries({ queryKey: ["profile"] });
-              fetchCVData(); // Re-fetch CV data (experiences, education, skills)
-            }}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link to={profile?.username ? `/profile/${profile.username}` : '/profile'}>{t("profileEdit.viewProfile")}</Link>
+            </Button>
+            <LinkedInImportButton
+              onImportComplete={() => {
+                // Invalidate profile cache to refresh data without full page reload
+                queryClient.invalidateQueries({ queryKey: ["profile"] });
+                fetchCVData(); // Re-fetch CV data (experiences, education, skills)
+              }}
+            />
+          </div>
         </div>
 
         <Tabs value={searchParams.get('tab') || 'basic'} onValueChange={(value) => setSearchParams({ tab: value })} className="mb-6">
@@ -556,6 +530,7 @@ const ProfileEditPage = () => {
                   <div className="flex-1">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <fieldset disabled={isLoading.saving} className="min-w-0 space-y-6">
                         <FormField
                           control={form.control}
                           name="displayName"
@@ -581,6 +556,7 @@ const ProfileEditPage = () => {
                                   <span className="text-muted-foreground">@</span>
                                   <Input
                                     placeholder={t("profileEdit.usernamePlaceholder", "your_username")}
+                                    maxLength={30}
                                     {...field}
                                     onChange={(e) => field.onChange(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                                   />
@@ -684,6 +660,12 @@ const ProfileEditPage = () => {
                         >
                           {isLoading.saving ? t("profileEdit.saving") : t("profileEdit.saveChanges")}
                         </Button>
+                        <p role={saveStatus === 'error' ? 'alert' : 'status'} aria-live="polite"
+                          className={`min-h-5 text-sm ${saveStatus === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}>
+                          {isLoading.saving ? t("profileEdit.saving") : saveStatus === 'error' ? t("profileEdit.saveFailed")
+                            : form.formState.isDirty ? t("profileEdit.unsavedChanges") : saveStatus === 'saved' ? t("profileEdit.savedChanges") : ''}
+                        </p>
+                        </fieldset>
                       </form>
                     </Form>
                   </div>
@@ -734,7 +716,7 @@ const ProfileEditPage = () => {
                 ) : (
                   <div className="space-y-6">
                     {experiences.map((exp, index) => (
-                      <div key={exp.id || `new-exp-${index}`} className="border rounded-lg p-4">
+                      <fieldset key={exp.id || `new-exp-${index}`} disabled={experienceBusyIndex === index} className="min-w-0 border rounded-lg p-4">
                         <div className="flex justify-between items-center mb-4">
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium">
@@ -748,7 +730,9 @@ const ProfileEditPage = () => {
                             <Button
                               variant="ghost"
                               size="sm"
+                              disabled={experienceBusyIndex !== null}
                               onClick={() => removeExperience(index)}
+                              aria-label={t("profileEdit.experience.remove", { name: exp.title || `${t("profileEdit.experience.title")} ${index + 1}` })}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash size={16} />
@@ -826,6 +810,9 @@ const ProfileEditPage = () => {
                             </Label>
                             <div className="mt-1">
                               <MonthYearPicker
+                                id={`startDate-${index}`}
+                                aria-invalid={experienceErrors[index]?.includes('start_date') || false}
+                                aria-describedby={experienceErrors[index]?.includes('start_date') ? `startDate-error-${index}` : undefined}
                                 value={exp.start_date || undefined}
                                 onChange={(value) => {
                                   updateExperienceField(index, 'start_date', value);
@@ -841,7 +828,7 @@ const ProfileEditPage = () => {
                               />
                             </div>
                             {experienceErrors[index]?.includes('start_date') && (
-                              <p className="text-sm text-destructive mt-1">{t("profileEdit.experience.startDateRequired", "Start date is required")}</p>
+                              <p id={`startDate-error-${index}`} role="alert" className="text-sm text-destructive mt-1">{t("profileEdit.experience.startDateRequired", "Start date is required")}</p>
                             )}
                           </div>
 
@@ -861,6 +848,7 @@ const ProfileEditPage = () => {
                                 <Label htmlFor={`endDate-${index}`}>{t("profileEdit.experience.endDate")}</Label>
                                 <div className="mt-1">
                                   <MonthYearPicker
+                                    id={`endDate-${index}`}
                                     value={exp.end_date || undefined}
                                     onChange={(value) => updateExperienceField(index, 'end_date', value)}
                                     placeholder={t("profileEdit.experience.pickDate")}
@@ -889,13 +877,14 @@ const ProfileEditPage = () => {
                               </span>
                             )}
                             <Button
+                              disabled={experienceBusyIndex !== null}
                               onClick={() => saveExperience(index)}
                             >
-                              {exp.id ? t("profileEdit.experience.update") : t("profileEdit.experience.save")}
+                              {experienceBusyIndex === index ? t("profileEdit.saving") : exp.id ? t("profileEdit.experience.update") : t("profileEdit.experience.save")}
                             </Button>
                           </div>
                         </div>
-                      </div>
+                      </fieldset>
                     ))}
 
                     {experiences.length === 0 && (
@@ -935,7 +924,7 @@ const ProfileEditPage = () => {
                 ) : (
                   <div className="space-y-6">
                     {education.map((edu, index) => (
-                      <div key={edu.id || `new-edu-${index}`} className="border rounded-lg p-4">
+                      <fieldset key={edu.id || `new-edu-${index}`} disabled={educationBusyIndex === index} className="min-w-0 border rounded-lg p-4">
                         <div className="flex justify-between items-center mb-4">
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium">
@@ -946,7 +935,9 @@ const ProfileEditPage = () => {
                             <Button
                               variant="ghost"
                               size="sm"
+                              disabled={educationBusyIndex !== null}
                               onClick={() => removeEducation(index)}
+                              aria-label={t("profileEdit.education.remove", { name: edu.institution || `${t("profileEdit.education.title")} ${index + 1}` })}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash size={16} />
@@ -1060,13 +1051,14 @@ const ProfileEditPage = () => {
                               </span>
                             )}
                             <Button
+                              disabled={educationBusyIndex !== null}
                               onClick={() => saveEducation(index)}
                             >
-                              {edu.id ? t("profileEdit.education.update") : t("profileEdit.education.save")}
+                              {educationBusyIndex === index ? t("profileEdit.saving") : edu.id ? t("profileEdit.education.update") : t("profileEdit.education.save")}
                             </Button>
                           </div>
                         </div>
-                      </div>
+                      </fieldset>
                     ))}
 
                     {education.length === 0 && (
@@ -1098,14 +1090,19 @@ const ProfileEditPage = () => {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder={t("profileEdit.skills.placeholder")}
-                        value={newSkill}
-                        onChange={(e) => setNewSkill(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && addSkill()}
-                      />
-                      <Button onClick={addSkill} type="button">{t("profileEdit.skills.add")}</Button>
+                    <div className="space-y-2">
+                      <Label htmlFor="profile-new-skill">{t("profileEdit.skills.name")}</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="profile-new-skill"
+                          disabled={skillSaving}
+                          placeholder={t("profileEdit.skills.placeholder")}
+                          value={newSkill}
+                          onChange={(e) => setNewSkill(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void addSkill(); } }}
+                        />
+                        <Button onClick={addSkill} disabled={skillSaving || !newSkill.trim()} type="button">{skillSaving ? t("profileEdit.saving") : t("profileEdit.skills.add")}</Button>
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap gap-2 mt-4">
@@ -1122,6 +1119,7 @@ const ProfileEditPage = () => {
                             size="icon"
                             className="h-5 w-5 rounded-full"
                             onClick={() => skill.id && removeSkill(skill.id)}
+                            aria-label={t("profileEdit.skills.remove", { name: skill.name })}
                           >
                             <Trash size={12} className="text-muted-foreground" />
                           </Button>

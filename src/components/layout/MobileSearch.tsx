@@ -16,16 +16,16 @@ export function MobileSearch() {
         size="icon" 
         className="md:hidden"
         onClick={() => setOpen(true)}
-        aria-label="Open search"
+        aria-label={t("search.searchLabel")}
       >
         <Search className="h-5 w-5" />
       </Button>
       
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="top" className="h-auto max-h-[90vh] overflow-auto [&>button]:hidden">
-          <SheetHeader className="sr-only">
+        <SheetContent side="top" className="h-auto max-h-[90vh] overflow-auto">
+          <SheetHeader className="mb-4 text-left">
             <SheetTitle>{t("mobileSearch.title")}</SheetTitle>
-            <SheetDescription>{t("mobileSearch.description")}</SheetDescription>
+            <SheetDescription className="sr-only">{t("mobileSearch.description")}</SheetDescription>
           </SheetHeader>
           <div className="pt-2 pb-4">
             <GlobalSearch 

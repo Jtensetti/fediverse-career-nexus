@@ -86,9 +86,12 @@ function MemberNavbar() {
         </DropdownMenu>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild><Button variant="ghost" size="icon" className="xl:hidden" aria-label={t("accessibility.navigationMenu")}><Menu className="h-5 w-5" /></Button></SheetTrigger>
-          <SheetContent side="left" className="w-80">
+          <SheetContent side="left" className="w-80 overflow-y-auto" onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            requestAnimationFrame(() => document.querySelector<HTMLAnchorElement>('[data-member-navigation] a')?.focus());
+          }}>
             <SheetHeader><SheetTitle>Nolto</SheetTitle><SheetDescription className="sr-only">{t("accessibility.navigationMenu")}</SheetDescription></SheetHeader>
-            <nav className="mt-6 flex flex-col gap-1">
+            <nav data-member-navigation className="mt-6 flex flex-col gap-1" aria-label={t("accessibility.navigationMenu")}>
               {links.map(link => <NavLink key={link.to} to={link.to} onClick={() => setOpen(false)} className={({ isActive }) => `rounded-lg px-4 py-3 text-sm ${isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}>{link.label}</NavLink>)}
               <Link to="/profile/edit" onClick={() => setOpen(false)} className="mt-3 border-t px-4 py-3 text-sm">{t("common.settings")}</Link>
               <Link to="/my-reviews" onClick={() => setOpen(false)} className="px-4 py-3 text-sm">{t("contentCare.myReviews")}</Link>

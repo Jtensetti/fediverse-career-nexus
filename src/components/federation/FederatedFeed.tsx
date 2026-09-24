@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFederatedFeed, type FederatedPost } from "@/services/federation/federationService";
 import { getBatchPostData } from "@/services/misc/batchDataService";
@@ -16,9 +17,10 @@ interface FederatedFeedProps {
   className?: string;
   sourceFilter?: string;
   feedType?: string;
+  onExploreNolto?: () => void;
 }
 
-export default function FederatedFeed({ limit = 20, className, sourceFilter = "following", feedType }: FederatedFeedProps) {
+export default function FederatedFeed({ limit = 20, className, sourceFilter = "following", feedType, onExploreNolto }: FederatedFeedProps) {
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
@@ -68,8 +70,12 @@ export default function FederatedFeed({ limit = 20, className, sourceFilter = "f
           <p>{t('feed.errorLoading')}</p>
           <Button variant="outline" onClick={() => feed.isFetchNextPageError ? feed.fetchNextPage() : feed.refetch()}>{t('feed.tryAgain')}</Button>
         </div> : posts.length === 0 ? <div className="rounded-lg border border-dashed p-8 text-center">
-          <h2 className="font-semibold">{t('personalFeeds.emptyTitle')}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{t('personalFeeds.emptyDescription')}</p>
+          <h2 className="font-semibold">{t(selection === 'following' ? 'personalFeeds.followingEmptyTitle' : 'personalFeeds.emptyTitle')}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t(selection === 'following' ? 'personalFeeds.followingEmptyDescription' : 'personalFeeds.emptyDescription')}</p>
+          {selection === 'following' && <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {onExploreNolto && <Button onClick={onExploreNolto}>{t('personalFeeds.exploreNolto')}</Button>}
+            <Button asChild variant="outline"><Link to="/search">{t('personalFeeds.findPeople')}</Link></Button>
+          </div>}
         </div> : null}
         {feed.hasNextPage && !feed.isError && <div ref={sentinel} className="py-6 text-center">
           <Button variant="outline" disabled={feed.isFetching} onClick={() => feed.fetchNextPage()}>

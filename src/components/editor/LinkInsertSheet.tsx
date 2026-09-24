@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,10 @@ export function LinkInsertSheet({
   const [url, setUrl] = useState("");
   const [text, setText] = useState(selectedText);
 
+  useEffect(() => {
+    if (open) setText(selectedText);
+  }, [open, selectedText]);
+
   const handleInsert = () => {
     if (!url) return;
     onInsert(url, text || undefined);
@@ -67,7 +71,7 @@ export function LinkInsertSheet({
           onChange={(e) => setText(e.target.value)}
         />
       </div>
-      <Button onClick={handleInsert} disabled={!url} className="w-full">
+      <Button type="button" onClick={handleInsert} disabled={!url} className="w-full">
         {t("linkInsert.insert")}
       </Button>
     </div>

@@ -43,6 +43,8 @@ function createJobFormSchema(t: any) {
     salary_currency: z.string().optional(),
     remote_policy: z.string().default("on-site"),
     experience_level: z.string().optional(),
+    application_url: z.string().trim().refine(value => !value || /^https?:\/\//i.test(value) && z.string().url().safeParse(value).success, t("jobFormLabels.applicationUrlValidation")),
+    contact_email: z.string().trim().refine(value => !value || z.string().email().safeParse(value).success, t("jobFormLabels.contactEmailValidation")),
     skills: z.string().transform(val => val ? val.split(",").map(s => s.trim()).filter(Boolean) : []),
     is_active: z.boolean().default(false),
     interview_process: z.string().optional(),
@@ -104,12 +106,14 @@ const JobForm = ({
     company_id: (defaultValues as any).company_id || null,
     location: defaultValues.location || "",
     description: defaultValues.description || "",
-    employment_type: defaultValues.employment_type || "full-time",
+    employment_type: (defaultValues.employment_type || "full-time").replace(/_/g, "-"),
     salary_min: defaultValues.salary_min ?? null,
     salary_max: defaultValues.salary_max ?? null,
     salary_currency: defaultValues.salary_currency || "SEK",
     remote_policy: defaultValues.remote_policy || "on-site",
     experience_level: defaultValues.experience_level || "",
+    application_url: defaultValues.application_url || "",
+    contact_email: defaultValues.contact_email || "",
     skills: defaultValues.skills?.join(", ") || "",
     is_active: defaultValues.is_active ?? false,
     interview_process: defaultValues.interview_process || "",
@@ -128,7 +132,10 @@ const JobForm = ({
     onSubmit(values);
   };
 
-  const finalSubmitText = submitButtonText || t("jobFormLabels.createJobPost");
+  const isPublished = form.watch("is_active");
+  const finalSubmitText = isPublished
+    ? defaultValues.is_active ? submitButtonText || t("jobEdit.updateButton") : t("jobFormLabels.publishJob")
+    : t("jobFormLabels.saveDraft");
 
   return (
     <Form {...form}>
@@ -227,13 +234,14 @@ const JobForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("jobFormLabels.employmentType")}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={t("jobFormLabels.selectEmploymentType")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    <SelectItem value="full-time">{t("jobFormLabels.fullTime")}</SelectItem>
                     <SelectItem value="permanent">{t("jobFormLabels.permanent", "Tillsvidareanställning")}</SelectItem>
                     <SelectItem value="substitute">{t("jobFormLabels.substitute", "Vikariat")}</SelectItem>
                     <SelectItem value="fixed-term">{t("jobFormLabels.fixedTerm", "Allmän visstidsanställning")}</SelectItem>
@@ -242,6 +250,8 @@ const JobForm = ({
                     <SelectItem value="part-time">{t("jobFormLabels.partTime", "Deltid")}</SelectItem>
                     <SelectItem value="seasonal">{t("jobFormLabels.seasonal", "Säsongsanställning")}</SelectItem>
                     <SelectItem value="internship">{t("jobFormLabels.internship", "Praktik / PRAO")}</SelectItem>
+                    <SelectItem value="contract">{t("jobFormLabels.contract")}</SelectItem>
+                    <SelectItem value="temporary">{t("jobFormLabels.temporary")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -484,15 +494,44 @@ const JobForm = ({
           {/* Visumsponsring borttagen — hanteras hellre direkt mellan kandidat och arbetsgivare. */}
         </div>
 
+        <div className="border rounded-lg p-4 space-y-4">
+          <h3 className="text-lg font-semibold">{t("jobView.howToApply")}</h3>
+          <p className="text-sm text-muted-foreground">{t("jobFormLabels.applicationHelp")}</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="application_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("jobFormLabels.applicationUrl")}</FormLabel>
+                  <FormControl><Input type="url" placeholder="https://" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contact_email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("jobFormLabels.contactEmail")}</FormLabel>
+                  <FormControl><Input type="email" placeholder="jobb@example.com" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
         <FormField
           control={form.control}
           name="is_active"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
               <div>
-                <FormLabel>{t("jobFormLabels.publishImmediately")}</FormLabel>
+                <FormLabel>{t(defaultValues.id ? "jobFormLabels.publishedStatus" : "jobFormLabels.publishImmediately")}</FormLabel>
                 <FormDescription>
-                  {t("jobFormLabels.publishDescription")}
+                  {t(isPublished ? "jobFormLabels.publishDescription" : "jobFormLabels.draftDescription")}
                 </FormDescription>
               </div>
               <FormControl>

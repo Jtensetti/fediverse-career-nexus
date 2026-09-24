@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search as SearchIcon, MapPin, Building2, GraduationCap, Globe, User, Loader2, X } from "lucide-react";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SEOHead } from "@/components/common/SEOHead";
 import Navbar from "@/components/layout/Navbar";
 import { advancedSearchService, AdvancedProfileResult, AdvancedSearchFilters } from "@/services/search/advancedSearchService";
+import { searchService, SearchResults } from "@/services/search/searchService";
 
 export default function Search() {
   const { t } = useTranslation();
@@ -26,41 +27,85 @@ export default function Search() {
   
   const [results, setResults] = useState<AdvancedProfileResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+  const [contentResults, setContentResults] = useState<SearchResults | null>(null);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentError, setContentError] = useState(false);
+  const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
+  const [contentRequest, setContentRequest] = useState(0);
+  const searchRequest = useRef(0);
+  const submittedUrlQuery = useRef<string | null>(null);
   const [activeTab, setActiveTab] = useState('people');
   const [filterOptions, setFilterOptions] = useState<{ locations: string[]; instances: string[] }>({ locations: [], instances: [] });
 
   useEffect(() => {
-    advancedSearchService.getFilterOptions().then(setFilterOptions);
+    advancedSearchService.getFilterOptions().then(setFilterOptions).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (initialQuery) {
-      handleSearch();
+    if (submittedUrlQuery.current === initialQuery) {
+      submittedUrlQuery.current = null;
+      return;
     }
-  }, []);
+    const request = ++searchRequest.current;
+    setQuery(initialQuery);
+    setSubmittedQuery(initialQuery);
+    setSearchError(false);
+    setLocation(''); setCompany(''); setInstitution(''); setHomeInstance('');
+    if (!initialQuery) { setResults([]); setIsLoading(false); return; }
+    setIsLoading(true);
+    advancedSearchService.searchPeople({ query: initialQuery }).then(data => {
+      if (request === searchRequest.current) setResults(data);
+    }).catch(() => {
+      if (request === searchRequest.current) { setResults([]); setSearchError(true); }
+    }).finally(() => {
+      if (request === searchRequest.current) setIsLoading(false);
+    });
+    return () => { if (request === searchRequest.current) searchRequest.current++; };
+  }, [initialQuery]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setContentResults(null);
+    setContentError(false);
+    if (submittedQuery.trim().length < 2) { setContentLoading(false); return; }
+    setContentLoading(true);
+    searchService.search(submittedQuery, 30).then(data => {
+      if (!cancelled) setContentResults(data);
+    }).catch(() => {
+      if (!cancelled) setContentError(true);
+    }).finally(() => {
+      if (!cancelled) setContentLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [submittedQuery, contentRequest]);
 
   const handleSearch = async () => {
+    if (query.trim() !== initialQuery) {
+      submittedUrlQuery.current = query.trim();
+      setSearchParams(query.trim() ? { q: query.trim() } : {});
+    }
+    const request = ++searchRequest.current;
+    setSubmittedQuery(query.trim());
+    setContentRequest(value => value + 1);
+    setSearchError(false);
     setIsLoading(true);
     try {
-      let searchResults: AdvancedProfileResult[] = [];
-      if (company) {
-        searchResults = await advancedSearchService.searchByCompany(company);
-      } else if (institution) {
-        searchResults = await advancedSearchService.searchByInstitution(institution);
-      } else {
-        const filters: AdvancedSearchFilters = { query, location, homeInstance };
-        searchResults = await advancedSearchService.searchPeople(filters);
-      }
-      setResults(searchResults);
+      const filters: AdvancedSearchFilters = { query, location, homeInstance, company, institution };
+      const searchResults = await advancedSearchService.searchPeople(filters);
+      if (request === searchRequest.current) setResults(searchResults);
     } catch (error) {
       console.error('Search error:', error);
-      setResults([]);
+      if (request === searchRequest.current) { setResults([]); setSearchError(true); }
     } finally {
-      setIsLoading(false);
+      if (request === searchRequest.current) setIsLoading(false);
     }
   };
 
   const clearFilters = () => {
+    searchRequest.current++;
+    setIsLoading(false);
+    setSearchError(false); setSubmittedQuery(''); setContentResults(null);
     setQuery(''); setLocation(''); setCompany(''); setInstitution(''); setHomeInstance('');
     setResults([]); setSearchParams({});
   };
@@ -68,7 +113,7 @@ export default function Search() {
   const hasActiveFilters = query || location || company || institution || homeInstance;
 
   const getInstanceDisplay = (instance: string | null) => {
-    if (!instance) return '@local';
+    if (!instance || instance === 'local') return '@nolto.social';
     return `@${instance}`;
   };
 
@@ -100,30 +145,31 @@ export default function Search() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    {t("search.nameOrUsername")}
+                    {t(activeTab === 'people' ? "search.nameOrUsername" : "search.searchButton")}
                   </label>
-                  <Input placeholder={t("search.nameOrUsernamePlaceholder")} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
+                  <Input aria-label={activeTab === 'people' ? t("search.nameOrUsername") : t("search.searchLabel")} placeholder={activeTab === 'people' ? t("search.nameOrUsernamePlaceholder") : t("globalSearch.placeholder")} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
+                {activeTab === 'people' && <>
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     {t("search.locationLabel")}
                   </label>
-                  <Input placeholder={t("search.locationPlaceholder")} value={location} onChange={(e) => setLocation(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
+                  <Input aria-label={t("search.locationLabel")} placeholder={t("search.locationPlaceholder")} value={location} onChange={(e) => setLocation(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                     {t("search.worksAt")}
                   </label>
-                  <Input placeholder={t("search.worksAtPlaceholder")} value={company} onChange={(e) => setCompany(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
+                  <Input aria-label={t("search.worksAt")} placeholder={t("search.worksAtPlaceholder")} value={company} onChange={(e) => setCompany(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <GraduationCap className="h-4 w-4 text-muted-foreground" />
                     {t("search.studiedAt")}
                   </label>
-                  <Input placeholder={t("search.studiedAtPlaceholder")} value={institution} onChange={(e) => setInstitution(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSearch()} />
+                  <Input aria-label={t("search.studiedAt")} placeholder={t("search.studiedAtPlaceholder")} value={institution} onChange={(e) => setInstitution(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
@@ -131,7 +177,7 @@ export default function Search() {
                     {t("search.instance")}
                   </label>
                   <Select value={homeInstance} onValueChange={setHomeInstance}>
-                    <SelectTrigger>
+                    <SelectTrigger aria-label={t("search.instance")}>
                       <SelectValue placeholder={t("search.allInstances")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -143,6 +189,7 @@ export default function Search() {
                     </SelectContent>
                   </Select>
                 </div>
+                </>}
                 <Button onClick={handleSearch} className="w-full" disabled={isLoading}>
                   {isLoading ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("search.searching")}</>) : (<><SearchIcon className="h-4 w-4 mr-2" />{t("search.searchButton")}</>)}
                 </Button>
@@ -152,16 +199,16 @@ export default function Search() {
 
           <div className="lg:col-span-3">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
+              <TabsList className="mb-4 flex h-auto flex-wrap justify-start">
                 <TabsTrigger value="people">
                   {t("search.people")}
                   {results.length > 0 && activeTab === 'people' && (
                     <Badge variant="secondary" className="ml-2">{results.length}</Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="jobs" disabled>{t("search.jobs")}</TabsTrigger>
-                <TabsTrigger value="articles" disabled>{t("search.articles")}</TabsTrigger>
-                <TabsTrigger value="events" disabled>{t("search.events")}</TabsTrigger>
+                <TabsTrigger value="jobs">{t("search.jobs")}</TabsTrigger>
+                <TabsTrigger value="articles">{t("search.articles")}</TabsTrigger>
+                <TabsTrigger value="events">{t("search.events")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="people" className="mt-0">
@@ -169,6 +216,8 @@ export default function Search() {
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                   </div>
+                ) : searchError ? (
+                  <p role="alert" className="rounded-lg border p-6 text-sm">{t("search.failed")}</p>
                 ) : results.length > 0 ? (
                   <div className="grid gap-4">
                     {results.map((profile) => (
@@ -215,6 +264,24 @@ export default function Search() {
                   </Card>
                 )}
               </TabsContent>
+              {(['jobs', 'articles', 'events'] as const).map(category => (
+                <TabsContent key={category} value={category} className="mt-0">
+                  {contentLoading ? <div role="status" className="p-12 text-center">{t("search.searching")}</div>
+                    : contentError || contentResults?.failedSources?.includes(category) ? <p role="alert" className="rounded-lg border p-6 text-sm">{t("search.failed")}</p>
+                    : contentResults?.[category].length ? <div className="grid gap-4">
+                      {contentResults[category].map(result => <Link key={result.id} to={result.url} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        <Card className="hover:bg-accent/50 transition-colors"><CardContent className="p-4">
+                          <h2 className="font-semibold">{result.title}</h2>
+                          {result.subtitle && <p className="mt-1 text-sm text-muted-foreground">{result.subtitle}</p>}
+                        </CardContent></Card>
+                      </Link>)}
+                    </div> : <Card><CardContent className="py-12 text-center">
+                      <SearchIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h2 className="font-semibold">{t(submittedQuery.length >= 2 ? "search.noResults" : "search.startSearching")}</h2>
+                      <p className="mt-2 text-sm text-muted-foreground">{t(submittedQuery.length >= 2 ? "search.noContentResults" : "search.minimumQuery")}</p>
+                    </CardContent></Card>}
+                </TabsContent>
+              ))}
             </Tabs>
           </div>
         </div>

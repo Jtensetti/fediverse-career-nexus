@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getEvent, updateEvent, Event } from '@/services/misc/eventService';
+import { getEvent, updateEvent, Event, EventWithRSVPCount } from '@/services/misc/eventService';
 import EventForm from '@/components/events/EventForm';
 import { Button } from '@/components/ui/button';
 import { SEOHead } from '@/components/common/SEOHead';
@@ -10,6 +10,7 @@ import { SEOHead } from '@/components/common/SEOHead';
 export default function EventEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation();
 
@@ -25,6 +26,10 @@ export default function EventEdit() {
     },
     onSuccess: (event) => {
       if (event) {
+        queryClient.setQueryData<EventWithRSVPCount>(['event', event.id], previous => ({
+          ...previous, ...event, rsvp_count: previous?.rsvp_count ?? 0,
+        }));
+        void queryClient.invalidateQueries({ queryKey: ['events'] });
         navigate(`/events/${event.id}`);
       }
     },

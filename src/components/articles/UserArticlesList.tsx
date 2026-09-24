@@ -8,7 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Lock, Calendar } from "lucide-react";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { stripHtml } from "@/lib/linkify";
 import FollowAuthorButton from "../social/FollowAuthorButton";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -18,6 +19,7 @@ interface UserArticlesListProps {
 }
 
 const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProps) => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
 
   const { data: articles, isLoading } = useQuery({
@@ -54,10 +56,10 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
     return (
       <div className="text-center py-8 text-muted-foreground">
         <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-        <p>Inga artiklar publicerade ännu</p>
+        <p>{t('articles.noPublished')}</p>
         {isOwnProfile && (
           <Button variant="outline" asChild className="mt-4">
-            <Link to="/articles/create">Skriv din första artikel</Link>
+            <Link to="/articles/create">{t('articles.writeFirst')}</Link>
           </Button>
         )}
       </div>
@@ -90,20 +92,18 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                   <Calendar className="h-3 w-3" />
                   <span>
-                    {article.published_at 
-                      ? format(new Date(article.published_at), 'MMM d, yyyy')
-                      : format(new Date(article.created_at), 'MMM d, yyyy')}
+                    {new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(article.published_at || article.created_at))}
                   </span>
                 </div>
 
                 {canReadFull ? (
                   <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                    {article.excerpt || article.content.substring(0, 100)}...
+                    {article.excerpt || stripHtml(article.content).substring(0, 100)}...
                   </p>
                 ) : (
                   <div className="flex items-center gap-2 mt-2">
                     <Lock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Följ för att läsa</span>
+                    <span className="text-sm text-muted-foreground">{t('articles.followToRead')}</span>
                   </div>
                 )}
 
@@ -125,7 +125,7 @@ const UserArticlesList = ({ userId, isOwnProfile = false }: UserArticlesListProp
       {!canReadFull && !isOwnProfile && (
         <div className="text-center pt-4 border-t">
           <p className="text-sm text-muted-foreground mb-3">
-            Följ för att få tillgång till alla artiklar och bli notifierad om nya
+            {t('articles.followHelp')}
           </p>
           <FollowAuthorButton authorId={userId} />
         </div>

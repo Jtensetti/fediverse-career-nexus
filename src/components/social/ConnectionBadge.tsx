@@ -1,6 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { UsersRound } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export type ConnectionDegree = 1 | 2 | 3 | null;
 
@@ -17,6 +18,7 @@ const ConnectionBadge = ({
   showIcon = true,
   size = "md" 
 }: ConnectionBadgeProps) => {
+  const { t } = useTranslation();
   if (!degree || degree > 3) return null;
   
   const sizeClasses = size === "sm" ? "text-xs py-0 px-1.5" : "text-xs py-0.5 px-2";
@@ -28,9 +30,9 @@ const ConnectionBadge = ({
   };
   
   const degreeText = {
-    1: "1st",
-    2: "2nd",
-    3: "3rd"
+    1: t("connections.firstDegreeBadge"),
+    2: t("connections.secondDegreeBadge"),
+    3: t("connections.thirdDegreeBadge")
   };
   
   return (

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 
 import { ATPROTO_LOGIN_STORAGE, clearAtprotoLogin } from '@/lib/atprotoLogin';
 
-export default function BlueskySignIn({ link = false }: { link?: boolean }) {
+export default function BlueskySignIn({ link = false, showUnavailable = false }: { link?: boolean; showUnavailable?: boolean }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [handle, setHandle] = useState('');
@@ -51,8 +51,9 @@ export default function BlueskySignIn({ link = false }: { link?: boolean }) {
     }
   };
   // No sign-in button is shown until the deployed backend explicitly enables it.
-  if (!readiness.data?.ready) return link ? <section className="rounded-lg border p-5 space-y-2">
-    <h3 className="font-semibold">Bluesky</h3><p className="text-sm text-muted-foreground">{t('bluesky.unavailable')}</p>
+  if (!readiness.data?.ready) return link || showUnavailable ? <section className="rounded-lg border p-5 space-y-2">
+    <h3 className="font-semibold">Bluesky</h3><p role="status" className="text-sm text-muted-foreground">{t(readiness.isLoading ? 'common.loading' : 'bluesky.unavailable')}</p>
+    {showUnavailable && readiness.isError && <Button variant="outline" onClick={() => void readiness.refetch()}>{t('common.retry')}</Button>}
   </section> : null;
   const site = new URL(readiness.data.siteUrl);
   if (site.protocol !== 'https:') return null;

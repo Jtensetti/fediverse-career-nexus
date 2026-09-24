@@ -22,15 +22,13 @@ const ArticleCardReactions = ({ articleId, className }: ArticleCardReactionsProp
   const totalCount = reactions.reduce((sum, r) => sum + r.count, 0);
 
   return (
-    <button className={cn(
+    <span className={cn(
       "flex items-center gap-1 hover:text-foreground transition-colors",
       className
     )}>
       <Heart className="h-4 w-4" />
-      {totalCount > 0 && (
-        <span className="text-sm">{totalCount}</span>
-      )}
-    </button>
+      <span className="text-sm">{totalCount}</span>
+    </span>
   );
 };
 

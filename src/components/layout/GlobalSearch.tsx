@@ -23,6 +23,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,20 +31,27 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
 
   // Debounced search
   useEffect(() => {
-    if (query.length < 1) {
+    let cancelled = false;
+    setHasError(false);
+    if (!query.trim()) {
       setResults(null);
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     const timeout = setTimeout(async () => {
-      const searchResults = await searchService.search(query);
-      setResults(searchResults);
-      setIsLoading(false);
-      setSelectedIndex(-1);
+      try {
+        const searchResults = await searchService.search(query.trim());
+        if (!cancelled) setResults(searchResults);
+      } catch {
+        if (!cancelled) { setResults(null); setHasError(true); }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
     }, 300);
 
-    return () => clearTimeout(timeout);
+    return () => { cancelled = true; clearTimeout(timeout); };
   }, [query]);
 
   // Close on click outside
@@ -63,7 +71,28 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
     : [];
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen || allResults.length === 0) return;
+    if (e.nativeEvent.isComposing) return;
+
+    if (e.key === "Escape") {
+      setIsOpen(false);
+      setSelectedIndex(-1);
+      return;
+    }
+    if (e.key === "Enter") {
+      const selected = isOpen && !isLoading && selectedIndex >= 0 ? allResults[selectedIndex] : undefined;
+      if (selected) {
+        e.preventDefault();
+        handleResultClick(selected);
+      } else if (query.trim()) {
+        e.preventDefault();
+        navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+        setIsOpen(false);
+        setQuery("");
+        onResultClick?.();
+      }
+      return;
+    }
+    if (!isOpen || isLoading || allResults.length === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -71,14 +100,6 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : allResults.length - 1));
-    } else if (e.key === "Enter" && selectedIndex >= 0) {
-      e.preventDefault();
-      const selected = allResults[selectedIndex];
-      navigate(selected.url);
-      setIsOpen(false);
-      setQuery("");
-    } else if (e.key === "Escape") {
-      setIsOpen(false);
     }
   };
 
@@ -124,11 +145,11 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
           const globalIndex = startIndex + index;
           return (
             <ProfileHoverCard 
+              key={result.id}
               username={type === 'profile' ? result.id : undefined}
               disabled={type !== 'profile'}
             >
               <button
-                key={result.id}
                 onClick={() => handleResultClick(result)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 hover:bg-accent transition-colors text-left",
@@ -165,9 +186,13 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           ref={inputRef}
+          type="search"
+          aria-label={t("search.searchLabel")}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
+            setSelectedIndex(-1);
+            setResults(null);
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
@@ -180,6 +205,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
           <Button
             variant="ghost"
             size="sm"
+            aria-label={t("search.clearSearch")}
             className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
             onClick={() => {
               setQuery("");
@@ -203,6 +229,8 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
+          ) : hasError || results?.failedSources?.length === 4 ? (
+            <div role="alert" className="p-4 text-sm">{t("search.failed")}</div>
           ) : results && results.total > 0 ? (
             <div className="py-2">
               {renderSection(results.profiles, 'profile')}
@@ -212,8 +240,11 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
-              {t("globalSearch.noResults")} "{query}"
+              {query.trim().length < 2 ? t("search.minimumQuery") : <>{t("globalSearch.noResults")} "{query}"</>}
             </div>
+          )}
+          {!!results?.failedSources?.length && results.failedSources.length < 4 && (
+            <p role="status" className="px-3 py-2 text-xs text-muted-foreground">{t("search.partialFailure")}</p>
           )}
           
           {/* Link to advanced search */}
