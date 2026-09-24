@@ -25,7 +25,7 @@ export default function EventCreate() {
         queryClient.setQueryData(['event', event.id], { ...event, rsvp_count: 0 });
         void queryClient.invalidateQueries({ queryKey: ['events'] });
         toast.success(t('eventCreate.success'));
-        navigate(`/events/${event.id}`);
+        confirmDiscard(() => navigate(`/events/${event.id}`));
       }
     },
     onError: (error) => {

@@ -9,6 +9,7 @@ import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<div id="root"></div>', { url: 'https://example.invalid/events/test-event' });
 for (const name of ['window', 'document', 'HTMLElement', 'HTMLInputElement', 'HTMLButtonElement', 'Node', 'NodeFilter', 'DocumentFragment', 'Event', 'MouseEvent', 'CustomEvent', 'MutationObserver', 'FileList']) globalThis[name] = dom.window[name];
 globalThis.getComputedStyle = dom.window.getComputedStyle;
+globalThis.window.confirm = () => true;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
 dom.window.HTMLElement.prototype.scrollIntoView = () => {};
