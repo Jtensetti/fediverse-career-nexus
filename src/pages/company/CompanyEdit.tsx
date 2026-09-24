@@ -56,7 +56,7 @@ export default function CompanyEdit() {
       toast.error(error.message || t("companies.updateError", "Failed to update company"));
     },
   });
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !updateMutation.isPending, message: t("common.discardChangesConfirm") });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !updateMutation.isPending, message: t("profileEdit.unsavedChanges") });
 
   if (isLoading || authLoading || checkingAccess) {
     return (

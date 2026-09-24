@@ -20,7 +20,7 @@ const JobEdit = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("common.discardChangesConfirm") });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("profileEdit.unsavedChanges") });
   
   useEffect(() => {
     if (!loading && !user) {
@@ -65,7 +65,7 @@ const JobEdit = () => {
       setIsDirty(false);
       navigate(`/jobs/${id}`);
     } else {
-      setSubmitError(t("jobEdit.updateFailed"));
+      setSubmitError(t("common.error"));
     }
   };
   

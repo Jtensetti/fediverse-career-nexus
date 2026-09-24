@@ -59,7 +59,7 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
       onUpdated();
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || tx("ui.postEditDialog.updateFailed"));
+      toast.error(err.message || tx("toasts.postUpdateFailed"));
     } finally {
       setLoading(false);
     }

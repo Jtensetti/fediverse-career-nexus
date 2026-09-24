@@ -16,7 +16,7 @@ export default function EventEdit() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation();
   const [isDirty, setIsDirty] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('common.discardChangesConfirm') });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('profileEdit.unsavedChanges') });
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -37,7 +37,7 @@ export default function EventEdit() {
         navigate(`/events/${event.id}`);
       }
     },
-    onError: () => toast.error(t('eventEdit.updateFailed')),
+    onError: () => toast.error(t('common.error')),
     onSettled: () => {
       setIsSubmitting(false);
     }

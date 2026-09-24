@@ -117,7 +117,7 @@ export async function searchCompanies(filters: CompanyFilters = {}, limit = 20, 
 
   if (error) {
     console.error('Error searching companies:', error);
-    return [];
+    throw error;
   }
 
   return data || [];
@@ -134,7 +134,7 @@ export async function getCompanies(limit = 20, offset = 0): Promise<Company[]> {
 
   if (error) {
     console.error('Error fetching companies:', error);
-    return [];
+    throw error;
   }
 
   return data || [];

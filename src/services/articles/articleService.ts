@@ -222,7 +222,6 @@ export const getArticleBySlug = async (slugOrId: string): Promise<Article | null
 
 // Get all published articles
 export const getPublishedArticles = async (): Promise<Article[]> => {
-  try {
     const { data, error } = await supabase
       .from('articles')
       .select('*')
@@ -231,16 +230,9 @@ export const getPublishedArticles = async (): Promise<Article[]> => {
       .order('published_at', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
     
-    if (error) {
-      console.error('Error fetching published articles:', error);
-      return [];
-    }
+    if (error) throw error;
     
     return (data || []).map(normalizeArticle);
-  } catch (error) {
-    console.error('Error fetching published articles:', error);
-    return [];
-  }
 };
 
 // Get user's articles (both drafts and published)

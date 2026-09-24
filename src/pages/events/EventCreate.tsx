@@ -16,7 +16,7 @@ export default function EventCreate() {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('common.discardChangesConfirm') });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('profileEdit.unsavedChanges') });
 
   const createMutation = useMutation({
     mutationFn: (eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => createEvent(eventData),

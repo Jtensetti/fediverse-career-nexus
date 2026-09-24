@@ -16,7 +16,7 @@ export default function CompanyCreate() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("common.discardChangesConfirm") });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("profileEdit.unsavedChanges") });
 
   const handleSubmit = async (data: CompanyFormData) => {
     setIsSubmitting(true);

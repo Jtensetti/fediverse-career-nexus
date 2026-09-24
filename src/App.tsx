@@ -12,6 +12,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
+import { MotionConfig } from "framer-motion";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
@@ -152,6 +153,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <MotionConfig reducedMotion="user">
           <TooltipProvider>
             <ErrorBoundary>
               <BrowserRouter>
@@ -377,6 +379,7 @@ function App() {
               </BrowserRouter>
             </ErrorBoundary>
           </TooltipProvider>
+          </MotionConfig>
         </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>

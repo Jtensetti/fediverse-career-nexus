@@ -17,7 +17,7 @@ const JobCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<{ message: string; details?: string } | null>(null);
   const [isDirty, setIsDirty] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("common.discardChangesConfirm") });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("profileEdit.unsavedChanges") });
 
   useEffect(() => {
     if (!loading && !user) {

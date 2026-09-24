@@ -168,7 +168,6 @@ export const getJobPosts = async (options?: {
 
 // Alias for backward compatibility
 export const getPublishedJobPosts = async (filters?: JobPostFilter): Promise<JobPost[]> => {
-  try {
     let query = supabase
       .from('job_posts')
       .select('*')
@@ -203,10 +202,6 @@ export const getPublishedJobPosts = async (filters?: JobPostFilter): Promise<Job
 
     if (error) throw error;
     return (data || []).map(enrichJobPost);
-  } catch (error) {
-    console.error('Error fetching published job posts:', error);
-    return [];
-  }
 };
 
 // Alias for backward compatibility
