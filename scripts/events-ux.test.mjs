@@ -84,8 +84,9 @@ async function render(component, path = '/events/test-event', seed = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity, staleTime: 60_000 }, mutations: { retry: false, gcTime: Infinity } } });
   if (seed) client.setQueryData(['event', fixture.id], { ...fixture });
   client.setQueryData(['events', 'upcoming'], [fixture]);
-  const router = createMemoryRouter(routes(), { initialEntries: [path] });
-  await act(async () => root.render(h(QueryClientProvider, { client }, h(RouterProvider, { router }))));
+  const isStandaloneForm = component?.type === EventForm;
+  const rendered = isStandaloneForm ? component : h(RouterProvider, { router: createMemoryRouter(routes(), { initialEntries: [path] }) });
+  await act(async () => root.render(h(QueryClientProvider, { client }, rendered)));
   await flush();
   return { client, cleanup: async () => { await act(async () => root.unmount()); client.clear(); } };
 }
