@@ -6,10 +6,11 @@ import App from "./App.tsx";
 import "./index.css";
 import "./lib/zodLocale";
 
-// Remount on language change so copy resolved outside hooks (tx) updates everywhere.
+// Subscribes to language changes and re-renders the tree in place, so tx()/dateLocale()
+// values resolved during render update while component, form, query and router state persist.
 function LocalizedApp() {
-  const { i18n: instance } = useTranslation();
-  return <App key={instance.resolvedLanguage ?? instance.language} />;
+  useTranslation();
+  return <App />;
 }
 
 const render = () => createRoot(document.getElementById("root")!).render(

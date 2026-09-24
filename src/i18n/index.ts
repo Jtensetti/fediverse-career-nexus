@@ -1,5 +1,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { toast } from "sonner";
+import { createLanguageSwitcher, type SwitchResult } from "./switcher";
 
 // Only the active language (plus the English fallback) is fetched; each locale is its own lazy chunk.
 const loaders = import.meta.glob<{ default: Record<string, unknown> }>("./locales/*.json");
@@ -36,11 +38,20 @@ function syncDocument(language: string) {
   if (typeof document !== "undefined") document.documentElement.lang = language;
 }
 
-export async function changeLanguage(language: string, persist = true) {
-  const next = pick(language) ?? "sv";
-  await Promise.all([ensureResources(next), next === "en" ? null : ensureResources("en")]);
-  if (persist) { try { localStorage.setItem(LANGUAGE_STORAGE_KEY, next); } catch { /* storage unavailable */ } }
-  await i18n.changeLanguage(next);
+const switchLanguage = createLanguageSwitcher({
+  load: async language => { await Promise.all([ensureResources(language), language === "en" ? null : ensureResources("en")]); },
+  apply: language => i18n.changeLanguage(language),
+  persist: language => { try { localStorage.setItem(LANGUAGE_STORAGE_KEY, language); } catch { /* storage unavailable */ } },
+  // Shown in the still-active previous language; the selection is not changed.
+  onError: (language, error) => {
+    console.error(`Failed to load language resources for ${language}`, error);
+    if (i18n.isInitialized) toast.error(i18n.t("language.loadFailed"));
+  },
+});
+
+/** Switch language in place (no remount). Returns "failed" and keeps the current language if loading fails. */
+export function changeLanguage(language: string, persist = true): Promise<SwitchResult> {
+  return switchLanguage(pick(language) ?? "sv", persist);
 }
 
 i18n.on("languageChanged", syncDocument);
@@ -56,8 +67,10 @@ export async function initI18n() {
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
   });
-  await changeLanguage(initial, false);
-  syncDocument(initial);
+  const result = await changeLanguage(initial, false);
+  // A missing locale chunk at startup falls back to Swedish rather than blank keys.
+  if (result === "failed" && initial !== "sv") await changeLanguage("sv", false);
+  syncDocument(i18n.language);
 }
 
 export default i18n;
