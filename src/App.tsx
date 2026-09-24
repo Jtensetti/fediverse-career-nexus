@@ -2,7 +2,8 @@ import SocialCallback from '@/pages/auth/SocialCallback';
 import React, { lazy, Suspense } from "react";
 
 import {
-  BrowserRouter,
+  createBrowserRouter,
+  RouterProvider,
   Routes,
   Route,
   Navigate,
