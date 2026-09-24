@@ -71,6 +71,7 @@ export default function CompanyCreate() {
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             onDirtyChange={setIsDirty}
+            onCancel={() => confirmDiscard(() => navigate('/organisationer'))}
           />
         </div>
       </main>

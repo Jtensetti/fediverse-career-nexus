@@ -149,6 +149,7 @@ export default function CompanyEdit() {
             submitButtonText={t("common.saveChanges", "Save Changes")}
             isEdit
             onDirtyChange={setIsDirty}
+            onCancel={() => confirmDiscard(() => navigate(`/organisation/${slug}`))}
           />
         </div>
       </main>

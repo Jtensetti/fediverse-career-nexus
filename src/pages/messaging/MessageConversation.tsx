@@ -183,12 +183,15 @@ export default function MessageConversation() {
     },
     onError: (error) => {
       console.error('Failed to send message:', error);
-      toast.error(tx("ui.messageConversation.kundeInteSkickaMeddelande"), { description: error instanceof Error ? error.message : "Försök igen" });
+       toast.error(tx("ui.messageConversation.kundeInteSkickaMeddelande"), { description: error instanceof Error ? error.message : tx("common.retry") });
     }
   });
 
   async function loadOlder() {
     if (!conversationId || !data?.next || loadingOlder) return;
+    const container = messagesContainerRef.current;
+    const previousHeight = container?.scrollHeight ?? 0;
+    const previousTop = container?.scrollTop ?? 0;
     setLoadingOlder(true);
     try {
       const page = await getMessagePage(conversationId, data.next);
@@ -196,6 +199,9 @@ export default function MessageConversation() {
         ...previous, next: page.next,
         messages: [...page.messages, ...previous.messages.filter(message => !page.messages.some(item => item.id === message.id))],
       } : previous);
+      requestAnimationFrame(() => {
+        if (container) container.scrollTop = previousTop + container.scrollHeight - previousHeight;
+      });
     } catch {
       toast.error(tx("ui.messageConversation.kundeInteLasaAldre"));
     } finally { setLoadingOlder(false); }
@@ -231,7 +237,7 @@ export default function MessageConversation() {
   // Handle loading and error states
   if (authLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -243,7 +249,7 @@ export default function MessageConversation() {
 
   if (!currentUserId) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center">
@@ -262,11 +268,11 @@ export default function MessageConversation() {
     );
   }
 
-  if (!inboxReady) return <div className="min-h-screen flex flex-col"><Navbar /><main className="flex-grow container max-w-4xl px-4 py-10"><Button variant="link" onClick={() => navigate('/messages')}>{tx("ui.messageConversation.tillMeddelanden")}</Button><EncryptedInbox partnerId={conversationId} /></main><Footer /></div>;
+  if (!inboxReady) return <div className="min-h-dvh flex flex-col"><Navbar /><main className="flex-grow container max-w-4xl px-4 py-10"><Button variant="link" onClick={() => navigate('/messages')}>{tx("ui.messageConversation.tillMeddelanden")}</Button><EncryptedInbox partnerId={conversationId} /></main><Footer /></div>;
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <Card>
@@ -302,7 +308,7 @@ export default function MessageConversation() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center py-8">
@@ -326,7 +332,7 @@ export default function MessageConversation() {
   const conversationTitle = otherUser?.fullname || otherUser?.username || 'Messages';
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-dvh flex flex-col">
       <SEOHead
         title={`Chat with ${conversationTitle}`}
         description={tx("ui.messageConversation.privateConversationOnNolto")}
@@ -334,7 +340,7 @@ export default function MessageConversation() {
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
         <EncryptedInbox partnerId={conversationId} />
-        <Card className="flex flex-col h-[calc(100vh-200px)]">
+        <Card className="flex flex-col h-[calc(100dvh-200px)] min-h-[28rem]">
           <CardHeader className="border-b">
             <div className="flex items-center space-x-4">
               <Avatar>

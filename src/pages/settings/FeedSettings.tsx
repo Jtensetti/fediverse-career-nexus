@@ -218,7 +218,7 @@ const FeedSettings = () => {
                   {(localPrefs.muted_words || []).map((word) => (
                     <Badge key={word} variant="secondary" className="flex items-center gap-1 pr-1">
                       {word}
-                      <Button variant="ghost" size="icon" className="h-4 w-4 p-0 hover:bg-transparent" onClick={() => handleRemoveMutedWord(word)}>
+                      <Button variant="ghost" size="icon" className="h-11 w-11 p-0 hover:bg-transparent" aria-label={`${t('common.remove')}: ${word}`} onClick={() => handleRemoveMutedWord(word)}>
                         <X className="h-3 w-3" />
                       </Button>
                     </Badge>

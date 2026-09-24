@@ -82,6 +82,7 @@ interface CompanyFormProps {
   submitButtonText?: string;
   isEdit?: boolean;
   onDirtyChange?: (dirty: boolean) => void;
+  onCancel?: () => void;
 }
 
 export default function CompanyForm({
@@ -91,6 +92,7 @@ export default function CompanyForm({
   submitButtonText,
   isEdit = false,
   onDirtyChange,
+  onCancel,
 }: CompanyFormProps) {
   const { t } = useTranslation();
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
@@ -392,6 +394,11 @@ export default function CompanyForm({
         </Card>
 
         <div className="flex justify-end gap-3">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+              {t("common.cancel")}
+            </Button>
+          )}
           <Button 
             type="submit" 
             disabled={isSubmitting || checkingSlug || (!isEdit && slugAvailable === false)}
