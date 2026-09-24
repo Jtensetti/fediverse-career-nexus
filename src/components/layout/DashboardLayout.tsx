@@ -20,7 +20,7 @@ const DashboardLayout = ({
   disableSEO = false,
 }: DashboardLayoutProps) => {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-dvh flex flex-col bg-background">
       {/* Auto-set SEO if title is provided and not disabled */}
       {!disableSEO && title && <SEOHead title={title} description={description} />}
       

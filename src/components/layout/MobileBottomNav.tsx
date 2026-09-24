@@ -1,6 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Search, Plus, MessageSquare, User } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -26,6 +25,7 @@ export default function MobileBottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border md:hidden"
+      data-mobile-bottom-nav
       role="navigation"
       aria-label={t('nav.mobile')}
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0.5rem)' }}
@@ -46,17 +46,10 @@ export default function MobileBottomNav() {
               aria-label={t(label)}
               aria-current={isActive ? "page" : undefined}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="bottomNavIndicator"
-                  className="absolute top-1 w-8 h-1 bg-primary rounded-full"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
+              {isActive && <span aria-hidden="true" className="absolute top-1 h-1 w-8 rounded-full bg-primary" />}
               <Icon
                 className={cn(
-                  "h-5 w-5 mb-1 transition-transform",
-                  isActive && "scale-110"
+                  "h-5 w-5 mb-1"
                 )}
                 fill={isActive ? "currentColor" : "none"}
                 strokeWidth={isActive ? 2.5 : 2}
@@ -71,13 +64,9 @@ export default function MobileBottomNav() {
           className="relative flex items-center justify-center -mt-6"
           aria-label={t('feed.createPost')}
         >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-          >
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30">
             <Plus className="h-6 w-6" />
-          </motion.div>
+          </span>
         </NavLink>
 
         {navItems.slice(2).map(({ to, icon: Icon, label }) => {
@@ -95,17 +84,10 @@ export default function MobileBottomNav() {
               aria-label={t(label)}
               aria-current={isActive ? "page" : undefined}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="bottomNavIndicator"
-                  className="absolute top-1 w-8 h-1 bg-primary rounded-full"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
+              {isActive && <span aria-hidden="true" className="absolute top-1 h-1 w-8 rounded-full bg-primary" />}
               <Icon
                 className={cn(
-                  "h-5 w-5 mb-1 transition-transform",
-                  isActive && "scale-110"
+                  "h-5 w-5 mb-1"
                 )}
                 fill={isActive ? "currentColor" : "none"}
                 strokeWidth={isActive ? 2.5 : 2}

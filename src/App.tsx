@@ -160,7 +160,7 @@ function App() {
                 <Toaster {...toasterConfig} />
                 <SessionExpiryWarning />
                 <AlertBanner />
-                <main id="main-content">
+                <div id="main-content">
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     {/* Public routes */}
@@ -371,7 +371,7 @@ function App() {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   </Suspense>
-                </main>
+                </div>
                 <MobileBottomNav />
                 </AuthProvider>
               </BrowserRouter>
@@ -389,7 +389,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (loading || mfaPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">{tx("ui.app.laddar")}</p>

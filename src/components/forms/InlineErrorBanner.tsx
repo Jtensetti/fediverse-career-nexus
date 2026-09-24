@@ -20,9 +20,9 @@ export function InlineErrorBanner({
   className = "",
 }: InlineErrorBannerProps) {
   const Icon = variant === "error" ? XCircle : AlertTriangle;
-  const bgColor = variant === "error" ? "bg-destructive/10" : "bg-yellow-500/10";
-  const borderColor = variant === "error" ? "border-destructive/50" : "border-yellow-500/50";
-  const textColor = variant === "error" ? "text-destructive" : "text-yellow-700 dark:text-yellow-400";
+  const bgColor = variant === "error" ? "bg-destructive/10" : "bg-warning/10";
+  const borderColor = variant === "error" ? "border-destructive/50" : "border-warning/50";
+  const textColor = variant === "error" ? "text-destructive" : "text-warning-foreground";
 
   return (
     <div
