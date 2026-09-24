@@ -42,7 +42,3 @@ export function useUnsavedChanges({ dirty, message }: UnsavedChangesOptions) {
     }
   }, [dirty, message]);
 }
-
-export function useAllowUnsavedNavigation() {
-  return useCallback((action: () => void) => action(), []);
-}
