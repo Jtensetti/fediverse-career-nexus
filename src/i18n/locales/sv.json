@@ -4035,6 +4035,7 @@
     "invalid": "Ogiltigt värde"
   },
   "language": {
-    "label": "Språk"
+    "label": "Språk",
+    "loadFailed": "Språket kunde inte laddas. Kontrollera anslutningen och försök igen."
   }
 }

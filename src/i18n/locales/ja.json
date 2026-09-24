@@ -3883,7 +3883,8 @@
     "invalid": "無効な値"
   },
   "language": {
-    "label": "言語"
+    "label": "言語",
+    "loadFailed": "言語を読み込めませんでした。接続を確認して、もう一度お試しください。"
   },
   "legalDocs": {
     "privacy": {
