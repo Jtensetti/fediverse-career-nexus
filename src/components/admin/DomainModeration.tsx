@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { tx } from "@/i18n/tx";
 interface DomainEntry {
   host: string;
   reason: string;
@@ -115,7 +116,7 @@ export default function DomainModeration() {
         setReason("");
         fetchDomains();
         
-        toast("Domän tillagd", { description: `${host} har lagts till i ${status}-listan` });
+        toast(tx("ui.domainModeration.domanTillagd"), { description: `${host} har lagts till i ${status}-listan` });
       } else {
         setError("Kunde inte lägga till domän");
       }
@@ -139,13 +140,13 @@ export default function DomainModeration() {
         setIsEditDialogOpen(false);
         fetchDomains();
         
-        toast("Domän uppdaterad", { description: `${currentDomain.host} har uppdaterats till ${editStatus}` });
+        toast(tx("ui.domainModeration.domanUppdaterad"), { description: `${currentDomain.host} har uppdaterats till ${editStatus}` });
       } else {
-        toast.error("Uppdatering misslyckades", { description: "Kunde inte uppdatera domänstatus" });
+        toast.error(tx("ui.domainModeration.uppdateringMisslyckades"), { description: tx("ui.domainModeration.kundeInteUppdateraDomanstatus") });
       }
     } catch (err) {
       console.error(err);
-      toast.error("Uppdatering misslyckades", { description: "Ett fel uppstod vid uppdatering" });
+      toast.error(tx("ui.domainModeration.uppdateringMisslyckades"), { description: tx("ui.domainModeration.ettFelUppstodVid") });
     }
   };
 
@@ -159,13 +160,13 @@ export default function DomainModeration() {
         setIsDeleteDialogOpen(false);
         fetchDomains();
         
-        toast("Domän borttagen", { description: `${domainToDelete} har tagits bort från moderering` });
+        toast(tx("ui.domainModeration.domanBorttagen"), { description: `${domainToDelete} har tagits bort från moderering` });
       } else {
-        toast.error("Borttagning misslyckades", { description: "Kunde inte ta bort domän" });
+        toast.error(tx("ui.domainModeration.borttagningMisslyckades"), { description: tx("ui.domainModeration.kundeInteTaBort") });
       }
     } catch (err) {
       console.error(err);
-      toast.error("Borttagning misslyckades", { description: "Ett fel uppstod vid borttagning" });
+      toast.error(tx("ui.domainModeration.borttagningMisslyckades"), { description: tx("ui.domainModeration.ettFelUppstodVid2") });
     } finally {
       setDomainToDelete(null);
     }
@@ -186,11 +187,11 @@ export default function DomainModeration() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'blocked':
-        return <Badge variant="destructive">Blockerad</Badge>;
+        return <Badge variant="destructive">{tx("ui.domainModeration.blockerad")}</Badge>;
       case 'probation':
-        return <Badge variant="outline" className="text-amber-500 border-amber-500">Prövotid</Badge>;
+        return <Badge variant="outline" className="text-amber-500 border-amber-500">{tx("ui.domainModeration.provotid")}</Badge>;
       default:
-        return <Badge variant="secondary">Normal</Badge>;
+        return <Badge variant="secondary">{tx("ui.domainModeration.normal")}</Badge>;
     }
   };
 
@@ -198,45 +199,45 @@ export default function DomainModeration() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Lägg till domänmoderering</CardTitle>
+          <CardTitle>{tx("ui.domainModeration.laggTillDomanmoderering")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="host" className="block text-sm font-medium mb-1">
-                  Domänvärd
+                  {tx("ui.domainModeration.domanvard")}
                 </label>
                 <Input
                   id="host"
-                  placeholder="exempel.social"
+                  placeholder={tx("ui.domainModeration.exempelSocial")}
                   value={host}
                   onChange={(e) => setHost(e.target.value)}
                 />
               </div>
               <div>
                 <label htmlFor="status" className="block text-sm font-medium mb-1">
-                  Status
+                  {tx("ui.domainModeration.status")}
                 </label>
                 <Select value={status} onValueChange={(value) => setStatus(value as any)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Välj status" />
+                    <SelectValue placeholder={tx("ui.domainModeration.valjStatus")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="probation">Prövotid</SelectItem>
-                    <SelectItem value="blocked">Blockerad</SelectItem>
+                    <SelectItem value="normal">{tx("ui.domainModeration.normal")}</SelectItem>
+                    <SelectItem value="probation">{tx("ui.domainModeration.provotid")}</SelectItem>
+                    <SelectItem value="blocked">{tx("ui.domainModeration.blockerad")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div>
               <label htmlFor="reason" className="block text-sm font-medium mb-1">
-                Reason
+                {tx("ui.domainModeration.reason")}
               </label>
               <Textarea
                 id="reason"
-                placeholder="Anledning till moderering"
+                placeholder={tx("ui.domainModeration.anledningTillModerering")}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
@@ -261,16 +262,16 @@ export default function DomainModeration() {
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={fetchDomains} disabled={loading}>
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {tx("ui.domainModeration.refresh")}
           </Button>
           <Button onClick={handleAddDomain} disabled={loading || !host || !reason}>
-            Add Domain
+            {tx("ui.domainModeration.addDomain")}
           </Button>
         </CardFooter>
       </Card>
       
       <div>
-        <h3 className="text-lg font-medium mb-4">Domänmoderationslista</h3>
+        <h3 className="text-lg font-medium mb-4">{tx("ui.domainModeration.domanmoderationslista")}</h3>
         
         {loading ? (
           <div className="animate-pulse space-y-3">
@@ -279,13 +280,13 @@ export default function DomainModeration() {
           </div>
         ) : domains.length > 0 ? (
           <Table>
-            <TableCaption>Lista över domäner med modereringsstatus</TableCaption>
+            <TableCaption>{tx("ui.domainModeration.listaOverDomanerMed")}</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Domän</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Anledning</TableHead>
-                <TableHead className="w-[180px]">Åtgärder</TableHead>
+                <TableHead>{tx("ui.domainModeration.doman")}</TableHead>
+                <TableHead>{tx("ui.domainModeration.status")}</TableHead>
+                <TableHead>{tx("ui.domainModeration.anledning")}</TableHead>
+                <TableHead className="w-[180px]">{tx("ui.domainModeration.atgarder")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -297,7 +298,7 @@ export default function DomainModeration() {
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => openEditDialog(domain)}>
-                        Edit
+                        {tx("ui.domainModeration.edit")}
                       </Button>
                       <Button variant="destructive" size="sm" onClick={() => confirmDelete(domain.host)}>
                         <Trash2 className="h-4 w-4" />
@@ -310,7 +311,7 @@ export default function DomainModeration() {
           </Table>
         ) : (
           <div className="text-center p-8 border border-dashed rounded-md">
-            <p className="text-muted-foreground">Inga domänmodereringsposterna hittades</p>
+            <p className="text-muted-foreground">{tx("ui.domainModeration.ingaDomanmodereringsposternaHittades")}</p>
           </div>
         )}
       </div>
@@ -319,29 +320,29 @@ export default function DomainModeration() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Redigera domänmoderering</DialogTitle>
+            <DialogTitle>{tx("ui.domainModeration.redigeraDomanmoderering")}</DialogTitle>
             <DialogDescription>
-              Uppdatera modereringsinställningar för {currentDomain?.host}
+              {tx("ui.domainModeration.uppdateraModereringsinstallningarFor")}{' '}{currentDomain?.host}
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <label htmlFor="edit-status">Status</label>
+              <label htmlFor="edit-status">{tx("ui.domainModeration.status")}</label>
               <Select value={editStatus} onValueChange={(value) => setEditStatus(value as any)}>
                 <SelectTrigger id="edit-status">
-                  <SelectValue placeholder="Välj status" />
+                  <SelectValue placeholder={tx("ui.domainModeration.valjStatus")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="probation">Prövotid</SelectItem>
-                  <SelectItem value="blocked">Blockerad</SelectItem>
+                  <SelectItem value="normal">{tx("ui.domainModeration.normal")}</SelectItem>
+                  <SelectItem value="probation">{tx("ui.domainModeration.provotid")}</SelectItem>
+                  <SelectItem value="blocked">{tx("ui.domainModeration.blockerad")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="grid gap-2">
-              <label htmlFor="edit-reason">Anledning</label>
+              <label htmlFor="edit-reason">{tx("ui.domainModeration.anledning")}</label>
               <Textarea
                 id="edit-reason"
                 value={editReason}
@@ -353,10 +354,10 @@ export default function DomainModeration() {
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancel
+              {tx("ui.domainModeration.cancel")}
             </Button>
             <Button onClick={handleEditDomain}>
-              Save Changes
+              {tx("ui.domainModeration.saveChanges")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -366,18 +367,18 @@ export default function DomainModeration() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bekräfta borttagning</DialogTitle>
+            <DialogTitle>{tx("ui.domainModeration.bekraftaBorttagning")}</DialogTitle>
             <DialogDescription>
-              Är du säker på att du vill ta bort {domainToDelete} från moderering?
+              {tx("ui.domainModeration.arDuSakerPa")}{' '}{domainToDelete}{' '}{tx("ui.domainModeration.franModerering")}
             </DialogDescription>
           </DialogHeader>
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
+              {tx("ui.domainModeration.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleDeleteDomain}>
-              Delete
+              {tx("ui.domainModeration.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

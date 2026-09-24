@@ -1,9 +1,10 @@
+import { dateLocale } from "@/lib/locale";
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
-import { sv } from 'date-fns/locale';
+
 
 import { Conversation, getConversations, getOtherParticipant } from '@/services/messaging/messageService';
 import { getReceivedMessageRequests, MessageRequest } from '@/services/messaging/messageRequestService';
@@ -22,6 +23,7 @@ import { Loader2, Users, MessageSquare, Inbox } from 'lucide-react';
 import { SEOHead } from '@/components/common/SEOHead';
 import EncryptedInbox from '@/components/messaging/EncryptedInbox';
 
+import { tx } from "@/i18n/tx";
 export default function Messages() {
   const { t } = useTranslation();
 
@@ -219,7 +221,7 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
   // Get the last message time
   const { t } = useTranslation();
   const lastMessageTime = conversation.last_message_at
-    ? formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true, locale: sv })
+    ? formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true, locale: dateLocale() })
     : t("messages.noMessagesYet");
 
   if (isLoading) {
@@ -246,7 +248,7 @@ function ConversationItem({ conversation, currentUserId }: ConversationItemProps
             <Avatar className="h-12 w-12">
               <AvatarImage src={otherUser?.avatar_url} />
               <AvatarFallback>
-                {otherUser?.username?.substring(0, 2).toUpperCase() || 'UN'}
+                {otherUser?.username?.substring(0, 2).toUpperCase() || tx("ui.messages.un")}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">

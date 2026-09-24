@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Check, Globe } from "lucide-react";
 
+import { tx } from "@/i18n/tx";
 interface FediverseBadgeProps {
   homeInstance: string;
   className?: string;
@@ -19,13 +20,13 @@ const FediverseBadge = ({ homeInstance, className }: FediverseBadgeProps) => {
             className={`bg-primary hover:bg-primary/90 text-primary-foreground inline-flex items-center gap-1 ${className || ''}`}
           >
             <Check size={12} />
-            <span className="text-xs">Verified via {homeInstance}</span>
+            <span className="text-xs">{tx("ui.fediverseBadge.verifiedVia")}{' '}{homeInstance}</span>
           </Badge>
         </TooltipTrigger>
         <TooltipContent>
           <p className="flex items-center gap-1">
             <Globe size={14} />
-            This user's identity is verified through their Fediverse account on {homeInstance}
+            {tx("ui.fediverseBadge.thisUserSIdentity")}{' '}{homeInstance}
           </p>
         </TooltipContent>
       </Tooltip>

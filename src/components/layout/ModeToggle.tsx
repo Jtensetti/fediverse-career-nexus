@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
+import { tx } from "@/i18n/tx";
 export function ModeToggle() {
   const { t } = useTranslation();
   const { setTheme } = useTheme();
@@ -71,7 +72,7 @@ export function ModeToggle() {
 
       if (error) {
         console.error('Error saving theme preference:', error);
-        toast.error(t('common.error'), { description: 'Failed to save theme preference' });
+        toast.error(t('common.error'), { description: tx("ui.modeToggle.failedToSaveTheme") });
       }
     }
   };

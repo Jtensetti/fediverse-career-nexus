@@ -61,6 +61,7 @@ import {
   Skill
 } from "@/services/profile/profileCVService";
 
+import { tx } from "@/i18n/tx";
 // Schema for the basic profile information
 const createProfileSchema = (t: any) => z.object({
   username: z.string()
@@ -1148,7 +1149,7 @@ const ProfileEditPage = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <MFASettings />
-                <div className="space-y-2"><h3 className="font-medium">Anslutna appar</h3><p className="text-sm text-muted-foreground">Hantera vilka externa appar som får använda ditt Nolto-konto.</p><Button variant="outline" asChild><a href="/settings/apps">Hantera appåtkomst</a></Button></div>
+                <div className="space-y-2"><h3 className="font-medium">{tx("ui.profileEdit.anslutnaAppar")}</h3><p className="text-sm text-muted-foreground">{tx("ui.profileEdit.hanteraVilkaExternaAppar")}</p><Button variant="outline" asChild><a href="/settings/apps">{tx("ui.profileEdit.hanteraAppatkomst")}</a></Button></div>
 
                 <Separator />
 

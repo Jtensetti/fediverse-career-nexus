@@ -5,6 +5,7 @@ import { readSocialLogin, SOCIAL_LOGIN_STORAGE } from '@/lib/socialLogin';
 import { Button } from '@/components/ui/button';
 import { consumeAppAuthorization } from '@/lib/appAuthorizationReturn';
 
+import { tx } from "@/i18n/tx";
 export default function SocialCallback() {
   const navigate = useNavigate();
   const [failed, setFailed] = useState(false);
@@ -30,8 +31,8 @@ export default function SocialCallback() {
     return () => { active = false; };
   }, [navigate]);
   return <main className="min-h-screen flex items-center justify-center bg-background p-5"><div className="max-w-md rounded-xl border p-6 space-y-4">
-    <h1 className="text-xl font-semibold">Logga in på Nolto</h1>
-    {failed ? <><p role="alert">Inloggningen kunde inte slutföras. Starta ett nytt försök i samma webbläsare.</p><Button asChild><Link to="/auth">Försök igen</Link></Button></>
-      : <p role="status">Slutför inloggningen…</p>}
+    <h1 className="text-xl font-semibold">{tx("ui.socialCallback.loggaInPaNolto")}</h1>
+    {failed ? <><p role="alert">{tx("ui.socialCallback.inloggningenKundeInteSlutforas")}</p><Button asChild><Link to="/auth">{tx("ui.socialCallback.forsokIgen")}</Link></Button></>
+      : <p role="status">{tx("ui.socialCallback.slutforInloggningen")}</p>}
   </div></main>;
 }

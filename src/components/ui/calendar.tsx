@@ -1,7 +1,8 @@
+import { dateLocale } from "@/lib/locale";
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker, type DropdownProps } from "react-day-picker";
-import { sv, enGB } from "date-fns/locale";
+
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 
@@ -25,7 +26,7 @@ function Calendar({
   ...props
 }: CalendarProps) {
   const { t, i18n } = useTranslation();
-  const locale = i18n.language.startsWith('sv') ? sv : enGB;
+  const locale = dateLocale(i18n.language);
   return (
     <DayPicker
       locale={locale}

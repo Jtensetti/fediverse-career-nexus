@@ -60,18 +60,6 @@
     "profileShort": "Profile"
   },
   "auth": {
-    "firstNamePlaceholder": "First name",
-    "lastNamePlaceholder": "Last name",
-    "usernamePlaceholder": "your_username",
-    "firstNameRequired": "First name is required",
-    "lastNameRequired": "Last name is required",
-    "emailRequired": "Email is required",
-    "passwordRequired": "Password is required",
-    "nameTooLong": "Must be less than 50 characters",
-    "nameInvalidChars": "Can only contain letters, spaces, hyphens, apostrophes, and periods",
-    "usernameMinChars": "At least 3 characters",
-    "usernameMaxChars": "Maximum 30 characters",
-    "usernameCharsOnly": "Lowercase letters, numbers, underscores only",
     "signIn": "Sign in",
     "signUp": "Sign up",
     "signOut": "Sign out",
@@ -107,6 +95,18 @@
     "enterEmail": "Enter your email",
     "enterPassword": "Enter your password",
     "createPassword": "Create a password",
+    "firstNamePlaceholder": "First name",
+    "lastNamePlaceholder": "Last name",
+    "usernamePlaceholder": "your_username",
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "emailRequired": "Email is required",
+    "passwordRequired": "Password is required",
+    "nameTooLong": "Must be less than 50 characters",
+    "nameInvalidChars": "Can only contain letters, spaces, hyphens, apostrophes, and periods",
+    "usernameMinChars": "At least 3 characters",
+    "usernameMaxChars": "Maximum 30 characters",
+    "usernameCharsOnly": "Lowercase letters, numbers, underscores only",
     "sessionVerificationFailed": "Your session could not be verified. Retry or sign out.",
     "completeMfa": "Complete sign-in using your authenticator app.",
     "usernameOptional": "Username",
@@ -211,6 +211,7 @@
     "selectTime": "Select Time",
     "done": "Done",
     "whatsOnMind": "What's on your mind?",
+    "postingToFeed": "Posting to your feed",
     "contentLabel": "Post text",
     "addImage": "Add image",
     "removeImage": "Remove image",
@@ -617,24 +618,15 @@
     "almostXYearsAgo": "almost {{count}} years ago"
   },
   "profileEdit": {
-    "usernameDesc": "Your @username on Nolto",
-    "profileSchema": {
-      "usernameMin": "Username must be at least 3 characters",
-      "usernameMax": "Username must be at most 30 characters",
-      "usernameRegex": "Username can only contain lowercase letters, numbers, and underscores",
-      "displayNameMin": "Display name must be at least 2 characters",
-      "headlineMin": "Headline must be at least 5 characters",
-      "invalidEmail": "Please enter a valid email"
-    },
     "title": "Edit profile",
     "tabs": {
-      "personal": "Personal",
+      "basicInfo": "Basic info",
       "experience": "Experience",
       "education": "Education",
       "skills": "Skills",
       "privacy": "Privacy",
       "freelance": "Freelance",
-      "basicInfo": "Basic info"
+      "personal": "Personal"
     },
     "personalInfo": "Personal information",
     "displayName": "Display name",
@@ -658,6 +650,7 @@
     "contactEmailDesc": "Public contact email",
     "username": "Username",
     "usernamePlaceholder": "your-username",
+    "usernameDesc": "Your @username on Nolto",
     "saveChanges": "Save changes",
     "saving": "Saving...",
     "present": "Present",
@@ -671,33 +664,41 @@
       "portfolio": "Portfolio URL",
       "portfolioPlaceholder": "https://your-portfolio.com"
     },
+    "profileSchema": {
+      "usernameMin": "Username must be at least 3 characters",
+      "usernameMax": "Username must be at most 30 characters",
+      "usernameRegex": "Username can only contain lowercase letters, numbers, and underscores",
+      "displayNameMin": "Display name must be at least 2 characters",
+      "headlineMin": "Headline must be at least 5 characters",
+      "invalidEmail": "Please enter a valid email"
+    },
     "experience": {
       "title": "Experience",
       "company": "Organisation",
-      "companyPlaceholder": "Organisation name",
-      "jobTitle": "Job title",
-      "jobTitlePlaceholder": "Your role",
+      "position": "Position",
       "startDate": "Start date",
       "endDate": "End date",
-      "current": "I currently work here",
-      "description": "Description",
-      "descriptionPlaceholder": "Describe your responsibilities",
-      "companyRequired": "Organisation is required",
-      "titleRequired": "Title is required",
-      "startDateRequired": "Start date is required",
-      "position": "Position",
       "currentRole": "Current role",
+      "description": "Description",
       "add": "Add",
       "save": "Save",
       "update": "Update",
       "delete": "Delete",
       "loading": "Loading...",
+      "jobTitle": "Job title",
+      "jobTitlePlaceholder": "Your role",
+      "companyPlaceholder": "Organisation name",
       "companyDomain": "Organisation domain",
       "companyDomainPlaceholder": "organisation.com",
       "locationPlaceholder": "e.g. Stockholm",
       "pickDate": "Pick a date",
+      "descriptionPlaceholder": "Describe your responsibilities",
       "noExperience": "No experience added yet",
-      "remove": "Remove experience {{name}}"
+      "titleRequired": "Title is required",
+      "startDateRequired": "Start date is required",
+      "remove": "Remove experience {{name}}",
+      "current": "I currently work here",
+      "companyRequired": "Organisation is required"
     },
     "education": {
       "title": "Education",
@@ -709,27 +710,27 @@
       "fieldPlaceholder": "e.g. Computer Science",
       "startYear": "Start year",
       "endYear": "End year",
-      "institutionRequired": "Institution is required",
-      "degreeRequired": "Degree is required",
-      "startYearRequired": "Start year is required",
       "add": "Add",
       "save": "Save",
       "update": "Update",
       "delete": "Delete",
       "loading": "Loading...",
       "noEducation": "No education added yet",
+      "institutionRequired": "Institution is required",
+      "degreeRequired": "Degree is required",
+      "startYearRequired": "Start year is required",
       "remove": "Remove education {{name}}"
     },
     "skills": {
       "title": "Skills",
-      "addSkill": "Add skill",
-      "placeholder": "Enter a skill",
-      "noSkills": "No skills added yet",
       "add": "Add",
+      "placeholder": "Enter a skill",
       "addButton": "Add skill",
       "loading": "Loading...",
+      "noSkills": "No skills added yet",
       "name": "New skill",
-      "remove": "Remove skill {{name}}"
+      "remove": "Remove skill {{name}}",
+      "addSkill": "Add skill"
     },
     "privacy": {
       "title": "Privacy settings",
@@ -745,6 +746,35 @@
     "unsavedChanges": "You have unsaved changes.",
     "saveFailed": "Changes could not be saved. Try again.",
     "requiredFields": "Complete: {{fields}}"
+  },
+  "freelancer": {
+    "openForWork": "Open for work",
+    "visibleToClients": "Visible to clients",
+    "notVisible": "Not visible",
+    "skills": "Skills",
+    "addSkill": "Add skill",
+    "noSkillsYet": "No skills added yet",
+    "rate": "Rate",
+    "ratePlaceholder": "e.g. 500 SEK/h",
+    "availability": "Availability",
+    "selectAvailability": "Select availability",
+    "fullTime": "Full-time",
+    "partTime": "Part-time",
+    "projectBased": "Project-based",
+    "notAvailable": "Not available",
+    "settingsSaved": "Settings saved",
+    "settingsError": "Could not save settings",
+    "dmSuggestion": "Enable direct messages so clients can reach you",
+    "openSettings": "Open settings",
+    "dmReminder": "DM reminder",
+    "dmReminderDesc": "Enable direct messages to receive inquiries",
+    "checkDmSettings": "Check DM settings",
+    "title": "Freelancers",
+    "subtitle": "Find freelance professionals",
+    "available": "Available",
+    "services": "Services",
+    "noFreelancers": "No freelancers found",
+    "viewProfile": "View profile"
   },
   "articles": {
     "title": "Articles",
@@ -811,89 +841,6 @@
     "essential": "Essential Cookies",
     "essentialDesc": "Required for authentication, security (Cloudflare), and basic functionality."
   },
-  "mfa": {
-    "title": "Two-Factor Authentication",
-    "description": "Add an extra layer of security by requiring a verification code when you sign in.",
-    "enable": "Enable Two-Factor Authentication",
-    "disable": "Disable Two-Factor Authentication",
-    "enabled": "Enabled",
-    "enabledDesc": "Your account is protected with two-factor authentication.",
-    "loading": "Loading security settings...",
-    "enrollTitle": "Set Up Two-Factor Authentication",
-    "enrollDesc": "Scan the QR code with your authenticator app.",
-    "enrollDescMobile": "Add your account to an authenticator app.",
-    "enrollSuccessDesc": "Your account is now protected with 2FA.",
-    "enrollSuccess": "Two-factor authentication enabled!",
-    "enrollError": "Failed to start enrollment",
-    "generating": "Generating setup...",
-    "openAuthenticator": "Open Authenticator App",
-    "openAuthenticatorHint": "This will add Nolto to your authenticator app automatically",
-    "showQR": "Show QR Code Instead",
-    "hideQR": "Hide QR Code",
-    "cantScan": "Can't scan? Enter this code manually:",
-    "manualEntry": "Or enter this code manually:",
-    "secretCopied": "Secret copied to clipboard",
-    "enterCode": "Enter the 6-digit code from your app:",
-    "verify": "Verify & Enable",
-    "verifying": "Verifying...",
-    "verifyError": "Invalid code. Please try again.",
-    "verifyTitle": "Two-Factor Authentication",
-    "verifyDesc": "Enter the 6-digit code from your authenticator app to continue.",
-    "authCode": "Authentication Code",
-    "continue": "Continue",
-    "loginSuccess": "Verified successfully!",
-    "invalidCode": "Invalid code. Please try again.",
-    "useAnotherMethod": "Cancel sign in",
-    "lostAccess": "Lost access to your authenticator?",
-    "contactSupport": "Contact support",
-    "disableTitle": "Disable Two-Factor Authentication?",
-    "disableDesc": "This will remove the extra security from your account. Enter your current authentication code to confirm.",
-    "enterCodeToDisable": "Enter your 6-digit code:",
-    "confirmDisable": "Disable 2FA",
-    "disabling": "Disabling...",
-    "disabled": "Two-factor authentication disabled",
-    "disableError": "Failed to disable 2FA. Check your code.",
-    "recoveryTitle": "Request account recovery",
-    "recoveryDesc": "Lost access to your authenticator app? Tell us how to reach you and an admin will help you regain access.",
-    "recoveryEmail": "Your email",
-    "recoveryUsername": "Username (optional)",
-    "recoveryMessage": "Additional information (optional)",
-    "recoveryMessagePlaceholder": "Briefly describe what happened — e.g. new phone, lost device …",
-    "recoverySend": "Send request",
-    "recoverySending": "Sending…",
-    "recoverySent": "Request received",
-    "recoverySubmittedDesc": "An administrator will review your request and contact you at your registered email shortly.",
-    "recoveryError": "Could not send request. Please try again shortly.",
-    "recoveryQueueTitle": "MFA recovery requests",
-    "recoveryQueueDesc": "Review and manage two-factor recovery requests.",
-    "recoveryNoRequests": "No pending requests.",
-    "recoveryIssueLink": "Send recovery link",
-    "recoveryReject": "Reject",
-    "recoveryConfirmTitle": "Send recovery link?",
-    "recoveryConfirmDesc": "The link will be sent to the account's **registered email address**, not the one entered in the form. The user must sign in with their password to complete recovery. The link is valid for 30 minutes.",
-    "recoveryConfirmSend": "Yes, send link",
-    "recoveryLinkSent": "Recovery link sent to the account owner.",
-    "recoveryLinkError": "Could not send the link.",
-    "recoveryRejected": "Request rejected.",
-    "recoveryStatusPending": "Pending",
-    "recoveryStatusInProgress": "In progress",
-    "recoveryStatusResolved": "Resolved",
-    "recoveryStatusRejected": "Rejected",
-    "recoveryNoUserMatch": "No matching user found for this email.",
-    "recoveryAttemptedLogin": "Attempted login:",
-    "recoveryEmailMatch": "matches the form",
-    "recoveryEmailMismatch": "does not match the form",
-    "recoveryNoAttemptedLogin": "No silent login credential captured (form opened without a prior login attempt).",
-    "recoveryPageTitle": "Recover two-factor authentication",
-    "recoveryPageDescLoggedOut": "Sign in with your password to complete recovery.",
-    "recoveryPageProcessing": "Confirming recovery…",
-    "recoveryPageSuccess": "Two-factor authentication reset",
-    "recoveryPageSuccessDesc": "You can now sign in without a code. We recommend re-enabling 2FA right away.",
-    "recoveryPageInvalid": "The link is invalid or has expired.",
-    "recoveryPageWrongUser": "This link does not belong to your signed-in account.",
-    "recoveryPageEnableNew": "Enable new 2FA",
-    "recoveryTab": "MFA cases"
-  },
   "companyAdmin": {
     "title": "Admin",
     "subtitle": "Manage employees, roles, and view activity",
@@ -933,21 +880,21 @@
   },
   "companies": {
     "title": "Organisations",
+    "subtitle": "Discover and connect with organisations",
     "createTitle": "Create Organisation",
     "createDescription": "Create an organisation page to showcase your organisation",
     "createSuccess": "Organisation created successfully!",
     "createError": "Failed to create organisation",
     "create": "Create Organisation",
+    "noMatching": "No matching organisations",
+    "beFirst": "Be the first to create an organisation page",
+    "adjustFilters": "Try adjusting your filters",
     "iWorkHere": "I work here",
     "pendingVerification": "Your employment claim is pending verification",
     "pendingVerificationDescription": "An organisation admin will review your claim.",
     "noPeople": "No employees listed",
     "noPeopleDescription": "Be the first to add yourself as an employee",
     "backToCompanies": "Back to Organisations",
-    "subtitle": "Discover and connect with organisations",
-    "noMatching": "No matching organisations",
-    "beFirst": "Be the first to create an organisation page",
-    "adjustFilters": "Try adjusting your filters",
     "jobTitlePlaceholder": "e.g. Software Engineer",
     "jobTitleValidation": "Title must be 2–100 characters",
     "startDateRequired": "Choose a start date",
@@ -1379,6 +1326,89 @@
     "nobodyDesc": "Disable all incoming messages",
     "updated": "Privacy setting updated",
     "updateFailed": "Failed to update privacy setting"
+  },
+  "mfa": {
+    "title": "Two-Factor Authentication",
+    "enabled": "Enabled",
+    "enabledDesc": "Your account is protected with two-factor authentication.",
+    "description": "Add an extra layer of security by requiring a verification code when you sign in.",
+    "enable": "Enable Two-Factor Authentication",
+    "disable": "Disable Two-Factor Authentication",
+    "disabled": "Two-factor authentication disabled",
+    "disableError": "Failed to disable 2FA. Check your code.",
+    "disableTitle": "Disable Two-Factor Authentication?",
+    "disableDesc": "This will remove the extra security from your account. Enter your current authentication code to confirm.",
+    "enterCodeToDisable": "Enter your 6-digit code:",
+    "disabling": "Disabling...",
+    "confirmDisable": "Disable 2FA",
+    "loading": "Loading security settings...",
+    "enrollTitle": "Set Up Two-Factor Authentication",
+    "enrollDesc": "Scan the QR code with your authenticator app.",
+    "enrollDescMobile": "Add your account to an authenticator app.",
+    "enrollError": "Failed to start enrollment",
+    "enrollSuccess": "Two-factor authentication enabled!",
+    "enrollSuccessDesc": "Your account is now protected with 2FA.",
+    "generating": "Generating setup...",
+    "cantScan": "Can't scan? Enter this code manually:",
+    "manualEntry": "Or enter this code manually:",
+    "secretCopied": "Secret copied to clipboard",
+    "showQR": "Show QR Code Instead",
+    "hideQR": "Hide QR Code",
+    "openAuthenticator": "Open Authenticator App",
+    "openAuthenticatorHint": "This will add Nolto to your authenticator app automatically",
+    "enterCode": "Enter the 6-digit code from your app:",
+    "verify": "Verify & Enable",
+    "verifying": "Verifying...",
+    "verifyError": "Invalid code. Please try again.",
+    "verifyTitle": "Two-Factor Authentication",
+    "verifyDesc": "Enter the 6-digit code from your authenticator app to continue.",
+    "authCode": "Authentication Code",
+    "continue": "Continue",
+    "useAnotherMethod": "Cancel sign in",
+    "lostAccess": "Lost access to your authenticator?",
+    "contactSupport": "Contact support",
+    "loginSuccess": "Verified successfully!",
+    "invalidCode": "Invalid code. Please try again.",
+    "recoveryTitle": "Request account recovery",
+    "recoveryDesc": "Lost access to your authenticator app? Tell us how to reach you and an admin will help you regain access.",
+    "recoveryEmail": "Your email",
+    "recoveryUsername": "Username (optional)",
+    "recoveryMessage": "Additional information (optional)",
+    "recoveryMessagePlaceholder": "Briefly describe what happened — e.g. new phone, lost device …",
+    "recoverySend": "Send request",
+    "recoverySending": "Sending…",
+    "recoverySent": "Request received",
+    "recoverySubmittedDesc": "An administrator will review your request and contact you at your registered email shortly.",
+    "recoveryError": "Could not send request. Please try again shortly.",
+    "recoveryQueueTitle": "MFA recovery requests",
+    "recoveryQueueDesc": "Review and manage two-factor recovery requests.",
+    "recoveryNoRequests": "No pending requests.",
+    "recoveryIssueLink": "Send recovery link",
+    "recoveryReject": "Reject",
+    "recoveryConfirmTitle": "Send recovery link?",
+    "recoveryConfirmDesc": "The link will be sent to the account's **registered email address**, not the one entered in the form. The user must sign in with their password to complete recovery. The link is valid for 30 minutes.",
+    "recoveryConfirmSend": "Yes, send link",
+    "recoveryLinkSent": "Recovery link sent to the account owner.",
+    "recoveryLinkError": "Could not send the link.",
+    "recoveryRejected": "Request rejected.",
+    "recoveryStatusPending": "Pending",
+    "recoveryStatusInProgress": "In progress",
+    "recoveryStatusResolved": "Resolved",
+    "recoveryStatusRejected": "Rejected",
+    "recoveryNoUserMatch": "No matching user found for this email.",
+    "recoveryAttemptedLogin": "Attempted login:",
+    "recoveryEmailMatch": "matches the form",
+    "recoveryEmailMismatch": "does not match the form",
+    "recoveryNoAttemptedLogin": "No silent login credential captured (form opened without a prior login attempt).",
+    "recoveryPageTitle": "Recover two-factor authentication",
+    "recoveryPageDescLoggedOut": "Sign in with your password to complete recovery.",
+    "recoveryPageProcessing": "Confirming recovery…",
+    "recoveryPageSuccess": "Two-factor authentication reset",
+    "recoveryPageSuccessDesc": "You can now sign in without a code. We recommend re-enabling 2FA right away.",
+    "recoveryPageInvalid": "The link is invalid or has expired.",
+    "recoveryPageWrongUser": "This link does not belong to your signed-in account.",
+    "recoveryPageEnableNew": "Enable new 2FA",
+    "recoveryTab": "MFA cases"
   },
   "postReply": {
     "title": "Reply to Post",
@@ -2066,35 +2096,6 @@
       "securityDesc": "Strong technical and organizational measures protect your personal data."
     }
   },
-  "freelancer": {
-    "title": "Freelancers",
-    "subtitle": "Find freelance professionals",
-    "available": "Available",
-    "rate": "Rate",
-    "services": "Services",
-    "noFreelancers": "No freelancers found",
-    "viewProfile": "View profile",
-    "openForWork": "Open for work",
-    "visibleToClients": "Visible to clients",
-    "notVisible": "Not visible",
-    "skills": "Skills",
-    "addSkill": "Add skill",
-    "noSkillsYet": "No skills added yet",
-    "ratePlaceholder": "e.g. 500 SEK/h",
-    "availability": "Availability",
-    "selectAvailability": "Select availability",
-    "fullTime": "Full-time",
-    "partTime": "Part-time",
-    "projectBased": "Project-based",
-    "notAvailable": "Not available",
-    "settingsSaved": "Settings saved",
-    "settingsError": "Could not save settings",
-    "dmSuggestion": "Enable direct messages so clients can reach you",
-    "openSettings": "Open settings",
-    "dmReminder": "DM reminder",
-    "dmReminderDesc": "Enable direct messages to receive inquiries",
-    "checkDmSettings": "Check DM settings"
-  },
   "onboardingFlow": {
     "step": "Step {{step}} of 3",
     "title1": "Choose your Nolto address",
@@ -2466,5 +2467,1566 @@
     "tryDifferentSearch": "Try different search terms or filters",
     "beFirst": "Show that you are available for projects in your profile.",
     "viewProfile": "View profile"
+  },
+  "ui": {
+    "mission": {
+      "whyNolto": "Why Nolto?",
+      "aPlaceForProfessional": "A place for professional profiles, knowledge and connections across servers.",
+      "aProfessionalNetworkNolto": [
+        [
+          "A professional network",
+          "Nolto brings together profiles, skills, jobs and public posts. The aim is to help people find collaborators and share what they know."
+        ],
+        [
+          "Open protocols",
+          "ActivityPub connects Nolto with other fediverse services, including Mastodon. A stable nolto.social address lets other servers discover the profile. Accounts on different services remain separate, with different features and rules."
+        ],
+        [
+          "Clear choices",
+          "You choose which CV details to provide, who can see them and whether to enable federation. Others may retain public material you share. The privacy policy explains data processing and how to contact the operator."
+        ]
+      ]
+    },
+    "hosting": {
+      "selfhosting": "Self-hosting",
+      "sourceCodeAndDeployment": "Source code and deployment instructions for running Nolto yourself.",
+      "openSource": "OPEN SOURCE",
+      "aNetworkToBuild": "A network to build upon.",
+      "noltosCodeIsOpen": "Nolto’s code is open. You can review it, contribute and adapt it to your own community.",
+      "runTheWebApp": "Run the web app with Docker",
+      "buildAndServeThe": "Build and serve the web app with the included Docker configuration. Connect it to an already configured backend.",
+      "readTheInstallationGuide": "Read the installation guide",
+      "contributeToNolto": "Contribute to Nolto",
+      "improveATranslationReport": "Improve a translation, report a bug or work on a feature. The source code and development guide are on GitHub.",
+      "viewTheSource": "View the source",
+      "addANoltoButton": "Add a Nolto button",
+      "letCandidatesFillYour": "Let candidates fill your application form from their Nolto profile. They choose which details to share. Copy a few lines of code to get started.",
+      "getTheButtonAnd": "Get the button and instructions",
+      "whatDoesYourOwn": "What does your own server need?",
+      "theDockerPackageContains": "The Docker package contains the web app and its proxy. Database, authentication, storage, email and background jobs need separate setup. A complete fresh installation of Nolto has not yet been verified. The guide explains the remaining steps.",
+      "justCuriousExploreNolto": "Just curious? Explore Nolto"
+    },
+    "helpCenter": {
+      "help": "Help",
+      "commonQuestionsAboutAccounts": "Common questions about accounts, federation and privacy.",
+      "iForgotMyPassword": [
+        [
+          "I forgot my password",
+          "Choose Forgot password on the sign-in page. If the address has an account, you will receive an email link. Use the most recent link. If you only use Mastodon sign-in, reset your password on your Mastodon server."
+        ],
+        [
+          "I lost my authenticator app",
+          "Use the recovery option in the MFA dialog or contact the operator. Recovery requires verification of account ownership. Never share passwords, one-time codes or recovery links in a public issue."
+        ],
+        [
+          "Why can't Mastodon find my Nolto address?",
+          "Check that federation is enabled in your profile settings and search for the full username@nolto.social address. WebFinger must be reachable on the Nolto domain. If discovery still fails, contact the operator with your address and the server you searched from."
+        ],
+        [
+          "Do my two accounts sync automatically?",
+          "No. Mastodon sign-in and account linking identify you. Linking does not merge followers, posts, passwords, bookmarks or private messages. Read the federation guide before importing follows or moving followers."
+        ],
+        [
+          "What do profile privacy choices mean?",
+          "Experience, education and skills follow their visibility settings. Hiding activity or articles on your profile does not unpublish content already public in feeds or at its own link. New private Nolto messages are end-to-end encrypted once both participants activate their inboxes. Older messages are labelled and may be readable by the server."
+        ],
+        [
+          "I forgot my inbox key phrase",
+          "Your account password and key phrase are separate. Unlock another device with the same phrase, or use your downloaded encrypted key backup together with the phrase. Nolto cannot recreate a lost key phrase. Never send the phrase or key backup to support."
+        ],
+        [
+          "What happens when I delete?",
+          "The account or content is hidden immediately and permanent deletion is scheduled for 30 days after the request. Contact the operator if earlier erasure is needed. Copies already received by other servers may remain."
+        ],
+        [
+          "How do I report a problem?",
+          "Use Report where available or contact the operator below with a link and a short description. Deleting content on Nolto cannot guarantee that other servers or people delete their copies."
+        ]
+      ]
+    },
+    "documentation": {
+      "gettingStartedWithNolto": "Getting started with Nolto",
+      "fromYourFirstAccount": "From your first account to an address in the fediverse.",
+      "createAndConfirmYour": [
+        [
+          "1. Create and confirm your account",
+          "Choose a username and register with email. Follow the confirmation link before signing in. You can also sign in with Mastodon; Nolto and Mastodon still have separate profiles."
+        ],
+        [
+          "2. Choose what to share",
+          "Add a summary, experience, education and skills under Edit profile. Choose who can see your CV sections. Basic profile details and publicly published content can be read by others."
+        ],
+        [
+          "3. Choose whether to federate",
+          "Onboarding lets you enable federation or wait. Other servers use WebFinger to discover username@nolto.social, and ActivityPub to follow and exchange public posts. Your username is locked when the identity is published."
+        ],
+        [
+          "4. Find people and jobs",
+          "Search profiles and organisations, send connection requests and browse jobs. Nolto connections and fediverse followers are different relationships. Private messages stay between Nolto accounts, subject to the recipient's settings."
+        ],
+        [
+          "5. Manage your account and data",
+          "Profile settings include MFA, linking an existing Mastodon account, exporting account data and requesting deletion. The export includes JSON and file metadata; uploaded files must be downloaded separately. It is not a complete Mastodon account import."
+        ]
+      ]
+    },
+    "federationGuide": {
+      "findYourProfileSearch": [
+        [
+          "Find your profile",
+          "Search for @username@nolto.social in Mastodon. WebFinger resolves the address to your public ActivityPub profile."
+        ],
+        [
+          "Follow and share",
+          "Enable federation on your Nolto profile. ActivityPub then handles follows and public posts between servers."
+        ],
+        [
+          "Sign in with Mastodon",
+          "Authenticate on your Mastodon server and return to Nolto. The accounts remain separate and you choose your own Nolto address."
+        ],
+        [
+          "Import follows",
+          "Export your Mastodon following list as CSV and import it in profile settings. This sends follow requests; some accounts need to approve them."
+        ],
+        [
+          "Move an account",
+          "Aliases and ActivityPub Move can request a follower migration to a compatible server. Receiving servers decide whether to honor the move. Posts, files and private messages are not transferred."
+        ]
+      ],
+      "backToHome": "Back to home",
+      "noltoAndMastodon": "Nolto and Mastodon",
+      "yourNoltoAddressLets": "Your Nolto address lets people find and follow you from other federated services. It is not an email address.",
+      "whatIsNotSynchronized": "What is not synchronized?",
+      "accountsAreNotFully": "Accounts are not fully mirrored in both directions. Private message history, bookmarks and all Mastodon preferences are not synchronized. Federated direct messages are unsupported. Bluesky's AT Protocol is a separate protocol and does not replace Mastodon compatibility.",
+      "otherServersMayRetain": "Other servers may retain public content. Disabling federation does not remove existing remote copies. Once published, your federated username is permanent.",
+      "readThePrivacyPolicy": "Read the privacy policy",
+      "mastodonAccountMigrationGuide": "Mastodon account migration guide",
+      "openProfileSettings": "Open profile settings",
+      "createYourNoltoAddress": "Create your Nolto address"
+    },
+    "explore": {
+      "exploreNolto": "Explore Nolto",
+      "readPublicConversationsOn": "Read public conversations on Nolto. No account needed to explore.",
+      "aLookInsideNolto": "A LOOK INSIDE NOLTO",
+      "conversationsAboutWorkingLife": "Conversations about working life.",
+      "takeALookAround": "Take a look around. Join when you want to be part of the conversation.",
+      "itStartsWithHello": "It starts with hello.",
+      "findPeopleToLearn": "Find people to learn from, work with and stay in touch with.",
+      "createYourAccount": "Create your account",
+      "alreadyAMemberSign": "Already a member? Sign in",
+      "discoverMore": "Discover more",
+      "browseJobs": "Browse jobs",
+      "meetOrganisations": "Meet organisations",
+      "noltoIsAnOpen": "Nolto is an open source professional network. You choose what to share and who to follow."
+    },
+    "index": {
+      "aMoreOpenWorking": "A more open working life",
+      "meetPeopleShareWhat": "Meet people, share what you know and find your next opportunity. Explore Nolto’s public feed without an account.",
+      "laddar": "Loading..."
+    },
+    "publicFeed": {
+      "publicPosts": "Public posts",
+      "chooseFeed": "Choose feed",
+      "onNolto": "On Nolto",
+      "acrossTheNetwork": "Across the network",
+      "refreshFeed": "Refresh feed",
+      "loadingPosts": "Loading posts",
+      "theFeedCouldNot": "The feed could not be loaded",
+      "pleaseTryAgainIn": "Please try again in a moment.",
+      "tryAgain": "Try again",
+      "conversationsStartHere": "Conversations start here.",
+      "thereAreNoPublic": "There are no public posts here yet. Share an idea, ask a question or tell us what you are working on.",
+      "startAConversation": "Start a conversation",
+      "loading": "Loading…",
+      "showMorePosts": "Show more posts",
+      "youHaveSeenAll": "You have seen all posts in this feed.",
+      "couldNotLoadMore": "Could not load more posts. Please try again.",
+      "publicPostsNewestFirst": "Public posts · Newest first"
+    },
+    "encryptedInbox": {
+      "couldNotLoadYour": "Could not load your key. Reload this page.",
+      "theRecipientsKeyCould": "The recipient’s key could not be verified.",
+      "theBackupFileIs": "The backup file is too large.",
+      "theKeyPhrasesMust": "The key phrases must match.",
+      "pleaseRetry": "Please retry.",
+      "inboxUnlockedNewMessages": "Inbox unlocked. New messages are encrypted between participants.",
+      "lockInbox": "Lock inbox",
+      "keysAndBackup": "Keys and backup",
+      "compareTheseFingerprintsUsing": "Compare these fingerprints using another trusted channel. Nolto cannot guarantee identity at first contact.",
+      "yourKey": "Your key: ",
+      "recipientKey": "Recipient key: ",
+      "notActivated": "Not activated",
+      "downloadEncryptedKeyBackup": "Download encrypted key backup",
+      "unlockYourInbox": "Unlock your inbox",
+      "enableEncryptedMessages": "Enable encrypted messages",
+      "yourKeyPhraseIs": "Your key phrase is used only in your browser. Nolto cannot read new messages or recover them if you lose the phrase. Use a separate long phrase, preferably at least five random words.",
+      "loadingEncryptionSettings": "Loading encryption settings…",
+      "keyPhrase": "Key phrase",
+      "repeatKeyPhrase": "Repeat key phrase",
+      "useADownloadedKey": "Use a downloaded key backup",
+      "encryptedKeyBackup": "Encrypted key backup",
+      "iHaveStoredThe": "I have stored the backup and key phrase in a safe place.",
+      "working": "Working…",
+      "unlock": "Unlock",
+      "activateInbox": "Activate inbox",
+      "createMessageKey": "Create message key",
+      "publicPostsAreExcluded": "Public posts are excluded. Older messages may use server encryption. ",
+      "readAboutPrivacyAnd": "Read about privacy and limitations"
+    },
+    "unauthenticatedHomepage": {
+      "yourProfessionalNetwork": "YOUR PROFESSIONAL NETWORK",
+      "meetPeopleShareWhat": "Meet people, share what you know and find your next opportunity. A network you help shape.",
+      "joinNolto": "Join Nolto",
+      "exploreTheFeed": "Explore the feed",
+      "takeALookYou": "Take a look. You don’t need an account to read.",
+      "whatNoltoStandsFor": "What Nolto stands for",
+      "peopleComeFirst": "People come first",
+      "partOfTheOpen": "Part of the open web",
+      "openSource": "Open source",
+      "conversationsAndNewPerspectives": "CONVERSATIONS AND NEW PERSPECTIVES",
+      "startByTakingA": "Start by taking a look.",
+      "readWhatPeopleShare": "Read what people share on Nolto and across the open network. Create an account when you want to reply or share something yourself.",
+      "aPlaceForFresh": "A place for fresh perspectives",
+      "noltosPublicFeedWith": "Nolto’s public feed, with local and network views. Open the feed.",
+      "peopleAndPossibilities": "PEOPLE AND POSSIBILITIES",
+      "yourNextStepStarts": "Your next step starts with curiosity.",
+      "findJobsAndGet": "Find jobs and get to know the organisations behind them. Looking for a new role, a collaboration or someone to exchange ideas with? Start here.",
+      "browseJobs": "Browse jobs",
+      "discoverOrganisations": "Discover organisations",
+      "noltosJobSearchWith": "Nolto’s job search with filters for job type, location and remote work.",
+      "oneWebMoreConnections": "ONE WEB. MORE CONNECTIONS.",
+      "yourname": "yourname",
+      "yourNetworkCanGrow": "YOUR NETWORK CAN GROW FURTHER",
+      "goodConnectionsAreEverywhere": "Good connections are everywhere.",
+      "youAndYourContacts": "You and your contacts don’t have to choose the same platform. Enable federation so people on services such as Mastodon can find and follow your Nolto profile.",
+      "meetTheOpenNetwork": "Meet the open network",
+      "seeYouOnNolto": "SEE YOU ON NOLTO",
+      "makeRoomForYour": "Make room for your next conversation.",
+      "createYourAccount": "Create your account",
+      "lookAroundFirst": "Look around first",
+      "openToBuildUpon": "Open to build upon.",
+      "readTheCodeContribute": "Read the code, contribute to Nolto or explore what self-hosting involves.",
+      "aboutSelfhosting": "About self-hosting",
+      "heroTitleStart": "A more open",
+      "heroTitleEmphasis": "working life."
+    },
+    "legalDocument": {
+      "contact": "Contact",
+      "backToHome": "Back to home",
+      "lastRevised": "Last revised",
+      "policies": "Policies",
+      "howNoltoAndMastodon": "How Nolto and Mastodon work together",
+      "translationNotice": "This translation is provided for convenience. If versions differ, the Swedish version prevails."
+    },
+    "publicNavbar": {
+      "explore": "Explore",
+      "jobs": "Jobs",
+      "anOpenNetwork": "An open network",
+      "selfhosting": "Self-hosting",
+      "noltoHome": "Nolto – home",
+      "mainNavigation": "Main navigation",
+      "signIn": "Sign in",
+      "joinNolto": "Join Nolto",
+      "openMenu": "Open menu",
+      "mobileNavigation": "Mobile navigation",
+      "createAccount": "Create account"
+    },
+    "footer": {
+      "exploreTheFeed": "Explore the feed",
+      "selfhosting": "Self-hosting",
+      "importFromNoltoButton": "Import from Nolto button",
+      "nolto": "Nolto."
+    },
+    "informationPage": {
+      "backToHome": "Back to home",
+      "helpAndInformation": "Help and information",
+      "gettingStarted": "Getting started",
+      "help": "Help",
+      "privacy": "Privacy",
+      "questions": "Questions?"
+    },
+    "dataExportSection": {
+      "theExportCouldNot": "The export could not be completed. Retry or contact jtensetti@protonmail.com for help with your data request.",
+      "downloadYourData": "Download your data",
+      "yourProfilePostsMessages": "Your profile, posts, messages, connections and settings in a JSON file.",
+      "theExportListsUploaded": "The export lists uploaded files; download the files themselves separately. New private messages are exported as ciphertext. Save your encrypted key backup from the inbox too. Passwords and login tokens are excluded. This archive cannot be imported directly into Mastodon.",
+      "preparingExport": "Preparing export…",
+      "downloadJson": "Download JSON",
+      "yourExportIsReady": "Your export is ready. Store it securely; it contains private messages and contact details."
+    },
+    "mastodonConnection": {
+      "couldNotConnectCheck": "Could not connect. Check the address and retry.",
+      "linkMastodon": "Link Mastodon",
+      "linkAnAccountTo": "Link an account to sign in to this Nolto account with Mastodon. Your Nolto address and profile stay in place. Posts and private messages are not mirrored automatically.",
+      "mastodonAddress": "Mastodon address",
+      "continueToMastodon": "Continue to Mastodon"
+    },
+    "sectionVisibilityToggle": {
+      "publicLinksNote": "Controls display on your profile. Published posts and articles remain public through their own links and feeds."
+    },
+    "starterPackService": {
+      "duMasteVaraInloggad": "You must be logged in to follow a pack",
+      "kundeInteFoljaPaket": "Could not follow pack",
+      "slutadeFoljaPaket": "Unfollowed pack",
+      "kundeInteSlutaFolja": "Could not unfollow pack",
+      "duMasteVaraInloggad2": "You must be logged in to create a pack",
+      "kundeInteTaBort": "Could not remove member",
+      "startpaketSkapat": "Starter pack created!",
+      "aPackWithThis": "A pack with this URL already exists",
+      "failedToCreatePack": "Failed to create pack",
+      "userIsAlreadyIn": "User is already in this pack",
+      "failedToAddMember": "Failed to add member"
+    },
+    "profileEditService": {
+      "duMasteVaraInloggad": "You must be logged in to update your profile",
+      "kundeInteUppdateraProfil": "Could not update profile",
+      "duMasteVaraInloggad2": "You must be logged in to upload an avatar",
+      "kundeInteLaddaUpp": "Could not upload avatar",
+      "profilUppdaterad": "Profile updated",
+      "avatarUppdaterad": "Avatar updated"
+    },
+    "postService": {
+      "duMasteVaraInloggad": "You must be logged in to create a post",
+      "ettOvantatFelUppstod": "An unexpected error occurred",
+      "inlaggetArDoltOch": "The post is hidden and will be permanently deleted after 30 days."
+    },
+    "postReplyService": {
+      "duMasteVaraInloggad": "You must be logged in to reply",
+      "svaretHarSparatsLadda": "Your reply has been saved. Please refresh to see its status.",
+      "svaretKundeIntePubliceras": "The reply could not be published. Please check that the post still exists and that you have permission."
+    },
+    "pollService": {
+      "duMasteVaraInloggad": "You must be logged in to vote",
+      "kundeInteSkickaRost": "Could not cast vote",
+      "rostRegistrerad": "Vote registered!",
+      "kundeInteRosta": "Could not vote"
+    },
+    "connectionsService": {
+      "kundeInteLaddaKontakter": "Could not load connections",
+      "kundeInteLaddaKontaktforslag": "Could not load connection suggestions",
+      "duMasteVaraInloggad": "You must be logged in to connect with others",
+      "denTidigareForfraganAvslogs": "The previous request was declined. The recipient can initiate a new connection.",
+      "youCanTConnect": "You can't connect with yourself"
+    },
+    "companyPostService": {
+      "inlaggetArDoltOch": "The post is hidden and will be permanently deleted after 30 days.",
+      "youMustBeLogged": "You must be logged in to create a post",
+      "youDonTHave": "You don't have permission to post for this company",
+      "companyNotFound": "Company not found",
+      "failedToCreatePost": "Failed to create post",
+      "anUnexpectedErrorOccurred": "An unexpected error occurred",
+      "youMustBeLogged2": "You must be logged in",
+      "youDonTHave2": "You don't have permission to delete this post"
+    },
+    "reactionsService": {
+      "loggaInForAtt": "Log in to react",
+      "kundeInteHanteraReaktion": "Could not handle reaction",
+      "kundeInteTaBort": "Could not remove reaction",
+      "kundeInteUppdateraReaktion": "Could not update reaction",
+      "kundeInteLaggaTill": "Could not add reaction"
+    },
+    "messageService": {
+      "duMasteVaraInloggad": "You must be logged in to view conversations",
+      "kundeInteLaddaKonversationer": "Could not load conversations",
+      "failedToLoadConversations": "Failed to load conversations"
+    },
+    "messageRequestService": {
+      "duMasteVaraInloggad": "You must be logged in",
+      "duKanInteSkicka": "You cannot send a request to yourself",
+      "duHarRedanEn": "You already have a pending request to this person",
+      "dinTidigareForfraganAvslogs": "Your previous request was declined",
+      "meddelandeforfraganSkickad": "Message request sent!",
+      "kundeInteSkickaForfragan": "Could not send request",
+      "forfraganAccepteradNiKan": "Request accepted! You can now send messages to each other.",
+      "kundeInteAccepteraForfragan": "Could not accept request",
+      "forfraganAvvisad": "Request declined",
+      "kundeInteAvvisaForfragan": "Could not decline request",
+      "meddelandeinstallningarUppdaterade": "Message settings updated",
+      "kundeInteUppdateraInstallningar": "Could not update settings"
+    },
+    "newsletterService": {
+      "kundeIntePrenumereraForsok": "Could not subscribe. Please try again.",
+      "kundeInteAvprenumereraForsok": "Could not unsubscribe. Please try again.",
+      "prenumerationLyckades": "Subscription successful!",
+      "avprenumerationLyckades": "Unsubscription successful."
+    },
+    "jobPostsService": {
+      "duMasteVaraInloggad": "You must be logged in to create a job advert",
+      "kundeInteSkapaJobbannons": "Could not create job advert",
+      "kundeInteUppdateraJobbannons": "Could not update job advert",
+      "kundeInteRaderaJobbannons": "Could not delete job advert",
+      "signInRequired": "You must be signed in",
+      "createFailed": "Could not create job post",
+      "unexpectedError": "An unexpected error occurred",
+      "jobbannonsUppdaterad": "Job advert updated",
+      "jobbannonsRaderad": "Job advert deleted"
+    },
+    "moderationService": {
+      "duMasteVaraInloggad": "You must be logged in",
+      "kundeInteUppdateraRapport": "Could not update report",
+      "kundeInteStangaAv": "Could not suspend user",
+      "avstangningUpphavd": "Suspension lifted",
+      "kundeInteUpphavaAvstangning": "Could not lift suspension",
+      "anvandarenHarRedanDenna": "User already has this role",
+      "kundeInteLaggaTill": "Could not add moderator",
+      "kundeInteTaBort": "Could not remove moderator",
+      "kundeInteRaderaInnehall": "Could not delete content",
+      "varningSkickadTillAnvandare": "Warning sent to user",
+      "kundeInteSkickaVarning": "Could not send warning",
+      "moderatorsrollTillagd": "Moderator role added",
+      "moderatorsrollBorttagen": "Moderator role removed"
+    },
+    "notifications": {
+      "dinaAviseringarPaNolto": "Your notifications on Nolto.",
+      "olasta": "unread)",
+      "markeraAllaSomLasta": "Mark all as read",
+      "olasta2": "Unread",
+      "ingaOlastaAviseringar": "No unread notifications",
+      "ingaAviseringarAnnu": "No notifications yet",
+      "duArHeltIkapp": "You're all caught up!",
+      "narDuFarAviseringar": "When you receive notifications, they will appear here",
+      "aviseringar": "Aviseringar",
+      "alla": "Alla"
+    },
+    "messageConversation": {
+      "kundeInteSkickaMeddelande": "Could not send message",
+      "kundeInteLasaAldre": "Could not load older messages",
+      "loggaInForAtt": "Log in to view your messages",
+      "tillMeddelanden": "← To messages",
+      "tillbakaTillMeddelanden": "Back to messages",
+      "laddar": "Loading...",
+      "ingaMeddelandenAnnu": "No messages yet",
+      "laddar2": "Loading…",
+      "visaAldreMeddelanden": "Show older messages",
+      "aldreMeddelandeMedServerkryptering": " · Older message with server encryption",
+      "privataMeddelandenTillAndra": "Private messages to other servers are not yet supported.",
+      "duKanInteSkicka": "You cannot send messages to this person. Please check your connection and privacy settings.",
+      "skrivDittMeddelande": "Write your message...",
+      "loggaIn": "Log in",
+      "felVidLaddningAv": "Error loading conversation",
+      "privateConversationOnNolto": "Private conversation on Nolto.",
+      "startaKonversationen": "Start the conversation!",
+      "skickaMeddelande": "Send message",
+      "un": "UN",
+      "kontrollerarAnslutning": "Checking connection..."
+    },
+    "connectedApps": {
+      "harKanDuAterkalla": "Here you can revoke an external app's access to your Nolto account. To use the app again, you will need to reconnect it.",
+      "hamtarAnslutningar": "Fetching connections…",
+      "duHarIngaGodkanda": "You have no authorised app connections.",
+      "anslutningArSenastGodkand": "connection(s). Last authorised",
+      "aterkallar": "Revoking…",
+      "aterkallaAtkomst": "Revoke access",
+      "omMastodonAppar": "About Mastodon apps",
+      "anslutnaAppar": "Connected apps"
+    },
+    "sessionExpiryWarning": {
+      "dinSessionHarGatt": "Your session has expired. Please log in again.",
+      "sessionenHarForlangts": "Session has been extended",
+      "kundeInteForlangaSessionen": "Could not extend session. Please log in again.",
+      "sessionenGarUtSnart": "Session will expire soon",
+      "dinSessionGarUt": "Your session will expire in",
+      "villDuForlangaSessionen": ". Would you like to extend the session?",
+      "avfarda": "Dismiss",
+      "forlanger": "Extending...",
+      "forlangSession": "Extend session"
+    },
+    "userLookup": {
+      "anvandaruppslag": "User Lookup",
+      "sokEfterAnvandareMed": "Search for users by username or name...",
+      "soker": "Searching...",
+      "avstangd": "Suspended",
+      "anvandardetaljer": "User details",
+      "atgarder": "Actions",
+      "visaProfil": "View profile",
+      "stangAvAnvandare": "Suspend user",
+      "anvandarenHittadesInte": "User not found",
+      "rapporter": "Rapporter",
+      "meddelande": "Meddelande"
+    },
+    "shareProfileCard": {
+      "profillankKopierad": "Profile link copied!",
+      "kundeInteKopieraLanken": "Could not copy link",
+      "delaDinProfil": "Share your profile",
+      "kopieraProfillank": "Copy profile link",
+      "xTwitter": "X/Twitter"
+    },
+    "userActivityList": {
+      "kundeInteLaddaAktivitet": "Could not load activity",
+      "ingenAktivitetAnnu": "No activity yet"
+    },
+    "postView": {
+      "laddarInlagg": "Loading post",
+      "laddarInlaggsdetaljer": "Loading post details...",
+      "inlaggHittadesInte": "Post not found",
+      "inlaggetKundeInteHittas": "The post could not be found.",
+      "tillbakaTillFlodet": "Back to feed",
+      "visaInlaggOchSvar": "View post and replies on Nolto.",
+      "ingaSvarAnnuBli": "No replies yet. Be the first to reply!",
+      "inlaggetHittadesInte": "Post not found",
+      "inlagg": "Post",
+      "skrivEttSvar": "Write a reply..."
+    },
+    "instances": {
+      "utforskaNatverketAvAnslutna": "Explore the network of connected instances that interoperate with Nolto.",
+      "anslutetNatverk": "Connected Network",
+      "noltoSamverkarMedInstanser": "Nolto interoperates with instances within the network. Your professional network extends beyond a single platform.",
+      "sakerNolto": "Secure Nolto",
+      "sokInstanser": "Search instances...",
+      "besokInstans": "Visit instance",
+      "anslutDinOrganisation": "Connect your organisation",
+      "kompatiblaOrganisationerKanAnsluta": "Compatible organisations can connect to the Nolto network. Follow users and the connection is established automatically.",
+      "gaMedINolto": "Join Nolto",
+      "lasMerOmNolto": "Read more about Nolto",
+      "ingaInstanserHittades": "No instances found",
+      "ingaInstanserAnslutnaAnnu": "No instances connected yet",
+      "provaEttAnnatSokord": "Try another search term",
+      "bliDenForstaAtt": "Be the first to connect! Register and start building your network.",
+      "anslutnaInstanser": "Connected instances",
+      "anslutnaInstanser2": "connected instances",
+      "verifieradeAnslutningar": "Verified connections",
+      "aktiv": "Aktiv",
+      "anslutna": "anslutna",
+      "kompatibelNolto": "Kompatibel nolto"
+    },
+    "federatedFeed": {
+      "laddar": "Loading"
+    },
+    "pollDisplay": {
+      "omrostningsdataEjTillganglig": "Poll data unavailable",
+      "loggaInForAtt": "Log in to vote",
+      "andraRost": "Change vote",
+      "okantAlternativ": "Unknown option",
+      "rostar": "Voting...",
+      "rosta": "Vote"
+    },
+    "pollCreator": {
+      "omrostningsalternativ": "Poll options",
+      "laggTillAlternativ": "Add option",
+      "varaktighet": "Varaktighet",
+      "flerval": "Flerval"
+    },
+    "moderationDashboard": {
+      "verifierarAtkomst": "Verifying access...",
+      "atkomstBegransad": "Access Restricted",
+      "dettaOmradeArBegransat": "This area is restricted to authorised moderators. If you believe you should have access, please contact the administrator.",
+      "verktygForAttHantera": "Tools for managing content and users across the network.",
+      "overvakaGranskaOchHantera": "Monitor, review, and manage activity",
+      "vantande": "Pending",
+      "oversikt": "Overview",
+      "anvandare": "Users",
+      "avstangningar": "Suspensions",
+      "mfaArenden": "MFA Cases",
+      "sokAnvandareRapporter": "Search users, reports...",
+      "vantandeRapporter": "Pending reports",
+      "aktivaAvstangningar": "Active suspensions",
+      "atgarderIdag": "Actions today",
+      "snabbatgarder": "Quick actions",
+      "kontrolleraVantandeRapporter": "Check pending reports",
+      "sokAnvandare": "Search users",
+      "sokOchGranskaAnvandare": "Search and review users",
+      "senasteModereringsatgarder": "Latest moderation actions",
+      "innehallsrapporter": "Content reports",
+      "granskaOchVidtaAtgarder": "Review and action reported content",
+      "anvandarhantering": "User management",
+      "sokOchHanteraAnvandarkonton": "Search and manage user accounts",
+      "anvandaravstangningar": "User suspensions",
+      "visaOchHanteraAktiva": "View and manage active and historical suspensions",
+      "domanmoderering": "Domain moderation",
+      "hanteraBlockeradeOchBegransade": "Manage blocked and restricted domains",
+      "aktorsmoderering": "Actor moderation",
+      "hanteraBlockeradeAktorer": "Manage blocked actors",
+      "visaBegransadeInstanserOch": "View restricted instances and Nolto health",
+      "oppnaInstanshanteraren": "Open instance manager",
+      "fullstandigHistorikOverModereringsatgarder": "Full history of moderation actions",
+      "tillbakaHem": "Back home",
+      "modereringscenter": "Modereringscenter",
+      "systemOnline": "System online",
+      "rapporter": "Rapporter",
+      "loggar": "Loggar",
+      "varningar": "Varningar",
+      "moderatorer": "Moderatorer",
+      "vanligaModereringsuppgifter": "Common moderation tasks",
+      "granskaRapporter": "Review reports",
+      "instanshantering": "Instanshantering",
+      "hanteraAnslutnaInstanser": "Manage connected instances",
+      "senasteAktivitet": "Latest activity",
+      "modereringslogg": "Modereringslogg"
+    },
+    "adminFederationHealth": {
+      "kundeInteLaddaHalsodata": "Could not load health data",
+      "cacheForvarmningMisslyckades": "Cache pre-warming failed",
+      "varningBekraftad": "Warning confirmed",
+      "kundeInteBekraftaVarning": "Could not confirm warning",
+      "dataUppdaterad": "Data updated",
+      "rensningMisslyckades": "Purge failed",
+      "federationHealth": "Federation Health",
+      "monitorAndManageFederation": "Monitor and manage federation infrastructure",
+      "refresh": "Refresh",
+      "pending": "Pending",
+      "processing": "Processing",
+      "failed": "Failed",
+      "cacheEntries": "Cache Entries",
+      "queueHealth": "Queue Health",
+      "cache": "Cache",
+      "instances": "Instances",
+      "alerts": "Alerts",
+      "queueStatus": "Queue Status",
+      "oldestPendingItem": "Oldest Pending Item",
+      "queuePartitions": "Queue Partitions",
+      "16Active": "16 active",
+      "queueUtilization": "Queue Utilization",
+      "previewCleanup": "Preview Cleanup",
+      "runCleanup": "Run Cleanup",
+      "cacheStatistics": "Cache Statistics",
+      "activeEntries": "Active Entries",
+      "expiredEntries": "Expired Entries",
+      "totalHits": "Total Hits",
+      "avgHitsEntry": "Avg Hits/Entry",
+      "preWarmPopularActors": "Pre-warm Popular Actors",
+      "remoteInstances": "Remote Instances",
+      "noInstanceDataYet": "No instance data yet",
+      "req24h": "req/24h",
+      "errors": "errors",
+      "activeAlerts": "Active Alerts",
+      "noActiveAlerts": "No active alerts",
+      "noPendingItems": "No pending items"
+    },
+    "newsletterSubscribe": {
+      "prenumereraPaVartNyhetsbrev": "Subscribe to our newsletter",
+      "loggaInForAtt": "Log in to subscribe to our newsletter.",
+      "duPrenumererarMed": "You are subscribed with:",
+      "duPrenumererarPaUppdateringar": "You are subscribed to updates about new articles.",
+      "prenumereraForAttFa": "Subscribe to receive updates about new articles.",
+      "nyhetsbrev": "Nyhetsbrev",
+      "bearbetar": "Bearbetar...",
+      "avprenumerera": "Avprenumerera",
+      "prenumerera": "Prenumerera"
+    },
+    "profileEdit": {
+      "hanteraVilkaExternaAppar": "Manage which external apps can use your Nolto account.",
+      "hanteraAppatkomst": "Manage app access",
+      "anslutnaAppar": "Connected apps"
+    },
+    "userBanDialog": {
+      "blockeraAnvandare": "Block user",
+      "blockeraEnAnvandareFran": "Block a user from the platform. They will not be able to log in during the blocking period.",
+      "sokEfterAnvandare": "Search for user",
+      "sokPaAnvandarnamnEller": "Search by username or name...",
+      "soker": "Searching...",
+      "valdAnvandare": "Selected user",
+      "andra": "Change",
+      "1Manad": "1 month",
+      "3Manader": "3 months",
+      "1Ar": "1 year",
+      "beskrivVarforAnvandarenBlockeras": "Describe why the user is being blocked...",
+      "anledningenLoggasOchKan": "The reason will be logged and may be shown to the user.",
+      "avbryt": "Cancel",
+      "redanBlockerad": "Already blocked",
+      "blockeringstid": "Blockeringstid",
+      "1Dag": "1 day",
+      "3Dagar": "3 days",
+      "1Vecka": "1 week",
+      "2Veckor": "2 weeks",
+      "permanent": "Permanent",
+      "anledning": "Anledning",
+      "blockerar": "Blockerar..."
+    },
+    "domainModeration": {
+      "domanTillagd": "Domain added",
+      "domanUppdaterad": "Domain updated",
+      "kundeInteUppdateraDomanstatus": "Could not update domain status",
+      "domanBorttagen": "Domain removed",
+      "kundeInteTaBort": "Could not remove domain",
+      "provotid": "Probation period",
+      "laggTillDomanmoderering": "Add domain moderation",
+      "domanvard": "Domain host",
+      "valjStatus": "Select status",
+      "anledningTillModerering": "Reason for moderation",
+      "domanmoderationslista": "Domain moderation list",
+      "listaOverDomanerMed": "List of domains with moderation status",
+      "doman": "Domain",
+      "atgarder": "Actions",
+      "ingaDomanmodereringsposternaHittades": "No domain moderation entries found",
+      "redigeraDomanmoderering": "Edit domain moderation",
+      "uppdateraModereringsinstallningarFor": "Update moderation settings for",
+      "bekraftaBorttagning": "Confirm deletion",
+      "arDuSakerPa": "Are you sure you want to remove",
+      "franModerering": "from moderation?",
+      "uppdateringMisslyckades": "Update failed",
+      "ettFelUppstodVid": "An error occurred during update",
+      "borttagningMisslyckades": "Deletion failed",
+      "ettFelUppstodVid2": "An error occurred during deletion",
+      "blockerad": "Blockerad",
+      "normal": "Normal",
+      "exempelSocial": "exempel.social",
+      "status": "Status",
+      "reason": "Reason",
+      "refresh": "Refresh",
+      "addDomain": "Add Domain",
+      "anledning": "Anledning",
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes",
+      "delete": "Delete"
+    },
+    "retainedReportReview": {
+      "anmaltInnehallSomHar": "Reported content that has been deleted",
+      "atkomstenLoggasTextKan": "Access is logged. Text can be reviewed if the report was made before deletion and the case is still open. Images and private messages are not displayed here.",
+      "textenArInteTillganglig": "Text is not available. The case may be closed, the storage period expired, or access denied.",
+      "granskningenForlangerInteLagringstiden": ". The review does not extend the storage period.",
+      "hamtarTexten": "Retrieving text…",
+      "inlaggetInnehallerIngenGranskbar": "The post contains no reviewable text.",
+      "granskaRaderadText": "Review deleted text",
+      "raderasPermanent": "Permanently deleted"
+    },
+    "actorModeration": {
+      "aktorBlockerad": "Actor blocked",
+      "aktorUppdaterad": "Actor updated",
+      "kundeInteUppdateraAktor": "Could not update actor",
+      "ettFelIntraffade": "An error occurred",
+      "aktorBorttagen": "Actor removed",
+      "kundeInteTaBort": "Could not remove actor",
+      "provotid": "Probation period",
+      "laggTillAktorblockering": "Add actor blocking",
+      "aktorUrl": "Actor URL",
+      "valjStatus": "Select status",
+      "laggTillAktor": "Add actor",
+      "blockeradeAktorer": "Blocked actors",
+      "listaOverBlockeradeAktorer": "List of Blocked Actors",
+      "aktor": "Actor",
+      "atgarder": "Actions",
+      "ingaAktorblockeringarHittades": "No actor blocks found",
+      "redigeraAktorblockering": "Edit actor block",
+      "uppdateraModereringsinstallningarFor": "Update moderation settings for",
+      "avbryt": "Cancel",
+      "sparaAndringar": "Save changes",
+      "bekraftaBorttagning": "Confirm removal",
+      "arDuSakerPa": "Are you sure you want to remove",
+      "franModereringen": "from moderation?",
+      "taBort": "Remove",
+      "uppdateringMisslyckades": "Update failed",
+      "borttagningMisslyckades": "Deletion failed",
+      "blockerad": "Blockerad",
+      "normal": "Normal",
+      "status": "Status",
+      "anledning": "Anledning",
+      "uppdatera": "Uppdatera",
+      "redigera": "Redigera"
+    },
+    "mastodonApps": {
+      "duKanAnvandaDitt": "You can use your Nolto account in a Mastodon app. Support is experimental and open to all Nolto accounts. Login, profile, home feed, text posts, replies, and likes have been tested in Phanpy.",
+      "valjNoltoSocialSom": "Select nolto.social as the server in the app. You log in to the Nolto website with your usual login method and choose whether the app should have access. Your Nolto address remains the same even when using Google, Apple, or Bluesky for login.",
+      "vadIngarIForsta": "What's included in the first version?",
+      "offentligaProfilerHemflodeOffentligt": "Public profiles, home feed, public feed, text posts, replies, and likes. Following accounts that Nolto already knows are also included, but cross-server follows are not yet verified. Existing images are displayed from their sources.",
+      "bildOchVideouppladdningFran": "Image and video uploads from external apps, private messages, boosts, polls, and push notifications are missing. Edit or delete posts on the Nolto website. Other apps may have limitations that have not yet been tested.",
+      "duKanNarSom": "You can revoke an app's access at any time below. The app will then need to be reconnected and re-authorised.",
+      "egnaNoltoKontonI": "Native Nolto accounts in the Bluesky app are not yet available. You can still use an existing Bluesky account to log in to Nolto.",
+      "noltoIEnMastodon": "Nolto in a Mastodon app",
+      "hanteraAnslutnaAppar": "Manage connected apps"
+    },
+    "integrations": {
+      "hamtaFranNoltoFor": "Retrieve from Nolto – for recruiters",
+      "laggTillEnNolto": "Add a Nolto button to your application form. The candidate chooses which profile data to share.",
+      "forRekryterareOchUtvecklare": "FOR RECRUITERS AND DEVELOPERS",
+      "latKandidatenBorjaMed": "Let the candidate start with their Nolto profile.",
+      "enKnappFyllerI": "A button populates the data the candidate wants to share. The person doesn't have to type the same information again, and you can keep your usual application form.",
+      "hamtaFranNolto": "Retrieve from Nolto",
+      "kopieraOchKlistraIn": "Copy and paste",
+      "ingenApiNyckelEller": "No API key or registration required. The example works on an HTTPS page and in local development.",
+      "markeraOchKopieraKoden": "Highlight and copy the code in the box.",
+      "valjVilkaUppgifterNi": "Choose which information you need",
+      "listaFaltenIData": "List the fields in data-nolto-fields. Contact details, experience, and education are unchecked by default. Information not approved by the candidate will be excluded from the response.",
+      "falt": "Field",
+      "innehall": "Content",
+      "forEttEgetFlode": "For a custom feed or recruitment system",
+      "laddaSammaScriptOch": "Load the same script and call requestProfile when the user clicks your button. Text fields come as strings and CV sections as lists. Aborted sharing will result in an error that you can catch with try/catch.",
+      "importenDelarEnKopia": "The import shares a one-time copy. It does not provide ongoing account access or automatic updates. The data consists of the candidate's own profile information, not a verification certificate or a login to your system.",
+      "tekniskReferensOchExempel": "Technical Reference and Example",
+      "kallkodOchEgenDrift": "Source Code and Self-Hosting",
+      "kodenArKopierad": "Code copied",
+      "kopieraKoden": "Copy the code"
+    },
+    "remoteInstancesTable": {
+      "domanstatusUppdaterad": "Domain status updated",
+      "kundeInteUppdateraDomanstatus": "Could not update domain status",
+      "ettFelIntraffadeForsok": "An error occurred. Please try again.",
+      "kundeInteLaddaData": "Could not load data",
+      "troskelvardeForForfragningar": "Request threshold",
+      "tidsfonsterMinuter": "Time window (minutes)",
+      "antalForfragningar": "Number of requests",
+      "senasteForfragan": "Last request",
+      "atgarder": "Actions",
+      "tillat": "Allow",
+      "tillatInstans": "Allow instance?",
+      "dettaTarBortAlla": "This will remove all restrictions for",
+      "avbryt": "Cancel",
+      "bekrafta": "Confirm",
+      "begransa": "Restrict",
+      "begransaInstans": "Restrict instance?",
+      "dettaSatter": "This will place",
+      "underBegransningMedReducerad": "under restriction with reduced functionality.",
+      "angeEnAnledningFor": "Provide a reason for the restriction",
+      "dettaBlockerarAllTrafik": "This will block all traffic from",
+      "angeEnAnledningFor2": "Provide a reason for the block",
+      "ingaInstanserHittadesSom": "No instances found exceeding the threshold.",
+      "uppdatera": "Uppdatera",
+      "instans": "Instans",
+      "status": "Status",
+      "anledning": "Anledning",
+      "blockera": "Blockera",
+      "blockeraInstans": "Block instance?"
+    },
+    "quoteRepostDialog": {
+      "loggaInForAtt": "Log in to repost",
+      "inlaggetDeladesTillDin": "Post shared to your profile!",
+      "kundeInteDelaVidare": "Could not repost. Please try again.",
+      "delaTillDinProfil": "Share to your profile",
+      "laggTillDinaTankar": "Add your thoughts (optional)...",
+      "avbryt": "Cancel",
+      "delar": "Delar...",
+      "delaVidare": "Share onward"
+    },
+    "flaggedContentList": {
+      "flaggatInnehall": "Flagged Content",
+      "vantande": "Pending",
+      "losta": "Resolved",
+      "avfardade": "Dismissed",
+      "inga": "None",
+      "forhandsvisning": "Preview",
+      "avfarda": "Dismiss",
+      "taBortInnehall": "Remove content",
+      "taBortDetta": "Remove this",
+      "avbryt": "Cancel",
+      "taBort": "Remove",
+      "blockeraAnvandare": "Block user",
+      "innehalletDoljsDirektOch": "The content will be hidden immediately and permanently deleted after 30 days. The report will be marked as resolved.",
+      "dettaTarPermanentBort": "This will permanently remove the reported content. This action cannot be undone.",
+      "granskade": "Granskade",
+      "allaRapporter": "All reports",
+      "rapporterHittades": "reports found",
+      "rapporteradAv": "Reported by @",
+      "markeraGranskad": "Mark as reviewed"
+    },
+    "blockUserDialog": {
+      "kundeInteBlockeraAnvandaren": "Could not block user",
+      "attBlockeraDennaAnvandare": "Blocking this user will:",
+      "doljaDerasInlaggFran": "Hide their posts from your feed",
+      "forhindraDemFranAtt": "Prevent them from sending you messages",
+      "taBortDemFran": "Remove them from search results",
+      "varforBlockerarDuDenna": "Why are you blocking this user?",
+      "avbryt": "Cancel",
+      "blockeraAnvandare": "Block user",
+      "blockera": "Blockera",
+      "anledningValfritt": "Reason (optional)",
+      "blockerar": "Blockerar..."
+    },
+    "linkedInImportButton": {
+      "importeraFranLinkedin": "Import from LinkedIn"
+    },
+    "app": {
+      "laddarSida": "Loading page",
+      "laddar": "Loading..."
+    },
+    "postReplyThread": {
+      "kundeInteSparaKommentaren": "Could not save comment",
+      "okand": "Unknown",
+      "kommentarEjTillganglig": "Comment not available"
+    },
+    "uploadStep": {
+      "bearbetarDinData": "Processing your data...",
+      "dettaKanTaEn": "This may take a moment",
+      "slappDinLinkedinZip": "Drop your LinkedIn ZIP file here",
+      "ellerKlickaForAtt": "or click to browse",
+      "forvantadeFilerIDin": "Expected files in your export:",
+      "profileCsvGrundlaggandeProfilinfo": "• Profile.csv – Basic profile info",
+      "sharesCsvInlaggOch": "• Shares.csv – Posts and articles (optional)",
+      "narDuExporterarFran": "When exporting from LinkedIn, select \"The larger data archive\" for more complete data.",
+      "maxFilstorlek100mb": "Max filstorlek: 100MB",
+      "tillbaka": "Tillbaka",
+      "positionsCsvArbetslivserfarenhet": "• Positions.csv – Work experience",
+      "educationCsvUtbildningshistorik": "• Education.csv – Educational history",
+      "skillsCsvKompetenser": "• Skills.csv – Skills",
+      "tips": "Tips:"
+    },
+    "postEditDialog": {
+      "omrostningsalternativKanInteRedigeras": "Poll options cannot be edited after creation to preserve the integrity of votes. You can only edit the question text above.",
+      "avbryt": "Cancel",
+      "redigeraOmrostning": "Edit poll",
+      "redigeraInlagg": "Edit post",
+      "redigeraDinOmrostningsfraga": "Edit your poll question...",
+      "vadTankerDuPa": "What's on your mind?",
+      "sparaAndringar": "Save changes",
+      "sparar": "Sparar..."
+    },
+    "companySearchFilter": {
+      "sokForetag": "Search company...",
+      "anstallda": "employees",
+      "typAvOrganisation": "Type of organisation",
+      "allaTyper": "All types",
+      "storlek": "Storlek",
+      "allaStorlekar": "All sizes",
+      "plats": "Plats",
+      "clear": "Clear"
+    },
+    "updatePassword": {
+      "valjNyttLosenord": "Choose new password",
+      "dittLosenordHarAndrats": "Your password has been changed.",
+      "fortsattTillNolto": "Continue to Nolto",
+      "aterstallningslankenSaknasHarGatt": "The reset link is missing, has expired, or has already been used.",
+      "begarEnNyLank": "Request a new link",
+      "nyttLosenordMinst12": "New password, at least 12 characters",
+      "bekraftaLosenord": "Confirm password",
+      "andraLosenord": "Change password",
+      "verifierarInloggning": "Verifying login…",
+      "sparar": "Sparar…"
+    },
+    "socialCallback": {
+      "loggaInPaNolto": "Log in to Nolto",
+      "inloggningenKundeInteSlutforas": "Login could not be completed. Please try again in the same browser.",
+      "forsokIgen": "Try again",
+      "slutforInloggningen": "Completing login…"
+    },
+    "previewStep": {
+      "ingenDataHittadesI": "No data was found in your export. This could be because the ZIP file structure is different from expected. Click \"Show details\" below to see which files were detected.",
+      "ingaCsvFilerHittades": "No CSV files found",
+      "inlaggsDelningskolumner": "Post/share columns:",
+      "seTillAttDu": "Ensure you are using \"Get a copy of your data\" from LinkedIn settings. Choose \"The larger data archive\" for more complete data.",
+      "inlagg": "Posts",
+      "ingenProfildataHittadesI": "No profile data found in the export",
+      "forvantadFilProfileCsv": "Expected file: Profile.csv",
+      "ingenArbetslivserfarenhetHittades": "No work experience found",
+      "forvantadFilPositionsCsv": "Expected file: Positions.csv",
+      "ingenUtbildningHittades": "No education found",
+      "forvantadFilEducationCsv": "Expected file: Education.csv",
+      "ingaKompetenserHittades": "No skills found",
+      "forvantadFilSkillsCsv": "Expected file: Skills.csv",
+      "importeraSomUtkast": "Import as draft",
+      "ingaInlaggEllerArtiklar": "No posts or articles found",
+      "forvantadFilSharesCsv": "Expected file: Shares.csv",
+      "doljDetaljer": "Hide details",
+      "visaDetaljer": "Show details",
+      "okant": "Unknown",
+      "csvFilerHittade": "CSV-filer hittade (",
+      "profilkolumner": "Profilkolumner:",
+      "positionskolumner": "Positionskolumner:",
+      "utbildningskolumner": "Utbildningskolumner:",
+      "kompetenskolumner": "Kompetenskolumner:",
+      "tips": "Tips:",
+      "profil": "Profil",
+      "arbete": "Arbete",
+      "utbildning": "Utbildning",
+      "kompetenser": "Kompetenser",
+      "importeraProfilinfo": "Import profile info",
+      "hittad": "Hittad",
+      "namn": "Namn",
+      "rubrik": "Rubrik",
+      "bio": "Bio",
+      "plats": "Plats",
+      "importeraArbetslivserfarenhet": "Import work experience",
+      "hittade": "hittade",
+      "importeraUtbildning": "Import education",
+      "importeraKompetenser": "Import skills",
+      "tillbaka": "Tillbaka",
+      "importerar": "Importerar...",
+      "ejAngivet": "Not specified",
+      "nuvarande": "Nuvarande"
+    },
+    "companyCard": {
+      "foljare": "followers"
+    },
+    "contentWarningInput": {
+      "innehallsvarningarHjalperAndraAtt": "Content warnings help others choose what they want to see. Posts with a warning are hidden by default.",
+      "laggTillInnehallsvarning": "Add content warning",
+      "tExPolitikSpoilers": "e.g. politics, spoilers, food..."
+    },
+    "shareProfile": {
+      "valjVadDuVill": "Choose what you want to share",
+      "oppnaDelningenMedNolto": "Open the sharing feature with the Nolto button on the page where you want to fill in a form.",
+      "klartDuKanStanga": "Done. You can close this window.",
+      "baraDeUppgifterDu": "Only the information you select will be sent when you press Share. The recipient can save it. You still need to review and submit the form on their page.",
+      "loggaInPaNolto": "Log in to Nolto",
+      "loggaInIDen": "Log in in the new tab, then return here.",
+      "hamtarDinProfil": "Fetching your profile…",
+      "forsokIgen": "Try again",
+      "avbryt": "Cancel",
+      "inteIfyllt": "Not filled in",
+      "mottagare": "Mottagare",
+      "kontrollerarInloggningen": "Checking login…",
+      "delaValdaUppgifter": "Share selected information"
+    },
+    "bannedUsersList": {
+      "upphavd": "Lifted",
+      "utgangen": "Expired",
+      "upphavBlockering": "Lift ban",
+      "upphavDennaBlockering": "Lift this ban?",
+      "dettaAterstallerOmedelbartAnvandarens": "This will immediately restore the user's access to the platform. Are you sure?",
+      "avbryt": "Cancel",
+      "ingaAktivaBlockeringar": "No active bans",
+      "ingenBlockeringshistorik": "No ban history",
+      "okandAnvandare": "Unknown user",
+      "utgar": "Expires",
+      "permanent": "Permanent",
+      "kvar": "kvar",
+      "blockerad": "Blockerad",
+      "blockeringar": "Blockeringar",
+      "aktiva": "Active (",
+      "historik": "History (",
+      "utgick": "Utgick"
+    },
+    "mfaRecover": {
+      "aterstallTvafaktorsautentisering": "Reset Two-Factor Authentication",
+      "tvafaktorsautentiseringenHarAterstalltsAktivera": "Two-factor authentication has been reset. Please enable it again in your account settings.",
+      "oppnaKontoinstallningar": "Open account settings",
+      "lankenArOgiltigKontakta": "The link is invalid. Please contact jtensetti@protonmail.com if you need assistance.",
+      "loggaInMedDitt": "Log in with your password to use the recovery link.",
+      "dettaTarBortDina": "This will remove your existing two-factor methods and log out your other sessions. The link only works for the account it was issued to.",
+      "tillbakaTillNolto": "Back to Nolto",
+      "aterstaller": "Resetting…",
+      "kontrollerarInloggning": "Checking login…",
+      "loggaIn": "Log in"
+    },
+    "instructionsStep": {
+      "oppnaLinkedinsDataexport": "Open LinkedIn's data export",
+      "eller": "or",
+      "jagHarRedanMin": "I already have my export",
+      "dinIntegritetSkyddas": "Your privacy is protected",
+      "dataBearbetasIDin": "Data is processed in your browser. We never store or send your file to any server.",
+      "klickaPaKnappenNedan": "Click the button below to go to LinkedIn's download settings.",
+      "begarDinData": "Request your data",
+      "valjDownloadLargerData": "Select \"Download larger data archive\" and tick the data you wish to export.",
+      "vantaPaEPost": "Wait for email",
+      "linkedinSkickarEttMejl": "LinkedIn will send an email when your data is ready. Usually a few minutes, up to 24 hours.",
+      "laddaNerZipFilen": "Download the ZIP file from LinkedIn and upload it here.",
+      "laddaUppZipFilen": "Upload the ZIP file"
+    },
+    "confirmStep": {
+      "objektImporteradesTillDin": "items were imported to your profile",
+      "slutfordMedProblem": "Completed with issues",
+      "nagraFelUppstod": "Some errors occurred:",
+      "visaProfil": "View profile",
+      "importLyckades": "Import successful",
+      "vissaObjektImporteradesMen": "Some items were imported, but errors occurred",
+      "importsammanfattning": "Importsammanfattning",
+      "profil": "Profil",
+      "arbetslivserfarenhet": "Arbetslivserfarenhet",
+      "utbildning": "Utbildning",
+      "kompetenser": "Kompetenser",
+      "artiklar": "Artiklar"
+    },
+    "authorizeApp": {
+      "oppnaAppanslutningenIEtt": "Open the app connection in a separate window on Nolto.",
+      "villDuAnslutaDen": "Do you want to connect this app?",
+      "kontrollerarAppensForfragan": "Checking app request…",
+      "appensNamnOchWebbplats": "The app's name and website are provided by the developer and are not verified by Nolto. Only approve an app you have chosen to connect yourself.",
+      "appenBegarAttFa": "The app requests permission to:",
+      "atkomstenGallerIHogst": "Access is valid for a maximum of 30 days and can be revoked under Connected Apps. It also expires when the login session is revoked. New posts follow Nolto's moderation rules.",
+      "mastodonAppstodetArUnder": "Mastodon app support is undergoing testing. Text posts, replies, likes and follows are included. Image and video uploads, private messages, boosts, and push notifications are not yet included.",
+      "loggaInPaNolto": "Log in to Nolto",
+      "efterInloggningenKommerDu": "After logging in, you will return here and decide whether to grant the app access.",
+      "ansluterSom": "Connecting as",
+      "kundeInteLasaDitt": "Could not read your account. Please reload the page and try again.",
+      "avbryt": "Cancel",
+      "dittNoltoKonto": "your Nolto account",
+      "godkannOchAnslut": "Approve and connect",
+      "anslutEnAppNolto": "Connect an app · Nolto",
+      "kontrollerarInloggningen": "Checking login…",
+      "ansluter": "Ansluter…"
+    },
+    "companyForm": {
+      "viByggerFramtidenFor": "We are building the future for...",
+      "berattaOmDinOrganisation": "Tell us about your organisation...",
+      "size110Anstallda": "1–10 employees",
+      "size1150Anstallda": "11–50 employees",
+      "size51200Anstallda": "51–200 employees",
+      "size201500Anstallda": "201–500 employees",
+      "size5011000Anstallda": "501–1,000 employees",
+      "size10015000": "1,001–5,000 employees",
+      "size500110000": "5,001–10,000 employees",
+      "size10001Anstallda": "10,001+ employees",
+      "organisationsnamn": "Organisationsnamn",
+      "noltoSocialOrganisation": "nolto.social/organisation/",
+      "organisationsnamn2": "organisationsnamn",
+      "stockholmSverige": "Stockholm, Sweden"
+    },
+    "messageRequestCard": {
+      "avboj": "Decline",
+      "avbojDennaForfragan": "Decline this request?",
+      "kommerInteKunnaSkicka": "will not be able to send another message request. You can always connect with them later if you change your mind.",
+      "avbryt": "Cancel",
+      "avbojForfragan": "Decline request",
+      "acceptera": "Acceptera",
+      "unknown": "Unknown"
+    },
+    "authRecovery": {
+      "tillbakaTillInloggning": "Back to login",
+      "aterstallLosenord": "Reset password",
+      "omAdressenTillhorEtt": "If the address belongs to an account, you will receive an email with a link to choose a new password. Please check your spam folder.",
+      "angeEPostadressenFor": "Enter the email address for your Nolto account. If you log in via Mastodon, please reset your password on your Mastodon server.",
+      "skickaAterstallningslank": "Send reset link",
+      "ePostadress": "E-postadress",
+      "skickar": "Skickar…"
+    },
+    "reportDialog": {
+      "valjEnAnledningFor": "Select a reason for reporting",
+      "kundeInteSkickaRapport": "Could not send report. Please try again.",
+      "anledningTillRapportering": "Reason for reporting",
+      "avbryt": "Cancel",
+      "spamEllerVilseledande": "Spam or misleading content",
+      "trakasserierEllerMobbning": "Harassment or bullying",
+      "hatretorikEllerDiskriminering": "Hate speech or discrimination",
+      "olampligtInnehall": "Inappropriate content",
+      "identitetsstold": "Identity theft",
+      "annat": "Other",
+      "rapportInskickadViGranskar": "Report submitted. We will review it shortly.",
+      "rapportera": "Rapportera",
+      "ytterligareDetaljerValfritt": "Further details (optional)",
+      "geYtterligareSammanhang": "Provide further context...",
+      "skickar": "Skickar...",
+      "skickaRapport": "Send report"
+    },
+    "profileCompleteness": {
+      "fyllIDinProfil": "Complete your profile",
+      "laggTill": "Add",
+      "grundlaggandeInfoNamnRubrik": "Basic info (name, headline, bio)",
+      "profilbild": "Profilbild",
+      "arbetslivserfarenhet": "Arbetslivserfarenhet",
+      "utbildning": "Utbildning",
+      "kompetenser": "Kompetenser"
+    },
+    "profileHoverCard": {
+      "profilenHittadesInte": "Profile not found",
+      "pa": "on",
+      "visaProfil": "View profile",
+      "okandAnvandare": "Unknown user",
+      "verifierad": "Verifierad",
+      "kontakter": "kontakter"
+    },
+    "shareButton": {
+      "lankKopieradTillUrklipp": "Link copied to clipboard!",
+      "kundeInteKopieraLank": "Could not copy link",
+      "kopieraLank": "Copy link",
+      "laddaNerSomBild": "Download as image",
+      "delaPaBluesky": "Share on Bluesky",
+      "delaPaMastodon": "Share on Mastodon",
+      "delaPaLinkedin": "Share on LinkedIn",
+      "delaPaXTwitter": "Share on X/Twitter",
+      "delaSomBild": "Share as image",
+      "dela": "Dela",
+      "flerAlternativ": "More options..."
+    },
+    "alertManager": {
+      "kundeInteSkapaAvisering": "Could not create alert",
+      "kundeInteUppdateraAvisering": "Could not update alert",
+      "kundeInteTaBort": "Could not delete alert",
+      "meddelandeKravs": "Message required",
+      "laddar": "Loading...",
+      "ingaAviseringarKonfigurerade": "No alerts configured",
+      "vaxlaAktiv": "Toggle active",
+      "infoGron": "Info (Green)",
+      "felRod": "Error (Red)",
+      "avbryt": "Cancel",
+      "skapaAvisering": "Create alert",
+      "spara": "Save",
+      "skapa": "Create",
+      "aviseringSkapad": "Alert created",
+      "aviseringUppdaterad": "Alert updated",
+      "aviseringBorttagen": "Alert deleted",
+      "webbplatsaviseringar": "Webbplatsaviseringar",
+      "nyAvisering": "New alert",
+      "meddelande": "Meddelande",
+      "angeAviseringsmeddelande": "Enter alert message...",
+      "typ": "Typ",
+      "fel": "Fel",
+      "info": "Info",
+      "redigeraAvisering": "Edit alert"
+    },
+    "deleteAccountSection": {
+      "kontotDoljsDirektOch": "The account will be hidden immediately and data permanently deleted after 30 days.",
+      "dinProfilOchDina": "Your profile and contact details",
+      "allaDinaInlaggKommentarer": "All your posts, comments, and reactions",
+      "dinaKontakterOchMeddelanden": "Your connections and messages",
+      "dinErfarenhetUtbildningOch": "Your experience, education, and skills",
+      "allaSparadeObjektOch": "All saved items and notifications",
+      "laddaNerDinaUppgifter": "Download your data first if you wish to retain it. Copies held by other servers and recipients may remain. Organisations and their files must be transferred before account deletion.",
+      "loggaUtOchLogga": "Log out and log in again to confirm your identity",
+      "jagForstarAttKontot": "I understand that the account will be closed immediately and permanently deleted after 30 days",
+      "forAttBekrafta": "to confirm",
+      "arDuHeltSaker": "Are you absolutely sure?",
+      "dinProfilOchDitt": "Your profile and content on Nolto will be hidden immediately. You will be logged out and unable to use the account. Data will be permanently deleted after 30 days. Copies already received by others may remain.",
+      "avbryt": "Cancel",
+      "raderaKonto": "Delete account",
+      "efter30DagarRaderas": "After 30 days, the following will be deleted:",
+      "skriv": "Skriv",
+      "radera": "RADERA",
+      "raderaMittKonto": "Delete my account",
+      "raderar": "Raderar...",
+      "jaRaderaMittKonto": "Yes, delete my account"
+    },
+    "notFound": {
+      "sidanHittadesInte": "Page not found",
+      "sidanDuLetarEfter": "The page you are looking for does not exist or has been moved.",
+      "tillbakaTillStartsidan": "Back to homepage"
+    },
+    "saveButton": {
+      "loggaInForAtt": "Log in to save item",
+      "kundeInteSparaObjektet": "Could not save item"
+    },
+    "emailNotificationPreferences": {
+      "duMasteVaraInloggad": "You must be logged in",
+      "kundeInteUppdateraInstallningar": "Could not update settings",
+      "sammanfattningsmailForNotifieringar": "Notification summary email",
+      "taEmotEPostsammanfattningar": "Receive email summaries of unread notifications",
+      "ePostnotifieringar": "E-postnotifieringar"
+    },
+    "profileService": {
+      "failedToLoadProfile": "Failed to load profile data"
+    },
+    "articleReactionsService": {
+      "youMustBeLogged": "You must be logged in to react to an article",
+      "failedToProcessYour": "Failed to process your reaction. Please try again."
+    },
+    "useArticleImageUpload": {
+      "pleaseSelectAnImage": "Please select an image file",
+      "imageMustBeSmaller": "Image must be smaller than 5MB",
+      "youMustBeLogged": "You must be logged in to upload images",
+      "failedToUploadImage": "Failed to upload image"
+    },
+    "inlineErrorBanner": {
+      "retry": "Retry",
+      "dismiss": "Dismiss"
+    },
+    "starterPackCard": {
+      "followed": "Followed",
+      "follow": "Follow"
+    },
+    "adminInstances": {
+      "verifyingAccess": "Verifying access...",
+      "accessRestricted": "Access Restricted",
+      "thisAreaIsRestricted": "This area is restricted to authorized moderators only.",
+      "returnHome": "Return Home",
+      "instanceManagementAdmin": "Instance Management - Admin",
+      "manageRateLimitedInstances": "Manage rate-limited instances and federation queues.",
+      "back": "Back",
+      "instanceManagement": "Instance Management",
+      "rateLimitedInstances": "Rate Limited Instances",
+      "federationQueue": "Federation Queue",
+      "federationLogs": "Federation Logs",
+      "federationLogsFunctionalityWill": "Federation logs functionality will be added in a future update."
+    },
+    "moderationLog": {
+      "loadingModerationActions": "Loading moderation actions..."
+    },
+    "blueskySignIn": {
+      "namnBskySocial": "namn.bsky.social"
+    },
+    "contentWarningDisplay": {
+      "contentWarning": "Content warning:",
+      "hide": "Hide",
+      "show": "Show"
+    },
+    "shardedQueueStats": {
+      "federationQueueStatistics": "Federation Queue Statistics",
+      "errorLoadingQueueStatistics": "Error loading queue statistics",
+      "federationQueueOverview": "Federation Queue Overview",
+      "total": "Total",
+      "pending": "Pending",
+      "processing": "Processing",
+      "failed": "Failed",
+      "processed": "Processed",
+      "queueStatisticsByPartition": "Queue Statistics by Partition",
+      "partition": "Partition",
+      "total2": "Total:",
+      "pending2": "Pending:",
+      "processing2": "Processing:",
+      "failed2": "Failed:",
+      "processed2": "Processed:"
+    },
+    "quotedPostPreview": {
+      "postAttachment": "Post attachment",
+      "reposted": "reposted"
+    },
+    "healthCheckStatus": {
+      "systemHealth": "System Health",
+      "monitorTheHealthOf": "Monitor the health of the system components",
+      "failedToLoadHealth": "Failed to load health status. Please try again.",
+      "database": "Database",
+      "latency": "Latency:",
+      "ms": "ms",
+      "queueDepth": "Queue Depth",
+      "messages": "messages",
+      "lastChecked": "Last checked:",
+      "traceId": "Trace ID:",
+      "connected": "Connected",
+      "slow": "Slow",
+      "error": "Error",
+      "normal": "Normal",
+      "high": "High",
+      "critical": "Critical",
+      "refreshing": "Refreshing...",
+      "refresh": "Refresh"
+    },
+    "fediverseBadge": {
+      "verifiedVia": "Verified via",
+      "thisUserSIdentity": "This user's identity is verified through their Fediverse account on"
+    },
+    "quoteCardGenerator": {
+      "imageDownloaded": "Image downloaded!",
+      "failedToGenerateImage": "Failed to generate image. Try again.",
+      "shareAsImage": "Share as Image",
+      "downloadAsImage": "Download as Image",
+      "verticalStories": "Vertical (Stories)",
+      "generating": "Generating...",
+      "downloadImage": "Download Image"
+    },
+    "linkPreview": {
+      "loadingPreview": "Loading preview..."
+    },
+    "companyPostCard": {
+      "cw": "CW:",
+      "postImage": "Post image"
+    },
+    "coverImageUpload": {
+      "cover": "Cover"
+    },
+    "imageLightbox": {
+      "imageViewer": "Image viewer",
+      "close": "Close",
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "image": "Image"
+    },
+    "alertBanner": {
+      "dismissAlert": "Dismiss alert"
+    },
+    "modeToggle": {
+      "failedToSaveTheme": "Failed to save theme preference"
+    },
+    "jobForm": {
+      "tEx50000": "e.g. 50000",
+      "tEx80000": "e.g. 80000"
+    },
+    "messageReactions": {
+      "addReaction": "Add reaction",
+      "reactToThisMessage": "React to this message"
+    },
+    "starterPackView": {
+      "unknown": "Unknown"
+    },
+    "freelancers": {
+      "freelancer": "Freelancer"
+    },
+    "messages": {
+      "un": "UN"
+    },
+    "search": {
+      "unknown": "Unknown"
+    },
+    "addRoleForm": {
+      "unknown": "Unknown"
+    },
+    "companyPostComposer": {
+      "preview": "Preview"
+    },
+    "skillEndorsements": {
+      "unknown": "Unknown"
+    },
+    "companyPeopleTab": {
+      "user": "User"
+    },
+    "postCardContent": {
+      "mediaAttachment": "Media attachment"
+    },
+    "commentPreview": {
+      "unknown": "Unknown"
+    },
+    "postComposer": {
+      "user": "User",
+      "preview": "Preview"
+    },
+    "companyEmployeeForm": {
+      "fullTime": "Full-time",
+      "partTime": "Part-time",
+      "contract": "Contract",
+      "intern": "Intern",
+      "freelance": "Freelance"
+    }
+  },
+  "notificationText": {
+    "someone": "Someone",
+    "connectionRequest": "{{name}} sent you a connection request",
+    "connectionAccepted": "{{name}} accepted your connection request",
+    "endorsement": "{{name}} endorsed your skill",
+    "withText": "{{name}}: {{text}}",
+    "message": "{{name}} sent you a message",
+    "follow": "{{name}} started following you",
+    "reactedPost": "{{name}} reacted {{emoji}} to your post",
+    "reactedComment": "{{name}} reacted {{emoji}} to your comment",
+    "boost": "{{name}} boosted your post",
+    "repliedPost": "{{name}} replied to your post",
+    "repliedComment": "{{name}} replied to your comment",
+    "mention": "{{name}} mentioned you",
+    "recommendationRequest": "{{name}} requested a recommendation",
+    "recommendationReceived": "{{name}} wrote you a recommendation",
+    "reactedMessage": "{{name}} reacted {{emoji}} to your message",
+    "articlePublished": "{{name}} published a new article",
+    "fallback": "New notification"
+  },
+  "validation": {
+    "required": "Required field",
+    "tooShort": "Enter at least {{min}} characters",
+    "tooLong": "Enter at most {{max}} characters",
+    "invalidEmail": "Enter a valid email address",
+    "invalidUrl": "Enter a valid web address",
+    "invalid": "Invalid value"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "legalDocs": {
+    "privacy": {
+      "title": "Privacy policy",
+      "intro": "The data Nolto uses, what federation shares, and your rights.",
+      "sections": [
+        [
+          "Responsibility and contact",
+          "Jonatan Tensetti operates Nolto.social and is the data controller for personal data processed as part of this service. Contact the operator at the email address below about personal data or a data protection request. Other federated servers have independent operators who are responsible for their own processing of personal data and have their own policies."
+        ],
+        [
+          "Data and purposes",
+          "We process your account email and authentication data, the optional profile fields you supply, content and relationships to provide the features you use. We do not sell personal data. We do not track profile visits or store message previews in contact requests. Consent records and MFA recovery requests do not retain IP addresses or browser identifiers. Hosting providers may still process technical connection information. Security logs and moderation records are used to protect the service and handle reports."
+        ],
+        [
+          "Legal bases",
+          "Account management and requested features rely on performing our agreement with you. Security and moderation rely on a legitimate interest in operating a safe service, balanced against your privacy. Legal obligations may require additional processing. Where a feature requires consent, it must be requested separately and be withdrawable."
+        ],
+        [
+          "Public content and federation",
+          "Profiles and public posts can be read by others. Enabling federation allows profile data, images, posts, reactions and account relationships to be sent to other servers using ActivityPub. WebFinger makes username@nolto.social discoverable. Recipients may be outside the EU/EEA. Editing or deleting content in Nolto cannot guarantee that every recipient deletes its copy."
+        ],
+        [
+          "Bluesky sign-in",
+          "When Bluesky sign-in is available, you authorize it with your account provider. Nolto stores your persistent AT Protocol identity (DID) linked to your Nolto account. We request sign-in permission only and do not collect posts, follows or private messages. Temporary server-side sign-in state is encrypted, expires after ten minutes and is then cleared. Access tokens are not kept after sign-in. Nolto never receives your Bluesky password. Link an existing Nolto account in profile settings to avoid creating a separate account."
+        ],
+        [
+          "Language reminders and review",
+          "Text submitted for publication is checked against a limited set of Swedish and English rules in Nolto’s database. The preflight check does not store the draft or send it to an external analysis service. Personal attacks may receive a reminder you can override. Some explicit threats and calls for group violence are held for human review. Rules can miss content or misunderstand context and do not assess images. My reviews shows the status and lets you provide context or request reconsideration. Review notes are deleted when the associated content is permanently deleted. Private messages are excluded from these text checks."
+        ],
+        [
+          "Mastodon sign-in",
+          "When you choose Mastodon sign-in, Nolto contacts that server to identify your account. Nolto does not receive your Mastodon password. An authorization token may be stored encrypted on the server. Signing in does not merge accounts or synchronize all history and private messages."
+        ],
+        [
+          "Providers and security",
+          "The backend runs on Lovable Cloud using Supabase technology for database, authentication and files. Email may use Resend. Providers process information needed for operation. Other federated servers have independent operators. Public profiles, posts and files must be readable by the service and receiving servers. Encryption in transit and encryption using a server key are not end-to-end encryption and cannot eliminate the risk of a breach."
+        ],
+        [
+          "Private messages",
+          "New private messages between Nolto accounts are encrypted and signed in the browser. Both participants must activate their encrypted inbox. The key phrase is never sent to Nolto; the private key is backed up only in encrypted form. An unlocked key is held in browser memory and locked on sign-out, page exit or 15 minutes of inactivity. Sender, recipient and timestamps remain visible to the server. Older messages are labelled separately and can be decrypted by the server. Public content and messages on other services are excluded. Keep your key phrase and encrypted key backup safe: resetting your account password does not recover the key phrase. Compare key fingerprints through another trusted channel. An attacker controlling your device or the code delivered by the service may still access content while you use the inbox."
+        ],
+        [
+          "Retention and rights",
+          "Requesting deletion of an account, post, comment or article hides it immediately from Nolto’s ordinary interface and API. Account access is disabled at the same time. Permanent deletion is scheduled for 30 days after the request. During that period data is isolated from ordinary access; retained content is encrypted with a separate server key and a background job moves files to a private encrypted archive. This is not end-to-end encryption. If a post or article was reported before deletion, authorised moderators can review its archived text while the report is open and retention has not expired. Access is logged and does not extend retention. This process does not give moderators access to private messages. Authentication rate-limit logs are pruned after one day, federation logs after seven days and MFA recovery requests after 30 days. Limited identifiers may be kept as federation tombstones and to prevent takeover of a retired federation address. Provider backups and copies already downloaded by recipients follow separate processes. GDPR requests are assessed without undue delay and may require earlier erasure; the 30-day workflow does not restrict your rights. Contact us if urgent or broader erasure is needed."
+        ],
+        [
+          "Your rights",
+          "You may request access, correction, erasure, restriction and, where applicable, portability, object to legitimate-interest processing and withdraw consent. Contact us below; proportionate identity verification may be needed. You may complain to the Swedish Authority for Privacy Protection at imy.se."
+        ]
+      ]
+    },
+    "terms": {
+      "title": "Terms of service",
+      "intro": "Your account, your content and independent federated servers.",
+      "sections": [
+        [
+          "Service operator",
+          "Nolto was created by Jonatan Tensetti, who also operates Nolto.social. These terms apply between you and the service operator. You can reach the operator at the email address under Contact."
+        ],
+        [
+          "Your account",
+          "Nolto is a professional network for people aged 16 and above. Protect your credentials and use two-factor authentication where possible. Do not impersonate others or represent an organization without authority. Contact us if your account may have been compromised."
+        ],
+        [
+          "Your content",
+          "You retain your rights to your content. You grant Nolto the non-exclusive permission to store, display and transmit it as needed for the features you use, including federation when enabled. You are responsible for having the right to publish it and respecting others' privacy and rights."
+        ],
+        [
+          "Federated identity",
+          "A Nolto address is a social identity, not an email address. Once published, it needs to remain stable. Mastodon and other services have separate accounts and rules. Following an account, importing follows or moving followers does not transfer or synchronize all data, history or private messages."
+        ],
+        [
+          "Moderation and review",
+          "Harassment, threats, hate, fraud, spam and illegal content are prohibited. Nolto may restrict content, accounts or federation in response to abuse. We aim for proportionate action and an understandable explanation where safety and legal duties permit. Report issues in the service or contact us. You may ask for a decision to be reviewed and explain why you disagree."
+        ],
+        [
+          "Availability, closure and changes",
+          "Maintenance and faults may interrupt the service. Verify user-provided job adverts and offers independently. These terms do not limit mandatory legal rights or promise specific uptime or compatibility with every server. You may stop using the service and request account deletion; remote copies may remain. Material changes should be communicated before taking effect where possible."
+        ]
+      ]
+    },
+    "cookies": {
+      "title": "Cookies and local storage",
+      "intro": "What your browser stores when you use Nolto.",
+      "sections": [
+        [
+          "Message keys",
+          "The browser stores key fingerprints to detect key changes. The key phrase and unlocked private keys are not written to local storage. Clearing browser storage removes prior comparisons; verify fingerprints again afterwards."
+        ],
+        [
+          "Sessions",
+          "The Supabase client stores session credentials in localStorage to keep you signed in. They are used to authenticate requests to the service, rather than remaining exclusively on your device. Sign out on shared devices."
+        ],
+        [
+          "Preferences and temporary data",
+          "Nolto stores language, theme and some interface preferences locally. Mastodon and Bluesky sign-in use sessionStorage to bind the callback to your sign-in attempt. A referral code may be retained with a 24-hour expiry. Clearing site data may require signing in and selecting preferences again."
+        ],
+        [
+          "Other services",
+          "The application code does not include advertising tracking or Google Analytics. Hosting and security providers may use technical storage depending on the deployment. External images and links may contact other services with their own policies. Consent must be obtained before enabling any storage that requires it."
+        ]
+      ]
+    },
+    "conduct": {
+      "title": "Code of conduct",
+      "intro": "Space to collaborate and disagree without harassment.",
+      "sections": [
+        [
+          "Treat people respectfully",
+          "Challenge ideas and decisions. Do not harass, threaten, discriminate, make unwanted sexual advances or organize attacks. Respect a request to stop contacting someone."
+        ],
+        [
+          "Be clear and honest",
+          "Do not impersonate others. Make commercial offers and recruitment intentions clear. Avoid mass messaging, misleading advertisements, fabricated qualifications and automated manipulation."
+        ],
+        [
+          "Respect privacy and rights",
+          "Do not publish private contact details, conversations or sensitive personal information without a right to do so. Respect copyright and cite sources where they help others assess a claim."
+        ],
+        [
+          "Report and appeal",
+          "Use the report feature or contact us with a link and short description. You may request an explanation and review of action affecting you. Remote servers have their own moderators; Nolto can restrict federation but cannot control their content."
+        ]
+      ]
+    },
+    "instances": {
+      "title": "Instance guidelines",
+      "intro": "Responsibilities for operators of independent installations.",
+      "sections": [
+        [
+          "Independent operation",
+          "An installation needs an identified operator, a contact channel, its own terms and a data protection assessment. Using Nolto's code does not make Nolto.social responsible for your installation or guarantee its security. Follow the repository license."
+        ],
+        [
+          "Stable identity",
+          "Choose the federation domain before publishing accounts. WebFinger, actor documents, key identifiers and signatures must use consistent permanent identities. Redirecting the website alone does not preserve federation."
+        ],
+        [
+          "Operation and compatibility",
+          "Maintain updates, access controls, signing keys, backups, recovery tests and delivery monitoring. Establish abuse and incident procedures. Test discovery, follows, publishing, editing and deletion against a separate server before opening. ActivityPub and AT Protocol are distinct; describe the interoperability actually available."
+        ]
+      ]
+    }
   }
 }

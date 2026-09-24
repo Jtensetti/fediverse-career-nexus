@@ -16,6 +16,7 @@ import { followAuthor } from "@/services/social/authorFollowService";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 const StarterPackView = () => {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
@@ -130,7 +131,7 @@ const StarterPackView = () => {
                       <Link to={`/profile/${member.user?.username || member.user_id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         <Avatar className="h-12 w-12">{member.user?.avatar_url && (<AvatarImage src={member.user.avatar_url} />)}<AvatarFallback className="bg-primary/10 text-primary">{(member.user?.fullname || member.user?.username || '?').charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                         <div>
-                          <div className="font-medium flex items-center gap-2">{member.user?.fullname || member.user?.username || 'Unknown'}{member.user?.is_verified && (<Badge variant="secondary" className="text-xs">{t("profile.verified")}</Badge>)}</div>
+                          <div className="font-medium flex items-center gap-2">{member.user?.fullname || member.user?.username || tx("ui.starterPackView.unknown")}{member.user?.is_verified && (<Badge variant="secondary" className="text-xs">{t("profile.verified")}</Badge>)}</div>
                           {member.user?.username && (<div className="text-sm text-muted-foreground">@{member.user.username}</div>)}
                           {member.user?.headline && (<div className="text-sm text-muted-foreground line-clamp-1">{member.user.headline}</div>)}
                         </div>

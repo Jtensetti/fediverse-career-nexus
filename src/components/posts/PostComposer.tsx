@@ -25,6 +25,7 @@ import { createPollObject } from "@/services/posts/pollService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+import { tx } from "@/i18n/tx";
 const MAX_CHARACTERS = 500;
 
 interface PostComposerProps {
@@ -213,7 +214,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <span className="font-semibold">{profile?.displayName || 'User'}</span>
+                    <span className="font-semibold">{profile?.displayName || tx("ui.postComposer.user")}</span>
                     <p className="text-xs text-muted-foreground font-normal">{t("posts.publicAudience")}</p>
                   </div>
                 </DialogTitle>
@@ -246,7 +247,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                       <div className="relative rounded-xl overflow-hidden bg-muted">
                         <img 
                           src={imagePreview} 
-                          alt={imageAltText || "Preview"} 
+                          alt={imageAltText || tx("ui.postComposer.preview")} 
                           className="w-full max-h-64 object-cover"
                         />
                         <Button

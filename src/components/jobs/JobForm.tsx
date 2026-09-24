@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { tx } from "@/i18n/tx";
 export type JobFormValues = z.infer<ReturnType<typeof createJobFormSchema>>;
 
 function createJobFormSchema(t: any) {
@@ -320,7 +321,7 @@ const JobForm = ({
                   <FormLabel>{t("jobFormLabels.minSalary")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="t.ex. 50000" 
+                      placeholder={tx("ui.jobForm.tEx50000")} 
                       type="number" 
                       value={field.value ?? ""} 
                       onChange={(e) => {
@@ -342,7 +343,7 @@ const JobForm = ({
                   <FormLabel>{t("jobFormLabels.maxSalary")}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="t.ex. 80000" 
+                      placeholder={tx("ui.jobForm.tEx80000")} 
                       type="number" 
                       value={field.value ?? ""}
                       onChange={(e) => {

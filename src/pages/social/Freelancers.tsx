@@ -15,6 +15,7 @@ import { Search, MapPin, Briefcase, Globe, MessageSquare, Filter, X } from "luci
 import { searchFreelancers, getFreelancerLocations, FreelancerProfile } from "@/services/misc/freelancerService";
 import { cn } from "@/lib/utils";
 
+import { tx } from "@/i18n/tx";
 const FreelancersPage = () => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -212,7 +213,7 @@ const FreelancerCard = ({ freelancer }: FreelancerCardProps) => {
           <Link to={`/profile/${freelancer.username}`}>
             <AvatarWithStatus
               src={freelancer.avatar_url}
-              alt={freelancer.fullname || freelancer.username || "Freelancer"}
+              alt={freelancer.fullname || freelancer.username || tx("ui.freelancers.freelancer")}
               fallback={(freelancer.fullname || freelancer.username || "F")[0]}
               size="lg"
               isFreelancer={true}

@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { banUser, searchUsers } from "@/services/moderation/moderationService";
 
+import { tx } from "@/i18n/tx";
 interface UserBanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -76,20 +77,20 @@ export function UserBanDialog({ open, onOpenChange, userId, onSuccess }: UserBan
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Ban className="h-5 w-5 text-destructive" />
-            Blockera användare
+            {tx("ui.userBanDialog.blockeraAnvandare")}
           </DialogTitle>
           <DialogDescription>
-            Blockera en användare från plattformen. De kommer inte kunna logga in under blockeringsperioden.
+            {tx("ui.userBanDialog.blockeraEnAnvandareFran")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {!selectedUser ? (
             <div className="space-y-2">
-              <Label>Sök efter användare</Label>
+              <Label>{tx("ui.userBanDialog.sokEfterAnvandare")}</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Sök på användarnamn eller namn..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+                <Input placeholder={tx("ui.userBanDialog.sokPaAnvandarnamnEller")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
               </div>
               {searchResults.length > 0 && (
                 <div className="border rounded-lg divide-y max-h-48 overflow-y-auto">
@@ -100,55 +101,55 @@ export function UserBanDialog({ open, onOpenChange, userId, onSuccess }: UserBan
                         <p className="text-sm font-medium truncate">@{user.username}</p>
                         {user.fullname && <p className="text-xs text-muted-foreground truncate">{user.fullname}</p>}
                       </div>
-                      {user.is_banned && <span className="text-xs text-destructive">Redan blockerad</span>}
+                      {user.is_banned && <span className="text-xs text-destructive">{tx("ui.userBanDialog.redanBlockerad")}</span>}
                     </button>
                   ))}
                 </div>
               )}
-              {isSearching && <p className="text-sm text-muted-foreground">Söker...</p>}
+              {isSearching && <p className="text-sm text-muted-foreground">{tx("ui.userBanDialog.soker")}</p>}
             </div>
           ) : (
             <div className="space-y-2">
-              <Label>Vald användare</Label>
+              <Label>{tx("ui.userBanDialog.valdAnvandare")}</Label>
               <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/50">
                 <Avatar className="h-10 w-10"><AvatarImage src={selectedUser.avatar_url || undefined} /><AvatarFallback><User className="h-5 w-5" /></AvatarFallback></Avatar>
                 <div className="flex-1">
                   <p className="font-medium">@{selectedUser.username}</p>
                   {selectedUser.fullname && <p className="text-sm text-muted-foreground">{selectedUser.fullname}</p>}
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedUser(null)}>Ändra</Button>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedUser(null)}>{tx("ui.userBanDialog.andra")}</Button>
               </div>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label>Blockeringstid</Label>
+            <Label>{tx("ui.userBanDialog.blockeringstid")}</Label>
             <Select value={duration} onValueChange={setDuration}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">1 dag</SelectItem>
-                <SelectItem value="3">3 dagar</SelectItem>
-                <SelectItem value="7">1 vecka</SelectItem>
-                <SelectItem value="14">2 veckor</SelectItem>
-                <SelectItem value="30">1 månad</SelectItem>
-                <SelectItem value="90">3 månader</SelectItem>
-                <SelectItem value="365">1 år</SelectItem>
-                <SelectItem value="permanent">Permanent</SelectItem>
+                <SelectItem value="1">{tx("ui.userBanDialog.1Dag")}</SelectItem>
+                <SelectItem value="3">{tx("ui.userBanDialog.3Dagar")}</SelectItem>
+                <SelectItem value="7">{tx("ui.userBanDialog.1Vecka")}</SelectItem>
+                <SelectItem value="14">{tx("ui.userBanDialog.2Veckor")}</SelectItem>
+                <SelectItem value="30">{tx("ui.userBanDialog.1Manad")}</SelectItem>
+                <SelectItem value="90">{tx("ui.userBanDialog.3Manader")}</SelectItem>
+                <SelectItem value="365">{tx("ui.userBanDialog.1Ar")}</SelectItem>
+                <SelectItem value="permanent">{tx("ui.userBanDialog.permanent")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Anledning</Label>
-            <Textarea placeholder="Beskriv varför användaren blockeras..." value={reason} onChange={(e) => setReason(e.target.value)} rows={3} />
-            <p className="text-xs text-muted-foreground">Anledningen loggas och kan visas för användaren.</p>
+            <Label>{tx("ui.userBanDialog.anledning")}</Label>
+            <Textarea placeholder={tx("ui.userBanDialog.beskrivVarforAnvandarenBlockeras")} value={reason} onChange={(e) => setReason(e.target.value)} rows={3} />
+            <p className="text-xs text-muted-foreground">{tx("ui.userBanDialog.anledningenLoggasOchKan")}</p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{tx("ui.userBanDialog.avbryt")}</Button>
           <Button variant="destructive" onClick={() => banMutation.mutate()} disabled={!selectedUser || !reason.trim() || banMutation.isPending}>
-            {banMutation.isPending ? "Blockerar..." : "Blockera användare"}
+            {banMutation.isPending ? tx("ui.userBanDialog.blockerar") : tx("ui.userBanDialog.blockeraAnvandare")}
           </Button>
         </DialogFooter>
       </DialogContent>

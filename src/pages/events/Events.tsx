@@ -1,9 +1,10 @@
+import { dateLocale } from "@/lib/locale";
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
-import { sv } from 'date-fns/locale';
+
 import { Calendar, Video, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,7 +113,7 @@ interface EventCardProps {
 function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation();
   const eventDate = parseISO(event.start_date);
-  const formattedDate = format(eventDate, 'EEEE d MMMM yyyy', { locale: sv });
+  const formattedDate = format(eventDate, 'EEEE d MMMM yyyy', { locale: dateLocale() });
   const formattedTime = format(eventDate, 'HH:mm');
   const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   

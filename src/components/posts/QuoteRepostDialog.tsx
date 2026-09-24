@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/locale";
 import { getOrCreateLocalActor } from "@/services/federation/actorService";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -10,9 +11,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import DOMPurify from "dompurify";
 
+import { tx } from "@/i18n/tx";
 interface QuoteRepostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -61,7 +63,7 @@ export default function QuoteRepostDialog({
 
   const handleSubmit = async () => {
     if (!user) {
-      toast.error("Logga in för att dela vidare");
+      toast.error(tx("ui.quoteRepostDialog.loggaInForAtt"));
       return;
     }
 
@@ -104,13 +106,13 @@ export default function QuoteRepostDialog({
 
       if (error) throw error;
 
-      toast.success("Inlägget delades till din profil!");
+      toast.success(tx("ui.quoteRepostDialog.inlaggetDeladesTillDin"));
       setContent("");
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error creating quote repost:", error);
-      toast.error("Kunde inte dela vidare. Försök igen.");
+      toast.error(tx("ui.quoteRepostDialog.kundeInteDelaVidare"));
     } finally {
       setIsSubmitting(false);
     }
@@ -127,7 +129,7 @@ export default function QuoteRepostDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Repeat className="h-5 w-5 text-green-500" />
-            Dela till din profil
+            {tx("ui.quoteRepostDialog.delaTillDinProfil")}
           </DialogTitle>
         </DialogHeader>
 
@@ -141,7 +143,7 @@ export default function QuoteRepostDialog({
             </Avatar>
             <div className="flex-1">
               <Textarea
-                placeholder="Lägg till dina tankar (valfritt)..."
+                placeholder={tx("ui.quoteRepostDialog.laggTillDinaTankar")}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[80px] resize-none border-0 focus-visible:ring-0 p-0 text-base"
@@ -176,7 +178,7 @@ export default function QuoteRepostDialog({
                     )}
                     {originalPost.publishedAt && (
                       <span className="text-xs text-muted-foreground">
-                        · {formatDistanceToNow(new Date(originalPost.publishedAt), { addSuffix: true, locale: sv })}
+                        · {formatDistanceToNow(new Date(originalPost.publishedAt), { addSuffix: true, locale: dateLocale() })}
                       </span>
                     )}
                   </div>
@@ -198,14 +200,14 @@ export default function QuoteRepostDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {tx("ui.quoteRepostDialog.avbryt")}
           </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={isSubmitting}
             className="bg-green-600 hover:bg-green-700"
           >
-            {isSubmitting ? "Delar..." : "Dela vidare"}
+            {isSubmitting ? tx("ui.quoteRepostDialog.delar") : tx("ui.quoteRepostDialog.delaVidare")}
           </Button>
         </DialogFooter>
       </DialogContent>

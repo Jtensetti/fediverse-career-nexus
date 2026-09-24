@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { ReactionKey, REACTIONS } from "@/lib/reactions";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface ReactionCount {
   reaction: ReactionKey;
   count: number;
@@ -88,7 +89,7 @@ export async function toggleReaction(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.warn('toggleReaction: User not authenticated');
-      toast.error("Logga in för att reagera");
+      toast.error(tx("ui.reactionsService.loggaInForAtt"));
       return { success: false, action: 'error', reaction };
     }
 
@@ -103,7 +104,7 @@ export async function toggleReaction(
 
     if (fetchError) {
       console.error('Error checking existing reaction:', fetchError);
-      toast.error("Kunde inte hantera reaktion");
+      toast.error(tx("ui.reactionsService.kundeInteHanteraReaktion"));
       return { success: false, action: 'error', reaction };
     }
 
@@ -117,7 +118,7 @@ export async function toggleReaction(
 
         if (deleteError) {
           console.error('toggleReaction: Error removing reaction:', deleteError);
-          toast.error("Kunde inte ta bort reaktion");
+          toast.error(tx("ui.reactionsService.kundeInteTaBort"));
           return { success: false, action: 'error', reaction };
         }
 
@@ -131,7 +132,7 @@ export async function toggleReaction(
 
         if (updateError) {
           console.error('toggleReaction: Error switching reaction:', updateError);
-          toast.error("Kunde inte uppdatera reaktion");
+          toast.error(tx("ui.reactionsService.kundeInteUppdateraReaktion"));
           return { success: false, action: 'error', reaction };
         }
 
@@ -150,7 +151,7 @@ export async function toggleReaction(
 
       if (insertError) {
         console.error('toggleReaction: Error adding reaction:', insertError);
-        toast.error("Kunde inte lägga till reaktion");
+        toast.error(tx("ui.reactionsService.kundeInteLaggaTill"));
         return { success: false, action: 'error', reaction };
       }
 
@@ -219,7 +220,7 @@ export async function toggleReaction(
     }
   } catch (error) {
     console.error('Error in toggleReaction:', error);
-    toast.error("Kunde inte hantera reaktion");
+    toast.error(tx("ui.reactionsService.kundeInteHanteraReaktion"));
     return { success: false, action: 'error', reaction };
   }
 }
@@ -250,7 +251,7 @@ export async function toggleMessageReaction(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.warn('toggleMessageReaction: User not authenticated');
-      toast.error("Logga in för att reagera");
+      toast.error(tx("ui.reactionsService.loggaInForAtt"));
       return { success: false, action: 'error', reaction };
     }
 
@@ -265,7 +266,7 @@ export async function toggleMessageReaction(
 
     if (fetchError) {
       console.error('Error checking existing reaction:', fetchError);
-      toast.error("Kunde inte hantera reaktion");
+      toast.error(tx("ui.reactionsService.kundeInteHanteraReaktion"));
       return { success: false, action: 'error', reaction };
     }
 
@@ -279,7 +280,7 @@ export async function toggleMessageReaction(
 
         if (deleteError) {
           console.error('Error removing message reaction:', deleteError);
-          toast.error("Kunde inte ta bort reaktion");
+          toast.error(tx("ui.reactionsService.kundeInteTaBort"));
           return { success: false, action: 'error', reaction };
         }
 
@@ -293,7 +294,7 @@ export async function toggleMessageReaction(
 
         if (updateError) {
           console.error('Error switching message reaction:', updateError);
-          toast.error("Kunde inte uppdatera reaktion");
+          toast.error(tx("ui.reactionsService.kundeInteUppdateraReaktion"));
           return { success: false, action: 'error', reaction };
         }
 
@@ -312,7 +313,7 @@ export async function toggleMessageReaction(
 
       if (insertError) {
         console.error('Error adding message reaction:', insertError);
-        toast.error("Kunde inte lägga till reaktion");
+        toast.error(tx("ui.reactionsService.kundeInteLaggaTill"));
         return { success: false, action: 'error', reaction };
       }
 
@@ -344,7 +345,7 @@ export async function toggleMessageReaction(
     }
   } catch (error) {
     console.error('Error in toggleMessageReaction:', error);
-    toast.error("Kunde inte hantera reaktion");
+    toast.error(tx("ui.reactionsService.kundeInteHanteraReaktion"));
     return { success: false, action: 'error', reaction };
   }
 }

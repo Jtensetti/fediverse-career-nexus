@@ -2,6 +2,7 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface ArticleReaction {
   id: string;
   article_id: string;
@@ -63,7 +64,7 @@ export const toggleReaction = async (articleId: string, emoji: string): Promise<
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      toast.error('You must be logged in to react to an article');
+      toast.error(tx("ui.articleReactionsService.youMustBeLogged"));
       return false;
     }
     
@@ -108,7 +109,7 @@ export const toggleReaction = async (articleId: string, emoji: string): Promise<
     }
   } catch (error) {
     console.error('Error toggling reaction:', error);
-    toast.error('Failed to process your reaction. Please try again.');
+    toast.error(tx("ui.articleReactionsService.failedToProcessYour"));
     return false;
   }
 };

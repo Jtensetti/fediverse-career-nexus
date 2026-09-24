@@ -3,6 +3,7 @@ import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { getOrCreateLocalActor } from "@/services/federation/actorService";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { tx } from "@/i18n/tx";
 export interface PostReply {
   id: string;
   content: string;
@@ -278,7 +279,7 @@ export async function createPostReply(
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast.error('Du måste vara inloggad för att svara');
+      toast.error(tx("ui.postReplyService.duMasteVaraInloggad"));
       return false;
     }
     await getOrCreateLocalActor(user.id);
@@ -290,11 +291,11 @@ export async function createPostReply(
     });
     if (error) throw error;
     const { data: savedReply, error: readError } = await supabase.from('ap_objects').select('moderation_status').eq('id', replyId).single();
-    if (readError) { toast.info('Svaret har sparats. Ladda om för att se dess status.'); return true; }
+    if (readError) { toast.info(tx("ui.postReplyService.svaretHarSparatsLadda")); return true; }
     notifyPublication(savedReply.moderation_status, 'Svar postat!');
     return true;
   } catch {
-    toast.error('Svaret kunde inte publiceras. Kontrollera att inlägget finns kvar och att du har behörighet.');
+    toast.error(tx("ui.postReplyService.svaretKundeIntePubliceras"));
     return false;
   }
 }

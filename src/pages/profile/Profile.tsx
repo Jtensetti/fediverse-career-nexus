@@ -1,3 +1,4 @@
+import { intlLocale } from "@/lib/locale";
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -708,10 +709,10 @@ const ProfilePage = () => {
                           </div>
                           <p className="text-primary font-medium">{exp.company}</p>
                           <p className="text-sm text-muted-foreground">
-                            {exp.startDate ? new Date(exp.startDate).toLocaleDateString("sv-SE", { year: "numeric", month: "short" }) : ""} -
+                            {exp.startDate ? new Date(exp.startDate).toLocaleDateString(intlLocale(), { year: "numeric", month: "short" }) : ""} -
                             {exp.isCurrentRole
                               ? ` ${t("profileEdit.present", "Nuvarande")}`
-                              : ` ${exp.endDate ? new Date(exp.endDate).toLocaleDateString("sv-SE", { year: "numeric", month: "short" }) : ""}`}
+                              : ` ${exp.endDate ? new Date(exp.endDate).toLocaleDateString(intlLocale(), { year: "numeric", month: "short" }) : ""}`}
                           </p>
                           {exp.location && <p className="text-sm text-muted-foreground">{exp.location}</p>}
                           {exp.description && <p className="mt-2 text-muted-foreground whitespace-pre-line">{exp.description}</p>}

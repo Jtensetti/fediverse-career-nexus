@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import QuoteCardGenerator from "@/components/posts/QuoteCardGenerator";
 
+import { tx } from "@/i18n/tx";
 interface ShareButtonProps {
   url?: string;
   title: string;
@@ -50,10 +51,10 @@ export function ShareButton({
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("Länk kopierad till urklipp!");
+      toast.success(tx("ui.shareButton.lankKopieradTillUrklipp"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Kunde inte kopiera länk");
+      toast.error(tx("ui.shareButton.kundeInteKopieraLank"));
     }
   };
 
@@ -109,9 +110,9 @@ export function ShareButton({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={variant} size={size} aria-label="Dela">
+          <Button variant={variant} size={size} aria-label={tx("ui.shareButton.dela")}>
             <Share2 className={size === "icon" ? "h-4 w-4" : "h-4 w-4 mr-2"} />
-            {size !== "icon" && "Dela"}
+            {size !== "icon" && tx("ui.shareButton.dela")}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
@@ -121,7 +122,7 @@ export function ShareButton({
             ) : (
               <Copy className="h-4 w-4 mr-2" />
             )}
-            Kopiera länk
+            {tx("ui.shareButton.kopieraLank")}
           </DropdownMenuItem>
           
           {canShowQuoteCard && (
@@ -129,7 +130,7 @@ export function ShareButton({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowQuoteCard(true)}>
                 <ImageIcon className="h-4 w-4 mr-2" />
-                Ladda ner som bild
+                {tx("ui.shareButton.laddaNerSomBild")}
               </DropdownMenuItem>
             </>
           )}
@@ -138,22 +139,22 @@ export function ShareButton({
           
           <DropdownMenuItem onClick={shareToBluesky}>
             <ExternalLink className="h-4 w-4 mr-2" />
-            Dela på Bluesky
+            {tx("ui.shareButton.delaPaBluesky")}
           </DropdownMenuItem>
           
           <DropdownMenuItem onClick={shareToMastodon}>
             <ExternalLink className="h-4 w-4 mr-2" />
-            Dela på Mastodon
+            {tx("ui.shareButton.delaPaMastodon")}
           </DropdownMenuItem>
           
           <DropdownMenuItem onClick={shareToLinkedIn}>
             <ExternalLink className="h-4 w-4 mr-2" />
-            Dela på LinkedIn
+            {tx("ui.shareButton.delaPaLinkedin")}
           </DropdownMenuItem>
           
           <DropdownMenuItem onClick={shareToTwitter}>
             <ExternalLink className="h-4 w-4 mr-2" />
-            Dela på X/Twitter
+            {tx("ui.shareButton.delaPaXTwitter")}
           </DropdownMenuItem>
           
           {typeof navigator.share === "function" && (
@@ -161,7 +162,7 @@ export function ShareButton({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={shareNative}>
                 <Share2 className="h-4 w-4 mr-2" />
-                Fler alternativ...
+                {tx("ui.shareButton.flerAlternativ")}
               </DropdownMenuItem>
             </>
           )}
@@ -172,7 +173,7 @@ export function ShareButton({
         <Dialog open={showQuoteCard} onOpenChange={setShowQuoteCard}>
           <DialogContent className="max-w-xl">
             <DialogHeader>
-              <DialogTitle>Dela som bild</DialogTitle>
+              <DialogTitle>{tx("ui.shareButton.delaSomBild")}</DialogTitle>
             </DialogHeader>
             <QuoteCardGenerator
               content={content}

@@ -13,6 +13,7 @@ import type { CompanyFilters } from "@/services/company/companyService";
 import { ORGANISATION_TYPES } from "./CompanyForm";
 import type { Database } from "@/integrations/supabase/types";
 
+import { tx } from "@/i18n/tx";
 type CompanySize = Database['public']['Enums']['company_size'];
 
 const companySizeOptions: { value: CompanySize; label: string }[] = [
@@ -63,7 +64,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Sök företag..."
+          placeholder={tx("ui.companySearchFilter.sokForetag")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -73,10 +74,10 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
       <div className="flex flex-wrap gap-3">
         <Select value={industry} onValueChange={setIndustry}>
           <SelectTrigger className="w-full sm:w-[220px]">
-            <SelectValue placeholder="Typ av organisation" />
+            <SelectValue placeholder={tx("ui.companySearchFilter.typAvOrganisation")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alla typer</SelectItem>
+            <SelectItem value="all">{tx("ui.companySearchFilter.allaTyper")}</SelectItem>
             {ORGANISATION_TYPES.map((type) => (
               <SelectItem key={type} value={type}>
                 {type}
@@ -87,20 +88,20 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
 
         <Select value={size} onValueChange={setSize}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Storlek" />
+            <SelectValue placeholder={tx("ui.companySearchFilter.storlek")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alla storlekar</SelectItem>
+            <SelectItem value="all">{tx("ui.companySearchFilter.allaStorlekar")}</SelectItem>
             {companySizeOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
-                {opt.label} anställda
+                {opt.label}{' '}{tx("ui.companySearchFilter.anstallda")}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <Input
-          placeholder="Plats"
+          placeholder={tx("ui.companySearchFilter.plats")}
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           className="w-full sm:w-[180px]"
@@ -109,7 +110,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             <X className="h-4 w-4 mr-1" />
-            Clear
+            {tx("ui.companySearchFilter.clear")}
           </Button>
         )}
       </div>

@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { submitReport, type ContentType } from "@/services/moderation/reportService";
 
+import { tx } from "@/i18n/tx";
 interface ReportDialogProps {
   contentType: ContentType;
   contentId: string;
@@ -26,12 +27,12 @@ interface ReportDialogProps {
 }
 
 const reportReasons = [
-  { value: "spam", label: "Spam eller vilseledande" },
-  { value: "harassment", label: "Trakasserier eller mobbning" },
-  { value: "hate_speech", label: "Hatretorik eller diskriminering" },
-  { value: "inappropriate", label: "Olämpligt innehåll" },
-  { value: "impersonation", label: "Identitetsstöld" },
-  { value: "other", label: "Annat" },
+  { value: "spam", get label() { return tx("ui.reportDialog.spamEllerVilseledande"); } },
+  { value: "harassment", get label() { return tx("ui.reportDialog.trakasserierEllerMobbning"); } },
+  { value: "hate_speech", get label() { return tx("ui.reportDialog.hatretorikEllerDiskriminering"); } },
+  { value: "inappropriate", get label() { return tx("ui.reportDialog.olampligtInnehall"); } },
+  { value: "impersonation", get label() { return tx("ui.reportDialog.identitetsstold"); } },
+  { value: "other", get label() { return tx("ui.reportDialog.annat"); } },
 ];
 
 const contentTypeLabels: Record<string, string> = {
@@ -65,7 +66,7 @@ export function ReportDialog({
 
   const handleSubmit = async () => {
     if (!reason) {
-      toast.error("Välj en anledning för rapporteringen");
+      toast.error(tx("ui.reportDialog.valjEnAnledningFor"));
       return;
     }
 
@@ -74,12 +75,12 @@ export function ReportDialog({
     const success = await submitReport(contentType, contentId, reason, details || undefined);
     
     if (success) {
-      toast.success("Rapport inskickad. Vi granskar den inom kort.");
+      toast.success(tx("ui.reportDialog.rapportInskickadViGranskar"));
       setOpen(false);
       setReason("");
       setDetails("");
     } else {
-      toast.error("Kunde inte skicka rapport. Försök igen.");
+      toast.error(tx("ui.reportDialog.kundeInteSkickaRapport"));
     }
     setIsSubmitting(false);
   };
@@ -87,7 +88,7 @@ export function ReportDialog({
   const dialogContent = (
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>Rapportera {localizedType}</DialogTitle>
+        <DialogTitle>{tx("ui.reportDialog.rapportera")}{' '}{localizedType}</DialogTitle>
         <DialogDescription>
           {contentTitle 
             ? `Rapporterar: "${contentTitle.substring(0, 50)}${contentTitle.length > 50 ? '...' : ''}"`
@@ -98,7 +99,7 @@ export function ReportDialog({
       
       <div className="space-y-4 py-4">
         <div className="space-y-3">
-          <Label>Anledning till rapportering</Label>
+          <Label>{tx("ui.reportDialog.anledningTillRapportering")}</Label>
           <RadioGroup value={reason} onValueChange={setReason}>
             {reportReasons.map((r) => (
               <div key={r.value} className="flex items-center space-x-2">
@@ -112,10 +113,10 @@ export function ReportDialog({
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="details">Ytterligare detaljer (valfritt)</Label>
+          <Label htmlFor="details">{tx("ui.reportDialog.ytterligareDetaljerValfritt")}</Label>
           <Textarea
             id="details"
-            placeholder="Ge ytterligare sammanhang..."
+            placeholder={tx("ui.reportDialog.geYtterligareSammanhang")}
             value={details}
             onChange={(e) => setDetails(e.target.value)}
             rows={3}
@@ -125,14 +126,14 @@ export function ReportDialog({
       
       <DialogFooter>
         <Button variant="outline" onClick={() => setOpen(false)}>
-          Avbryt
+          {tx("ui.reportDialog.avbryt")}
         </Button>
         <Button 
           onClick={handleSubmit} 
           disabled={isSubmitting || !reason}
           className="bg-destructive hover:bg-destructive/90"
         >
-          {isSubmitting ? "Skickar..." : "Skicka rapport"}
+          {isSubmitting ? tx("ui.reportDialog.skickar") : tx("ui.reportDialog.skickaRapport")}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -152,7 +153,7 @@ export function ReportDialog({
         {trigger || (
           <Button variant="ghost" size="sm" className="text-muted-foreground">
             <Flag className="h-4 w-4 mr-1" />
-            Rapportera
+            {tx("ui.reportDialog.rapportera")}
           </Button>
         )}
       </DialogTrigger>

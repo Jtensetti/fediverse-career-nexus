@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import i18n from "@/i18n";
 
+import { tx } from "@/i18n/tx";
 // Lightweight profile data for hover cards - single query, no joins
 export interface ProfilePreview {
   id: string;
@@ -387,7 +388,7 @@ export const getUserProfileByUsername = async (usernameOrId: string): Promise<Us
     };
   } catch (error) {
     console.error("Error fetching user profile:", error);
-    toast.error("Failed to load profile data");
+    toast.error(tx("ui.profileService.failedToLoadProfile"));
     return null;
   }
 };

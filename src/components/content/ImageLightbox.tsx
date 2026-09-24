@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
+import { tx } from "@/i18n/tx";
 interface ImageLightboxProps {
   images: Array<{ url: string; altText?: string }>;
   initialIndex?: number;
@@ -63,7 +64,7 @@ export default function ImageLightbox({
         hideCloseButton
       >
         <VisuallyHidden>
-          <DialogTitle>Image viewer</DialogTitle>
+          <DialogTitle>{tx("ui.imageLightbox.imageViewer")}</DialogTitle>
         </VisuallyHidden>
         
         {/* Close button */}
@@ -72,7 +73,7 @@ export default function ImageLightbox({
           size="icon"
           className="absolute top-2 right-2 z-50 text-white hover:bg-white/20 rounded-full"
           onClick={() => onOpenChange(false)}
-          aria-label="Close"
+          aria-label={tx("ui.imageLightbox.close")}
         >
           <X className="h-6 w-6" />
         </Button>
@@ -85,7 +86,7 @@ export default function ImageLightbox({
               size="icon"
               className="absolute left-2 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20 rounded-full h-12 w-12"
               onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
-              aria-label="Previous image"
+              aria-label={tx("ui.imageLightbox.previousImage")}
             >
               <ChevronLeft className="h-8 w-8" />
             </Button>
@@ -94,7 +95,7 @@ export default function ImageLightbox({
               size="icon"
               className="absolute right-2 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20 rounded-full h-12 w-12"
               onClick={() => setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
-              aria-label="Next image"
+              aria-label={tx("ui.imageLightbox.nextImage")}
             >
               <ChevronRight className="h-8 w-8" />
             </Button>
@@ -107,7 +108,7 @@ export default function ImageLightbox({
           size="icon"
           className="absolute top-2 left-2 z-50 text-white hover:bg-white/20 rounded-full"
           onClick={() => setIsZoomed(!isZoomed)}
-          aria-label={isZoomed ? "Zoom out" : "Zoom in"}
+          aria-label={isZoomed ? tx("ui.imageLightbox.zoomOut") : tx("ui.imageLightbox.zoomIn")}
         >
           {isZoomed ? <ZoomOut className="h-5 w-5" /> : <ZoomIn className="h-5 w-5" />}
         </Button>
@@ -122,7 +123,7 @@ export default function ImageLightbox({
         >
           <img
             src={currentImage.url}
-            alt={currentImage.altText || "Image"}
+            alt={currentImage.altText || tx("ui.imageLightbox.image")}
             className={cn(
               "select-none",
               isZoomed 

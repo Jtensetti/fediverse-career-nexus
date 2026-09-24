@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+import { tx } from "@/i18n/tx";
 interface SaveButtonProps {
   itemId: string;
   itemType: SavedItemType;
@@ -42,7 +43,7 @@ export function SaveButton({
     e.stopPropagation();
     
     if (!user) {
-      toast.error("Logga in för att spara objekt");
+      toast.error(tx("ui.saveButton.loggaInForAtt"));
       return;
     }
 
@@ -57,7 +58,7 @@ export function SaveButton({
       toast.success(result.saved ? "Sparat!" : "Borttaget från sparade");
     } else {
       setIsSaved(isSaved);
-      toast.error("Kunde inte spara objektet");
+      toast.error(tx("ui.saveButton.kundeInteSparaObjektet"));
     }
     
     setIsLoading(false);

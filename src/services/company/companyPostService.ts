@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import type { FederatedPost } from "@/services/federation/federationService";
 
+import { tx } from "@/i18n/tx";
 export interface CreateCompanyPostData {
   companyId: string;
   content: string;
@@ -21,7 +22,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      toast.error("You must be logged in to create a post");
+      toast.error(tx("ui.companyPostService.youMustBeLogged"));
       return null;
     }
 
@@ -34,13 +35,13 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       .single();
 
     if (roleError || !role) {
-      toast.error("You don't have permission to post for this company");
+      toast.error(tx("ui.companyPostService.youDonTHave"));
       return null;
     }
 
     const allowedRoles = ['owner', 'admin', 'editor'];
     if (!allowedRoles.includes(role.role)) {
-      toast.error("You don't have permission to post for this company");
+      toast.error(tx("ui.companyPostService.youDonTHave"));
       return null;
     }
 
@@ -52,7 +53,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       .single();
 
     if (companyError || !company) {
-      toast.error("Company not found");
+      toast.error(tx("ui.companyPostService.companyNotFound"));
       return null;
     }
 
@@ -116,7 +117,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       const { data: existing } = await supabase.from('ap_objects').select('id,moderation_status').eq('id', postId).eq('company_id', postData.companyId).maybeSingle();
       if (existing) { notifyPublication(existing.moderation_status || 'published', 'Inlägget skapades!'); return existing.id; }
       console.error('Post creation error:', postError);
-      toast.error("Failed to create post");
+      toast.error(tx("ui.companyPostService.failedToCreatePost"));
       return null;
     }
 
@@ -131,7 +132,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
 
   } catch (error) {
     console.error('Unexpected error creating company post:', error);
-    toast.error("An unexpected error occurred");
+    toast.error(tx("ui.companyPostService.anUnexpectedErrorOccurred"));
     return null;
   }
 }
@@ -198,7 +199,7 @@ export async function getCompanyPosts(companyId: string, limit = 20, offset = 0)
 export async function deleteCompanyPost(postId: string, companyId: string): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    toast.error("You must be logged in");
+    toast.error(tx("ui.companyPostService.youMustBeLogged2"));
     return false;
   }
 
@@ -211,12 +212,12 @@ export async function deleteCompanyPost(postId: string, companyId: string): Prom
     .single();
 
   if (!role || !['owner', 'admin'].includes(role.role)) {
-    toast.error("You don't have permission to delete this post");
+    toast.error(tx("ui.companyPostService.youDonTHave2"));
     return false;
   }
 
   try { await requestContentDeletion('post', postId); }
   catch (error) { toast.error(error instanceof Error ? error.message : 'Kunde inte dölja inlägget'); return false; }
-  toast.success('Inlägget är dolt och raderas permanent efter 30 dagar.');
+  toast.success(tx("ui.companyPostService.inlaggetArDoltOch"));
   return true;
 }

@@ -33,12 +33,13 @@ import {
 } from "@/components/ui/select";
 import { claimEmployment, type EmploymentType } from "@/services/company/companyEmployeeService";
 
+import { tx } from "@/i18n/tx";
 const employmentTypes: { value: EmploymentType; label: string }[] = [
-  { value: "full_time", label: "Full-time" },
-  { value: "part_time", label: "Part-time" },
-  { value: "contract", label: "Contract" },
-  { value: "intern", label: "Intern" },
-  { value: "freelance", label: "Freelance" },
+  { value: "full_time", get label() { return tx("ui.companyEmployeeForm.fullTime"); } },
+  { value: "part_time", get label() { return tx("ui.companyEmployeeForm.partTime"); } },
+  { value: "contract", get label() { return tx("ui.companyEmployeeForm.contract"); } },
+  { value: "intern", get label() { return tx("ui.companyEmployeeForm.intern"); } },
+  { value: "freelance", get label() { return tx("ui.companyEmployeeForm.freelance"); } },
 ];
 
 const createSchema = (t: (key: string) => string) => z.object({

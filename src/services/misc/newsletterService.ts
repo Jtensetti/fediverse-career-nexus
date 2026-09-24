@@ -2,6 +2,7 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface NewsletterSubscription {
   id: string;
   email: string;
@@ -29,11 +30,11 @@ export const subscribeToNewsletter = async (email: string): Promise<NewsletterSu
       return null;
     }
     
-    toast.success('Prenumeration lyckades!');
+    toast.success(tx("ui.newsletterService.prenumerationLyckades"));
     return data as NewsletterSubscription;
   } catch (error) {
     console.error('Error subscribing to newsletter:', error);
-    toast.error('Kunde inte prenumerera. Försök igen.');
+    toast.error(tx("ui.newsletterService.kundeIntePrenumereraForsok"));
     return null;
   }
 };
@@ -55,11 +56,11 @@ export const unsubscribeFromNewsletter = async (email: string): Promise<Newslett
       return null;
     }
     
-    toast.success('Avprenumeration lyckades.');
+    toast.success(tx("ui.newsletterService.avprenumerationLyckades"));
     return data as NewsletterSubscription;
   } catch (error) {
     console.error('Error unsubscribing from newsletter:', error);
-    toast.error('Kunde inte avprenumerera. Försök igen.');
+    toast.error(tx("ui.newsletterService.kundeInteAvprenumereraForsok"));
     return null;
   }
 };

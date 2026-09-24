@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
+import { tx } from "@/i18n/tx";
 interface LinkPreviewData {
   url: string;
   title?: string;
@@ -126,7 +127,7 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
         onKeyDown={handleKeyDown}
       >
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Loading preview...</span>
+        <span className="text-sm text-muted-foreground">{tx("ui.linkPreview.loadingPreview")}</span>
       </div>
     );
   }

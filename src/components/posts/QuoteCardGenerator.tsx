@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+import { tx } from "@/i18n/tx";
 interface QuoteCardGeneratorProps {
   content: string;
   author: {
@@ -59,10 +60,10 @@ export default function QuoteCardGenerator({
       link.href = dataUrl;
       link.click();
 
-      toast.success('Image downloaded!');
+      toast.success(tx("ui.quoteCardGenerator.imageDownloaded"));
     } catch (error) {
       console.error('Error generating image:', error);
-      toast.error('Failed to generate image. Try again.');
+      toast.error(tx("ui.quoteCardGenerator.failedToGenerateImage"));
     } finally {
       setIsGenerating(false);
     }
@@ -82,13 +83,13 @@ export default function QuoteCardGenerator({
         {trigger || (
           <Button variant="ghost" size="sm" className="gap-2">
             <ImageIcon className="h-4 w-4" />
-            Share as Image
+            {tx("ui.quoteCardGenerator.shareAsImage")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Download as Image</DialogTitle>
+          <DialogTitle>{tx("ui.quoteCardGenerator.downloadAsImage")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -107,7 +108,7 @@ export default function QuoteCardGenerator({
               />
             </div>
             <div className="flex items-center gap-2">
-              <Label htmlFor="vertical" className="text-sm">Vertical (Stories)</Label>
+              <Label htmlFor="vertical" className="text-sm">{tx("ui.quoteCardGenerator.verticalStories")}</Label>
               <Switch
                 id="vertical"
                 checked={isVertical}
@@ -184,12 +185,12 @@ export default function QuoteCardGenerator({
             {isGenerating ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Generating...
+                {tx("ui.quoteCardGenerator.generating")}
               </>
             ) : (
               <>
                 <Download className="h-4 w-4" />
-                Download Image
+                {tx("ui.quoteCardGenerator.downloadImage")}
               </>
             )}
           </Button>

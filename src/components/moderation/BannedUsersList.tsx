@@ -1,6 +1,7 @@
+import { dateLocale } from "@/lib/locale";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow, format } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { Ban, Undo2, Clock, AlertCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getActiveBans, getAllBans, revokeBan, UserBan } from "@/services/moderation/moderationService";
 
+import { tx } from "@/i18n/tx";
 export function BannedUsersList() {
   const queryClient = useQueryClient();
 
@@ -49,18 +51,18 @@ export function BannedUsersList() {
                 <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
               </Avatar>
               <div>
-                <CardTitle className="text-base">@{ban.user?.username || "Okänd användare"}</CardTitle>
+                <CardTitle className="text-base">@{ban.user?.username || tx("ui.bannedUsersList.okandAnvandare")}</CardTitle>
                 <CardDescription className="text-xs">{ban.user?.fullname}</CardDescription>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {isPermanent && !isRevoked && <Badge variant="destructive">Permanent</Badge>}
-              {isRevoked && <Badge variant="outline" className="text-green-500 border-green-500">Upphävd</Badge>}
-              {isExpired && !isRevoked && <Badge variant="outline" className="text-muted-foreground">Utgången</Badge>}
+              {isPermanent && !isRevoked && <Badge variant="destructive">{tx("ui.bannedUsersList.permanent")}</Badge>}
+              {isRevoked && <Badge variant="outline" className="text-green-500 border-green-500">{tx("ui.bannedUsersList.upphavd")}</Badge>}
+              {isExpired && !isRevoked && <Badge variant="outline" className="text-muted-foreground">{tx("ui.bannedUsersList.utgangen")}</Badge>}
               {!isPermanent && !isRevoked && !isExpired && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {formatDistanceToNow(new Date(ban.expires_at!), { addSuffix: false, locale: sv })} kvar
+                  {formatDistanceToNow(new Date(ban.expires_at!), { addSuffix: false, locale: dateLocale() })}{' '}{tx("ui.bannedUsersList.kvar")}
                 </Badge>
               )}
             </div>
@@ -73,9 +75,9 @@ export function BannedUsersList() {
           </div>
 
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Blockerad {formatDistanceToNow(new Date(ban.created_at), { addSuffix: true, locale: sv })}</span>
+            <span>{tx("ui.bannedUsersList.blockerad")}{' '}{formatDistanceToNow(new Date(ban.created_at), { addSuffix: true, locale: dateLocale() })}</span>
             {ban.expires_at && !isPermanent && (
-              <span>{isExpired ? "Utgick" : "Utgår"} {format(new Date(ban.expires_at), "d MMM yyyy", { locale: sv })}</span>
+              <span>{isExpired ? tx("ui.bannedUsersList.utgick") : tx("ui.bannedUsersList.utgar")} {format(new Date(ban.expires_at), "d MMM yyyy", { locale: dateLocale() })}</span>
             )}
           </div>
 
@@ -83,19 +85,19 @@ export function BannedUsersList() {
             <div className="pt-2">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="sm" variant="outline"><Undo2 className="h-4 w-4 mr-1" />Upphäv blockering</Button>
+                  <Button size="sm" variant="outline"><Undo2 className="h-4 w-4 mr-1" />{tx("ui.bannedUsersList.upphavBlockering")}</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Upphäv denna blockering?</AlertDialogTitle>
+                    <AlertDialogTitle>{tx("ui.bannedUsersList.upphavDennaBlockering")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Detta återställer omedelbart användarens åtkomst till plattformen. Är du säker?
+                      {tx("ui.bannedUsersList.dettaAterstallerOmedelbartAnvandarens")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                    <AlertDialogCancel>{tx("ui.bannedUsersList.avbryt")}</AlertDialogCancel>
                     <AlertDialogAction onClick={() => revokeMutation.mutate(ban.id)} disabled={revokeMutation.isPending}>
-                      Upphäv blockering
+                      {tx("ui.bannedUsersList.upphavBlockering")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -121,18 +123,18 @@ export function BannedUsersList() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Ban className="h-5 w-5" />
-        <h3 className="text-lg font-semibold">Blockeringar</h3>
+        <h3 className="text-lg font-semibold">{tx("ui.bannedUsersList.blockeringar")}</h3>
       </div>
 
       <Tabs defaultValue="active" className="w-full">
         <TabsList>
-          <TabsTrigger value="active">Aktiva ({activeBans?.length || 0})</TabsTrigger>
-          <TabsTrigger value="history">Historik ({allBans?.length || 0})</TabsTrigger>
+          <TabsTrigger value="active">{tx("ui.bannedUsersList.aktiva")}{activeBans?.length || 0})</TabsTrigger>
+          <TabsTrigger value="history">{tx("ui.bannedUsersList.historik")}{allBans?.length || 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-4 mt-4">
           {!activeBans || activeBans.length === 0 ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground"><Ban className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>Inga aktiva blockeringar</p></CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground"><Ban className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>{tx("ui.bannedUsersList.ingaAktivaBlockeringar")}</p></CardContent></Card>
           ) : (
             activeBans.map((ban) => renderBanCard(ban, true))
           )}
@@ -142,7 +144,7 @@ export function BannedUsersList() {
           {loadingAll ? (
             <div className="space-y-4">{[1, 2, 3].map((i) => (<Card key={i}><CardContent className="py-6"><Skeleton className="h-20 w-full" /></CardContent></Card>))}</div>
           ) : !allBans || allBans.length === 0 ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground"><Ban className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>Ingen blockeringshistorik</p></CardContent></Card>
+            <Card><CardContent className="py-8 text-center text-muted-foreground"><Ban className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>{tx("ui.bannedUsersList.ingenBlockeringshistorik")}</p></CardContent></Card>
           ) : (
             allBans.map((ban) => renderBanCard(ban, false))
           )}

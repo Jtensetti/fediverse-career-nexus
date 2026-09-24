@@ -13,6 +13,7 @@ import {
 import { Plus, X, BarChart3 } from "lucide-react";
 import { pollDurationOptions } from "@/services/posts/pollService";
 
+import { tx } from "@/i18n/tx";
 interface PollCreatorProps {
   onPollChange: (poll: PollCreatorData | null) => void;
   onRemove: () => void;
@@ -73,7 +74,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm font-medium">
           <BarChart3 className="h-4 w-4" />
-          Omröstningsalternativ
+          {tx("ui.pollCreator.omrostningsalternativ")}
         </div>
         <Button
           variant="ghost"
@@ -116,14 +117,14 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
             className="w-full"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Lägg till alternativ
+            {tx("ui.pollCreator.laggTillAlternativ")}
           </Button>
         )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 space-y-2">
-          <Label className="text-xs text-muted-foreground">Varaktighet</Label>
+          <Label className="text-xs text-muted-foreground">{tx("ui.pollCreator.varaktighet")}</Label>
           <Select
             value={durationMinutes.toString()}
             onValueChange={handleDurationChange}
@@ -148,7 +149,7 @@ export function PollCreator({ onPollChange, onRemove }: PollCreatorProps) {
             onCheckedChange={handleMultipleChoiceChange}
           />
           <Label htmlFor="multiple-choice" className="text-sm cursor-pointer">
-            Flerval
+            {tx("ui.pollCreator.flerval")}
           </Label>
         </div>
       </div>

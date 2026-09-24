@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
  
+import { tx } from "@/i18n/tx";
  interface SiteAlert {
    id: string;
    message: string;
@@ -69,7 +70,7 @@ import { useState, useEffect } from "react";
            <button
              onClick={() => handleDismiss(alert.id)}
              className="ml-2 rounded-full p-1 hover:bg-foreground/10 transition-colors"
-             aria-label="Dismiss alert"
+             aria-label={tx("ui.alertBanner.dismissAlert")}
            >
              <X className="h-4 w-4" />
            </button>

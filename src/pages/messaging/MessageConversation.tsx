@@ -1,8 +1,9 @@
+import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
-import { sv } from 'date-fns/locale';
+
 import { Send, AlertCircle, Loader2 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
@@ -39,6 +40,7 @@ import MessageReactions from '@/components/reactions/MessageReactions';
 import { SEOHead } from '@/components/common/SEOHead';
 import EncryptedInbox, { useUnlockedInbox } from '@/components/messaging/EncryptedInbox';
 
+import { tx } from "@/i18n/tx";
 export default function MessageConversation() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
@@ -181,7 +183,7 @@ export default function MessageConversation() {
     },
     onError: (error) => {
       console.error('Failed to send message:', error);
-      toast.error("Kunde inte skicka meddelande", { description: error instanceof Error ? error.message : "Försök igen" });
+      toast.error(tx("ui.messageConversation.kundeInteSkickaMeddelande"), { description: error instanceof Error ? error.message : "Försök igen" });
     }
   });
 
@@ -195,7 +197,7 @@ export default function MessageConversation() {
         messages: [...page.messages, ...previous.messages.filter(message => !page.messages.some(item => item.id === message.id))],
       } : previous);
     } catch {
-      toast.error('Kunde inte läsa äldre meddelanden');
+      toast.error(tx("ui.messageConversation.kundeInteLasaAldre"));
     } finally { setLoadingOlder(false); }
   }
 
@@ -245,13 +247,13 @@ export default function MessageConversation() {
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center">
-            <p>Logga in för att visa dina meddelanden</p>
+            <p>{tx("ui.messageConversation.loggaInForAtt")}</p>
             <Button
               variant="outline"
               className="mt-4"
               onClick={() => navigate('/auth')}
             >
-              Logga in
+              {tx("ui.messageConversation.loggaIn")}
             </Button>
           </div>
         </div>
@@ -260,7 +262,7 @@ export default function MessageConversation() {
     );
   }
 
-  if (!inboxReady) return <div className="min-h-screen flex flex-col"><Navbar /><main className="flex-grow container max-w-4xl px-4 py-10"><Button variant="link" onClick={() => navigate('/messages')}>← Till meddelanden</Button><EncryptedInbox partnerId={conversationId} /></main><Footer /></div>;
+  if (!inboxReady) return <div className="min-h-screen flex flex-col"><Navbar /><main className="flex-grow container max-w-4xl px-4 py-10"><Button variant="link" onClick={() => navigate('/messages')}>{tx("ui.messageConversation.tillMeddelanden")}</Button><EncryptedInbox partnerId={conversationId} /></main><Footer /></div>;
 
   if (isLoading) {
     return (
@@ -304,13 +306,13 @@ export default function MessageConversation() {
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center py-8">
-            <p className="text-red-500">Fel vid laddning av konversation</p>
+            <p className="text-red-500">{tx("ui.messageConversation.felVidLaddningAv")}</p>
             <Button
               variant="outline"
               className="mt-4"
               onClick={() => navigate('/messages')}
             >
-              Tillbaka till meddelanden
+              {tx("ui.messageConversation.tillbakaTillMeddelanden")}
             </Button>
           </div>
         </div>
@@ -327,7 +329,7 @@ export default function MessageConversation() {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title={`Chat with ${conversationTitle}`}
-        description="Private conversation on Nolto."
+        description={tx("ui.messageConversation.privateConversationOnNolto")}
       />
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
@@ -338,13 +340,13 @@ export default function MessageConversation() {
               <Avatar>
                 <AvatarImage src={otherUser?.avatar_url} />
                 <AvatarFallback>
-                  {otherUser?.username?.substring(0, 2).toUpperCase() || 'UN'}
+                  {otherUser?.username?.substring(0, 2).toUpperCase() || tx("ui.messageConversation.un")}
                 </AvatarFallback>
               </Avatar>
               <div className="flex items-center gap-2">
                 <CardTitle>
                   {otherUser?.fullname || otherUser?.username || (
-                    <span className="text-muted-foreground">Laddar...</span>
+                    <span className="text-muted-foreground">{tx("ui.messageConversation.laddar")}</span>
                   )}
                 </CardTitle>
                 {isFederated && otherUser?.homeInstance && (
@@ -360,11 +362,11 @@ export default function MessageConversation() {
             className="flex-grow overflow-y-auto p-4"
           >
             <div className="space-y-4">
-              {data.next && <Button variant="outline" onClick={loadOlder} disabled={loadingOlder}>{loadingOlder ? "Laddar…" : "Visa äldre meddelanden"}</Button>}
+              {data.next && <Button variant="outline" onClick={loadOlder} disabled={loadingOlder}>{loadingOlder ? tx("ui.messageConversation.laddar2") : tx("ui.messageConversation.visaAldreMeddelanden")}</Button>}
               {messages.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="text-muted-foreground">Inga meddelanden ännu</p>
-                  <p className="text-sm">Starta konversationen!</p>
+                  <p className="text-muted-foreground">{tx("ui.messageConversation.ingaMeddelandenAnnu")}</p>
+                  <p className="text-sm">{tx("ui.messageConversation.startaKonversationen")}</p>
                 </div>
               ) : (
                 messages.map((message) => {
@@ -396,8 +398,8 @@ export default function MessageConversation() {
                           }}
                         />
                         <p className="text-xs opacity-70 mt-1">
-                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true, locale: sv })}
-                          {message.encryption_version !== 'openpgp-v1' && ' · Äldre meddelande med serverkryptering'}
+                          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true, locale: dateLocale() })}
+                          {message.encryption_version !== 'openpgp-v1' && tx("ui.messageConversation.aldreMeddelandeMedServerkryptering")}
                         </p>
                       </div>
                       {/* Reactions moved OUTSIDE the bubble for better visibility */}
@@ -420,7 +422,7 @@ export default function MessageConversation() {
             {canMessage === false ? (
               <div className="w-full flex items-center justify-center gap-2 text-muted-foreground py-2">
                 <AlertCircle className="h-4 w-4" />
-                <span>{isFederated ? "Privata meddelanden till andra servrar stöds inte ännu." : "Du kan inte skicka meddelanden till den här personen. Kontrollera er anslutning och era integritetsinställningar."}</span>
+                <span>{isFederated ? tx("ui.messageConversation.privataMeddelandenTillAndra") : tx("ui.messageConversation.duKanInteSkicka")}</span>
               </div>
             ) : (
               <form onSubmit={handleSendMessage} className="w-full">
@@ -430,7 +432,7 @@ export default function MessageConversation() {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={canMessage === null ? "Kontrollerar anslutning..." : "Skriv ditt meddelande..."}
+                    placeholder={canMessage === null ? tx("ui.messageConversation.kontrollerarAnslutning") : tx("ui.messageConversation.skrivDittMeddelande")}
                     className="flex-grow min-h-[40px] max-h-[150px] resize-none py-2"
                     disabled={canMessage === null}
                     rows={1}
@@ -439,7 +441,7 @@ export default function MessageConversation() {
                   <Button
                     type="submit"
                     size="icon"
-                    aria-label="Skicka meddelande"
+                    aria-label={tx("ui.messageConversation.skickaMeddelande")}
                     className="h-10 w-10 flex-shrink-0"
                     disabled={!newMessage.trim() || sendMessageMutation.isPending || canMessage !== true}
                   >

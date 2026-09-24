@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { getPostReplies, type PostReply } from "@/services/posts/postReplyService";
 import type { FederatedPost } from "@/services/federation/federationService";
 
+import { tx } from "@/i18n/tx";
 export default function PostView() {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
@@ -213,7 +214,7 @@ export default function PostView() {
 
   if (loading) {
     return (
-      <DashboardLayout title="Laddar inlägg" description="Laddar inläggsdetaljer...">
+      <DashboardLayout title={tx("ui.postView.laddarInlagg")} description={tx("ui.postView.laddarInlaggsdetaljer")}>
         <div className="min-h-[50vh] flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -223,16 +224,16 @@ export default function PostView() {
 
   if (error || !post) {
     return (
-      <DashboardLayout title="Inlägg hittades inte" description="Inlägget kunde inte hittas.">
+      <DashboardLayout title={tx("ui.postView.inlaggHittadesInte")} description={tx("ui.postView.inlaggetKundeInteHittas")}>
         <div className="max-w-2xl mx-auto px-4 py-8">
           <Link to="/feed">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Tillbaka till flödet
+              {tx("ui.postView.tillbakaTillFlodet")}
             </Button>
           </Link>
           <div className="text-center py-12">
-            <p className="text-muted-foreground">{error || 'Inlägget hittades inte'}</p>
+            <p className="text-muted-foreground">{error || tx("ui.postView.inlaggetHittadesInte")}</p>
           </div>
         </div>
       </DashboardLayout>
@@ -246,12 +247,12 @@ export default function PostView() {
     : 'Post';
   
   return (
-    <DashboardLayout title={postTitle || 'Inlägg'} description="Visa inlägg och svar på Nolto.">
+    <DashboardLayout title={postTitle || tx("ui.postView.inlagg")} description={tx("ui.postView.visaInlaggOchSvar")}>
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Link to="/feed">
           <Button variant="ghost" size="sm" className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Tillbaka till flödet
+            {tx("ui.postView.tillbakaTillFlodet")}
           </Button>
         </Link>
 
@@ -273,7 +274,7 @@ export default function PostView() {
           <InlineReplyComposer 
             postId={post.id} 
             onReplyCreated={handleReplyCreated}
-            placeholder="Skriv ett svar..."
+            placeholder={tx("ui.postView.skrivEttSvar")}
             companyContext={post.company}
           />
         </div>}
@@ -302,7 +303,7 @@ export default function PostView() {
 
         {replies.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            <p>Inga svar ännu. Bli först att svara!</p>
+            <p>{tx("ui.postView.ingaSvarAnnuBli")}</p>
           </div>
         )}
       </div>

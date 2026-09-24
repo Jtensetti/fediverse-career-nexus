@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 
 import { ATPROTO_LOGIN_STORAGE, clearAtprotoLogin } from '@/lib/atprotoLogin';
 
+import { tx } from "@/i18n/tx";
 export default function BlueskySignIn({ link = false, showUnavailable = false }: { link?: boolean; showUnavailable?: boolean }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -66,7 +67,7 @@ export default function BlueskySignIn({ link = false, showUnavailable = false }:
       : <form onSubmit={event => void start(event)} className="space-y-3">
         <Label htmlFor={link ? 'bluesky-link-handle' : 'bluesky-login-handle'}>{t('bluesky.handle')}</Label>
         <Input id={link ? 'bluesky-link-handle' : 'bluesky-login-handle'} value={handle} onChange={event => setHandle(event.target.value)}
-          placeholder="namn.bsky.social" required autoCapitalize="none" autoCorrect="off" spellCheck={false} maxLength={254} disabled={busy} />
+          placeholder={tx("ui.blueskySignIn.namnBskySocial")} required autoCapitalize="none" autoCorrect="off" spellCheck={false} maxLength={254} disabled={busy} />
         <Button type="submit" variant="outline" className="w-full" disabled={busy || !handle.trim() || (link && identity.isLoading)}>{t(busy ? 'bluesky.starting' : 'bluesky.continue')}</Button>
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       </form>}

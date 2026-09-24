@@ -15,6 +15,7 @@ import { ModeToggle } from "./ModeToggle";
 import { GlobalSearch } from "./GlobalSearch";
 import { MobileSearch } from "./MobileSearch";
 import { NotificationBell } from "./NotificationBell";
+import LanguageSelector from "@/components/common/LanguageSelector";
 import PublicNavbar from "./PublicNavbar";
 
 export default function Navbar() {
@@ -69,6 +70,7 @@ function MemberNavbar() {
       <div className="flex items-center gap-2">
         <MobileSearch />
         <div className="hidden md:block"><GlobalSearch /></div>
+        <LanguageSelector compact className="hidden sm:flex" />
         <NotificationBell />
         <div className="hidden sm:block"><ModeToggle /></div>
         <DropdownMenu>

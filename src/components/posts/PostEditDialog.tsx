@@ -10,6 +10,7 @@ import { updatePost } from "@/services/posts/postService";
 import { isPoll } from "@/services/posts/pollService";
 import type { FederatedPost } from "@/services/federation/federationService";
 
+import { tx } from "@/i18n/tx";
 interface PostEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -68,13 +69,13 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{postIsPoll ? "Redigera omröstning" : "Redigera inlägg"}</DialogTitle>
+          <DialogTitle>{postIsPoll ? tx("ui.postEditDialog.redigeraOmrostning") : tx("ui.postEditDialog.redigeraInlagg")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={postIsPoll ? "Redigera din omröstningsfråga..." : "Vad tänker du på?"}
+            placeholder={postIsPoll ? tx("ui.postEditDialog.redigeraDinOmrostningsfraga") : tx("ui.postEditDialog.vadTankerDuPa")}
             className="min-h-[150px] resize-none"
             disabled={contentCheck.checking || loading}
           />
@@ -83,18 +84,17 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Omröstningsalternativ kan inte redigeras efter att de skapats för att bevara rösternas integritet. 
-                Du kan bara redigera frågetexten ovan.
+                {tx("ui.postEditDialog.omrostningsalternativKanInteRedigeras")}
               </AlertDescription>
             </Alert>
           )}
           
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={contentCheck.checking || loading}>
-              Avbryt
+              {tx("ui.postEditDialog.avbryt")}
             </Button>
             <Button onClick={handleSave} disabled={contentCheck.checking || loading || !content.trim()}>
-              {loading ? "Sparar..." : "Spara ändringar"}
+              {loading ? tx("ui.postEditDialog.sparar") : tx("ui.postEditDialog.sparaAndringar")}
             </Button>
           </div>
         </div>

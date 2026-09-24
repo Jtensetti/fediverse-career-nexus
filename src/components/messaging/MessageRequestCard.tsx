@@ -1,7 +1,8 @@
+import { dateLocale } from "@/lib/locale";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { Check, X, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +23,7 @@ import {
   declineMessageRequest
 } from "@/services/messaging/messageRequestService";
 
+import { tx } from "@/i18n/tx";
 interface MessageRequestCardProps {
   request: MessageRequest;
   onAction?: (requestId: string, action: 'accepted' | 'declined') => void;
@@ -76,14 +78,14 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
                     to={`/profile/${sender?.username || sender?.id}`} 
                     className="font-semibold hover:underline text-foreground"
                   >
-                    {sender?.fullname || sender?.username || 'Unknown'}
+                    {sender?.fullname || sender?.username || tx("ui.messageRequestCard.unknown")}
                   </Link>
                   {sender?.headline && (
                     <p className="text-sm text-muted-foreground truncate">{sender.headline}</p>
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground flex-shrink-0">
-                  {request.created_at && formatDistanceToNow(new Date(request.created_at), { addSuffix: true, locale: sv })}
+                  {request.created_at && formatDistanceToNow(new Date(request.created_at), { addSuffix: true, locale: dateLocale() })}
                 </span>
               </div>
 
@@ -101,7 +103,7 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
                   ) : (
                     <Check className="h-4 w-4" />
                   )}
-                    Acceptera
+                    {tx("ui.messageRequestCard.acceptera")}
                  </Button>
                 <Button
                   variant="outline"
@@ -115,7 +117,7 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
                   ) : (
                     <X className="h-4 w-4" />
                   )}
-                   Avböj
+                   {tx("ui.messageRequestCard.avboj")}
                 </Button>
               </div>
             </div>
@@ -129,17 +131,16 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              Avböj denna förfrågan?
+              {tx("ui.messageRequestCard.avbojDennaForfragan")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {sender?.fullname || sender?.username} kommer inte kunna skicka en ny meddelandeförfrågan.
-              Du kan alltid ansluta med dem senare om du ändrar dig.
+              {sender?.fullname || sender?.username}{' '}{tx("ui.messageRequestCard.kommerInteKunnaSkicka")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{tx("ui.messageRequestCard.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDecline} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Avböj förfrågan
+              {tx("ui.messageRequestCard.avbojForfragan")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

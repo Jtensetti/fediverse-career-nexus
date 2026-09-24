@@ -45,6 +45,7 @@ const MfaRecoveryQueue = lazy(() => import('@/components/moderation/MfaRecoveryQ
 
 import StatCard from '@/components/moderation/StatCard';
 
+import { tx } from "@/i18n/tx";
 function QuickAction({ 
   label, 
   description, 
@@ -125,7 +126,7 @@ export default function ModerationDashboard() {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center space-y-4">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-              <p className="text-muted-foreground">Verifierar åtkomst...</p>
+              <p className="text-muted-foreground">{tx("ui.moderationDashboard.verifierarAtkomst")}</p>
             </div>
           </div>
         </main>
@@ -149,12 +150,12 @@ export default function ModerationDashboard() {
               <div className="p-4 rounded-full bg-destructive/10 w-fit mx-auto">
                 <Shield className="h-12 w-12 text-destructive" />
               </div>
-              <h1 className="text-2xl font-bold">Åtkomst begränsad</h1>
+              <h1 className="text-2xl font-bold">{tx("ui.moderationDashboard.atkomstBegransad")}</h1>
               <p className="text-muted-foreground">
-                Detta område är begränsat till behöriga moderatorer. Om du anser att du borde ha åtkomst, kontakta administratören.
+                {tx("ui.moderationDashboard.dettaOmradeArBegransat")}
               </p>
               <Button onClick={() => navigate('/')} variant="outline">
-                Tillbaka hem
+                {tx("ui.moderationDashboard.tillbakaHem")}
               </Button>
             </motion.div>
           </div>
@@ -167,8 +168,8 @@ export default function ModerationDashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead 
-        title="Modereringscenter" 
-        description="Verktyg för att hantera innehåll och användare i nätverket."
+        title={tx("ui.moderationDashboard.modereringscenter")} 
+        description={tx("ui.moderationDashboard.verktygForAttHantera")}
       />
       <Navbar />
       
@@ -186,20 +187,20 @@ export default function ModerationDashboard() {
                   <Shield className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight">Modereringscenter</h1>
-                  <p className="text-muted-foreground">Övervaka, granska och hantera aktivitet</p>
+                  <h1 className="text-3xl font-bold tracking-tight">{tx("ui.moderationDashboard.modereringscenter")}</h1>
+                  <p className="text-muted-foreground">{tx("ui.moderationDashboard.overvakaGranskaOchHantera")}</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="gap-1">
                   <CheckCircle className="h-3 w-3 text-primary" />
-                  System online
+                  {tx("ui.moderationDashboard.systemOnline")}
                 </Badge>
                 {pendingCount > 0 && (
                   <Badge variant="destructive" className="gap-1">
                     <AlertTriangle className="h-3 w-3" />
-                    {pendingCount} Väntande
+                    {pendingCount}{' '}{tx("ui.moderationDashboard.vantande")}
                   </Badge>
                 )}
               </div>
@@ -213,12 +214,12 @@ export default function ModerationDashboard() {
               <TabsList className="flex-wrap h-auto gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="overview" className="gap-2">
                   <Activity className="h-4 w-4" />
-                  Översikt
+                  {tx("ui.moderationDashboard.oversikt")}
                 </TabsTrigger>
                 <TabsTrigger value="content-review">{t("contentCare.queueTitle")}</TabsTrigger>
                 <TabsTrigger value="reports" className="gap-2">
                   <Flag className="h-4 w-4" />
-                  Rapporter
+                  {tx("ui.moderationDashboard.rapporter")}
                   {pendingCount > 0 && (
                     <Badge variant="destructive" className="ml-1 h-5 min-w-5 text-xs">
                       {pendingCount}
@@ -227,11 +228,11 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="users" className="gap-2">
                   <Users className="h-4 w-4" />
-                  Användare
+                  {tx("ui.moderationDashboard.anvandare")}
                 </TabsTrigger>
                 <TabsTrigger value="bans" className="gap-2">
                   <Ban className="h-4 w-4" />
-                  Avstängningar
+                  {tx("ui.moderationDashboard.avstangningar")}
                 </TabsTrigger>
                 <TabsTrigger value="federation" className="gap-2">
                   <Globe className="h-4 w-4" />
@@ -239,22 +240,22 @@ export default function ModerationDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="logs" className="gap-2">
                   <Eye className="h-4 w-4" />
-                  Loggar
+                  {tx("ui.moderationDashboard.loggar")}
                 </TabsTrigger>
                 <TabsTrigger value="alerts" className="gap-2">
                   <Bell className="h-4 w-4" />
-                  Varningar
+                  {tx("ui.moderationDashboard.varningar")}
                 </TabsTrigger>
                 <TabsTrigger value="mfa-recovery" className="gap-2">
                   <Shield className="h-4 w-4" />
-                  MFA-ärenden
+                  {tx("ui.moderationDashboard.mfaArenden")}
                 </TabsTrigger>
               </TabsList>
 
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Sök användare, rapporter..."
+                  placeholder={tx("ui.moderationDashboard.sokAnvandareRapporter")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -267,28 +268,28 @@ export default function ModerationDashboard() {
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard 
-                  label="Väntande rapporter" 
+                  label={tx("ui.moderationDashboard.vantandeRapporter")} 
                   value={stats?.pendingReports ?? 0}
                   icon={Flag}
                   color={pendingCount > 0 ? 'warning' : 'primary'}
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Aktiva avstängningar" 
+                  label={tx("ui.moderationDashboard.aktivaAvstangningar")} 
                   value={stats?.activeBans ?? 0}
                   icon={Ban}
                   color="destructive"
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Åtgärder idag" 
+                  label={tx("ui.moderationDashboard.atgarderIdag")} 
                   value={stats?.totalActionsToday ?? 0}
                   icon={Gavel}
                   color="primary"
                   loading={statsLoading}
                 />
                 <StatCard 
-                  label="Moderatorer" 
+                  label={tx("ui.moderationDashboard.moderatorer")} 
                   value={stats?.totalModerators ?? 0}
                   icon={Shield}
                   color="success"
@@ -300,20 +301,20 @@ export default function ModerationDashboard() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Snabbåtgärder</CardTitle>
-                    <CardDescription>Vanliga modereringsuppgifter</CardDescription>
+                    <CardTitle className="text-lg">{tx("ui.moderationDashboard.snabbatgarder")}</CardTitle>
+                    <CardDescription>{tx("ui.moderationDashboard.vanligaModereringsuppgifter")}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <QuickAction icon={Flag} label="Granska rapporter" description="Kontrollera väntande rapporter" onClick={() => setActiveTab('reports')} variant={pendingCount > 0 ? 'warning' : 'default'} />
-                    <QuickAction icon={Search} label="Sök användare" description="Sök och granska användare" onClick={() => setActiveTab('users')} />
-                    <QuickAction icon={Server} label="Instanshantering" description="Hantera anslutna instanser" onClick={() => navigate('/admin/instances')} />
+                    <QuickAction icon={Flag} label={tx("ui.moderationDashboard.granskaRapporter")} description={tx("ui.moderationDashboard.kontrolleraVantandeRapporter")} onClick={() => setActiveTab('reports')} variant={pendingCount > 0 ? 'warning' : 'default'} />
+                    <QuickAction icon={Search} label={tx("ui.moderationDashboard.sokAnvandare")} description={tx("ui.moderationDashboard.sokOchGranskaAnvandare")} onClick={() => setActiveTab('users')} />
+                    <QuickAction icon={Server} label={tx("ui.moderationDashboard.instanshantering")} description={tx("ui.moderationDashboard.hanteraAnslutnaInstanser")} onClick={() => navigate('/admin/instances')} />
                   </CardContent>
                 </Card>
 
                 <Card className="md:col-span-2 lg:col-span-2">
                   <CardHeader>
-                    <CardTitle className="text-lg">Senaste aktivitet</CardTitle>
-                    <CardDescription>Senaste modereringsåtgärder</CardDescription>
+                    <CardTitle className="text-lg">{tx("ui.moderationDashboard.senasteAktivitet")}</CardTitle>
+                    <CardDescription>{tx("ui.moderationDashboard.senasteModereringsatgarder")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ScrollArea className="h-[200px]">
@@ -333,9 +334,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Flag className="h-5 w-5 text-accent-foreground" />
-                    Innehållsrapporter
+                    {tx("ui.moderationDashboard.innehallsrapporter")}
                   </CardTitle>
-                  <CardDescription>Granska och vidta åtgärder för rapporterat innehåll</CardDescription>
+                  <CardDescription>{tx("ui.moderationDashboard.granskaOchVidtaAtgarder")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
@@ -351,9 +352,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
-                    Användarhantering
+                    {tx("ui.moderationDashboard.anvandarhantering")}
                   </CardTitle>
-                  <CardDescription>Sök och hantera användarkonton</CardDescription>
+                  <CardDescription>{tx("ui.moderationDashboard.sokOchHanteraAnvandarkonton")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
@@ -369,9 +370,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Ban className="h-5 w-5 text-destructive" />
-                    Användaravstängningar
+                    {tx("ui.moderationDashboard.anvandaravstangningar")}
                   </CardTitle>
-                  <CardDescription>Visa och hantera aktiva och historiska avstängningar</CardDescription>
+                  <CardDescription>{tx("ui.moderationDashboard.visaOchHanteraAktiva")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
@@ -388,9 +389,9 @@ export default function ModerationDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Globe className="h-5 w-5 text-primary" />
-                      Domänmoderering
+                      {tx("ui.moderationDashboard.domanmoderering")}
                     </CardTitle>
-                    <CardDescription>Hantera blockerade och begränsade domäner</CardDescription>
+                    <CardDescription>{tx("ui.moderationDashboard.hanteraBlockeradeOchBegransade")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Suspense fallback={<LoadingFallback />}>
@@ -403,9 +404,9 @@ export default function ModerationDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-secondary-foreground" />
-                      Aktörsmoderering
+                      {tx("ui.moderationDashboard.aktorsmoderering")}
                     </CardTitle>
-                    <CardDescription>Hantera blockerade aktörer</CardDescription>
+                    <CardDescription>{tx("ui.moderationDashboard.hanteraBlockeradeAktorer")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Suspense fallback={<LoadingFallback />}>
@@ -421,12 +422,12 @@ export default function ModerationDashboard() {
                     <div className="flex items-center gap-3">
                       <Server className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">Instanshantering</p>
-                        <p className="text-sm text-muted-foreground">Visa begränsade instanser och noltoshälsa</p>
+                        <p className="font-medium">{tx("ui.moderationDashboard.instanshantering")}</p>
+                        <p className="text-sm text-muted-foreground">{tx("ui.moderationDashboard.visaBegransadeInstanserOch")}</p>
                       </div>
                     </div>
                     <Button onClick={() => navigate('/admin/instances')} variant="outline">
-                      Öppna instanshanteraren
+                      {tx("ui.moderationDashboard.oppnaInstanshanteraren")}
                     </Button>
                   </div>
                 </CardContent>
@@ -439,9 +440,9 @@ export default function ModerationDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Eye className="h-5 w-5 text-muted-foreground" />
-                    Modereringslogg
+                    {tx("ui.moderationDashboard.modereringslogg")}
                   </CardTitle>
-                  <CardDescription>Fullständig historik över modereringsåtgärder</CardDescription>
+                  <CardDescription>{tx("ui.moderationDashboard.fullstandigHistorikOverModereringsatgarder")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>

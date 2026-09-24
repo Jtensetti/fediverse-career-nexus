@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface JobPost {
   id: string;
   title: string;
@@ -100,8 +101,8 @@ export const createJobPost = async (
     const { data: session } = await supabase.auth.getSession();
     
     if (!session.session) {
-      toast.error('Du måste vara inloggad för att skapa en jobbannons');
-      return { ok: false, message: 'Du måste vara inloggad', code: 'AUTH_REQUIRED' };
+      toast.error(tx("ui.jobPostsService.duMasteVaraInloggad"));
+      return { ok: false, message: tx('ui.jobPostsService.signInRequired'), code: 'AUTH_REQUIRED' };
     }
     
     const normalizedData = normalizeJobPostData(jobPost as Record<string, unknown>);
@@ -119,15 +120,15 @@ export const createJobPost = async (
     
     if (error) {
       console.error('Error creating job post:', error);
-      toast.error('Kunde inte skapa jobbannons');
-      return { ok: false, message: 'Kunde inte skapa jobbannons', details: error.message };
+      toast.error(tx("ui.jobPostsService.kundeInteSkapaJobbannons"));
+      return { ok: false, message: tx('ui.jobPostsService.createFailed'), details: error.message };
     }
     
     return { ok: true, id: data.id };
   } catch (error) {
     console.error('Error creating job post:', error);
-    toast.error('Kunde inte skapa jobbannons');
-    return { ok: false, message: 'Ett oväntat fel uppstod' };
+    toast.error(tx("ui.jobPostsService.kundeInteSkapaJobbannons"));
+    return { ok: false, message: tx('ui.jobPostsService.unexpectedError') };
   }
 };
 
@@ -262,11 +263,11 @@ export const updateJobPost = async (
       .single();
 
     if (error) throw error;
-    toast.success('Jobbannons uppdaterad');
+    toast.success(tx("ui.jobPostsService.jobbannonsUppdaterad"));
     return enrichJobPost(data);
   } catch (error) {
     console.error('Error updating job post:', error);
-    toast.error('Kunde inte uppdatera jobbannons');
+    toast.error(tx("ui.jobPostsService.kundeInteUppdateraJobbannons"));
     return null;
   }
 };
@@ -283,7 +284,7 @@ export const toggleJobPostPublished = async (id: string, isActive: boolean): Pro
     return true;
   } catch (error) {
     console.error('Error toggling job post published:', error);
-    toast.error('Kunde inte uppdatera jobbannons');
+    toast.error(tx("ui.jobPostsService.kundeInteUppdateraJobbannons"));
     return false;
   }
 };
@@ -296,11 +297,11 @@ export const deleteJobPost = async (id: string): Promise<boolean> => {
       .eq('id', id);
 
     if (error) throw error;
-    toast.success('Jobbannons raderad');
+    toast.success(tx("ui.jobPostsService.jobbannonsRaderad"));
     return true;
   } catch (error) {
     console.error('Error deleting job post:', error);
-    toast.error('Kunde inte radera jobbannons');
+    toast.error(tx("ui.jobPostsService.kundeInteRaderaJobbannons"));
     return false;
   }
 };

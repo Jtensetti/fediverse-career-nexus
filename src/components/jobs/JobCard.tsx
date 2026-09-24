@@ -8,7 +8,7 @@ import { Calendar, MapPin, Globe, Building2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { sv, enUS } from "date-fns/locale";
+import { dateLocale } from "@/lib/locale";
 import { motion } from "framer-motion";
 import TransparencyScore from "@/components/social/TransparencyScore";
 
@@ -92,7 +92,7 @@ const JobCard = ({ job }: JobCardProps) => {
             </div>
             <div className="flex items-center gap-2">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
-              <span>{t("jobView.created")} {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: i18n.language.startsWith("sv") ? sv : enUS })}</span>
+              <span>{t("jobView.created")} {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: dateLocale(i18n.language) })}</span>
             </div>
           </div>
           

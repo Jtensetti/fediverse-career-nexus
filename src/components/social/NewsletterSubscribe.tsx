@@ -7,6 +7,7 @@ import { Mail } from "lucide-react";
 import { subscribeToNewsletter, unsubscribeFromNewsletter, checkNewsletterSubscription } from "@/services/misc/newsletterService";
 import { supabase } from "@/lib/supabase";
 
+import { tx } from "@/i18n/tx";
 const NewsletterSubscribe = () => {
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -60,9 +61,9 @@ const NewsletterSubscribe = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Prenumerera på vårt nyhetsbrev</CardTitle>
+          <CardTitle className="text-xl">{tx("ui.newsletterSubscribe.prenumereraPaVartNyhetsbrev")}</CardTitle>
           <CardDescription>
-            Logga in för att prenumerera på vårt nyhetsbrev.
+            {tx("ui.newsletterSubscribe.loggaInForAtt")}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -72,11 +73,11 @@ const NewsletterSubscribe = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Nyhetsbrev</CardTitle>
+        <CardTitle className="text-xl">{tx("ui.newsletterSubscribe.nyhetsbrev")}</CardTitle>
         <CardDescription>
           {isSubscribed 
-            ? "Du prenumererar på uppdateringar om nya artiklar." 
-            : "Prenumerera för att få uppdateringar om nya artiklar."}
+            ? tx("ui.newsletterSubscribe.duPrenumererarPaUppdateringar") 
+            : tx("ui.newsletterSubscribe.prenumereraForAttFa")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -84,7 +85,7 @@ const NewsletterSubscribe = () => {
           <div className="space-y-4">
             <div className="p-3 bg-green-50 text-green-700 rounded-md flex items-center gap-2">
               <Mail size={16} />
-              <span>Du prenumererar med: {email}</span>
+              <span>{tx("ui.newsletterSubscribe.duPrenumererarMed")}{' '}{email}</span>
             </div>
             <Button 
               variant="outline" 
@@ -92,7 +93,7 @@ const NewsletterSubscribe = () => {
               disabled={isLoading}
               className="w-full"
             >
-              {isLoading ? "Bearbetar..." : "Avprenumerera"}
+              {isLoading ? tx("ui.newsletterSubscribe.bearbetar") : tx("ui.newsletterSubscribe.avprenumerera")}
             </Button>
           </div>
         ) : (
@@ -107,7 +108,7 @@ const NewsletterSubscribe = () => {
                 disabled={isLoading || !!userEmail}
               />
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Bearbetar..." : "Prenumerera"}
+                {isLoading ? tx("ui.newsletterSubscribe.bearbetar") : tx("ui.newsletterSubscribe.prenumerera")}
               </Button>
             </div>
           </form>

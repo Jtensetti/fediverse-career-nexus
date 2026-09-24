@@ -3,6 +3,7 @@ import { publicMediaUrl } from "@/lib/media";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+import { tx } from "@/i18n/tx";
 export interface ProfileUpdateData {
   username?: string;
   fullname?: string;
@@ -44,7 +45,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
 
     if (!user) {
       console.error('No user found in updateUserProfile');
-      toast.error("Du måste vara inloggad för att uppdatera din profil");
+      toast.error(tx("ui.profileEditService.duMasteVaraInloggad"));
       return false;
     }
 
@@ -72,11 +73,11 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
       return false;
     }
 
-    toast.success("Profil uppdaterad");
+    toast.success(tx("ui.profileEditService.profilUppdaterad"));
     return true;
   } catch (error) {
     console.error("Error updating profile:", error);
-    toast.error("Kunde inte uppdatera profil");
+    toast.error(tx("ui.profileEditService.kundeInteUppdateraProfil"));
     return false;
   }
 };
@@ -90,7 +91,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (!user) {
       console.error('No user found in uploadProfileAvatar');
-      toast.error("Du måste vara inloggad för att ladda upp en avatar");
+      toast.error(tx("ui.profileEditService.duMasteVaraInloggad2"));
       return null;
     }
 
@@ -131,11 +132,11 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
       return null;
     }
 
-    toast.success("Avatar uppdaterad");
+    toast.success(tx("ui.profileEditService.avatarUppdaterad"));
     return publicUrl;
   } catch (error) {
     console.error("Error uploading avatar:", error);
-    toast.error("Kunde inte ladda upp avatar");
+    toast.error(tx("ui.profileEditService.kundeInteLaddaUpp"));
     return null;
   }
 };
@@ -146,7 +147,7 @@ export const updateProfile = async (profileData: any) => {
 
     if (!user) {
       console.error('No user found in updateProfile');
-      toast.error('Du måste vara inloggad för att uppdatera din profil');
+      toast.error(tx("ui.profileEditService.duMasteVaraInloggad"));
       throw new Error('Du måste vara inloggad');
     }
 

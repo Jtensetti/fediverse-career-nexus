@@ -14,6 +14,7 @@ import Navbar from "@/components/layout/Navbar";
 import { advancedSearchService, AdvancedProfileResult, AdvancedSearchFilters } from "@/services/search/advancedSearchService";
 import { searchService, SearchResults } from "@/services/search/searchService";
 
+import { tx } from "@/i18n/tx";
 export default function Search() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -231,7 +232,7 @@ export default function Search() {
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-semibold">{profile.fullname || profile.username || 'Unknown'}</span>
+                                  <span className="font-semibold">{profile.fullname || profile.username || tx("ui.search.unknown")}</span>
                                   <span className="text-sm text-muted-foreground">@{profile.username || 'unknown'}{getInstanceDisplay(profile.home_instance)}</span>
                                 </div>
                                 {profile.headline && (<p className="text-sm text-muted-foreground mt-1 line-clamp-2">{profile.headline}</p>)}

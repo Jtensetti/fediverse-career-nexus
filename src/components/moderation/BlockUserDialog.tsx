@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { blockUser } from "@/services/moderation/blockService";
 
+import { tx } from "@/i18n/tx";
 interface BlockUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,7 +43,7 @@ export default function BlockUserDialog({
       setReason("");
       onBlocked?.();
     } else {
-      toast.error("Kunde inte blockera användaren");
+      toast.error(tx("ui.blockUserDialog.kundeInteBlockeraAnvandaren"));
     }
     setIsBlocking(false);
   };
@@ -53,24 +54,24 @@ export default function BlockUserDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserX className="h-5 w-5 text-destructive" />
-            Blockera {userName}
+            {tx("ui.blockUserDialog.blockera")}{' '}{userName}
           </DialogTitle>
           <DialogDescription>
-            Att blockera denna användare kommer att:
+            {tx("ui.blockUserDialog.attBlockeraDennaAnvandare")}
             <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-              <li>Dölja deras inlägg från ditt flöde</li>
-              <li>Förhindra dem från att skicka meddelanden till dig</li>
-              <li>Ta bort dem från sökresultat</li>
+              <li>{tx("ui.blockUserDialog.doljaDerasInlaggFran")}</li>
+              <li>{tx("ui.blockUserDialog.forhindraDemFranAtt")}</li>
+              <li>{tx("ui.blockUserDialog.taBortDemFran")}</li>
             </ul>
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="reason">Anledning (valfritt)</Label>
+            <Label htmlFor="reason">{tx("ui.blockUserDialog.anledningValfritt")}</Label>
             <Textarea
               id="reason"
-              placeholder="Varför blockerar du denna användare?"
+              placeholder={tx("ui.blockUserDialog.varforBlockerarDuDenna")}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
@@ -80,14 +81,14 @@ export default function BlockUserDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {tx("ui.blockUserDialog.avbryt")}
           </Button>
           <Button
             variant="destructive"
             onClick={handleBlock}
             disabled={isBlocking}
           >
-            {isBlocking ? "Blockerar..." : "Blockera användare"}
+            {isBlocking ? tx("ui.blockUserDialog.blockerar") : tx("ui.blockUserDialog.blockeraAnvandare")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Users, Briefcase, Check, ExternalLink } from "lucide-react";
 import { getProfilePreview } from "@/services/profile/profileService";
 
+import { tx } from "@/i18n/tx";
 interface ProfileHoverCardProps {
   children: ReactNode;
   username?: string;
@@ -43,7 +44,7 @@ export function ProfileHoverCard({ children, username, userId, disabled = false 
           <ProfileHoverCardContent profile={profile} />
         ) : (
           <div className="p-4 text-center text-muted-foreground text-sm">
-            Profilen hittades inte
+            {tx("ui.profileHoverCard.profilenHittadesInte")}
           </div>
         )}
       </HoverCardContent>
@@ -110,11 +111,11 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
               to={`/profile/${profile.username || profile.id}`}
               className="font-semibold hover:underline text-foreground"
             >
-              {profile.displayName || 'Okänd användare'}
+              {profile.displayName || tx("ui.profileHoverCard.okandAnvandare")}
             </Link>
             {profile.isVerified && (
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 px-1.5 py-0">
-                <Check size={10} className="mr-0.5" /> Verifierad
+                <Check size={10} className="mr-0.5" />{' '}{tx("ui.profileHoverCard.verifierad")}
               </Badge>
             )}
           </div>
@@ -130,7 +131,7 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
           {currentRole && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <Briefcase size={14} className="flex-shrink-0" />
-              <span className="truncate">{currentRole.title} på {currentRole.company}</span>
+              <span className="truncate">{currentRole.title}{' '}{tx("ui.profileHoverCard.pa")}{' '}{currentRole.company}</span>
             </div>
           )}
           
@@ -144,7 +145,7 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
           {typeof profile.connections === 'number' && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <Users size={14} className="flex-shrink-0" />
-              <span>{profile.connections} kontakter</span>
+              <span>{profile.connections}{' '}{tx("ui.profileHoverCard.kontakter")}</span>
             </div>
           )}
         </div>
@@ -156,7 +157,7 @@ function ProfileHoverCardContent({ profile }: ProfileHoverCardContentProps) {
           asChild
         >
           <Link to={`/profile/${profile.username || profile.id}`}>
-            Visa profil
+            {tx("ui.profileHoverCard.visaProfil")}
             <ExternalLink size={14} className="ml-1.5" />
           </Link>
         </Button>

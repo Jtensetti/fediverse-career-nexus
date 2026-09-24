@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, FileArchive, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { validateLinkedInZip } from '@/services/content/linkedinImportService';
 
+import { tx } from "@/i18n/tx";
 interface UploadStepProps {
   onFileSelected: (file: File) => void;
   onBack: () => void;
@@ -48,8 +49,8 @@ export default function UploadStep({ onFileSelected, onBack, isProcessing, error
           {isProcessing ? (
             <>
               <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
-              <p className="font-medium text-foreground">Bearbetar din data...</p>
-              <p className="text-sm text-muted-foreground mt-1">Detta kan ta en stund</p>
+              <p className="font-medium text-foreground">{tx("ui.uploadStep.bearbetarDinData")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{tx("ui.uploadStep.dettaKanTaEn")}</p>
             </>
           ) : (
             <>
@@ -57,9 +58,9 @@ export default function UploadStep({ onFileSelected, onBack, isProcessing, error
                 <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center"><FileArchive className="h-6 w-6 text-muted-foreground" /></div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center"><Upload className="h-3 w-3 text-primary-foreground" /></div>
               </div>
-              <p className="font-medium text-foreground">Släpp din LinkedIn ZIP-fil här</p>
-              <p className="text-sm text-muted-foreground mt-1">eller klicka för att bläddra</p>
-              <p className="text-xs text-muted-foreground mt-3">Max filstorlek: 100MB</p>
+              <p className="font-medium text-foreground">{tx("ui.uploadStep.slappDinLinkedinZip")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{tx("ui.uploadStep.ellerKlickaForAtt")}</p>
+              <p className="text-xs text-muted-foreground mt-3">{tx("ui.uploadStep.maxFilstorlek100mb")}</p>
             </>
           )}
         </label>
@@ -68,20 +69,20 @@ export default function UploadStep({ onFileSelected, onBack, isProcessing, error
       {displayError && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertDescription>{displayError}</AlertDescription></Alert>}
 
       <div className="flex justify-between">
-        <Button variant="ghost" onClick={onBack} disabled={isProcessing}><ArrowLeft className="h-4 w-4 mr-2" />Tillbaka</Button>
+        <Button variant="ghost" onClick={onBack} disabled={isProcessing}><ArrowLeft className="h-4 w-4 mr-2" />{tx("ui.uploadStep.tillbaka")}</Button>
       </div>
 
       <div className="p-3 rounded-lg bg-muted/50 text-sm">
-        <p className="font-medium text-foreground mb-2">Förväntade filer i din export:</p>
+        <p className="font-medium text-foreground mb-2">{tx("ui.uploadStep.forvantadeFilerIDin")}</p>
         <ul className="space-y-1 text-muted-foreground">
-          <li>• Profile.csv – Grundläggande profilinfo</li>
-          <li>• Positions.csv – Arbetslivserfarenhet</li>
-          <li>• Education.csv – Utbildningshistorik</li>
-          <li>• Skills.csv – Kompetenser</li>
-          <li>• Shares.csv – Inlägg och artiklar (valfritt)</li>
+          <li>{tx("ui.uploadStep.profileCsvGrundlaggandeProfilinfo")}</li>
+          <li>{tx("ui.uploadStep.positionsCsvArbetslivserfarenhet")}</li>
+          <li>{tx("ui.uploadStep.educationCsvUtbildningshistorik")}</li>
+          <li>{tx("ui.uploadStep.skillsCsvKompetenser")}</li>
+          <li>{tx("ui.uploadStep.sharesCsvInlaggOch")}</li>
         </ul>
         <p className="text-xs text-muted-foreground mt-3 pt-2 border-t border-muted">
-          <strong>Tips:</strong> När du exporterar från LinkedIn, välj "The larger data archive" för mer komplett data.
+          <strong>{tx("ui.uploadStep.tips")}</strong>{' '}{tx("ui.uploadStep.narDuExporterarFran")}
         </p>
       </div>
     </div>

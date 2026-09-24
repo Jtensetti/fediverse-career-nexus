@@ -1,7 +1,8 @@
+import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, type ComponentPropsWithoutRef } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { sv, enGB } from "date-fns/locale";
+
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { calendarSelectClassName } from "@/components/ui/calendar";
@@ -22,7 +23,7 @@ export function MonthYearPicker({
   toYear = new Date().getFullYear(), className, ...props
 }: MonthYearPickerProps) {
   const { t, i18n } = useTranslation();
-  const locale = i18n.language.startsWith('sv') ? sv : enGB;
+  const locale = dateLocale(i18n.language);
   const parsedValue = parseLocalDate(value);
   const valueYear = parsedValue?.getFullYear();
   const minYear = Math.min(fromYear, valueYear ?? fromYear);

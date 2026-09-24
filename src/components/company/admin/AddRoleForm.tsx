@@ -18,6 +18,7 @@ import { addCompanyRole } from "@/services/company/companyRolesService";
 import { logAuditAction } from "@/services/company/companyAuditService";
 import type { Database } from "@/integrations/supabase/types";
 
+import { tx } from "@/i18n/tx";
 type CompanyRoleEnum = Database["public"]["Enums"]["company_role"];
 
 interface AddRoleFormProps {
@@ -134,7 +135,7 @@ export default function AddRoleForm({ companyId, onRoleAdded }: AddRoleFormProps
                 </Avatar>
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">
-                    {user.fullname || user.username || "Unknown"}
+                    {user.fullname || user.username || tx("ui.addRoleForm.unknown")}
                   </p>
                   {user.username && (
                     <p className="text-xs text-muted-foreground truncate">@{user.username}</p>

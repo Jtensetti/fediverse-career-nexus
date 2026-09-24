@@ -20,6 +20,7 @@ import { SEOHead } from "@/components/common/SEOHead";
 import { useAuth } from "@/contexts/AuthContext";
 import Explore from "./Explore";
 
+import { tx } from "@/i18n/tx";
 function MemberFeed() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -112,7 +113,7 @@ function MemberFeed() {
 
 function FederatedFeedPage() {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-[60vh] flex items-center justify-center" aria-busy="true"><RefreshCw className="h-6 w-6 animate-spin" aria-label="Laddar" /></div>;
+  if (loading) return <div className="min-h-[60vh] flex items-center justify-center" aria-busy="true"><RefreshCw className="h-6 w-6 animate-spin" aria-label={tx("ui.federatedFeed.laddar")} /></div>;
   return user ? <MemberFeed key={user.id} /> : <Explore />;
 }
 

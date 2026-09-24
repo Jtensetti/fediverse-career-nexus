@@ -1,10 +1,12 @@
+import { dateLocale } from "@/lib/locale";
 import { useQuery } from "@tanstack/react-query";
 import { getUserActivity, type ActivityItem } from "@/services/misc/userActivityService";
 import { Heart, Repeat2, Loader2, Quote } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { sv } from "date-fns/locale";
+
 import { Link } from "react-router-dom";
 
+import { tx } from "@/i18n/tx";
 interface UserActivityListProps {
   userId?: string;
   className?: string;
@@ -26,12 +28,12 @@ export default function UserActivityList({ userId, className = "" }: UserActivit
 
   if (error) {
     return (
-      <div className="p-4 text-center text-destructive">Kunde inte ladda aktivitet</div>
+      <div className="p-4 text-center text-destructive">{tx("ui.userActivityList.kundeInteLaddaAktivitet")}</div>
     );
   }
 
   if (!activities || activities.length === 0) {
-    return <div className="p-4 text-center text-muted-foreground">Ingen aktivitet ännu</div>;
+    return <div className="p-4 text-center text-muted-foreground">{tx("ui.userActivityList.ingenAktivitetAnnu")}</div>;
   }
 
   return (
@@ -66,7 +68,7 @@ function ActivityRow({ activity }: { activity: ActivityItem }) {
   };
 
   const { icon, text } = getActionDetails();
-  const timeAgo = formatDistanceToNow(new Date(activity.created_at), { addSuffix: true, locale: sv });
+  const timeAgo = formatDistanceToNow(new Date(activity.created_at), { addSuffix: true, locale: dateLocale() });
 
   const contentPreview = activity.originalPost.content
     ? activity.originalPost.content.replace(/<[^>]*>/g, '').slice(0, 60) + (activity.originalPost.content.length > 60 ? '...' : '')

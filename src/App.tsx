@@ -25,6 +25,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 // Eager-loaded critical routes (landing, auth, 404)
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { tx } from "@/i18n/tx";
 const Auth = lazy(() => import("./pages/auth/Auth"));
 
 // Lazy-loaded routes — split into per-route chunks
@@ -134,7 +135,7 @@ function RouteFallback() {
     <div className="min-h-[40vh] flex items-center justify-center">
       <div
         className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
-        aria-label="Laddar sida"
+        aria-label={tx("ui.app.laddarSida")}
       />
     </div>
   );
@@ -391,7 +392,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Laddar...</p>
+          <p className="text-muted-foreground">{tx("ui.app.laddar")}</p>
         </div>
       </div>
     );

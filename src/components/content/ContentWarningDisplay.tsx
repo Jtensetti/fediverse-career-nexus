@@ -3,6 +3,7 @@ import { AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { tx } from "@/i18n/tx";
 interface ContentWarningDisplayProps {
   warning: string;
   children: React.ReactNode;
@@ -33,7 +34,7 @@ export default function ContentWarningDisplay({
       >
         <AlertTriangle className="h-4 w-4 flex-shrink-0" />
         <span className="flex-1 text-sm font-medium">
-          Content warning: {warning}
+          {tx("ui.contentWarningDisplay.contentWarning")}{' '}{warning}
         </span>
         <Button
           variant="ghost"
@@ -43,12 +44,12 @@ export default function ContentWarningDisplay({
         >
           {isExpanded ? (
             <>
-              Hide
+              {tx("ui.contentWarningDisplay.hide")}
               <ChevronUp className="h-4 w-4" />
             </>
           ) : (
             <>
-              Show
+              {tx("ui.contentWarningDisplay.show")}
               <ChevronDown className="h-4 w-4" />
             </>
           )}
