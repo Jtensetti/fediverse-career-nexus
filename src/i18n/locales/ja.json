@@ -815,7 +815,9 @@
     "signUpToPost": "投稿するにはサインアップ",
     "clearFilters": "フィルターをクリア",
     "allJobTypes": "すべての雇用形態",
-    "viewDetails": "詳細を見る"
+    "viewDetails": "詳細を見る",
+    "noneAvailable": "現在、公開中の求人はありません",
+    "noneAvailableDescription": "新しい機会を探すには、しばらくしてからもう一度ご確認ください。"
   },
   "messages": {
     "title": "メッセージ",
@@ -932,7 +934,9 @@
     "noPosts": "まだ投稿がありません",
     "noPostsDescription": "この組織はまだ投稿を共有していません。",
     "noJobs": "求人がありません",
-    "noJobsDescription": "この組織は現在、求人を募集していません。"
+    "noJobsDescription": "この組織は現在、求人を募集していません。",
+    "noneAvailable": "現在、公開中の組織はありません",
+    "noneAvailableDescription": "Noltoの組織を探すには、しばらくしてからもう一度ご確認ください。"
   },
   "companyHeader": {
     "admin": "管理者",

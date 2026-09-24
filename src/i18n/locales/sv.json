@@ -815,7 +815,9 @@
     "signUpToPost": "Registrera dig för att publicera",
     "clearFilters": "Rensa filter",
     "allJobTypes": "Alla anställningstyper",
-    "viewDetails": "Visa detaljer"
+    "viewDetails": "Visa detaljer",
+    "noneAvailable": "Inga jobb är publicerade just nu",
+    "noneAvailableDescription": "Kom tillbaka senare för att se nya möjligheter."
   },
   "messages": {
     "title": "Meddelanden",
@@ -932,7 +934,9 @@
     "noPosts": "Inga inlägg ännu",
     "noPostsDescription": "Organisationen har inte delat några inlägg ännu.",
     "noJobs": "Inga lediga jobb",
-    "noJobsDescription": "Organisationen har inga lediga tjänster just nu."
+    "noJobsDescription": "Organisationen har inga lediga tjänster just nu.",
+    "noneAvailable": "Inga organisationer är publicerade just nu",
+    "noneAvailableDescription": "Kom tillbaka senare för att upptäcka organisationer på Nolto."
   },
   "companyHeader": {
     "admin": "Admin",

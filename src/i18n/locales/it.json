@@ -815,7 +815,9 @@
     "signUpToPost": "Iscriviti per pubblicare",
     "clearFilters": "Cancella filtri",
     "allJobTypes": "Tutti i tipi di impiego",
-    "viewDetails": "Visualizza dettagli"
+    "viewDetails": "Visualizza dettagli",
+    "noneAvailable": "Al momento non ci sono offerte di lavoro disponibili",
+    "noneAvailableDescription": "Torna più tardi per scoprire nuove opportunità."
   },
   "messages": {
     "title": "Messaggi",
@@ -932,7 +934,9 @@
     "noPosts": "Nessun post ancora",
     "noPostsDescription": "Questa organizzazione non ha ancora condiviso alcun post.",
     "noJobs": "Nessuna offerta di lavoro",
-    "noJobsDescription": "Questa organizzazione non ha offerte di lavoro al momento."
+    "noJobsDescription": "Questa organizzazione non ha offerte di lavoro al momento.",
+    "noneAvailable": "Al momento non ci sono organizzazioni disponibili",
+    "noneAvailableDescription": "Torna più tardi per scoprire le organizzazioni su Nolto."
   },
   "companyHeader": {
     "admin": "Amministratore",
