@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Bewerk je peilingvraag...",
       "vadTankerDuPa": "Wat denk je?",
       "sparaAndringar": "Wijzigingen opslaan",
-      "sparar": "Opslaan..."
+      "sparar": "Opslaan...",
+      "updateFailed": "Het bericht kon niet worden bijgewerkt."
     },
     "companySearchFilter": {
       "sokForetag": "Bedrijf zoeken...",

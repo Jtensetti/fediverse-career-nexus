@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { getPublishedJobPosts, type JobPost, type JobPostFilter } from "@/services/misc/jobPostsService";
+import { getPublishedJobPosts, type JobPostFilter } from "@/services/misc/jobPostsService";
 import JobCard from "@/components/jobs/JobCard";
 import JobSearchFilter from "@/components/jobs/JobSearchFilter";
 import DashboardLayout from "@/components/layout/DashboardLayout";

@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Edit your poll question...",
       "vadTankerDuPa": "What's on your mind?",
       "sparaAndringar": "Save changes",
-      "sparar": "Sparar..."
+      "sparar": "Sparar...",
+      "updateFailed": "The post could not be updated."
     },
     "companySearchFilter": {
       "sokForetag": "Search company...",

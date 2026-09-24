@@ -35,8 +35,9 @@ export default function Companies() {
     if (newFilters.industry) next.set('type', newFilters.industry);
     if (newFilters.size) next.set('size', newFilters.size);
     if (newFilters.location) next.set('location', newFilters.location);
+    if (next.toString() === searchParams.toString()) return;
     setSearchParams(next, { replace: true });
-  }, [setSearchParams]);
+  }, [searchParams, setSearchParams]);
 
   return (
     <DashboardLayout title={t("companies.title")}>

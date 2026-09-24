@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Bearbeiten Sie Ihre Umfragefrage...",
       "vadTankerDuPa": "Was beschäftigt Sie?",
       "sparaAndringar": "Änderungen speichern",
-      "sparar": "Speichert..."
+      "sparar": "Speichert...",
+      "updateFailed": "Der Beitrag konnte nicht aktualisiert werden."
     },
     "companySearchFilter": {
       "sokForetag": "Firma suchen...",

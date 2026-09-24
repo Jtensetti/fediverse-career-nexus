@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Edite su pregunta de la encuesta...",
       "vadTankerDuPa": "¿Qué tiene en mente?",
       "sparaAndringar": "Guardar cambios",
-      "sparar": "Guardando..."
+      "sparar": "Guardando...",
+      "updateFailed": "No se pudo actualizar la publicación."
     },
     "companySearchFilter": {
       "sokForetag": "Buscar empresa...",

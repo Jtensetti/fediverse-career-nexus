@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Modifica la tua domanda del sondaggio...",
       "vadTankerDuPa": "A cosa stai pensando?",
       "sparaAndringar": "Salva modifiche",
-      "sparar": "Salvataggio..."
+      "sparar": "Salvataggio...",
+      "updateFailed": "Non è stato possibile aggiornare il post."
     },
     "companySearchFilter": {
       "sokForetag": "Cerca azienda...",

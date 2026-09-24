@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Modifier votre question de sondage...",
       "vadTankerDuPa": "À quoi pensez-vous ?",
       "sparaAndringar": "Enregistrer les modifications",
-      "sparar": "Enregistrement..."
+      "sparar": "Enregistrement...",
+      "updateFailed": "Impossible de mettre à jour la publication."
     },
     "companySearchFilter": {
       "sokForetag": "Rechercher une entreprise...",

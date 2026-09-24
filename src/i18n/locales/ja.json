@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "投票の質問を編集...",
       "vadTankerDuPa": "何を考えていますか？",
       "sparaAndringar": "変更を保存",
-      "sparar": "保存中..."
+      "sparar": "保存中...",
+      "updateFailed": "投稿を更新できませんでした。"
     },
     "companySearchFilter": {
       "sokForetag": "企業を検索...",
