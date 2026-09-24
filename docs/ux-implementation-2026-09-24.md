@@ -18,7 +18,7 @@ Utgångspunkt: main `da70086fd1c1c12a1ad1fe90cb81bd9b6af92394`. Ingen publicerin
 - `scripts/ux-standard.test.mjs` kontrollerar de globala defekterna, gemensamma mål/radbrytning, URL-baserad liststate, osparat-skydd och meddelandelistans fel-/scrollmönster.
 - Översättningstest, TypeScript för app och byggkonfiguration samt diffkontroll passerar.
 - Node-, Deno-, Edge- och produktionsbygge körs som slutlig gate efter implementeringen.
-- Browserkontroll görs lokalt utan produktionsskrivningar på publika jobb-, artikel-, evenemangs- och organisationsvyer i desktop/mobil, mörkt läge och reducerad rörelse.
+- Browserkontroll gjordes lokalt utan produktionsskrivningar på jobb-, evenemangs- och organisationsvyer i desktop/mobil, mörkt läge och reducerad rörelse. Alla höll 320 px utan sidscroll och utan konsolfel. Artiklar, meddelanden och profilredigering skickade den lokala utloggade sessionen till inloggning och räknas därför inte som autentiserat verifierade.
 
 ## Delvis verifierat eller kvar
 
@@ -27,6 +27,7 @@ Utgångspunkt: main `da70086fd1c1c12a1ad1fe90cb81bd9b6af92394`. Ingen publicerin
 - Full generell scrollåterställning mellan varje list- och detaljsida infördes inte; den kräver avgränsad routerstrategi så callback- och authflöden inte störs. Meddelandens prepend-scroll är åtgärdad separat.
 - De delade primitives förbättrar hela produkten, men varje ikon, rubriknivå, etikett, 200 % textläge och tangentbordsordning är inte manuellt granskat.
 - Autentiserade resor har inte skrivit testdata. Bildutkast/atomisk publicering, moderering, bekräftelser och E2EE ändrades inte.
+- Den lokala sparade sessionen var inte längre giltig, så autentiserade browserresor kunde inte verifieras i slutkontrollen. Beteendetesterna använder befintliga lokala fixtures/mocks och produktionsdata berördes inte.
 - Översättningarna behöver fortfarande modersmålsgranskning, särskilt juridisk text. Svenska skärmbilder på startsidan är fortfarande bilder och översätts inte.
 - Ingen WCAG 2.2 AA-certifiering, användarstudie, fältprestanda eller Core Web Vitals-mätning hävdas.
 - Tre befintliga databasåtkomstfynd ligger utanför den uttryckliga frontendgränsen och ändrades inte: bred läsning av profilsektioners synlighet, bred läsning av blockerade domäner samt en alltför bred organisations-update-check.
