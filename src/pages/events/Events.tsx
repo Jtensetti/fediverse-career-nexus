@@ -1,6 +1,5 @@
 import { dateLocale } from "@/lib/locale";
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
@@ -16,7 +15,8 @@ import { SEOHead } from '@/components/common/SEOHead';
 
 export default function Events() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') === 'past' ? 'past' : 'upcoming';
   
   const upcomingEvents = useQuery({
     queryKey: ['events', 'upcoming'],
@@ -52,7 +52,7 @@ export default function Events() {
             </Button>
           </div>
           
-          <Tabs defaultValue="upcoming" className="w-full" onValueChange={(value) => setTab(value as 'upcoming' | 'past')}>
+          <Tabs value={tab} className="w-full" onValueChange={(value) => setSearchParams(value === 'past' ? { tab: 'past' } : {}, { replace: true })}>
             <TabsList className="mb-8">
               <TabsTrigger value="upcoming">{t("events.upcoming")}</TabsTrigger>
               <TabsTrigger value="past">{t("events.past")}</TabsTrigger>
@@ -62,6 +62,11 @@ export default function Events() {
               {upcomingEvents.isLoading ? (
                 <div className="flex justify-center py-10">
                   <p>{t("events.loading")}</p>
+                </div>
+              ) : upcomingEvents.isError ? (
+                <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+                  <p className="font-medium">{t("common.error")}</p>
+                  <Button variant="outline" className="mt-4" onClick={() => void upcomingEvents.refetch()}>{t("common.retry")}</Button>
                 </div>
               ) : upcomingEvents.data?.length === 0 ? (
                 <div className="text-center py-10 border rounded-lg bg-muted/20">
@@ -84,6 +89,11 @@ export default function Events() {
               {pastEvents.isLoading ? (
                 <div className="flex justify-center py-10">
                   <p>{t("events.loading")}</p>
+                </div>
+              ) : pastEvents.isError ? (
+                <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+                  <p className="font-medium">{t("common.error")}</p>
+                  <Button variant="outline" className="mt-4" onClick={() => void pastEvents.refetch()}>{t("common.retry")}</Button>
                 </div>
               ) : pastEvents.data?.length === 0 ? (
                 <div className="text-center py-10 border rounded-lg bg-muted/20">

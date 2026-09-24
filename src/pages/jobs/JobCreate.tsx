@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
 import { toast } from "sonner";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 
 const JobCreate = () => {
   const { t } = useTranslation();
@@ -15,6 +16,8 @@ const JobCreate = () => {
   const { user, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<{ message: string; details?: string } | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("profileEdit.unsavedChanges") });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -71,7 +74,7 @@ const JobCreate = () => {
         {submitError && (
           <InlineErrorBanner message={submitError.message} details={submitError.details} onRetry={() => setSubmitError(null)} onDismiss={() => setSubmitError(null)} className="mb-6" />
         )}
-        <JobForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        <JobForm onSubmit={handleSubmit} isSubmitting={isSubmitting} onDirtyChange={setIsDirty} onCancel={() => confirmDiscard(() => navigate("/jobs/manage"))} />
       </main>
       <Footer />
     </div>

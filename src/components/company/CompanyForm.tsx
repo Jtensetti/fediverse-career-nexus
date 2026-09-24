@@ -81,6 +81,7 @@ interface CompanyFormProps {
   isSubmitting?: boolean;
   submitButtonText?: string;
   isEdit?: boolean;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 export default function CompanyForm({
@@ -89,6 +90,7 @@ export default function CompanyForm({
   isSubmitting = false,
   submitButtonText,
   isEdit = false,
+  onDirtyChange,
 }: CompanyFormProps) {
   const { t } = useTranslation();
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
@@ -112,6 +114,9 @@ export default function CompanyForm({
 
   const watchName = form.watch("name");
   const watchSlug = form.watch("slug");
+  const { isDirty } = form.formState;
+
+  useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
 
   // Auto-generate slug from name (only when creating)
   useEffect(() => {

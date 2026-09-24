@@ -6,6 +6,8 @@ import { getEvent, updateEvent, Event, EventWithRSVPCount } from '@/services/mis
 import EventForm from '@/components/events/EventForm';
 import { Button } from '@/components/ui/button';
 import { SEOHead } from '@/components/common/SEOHead';
+import { toast } from 'sonner';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 export default function EventEdit() {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +15,8 @@ export default function EventEdit() {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation();
+  const [isDirty, setIsDirty] = useState(false);
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('profileEdit.unsavedChanges') });
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -33,6 +37,7 @@ export default function EventEdit() {
         navigate(`/events/${event.id}`);
       }
     },
+    onError: () => toast.error(t('common.error')),
     onSettled: () => {
       setIsSubmitting(false);
     }
@@ -90,6 +95,8 @@ export default function EventEdit() {
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           submitButtonText={t('eventEdit.editButton')}
+          onDirtyChange={setIsDirty}
+          onCancel={() => confirmDiscard(() => navigate(`/events/${id}`))}
         />
       </div>
     </div>

@@ -28,14 +28,21 @@ const companySizeOptions: { value: CompanySize; label: string }[] = [
 
 interface CompanySearchFilterProps {
   onFilterChange: (filters: CompanyFilters) => void;
+  filters?: CompanyFilters;
 }
 
-export default function CompanySearchFilter({ onFilterChange }: CompanySearchFilterProps) {
-  const [search, setSearch] = useState("");
-  const [industry, setIndustry] = useState<string>("");
-  const [size, setSize] = useState<string>("");
-  const [location, setLocation] = useState("");
+export default function CompanySearchFilter({ onFilterChange, filters = {} }: CompanySearchFilterProps) {
+  const [search, setSearch] = useState(filters.search || "");
+  const [industry, setIndustry] = useState<string>(filters.industry || "");
+  const [size, setSize] = useState<string>(filters.size || "");
+  const [location, setLocation] = useState(filters.location || "");
 
+  useEffect(() => {
+    setSearch(filters.search || "");
+    setIndustry(filters.industry || "");
+    setSize(filters.size || "");
+    setLocation(filters.location || "");
+  }, [filters]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,6 +62,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
     setIndustry("");
     setSize("");
     setLocation("");
+    onFilterChange({});
   };
 
   const hasFilters = search || industry || size || location;
@@ -64,6 +72,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          aria-label={tx("ui.companySearchFilter.sokForetag")}
           placeholder={tx("ui.companySearchFilter.sokForetag")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -73,7 +82,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
 
       <div className="flex flex-wrap gap-3">
         <Select value={industry} onValueChange={setIndustry}>
-          <SelectTrigger className="w-full sm:w-[220px]">
+          <SelectTrigger className="w-full sm:w-[220px]" aria-label={tx("ui.companySearchFilter.typAvOrganisation")}>
             <SelectValue placeholder={tx("ui.companySearchFilter.typAvOrganisation")} />
           </SelectTrigger>
           <SelectContent>
@@ -87,7 +96,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
         </Select>
 
         <Select value={size} onValueChange={setSize}>
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]" aria-label={tx("ui.companySearchFilter.storlek")}>
             <SelectValue placeholder={tx("ui.companySearchFilter.storlek")} />
           </SelectTrigger>
           <SelectContent>
@@ -101,6 +110,7 @@ export default function CompanySearchFilter({ onFilterChange }: CompanySearchFil
         </Select>
 
         <Input
+          aria-label={tx("ui.companySearchFilter.plats")}
           placeholder={tx("ui.companySearchFilter.plats")}
           value={location}
           onChange={(e) => setLocation(e.target.value)}

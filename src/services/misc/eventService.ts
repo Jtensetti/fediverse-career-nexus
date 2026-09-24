@@ -62,7 +62,6 @@ export async function getEvents(options: {
   upcoming?: boolean;
   userId?: string | null;
 } = {}): Promise<EventWithRSVPCount[]> {
-  try {
     const { limit = 10, page = 0, upcoming = true, userId } = options;
     // Avoid milliseconds in OR filters (can be brittle in some PostgREST parsers)
     const nowISO = new Date().toISOString().split('.')[0] + 'Z';
@@ -124,11 +123,6 @@ export async function getEvents(options: {
     }
 
     return eventsWithCount;
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    toast.error(i18n.t('toasts.eventLoadFailed'));
-    return [];
-  }
 }
 
 export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {

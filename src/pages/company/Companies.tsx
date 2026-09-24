@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,18 +14,29 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Companies() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [filters, setFilters] = useState<CompanyFilters>({});
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = useMemo<CompanyFilters>(() => ({
+    search: searchParams.get('q') || undefined,
+    industry: searchParams.get('type') || undefined,
+    size: (searchParams.get('size') as CompanyFilters['size']) || undefined,
+    location: searchParams.get('location') || undefined,
+  }), [searchParams]);
 
   const hasFilters = Object.keys(filters).some(k => !!filters[k as keyof CompanyFilters]);
 
-  const { data: companies = [], isLoading } = useQuery({
+  const { data: companies = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['companies', filters],
     queryFn: () => hasFilters ? searchCompanies(filters) : getCompanies(),
   });
 
   const handleFilterChange = useCallback((newFilters: CompanyFilters) => {
-    setFilters(newFilters);
-  }, []);
+    const next = new URLSearchParams();
+    if (newFilters.search) next.set('q', newFilters.search);
+    if (newFilters.industry) next.set('type', newFilters.industry);
+    if (newFilters.size) next.set('size', newFilters.size);
+    if (newFilters.location) next.set('location', newFilters.location);
+    setSearchParams(next, { replace: true });
+  }, [setSearchParams]);
 
   return (
     <DashboardLayout title={t("companies.title")}>
@@ -50,7 +61,7 @@ export default function Companies() {
         )}
       </div>
 
-      <CompanySearchFilter onFilterChange={handleFilterChange} />
+      <CompanySearchFilter filters={filters} onFilterChange={handleFilterChange} />
 
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -69,6 +80,11 @@ export default function Companies() {
               </div>
             </div>
           ))}
+        </div>
+      ) : isError ? (
+        <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+          <p className="font-medium">{t("common.error")}</p>
+          <Button variant="outline" className="mt-4" onClick={() => void refetch()}>{t("common.retry")}</Button>
         </div>
       ) : companies.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

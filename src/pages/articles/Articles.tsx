@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getPublishedArticles, ArticleWithAccess } from "@/services/articles/articleService";
 import { canAccessFullArticle } from "@/services/social/authorFollowService";
@@ -10,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, BookText, Users, UserCheck } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,11 +21,17 @@ const Articles = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
+  const activeTab = searchParams.get('tab') === 'accessible' ? 'accessible' : 'all';
+  const updateParams = (updates: { q?: string; tab?: string }) => {
+    const next = new URLSearchParams(searchParams);
+    Object.entries(updates).forEach(([key, value]) => value && value !== 'all' ? next.set(key, value) : next.delete(key));
+    setSearchParams(next, { replace: true });
+  };
   
   // Fetch all published articles
-  const { data: articles = [], isLoading } = useQuery({
+  const { data: articles = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['articles'],
     queryFn: getPublishedArticles,
   });
@@ -125,13 +130,13 @@ const Articles = () => {
               aria-label={t("articles.search")}
               placeholder={t("articles.search")}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => updateParams({ q: e.target.value })}
               className="pl-10"
             />
           </div>
 
           {user && (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+            <Tabs value={activeTab} onValueChange={(tab) => updateParams({ tab })} className="mb-6">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="all" className="flex items-center gap-2">
                   <BookText className="h-4 w-4" />
@@ -158,6 +163,11 @@ const Articles = () => {
                 </div>
               ))}
             </div>
+          ) : isError ? (
+            <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+              <p className="font-medium">{t("common.error")}</p>
+              <Button variant="outline" className="mt-4" onClick={() => void refetch()}>{t("common.retry")}</Button>
+            </div>
           ) : filteredArticles.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2">
               {filteredArticles.map((article) => (
@@ -181,7 +191,7 @@ const Articles = () => {
                   : t("articles.noPublished")}
               </p>
               {activeTab === "accessible" && (
-                <Button variant="outline" onClick={() => setActiveTab("all")}>
+                <Button variant="outline" onClick={() => updateParams({ tab: "all" })}>
                   <Users className="h-4 w-4 mr-2" />
                   {t("articles.browseAll")}
                 </Button>

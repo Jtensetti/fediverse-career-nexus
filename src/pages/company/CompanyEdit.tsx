@@ -1,4 +1,5 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ import { getCompanyBySlug, updateCompany } from "@/services/company/companyServi
 import { canManageCompany } from "@/services/company/companyRolesService";
 import { useAuth } from "@/contexts/AuthContext";
 import { Building2 } from "lucide-react";
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
 
 export default function CompanyEdit() {
   const { slug } = useParams<{ slug: string }>();
@@ -20,6 +22,7 @@ export default function CompanyEdit() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
+  const [isDirty, setIsDirty] = useState(false);
 
   const { data: company, isLoading } = useQuery({
     queryKey: ['company', slug],
@@ -53,6 +56,7 @@ export default function CompanyEdit() {
       toast.error(error.message || t("companies.updateError", "Failed to update company"));
     },
   });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !updateMutation.isPending, message: t("profileEdit.unsavedChanges") });
 
   if (isLoading || authLoading || checkingAccess) {
     return (
@@ -114,11 +118,9 @@ export default function CompanyEdit() {
       <Navbar />
       <main className="flex-grow">
         <div className="container max-w-3xl mx-auto py-10 px-4 sm:px-6">
-          <Button variant="ghost" asChild className="mb-4">
-            <Link to={`/organisation/${slug}`}>
+          <Button variant="ghost" className="mb-4" onClick={() => confirmDiscard(() => navigate(`/organisation/${slug}`))}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t("common.back", "Back")}
-            </Link>
           </Button>
 
           <div className="mb-8">
@@ -146,6 +148,7 @@ export default function CompanyEdit() {
             isSubmitting={updateMutation.isPending}
             submitButtonText={t("common.saveChanges", "Save Changes")}
             isEdit
+            onDirtyChange={setIsDirty}
           />
         </div>
       </main>

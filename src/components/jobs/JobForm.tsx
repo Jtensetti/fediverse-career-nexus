@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -69,13 +70,17 @@ interface JobFormProps {
   onSubmit: (data: JobFormValues) => void;
   isSubmitting: boolean;
   submitButtonText?: string;
+  onCancel?: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const JobForm = ({ 
   defaultValues = {}, 
   onSubmit, 
   isSubmitting,
-  submitButtonText
+  submitButtonText,
+  onCancel,
+  onDirtyChange,
 }: JobFormProps) => {
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -128,6 +133,8 @@ const JobForm = ({
     resolver: zodResolver(jobFormSchema),
     defaultValues: formattedDefaultValues as any,
   });
+  const { isDirty } = form.formState;
+  useEffect(() => onDirtyChange?.(isDirty), [isDirty, onDirtyChange]);
 
   const handleSubmit = (values: JobFormValues) => {
     onSubmit(values);
@@ -546,7 +553,7 @@ const JobForm = ({
         />
 
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => window.history.back()}>
+          <Button type="button" variant="outline" onClick={onCancel || (() => window.history.back())} disabled={isSubmitting}>
             {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
