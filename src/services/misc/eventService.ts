@@ -126,13 +126,13 @@ export async function getEvents(options: {
 }
 
 export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
-  try {
     const { data, error } = await supabase
       .from('events')
       .select('*, rsvp_count:event_rsvps(count)')
       .eq('id', id)
       .single();
 
+    if (error?.code === 'PGRST116') return null;
     if (error) throw error;
 
     // Transform the data to match our expected type
@@ -162,11 +162,6 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
     }
 
     return eventWithCount;
-  } catch (error) {
-    console.error('Error fetching event:', error);
-    toast.error(i18n.t('toasts.eventDetailsFailed'));
-    return null;
-  }
 }
 
 export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Event | null> {

@@ -9,6 +9,7 @@ import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<div id="root"></div>', { url: 'https://example.invalid/events/test-event' });
 for (const name of ['window', 'document', 'HTMLElement', 'HTMLInputElement', 'HTMLButtonElement', 'Node', 'NodeFilter', 'DocumentFragment', 'Event', 'MouseEvent', 'CustomEvent', 'MutationObserver', 'FileList']) globalThis[name] = dom.window[name];
 globalThis.getComputedStyle = dom.window.getComputedStyle;
+globalThis.window.confirm = () => true;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
 dom.window.HTMLElement.prototype.scrollIntoView = () => {};
@@ -54,7 +55,7 @@ registerHooks({
 
 const React = await import('react');
 const { createRoot } = await import('react-dom/client');
-const { MemoryRouter, Routes, Route, useLocation } = await import('react-router-dom');
+const { createMemoryRouter, RouterProvider, Outlet, useLocation } = await import('react-router-dom');
 const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query');
 const { default: EventForm } = await import('../src/components/events/EventForm.tsx');
 const { default: EventCreate } = await import('../src/pages/events/EventCreate.tsx');
@@ -69,12 +70,13 @@ const fixture = {
   max_attendees: null, visibility: 'private', rsvp_count: 7, user_rsvp_status: 'attending',
 };
 function Location() { const location = useLocation(); return h('output', { 'data-location': true }, location.pathname); }
-function routes() { return h(React.Fragment, {}, h(Location), h(Routes, {},
-  h(Route, { path: '/events/edit/:id', element: h(EventEdit) }),
-  h(Route, { path: '/events/create', element: h(EventCreate) }),
-  h(Route, { path: '/events/:id', element: h(EventView) }),
-  h(Route, { path: '/events', element: h('h1', {}, 'Events list') }),
-)); }
+function Root() { return h(React.Fragment, {}, h(Location), h(Outlet)); }
+function routes() { return [{ element: h(Root), children: [
+  { path: '/events/edit/:id', element: h(EventEdit) },
+  { path: '/events/create', element: h(EventCreate) },
+  { path: '/events/:id', element: h(EventView) },
+  { path: '/events', element: h('h1', {}, 'Events list') },
+] }]; }
 async function render(component, path = '/events/test-event', seed = true) {
   globalThis.eventsTestEvent = { ...fixture };
   globalThis.eventsTestDeleteCalls = 0;
@@ -82,7 +84,9 @@ async function render(component, path = '/events/test-event', seed = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity, staleTime: 60_000 }, mutations: { retry: false, gcTime: Infinity } } });
   if (seed) client.setQueryData(['event', fixture.id], { ...fixture });
   client.setQueryData(['events', 'upcoming'], [fixture]);
-  await act(async () => root.render(h(QueryClientProvider, { client }, h(MemoryRouter, { initialEntries: [path] }, component))));
+  const isStandaloneForm = component?.type === EventForm;
+  const rendered = isStandaloneForm ? component : h(RouterProvider, { router: createMemoryRouter(routes(), { initialEntries: [path] }) });
+  await act(async () => root.render(h(QueryClientProvider, { client }, rendered)));
   await flush();
   return { client, cleanup: async () => { await act(async () => root.unmount()); client.clear(); } };
 }

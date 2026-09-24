@@ -122,7 +122,7 @@ export default function Search() {
     <>
       <SEOHead title={t("search.seoTitle")} description={t("search.seoDescription")} />
       <Navbar />
-      <div className="container max-w-6xl mx-auto px-4 py-8">
+      <main className="container max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{t("search.title")}</h1>
           <p className="text-muted-foreground">{t("search.description")}</p>
@@ -144,41 +144,41 @@ export default function Search() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-query" className="text-sm font-medium flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     {t(activeTab === 'people' ? "search.nameOrUsername" : "search.searchButton")}
                   </label>
-                  <Input aria-label={activeTab === 'people' ? t("search.nameOrUsername") : t("search.searchLabel")} placeholder={activeTab === 'people' ? t("search.nameOrUsernamePlaceholder") : t("globalSearch.placeholder")} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
+                  <Input id="search-query" aria-label={activeTab === 'people' ? t("search.nameOrUsername") : t("search.searchLabel")} placeholder={activeTab === 'people' ? t("search.nameOrUsernamePlaceholder") : t("globalSearch.placeholder")} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 {activeTab === 'people' && <>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-location" className="text-sm font-medium flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     {t("search.locationLabel")}
                   </label>
-                  <Input aria-label={t("search.locationLabel")} placeholder={t("search.locationPlaceholder")} value={location} onChange={(e) => setLocation(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
+                  <Input id="search-location" placeholder={t("search.locationPlaceholder")} value={location} onChange={(e) => setLocation(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-company" className="text-sm font-medium flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                     {t("search.worksAt")}
                   </label>
-                  <Input aria-label={t("search.worksAt")} placeholder={t("search.worksAtPlaceholder")} value={company} onChange={(e) => setCompany(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
+                  <Input id="search-company" placeholder={t("search.worksAtPlaceholder")} value={company} onChange={(e) => setCompany(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-institution" className="text-sm font-medium flex items-center gap-2">
                     <GraduationCap className="h-4 w-4 text-muted-foreground" />
                     {t("search.studiedAt")}
                   </label>
-                  <Input aria-label={t("search.studiedAt")} placeholder={t("search.studiedAtPlaceholder")} value={institution} onChange={(e) => setInstitution(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
+                  <Input id="search-institution" placeholder={t("search.studiedAtPlaceholder")} value={institution} onChange={(e) => setInstitution(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSearch()} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
+                  <label htmlFor="search-instance" className="text-sm font-medium flex items-center gap-2">
                     <Globe className="h-4 w-4 text-muted-foreground" />
                     {t("search.instance")}
                   </label>
                   <Select value={homeInstance} onValueChange={setHomeInstance}>
-                    <SelectTrigger aria-label={t("search.instance")}>
+                    <SelectTrigger id="search-instance">
                       <SelectValue placeholder={t("search.allInstances")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -286,7 +286,7 @@ export default function Search() {
             </Tabs>
           </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

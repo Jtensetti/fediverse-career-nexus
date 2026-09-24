@@ -37,12 +37,32 @@ test('create and edit flows guard dirty work without storing form contents', () 
   const hook = read('src/hooks/useUnsavedChanges.ts');
   assert.match(hook, /beforeunload/);
   assert.match(hook, /window\.confirm/);
+  assert.match(hook, /useBlocker/);
+  assert.match(read('src/App.tsx'), /createBrowserRouter/);
   assert.doesNotMatch(hook, /localStorage|sessionStorage/);
   for (const file of [
     'src/pages/jobs/JobCreate.tsx', 'src/pages/jobs/JobEdit.tsx',
     'src/pages/events/EventCreate.tsx', 'src/pages/events/EventEdit.tsx',
     'src/pages/company/CompanyCreate.tsx', 'src/pages/company/CompanyEdit.tsx',
   ]) assert.match(read(file), /useUnsavedChanges/);
+});
+
+test('filters have persistent labels and the signed-in mobile menu exposes language choice', () => {
+  for (const file of ['src/components/jobs/JobSearchFilter.tsx', 'src/components/company/CompanySearchFilter.tsx', 'src/pages/search/Search.tsx']) {
+    const source = read(file);
+    assert.match(source, /htmlFor=/);
+    assert.match(source, /id=/);
+  }
+  assert.match(read('src/components/layout/Navbar.tsx'), /<LanguageSelector \/>/);
+  assert.doesNotMatch(read('src/components/jobs/JobSearchFilter.tsx'), /<Switch/);
+});
+
+test('semantic normal-text colors retain accessible contrast', () => {
+  const css = read('src/index.css');
+  assert.match(css, /--destructive: 0 72% 42%/);
+  assert.match(css, /--success: 142 72% 29%/);
+  assert.match(css, /--info: 199 85% 32%/);
+  assert.match(css, /--input: 214 20% 58%/);
 });
 
 test('messages distinguish query errors and preserve scroll when older messages prepend', () => {

@@ -98,21 +98,18 @@ export default function Companies() {
           icon={Building2}
           title={hasFilters 
             ? t("companies.noMatching")
-            : t("companies.beFirst")
+            : t("companies.noneAvailable")
           }
           description={hasFilters
             ? t("companies.adjustFilters")
-            : t("companies.createDescription")
+            : t("companies.noneAvailableDescription")
           }
           action={
-            user
-              ? { label: t("companies.create"), link: "/organisationer/skapa" }
-              : { label: t("auth.signUp"), link: "/auth/signup" }
-          }
-          secondaryAction={
             hasFilters
               ? { label: t("common.clearFilters"), onClick: () => handleFilterChange({}) }
-              : undefined
+              : user
+              ? { label: t("companies.create"), link: "/organisationer/skapa" }
+              : { label: t("auth.signUp"), link: "/auth/signup" }
           }
         />
       )}

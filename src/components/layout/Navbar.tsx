@@ -99,7 +99,11 @@ function MemberNavbar() {
               <Link to="/my-reviews" onClick={() => setOpen(false)} className="px-4 py-3 text-sm">{t("contentCare.myReviews")}</Link>
               <button onClick={() => void logout()} className="px-4 py-3 text-left text-sm text-destructive">{t("auth.logout")}</button>
             </nav>
-            <div className="mt-4"><ModeToggle /></div>
+            <div className="mt-2 border-t px-2 pt-4"><LanguageSelector className="w-full" /></div>
+             <div className="mt-4 flex flex-col gap-3 border-t pt-4">
+               <LanguageSelector />
+               <ModeToggle />
+             </div>
           </SheetContent>
         </Sheet>
       </div>

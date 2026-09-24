@@ -815,7 +815,9 @@
     "signUpToPost": "Meld u aan om te plaatsen",
     "clearFilters": "Filters wissen",
     "allJobTypes": "Alle dienstverbandtypen",
-    "viewDetails": "Details bekijken"
+    "viewDetails": "Details bekijken",
+    "noneAvailable": "Er zijn momenteel geen vacatures beschikbaar",
+    "noneAvailableDescription": "Kom later terug voor nieuwe mogelijkheden."
   },
   "messages": {
     "title": "Berichten",
@@ -932,7 +934,9 @@
     "noPosts": "Nog geen berichten",
     "noPostsDescription": "Deze organisatie heeft nog geen berichten gedeeld.",
     "noJobs": "Geen openstaande vacatures",
-    "noJobsDescription": "Deze organisatie heeft momenteel geen openstaande vacatures."
+    "noJobsDescription": "Deze organisatie heeft momenteel geen openstaande vacatures.",
+    "noneAvailable": "Er zijn momenteel geen organisaties beschikbaar",
+    "noneAvailableDescription": "Kom later terug om organisaties op Nolto te ontdekken."
   },
   "companyHeader": {
     "admin": "Beheerder",

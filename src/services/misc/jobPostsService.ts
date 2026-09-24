@@ -141,7 +141,6 @@ export const getJobPosts = async (options?: {
   const { limit = 20, page = 1, activeOnly = true, userId } = options || {};
   const offset = (page - 1) * limit;
 
-  try {
     let query = supabase
       .from('job_posts')
       .select('*')
@@ -160,10 +159,6 @@ export const getJobPosts = async (options?: {
 
     if (error) throw error;
     return (data || []).map(enrichJobPost);
-  } catch (error) {
-    console.error('Error fetching job posts:', error);
-    return [];
-  }
 };
 
 // Alias for backward compatibility
@@ -206,7 +201,6 @@ export const getPublishedJobPosts = async (filters?: JobPostFilter): Promise<Job
 
 // Alias for backward compatibility
 export const getUserJobPosts = async (): Promise<JobPost[]> => {
-  try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session) return [];
 
@@ -218,26 +212,18 @@ export const getUserJobPosts = async (): Promise<JobPost[]> => {
 
     if (error) throw error;
     return (data || []).map(enrichJobPost);
-  } catch (error) {
-    console.error('Error fetching user job posts:', error);
-    return [];
-  }
 };
 
 export const getJobPost = async (id: string): Promise<JobPost | null> => {
-  try {
     const { data, error } = await supabase
       .from('job_posts')
       .select('*')
       .eq('id', id)
       .single();
 
+    if (error?.code === 'PGRST116') return null;
     if (error) throw error;
     return enrichJobPost(data);
-  } catch (error) {
-    console.error('Error fetching job post:', error);
-    return null;
-  }
 };
 
 // Alias for backward compatibility

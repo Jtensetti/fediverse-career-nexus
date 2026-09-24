@@ -815,7 +815,9 @@
     "signUpToPost": "Sign up to post",
     "clearFilters": "Clear filters",
     "allJobTypes": "All employment types",
-    "viewDetails": "View details"
+    "viewDetails": "View details",
+    "noneAvailable": "No jobs are available right now",
+    "noneAvailableDescription": "Check back later for new opportunities."
   },
   "messages": {
     "title": "Messages",
@@ -932,7 +934,9 @@
     "noPosts": "No posts yet",
     "noPostsDescription": "This organization has not shared any posts yet.",
     "noJobs": "No job openings",
-    "noJobsDescription": "This organization has no job openings at the moment."
+    "noJobsDescription": "This organization has no job openings at the moment.",
+    "noneAvailable": "No organisations are available right now",
+    "noneAvailableDescription": "Check back later to discover organisations on Nolto."
   },
   "companyHeader": {
     "admin": "Admin",

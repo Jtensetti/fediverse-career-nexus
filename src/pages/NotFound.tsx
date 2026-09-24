@@ -13,7 +13,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-muted/30 px-4">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-muted/30 px-4">
       <SEOHead title={tx("ui.notFound.sidanHittadesInte")} description={tx("ui.notFound.sidanDuLetarEfter")} />
       <div className="text-center max-w-md">
         <h1 className="text-7xl font-display font-bold text-primary mb-6">404</h1>
@@ -28,7 +28,7 @@ const NotFound = () => {
           </Link>
         </Button>
       </div>
-    </div>
+    </main>
   );
 };
 

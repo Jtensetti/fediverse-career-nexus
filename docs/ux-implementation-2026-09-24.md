@@ -8,12 +8,14 @@ Färggrund: den befintliga källan och livewebbplatsens teal/petrol, bleka aqua 
 
 - Globala statusmeddelanden är åter synliga; mobilnavigeringens säkra bottenyta använder strukturell markör i stället för svensk `aria-label`; forced-colors tillåts använda användarens färger.
 - Gemensamma knappar, inputs, textareas, selects, tabs och dialoger har minhöjd, radbrytning, tydligt fokus och viewport-anpassad dialogyta. Repetitiv skal-/bounce-rörelse togs bort från mobilnavigationen.
-- Framer Motion följer `prefers-reduced-motion`. Appens yttre felaktiga `main` blev en neutral behållare och helskärmslayout använder dynamisk viewport där den ändrades.
-- Jobb, artiklar, evenemang och organisationer skriver centrala filter/flikar till URL och visar separat laddning, fel med nytt försök, resultat och relevant tomstatus. Berörda lästjänster kastar riktiga fel i stället för att returnera falskt tomma listor.
-- Jobb-, evenemangs- och organisationsformulär rapporterar dirty-state. Omladdning och uttrycklig avbryt/tillbaka bekräftar kassering; lyckad/pågående sparning ger ingen nuisance-varning. Innehållet hålls endast i komponentminne.
+- Framer Motion följer `prefers-reduced-motion`. Appen använder datarouter; skip-länken fokuserar sidans faktiska huvudinnehåll utan ett nästlat yttre `main`.
+- Jobb, artiklar, evenemang och organisationer skriver centrala filter/flikar till URL och visar separat laddning, fel med nytt försök, resultat och relevant tomstatus. Jobb och organisationer har läsarorienterade första tomlägen och filtertomlägen prioriterar att rensa filtren. Berörda lästjänster kastar riktiga fel i stället för att returnera falskt tomma listor.
+- Jobb-, evenemangs- och organisationsformulär rapporterar dirty-state. Omladdning, browser back och intern navigation blockeras centralt; cancel återställer aktuell URL och arbete, medan lyckad sparning passerar synkront utan nuisance-varning. Innehållet hålls endast i komponentminne.
 - Jobbredigering och evenemangsredigering visar misslyckad mutation i stället för att tyst stanna. Inläggs- och kommentarredigering fick namngivna textfält och översatt reservfel.
 - Meddelandelistan skiljer fel i kontakter/förfrågningar från tomma tillstånd. Äldre meddelanden kan läggas till utan att läspositionen hoppar. Meddelandefönstret använder dynamisk mobilhöjd.
 - Granskade ikonknappar har namn och minst 44 px fristående mål. Språkresurserna har fortsatt exakt paritet för sv/en/fr/de/nl/es/ja/it.
+- Jobb-, organisations- och globala sökfilter har synliga kopplade etiketter. Remote-valet är en checkbox för det val som tillämpas när filtret skickas. Alla åtta språk finns i den inloggade mobilmenyn.
+- Semantiska destructive/success/info/secondary-par och inputgränser justerades inom befintliga Nolto-nyanser för normaltext- respektive komponentkontrast.
 
 ## Verifiering
 
@@ -26,7 +28,7 @@ Färggrund: den befintliga källan och livewebbplatsens teal/petrol, bleka aqua 
 
 - Detta är en bred, konkret passering men inte en fullständig omskrivning av hundratals vyer. Artikelns skapa/redigera-formulär och vissa profil-/inställningsdialoger har ännu inte samma generella dirty-navigation-guard.
 - Sökningens huvudfråga och fyra prioriterade listor är djup­länkbara; samtliga avancerade sökfält, federerat flödesval och alla äldre lokala tabs är inte URL-synkroniserade.
-- Full generell scrollåterställning mellan varje list- och detaljsida infördes inte; den kräver avgränsad routerstrategi så callback- och authflöden inte störs. Meddelandens prepend-scroll är åtgärdad separat.
+- Full generell scrollåterställning mellan varje list- och detaljsida infördes inte; dataroutern är införd men scrollstrategin behöver fortsatt avgränsas så callback- och authflöden inte störs. Meddelandens prepend-scroll är åtgärdad separat.
 - De delade primitives förbättrar hela produkten, men varje ikon, rubriknivå, etikett, 200 % textläge och tangentbordsordning är inte manuellt granskat.
 - Autentiserade resor har inte skrivit testdata. Bildutkast/atomisk publicering, moderering, bekräftelser och E2EE ändrades inte.
 - Den lokala sparade sessionen var inte längre giltig, så autentiserade browserresor kunde inte verifieras i slutkontrollen. Beteendetesterna använder befintliga lokala fixtures/mocks och produktionsdata berördes inte.

@@ -62,8 +62,7 @@ const JobEdit = () => {
     const success = await updateJobPost(id, jobData);
     setIsSubmitting(false);
     if (success) {
-      setIsDirty(false);
-      navigate(`/jobs/${id}`);
+      confirmDiscard(() => navigate(`/jobs/${id}`), true);
     } else {
       setSubmitError(t("common.error"));
     }

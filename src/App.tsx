@@ -2,7 +2,8 @@ import SocialCallback from '@/pages/auth/SocialCallback';
 import React, { lazy, Suspense } from "react";
 
 import {
-  BrowserRouter,
+  createBrowserRouter,
+  RouterProvider,
   Routes,
   Route,
   Navigate,
@@ -142,7 +143,25 @@ function RouteFallback() {
   );
 }
 
-function App() {
+function RouteContent({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const wrapper = ref.current;
+    if (!wrapper) return;
+    const pageMain = wrapper.querySelector("main");
+    const target = pageMain ?? wrapper;
+    target.id = "main-content";
+    target.tabIndex = -1;
+    wrapper.toggleAttribute("role", !pageMain);
+    if (!pageMain) wrapper.setAttribute("role", "main");
+  }, [location.pathname]);
+
+  return <div ref={ref}>{children}</div>;
+}
+
+function RoutedContent() {
   const toasterConfig = {
     position: "top-center" as const,
     duration: 3000,
@@ -156,13 +175,13 @@ function App() {
           <MotionConfig reducedMotion="user">
           <TooltipProvider>
             <ErrorBoundary>
-              <BrowserRouter>
+              <>
                 <AuthProvider>
                 <SkipToContent />
                 <Toaster {...toasterConfig} />
                 <SessionExpiryWarning />
                 <AlertBanner />
-                <div id="main-content">
+                <RouteContent>
                   <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     {/* Public routes */}
@@ -373,10 +392,10 @@ function App() {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   </Suspense>
-                </div>
+                </RouteContent>
                 <MobileBottomNav />
                 </AuthProvider>
-              </BrowserRouter>
+              </>
             </ErrorBoundary>
           </TooltipProvider>
           </MotionConfig>
@@ -384,6 +403,12 @@ function App() {
       </HelmetProvider>
     </QueryClientProvider>
   );
+}
+
+const router = createBrowserRouter([{ path: "*", element: <RoutedContent /> }]);
+
+function App() {
+  return <RouterProvider router={router} />;
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
