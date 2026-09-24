@@ -373,7 +373,8 @@ function AppRoutes() {
   );
 }
 
-const router = createBrowserRouter([{ path: "*", element: <AppRoutes /> }]);
+// Keep route rendering failures inside Nolto's translated recovery UI.
+const router = createBrowserRouter([{ path: "*", element: <ErrorBoundary><AppRoutes /></ErrorBoundary> }]);
 
 function App() {
 
