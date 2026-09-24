@@ -16,7 +16,6 @@ const translations = JSON.parse(readFileSync(new URL('../src/i18n/locales/sv.jso
 const translate = key => key.split('.').reduce((object, part) => object?.[part], translations) ?? key;
 globalThis.eventsTestTranslate = translate;
 const mocks = {
-  "@/components/layout/DashboardLayout": "import React from 'react'; export default ({children})=>React.createElement('main',{},children);",
   'sonner': 'export const toast={success(){},error(){}};',
   'react-i18next': 'export const useTranslation=()=>({t:globalThis.eventsTestTranslate,i18n:{language:"sv"}});',
   '@/i18n': 'export default {language:"sv",resolvedLanguage:"sv",t:(k,v)=>globalThis.eventsTestTranslate(k,v),on(){}}; export const changeLanguage=async()=>{};',
@@ -115,7 +114,7 @@ test('removing optional event URLs saves null and hidden offline meeting fields 
     await setInput('meeting_url', 'unfinished-link');
     await submit();
     assert.equal(submitted, undefined, 'an invalid visible meeting URL must still be rejected');
-    await act(async () => document.querySelector('[role="checkbox"]').click());
+    await act(async () => document.querySelector('[role="switch"]').click());
     await submit();
     assert.equal(submitted.is_online, false);
     assert.equal(submitted.meeting_url, null);

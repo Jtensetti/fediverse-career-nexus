@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Modifica la tua domanda del sondaggio...",
       "vadTankerDuPa": "A cosa stai pensando?",
       "sparaAndringar": "Salva modifiche",
-      "sparar": "Salvataggio..."
+      "sparar": "Salvataggio...",
+      "updateFailed": "Non è stato possibile aggiornare il post."
     },
     "companySearchFilter": {
       "sokForetag": "Cerca azienda...",
@@ -4029,21 +4030,5 @@
         ]
       ]
     }
-  },
-  "ux": {
-    "leaveTitle": "Uscire senza salvare?",
-    "leaveDescription": "Se lasci questa pagina, le modifiche non salvate andranno perse. Un invio già in corso potrebbe comunque completarsi.",
-    "keepEditing": "Continua a modificare",
-    "discardAndLeave": "Esci senza salvare",
-    "loadFailed": "Impossibile caricare il contenuto. Controlla la connessione e riprova.",
-    "refreshFailed": "Impossibile caricare l’aggiornamento. Viene mostrato l’ultimo contenuto caricato, che potrebbe non essere aggiornato.",
-    "refreshing": "Aggiornamento del contenuto…",
-    "noJobs": "Nessuna offerta ancora pubblicata",
-    "noJobsDescription": "Qui troverai le offerte quando saranno pubblicate su Nolto. Torna a trovarci.",
-    "noOrganisations": "Nessuna organizzazione ancora presente",
-    "noOrganisationsDescription": "Qui potrai scoprire le organizzazioni dopo che avranno creato le proprie pagine.",
-    "saveUnconfirmed": "Non abbiamo potuto confermare il salvataggio della modifica. Il tuo contenuto è ancora qui. Controlla il risultato prima di riprovare.",
-    "unsaved": "Hai modifiche non salvate.",
-    "sending": "Invio in corso…"
   }
 }

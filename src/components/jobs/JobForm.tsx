@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Form,
   FormControl,
@@ -74,9 +74,9 @@ interface JobFormProps {
   onDirtyChange?: (dirty: boolean) => void;
 }
 
-const JobForm = ({
-  defaultValues = {},
-  onSubmit,
+const JobForm = ({ 
+  defaultValues = {}, 
+  onSubmit, 
   isSubmitting,
   submitButtonText,
   onCancel,
@@ -105,7 +105,7 @@ const JobForm = ({
     },
     enabled: userCompanyRoles.length > 0,
   });
-
+  
   const formattedDefaultValues = {
     title: defaultValues.title || "",
     company: defaultValues.company || "",
@@ -128,7 +128,7 @@ const JobForm = ({
     growth_path: defaultValues.growth_path || "",
     visa_sponsorship: defaultValues.visa_sponsorship ?? false,
   };
-
+  
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: formattedDefaultValues as any,
@@ -147,8 +147,7 @@ const JobForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" aria-busy={isSubmitting}>
-        <fieldset disabled={isSubmitting} className="contents">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
@@ -163,7 +162,7 @@ const JobForm = ({
               </FormItem>
             )}
           />
-
+          
           <FormField
             control={form.control}
             name="company"
@@ -187,7 +186,7 @@ const JobForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("jobFormLabels.linkToCompany")}</FormLabel>
-                <Select
+                <Select 
                   onValueChange={(val) => {
                     field.onChange(val === "none" ? null : val);
                     if (val !== "none") {
@@ -196,7 +195,7 @@ const JobForm = ({
                         form.setValue("company", selected.name);
                       }
                     }
-                  }}
+                  }} 
                   value={field.value || "none"}
                 >
                   <FormControl>
@@ -221,7 +220,7 @@ const JobForm = ({
             )}
           />
         )}
-
+        
         <div className="grid gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
@@ -236,7 +235,7 @@ const JobForm = ({
               </FormItem>
             )}
           />
-
+          
           <FormField
             control={form.control}
             name="employment_type"
@@ -268,7 +267,7 @@ const JobForm = ({
             )}
           />
         </div>
-
+        
         <FormField
           control={form.control}
           name="remote_policy"
@@ -291,7 +290,7 @@ const JobForm = ({
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="experience_level"
@@ -317,7 +316,7 @@ const JobForm = ({
             </FormItem>
           )}
         />
-
+        
         <div className="border rounded-lg p-4 space-y-4">
           <h3 className="text-lg font-semibold">{t("jobFormLabels.compensation")}</h3>
           <div className="grid gap-4 md:grid-cols-3">
@@ -328,10 +327,10 @@ const JobForm = ({
                 <FormItem>
                   <FormLabel>{t("jobFormLabels.minSalary")}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={tx("ui.jobForm.tEx50000")}
-                      type="number"
-                      value={field.value ?? ""}
+                    <Input 
+                      placeholder={tx("ui.jobForm.tEx50000")} 
+                      type="number" 
+                      value={field.value ?? ""} 
                       onChange={(e) => {
                         const n = e.target.value === "" ? null : Number(e.target.value);
                         field.onChange(n);
@@ -342,7 +341,7 @@ const JobForm = ({
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="salary_max"
@@ -350,9 +349,9 @@ const JobForm = ({
                 <FormItem>
                   <FormLabel>{t("jobFormLabels.maxSalary")}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={tx("ui.jobForm.tEx80000")}
-                      type="number"
+                    <Input 
+                      placeholder={tx("ui.jobForm.tEx80000")} 
+                      type="number" 
                       value={field.value ?? ""}
                       onChange={(e) => {
                         const n = e.target.value === "" ? null : Number(e.target.value);
@@ -364,7 +363,7 @@ const JobForm = ({
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="salary_currency"
@@ -383,7 +382,7 @@ const JobForm = ({
             />
           </div>
         </div>
-
+        
         <FormField
           control={form.control}
           name="description"
@@ -391,8 +390,8 @@ const JobForm = ({
             <FormItem>
               <FormLabel>{t("jobFormLabels.jobDescription")}</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder={t("jobFormLabels.jobDescPlaceholder")}
+                <Textarea 
+                  placeholder={t("jobFormLabels.jobDescPlaceholder")} 
                   className="min-h-[200px]"
                   {...field}
                 />
@@ -401,7 +400,7 @@ const JobForm = ({
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="skills"
@@ -409,7 +408,7 @@ const JobForm = ({
             <FormItem>
               <FormLabel>{t("jobFormLabels.requiredSkills")}</FormLabel>
               <FormControl>
-                <Input
+                <Input 
                   placeholder={t("jobFormLabels.skillsPlaceholder")}
                   {...field}
                 />
@@ -427,7 +426,7 @@ const JobForm = ({
             <h3 className="text-lg font-semibold">{t("jobFormLabels.transparencyDetails")}</h3>
             <span className="text-xs text-muted-foreground">{t("jobFormLabels.helpsCandidate")}</span>
           </div>
-
+          
           <div className="grid gap-4 md:grid-cols-2">
             <FormField
               control={form.control}
@@ -436,7 +435,7 @@ const JobForm = ({
                 <FormItem>
                   <FormLabel>{t("jobFormLabels.interviewProcess")}</FormLabel>
                   <FormControl>
-                    <Input
+                    <Input 
                       placeholder={t("jobFormLabels.interviewPlaceholder")}
                       {...field}
                     />
@@ -445,7 +444,7 @@ const JobForm = ({
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="response_time"
@@ -453,7 +452,7 @@ const JobForm = ({
                 <FormItem>
                   <FormLabel>{t("jobFormLabels.responseTime")}</FormLabel>
                   <FormControl>
-                    <Input
+                    <Input 
                       placeholder={t("jobFormLabels.responseTimePlaceholder")}
                       {...field}
                     />
@@ -472,7 +471,7 @@ const JobForm = ({
                 <FormItem>
                   <FormLabel>{t("jobFormLabels.teamSize")}</FormLabel>
                   <FormControl>
-                    <Input
+                    <Input 
                       placeholder={t("jobFormLabels.teamSizePlaceholder")}
                       {...field}
                     />
@@ -481,7 +480,7 @@ const JobForm = ({
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="growth_path"
@@ -489,7 +488,7 @@ const JobForm = ({
                 <FormItem>
                   <FormLabel>{t("jobFormLabels.growthPath")}</FormLabel>
                   <FormControl>
-                    <Input
+                    <Input 
                       placeholder={t("jobFormLabels.growthPathPlaceholder")}
                       {...field}
                     />
@@ -544,9 +543,9 @@ const JobForm = ({
                 </FormDescription>
               </div>
               <FormControl>
-                <Checkbox
+                <Switch 
                   checked={field.value}
-                  onCheckedChange={checked => field.onChange(checked === true)}
+                  onCheckedChange={field.onChange}
                 />
               </FormControl>
             </FormItem>
@@ -561,7 +560,6 @@ const JobForm = ({
             {isSubmitting ? t("jobFormLabels.submitting") : finalSubmitText}
           </Button>
         </div>
-        </fieldset>
       </form>
     </Form>
   );

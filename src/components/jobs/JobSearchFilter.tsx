@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { JobPostFilter } from "@/services/misc/jobPostsService";
 
 interface JobSearchFilterProps {
@@ -33,8 +33,8 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
     setJobType(filters.job_type);
     setLocation(filters.location || "");
     setRemoteAllowed(filters.remote_allowed);
-  }, [filters.search, filters.job_type, filters.location, filters.remote_allowed]);
-
+  }, [filters]);
+  
   const handleSearch = () => {
     onFilterChange({
       search: search.trim() || undefined,
@@ -43,26 +43,24 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
       remote_allowed: remoteAllowed,
     });
   };
-
+  
   const handleClear = () => {
     setSearch("");
     setJobType(undefined);
     setLocation("");
     setRemoteAllowed(undefined);
-
+    
     onFilterChange({});
   };
-
+  
   return (
     <form role="search" onSubmit={event => { event.preventDefault(); handleSearch(); }} className="bg-card rounded-lg border p-4 mb-6 space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
         {/* Search input */}
         <div className="min-w-0 sm:col-span-2 xl:col-span-3">
-          <Label htmlFor="job-search">{t("common.search")}</Label>
-          <div className="relative mt-2">
+          <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              id="job-search"
               type="text"
               placeholder={t("jobs.searchPlaceholder")}
               aria-label={t("jobs.searchPlaceholder")}
@@ -72,18 +70,17 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
             />
           </div>
         </div>
-
+        
         {/* Job type filter */}
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="job-type">{t("jobs.jobType")}</Label>
-          <Select
+        <div className="min-w-0">
+          <Select 
             value={jobType || "all"}
             onValueChange={(value) => {
               if (value === "all") setJobType(undefined);
               if (value === "full_time" || value === "part_time" || value === "contract" || value === "internship" || value === "temporary") setJobType(value);
             }}
           >
-            <SelectTrigger id="job-type" aria-label={t("jobs.jobType")}>
+            <SelectTrigger aria-label={t("jobs.jobType")}>
               <SelectValue placeholder={t("jobs.jobType")} />
             </SelectTrigger>
             <SelectContent>
@@ -99,12 +96,10 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
             </SelectContent>
           </Select>
         </div>
-
+        
         {/* Location filter */}
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="job-location">{t("jobs.location")}</Label>
+        <div className="min-w-0">
           <Input
-            id="job-location"
             type="text"
             placeholder={t("jobs.location")}
             aria-label={t("jobs.location")}
@@ -112,9 +107,9 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
             onChange={(e) => setLocation(e.target.value)}
           />
         </div>
-
+        
         {/* Filter buttons */}
-        <div className="flex items-end gap-2 sm:col-span-2 xl:col-span-1">
+        <div className="flex gap-2 sm:col-span-2 xl:col-span-1">
           <Button type="submit" className="flex-1 xl:flex-none">
             <Filter className="mr-2 h-4 w-4" />
             {t("jobs.filter")}
@@ -124,14 +119,14 @@ const JobSearchFilter = ({ onFilterChange, filters }: JobSearchFilterProps) => {
           </Button>
         </div>
       </div>
-
+      
       {/* Remote option */}
-      <div className="flex min-h-11 items-center gap-3">
-        <Checkbox
+      <div className="flex items-center space-x-2">
+        <Switch 
           id="remote-allowed"
           checked={remoteAllowed === true}
           onCheckedChange={(checked) => {
-            setRemoteAllowed(checked === true ? true : undefined);
+            setRemoteAllowed(checked ? true : undefined);
           }}
         />
         <Label htmlFor="remote-allowed">{t("jobs.remoteAllowed")}</Label>

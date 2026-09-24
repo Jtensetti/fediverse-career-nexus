@@ -1,5 +1,3 @@
-import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
-import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
 import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -47,8 +45,6 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
     onOpenChange?.(value);
   };
   const [postContent, setPostContent] = useState("");
-  const [submitError, setSubmitError] = useState(false);
-  const preparingRef = useRef(false);
   const imageDraft = usePostImageDraft();
   const imagePreview = imageDraft.preview;
   const [postId, setPostId] = useState(() => crypto.randomUUID());
@@ -63,11 +59,6 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-
-  useUnsavedChanges({
-    dirty: !!(postContent.trim() || imageDraft.file || imageAltText || contentWarning || pollData?.options.some(option => option.trim())),
-    message: t("ux.leaveDescription"),
-  });
 
   // Extract URLs from post content for link preview
   const detectedUrls = useMemo(() => {
@@ -96,8 +87,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
   const createPostMutation = useMutation({
     mutationFn: (postData: CreatePostData) => createPost(postData),
     onSuccess: (success) => {
-      if (!success) { setSubmitError(true); return; }
-      setSubmitError(false);
+      if (!success) return;
       resetForm();
       setIsOpen(false);
       queryClient.invalidateQueries({ queryKey: ['federatedFeed'] });
@@ -105,8 +95,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
     },
     onError: (error: Error) => {
       console.error('Failed to create post:', error);
-      setSubmitError(true);
-      toast.error(error.message || t('ux.saveUnconfirmed'));
+      toast.error(error.message || 'Kunde inte skapa inlägg. Försök igen.');
     },
   });
 
@@ -128,8 +117,6 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
   };
 
   const handlePost = async () => {
-    if (preparingRef.current || createPostMutation.isPending) return;
-    setSubmitError(false);
     if (!postContent.trim() && !showPollCreator) {
       toast.error(t("posts.enterContent", "Please enter some content for your post"));
       return;
@@ -144,7 +131,6 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
       }
     }
 
-    preparingRef.current = true;
     setPreparingPost(true);
     try {
       // Build post data with optional poll
@@ -170,8 +156,8 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
 
       if (!await contentCheck.check([postContent, contentWarning, imageAltText, ...(pollData?.options || [])].join('\n'))) return;
       createPostMutation.mutate(finalPostData);
-    } catch (error) { setSubmitError(true); toast.error(error instanceof Error ? error.message : t('ux.saveUnconfirmed')); }
-    finally { preparingRef.current = false; setPreparingPost(false); }
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Kunde inte förbereda bilden.'); }
+    finally { setPreparingPost(false); }
   };
 
   const handleWriteArticle = () => {
@@ -200,7 +186,6 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
     <div className={cn("space-y-4", className)}>
       <Card variant="elevated">
         <CardContent className="pt-6">
-          {/* Closing preserves this mounted draft; leaving the page is guarded separately. */}
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <motion.button
@@ -216,11 +201,10 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                     {profile?.displayName ? getInitials(profile.displayName) : 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-muted-foreground flex-1">{postContent.trim() || imagePreview ? t("ux.unsaved") : t("posts.whatsOnMind", "What's on your mind?")}</span>
+                <span className="text-muted-foreground flex-1">{t("posts.whatsOnMind", "What's on your mind?")}</span>
               </motion.button>
             </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto p-0" aria-busy={isLoading}>
-              <fieldset disabled={isLoading} className="contents">
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden p-0">
               <DialogHeader className="p-6 pb-0">
                 <DialogTitle className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
@@ -236,7 +220,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                 </DialogTitle>
                 <DialogDescription>{t("posts.publicAudienceDescription")}</DialogDescription>
               </DialogHeader>
-
+              
               <div className="p-6 pt-4 space-y-4 overflow-y-auto max-h-[60vh]">
                 <Textarea
                   ref={textareaRef}
@@ -250,7 +234,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                   )}
                   disabled={isLoading}
                 />
-
+                
                 {/* Image Preview with Alt Text */}
                 <AnimatePresence>
                   {imagePreview && (
@@ -261,9 +245,9 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                       className="space-y-2"
                     >
                       <div className="relative rounded-xl overflow-hidden bg-muted">
-                        <img
-                          src={imagePreview}
-                          alt={imageAltText || tx("ui.postComposer.preview")}
+                        <img 
+                          src={imagePreview} 
+                          alt={imageAltText || tx("ui.postComposer.preview")} 
                           className="w-full max-h-64 object-cover"
                         />
                         <Button
@@ -285,7 +269,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                           </div>
                         )}
                       </div>
-
+                      
                       {/* Alt text input for accessibility */}
                       <div className="px-1">
                         <Label htmlFor="alt-text" className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
@@ -358,8 +342,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
 
 
               </div>
-
-              {submitError && <InlineErrorBanner message={t("ux.saveUnconfirmed")} className="mx-4 mb-4" />}
+              
               {/* Footer */}
               <div className="p-4 border-t bg-muted/30">
                 <div className="flex items-center justify-between">
@@ -377,7 +360,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                       size="icon"
                       aria-label={t("posts.addImage")}
                       onClick={() => document.getElementById('image-upload')?.click()}
-                      className="h-11 w-11 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
                       disabled={isLoading}
                     >
                       <Image className="h-5 w-5" />
@@ -389,7 +372,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                       aria-pressed={showPollCreator}
                       onClick={() => setShowPollCreator(!showPollCreator)}
                       className={cn(
-                        "h-11 w-11 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10",
+                        "h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10",
                         showPollCreator && "text-primary bg-primary/10"
                       )}
                       disabled={isLoading}
@@ -398,7 +381,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                     </Button>
 
                   </div>
-
+                  
                   <div className="flex items-center gap-3">
                     {/* Character Counter */}
                     <div className="flex items-center gap-2">
@@ -438,9 +421,9 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                         </span>
                       )}
                     </div>
+                    
 
-
-
+                    
                     <Button
                       onClick={handlePost}
                       disabled={!postContent.trim() || isLoading || isOverLimit}
@@ -448,7 +431,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                       className="gap-2 min-w-[80px]"
                     >
                       {isLoading ? (
-                        <><Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /><span role="status">{t("ux.sending")}</span></>
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
                           <Send className="h-4 w-4" />
@@ -459,11 +442,10 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                   </div>
                 </div>
               </div>
-              </fieldset>
             </DialogContent>
       {contentCheck.dialog}
           </Dialog>
-
+          
           <div className="mt-4 grid grid-cols-2 gap-2">
             <Button
               variant="outline"
@@ -473,7 +455,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
               <PenTool className="h-4 w-4" />
               {t("posts.writeArticle", "Write an Article")}
             </Button>
-
+            
             <Button
               variant="outline"
               onClick={handleCreateEvent}

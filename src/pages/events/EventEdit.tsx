@@ -1,5 +1,3 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,8 +16,7 @@ export default function EventEdit() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation();
   const [isDirty, setIsDirty] = useState(false);
-  const [submitError, setSubmitError] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty, message: t('ux.leaveDescription') });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('profileEdit.unsavedChanges') });
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -32,24 +29,22 @@ export default function EventEdit() {
       return updateEvent(eventId, eventData);
     },
     onSuccess: (event) => {
-      if (!event) { setSubmitError(true); return; }
       if (event) {
         queryClient.setQueryData<EventWithRSVPCount>(['event', event.id], previous => ({
           ...previous, ...event, rsvp_count: previous?.rsvp_count ?? 0,
         }));
         void queryClient.invalidateQueries({ queryKey: ['events'] });
-        confirmDiscard.afterSave(() => navigate(`/events/${event.id}`));
+        navigate(`/events/${event.id}`);
       }
     },
-    onError: () => { setSubmitError(true); toast.error(t('common.error')); },
+    onError: () => toast.error(t('common.error')),
     onSettled: () => {
       setIsSubmitting(false);
     }
   });
 
   const handleSubmit = (data: Omit<Event, "id" | "created_at" | "updated_at" | "user_id">) => {
-    if (id && !isSubmitting) {
-      setSubmitError(false);
+    if (id) {
       setIsSubmitting(true);
       updateMutation.mutate({ eventId: id, eventData: data });
     }
@@ -57,17 +52,17 @@ export default function EventEdit() {
 
   if (isLoading) {
     return (
-      <DashboardLayout showHeader={false}>
+      <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
         <div className="text-center" aria-live="polite">
           {t('events.loading')}
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   if (!event) {
     return (
-      <DashboardLayout showHeader={false}>
+      <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">{t('events.notFound')}</h2>
           <p className="text-muted-foreground mb-6">
@@ -77,15 +72,15 @@ export default function EventEdit() {
             <Link to="/events">{t('events.backToEvents')}</Link>
           </Button>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout showHeader={false}>
-      <SEOHead
-        title={event?.title ? `${t('eventEdit.editTitle')}: ${event.title}` : t('eventEdit.editTitle')}
-        description={t('eventEdit.editDescription')}
+    <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
+      <SEOHead 
+        title={event?.title ? `${t('eventEdit.editTitle')}: ${event.title}` : t('eventEdit.editTitle')} 
+        description={t('eventEdit.editDescription')} 
       />
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">{t('eventEdit.editTitle')}</h1>
@@ -93,10 +88,9 @@ export default function EventEdit() {
           {t('eventEdit.editDescription')}
         </p>
       </div>
-
+      
       <div className="bg-card rounded-lg border p-6">
-        {submitError && <InlineErrorBanner message={t("ux.saveUnconfirmed")} className="mb-4" />}
-        <EventForm
+        <EventForm 
           defaultValues={event}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
@@ -105,6 +99,6 @@ export default function EventEdit() {
           onCancel={() => confirmDiscard(() => navigate(`/events/${id}`))}
         />
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Edit your poll question...",
       "vadTankerDuPa": "What's on your mind?",
       "sparaAndringar": "Save changes",
-      "sparar": "Sparar..."
+      "sparar": "Sparar...",
+      "updateFailed": "The post could not be updated."
     },
     "companySearchFilter": {
       "sokForetag": "Search company...",
@@ -4029,21 +4030,5 @@
         ]
       ]
     }
-  },
-  "ux": {
-    "leaveTitle": "Leave without saving?",
-    "leaveDescription": "Your unsaved changes will be lost if you leave this page. A send already in progress may still complete.",
-    "keepEditing": "Keep editing",
-    "discardAndLeave": "Leave without saving",
-    "loadFailed": "The content could not be loaded. Check your connection and try again.",
-    "refreshFailed": "The update could not be loaded. Previously loaded content is shown and may be out of date.",
-    "refreshing": "Updating content …",
-    "noJobs": "No jobs published yet",
-    "noJobsDescription": "You will find opportunities here when they are published on Nolto. Check back soon.",
-    "noOrganisations": "No organisations yet",
-    "noOrganisationsDescription": "You can discover organisations here once they have created their pages.",
-    "saveUnconfirmed": "We could not confirm that the change was saved. Your content is still here. Check the result before trying again.",
-    "unsaved": "You have unsaved changes.",
-    "sending": "Sending …"
   }
 }

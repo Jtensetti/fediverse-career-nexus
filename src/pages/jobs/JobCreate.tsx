@@ -17,7 +17,7 @@ const JobCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<{ message: string; details?: string } | null>(null);
   const [isDirty, setIsDirty] = useState(false);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty, message: t("ux.leaveDescription") });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("profileEdit.unsavedChanges") });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -41,7 +41,6 @@ const JobCreate = () => {
   if (!user) return null;
 
   const handleSubmit = async (values: any) => {
-    if (isSubmitting) return;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
@@ -49,15 +48,16 @@ const JobCreate = () => {
       const result = await createJobPost(jobData);
       if (result.ok) {
         toast.success(t(values.is_active ? "jobCreate.published" : "jobCreate.draftSaved"));
-        confirmDiscard.afterSave(() => navigate(`/jobs/${result.id}`));
+        navigate(`/jobs/${result.id}`);
       } else {
         const errorResult = result as { ok: false; message: string; details?: string };
         setSubmitError({ message: errorResult.message, details: errorResult.details });
         toast.error(errorResult.message, { description: errorResult.details, duration: 5000 });
       }
-    } catch {
-      setSubmitError({ message: t("ux.saveUnconfirmed") });
-      toast.error(t("ux.saveUnconfirmed"));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t("common.error");
+      setSubmitError({ message: t("jobCreate.failed"), details: errorMessage });
+      toast.error(t("jobCreate.failed"), { description: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +72,7 @@ const JobCreate = () => {
           <p className="text-muted-foreground">{t("jobCreate.description")}</p>
         </div>
         {submitError && (
-          <InlineErrorBanner message={submitError.message} details={submitError.details} onDismiss={() => setSubmitError(null)} className="mb-6" />
+          <InlineErrorBanner message={submitError.message} details={submitError.details} onRetry={() => setSubmitError(null)} onDismiss={() => setSubmitError(null)} className="mb-6" />
         )}
         <JobForm onSubmit={handleSubmit} isSubmitting={isSubmitting} onDirtyChange={setIsDirty} onCancel={() => confirmDiscard(() => navigate("/jobs/manage"))} />
       </main>

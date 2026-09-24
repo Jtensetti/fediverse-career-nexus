@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Search, X } from "lucide-react";
 import type { CompanyFilters } from "@/services/company/companyService";
 import { ORGANISATION_TYPES } from "./CompanyForm";
@@ -21,11 +20,10 @@ const companySizeOptions: { value: CompanySize; label: string }[] = [
   { value: '1-10', label: '1–10' },
   { value: '11-50', label: '11–50' },
   { value: '51-200', label: '51–200' },
-  { value: '201-500', label: '201–500' },
-  { value: '501-1000', label: '501–1 000' },
+  { value: '201-500', label: '201–1 000' },
   { value: '1001-5000', label: '1 001–5 000' },
-  { value: '5001-10000', label: '5 001–10 000' },
-  { value: '10000+', label: '10 001+' },
+  { value: '5001-10000', label: '5 001–20 000' },
+  { value: '10000+', label: '20 000+' },
 ];
 
 interface CompanySearchFilterProps {
@@ -44,16 +42,20 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
     setIndustry(filters.industry || "");
     setSize(filters.size || "");
     setLocation(filters.location || "");
-  }, [filters.search, filters.industry, filters.size, filters.location]);
+  }, [filters]);
 
-  const applyFilters = () => {
-    onFilterChange({
-      search: search.trim() || undefined,
-      industry: industry && industry !== 'all' ? industry : undefined,
-      size: size && size !== 'all' ? size as CompanySize : undefined,
-      location: location.trim() || undefined,
-    });
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const filters: CompanyFilters = {};
+      if (search) filters.search = search;
+      if (industry && industry !== "all") filters.industry = industry;
+      if (size && size !== "all") filters.size = size as CompanySize;
+      if (location) filters.location = location;
+      onFilterChange(filters);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search, industry, size, location, onFilterChange]);
 
   const clearFilters = () => {
     setSearch("");
@@ -66,13 +68,10 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
   const hasFilters = search || industry || size || location;
 
   return (
-    <form role="search" onSubmit={event => { event.preventDefault(); applyFilters(); }} className="space-y-4 mb-6 rounded-lg border bg-card p-4">
-      <div>
-      <Label htmlFor="organisation-search">{tx("common.search")}</Label>
-      <div className="relative mt-2">
+    <div className="space-y-4 mb-6">
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          id="organisation-search"
           aria-label={tx("ui.companySearchFilter.sokForetag")}
           placeholder={tx("ui.companySearchFilter.sokForetag")}
           value={search}
@@ -81,11 +80,9 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
         />
       </div>
 
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div className="space-y-2"><Label htmlFor="organisation-type">{tx("ui.companySearchFilter.typAvOrganisation")}</Label>
+      <div className="flex flex-wrap gap-3">
         <Select value={industry} onValueChange={setIndustry}>
-          <SelectTrigger id="organisation-type" className="w-full" aria-label={tx("ui.companySearchFilter.typAvOrganisation")}>
+          <SelectTrigger className="w-full sm:w-[220px]" aria-label={tx("ui.companySearchFilter.typAvOrganisation")}>
             <SelectValue placeholder={tx("ui.companySearchFilter.typAvOrganisation")} />
           </SelectTrigger>
           <SelectContent>
@@ -98,10 +95,8 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
           </SelectContent>
         </Select>
 
-        </div>
-        <div className="space-y-2"><Label htmlFor="organisation-size">{tx("ui.companySearchFilter.storlek")}</Label>
         <Select value={size} onValueChange={setSize}>
-          <SelectTrigger id="organisation-size" className="w-full" aria-label={tx("ui.companySearchFilter.storlek")}>
+          <SelectTrigger className="w-full sm:w-[180px]" aria-label={tx("ui.companySearchFilter.storlek")}>
             <SelectValue placeholder={tx("ui.companySearchFilter.storlek")} />
           </SelectTrigger>
           <SelectContent>
@@ -114,28 +109,21 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
           </SelectContent>
         </Select>
 
-        </div>
-        <div className="space-y-2"><Label htmlFor="organisation-location">{tx("ui.companySearchFilter.plats")}</Label>
         <Input
-          id="organisation-location"
           aria-label={tx("ui.companySearchFilter.plats")}
           placeholder={tx("ui.companySearchFilter.plats")}
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-full"
+          className="w-full sm:w-[180px]"
         />
 
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit">{tx("jobs.filter")}</Button>
         {hasFilters && (
-          <Button type="button" variant="outline" onClick={clearFilters}>
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
             <X className="h-4 w-4 mr-1" />
             {tx("ui.companySearchFilter.clear")}
           </Button>
         )}
       </div>
-    </form>
+    </div>
   );
 }

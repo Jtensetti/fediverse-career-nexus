@@ -3357,7 +3357,8 @@
       "redigeraDinOmrostningsfraga": "Bewerk je peilingvraag...",
       "vadTankerDuPa": "Wat denk je?",
       "sparaAndringar": "Wijzigingen opslaan",
-      "sparar": "Opslaan..."
+      "sparar": "Opslaan...",
+      "updateFailed": "Het bericht kon niet worden bijgewerkt."
     },
     "companySearchFilter": {
       "sokForetag": "Bedrijf zoeken...",
@@ -4029,21 +4030,5 @@
         ]
       ]
     }
-  },
-  "ux": {
-    "leaveTitle": "Verlaten zonder op te slaan?",
-    "leaveDescription": "Je niet-opgeslagen wijzigingen gaan verloren als je deze pagina verlaat. Een verzending die al bezig is, kan nog worden voltooid.",
-    "keepEditing": "Verder bewerken",
-    "discardAndLeave": "Verlaten zonder opslaan",
-    "loadFailed": "De inhoud kon niet worden geladen. Controleer je verbinding en probeer het opnieuw.",
-    "refreshFailed": "De update kon niet worden geladen. De laatst geladen inhoud wordt getoond en kan verouderd zijn.",
-    "refreshing": "Inhoud bijwerken …",
-    "noJobs": "Nog geen vacatures gepubliceerd",
-    "noJobsDescription": "Hier vind je vacatures zodra ze op Nolto worden gepubliceerd. Kom gerust terug.",
-    "noOrganisations": "Nog geen organisaties",
-    "noOrganisationsDescription": "Hier kun je organisaties ontdekken zodra ze hun pagina hebben aangemaakt.",
-    "saveUnconfirmed": "We konden niet bevestigen dat de wijziging is opgeslagen. Je inhoud staat hier nog. Controleer het resultaat voordat je het opnieuw probeert.",
-    "unsaved": "Je hebt niet-opgeslagen wijzigingen.",
-    "sending": "Verzenden …"
   }
 }

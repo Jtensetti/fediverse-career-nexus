@@ -39,14 +39,14 @@ export default function Messages() {
   });
 
   // Fetch message requests
-  const { data: messageRequests, refetch: refetchRequests } = useQuery<MessageRequest[]>({
+  const { data: messageRequests, isError: requestsError, refetch: refetchRequests } = useQuery<MessageRequest[]>({
     queryKey: ['messageRequests'],
     queryFn: getReceivedMessageRequests,
     enabled: !!currentUserId
   });
 
   // Fetch connections to check if user has any
-  const { data: connections } = useQuery({
+  const { data: connections, isError: connectionsError, refetch: refetchConnections } = useQuery({
     queryKey: ['connections', currentUserId],
     queryFn: () => getUserConnections(),
     enabled: !!currentUserId
@@ -57,7 +57,7 @@ export default function Messages() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -68,7 +68,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-dvh flex flex-col">
       <SEOHead title={t("messagesPage.title")} description={t("messagesPage.title")} />
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
@@ -125,6 +125,11 @@ export default function Messages() {
                   {t("messages.tryAgain")}
                 </Button>
               </div>
+            ) : connectionsError ? (
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+                <p>{t("common.error")}</p>
+                <Button variant="outline" className="mt-4" onClick={() => void refetchConnections()}>{t("common.retry")}</Button>
+              </div>
             ) : currentUserId && conversations && conversations.length > 0 ? (
               <div className="space-y-4">
                 {conversations.map((conversation) => (
@@ -165,7 +170,12 @@ export default function Messages() {
           </TabsContent>
 
           <TabsContent value="requests">
-            {pendingRequests.length > 0 ? (
+            {requestsError ? (
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+                <p>{t("common.error")}</p>
+                <Button variant="outline" className="mt-4" onClick={() => void refetchRequests()}>{t("common.retry")}</Button>
+              </div>
+            ) : pendingRequests.length > 0 ? (
               <div className="space-y-4">
                 {pendingRequests.map((request) => (
                   <MessageRequestCard

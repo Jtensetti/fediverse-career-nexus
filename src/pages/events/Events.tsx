@@ -1,4 +1,3 @@
-import QueryFeedback from "@/components/common/QueryFeedback";
 import { dateLocale } from "@/lib/locale";
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -18,12 +17,12 @@ export default function Events() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get('tab') === 'past' ? 'past' : 'upcoming';
-
+  
   const upcomingEvents = useQuery({
     queryKey: ['events', 'upcoming'],
     queryFn: () => getEvents({ upcoming: true }),
   });
-
+  
   const pastEvents = useQuery({
     queryKey: ['events', 'past'],
     queryFn: () => getEvents({ upcoming: false }),
@@ -32,9 +31,9 @@ export default function Events() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead
-        title={t("events.title")}
-        description={t("events.subtitle")}
+      <SEOHead 
+        title={t("events.title")} 
+        description={t("events.subtitle")} 
       />
       <Navbar />
       <main className="flex-grow">
@@ -44,7 +43,7 @@ export default function Events() {
               <h1 className="text-3xl font-bold tracking-tight">{t("events.title")}</h1>
               <p className="text-muted-foreground mt-2">{t("events.subtitle")}</p>
             </div>
-
+            
             <Button asChild className="mt-4 md:mt-0">
               <Link to="/events/create">
                 <Calendar className="mr-2 h-4 w-4" />
@@ -52,20 +51,24 @@ export default function Events() {
               </Link>
             </Button>
           </div>
-
-          <Tabs value={tab} className="w-full" onValueChange={(value) => setSearchParams(value === 'past' ? { tab: 'past' } : {}, { replace: true, preventScrollReset: true })}>
+          
+          <Tabs value={tab} className="w-full" onValueChange={(value) => setSearchParams(value === 'past' ? { tab: 'past' } : {}, { replace: true })}>
             <TabsList className="mb-8">
               <TabsTrigger value="upcoming">{t("events.upcoming")}</TabsTrigger>
               <TabsTrigger value="past">{t("events.past")}</TabsTrigger>
             </TabsList>
-
+            
             <TabsContent value="upcoming" className="space-y-6">
-              <QueryFeedback failed={upcomingEvents.isError} hasData={upcomingEvents.data !== undefined} busy={upcomingEvents.isFetching} retry={upcomingEvents.refetch} />
               {upcomingEvents.isLoading ? (
                 <div className="flex justify-center py-10">
                   <p>{t("events.loading")}</p>
                 </div>
-              ) : upcomingEvents.isError && !upcomingEvents.data ? null : upcomingEvents.data?.length === 0 ? (
+              ) : upcomingEvents.isError ? (
+                <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+                  <p className="font-medium">{t("common.error")}</p>
+                  <Button variant="outline" className="mt-4" onClick={() => void upcomingEvents.refetch()}>{t("common.retry")}</Button>
+                </div>
+              ) : upcomingEvents.data?.length === 0 ? (
                 <div className="text-center py-10 border rounded-lg bg-muted/20">
                   <h3 className="text-xl font-medium mb-2">{t("events.noUpcoming")}</h3>
                   <p className="text-muted-foreground mb-6">{t("events.noUpcomingDesc")}</p>
@@ -81,14 +84,18 @@ export default function Events() {
                 </div>
               )}
             </TabsContent>
-
+            
             <TabsContent value="past" className="space-y-6">
-              <QueryFeedback failed={pastEvents.isError} hasData={pastEvents.data !== undefined} busy={pastEvents.isFetching} retry={pastEvents.refetch} />
               {pastEvents.isLoading ? (
                 <div className="flex justify-center py-10">
                   <p>{t("events.loading")}</p>
                 </div>
-              ) : pastEvents.isError && !pastEvents.data ? null : pastEvents.data?.length === 0 ? (
+              ) : pastEvents.isError ? (
+                <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+                  <p className="font-medium">{t("common.error")}</p>
+                  <Button variant="outline" className="mt-4" onClick={() => void pastEvents.refetch()}>{t("common.retry")}</Button>
+                </div>
+              ) : pastEvents.data?.length === 0 ? (
                 <div className="text-center py-10 border rounded-lg bg-muted/20">
                   <h3 className="text-xl font-medium">{t("events.noPast")}</h3>
                   <p className="text-muted-foreground">{t("events.noPastDesc")}</p>
@@ -119,16 +126,14 @@ function EventCard({ event }: EventCardProps) {
   const formattedDate = format(eventDate, 'EEEE d MMMM yyyy', { locale: dateLocale() });
   const formattedTime = format(eventDate, 'HH:mm');
   const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
+  
   return (
     <Card className="overflow-hidden flex flex-col">
       {event.cover_image_url ? (
         <div className="aspect-video w-full overflow-hidden">
-          <img
-            loading="lazy"
-            decoding="async"
-            src={event.cover_image_url}
-            alt={event.title}
+          <img 
+            src={event.cover_image_url} 
+            alt={event.title} 
             className="object-cover w-full h-full"
           />
         </div>
@@ -137,7 +142,7 @@ function EventCard({ event }: EventCardProps) {
           <Calendar className="h-10 w-10 text-muted-foreground/60" />
         </div>
       )}
-
+      
       <CardHeader>
         <CardTitle className="line-clamp-2">
           <Link to={`/events/${event.id}`} className="hover:underline">
@@ -151,13 +156,13 @@ function EventCard({ event }: EventCardProps) {
           </div>
         </CardDescription>
       </CardHeader>
-
+      
       <CardContent className="flex-grow">
         <p className="text-sm text-muted-foreground line-clamp-3">
           {event.description}
         </p>
       </CardContent>
-
+      
       <CardFooter className="flex items-center justify-between border-t pt-4">
         <div className="flex items-center gap-2">
           {event.is_online && (
@@ -172,7 +177,7 @@ function EventCard({ event }: EventCardProps) {
             </div>
           )}
         </div>
-
+        
         <div className="flex items-center text-xs text-muted-foreground">
           <User className="h-3 w-3 mr-1" />
           {event.rsvp_count || 0} {t("events.attending")}

@@ -30,15 +30,15 @@ export default function MobileBottomNav() {
       aria-label={t('nav.mobile')}
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0.5rem)' }}
     >
-      <div className="flex items-center justify-around min-h-16 px-2">
+      <div className="flex items-center justify-around h-16 px-2">
         {navItems.slice(0, 2).map(({ to, icon: Icon, label }) => {
-          const isActive = location.pathname === to || location.pathname.startsWith(`${to}/`);
+          const isActive = location.pathname === to;
           return (
             <NavLink
               key={to}
               to={to}
               className={cn(
-                "relative flex flex-col items-center justify-center flex-1 min-w-0 min-h-16 px-1 py-2 transition-colors",
+                "relative flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -54,7 +54,7 @@ export default function MobileBottomNav() {
                 fill={isActive ? "currentColor" : "none"}
                 strokeWidth={isActive ? 2.5 : 2}
               />
-              <span className="text-xs font-medium text-center break-words">{t(label)}</span>
+              <span className="text-xs font-medium">{t(label)}</span>
             </NavLink>
           );
         })}
@@ -70,13 +70,13 @@ export default function MobileBottomNav() {
         </NavLink>
 
         {navItems.slice(2).map(({ to, icon: Icon, label }) => {
-          const isActive = location.pathname === to || location.pathname.startsWith(`${to}/`);
+          const isActive = location.pathname === to;
           return (
             <NavLink
               key={to}
               to={to}
               className={cn(
-                "relative flex flex-col items-center justify-center flex-1 min-w-0 min-h-16 px-1 py-2 transition-colors",
+                "relative flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -92,7 +92,7 @@ export default function MobileBottomNav() {
                 fill={isActive ? "currentColor" : "none"}
                 strokeWidth={isActive ? 2.5 : 2}
               />
-              <span className="text-xs font-medium text-center break-words">{t(label)}</span>
+              <span className="text-xs font-medium">{t(label)}</span>
             </NavLink>
           );
         })}

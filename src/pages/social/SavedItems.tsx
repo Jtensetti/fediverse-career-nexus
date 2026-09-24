@@ -91,7 +91,7 @@ export default function SavedItemsPage() {
       <SEOHead title={t("savedItems.title")} description={t("savedItems.seoDescription")} />
       <div className="container max-w-4xl mx-auto py-6 px-4">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" asChild><Link to="/profile"><ArrowLeft className="h-5 w-5" /></Link></Button>
+          <Button variant="ghost" size="icon" asChild><Link to="/profile" aria-label={t("common.back")}><ArrowLeft className="h-5 w-5" /></Link></Button>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2"><Bookmark className="h-6 w-6 text-primary" />{t("savedItems.title")}</h1>
             <p className="text-muted-foreground">{t("savedItems.description")}</p>

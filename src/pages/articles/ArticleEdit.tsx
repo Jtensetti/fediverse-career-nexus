@@ -1,16 +1,14 @@
-import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
-import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
 import { useTranslation } from "react-i18next";
 import { useContentCheck } from '@/hooks/useContentCheck';
 
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   ArticleFormData,
   updateArticle,
@@ -27,6 +25,7 @@ import { ArrowLeft, Save, UserPlus, X, Users, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
@@ -56,8 +55,6 @@ const ArticleEdit = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const submitPending = useRef(false);
-  const [submitError, setSubmitError] = useState(false);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [article, setArticle] = useState<ArticleFormData>({
     title: "",
@@ -65,12 +62,6 @@ const ArticleEdit = () => {
     excerpt: "",
     slug: "",
     published: false,
-  });
-  const [baseline, setBaseline] = useState<string | null>(null);
-  const initializedArticle = useRef<string | null>(null);
-  const confirmDiscard = useUnsavedChanges({
-    dirty: baseline !== null && JSON.stringify({ ...article, cover_image_url: coverImageUrl }) !== baseline,
-    message: t("ux.leaveDescription"),
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -93,7 +84,7 @@ const ArticleEdit = () => {
   );
 
   useEffect(() => {
-    if (originalArticle && initializedArticle.current !== originalArticle.id) {
+    if (originalArticle) {
       setArticle({
         title: originalArticle.title,
         content: originalArticle.content,
@@ -102,8 +93,6 @@ const ArticleEdit = () => {
         published: originalArticle.published,
       });
       setCoverImageUrl(originalArticle.cover_image_url || null);
-      setBaseline(JSON.stringify({ title: originalArticle.title, content: originalArticle.content, excerpt: originalArticle.excerpt || "", slug: originalArticle.slug, published: originalArticle.published, cover_image_url: originalArticle.cover_image_url || null }));
-      initializedArticle.current = originalArticle.id;
     }
   }, [originalArticle]);
 
@@ -127,39 +116,39 @@ const ArticleEdit = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitPending.current) return;
-    submitPending.current = true;
-    setIsSubmitting(true);
-    setSubmitError(false);
-    try {
-      if (!id) {
-        toast.error(t("articleForm.missingId"));
-        return;
-      }
-      if (!article.title) {
-        toast.error(t("articleForm.missingTitle"));
-        return;
-      }
-      if (!stripHtml(article.content)) {
-        toast.error(t("articleForm.missingContent"));
-        return;
-      }
 
-      if (article.published && !await contentCheck.check([article.title, article.content, article.excerpt || ''].join('\n'))) return;
-      const result = await updateArticle(id, { ...article, cover_image_url: coverImageUrl });
+    if (!id) {
+      toast.error(t("articleForm.missingId"));
+      return;
+    }
+    if (!article.title) {
+      toast.error(t("articleForm.missingTitle"));
+      return;
+    }
+    if (!stripHtml(article.content)) {
+      toast.error(t("articleForm.missingContent"));
+      return;
+    }
+
+    if (article.published && !await contentCheck.check([article.title, article.content, article.excerpt || ''].join('\n'))) return;
+    setIsSubmitting(true);
+
+    try {
+      const result = await updateArticle(id, article);
       if (result) {
+        if (coverImageUrl !== originalArticle?.cover_image_url) {
+          await supabase
+            .from('articles')
+            .update({ cover_image_url: coverImageUrl })
+            .eq('id', id);
+        }
         queryClient.invalidateQueries({ queryKey: ['article'] });
         queryClient.invalidateQueries({ queryKey: ['articles'] });
         queryClient.invalidateQueries({ queryKey: ['userArticles'] });
         queryClient.invalidateQueries({ queryKey: ['user-articles'] });
-        confirmDiscard.afterSave(() => navigate("/articles/manage"));
-      } else {
-        setSubmitError(true);
+        navigate("/articles/manage");
       }
-    } catch {
-      setSubmitError(true);
     } finally {
-      submitPending.current = false;
       setIsSubmitting(false);
     }
   };
@@ -378,9 +367,7 @@ const ArticleEdit = () => {
 
           <Card>
             <CardContent className="pt-6">
-              <form onSubmit={handleSubmit} className="space-y-6" aria-busy={isSubmitting}>
-                <fieldset disabled={isSubmitting} className="contents">
-                {submitError && <InlineErrorBanner message={t("ux.saveUnconfirmed")} />}
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="title">{t("articleForm.titleLabel")}</Label>
                   <Input
@@ -395,7 +382,7 @@ const ArticleEdit = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="article-content">{t("articleForm.content")}</Label>
-                  <ArticleEditor readOnly={isSubmitting}
+                  <ArticleEditor
                     value={article.content}
                     onChange={handleContentChange}
                     placeholder={t("articleForm.contentPlaceholder")}
@@ -443,10 +430,10 @@ const ArticleEdit = () => {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <Checkbox
+                  <Switch
                     id="published"
                     checked={article.published}
-                    onCheckedChange={checked => handlePublishedChange(checked === true)}
+                    onCheckedChange={handlePublishedChange}
                   />
                   <Label htmlFor="published">{t("articleForm.publishToggle")}</Label>
                 </div>
@@ -457,7 +444,6 @@ const ArticleEdit = () => {
                     {isSubmitting ? t("articleForm.saving") : article.published ? (originalArticle.published ? t("articleForm.saveChanges") : t("articleForm.publish")) : (originalArticle.published ? t("articleForm.unpublish") : t("articleForm.saveDraft"))}
                   </Button>
                 </div>
-                </fieldset>
               </form>
             </CardContent>
           </Card>

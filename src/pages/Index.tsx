@@ -47,9 +47,9 @@ export default function Index() {
         description={t("ui.index.meetPeopleShareWhat")}
       />
       <Navbar />
-      <main id="main-content" tabIndex={-1} className="flex-grow">
+      <div className="flex-grow">
         <UnauthenticatedHomepage />
-      </main>
+      </div>
       <Footer />
     </div>
   );

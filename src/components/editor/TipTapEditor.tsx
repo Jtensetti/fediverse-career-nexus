@@ -34,7 +34,6 @@ export interface TipTapEditorHandle {
 }
 
 interface TipTapEditorProps {
-  editable?: boolean;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -49,7 +48,6 @@ interface TipTapEditorProps {
 export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(function TipTapEditor(
   {
     value,
-    editable = true,
     onChange,
     placeholder = "Skriv din artikel...",
     className,
@@ -64,7 +62,6 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
   const isUpdatingRef = useRef(false);
 
   const editor = useEditor({
-    editable,
     extensions: [
       StarterKit.configure({
         link: false,
@@ -118,8 +115,6 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
       onSelectionChange?.(from !== to);
     },
   });
-
-  useEffect(() => { editor?.setEditable(editable); }, [editor, editable]);
 
   // Sync external value changes
   useEffect(() => {

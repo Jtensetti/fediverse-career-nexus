@@ -10,7 +10,6 @@ import { useArticleImageUpload } from "@/hooks/useArticleImageUpload";
 import { toast } from "sonner";
 
 interface ArticleEditorProps {
-  readOnly?: boolean;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -20,7 +19,6 @@ interface ArticleEditorProps {
 }
 
 export function ArticleEditor({
-  readOnly = false,
   value,
   onChange,
   placeholder,
@@ -45,7 +43,7 @@ export function ArticleEditor({
   const handleAction = useCallback(
     (action: ToolbarAction) => {
       const editor = getEditor();
-      if (!editor || readOnly) return;
+      if (!editor) return;
 
       switch (action) {
         case "bold":
@@ -112,19 +110,19 @@ export function ArticleEditor({
           break;
       }
     },
-    [getEditor, readOnly, t]
+    [getEditor]
   );
 
   // Handle link insertion
   const handleLinkInsert = useCallback(
     (url: string, text?: string) => {
       const editor = getEditor();
-      if (editor && !readOnly) {
+      if (editor) {
         editor.setLink(url, text || editor.getSelectedText() || url);
       }
       setShowLinkSheet(false);
     },
-    [getEditor, readOnly]
+    [getEditor]
   );
 
   const blurTimerRef = useRef<number | null>(null);
@@ -164,7 +162,7 @@ export function ArticleEditor({
   // Handle file selection for image upload
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || readOnly) return;
+    if (!file) return;
 
     const editor = getEditor();
     if (!editor) {
@@ -182,7 +180,7 @@ export function ArticleEditor({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [readOnly, getEditor, uploadImage, t]);
+  }, [getEditor, uploadImage, t]);
 
   // Show toolbar when keyboard is open on mobile, or always on desktop
   const showToolbar = isMobile ? (isFocused || isKeyboardOpen) : true;
@@ -194,7 +192,6 @@ export function ArticleEditor({
     )}>
       {/* TipTap Rich Text Editor */}
       <TipTapEditor
-        editable={!readOnly}
         id={id}
         label={label ?? t("articleForm.editorLabel")}
         ref={editorRef}

@@ -1,8 +1,6 @@
-import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
-import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
 import { useTranslation } from "react-i18next";
 import { useContentCheck } from '@/hooks/useContentCheck';
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import Navbar from "@/components/layout/Navbar";
@@ -10,7 +8,7 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { ArticleFormData, createArticle, generateSlug } from "@/services/articles/articleService";
 import ArticleEditor from "@/components/articles/ArticleEditor";
 import { toast } from "sonner";
@@ -55,8 +53,6 @@ const ArticleCreate = () => {
   const contentCheck = useContentCheck();
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const submitPending = useRef(false);
-  const [submitError, setSubmitError] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isEditing, setIsEditing] = useState(false);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
@@ -66,11 +62,6 @@ const ArticleCreate = () => {
     excerpt: "",
     slug: "",
     published: false,
-  });
-
-  const confirmDiscard = useUnsavedChanges({
-    dirty: !!(article.title || stripHtml(article.content) || /<img\b/i.test(article.content) || article.excerpt || article.slug || article.published || coverImageUrl),
-    message: t("ux.leaveDescription"),
   });
 
   const validateField = (name: keyof ArticleFormData, value: string | boolean) => {
@@ -91,20 +82,20 @@ const ArticleCreate = () => {
     const title = e.target.value;
     const slug = customSlug ? article.slug : generateSlug(title).slice(0, 100);
     setArticle({ ...article, title, slug });
-    if (errors.title) validateField("title", title);
-    if (errors.slug && slug) validateField("slug", slug);
+    validateField("title", title);
+    if (slug) validateField("slug", slug);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === "slug") setCustomSlug(true);
     setArticle({ ...article, [name]: value });
-    if (errors[name as keyof ArticleFormData]) validateField(name as keyof ArticleFormData, value);
+    validateField(name as keyof ArticleFormData, value);
   };
 
   const handleContentChange = (content: string) => {
     setArticle({ ...article, content });
-    if (errors.content) validateField("content", content);
+    validateField("content", content);
   };
 
   const handlePublishedChange = (checked: boolean) => {
@@ -113,66 +104,64 @@ const ArticleCreate = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitPending.current) return;
-    submitPending.current = true;
-    setIsSubmitting(true);
-    setSubmitError(false);
-    try {
-      const result = articleSchema.safeParse(article);
 
-      if (!result.success) {
-        const fieldErrors: ValidationErrors = {};
-        result.error.errors.forEach((err) => {
-          const field = err.path[0] as keyof ArticleFormData;
-          if (!fieldErrors[field]) {
-            fieldErrors[field] = err.message;
-          }
-        });
-        setErrors(fieldErrors);
-        if (isEditing && (fieldErrors.title || fieldErrors.slug || fieldErrors.excerpt)) setIsEditing(false);
-        toast.error(t("articleForm.checkFields"));
-        return;
-      }
+    const result = articleSchema.safeParse(article);
 
-      try {
-        const { data: existing, error: existingError } = await supabase
-          .from('articles')
-          .select('id')
-          .eq('slug', article.slug)
-          .limit(1);
-
-        if (existingError) throw existingError;
-
-        if (existing && existing.length > 0) {
-          setErrors((prev) => ({
-            ...prev,
-            slug: t("articleForm.addressTaken"),
-          }));
-          setIsEditing(false);
-          toast.error(t("articleForm.addressTakenToast"));
-          return;
+    if (!result.success) {
+      const fieldErrors: ValidationErrors = {};
+      result.error.errors.forEach((err) => {
+        const field = err.path[0] as keyof ArticleFormData;
+        if (!fieldErrors[field]) {
+          fieldErrors[field] = err.message;
         }
-      } catch (error) {
-        console.error('Error checking slug uniqueness:', error);
-        setErrors(prev => ({ ...prev, slug: t("articleForm.addressCheckFailed") }));
+      });
+      setErrors(fieldErrors);
+      if (isEditing && (fieldErrors.title || fieldErrors.slug || fieldErrors.excerpt)) setIsEditing(false);
+      toast.error(t("articleForm.checkFields"));
+      return;
+    }
+
+    try {
+      const { data: existing, error: existingError } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('slug', article.slug)
+        .limit(1);
+
+      if (existingError) throw existingError;
+
+      if (existing && existing.length > 0) {
+        setErrors((prev) => ({
+          ...prev,
+          slug: t("articleForm.addressTaken"),
+        }));
         setIsEditing(false);
-        toast.error(t("articleForm.addressCheckFailed"));
+        toast.error(t("articleForm.addressTakenToast"));
         return;
       }
+    } catch (error) {
+      console.error('Error checking slug uniqueness:', error);
+      toast.error(t("articleForm.addressCheckFailed"));
+      return;
+    }
 
-      if (article.published && !await contentCheck.check([article.title, article.content, article.excerpt || ''].join('\n'))) return;
-      const articleResult = await createArticle({ ...article, cover_image_url: coverImageUrl });
+    if (article.published && !await contentCheck.check([article.title, article.content, article.excerpt || ''].join('\n'))) return;
+    setIsSubmitting(true);
+
+    try {
+      const articleResult = await createArticle(article);
       if (articleResult) {
+        if (coverImageUrl) {
+          await supabase
+            .from('articles')
+            .update({ cover_image_url: coverImageUrl })
+            .eq('id', articleResult.id);
+        }
         queryClient.invalidateQueries({ queryKey: ['user-articles'] });
         queryClient.invalidateQueries({ queryKey: ['articles'] });
-        confirmDiscard.afterSave(() => navigate("/articles/manage"));
-      } else {
-        setSubmitError(true);
+        navigate("/articles/manage");
       }
-    } catch {
-      setSubmitError(true);
     } finally {
-      submitPending.current = false;
       setIsSubmitting(false);
     }
   };
@@ -182,7 +171,6 @@ const ArticleCreate = () => {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         {contentCheck.dialog}
-        {submitError && <InlineErrorBanner message={t("ux.saveUnconfirmed")} />}
         <SEOHead title={t("articleForm.createTitle")} description={t("articleForm.createDescription")} />
 
         <div className="flex items-center justify-between p-3 border-b border-border bg-background/95 backdrop-blur-sm">
@@ -192,10 +180,7 @@ const ArticleCreate = () => {
         </div>
 
         <div className="px-4 pt-4">
-          <Label htmlFor="article-title-mobile">{t("articleForm.titleLabel")}</Label>
           <Input
-            id="article-title-mobile"
-            disabled={isSubmitting}
             aria-label={t("articleForm.titleAccessible")}
             maxLength={200}
             value={article.title}
@@ -206,7 +191,7 @@ const ArticleCreate = () => {
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <ArticleEditor readOnly={isSubmitting}
+          <ArticleEditor
             value={article.content}
             onChange={handleContentChange}
             placeholder={t("articleForm.contentStart")}
@@ -220,11 +205,11 @@ const ArticleCreate = () => {
           )}
           <div className="flex items-center justify-between bg-muted/80 backdrop-blur-sm rounded-full px-4 py-2">
             <div className="flex items-center gap-2">
-              <Checkbox
+              <Switch
                 id="published-mobile"
                 checked={article.published}
-                onCheckedChange={checked => handlePublishedChange(checked === true)}
-                disabled={isSubmitting}
+                onCheckedChange={handlePublishedChange}
+                className="scale-90"
               />
               <Label htmlFor="published-mobile" className="text-sm">{t("articleForm.publishNow")}</Label>
             </div>
@@ -255,9 +240,7 @@ const ArticleCreate = () => {
 
           <Card>
             <CardContent className="pt-6">
-              <form onSubmit={handleSubmit} className="space-y-6" aria-busy={isSubmitting}>
-                <fieldset disabled={isSubmitting} className="contents">
-                {submitError && <InlineErrorBanner message={t("ux.saveUnconfirmed")} />}
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="title">{t("articleForm.titleLabel")}</Label>
                   <Input
@@ -297,7 +280,7 @@ const ArticleCreate = () => {
                 ) : (
                   <div className="space-y-2">
                     <Label htmlFor="article-content">{t("articleForm.content")}</Label>
-                    <ArticleEditor readOnly={isSubmitting}
+                    <ArticleEditor
                       value={article.content}
                       onChange={handleContentChange}
                       placeholder={t("articleForm.contentPlaceholder")}
@@ -356,7 +339,7 @@ const ArticleCreate = () => {
                 </details>
 
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="published" checked={article.published} onCheckedChange={checked => handlePublishedChange(checked === true)} />
+                  <Switch id="published" checked={article.published} onCheckedChange={handlePublishedChange} />
                   <Label htmlFor="published">{t("articleForm.publishToggle")}</Label>
                 </div>
 
@@ -366,7 +349,6 @@ const ArticleCreate = () => {
                     {isSubmitting ? t("articleForm.saving") : article.published ? t("articleForm.publish") : t("articleForm.saveDraft")}
                   </Button>
                 </div>
-                </fieldset>
               </form>
             </CardContent>
           </Card>

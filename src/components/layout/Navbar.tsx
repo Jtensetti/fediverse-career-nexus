@@ -1,5 +1,4 @@
-import { UnsavedChangesContext } from "@/contexts/UnsavedChangesContext";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Menu, Settings, UserRound, LogOut } from "lucide-react";
@@ -27,7 +26,6 @@ export default function Navbar() {
 function MemberNavbar() {
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
-  const unsaved = useContext(UnsavedChangesContext);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { hasAccess } = useModerationAccess();
@@ -52,7 +50,6 @@ function MemberNavbar() {
     { to: "/messages", label: t("nav.messages") },
   ];
   const logout = async () => {
-    if (unsaved?.hasChanges() && !window.confirm(t("ux.leaveDescription"))) return;
     try {
       await signOut();
       toast.success(t("toasts.loggedOut"));
@@ -68,7 +65,7 @@ function MemberNavbar() {
     <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-3 px-4">
       <Link to="/feed" className="flex items-center gap-2 text-primary"><img src="/brand/mascot.webp" width="32" height="32" alt="" className="h-8 w-8 object-contain" /><span className="font-display text-xl font-bold">Nolto</span></Link>
       <nav className="hidden items-center gap-1 xl:flex" aria-label={t("accessibility.navigationMenu")}>
-        {links.map(link => <NavLink key={link.to} to={link.to} className={({ isActive }) => `inline-flex min-h-11 items-center rounded-md px-3 py-2 text-sm font-medium ${isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}>{link.label}</NavLink>)}
+        {links.map(link => <NavLink key={link.to} to={link.to} className={({ isActive }) => `rounded-md px-3 py-2 text-sm font-medium ${isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}>{link.label}</NavLink>)}
       </nav>
       <div className="flex items-center gap-2">
         <MobileSearch />
@@ -91,7 +88,7 @@ function MemberNavbar() {
         </DropdownMenu>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild><Button variant="ghost" size="icon" className="xl:hidden" aria-label={t("accessibility.navigationMenu")}><Menu className="h-5 w-5" /></Button></SheetTrigger>
-          <SheetContent side="left" className="w-80 max-w-[100vw] overflow-y-auto" onOpenAutoFocus={(event) => {
+          <SheetContent side="left" className="w-80 overflow-y-auto" onOpenAutoFocus={(event) => {
             event.preventDefault();
             requestAnimationFrame(() => document.querySelector<HTMLAnchorElement>('[data-member-navigation] a')?.focus());
           }}>
@@ -102,7 +99,7 @@ function MemberNavbar() {
               <Link to="/my-reviews" onClick={() => setOpen(false)} className="px-4 py-3 text-sm">{t("contentCare.myReviews")}</Link>
               <button onClick={() => void logout()} className="px-4 py-3 text-left text-sm text-destructive">{t("auth.logout")}</button>
             </nav>
-            <div className="mt-4 flex flex-wrap items-center gap-3"><LanguageSelector /><ModeToggle /></div>
+            <div className="mt-4"><ModeToggle /></div>
           </SheetContent>
         </Sheet>
       </div>

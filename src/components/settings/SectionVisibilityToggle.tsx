@@ -48,7 +48,7 @@ export default function SectionVisibilityToggle({ section, currentVisibility, on
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                className="h-11 w-11 text-muted-foreground hover:text-foreground"
                 disabled={updating}
                 aria-label={t("visibility.currentSetting", { audience: t(current.labelKey, current.fallback) })}
               >

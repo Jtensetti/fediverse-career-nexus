@@ -20,8 +20,8 @@ const JobEdit = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty, message: t("ux.leaveDescription") });
-
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t("profileEdit.unsavedChanges") });
+  
   useEffect(() => {
     if (!loading && !user) {
       toast.error(t('jobEdit.signInRequired'));
@@ -29,7 +29,7 @@ const JobEdit = () => {
       return;
     }
     if (!user) return;
-
+    
     const fetchJob = async () => {
       if (!id) return;
       setIsLoading(true);
@@ -49,9 +49,9 @@ const JobEdit = () => {
     };
     fetchJob();
   }, [id, navigate, user, loading, t]);
-
+  
   const handleSubmit = async (values: any) => {
-    if (!id || isSubmitting) return;
+    if (!id) return;
     setIsSubmitting(true);
     setSubmitError(null);
     const jobData = {
@@ -59,21 +59,16 @@ const JobEdit = () => {
       application_url: values.application_url || null,
       contact_email: values.contact_email || null,
     };
-    try {
-      const success = await updateJobPost(id, jobData);
-      if (success) {
-        setIsDirty(false);
-        confirmDiscard.afterSave(() => navigate(`/jobs/${id}`));
-      } else {
-        setSubmitError(t("ux.saveUnconfirmed"));
-      }
-    } catch {
-      setSubmitError(t("ux.saveUnconfirmed"));
-    } finally {
-      setIsSubmitting(false);
+    const success = await updateJobPost(id, jobData);
+    setIsSubmitting(false);
+    if (success) {
+      setIsDirty(false);
+      navigate(`/jobs/${id}`);
+    } else {
+      setSubmitError(t("common.error"));
     }
   };
-
+  
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -85,7 +80,7 @@ const JobEdit = () => {
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -95,7 +90,7 @@ const JobEdit = () => {
           <p className="text-muted-foreground">{t('jobEdit.subtitle')}</p>
         </div>
         {submitError && <InlineErrorBanner message={submitError} onDismiss={() => setSubmitError(null)} className="mb-6" />}
-        <JobForm
+        <JobForm 
           defaultValues={job}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}

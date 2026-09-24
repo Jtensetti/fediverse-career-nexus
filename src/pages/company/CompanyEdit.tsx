@@ -1,4 +1,3 @@
-import InlineErrorBanner from "@/components/forms/InlineErrorBanner";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,7 +23,6 @@ export default function CompanyEdit() {
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
   const [isDirty, setIsDirty] = useState(false);
-  const [submitError, setSubmitError] = useState(false);
 
   const { data: company, isLoading } = useQuery({
     queryKey: ['company', slug],
@@ -52,14 +50,13 @@ export default function CompanyEdit() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company', slug] });
       toast.success(t("companies.updateSuccess", "Company updated successfully"));
-      confirmDiscard.afterSave(() => navigate(`/organisation/${slug}`));
+      navigate(`/organisation/${slug}`);
     },
     onError: (error: Error) => {
-      setSubmitError(true);
       toast.error(error.message || t("companies.updateError", "Failed to update company"));
     },
   });
-  const confirmDiscard = useUnsavedChanges({ dirty: isDirty, message: t("ux.leaveDescription") });
+  const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !updateMutation.isPending, message: t("profileEdit.unsavedChanges") });
 
   if (isLoading || authLoading || checkingAccess) {
     return (
@@ -135,7 +132,6 @@ export default function CompanyEdit() {
             </p>
           </div>
 
-          {submitError && <InlineErrorBanner message={t("ux.saveUnconfirmed")} className="mb-4" />}
           <CompanyForm
             defaultValues={{
               name: company.name,
@@ -153,6 +149,7 @@ export default function CompanyEdit() {
             submitButtonText={t("common.saveChanges", "Save Changes")}
             isEdit
             onDirtyChange={setIsDirty}
+            onCancel={() => confirmDiscard(() => navigate(`/organisation/${slug}`))}
           />
         </div>
       </main>

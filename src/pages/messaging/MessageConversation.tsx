@@ -1,5 +1,3 @@
-import { useUnsavedChanges } from "@/hooks/useUnsavedChanges";
-import { useReducedMotion } from "framer-motion";
 import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -51,8 +49,6 @@ export default function MessageConversation() {
   const currentUserId = user?.id || null;
   const inboxReady = useUnlockedInbox();
   const [newMessage, setNewMessage] = useState('');
-  const reduceMotion = useReducedMotion();
-  useUnsavedChanges({ dirty: !!newMessage.trim(), message: tx('ux.leaveDescription') });
   const [otherUser, setOtherUser] = useState<ParticipantInfo | null>(null);
   const [canMessage, setCanMessage] = useState<boolean | null>(null);
   const [isFederated, setIsFederated] = useState<boolean>(false);
@@ -77,10 +73,10 @@ export default function MessageConversation() {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
-        behavior: smooth && !reduceMotion ? 'smooth' : 'auto'
+        behavior: smooth ? 'smooth' : 'auto'
       });
     }
-  }, [reduceMotion]);
+  }, []);
 
   // Check if user is near bottom of messages
   const checkIfNearBottom = useCallback(() => {
@@ -173,9 +169,9 @@ export default function MessageConversation() {
       if (!conversationId) throw new Error('No conversation ID');
       return sendMessage(conversationId, messageContent);
     },
-    onSuccess: (message, sentContent) => {
+    onSuccess: (message) => {
       queryClient.setQueryData(['conversation', currentUserId, conversationId], (previous: ConversationWithMessages | undefined) => previous ? { ...previous, messages: [...previous.messages.filter(item => item.id !== message.id), message] } : previous);
-      setNewMessage(current => current.trim() === sentContent.trim() ? '' : current);
+      setNewMessage('');
       // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -187,12 +183,15 @@ export default function MessageConversation() {
     },
     onError: (error) => {
       console.error('Failed to send message:', error);
-      toast.error(tx("ui.messageConversation.kundeInteSkickaMeddelande"), { description: error instanceof Error ? error.message : "Försök igen" });
+       toast.error(tx("ui.messageConversation.kundeInteSkickaMeddelande"), { description: error instanceof Error ? error.message : tx("common.retry") });
     }
   });
 
   async function loadOlder() {
     if (!conversationId || !data?.next || loadingOlder) return;
+    const container = messagesContainerRef.current;
+    const previousHeight = container?.scrollHeight ?? 0;
+    const previousTop = container?.scrollTop ?? 0;
     setLoadingOlder(true);
     try {
       const page = await getMessagePage(conversationId, data.next);
@@ -200,6 +199,9 @@ export default function MessageConversation() {
         ...previous, next: page.next,
         messages: [...page.messages, ...previous.messages.filter(message => !page.messages.some(item => item.id === message.id))],
       } : previous);
+      requestAnimationFrame(() => {
+        if (container) container.scrollTop = previousTop + container.scrollHeight - previousHeight;
+      });
     } catch {
       toast.error(tx("ui.messageConversation.kundeInteLasaAldre"));
     } finally { setLoadingOlder(false); }
@@ -235,7 +237,7 @@ export default function MessageConversation() {
   // Handle loading and error states
   if (authLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -247,7 +249,7 @@ export default function MessageConversation() {
 
   if (!currentUserId) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center">
@@ -266,11 +268,11 @@ export default function MessageConversation() {
     );
   }
 
-  if (!inboxReady) return <div className="min-h-screen flex flex-col"><Navbar /><main className="flex-grow container max-w-4xl px-4 py-10"><Button variant="link" onClick={() => navigate('/messages')}>{tx("ui.messageConversation.tillMeddelanden")}</Button><EncryptedInbox partnerId={conversationId} /></main><Footer /></div>;
+  if (!inboxReady) return <div className="min-h-dvh flex flex-col"><Navbar /><main className="flex-grow container max-w-4xl px-4 py-10"><Button variant="link" onClick={() => navigate('/messages')}>{tx("ui.messageConversation.tillMeddelanden")}</Button><EncryptedInbox partnerId={conversationId} /></main><Footer /></div>;
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <Card>
@@ -306,7 +308,7 @@ export default function MessageConversation() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-dvh flex flex-col">
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center py-8">
@@ -330,7 +332,7 @@ export default function MessageConversation() {
   const conversationTitle = otherUser?.fullname || otherUser?.username || 'Messages';
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-dvh flex flex-col">
       <SEOHead
         title={`Chat with ${conversationTitle}`}
         description={tx("ui.messageConversation.privateConversationOnNolto")}
@@ -338,7 +340,7 @@ export default function MessageConversation() {
       <Navbar />
       <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
         <EncryptedInbox partnerId={conversationId} />
-        <Card className="flex flex-col h-[calc(100vh-200px)]">
+        <Card className="flex flex-col h-[calc(100dvh-200px)] min-h-[28rem]">
           <CardHeader className="border-b">
             <div className="flex items-center space-x-4">
               <Avatar>
@@ -429,13 +431,9 @@ export default function MessageConversation() {
                 <span>{isFederated ? tx("ui.messageConversation.privataMeddelandenTillAndra") : tx("ui.messageConversation.duKanInteSkicka")}</span>
               </div>
             ) : (
-              <form onSubmit={handleSendMessage} className="w-full" aria-busy={sendMessageMutation.isPending}>
-                {sendMessageMutation.isError && <p role="alert" className="mb-3 text-destructive">{tx("ux.saveUnconfirmed")}</p>}
-                {sendMessageMutation.isPending && <p role="status" className="mb-2 text-sm text-muted-foreground">{tx("ux.sending")}</p>}
-                <label htmlFor="message-text" className="mb-2 block text-sm font-medium">{tx("ui.messageConversation.skrivDittMeddelande")}</label>
+              <form onSubmit={handleSendMessage} className="w-full">
                 <div className="flex space-x-2 items-end">
                   <Textarea
-                    id="message-text"
                     ref={textareaRef}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
@@ -450,10 +448,10 @@ export default function MessageConversation() {
                     type="submit"
                     size="icon"
                     aria-label={tx("ui.messageConversation.skickaMeddelande")}
-                    className="h-11 w-11 flex-shrink-0"
+                    className="h-10 w-10 flex-shrink-0"
                     disabled={!newMessage.trim() || sendMessageMutation.isPending || canMessage !== true}
                   >
-                    {sendMessageMutation.isPending ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Send aria-hidden="true" className="h-4 w-4" />}
+                    <Send className="h-4 w-4" />
                   </Button>
                 </div>
               </form>

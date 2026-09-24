@@ -1,43 +1,33 @@
-# Implementering av UI/UX-bibeln – 24 september 2026
+# UX-implementering 24 september 2026
 
-Detta kompletterar den tidigare auditrapporten och beskriver den senare implementationen. Historiska uppgifter om testinnehåll i tidigare rapporter är inte ett aktuellt datainventarium. Ingen ny testanvändare eller nytt testinnehåll har skapats i produktion för denna implementation.
+Utgångspunkt: main `da70086fd1c1c12a1ad1fe90cb81bd9b6af92394`. Ingen publicering, backendändring, produktionsdata eller ny betaltjänst ingår.
 
-## Omfattning
+## Implementerat
 
-Befintlig Nolto-identitet behålls: petrol, aqua, guld, mammut, illustrationer och typografi. Förändringarna gäller gemensamma kontroller, huvudnavigation, listor/sökfilter och centrala skrivflöden. Autentiseringsregler, databasschema, RLS och åtkomsträttigheter ändras inte.
-
-De första gemensamma ändringarna ligger i main-kommittarna fram till `ce4541986db0da34b7d8f0f23f6e4833a9de4d00`. Den kompletterande PR:n rättar bland annat den första versionens typfel, otillräckliga kontrastvärden, ofullständiga filteretiketter och ett utkastskydd som bara täckte omladdning.
-
-Genomfört:
-
-- Gemensam skyddad intern navigation, bakåtknapp och omladdning för osparade artiklar, jobb, evenemang, organisationer, profilfält/CV-rader, meddelandetext och inlägg/kommentarredigering. Ett stängt inläggsutkast går att öppna igen under samma sidbesök.
-- Jobb-, organisations- och sökfilter samt relevanta listflikar bevaras i URL. Inmatning nollställs inte av en likvärdig omrendering. Filter har synliga kopplade etiketter.
-- Listor skiljer tomt resultat från hämtfel och varnar om uppdateringen misslyckades medan äldre data visas. Återförsök ligger kvar på sidan.
-- Sparfel lämnar innehållet kvar och visar beständig återkoppling. Artikel- och inläggssändning har spärr även under förberedelse. Artikelns omslag sparas med övriga artikeluppgifter.
-- Kontroller som sparas tillsammans med ett formulär använder kryssrutor. Gemensamma knapptexter kan växa och ikonknappar får minst 44 × 44 CSS-pixlar.
-- Justerade ljushetsvärden ger bättre kontrast inom Noltos palett i båda temana. Gemensam minskad rörelse, fokusmarginaler, huvudlandmärken och hopplänk.
-- Nya texter finns på svenska, engelska, tyska, franska, nederländska, spanska, italienska och japanska.
+- Globala statusmeddelanden är åter synliga; mobilnavigeringens säkra bottenyta använder strukturell markör i stället för svensk `aria-label`; forced-colors tillåts använda användarens färger.
+- Gemensamma knappar, inputs, textareas, selects, tabs och dialoger har minhöjd, radbrytning, tydligt fokus och viewport-anpassad dialogyta. Repetitiv skal-/bounce-rörelse togs bort från mobilnavigationen.
+- Framer Motion följer `prefers-reduced-motion`. Appens yttre felaktiga `main` blev en neutral behållare och helskärmslayout använder dynamisk viewport där den ändrades.
+- Jobb, artiklar, evenemang och organisationer skriver centrala filter/flikar till URL och visar separat laddning, fel med nytt försök, resultat och relevant tomstatus. Berörda lästjänster kastar riktiga fel i stället för att returnera falskt tomma listor.
+- Jobb-, evenemangs- och organisationsformulär rapporterar dirty-state. Omladdning och uttrycklig avbryt/tillbaka bekräftar kassering; lyckad/pågående sparning ger ingen nuisance-varning. Innehållet hålls endast i komponentminne.
+- Jobbredigering och evenemangsredigering visar misslyckad mutation i stället för att tyst stanna. Inläggs- och kommentarredigering fick namngivna textfält och översatt reservfel.
+- Meddelandelistan skiljer fel i kontakter/förfrågningar från tomma tillstånd. Äldre meddelanden kan läggas till utan att läspositionen hoppar. Meddelandefönstret använder dynamisk mobilhöjd.
+- Granskade ikonknappar har namn och minst 44 px fristående mål. Språkresurserna har fortsatt exakt paritet för sv/en/fr/de/nl/es/ja/it.
 
 ## Verifiering
 
-Lokalt genomförd automatiserad verifiering:
+- `scripts/ux-standard.test.mjs` kontrollerar de globala defekterna, gemensamma mål/radbrytning, URL-baserad liststate, osparat-skydd och meddelandelistans fel-/scrollmönster.
+- Översättningstest, TypeScript för app och byggkonfiguration samt diffkontroll passerar.
+- Node-, Deno-, Edge- och produktionsbygge körs som slutlig gate efter implementeringen.
+- Browserkontroll gjordes lokalt utan produktionsskrivningar på jobb-, evenemangs- och organisationsvyer i desktop/mobil, mörkt läge och reducerad rörelse. Alla höll 320 px utan sidscroll och utan konsolfel. Artiklar, meddelanden och profilredigering skickade den lokala utloggade sessionen till inloggning och räknas därför inte som autentiserat verifierade.
 
-- Source-kontroll och TypeScript-kontroller: godkända.
-- Node-testsviten: 106 godkända tester, inklusive åtta nya beteende-/kontrastkontroller.
-- Deno: 54 godkända tester.
-- Edge-funktionernas kontroll och produktionsbygge: godkända.
+## Delvis verifierat eller kvar
 
-De åtta nya kontrollerna omfattar orört formulär, avbruten bakåtnavigation med bibehållen text och fokus, godkänd kassering/bekräftad sparning, misslyckad sparning med flera monterade skrivytor, profilflikar, filterutkast och etiketter, återförsök med kvarvarande cache samt faktisk kontrast mellan definierade ljusa/mörka tokenpar. Befintliga flödestester kontrollerar även att inläggsutkast överlever stängning och återöppning.
-
-Kontrollerna körs med isolerade komponenter och tjänstestubbar. De är inte ett bevis för alla produktionsintegrationer, skärmläsare eller verkliga mobiltelefoner. Bygget rapporterar fortfarande en initial JS-chunk över Vites standardgräns på 500 kB; gränsen har inte höjts för att dölja varningen. Ingen fältmätning av Core Web Vitals har genomförts här.
-
-## Återstående arbete och avgränsningar
-
-1. Genomför manuella tester med skärmläsare, tangentbord, 200 procent textförstoring, 320 CSS-pixlars omflöde och skärmtangentbord på riktiga enheter. Tokenkontrast är inte en full WCAG 2.2 AA-granskning.
-2. Genomför observerade uppgifter med målgruppen. Bestäm mått och godkännandegränser före testet. De automatiska testerna säger inget om statistisk användbarhet i målgruppen.
-3. Mät verkliga LCP, INP och CLS vid 75:e percentilen separat för mobil/dator. Följ upp huvudpaketets storlek och återställning av skrollposition när bilder eller data anländer sent.
-4. Inventera äldre inställnings-, admin- och detaljvyer som inte fått full tillstånds- och formulärgranskning i denna leverans. Organisations- och evenemangslistorna har fortfarande sina befintliga hämtningsgränser (20 respektive 10); fullständig paginering behöver tillkomma när de växer.
-5. Utkast lagras i minnet och kan inte återställas efter krasch eller uttrycklig kassering. Serverlagrade utkast, generell ångra-funktion och idempotens för samtliga skrivoperationer kräver separata beslut och backendarbete. Ett avbrutet anrop kan fortfarande ha nått servern; beständig text för obekräftat utfall uppmärksammar detta.
-6. Produktägaren behöver utse fortsatt designförvaltning, språkgranskning, användartest och mätansvar. Ansvar kan inte ersättas av en kodkomponent.
-
-Dessa punkter är fortsatt arbete, inte genomförda eller certifierade resultat.
+- Detta är en bred, konkret passering men inte en fullständig omskrivning av hundratals vyer. Artikelns skapa/redigera-formulär och vissa profil-/inställningsdialoger har ännu inte samma generella dirty-navigation-guard.
+- Sökningens huvudfråga och fyra prioriterade listor är djup­länkbara; samtliga avancerade sökfält, federerat flödesval och alla äldre lokala tabs är inte URL-synkroniserade.
+- Full generell scrollåterställning mellan varje list- och detaljsida infördes inte; den kräver avgränsad routerstrategi så callback- och authflöden inte störs. Meddelandens prepend-scroll är åtgärdad separat.
+- De delade primitives förbättrar hela produkten, men varje ikon, rubriknivå, etikett, 200 % textläge och tangentbordsordning är inte manuellt granskat.
+- Autentiserade resor har inte skrivit testdata. Bildutkast/atomisk publicering, moderering, bekräftelser och E2EE ändrades inte.
+- Den lokala sparade sessionen var inte längre giltig, så autentiserade browserresor kunde inte verifieras i slutkontrollen. Beteendetesterna använder befintliga lokala fixtures/mocks och produktionsdata berördes inte.
+- Översättningarna behöver fortfarande modersmålsgranskning, särskilt juridisk text. Svenska skärmbilder på startsidan är fortfarande bilder och översätts inte.
+- Ingen WCAG 2.2 AA-certifiering, användarstudie, fältprestanda eller Core Web Vitals-mätning hävdas.
+- Tre befintliga databasåtkomstfynd ligger utanför den uttryckliga frontendgränsen och ändrades inte: bred läsning av profilsektioners synlighet, bred läsning av blockerade domäner samt en alltför bred organisations-update-check.
