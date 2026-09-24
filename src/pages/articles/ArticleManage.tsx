@@ -39,7 +39,7 @@ const ArticleManage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
 
-  const { data: articles = [], isLoading } = useQuery({
+  const { data: articles = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['user-articles'],
     queryFn: getUserArticles,
   });
@@ -134,6 +134,11 @@ const ArticleManage = () => {
           {isLoading ? (
             <div className="text-center py-12">
               <p>{t("articleForm.loadingArticles")}</p>
+            </div>
+          ) : isError ? (
+            <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center">
+              <p className="font-medium">{t("common.error")}</p>
+              <Button variant="outline" className="mt-4" onClick={() => void refetch()}>{t("common.retry")}</Button>
             </div>
           ) : filteredArticles.length > 0 ? (
             <>

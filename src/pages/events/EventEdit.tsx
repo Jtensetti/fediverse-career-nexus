@@ -18,7 +18,7 @@ export default function EventEdit() {
   const [isDirty, setIsDirty] = useState(false);
   const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !isSubmitting, message: t('profileEdit.unsavedChanges') });
 
-  const { data: event, isLoading } = useQuery({
+  const { data: event, isLoading, isError, refetch } = useQuery({
     queryKey: ['event', id],
     queryFn: () => getEvent(id!),
     enabled: !!id
@@ -64,13 +64,9 @@ export default function EventEdit() {
     return (
       <div className="container max-w-4xl mx-auto py-10 px-4 sm:px-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">{t('events.notFound')}</h2>
-          <p className="text-muted-foreground mb-6">
-            {t('events.notFoundDescription')}
-          </p>
-          <Button asChild>
-            <Link to="/events">{t('events.backToEvents')}</Link>
-          </Button>
+          <h2 className="text-2xl font-bold mb-4">{isError ? t('common.error') : t('events.notFound')}</h2>
+          <p className="text-muted-foreground mb-6">{isError ? t('common.error') : t('events.notFoundDescription')}</p>
+          {isError ? <Button onClick={() => void refetch()}>{t('common.retry')}</Button> : <Button asChild><Link to="/events">{t('events.backToEvents')}</Link></Button>}
         </div>
       </div>
     );
