@@ -49,5 +49,6 @@ try {
     try { await db.exec(await readFile(new URL(name, migrationDirectory), 'utf8')); }
     catch (error) { throw new Error(`${name}: ${error.message}`); }
   }
-  console.log('PASS: privacy migrations, deletion visibility and retention, private media, encrypted message boundaries.');
+  await db.exec(await readFile(new URL('./mobile-push-assertions.sql', import.meta.url), 'utf8'));
+  console.log('PASS: privacy migrations, deletion visibility and retention, private media, encrypted messages and mobile push boundaries.');
 } finally { await db.close(); }
