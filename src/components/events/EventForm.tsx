@@ -12,20 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { Event } from "@/services/misc/eventService";
-import { endAfterStartChange, localDateTime, nextEventRange } from "@/lib/localDate";
-
-const timeOptions = () => {
-  const times = [];
-  for (let hour = 0; hour < 24; hour++) {
-    for (let minute of [0, 30]) {
-      const h = hour.toString().padStart(2, "0");
-      const m = minute.toString().padStart(2, "0");
-      const label = `${h}:${m}`;
-      times.push({ value: `${h}:${m}`, label });
-    }
-  }
-  return times;
-};
+import { endAfterStartChange, isValidLocalDateTime, localDateTime, nextEventRange, TIME_PATTERN } from "@/lib/localDate";
 
 function createEventFormSchema(t: any) {
   const optionalUrl = z.string().trim().nullish().transform(value => value || null);
@@ -35,9 +22,11 @@ function createEventFormSchema(t: any) {
       description: z.string().min(10, t("eventFormLabels.descriptionValidation")),
       location: z.string().optional(),
       start_date: z.date({ required_error: t("eventFormLabels.startDateRequired") }),
-      start_time: z.string({ required_error: t("eventFormLabels.startTimeRequired") }),
+      start_time: z.string({ required_error: t("eventFormLabels.startTimeRequired") })
+        .min(1, t("eventFormLabels.startTimeRequired")).regex(TIME_PATTERN, t("eventFormLabels.invalidTime")),
       end_date: z.date({ required_error: t("eventFormLabels.endDateRequired") }),
-      end_time: z.string({ required_error: t("eventFormLabels.endTimeRequired") }),
+      end_time: z.string({ required_error: t("eventFormLabels.endTimeRequired") })
+        .min(1, t("eventFormLabels.endTimeRequired")).regex(TIME_PATTERN, t("eventFormLabels.invalidTime")),
       is_online: z.boolean().default(false),
       meeting_url: optionalUrl,
       max_attendees: z.coerce.number().int().positive().optional().nullable(),
@@ -50,8 +39,17 @@ function createEventFormSchema(t: any) {
     .refine(data => !data.cover_image_url || z.string().url().safeParse(data.cover_image_url).success, {
       message: t("eventFormLabels.invalidUrl"), path: ["cover_image_url"],
     })
+    .superRefine((data, ctx) => {
+      // Never silently shift a time that a DST transition skips.
+      for (const [date, time] of [["start_date", "start_time"], ["end_date", "end_time"]] as const) {
+        if (TIME_PATTERN.test(data[time]) && !isValidLocalDateTime(data[date], data[time])) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: t("eventFormLabels.nonexistentLocalTime"), path: [time] });
+        }
+      }
+    })
     .refine(
       (data) => {
+        if (!isValidLocalDateTime(data.start_date, data.start_time) || !isValidLocalDateTime(data.end_date, data.end_time)) return true;
         const startDateTime = localDateTime(data.start_date, data.start_time);
         const endDateTime = localDateTime(data.end_date, data.end_time);
         return endDateTime > startDateTime;
@@ -131,6 +129,13 @@ const EventForm = ({
     const oldEnd = localDateTime(previous.end_date, previous.end_time);
     form.setValue(field, value, { shouldDirty: true });
     const current = form.getValues();
+    const valid = isValidLocalDateTime(previous.start_date, previous.start_time)
+      && isValidLocalDateTime(previous.end_date, previous.end_time)
+      && isValidLocalDateTime(current.start_date, current.start_time);
+    if (!valid) {
+      if (form.formState.isSubmitted) void form.trigger(['start_date', 'start_time', 'end_date', 'end_time']);
+      return;
+    }
     const nextEnd = endAfterStartChange(oldStart, oldEnd, localDateTime(current.start_date, current.start_time));
     if (nextEnd !== oldEnd) {
       form.setValue('end_date', nextEnd, { shouldDirty: true });
@@ -190,10 +195,10 @@ const EventForm = ({
             <FormField control={form.control} name="start_time" render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("eventFormLabels.startTime")}</FormLabel>
-                <Select onValueChange={time => changeStart('start_time', time)} value={field.value}>
-                  <FormControl><SelectTrigger><SelectValue placeholder={t("eventFormLabels.selectTime")} /></SelectTrigger></FormControl>
-                  <SelectContent>{timeOptions().map((time) => (<SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>))}</SelectContent>
-                </Select>
+                <FormControl>
+                  <Input type="time" step={60} inputMode="numeric" required {...field}
+                    onChange={event => changeStart('start_time', event.target.value)} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -209,10 +214,9 @@ const EventForm = ({
             <FormField control={form.control} name="end_time" render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("eventFormLabels.endTime")}</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl><SelectTrigger><SelectValue placeholder={t("eventFormLabels.selectTime")} /></SelectTrigger></FormControl>
-                  <SelectContent>{timeOptions().map((time) => (<SelectItem key={time.value} value={time.value}>{time.label}</SelectItem>))}</SelectContent>
-                </Select>
+                <FormControl>
+                  <Input type="time" step={60} inputMode="numeric" required {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
