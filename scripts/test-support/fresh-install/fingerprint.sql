@@ -10,10 +10,10 @@ WITH items(kind, object, def) AS (
   SELECT 'policy', tablename || '.' || policyname, permissive || '|' || cmd || '|' || array_to_string(roles, ',') || '|' || coalesce(qual, '') || '|' || coalesce(with_check, '')
     FROM pg_policies WHERE schemaname = 'public'
   UNION ALL
-  SELECT 'function', p.oid::regprocedure::text, md5(pg_get_functiondef(p.oid)) || ' secdef=' || p.prosecdef || ' acl=' || coalesce(array_to_string(p.proacl, ','), 'default')
+  SELECT 'function', p.oid::regprocedure::text::text, md5(pg_get_functiondef(p.oid)) || ' secdef=' || p.prosecdef || ' acl=' || coalesce(array_to_string(p.proacl, ','), 'default')
     FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public' AND p.prokind IN ('f','p')
   UNION ALL
-  SELECT 'trigger', c.relname || '.' || t.tgname, pg_get_triggerdef(t.oid)
+  SELECT 'trigger', c.relname::text || '.' || t.tgname::text, pg_get_triggerdef(t.oid)
     FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE NOT t.tgisinternal AND (n.nspname = 'public' OR (n.nspname = 'auth' AND c.relname = 'users'))
   UNION ALL
