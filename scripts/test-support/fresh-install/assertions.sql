@@ -1,8 +1,14 @@
--- Fresh-install assertions for run-fresh-install.mjs. Throwaway database only.
+-- Fresh-install assertions for run-fresh-install.mjs and the disposable Supabase Docker test.
+-- Throwaway database only (see guard below).
 -- Fixture IDs below are synthetic and exist only inside the throwaway database.
 \set ON_ERROR_STOP 1
 DO $$ BEGIN
-  IF current_database() NOT LIKE 'nolto_fresh_%' THEN RAISE EXCEPTION 'assertions refuse database %', current_database(); END IF;
+  -- Allowed only in a nolto_fresh_* throwaway database, or where the disposable-container
+  -- wrapper has set the test-only marker nolto.fresh_install_guard=isolated-ci.
+  IF current_database() NOT LIKE 'nolto_fresh_%'
+     AND coalesce(current_setting('nolto.fresh_install_guard', true), '') <> 'isolated-ci' THEN
+    RAISE EXCEPTION 'assertions refuse database % (no isolation marker)', current_database();
+  END IF;
 END $$;
 
 -- 1. Schema shape: every public table has RLS; key objects exist.

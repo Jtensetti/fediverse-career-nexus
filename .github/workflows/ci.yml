@@ -53,7 +53,7 @@ jobs:
           sudo -u postgres psql -p "$port" -c "ALTER USER postgres PASSWORD 'ci-throwaway'"
           echo "PGPORT=$port" >> "$GITHUB_ENV"
       - name: Fresh-install replay
-        env: { PGHOST: 127.0.0.1, PGUSER: postgres, PGPASSWORD: ci-throwaway }
+        env: { NOLTO_FRESH_INSTALL_TEST: '1', PGHOST: 127.0.0.1, PGUSER: postgres, PGPASSWORD: ci-throwaway }
         run: node scripts/test-support/run-fresh-install.mjs
   container:
     runs-on: ubuntu-latest
