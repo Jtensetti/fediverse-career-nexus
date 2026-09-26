@@ -1,0 +1,150 @@
+name: Real Supabase fresh-install acceptance
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - supabase/migrations/**
+      - supabase/config.toml
+      - scripts/test-support/fresh-install/**
+      - .github/workflows/supabase-fresh-install.yml
+  pull_request:
+    paths:
+      - supabase/migrations/**
+      - supabase/config.toml
+      - scripts/test-support/fresh-install/**
+      - .github/workflows/supabase-fresh-install.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: real-supabase-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  supabase-start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_CLI_VERSION: 2.118.0
+      CI_PROJECT: nolto-fresh-ci
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - name: Prepare unlinked copy and an internal network with no container egress
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="$RUNNER_TEMP/$CI_PROJECT"
+          mkdir -p "$target/supabase"
+          cp supabase/config.toml "$target/supabase/config.toml"
+          cp -a supabase/migrations "$target/supabase/migrations"
+          # Only the disposable local project name changes. No production .env, link,
+          # credentials, seed rows or cached CLI state is copied.
+          TARGET="$target" node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const path = process.env.TARGET + '/supabase/config.toml';
+          const original = readFileSync(path, 'utf8');
+          if (!/^project_id\s*=\s*"[^"]+"/m.test(original)) throw new Error('Expected project_id');
+          writeFileSync(path, original.replace(/^project_id\s*=\s*"[^"]+"/m, `project_id = "${process.env.CI_PROJECT}"`));
+          NODE
+          docker network create --internal -o com.docker.network.bridge.host_binding_ipv4=127.0.0.1 "$CI_PROJECT"
+          echo "CI_WORKDIR=$target" >> "$GITHUB_ENV"
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" --version
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" start --help
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" status --help
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" stop --help
+      - name: Start the real local Supabase stack and replay the unmodified migration chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$CI_WORKDIR"
+          # Real Auth/Storage/Realtime and real pg_cron/pg_net. The internal network
+          # prevents migration-installed jobs reaching any production endpoint.
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" start --network-id "$CI_PROJECT"
+          container="supabase_db_$CI_PROJECT"
+          test "$(docker inspect -f '{{.Name}}' "$container")" = "/$container"
+          docker exec -u postgres "$container" psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "ALTER SYSTEM SET cron.launch_active_jobs = off" -c 'SELECT pg_reload_conf()'
+          npx --yes "supabase@$SUPABASE_CLI_VERSION" status --output json > "$RUNNER_TEMP/nolto-local-status.json"
+      - name: Check every recorded migration and run security/provisioning assertions on real PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readdirSync } from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          const files = readdirSync('supabase/migrations').filter(name => name.endsWith('.sql')).sort();
+          const expected = files.map(name => {
+            const match = /^(\d+)_.+\.sql$/.exec(name);
+            assert.ok(match, `Skipped migration filename: ${name}`);
+            return match[1];
+          });
+          assert.equal(new Set(expected).size, expected.length, 'Duplicate migration version');
+          const actual = execFileSync('docker', ['exec', '-u', 'postgres', `supabase_db_${process.env.CI_PROJECT}`,
+            'psql', '-X', '-U', 'postgres', '-d', 'postgres', '-At', '-v', 'ON_ERROR_STOP=1', '-c',
+            'SELECT version FROM supabase_migrations.schema_migrations ORDER BY version'], { encoding: 'utf8' }).trim().split('\n');
+          assert.deepEqual(actual, expected);
+          console.log(`PASS: all ${expected.length} project migrations recorded by the real Supabase CLI.`);
+          NODE
+          # The test-only marker permits these transactional assertions on Supabase's
+          # real database named postgres. No host/connection string is accepted here.
+          docker exec -u postgres -e PGOPTIONS=-cnolto.fresh_install_guard=isolated-ci -i "supabase_db_$CI_PROJECT" \
+            psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-support/fresh-install/assertions.sql
+      - name: Exercise real Auth account provisioning, password login and owner-profile access
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import { randomBytes } from 'node:crypto';
+          const config = JSON.parse(readFileSync(process.env.RUNNER_TEMP + '/nolto-local-status.json', 'utf8'));
+          const api = config.API_URL;
+          assert.ok(['http://127.0.0.1:54321', 'http://localhost:54321'].includes(api), 'Refusing a nonlocal Auth API');
+          assert.ok(config.ANON_KEY && config.SERVICE_ROLE_KEY, 'Local keys missing');
+          const password = randomBytes(24).toString('hex');
+          let userId;
+          async function call(path, key, body, token = key, method = body === undefined ? 'GET' : 'POST') {
+            const response = await fetch(api + path, { method, redirect: 'error', signal: AbortSignal.timeout(20000),
+              headers: { apikey: key, authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+              body: body === undefined ? undefined : JSON.stringify(body) });
+            if (!response.ok) throw new Error(`Local ${method} ${path.split('?')[0]} returned ${response.status}`);
+            return response.status === 204 ? null : response.json();
+          }
+          try {
+            // Confirmed fixture via the REAL local Auth service; never sends an email.
+            const created = await call('/auth/v1/admin/users', config.SERVICE_ROLE_KEY, {
+              email: 'fresh-ci@example.invalid', password, email_confirm: true,
+              user_metadata: { preferred_username: 'ci_fresh_user', fullname: 'CI Fixture' },
+            });
+            userId = created.id; assert.match(userId, /^[0-9a-f-]{36}$/i);
+            const session = await call('/auth/v1/token?grant_type=password', config.ANON_KEY, {
+              email: 'fresh-ci@example.invalid', password,
+            });
+            assert.equal(session.user.id, userId); assert.ok(session.access_token);
+            const profiles = await call(`/rest/v1/profiles?id=eq.${userId}&select=id,username`, config.ANON_KEY, undefined, session.access_token);
+            assert.equal(profiles.length, 1); assert.equal(profiles[0].id, userId); assert.equal(profiles[0].username, 'ci_fresh_user');
+            console.log('PASS: real Auth creates the profile through the migration-installed trigger, password login succeeds, and the owner can read their profile through PostgREST.');
+            appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              '## Real Supabase fresh-install acceptance\n\nThe real Supabase CLI started an unlinked disposable stack, applied every project migration, passed database security/provisioning assertions and a real Auth + PostgREST account smoke test. Container egress was blocked; no production credentials or data were used.\n\nThis does not test real email delivery, Android/Moshidon, external federation, or upgrade of an existing 2025 installation.\n');
+          } finally {
+            if (userId) await call('/auth/v1/admin/users/' + userId, config.SERVICE_ROLE_KEY, undefined, config.SERVICE_ROLE_KEY, 'DELETE');
+          }
+          NODE
+      - name: Stop only the disposable local stack
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${CI_WORKDIR:-}" ] && [ -f "$CI_WORKDIR/supabase/config.toml" ]; then
+            cd "$CI_WORKDIR"
+            npx --yes "supabase@$SUPABASE_CLI_VERSION" stop --no-backup
+          fi
+          docker network rm "$CI_PROJECT" || true
+          rm -f "$RUNNER_TEMP/nolto-local-status.json"
