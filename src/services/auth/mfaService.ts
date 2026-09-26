@@ -199,7 +199,9 @@ export const getAALevel = async (): Promise<'aal1' | 'aal2' | null> => {
     return null;
   }
   
-  return data.currentLevel;
+  if (data.currentLevel === 'aal1') return 'aal1';
+  if (data.currentLevel === 'aal2') return 'aal2';
+  return null;
 };
 
 /**

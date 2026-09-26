@@ -2,7 +2,7 @@
 // Auth, PostgREST, schema, roles, issuance RPC and token writes are REAL.
 // Only outbound email delivery is replaced with an in-memory sink.
 import { strict as assert } from 'node:assert';
-import { createClient } from 'npm:@supabase/supabase-js@2.89.0';
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import { createSignupHandler } from '../../supabase/functions/auth-signup/handler.ts';
 import { createConfirmHandler } from '../../supabase/functions/auth-confirm-email/handler.ts';
 import type { sendEmail } from '../../supabase/functions/_shared/email.ts';

@@ -7,7 +7,7 @@
 import { buildKeyId, getFederationBaseUrl } from "./federation-urls.ts";
 import { remoteFetch, fetchActorDocument } from "./remote-fetch.ts";
 const encodeBase64 = (buffer: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...(buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer))));
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 // Helper function to convert PEM to ArrayBuffer for private keys
 export function pemToPrivateKeyBuffer(pem: string): ArrayBuffer {

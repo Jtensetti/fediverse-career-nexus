@@ -1,7 +1,7 @@
 import { remoteFetch, fetchActorDocument, readBody } from "../_shared/remote-fetch.ts";
 import { linkRemoteReply, localObjectId, resolveKnownObject } from '../_shared/federated-interactions.ts';
 
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { functionPath, isLocalUrl, buildActorUrl, buildActivityId } from "../_shared/federation-urls.ts";
 import { verifySignature, fetchPublicKey } from "../_shared/http-signature.ts";
 

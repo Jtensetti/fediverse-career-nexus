@@ -1,5 +1,5 @@
 import { adminHandler } from "../_shared/user-auth.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

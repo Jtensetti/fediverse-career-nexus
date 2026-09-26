@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 export const serviceClient = (timeoutMs?: number) => createClient(
   Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,

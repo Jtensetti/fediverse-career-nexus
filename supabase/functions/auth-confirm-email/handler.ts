@@ -1,6 +1,6 @@
 import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
 import { z } from "npm:zod@3.25.76";
-import type { SupabaseClient } from "npm:@supabase/supabase-js@2.89.0";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.117.2";
 
 export interface ConfirmDeps { db?: () => Pick<SupabaseClient, "from" | "auth">; now?: () => Date }
 

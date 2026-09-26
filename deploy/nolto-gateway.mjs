@@ -69,7 +69,15 @@ export default {
       headers.delete("x-forwarded-host");
       headers.delete("x-forwarded-for");
       headers.delete("forwarded");
-      return fetch(target, { method: request.method, headers, body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body, redirect: "manual" });
+      // Protocol endpoints authenticate with bearer tokens or HTTP signatures.
+      // Browser cookies belong to Nolto's origin, not the Supabase upstream.
+      headers.delete("cookie");
+      const upstream = await fetch(target, { method: request.method, headers, body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body, redirect: "manual" });
+      // Keep the body streaming and preserve status/other headers. In particular,
+      // never relay Supabase's __cf_bm cookie (Domain=supabase.co) from nolto.social.
+      const response = new Response(upstream.body, upstream);
+      response.headers.delete("set-cookie");
+      return response;
     }
     if (mode === 'split') {
       let frontend;

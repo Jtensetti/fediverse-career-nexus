@@ -2,7 +2,7 @@ import { HttpError, requestBody } from "../_shared/user-auth.ts";
 import { confirmationLink } from "../_shared/federation-urls.ts";
 import { USERNAME_PATTERN, RESERVED_USERNAMES, escapeHtml } from "../_shared/actor-document.ts";
 import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
-import type { SupabaseClient } from "npm:@supabase/supabase-js@2.89.0";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.117.2";
 import { sendEmail as resendEmail } from "../_shared/email.ts";
 import { z } from "npm:zod@3.25.76";
 
