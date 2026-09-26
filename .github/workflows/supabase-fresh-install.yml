@@ -9,6 +9,7 @@ on:
       - supabase/functions/**
       - supabase/config.toml
       - scripts/test-support/fresh-install/**
+      - scripts/test-support/run-email-confirmation.ts
       - .github/workflows/supabase-fresh-install.yml
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
       - supabase/functions/**
       - supabase/config.toml
       - scripts/test-support/fresh-install/**
+      - scripts/test-support/run-email-confirmation.ts
       - .github/workflows/supabase-fresh-install.yml
 
 permissions:
@@ -55,10 +57,10 @@ jobs:
           if (!/^project_id\s*=\s*"[^"]+"/m.test(original)) throw new Error('Expected project_id');
           writeFileSync(path, original.replace(/^project_id\s*=\s*"[^"]+"/m, `project_id = "${process.env.CI_PROJECT}"`));
           NODE
-          # --internal suppressed the CLI's host-port connection on the hosted runner.
-          # Instead block all NEW outbound container connections, except within this
-          # disposable subnet; replies to connections from the host remain permitted.
-          # Rules must be installed successfully BEFORE any project container starts.
+          # --internal suppressed the CLI's host-port connection on this runner.
+          # Block all NEW outbound container connections instead, except within this
+          # disposable subnet; allow replies to connections initiated by the host.
+          # Rules must succeed BEFORE any project container starts.
           docker network create --subnet 172.30.92.0/24 \
             -o com.docker.network.bridge.name=br-nolto-ci \
             -o com.docker.network.bridge.host_binding_ipv4=127.0.0.1 "$CI_PROJECT"
@@ -70,7 +72,8 @@ jobs:
           sudo iptables -I DOCKER-USER 1 -i br-nolto-ci -j NOLTO-CI-EGRESS
           sudo iptables -I INPUT 1 -i br-nolto-ci -m conntrack --ctstate NEW -j REJECT
           docker run --rm --network "$CI_PROJECT" busybox:1.37.0 sh -c 'if nc -z -w 2 1.1.1.1 443; then echo "ERROR: container egress was not blocked"; exit 1; fi'
-          sudo iptables -nvL NOLTO-CI-EGRESS
+          # Verify the probe actually reached our reject rule, not just a missing command.
+          sudo iptables -nvxL NOLTO-CI-EGRESS | awk '$3 == "REJECT" { seen=1; packets=$1 } END { exit !(seen && packets > 0) }'
           echo "CI_WORKDIR=$target" >> "$GITHUB_ENV"
           npx --yes "supabase@$SUPABASE_CLI_VERSION" --version
           npx --yes "supabase@$SUPABASE_CLI_VERSION" start --help
@@ -81,7 +84,7 @@ jobs:
         run: |
           set -euo pipefail
           cd "$CI_WORKDIR"
-          # The firewall also blocks any historical cron/net job's production URL.
+          # The firewall blocks historical cron/net jobs from reaching production URLs.
           if npx --yes "supabase@$SUPABASE_CLI_VERSION" start --network-id "$CI_PROJECT" --debug > "$RUNNER_TEMP/nolto-start.log" 2>&1; then
             echo 'PASS: supabase start completed with normal health checks.'
           else
@@ -91,8 +94,11 @@ jobs:
           fi
           container="supabase_db_$CI_PROJECT"
           test "$(docker inspect -f '{{.Name}}' "$container")" = "/$container"
+          # Supabase's postgres role cannot ALTER SYSTEM for this cron parameter.
+          # Pause its own disposable jobs through pg_cron's supported management API.
           docker exec -u postgres "$container" psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 \
-            -c "ALTER SYSTEM SET cron.launch_active_jobs = off" -c 'SELECT pg_reload_conf()'
+            -c 'SELECT cron.alter_job(jobid, active := false) FROM cron.job'
+          test "$(docker exec -u postgres "$container" psql -X -U postgres -d postgres -At -c 'SELECT count(*) FROM cron.job WHERE active')" = 0
           npx --yes "supabase@$SUPABASE_CLI_VERSION" status --output json > "$RUNNER_TEMP/nolto-local-status.json"
       - name: Check all migration versions, security and provisioning on real PostgreSQL
         shell: bash
@@ -115,7 +121,6 @@ jobs:
           assert.deepEqual(actual, expected);
           console.log(`PASS: all ${expected.length} project migrations recorded by the real Supabase CLI.`);
           NODE
-          # Only the known disposable container receives this test-only marker.
           docker exec -u postgres -e PGOPTIONS=-cnolto.fresh_install_guard=isolated-ci -i "supabase_db_$CI_PROJECT" \
             psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-support/fresh-install/assertions.sql
       - name: Exercise real Auth provisioning, password login and owner-profile access
@@ -124,7 +129,7 @@ jobs:
           set -euo pipefail
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict';
-          import { readFileSync, appendFileSync } from 'node:fs';
+          import { readFileSync } from 'node:fs';
           import { randomBytes } from 'node:crypto';
           const config = JSON.parse(readFileSync(process.env.RUNNER_TEMP + '/nolto-local-status.json', 'utf8'));
           const api = config.API_URL;
@@ -150,12 +155,28 @@ jobs:
             const profiles = await call(`/rest/v1/profiles?id=eq.${userId}&select=id,username`, config.ANON_KEY, undefined, session.access_token);
             assert.equal(profiles.length, 1); assert.equal(profiles[0].id, userId); assert.equal(profiles[0].username, 'ci_fresh_user');
             console.log('PASS: real Auth provisioning, password login and owner profile access through PostgREST.');
-            appendFileSync(process.env.GITHUB_STEP_SUMMARY,
-              '## Real Supabase fresh-install acceptance\n\nA disposable unlinked Supabase stack applied every migration, passed security/provisioning assertions and a real Auth + PostgREST smoke test. Container egress was firewall-blocked before startup; no production credentials or data were used.\n\nThis does not test real email delivery, Android/Moshidon, external federation, or upgrade of an existing 2025 installation.\n');
           } finally {
             if (userId) await call('/auth/v1/admin/users/' + userId, config.SERVICE_ROLE_KEY, undefined, config.SERVICE_ROLE_KEY, 'DELETE');
           }
           NODE
+      - name: Follow actual signup email content through confirmation using real local Auth and SQL
+        env:
+          NOLTO_FRESH_INSTALL_TEST: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes deno@2.9.6 run --config deno.json \
+            --allow-read="$RUNNER_TEMP/nolto-local-status.json" \
+            --allow-env=NOLTO_FRESH_INSTALL_TEST,SITE_URL,EMAIL_LINK_ORIGINS,FEDERATION_DOMAIN,SUPABASE_URL,SUPABASE_ANON_KEY,SUPABASE_SERVICE_ROLE_KEY \
+            --allow-net=127.0.0.1:54321,localhost:54321 \
+            scripts/test-support/run-email-confirmation.ts "$RUNNER_TEMP/nolto-local-status.json"
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          ## Real Supabase acceptance
+
+          The disposable unlinked stack applied every project migration, passed security/provisioning assertions and real Auth/PostgREST login, and ran the actual signup/confirmation handlers with real SQL token issuance and consumption. Canonical-apex and explicitly permitted www links both completed confirmation and login; replay was idempotent.
+
+          Only outbound email delivery was replaced with an in-memory sink. Container egress was firewall-blocked before startup; no production credentials or data were used. This does not test inbox delivery, Android/Moshidon, external federation or upgrade of an existing 2025 installation.
+          SUMMARY
       - name: Stop only the disposable stack and remove its firewall rules
         if: always()
         shell: bash
