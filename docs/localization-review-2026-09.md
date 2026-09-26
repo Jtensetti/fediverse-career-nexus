@@ -76,10 +76,13 @@ Detta används bland annat i privata meddelanden, nyckelbackup, bildbearbetning,
 - Kryptering: avsändare/mottagare, fel lösenfras, meddelandebindning, förfalskning och skadad chiffertext.
 - Bildutkast: samtidiga uppladdningar, bildbyte och komprimeringsfel. Profilöverföring: mottagaradress, medgivna fält och popupens avsändare.
 
+Den fullständiga testsviten är också godkänd: **120 Node-tester och 58 Deno-tester**. Inloggningsflödets testdubbel har uppdaterats för att använda den riktiga `Trans`-komponenten, med kontroll av båda villkorslänkarna.
+
 Typkontroll, källkontroll, `git diff --check` och produktionsbygge är godkända. Den befintliga byggvarningen om stora JavaScript-paket kvarstår. Testerna använder mockade tjänster och skriver inte till en verklig databas.
 
 ```sh
 node --experimental-strip-types --test scripts/translations.test.mjs scripts/language-switch.test.mjs scripts/localization-controls.test.mjs scripts/company-address.test.mjs scripts/private-messages.test.mjs scripts/image-draft.test.mjs scripts/runtime-localization.test.mjs scripts/profile-import.test.mjs
+npm test
 npm run check:source
 npm run check:types
 npm run build
