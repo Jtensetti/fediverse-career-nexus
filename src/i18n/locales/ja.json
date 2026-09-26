@@ -1511,7 +1511,9 @@
     "visibilityControlDesc": "イベントの発見および参加を許可するユーザーを管理します",
     "createEvent": "イベントを作成",
     "endAfterStart": "終了時刻は開始時刻より後である必要があります",
-    "localTimezone": "すべての時刻はあなたのローカルタイムゾーンを使用します: {{timezone}}。"
+    "localTimezone": "すべての時刻はあなたのローカルタイムゾーンを使用します: {{timezone}}。",
+    "invalidTime": "有効な時刻を入力してください（HH:MM、00:00～23:59）",
+    "nonexistentLocalTime": "夏時間の切り替えのため、選択した日付にこの時刻は存在しません。別の時刻を選んでください。"
   },
   "jobFormLabels": {
     "jobTitle": "役職 *",

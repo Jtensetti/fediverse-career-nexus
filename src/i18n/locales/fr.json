@@ -1511,7 +1511,9 @@
     "visibilityControlDesc": "Contrôlez qui peut découvrir et participer à votre événement",
     "createEvent": "Créer un événement",
     "endAfterStart": "L'heure de fin doit être postérieure à l'heure de début",
-    "localTimezone": "Toutes les heures utilisent votre fuseau horaire local : {{timezone}}."
+    "localTimezone": "Toutes les heures utilisent votre fuseau horaire local : {{timezone}}.",
+    "invalidTime": "Saisissez une heure valide (HH:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "Cette heure n’existe pas à la date choisie en raison du changement d’heure. Choisissez une autre heure."
   },
   "jobFormLabels": {
     "jobTitle": "Titre du poste *",

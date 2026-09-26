@@ -1511,7 +1511,9 @@
     "visibilityControlDesc": "Styr vem som kan upptäcka och delta i ditt evenemang",
     "createEvent": "Skapa evenemang",
     "endAfterStart": "Sluttiden måste vara efter starttiden",
-    "localTimezone": "Alla tider visas i din lokala tidszon: {{timezone}}."
+    "localTimezone": "Alla tider visas i din lokala tidszon: {{timezone}}.",
+    "invalidTime": "Ange en giltig tid (TT:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "Den här tiden finns inte på det valda datumet på grund av sommartid. Välj en annan tid."
   },
   "jobFormLabels": {
     "jobTitle": "Jobbtitel *",

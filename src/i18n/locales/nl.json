@@ -1511,7 +1511,9 @@
     "visibilityControlDesc": "Bepaal wie uw evenement kan ontdekken en bijwonen",
     "createEvent": "Evenement aanmaken",
     "endAfterStart": "Eindtijd moet na de starttijd liggen",
-    "localTimezone": "Alle tijden gebruiken uw lokale tijdzone: {{timezone}}."
+    "localTimezone": "Alle tijden gebruiken uw lokale tijdzone: {{timezone}}.",
+    "invalidTime": "Voer een geldige tijd in (UU:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "Deze tijd bestaat niet op de gekozen datum vanwege de zomertijd. Kies een andere tijd."
   },
   "jobFormLabels": {
     "jobTitle": "Functietitel *",
