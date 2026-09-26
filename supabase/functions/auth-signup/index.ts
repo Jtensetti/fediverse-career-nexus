@@ -1,5 +1,5 @@
 import { HttpError, requestBody } from "../_shared/user-auth.ts";
-import { getSiteUrl } from "../_shared/federation-urls.ts";
+import { emailLinkOrigin } from "../_shared/federation-urls.ts";
 import { USERNAME_PATTERN, RESERVED_USERNAMES, escapeHtml } from "../_shared/actor-document.ts";
 import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
 import { sendEmail } from "../_shared/email.ts";
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     const { data: token, error: tokenError } = await db.rpc("request_email_verification", { target_email: parsed.data.email });
     if (tokenError) throw tokenError;
     if (token) {
-      const link = `${getSiteUrl()}/confirm-email?token=${encodeURIComponent(token)}`;
+      const link = `${emailLinkOrigin(req.headers.get("origin"))}/confirm-email?token=${encodeURIComponent(token)}`;
       try {
         await sendEmail(apiKey, {
           from: "Nolto <noreply@nolto.social>", to: parsed.data.email, subject: "Confirm your Nolto account",
