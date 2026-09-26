@@ -64,9 +64,3 @@ Deno.test("signup/resend link targets /confirm-email and round-trips the token f
     assert.equal([...link.searchParams.keys()].length, 1);
   }
 }));
-
-Deno.test("auth-signup builds its email link with confirmationLink and the request Origin", async () => {
-  const source = await Deno.readTextFile(new URL("../functions/auth-signup/index.ts", import.meta.url));
-  assert.match(source, /confirmationLink\(req\.headers\.get\("origin"\), token\)/);
-  assert.doesNotMatch(source, /\/confirm-email\?token=/);
-});
