@@ -18,7 +18,7 @@ CREATE SCHEMA extensions;
 CREATE EXTENSION pgcrypto WITH SCHEMA extensions;
 CREATE EXTENSION "uuid-ossp" WITH SCHEMA extensions;
 GRANT USAGE ON SCHEMA extensions, public TO anon, authenticated, service_role;
-ALTER DATABASE CURRENT SET search_path = "$user", public, extensions;
+DO $$ BEGIN EXECUTE format('ALTER DATABASE %I SET search_path = "$user", public, extensions', current_database()); END $$;
 SET search_path = "$user", public, extensions;
 
 CREATE SCHEMA auth;
