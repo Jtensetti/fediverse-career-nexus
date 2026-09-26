@@ -1,3 +1,4 @@
+import { UserFacingError, userFacingErrorMessage } from '@/lib/userFacingError';
 import Papa from "papaparse";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -110,13 +111,13 @@ export default function AccountMigrationSection() {
         body: { new_account_url: newAccountUrl.trim() }
       });
       if (response.error) {
-        throw new Error(response.error.message || t("migration.migrationFailed"));
+        throw new Error(t('migration.migrationFailed'));
       }
       setMovedTo(newAccountUrl.trim());
       toast.success(t("migration.migrationInitiated"));
     } catch (error: any) {
       console.error("Migration error:", error);
-      toast.error(error.message || t("migration.migrationFailed"));
+      toast.error(userFacingErrorMessage(error, 'migration.migrationFailed'));
     } finally {
       setIsMigrating(false);
     }
@@ -126,16 +127,16 @@ export default function AccountMigrationSection() {
     setIsImporting(true);
     setImportResult(null);
     try {
-      if (file.size > 1024 * 1024) throw new Error("CSV-filen får vara högst 1 MB.");
+      if (file.size > 1024 * 1024) throw new UserFacingError('runtimeErrors.csvSize');
       const parsed = Papa.parse<string[]>(await file.text(), { skipEmptyLines: true });
-      if (parsed.errors.length) throw new Error("CSV-filen kunde inte läsas.");
+      if (parsed.errors.length) throw new UserFacingError('runtimeErrors.csvRead');
       const accounts = [...new Set(parsed.data.map(row => row[0]?.trim()).filter(value => /^@?[^@\s]+@[^@\s]+$/.test(value || "")))];
-      if (!accounts.length || accounts.length > 5000) throw new Error("Välj en Mastodon-följlista med 1–5000 konton.");
+      if (!accounts.length || accounts.length > 5000) throw new UserFacingError('runtimeErrors.csvAccounts');
       let queued = 0, skipped = 0;
       for (let offset = 0; offset < accounts.length; offset += 20) {
         const csv = Papa.unparse([["Account address"], ...accounts.slice(offset, offset + 20).map(acct => [acct])]);
         const { data, error } = await supabase.functions.invoke("import-follows-csv", { body: { csv } });
-        if (error) throw new Error(`${queued} skickade, ${skipped} misslyckade. ${error.message}`);
+        if (error) throw new UserFacingError('runtimeErrors.csvInterrupted', { queued, skipped });
         queued += data.queued || 0; skipped += data.skipped || 0;
         setImportResult({ queued, skipped });
       }
@@ -143,7 +144,7 @@ export default function AccountMigrationSection() {
       else toast.success(t("migration.importSuccess", { count: queued }));
     } catch (err: any) {
       console.error("CSV import error:", err);
-      toast.error(err.message || t("migration.importFailed"));
+      toast.error(userFacingErrorMessage(err, 'migration.importFailed'));
     } finally {
       setIsImporting(false);
     }

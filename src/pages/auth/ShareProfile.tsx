@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,8 +10,9 @@ import { profileShareRequest, selectedProfile, type ProfileField } from '@/lib/p
 import { getOwnProfileForSharing } from '@/services/profile/profileSharingService';
 
 import { tx } from "@/i18n/tx";
-const labels: Record<ProfileField, string> = { name: 'Namn', headline: 'Yrkesrubrik', location: 'Ort', bio: 'Presentation', profileUrl: 'Profiladress', handle: 'Nolto-adress', email: 'E-post', phone: 'Telefon', website: 'Webbplats', experience: 'Arbetslivserfarenhet', education: 'Utbildning', skills: 'Kompetenser' };
+const labelKeys: Record<ProfileField, string> = { name: 'profileEdit.displayName', headline: 'profileEdit.headline', location: 'profileEdit.location', bio: 'profileEdit.bio', profileUrl: 'profileSharingLabels.profileUrl', handle: 'profileSharingLabels.handle', email: 'auth.email', phone: 'profileEdit.phone', website: 'companyForm.website', experience: 'profile.experience', education: 'profile.education', skills: 'profile.skills' };
 export default function ShareProfile() {
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const request = useMemo(() => { try { return profileShareRequest(window.location.search); } catch { return null; } }, []);
   const [selected, setSelected] = useState(new Set<ProfileField>(['name', 'headline', 'profileUrl']));
@@ -31,11 +34,11 @@ export default function ShareProfile() {
         <p className="text-sm text-muted-foreground">{tx("ui.shareProfile.baraDeUppgifterDu")}</p>
         {loading ? <p role="status">{tx("ui.shareProfile.kontrollerarInloggningen")}</p> : !user ? <div className="space-y-3"><Button asChild><a href="/auth" target="_blank" rel="noopener noreferrer">{tx("ui.shareProfile.loggaInPaNolto")}</a></Button><p className="text-sm">{tx("ui.shareProfile.loggaInIDen")}</p></div>
           : profile.isPending ? <p role="status">{tx("ui.shareProfile.hamtarDinProfil")}</p>
-          : profile.isError ? <><p role="alert">{profile.error.message}</p><Button variant="outline" onClick={() => void profile.refetch()}>{tx("ui.shareProfile.forsokIgen")}</Button></>
+          : profile.isError ? <><p role="alert">{userFacingErrorMessage(profile.error, 'ui.profileService.failedToLoadProfile')}</p><Button variant="outline" onClick={() => void profile.refetch()}>{tx("ui.shareProfile.forsokIgen")}</Button></>
           : <div className="space-y-4">{request.fields.map(field => {
             const value = profile.data?.[field];
             const preview = Array.isArray(value) ? value.map(item => typeof item === 'string' ? item : [item.title || item.degree, item.company || item.institution, item.start_date || item.start_year, item.end_date || item.end_year].filter(Boolean).join(' · ')).join('\n') : value;
-            return <div key={field} className="flex gap-3 rounded-lg border p-4"><Checkbox id={`share-${field}`} checked={selected.has(field)} disabled={!preview} onCheckedChange={checked => setSelected(previous => { const next = new Set(previous); if (checked) next.add(field); else next.delete(field); return next; })} /><div className="min-w-0"><Label htmlFor={`share-${field}`}>{labels[field]}</Label><p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">{preview || tx("ui.shareProfile.inteIfyllt")}</p></div></div>;
+            return <div key={field} className="flex gap-3 rounded-lg border p-4"><Checkbox id={`share-${field}`} checked={selected.has(field)} disabled={!preview} onCheckedChange={checked => setSelected(previous => { const next = new Set(previous); if (checked) next.add(field); else next.delete(field); return next; })} /><div className="min-w-0"><Label htmlFor={`share-${field}`}>{t(labelKeys[field])}</Label><p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">{preview || tx("ui.shareProfile.inteIfyllt")}</p></div></div>;
           })}</div>}
         <div className="flex gap-3"><Button variant="outline" onClick={() => send(true)}>{tx("ui.shareProfile.avbryt")}</Button><Button disabled={!profile.data || !user || !request.fields.some(field => selected.has(field) && profile.data?.[field])} onClick={() => send()}>{tx("ui.shareProfile.delaValdaUppgifter")}</Button></div>
       </>}

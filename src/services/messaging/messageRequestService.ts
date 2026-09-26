@@ -228,7 +228,7 @@ export async function canMessageDirectly(targetUserId: string): Promise<{
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session.session?.user) {
-      return { canMessage: false, reason: 'Not logged in' };
+      return { canMessage: false, reason: tx("ui.messageRequestService.duMasteVaraInloggad") };
     }
 
     const { data, error } = await supabase.rpc('can_message_user', {
@@ -239,11 +239,11 @@ export async function canMessageDirectly(targetUserId: string): Promise<{
     return {
       canMessage: permission?.can_message === true,
       needsRequest: permission?.reason === 'not_connected',
-      reason: permission?.can_message ? undefined : 'Mottagarens inställningar tillåter inte meddelanden nu',
+      reason: permission?.can_message ? undefined : tx("reviewUI.messagingRestricted"),
     };
   } catch (error) {
     console.error('Error checking message permissions:', error);
-    return { canMessage: false, reason: 'Fel vid kontroll av behörigheter' };
+    return { canMessage: false, reason: tx("reviewUI.messagePermissionFailed") };
   }
 }
 

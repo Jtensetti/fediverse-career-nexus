@@ -3,7 +3,7 @@ import BlueskySignIn from '@/components/auth/BlueskySignIn';
 import { consumeAppAuthorization } from '@/lib/appAuthorizationReturn';
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -524,7 +524,7 @@ export default function AuthPage() {
         </>}
       </CardContent></Card>
       <p className="mt-5 text-center text-xs leading-relaxed text-muted-foreground">
-        {t("auth.termsAgreement")} <Link to="/terms" className="underline">{t("auth.termsOfService")}</Link> {t("auth.and")} <Link to="/privacy" className="underline">{t("auth.privacyPolicy")}</Link>
+        <Trans i18nKey="auth.accountAgreement" components={{ terms: <Link to="/terms" className="underline" />, privacy: <Link to="/privacy" className="underline" /> }} />
       </p>
     </div>
   </main>;

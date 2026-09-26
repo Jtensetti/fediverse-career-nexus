@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { dateLocale } from "@/lib/locale";
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -183,7 +184,7 @@ export default function MessageConversation() {
     },
     onError: (error) => {
       console.error('Failed to send message:', error);
-       toast.error(tx("ui.messageConversation.kundeInteSkickaMeddelande"), { description: error instanceof Error ? error.message : tx("common.retry") });
+       toast.error(tx("ui.messageConversation.kundeInteSkickaMeddelande"), { description: userFacingErrorMessage(error, 'ui.messageConversation.kundeInteSkickaMeddelande') });
     }
   });
 
@@ -202,8 +203,8 @@ export default function MessageConversation() {
       requestAnimationFrame(() => {
         if (container) container.scrollTop = previousTop + container.scrollHeight - previousHeight;
       });
-    } catch {
-      toast.error(tx("ui.messageConversation.kundeInteLasaAldre"));
+    } catch (error) {
+      toast.error(userFacingErrorMessage(error, "ui.messageConversation.kundeInteLasaAldre"));
     } finally { setLoadingOlder(false); }
   }
 
@@ -312,7 +313,7 @@ export default function MessageConversation() {
         <Navbar />
         <div className="flex-grow container max-w-4xl mx-auto px-4 py-10">
           <div className="text-center py-8">
-            <p className="text-red-500">{tx("ui.messageConversation.felVidLaddningAv")}</p>
+            <p className="text-red-500">{userFacingErrorMessage(error, "ui.messageConversation.felVidLaddningAv")}</p>
             <Button
               variant="outline"
               className="mt-4"

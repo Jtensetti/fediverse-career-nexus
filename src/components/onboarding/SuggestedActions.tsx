@@ -170,7 +170,7 @@ const SuggestedActions = ({ onCreatePost, refreshKey = 0 }: { onCreatePost: () =
           {visibleActions.slice(0, 3).map((action) => (
             <div
               key={action.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
+              className="flex flex-wrap items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
             >
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <action.icon className="h-5 w-5 text-primary" />
@@ -179,7 +179,7 @@ const SuggestedActions = ({ onCreatePost, refreshKey = 0 }: { onCreatePost: () =
                 <p className="font-medium text-foreground text-sm">{t(action.titleKey)}</p>
                 <p className="text-xs text-muted-foreground truncate">{t(action.descriptionKey)}</p>
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex w-full sm:w-auto items-center justify-end gap-1">
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -190,12 +190,12 @@ const SuggestedActions = ({ onCreatePost, refreshKey = 0 }: { onCreatePost: () =
                   <X className="h-4 w-4" />
                 </Button>
                 {action.id === "first-post" ? (
-                  <Button size="sm" variant="secondary" onClick={onCreatePost} aria-label={t(action.titleKey)}>
-                    {t("suggestions.doIt")}
+                  <Button size="sm" variant="secondary" className="h-auto min-h-8 whitespace-normal" onClick={onCreatePost} aria-label={t(action.titleKey)}>
+                    {t(action.titleKey)}
                   </Button>
                 ) : (
-                  <Button asChild size="sm" variant="secondary">
-                    <Link to={action.link} aria-label={t(action.titleKey)}>{t("suggestions.doIt")}</Link>
+                  <Button asChild size="sm" variant="secondary" className="h-auto min-h-8 whitespace-normal">
+                    <Link to={action.link} aria-label={t(action.titleKey)}>{t(action.titleKey)}</Link>
                   </Button>
                 )}
               </div>

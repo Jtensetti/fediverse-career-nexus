@@ -8,6 +8,7 @@ import CompanyFollowButton from "./CompanyFollowButton";
 import CompanyImageUpload from "./CompanyImageUpload";
 import type { Company } from "@/services/company/companyService";
 import type { CompanyRoleEnum } from "@/services/company/companyRolesService";
+import { getCompanySizeLabel, getOrganisationTypeLabel } from "@/lib/companyOptions";
 
 interface CompanyHeaderProps {
   company: Company;
@@ -125,7 +126,7 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
           {company.industry && (
             <Badge variant="secondary" className="font-normal">
               <Building2 className="h-3.5 w-3.5 mr-1" />
-              {company.industry}
+              {getOrganisationTypeLabel(company.industry, t)}
             </Badge>
           )}
           {company.location && (
@@ -165,7 +166,7 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
           </div>
           {company.size && (
             <div className="text-muted-foreground">
-              <span className="font-medium text-foreground">{company.size}</span> {t("companyHeader.companySize", "company size")}
+              <span className="font-medium text-foreground">{getCompanySizeLabel(company.size, t)}</span>
             </div>
           )}
         </div>

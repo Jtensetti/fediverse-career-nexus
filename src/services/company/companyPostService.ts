@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { notifyPublication } from '@/services/moderation/publicationStatus';
 import type { UploadedPostImage } from "@/lib/imageDraft";
 import { requestContentDeletion } from "@/services/privacy/deletionService";
@@ -115,7 +116,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
 
     if (postError) {
       const { data: existing } = await supabase.from('ap_objects').select('id,moderation_status').eq('id', postId).eq('company_id', postData.companyId).maybeSingle();
-      if (existing) { notifyPublication(existing.moderation_status || 'published', 'Inlägget skapades!'); return existing.id; }
+      if (existing) { notifyPublication(existing.moderation_status || 'published', tx('reviewUI.postCreated')); return existing.id; }
       console.error('Post creation error:', postError);
       toast.error(tx("ui.companyPostService.failedToCreatePost"));
       return null;
@@ -127,7 +128,7 @@ export async function createCompanyPost(postData: CreateCompanyPostData): Promis
       .update({ last_post_at: new Date().toISOString() })
       .eq('id', postData.companyId);
 
-    notifyPublication(post.moderation_status, "Inlägget skapades!");
+    notifyPublication(post.moderation_status, tx('reviewUI.postCreated'));
     return post.id;
 
   } catch (error) {
@@ -217,7 +218,7 @@ export async function deleteCompanyPost(postId: string, companyId: string): Prom
   }
 
   try { await requestContentDeletion('post', postId); }
-  catch (error) { toast.error(error instanceof Error ? error.message : 'Kunde inte dölja inlägget'); return false; }
+  catch (error) { toast.error(userFacingErrorMessage(error, 'ui.moderationService.kundeInteRaderaInnehall')); return false; }
   toast.success(tx("ui.companyPostService.inlaggetArDoltOch"));
   return true;
 }

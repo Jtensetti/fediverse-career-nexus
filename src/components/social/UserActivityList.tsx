@@ -51,18 +51,18 @@ function ActivityRow({ activity }: { activity: ActivityItem }) {
       case 'boost':
         return {
           icon: <Repeat2 className="h-4 w-4 text-primary" />,
-          text: 'delade ett inlägg'
+          text: tx('reviewUI.activityBoost')
         };
       case 'quote':
         return {
           icon: <Quote className="h-4 w-4 text-accent-foreground" />,
-          text: 'citerade ett inlägg'
+          text: tx('reviewUI.activityQuote')
         };
       case 'like':
       default:
         return {
           icon: <Heart className="h-4 w-4 text-destructive" />,
-          text: 'gillade ett inlägg'
+          text: tx('reviewUI.activityLike')
         };
     }
   };
@@ -72,7 +72,7 @@ function ActivityRow({ activity }: { activity: ActivityItem }) {
 
   const contentPreview = activity.originalPost.content
     ? activity.originalPost.content.replace(/<[^>]*>/g, '').slice(0, 60) + (activity.originalPost.content.length > 60 ? '...' : '')
-    : 'ett inlägg';
+    : tx('posts.post');
 
   return (
     <div className="flex items-start gap-3 py-2 border-b border-border last:border-0">

@@ -182,7 +182,7 @@ export default function Notifications() {
               {tx("ui.notifications.aviseringar")}
               {unreadCount > 0 && (
                 <span className="text-sm font-normal text-muted-foreground">
-                  ({unreadCount}{' '}{tx("ui.notifications.olasta")}
+                  {tx("ui.notifications.unreadCount", { total: unreadCount })}
                 </span>
               )}
             </CardTitle>

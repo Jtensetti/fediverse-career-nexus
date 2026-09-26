@@ -1,3 +1,4 @@
+import { UserFacingError } from '@/lib/userFacingError';
 import { dateLocale } from "@/lib/locale";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +21,7 @@ import { RetainedReportReview } from './RetainedReportReview';
 
 import { tx } from "@/i18n/tx";
 const contentTypeLabels: Record<string, string> = {
-  post: "inlägg", article: "artikel", user: "användare", job: "jobb", event: "evenemang",
+  post: 'contentCare.kind_post', article: 'contentCare.kind_article', user: 'moderation.user', job: 'jobs.title', event: 'nav.events', company: 'nav.companies', comment: 'contentCare.kind_comment',
 };
 
 export function FlaggedContentList() {
@@ -35,15 +36,15 @@ export function FlaggedContentList() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ reportId, status }: { reportId: string; status: "pending" | "reviewed" | "resolved" | "dismissed" }) => {
-      if (!await updateReportStatus(reportId, status)) throw new Error('Ärendets status kunde inte sparas');
+      if (!await updateReportStatus(reportId, status)) throw new UserFacingError('ui.moderationService.kundeInteUppdateraRapport');
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["flagged-content"] }); queryClient.invalidateQueries({ queryKey: ["moderation-stats"] }); },
   });
 
   const deleteContentMutation = useMutation({
     mutationFn: async ({ contentType, contentId, reportId }: { contentType: string; contentId: string; reportId: string }) => {
-      if (!await deleteFlaggedContent(contentType, contentId)) throw new Error('Raderingen misslyckades');
-      if (!await updateReportStatus(reportId, "resolved", "delete")) throw new Error('Ärendets status kunde inte sparas');
+      if (!await deleteFlaggedContent(contentType, contentId)) throw new UserFacingError('ui.moderationService.kundeInteRaderaInnehall');
+      if (!await updateReportStatus(reportId, "resolved", "delete")) throw new UserFacingError('ui.moderationService.kundeInteUppdateraRapport');
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["flagged-content"] }); queryClient.invalidateQueries({ queryKey: ["moderation-stats"] }); },
   });
@@ -70,7 +71,7 @@ export function FlaggedContentList() {
   };
 
   const statusLabels: Record<string, string> = {
-    pending: "Väntande", reviewed: "Granskad", resolved: "Löst", dismissed: "Avfärdad",
+    pending: tx('ui.flaggedContentList.vantande'), reviewed: tx('ui.flaggedContentList.granskade'), resolved: tx('ui.flaggedContentList.losta'), dismissed: tx('ui.flaggedContentList.avfardade'),
   };
 
   const handleBanUser = (report: FlaggedContent) => {
@@ -99,7 +100,7 @@ export function FlaggedContentList() {
       </div>
 
       {!reports || reports.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground"><Flag className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>{tx("ui.flaggedContentList.inga")}{' '}{statusFilter !== "all" ? (statusLabels[statusFilter]?.toLowerCase() || "") + " " : ""}{tx("ui.flaggedContentList.rapporterHittades")}</p></CardContent></Card>
+        <Card><CardContent className="py-8 text-center text-muted-foreground"><Flag className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>{tx("reviewUI.noReports")}</p></CardContent></Card>
       ) : (
         <div className="space-y-4">
           {reports.map((report) => (
@@ -109,12 +110,12 @@ export function FlaggedContentList() {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8"><AvatarImage src={report.reporter?.avatar_url || undefined} /><AvatarFallback>{report.reporter?.username?.charAt(0).toUpperCase() || "?"}</AvatarFallback></Avatar>
                     <div>
-                      <CardTitle className="text-sm">{tx("ui.flaggedContentList.rapporteradAv")}{report.reporter?.username || "okänd"}</CardTitle>
+                      <CardTitle className="text-sm">{tx("ui.flaggedContentList.rapporteradAv")}{report.reporter?.username || tx("common.unknown")}</CardTitle>
                       <CardDescription className="text-xs">{formatDistanceToNow(new Date(report.created_at), { addSuffix: true, locale: dateLocale() })}</CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className={getContentTypeColor(report.content_type)}>{contentTypeLabels[report.content_type] || report.content_type}</Badge>
+                    <Badge className={getContentTypeColor(report.content_type)}>{tx(contentTypeLabels[report.content_type] || 'common.unknown')}</Badge>
                     <Badge className={getStatusColor(report.status)}>{statusLabels[report.status] || report.status}</Badge>
                   </div>
                 </div>
@@ -154,7 +155,7 @@ export function FlaggedContentList() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>{tx("ui.flaggedContentList.taBortDetta")}{' '}{contentTypeLabels[report.content_type] || report.content_type}?</AlertDialogTitle>
+                          <AlertDialogTitle>{tx("reviewUI.deleteContentQuestion")}</AlertDialogTitle>
                           <AlertDialogDescription>{['post', 'article'].includes(report.content_type)
                             ? tx("ui.flaggedContentList.innehalletDoljsDirektOch")
                             : tx("ui.flaggedContentList.dettaTarPermanentBort")}</AlertDialogDescription>

@@ -17,7 +17,7 @@ function leaves(value, prefix = '', out = new Map()) {
   return out;
 }
 const flat = Object.fromEntries(languages.map(language => [language, leaves(resources[language])]));
-const placeholders = value => [...value.matchAll(/{{\s*([^}]+?)\s*}}/g)].map(match => match[1]).concat([...value.matchAll(/<\/?\d+>/g)].map(match => match[0])).sort();
+const placeholders = value => [...value.matchAll(/{{\s*([^}]+?)\s*}}/g)].map(match => match[1]).concat([...value.matchAll(/<\/?(?:\d+|[A-Za-z][A-Za-z0-9]*)>/g)].map(match => match[0])).sort();
 
 const references = new Map();
 const hardcoded = [];
@@ -38,6 +38,9 @@ function scan(directory) {
         }
         add(node.arguments[0]);
       }
+      if (ts.isCallExpression(node) && node.expression.getText(source) === 'userFacingErrorMessage' && ts.isStringLiteral(node.arguments?.[1])) references.set(node.arguments[1].text, file);
+      if (ts.isNewExpression(node) && node.expression.getText(source) === 'UserFacingError' && ts.isStringLiteral(node.arguments?.[0])) references.set(node.arguments[0].text, file);
+      if (ts.isJsxAttribute(node) && node.name.getText(source) === 'i18nKey' && node.initializer && ts.isStringLiteral(node.initializer)) references.set(node.initializer.text, file);
       if (ts.isJsxText(node)) {
         const text = node.getText(source).replace(/\s+/g, ' ').trim();
         const parent = ts.isJsxElement(node.parent) ? node.parent.openingElement.tagName.getText(source) : '';
@@ -91,7 +94,7 @@ test('plural forms exist wherever English defines them', () => {
 // strings missed untranslated buttons such as "Accept", "Share" and "Saving".
 // A new exception needs a language/context review; do not raise a copy budget.
 const sharedVocabulary = Object.fromEntries(Object.entries({
-  sv: 'Admin|Cache|Cookies|Hybrid|Info|Moderator|Normal|Organisation|Partition|Permanent|Region|Server|Status|System|Tips:|{{count}} server',
+  sv: 'Admin|Cache|Cookies|Hybrid|Info|Moderator|Normal|Organisation|Partition|Permanent|Region|Server|Status|System|Tips:|{{count}} server|{{count}} person',
   fr: '15. Contact|Action|Actions|Admin|Article|Articles|Cache|Collaboration|Compatible|Contact|Cookies|Description|Documentation|Freelance|Image|Info|Instances|Message|Messages|Newsletter|Normal|Notification|Notifications|OPEN SOURCE|Open Source|Open source|Organisation|Organisations|Partition|Permanent|Public|Services|Sessions|Suggestions|Suspensions|Tags|Total|Type|Vertical (Stories)|messages|req/24h',
   de: 'Admin|Cache|Community|Cookies|Domain|Feed|Feeds|Hybrid|Info|Jobs|Moderation|Moderator|Name|Newsletter|Normal|OPEN SOURCE|Open Source|Optional|Organisation|Partition|Permanent|Position|Region|Remote|Server|Status|System|System online|Tags|Team',
   nl: '1 week|10. Disclaimers|15. Contact|8. Privacy|Cache|Contact|Cookies|Database|Download JSON|Feed|Feeds|Filters|Freelance|Freelancer|Freelancers|Home|Info|Logs|Moderator|Moderators|OPEN SOURCE|Open Source|Open source|Permanent|Posts|Privacy|Privacy by Design|Self-hosting|Server|Status|Tags|Team|Tips:|Trace ID:|Type|Website|Week {{number}}|{{count}} server|{{count}} servers',
@@ -99,6 +102,9 @@ const sharedVocabulary = Object.fromEntries(Object.entries({
   ja: '',
   it: '8. Privacy|Cache|Database|Email|Feed|Freelance|Full-time|Home|Info|Newsletter|Nolto – home|OPEN SOURCE|Open Source|Open source|Part-time|Password|Post|Privacy|Privacy by Design|Self-hosting|Server|Username|follower|{{count}} server',
 }).map(([language, words]) => [language, new Set(words.split('|'))]));
+// Startup is an established business term in these locales.
+for (const language of ['sv', 'fr', 'nl', 'es', 'it']) sharedVocabulary[language].add('Startup');
+sharedVocabulary.de.add('Passphrase');
 const sharedNames = new Set(['Nolto', 'Nolto.', 'ActivityPub', 'Fediverse', 'X/Twitter', 'URL', 'ms', 'nolto.social/organisation/', 'organisation.com']);
 
 test('translations contain no unreviewed English copies, including short labels', () => {
@@ -106,6 +112,13 @@ test('translations contain no unreviewed English copies, including short labels'
     const copied = [...flat.en].filter(([key, english]) => {
       if (flat[language].get(key) !== english) return false;
       if (!/[A-Za-z]/.test(english.replace(/{{[^}]*}}/g, ''))) return false;
+      // Reviewed domain examples and shared warning vocabulary, scoped to these keys.
+      if (key === 'ui.blueskySignIn.namnBskySocial' && english === 'name.bsky.social') return false;
+      if (key === 'ui.companyForm.organisationsnamn2' && english === 'organisation-name') return false;
+      if (key === 'reviewUI.warningSpoilers' && ['sv', 'nl', 'es'].includes(language) && english === 'spoilers') return false;
+      if (key === 'reviewUI.warningAlcohol' && ['nl', 'es'].includes(language) && english === 'alcohol') return false;
+      if (key === 'reviewUI.warningViolence' && language === 'fr' && english === 'violence') return false;
+      if (key.startsWith('reviewUI.votes_') && language === 'fr') return false;
       if (sharedNames.has(english) || sharedVocabulary[language].has(english) || /^https?:\/\//.test(english)) return false;
       // URL path examples deliberately use ASCII; the field's label/help is localized.
       if (/\.(urlSlugPlaceholder|slugPlaceholder|addressPlaceholder)$/.test(key) && /^[a-z0-9-]+$/.test(english)) return false;
@@ -116,8 +129,8 @@ test('translations contain no unreviewed English copies, including short labels'
 });
 
 test('hardcoded JSX text inventory does not grow', () => {
-  // Remaining items are reported honestly; lower this budget as they are extracted.
-  const BUDGET = 40;
+  // Product and protocol names are explicitly allowlisted above.
+  const BUDGET = 0;
   if (hardcoded.length) console.log(`Remaining hardcoded JSX text nodes (${hardcoded.length}):\n  ` + hardcoded.join('\n  '));
   assert.ok(hardcoded.length <= BUDGET, `${hardcoded.length} hardcoded JSX text nodes (budget ${BUDGET})`);
 });

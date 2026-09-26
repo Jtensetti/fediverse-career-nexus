@@ -1,3 +1,4 @@
+import { UserFacingError } from '@/lib/userFacingError';
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Ban, Search, User } from "lucide-react";
@@ -60,7 +61,7 @@ export function UserBanDialog({ open, onOpenChange, userId, onSuccess }: UserBan
 
   const banMutation = useMutation({
     mutationFn: () => {
-      if (!selectedUser) throw new Error("Ingen användare vald");
+      if (!selectedUser) throw new UserFacingError('runtimeErrors.selectUser');
       const days = duration === "permanent" ? undefined : parseInt(duration);
       return banUser(selectedUser.id, reason, days);
     },

@@ -86,7 +86,7 @@ export default function DomainModeration() {
       })) : [];
       setDomains(domainEntries);
     } catch (err) {
-      setError("Kunde inte ladda domänmoderationsdata");
+      setError(tx("moderation.loadRulesFailed"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -98,12 +98,12 @@ export default function DomainModeration() {
     setSuccess(null);
     
     if (!host) {
-      setError("Domänvärd krävs");
+      setError(tx("moderation.domainRequired"));
       return;
     }
     
     if (!reason) {
-      setError("Anledning krävs");
+      setError(tx("moderation.reasonRequired"));
       return;
     }
     
@@ -111,17 +111,17 @@ export default function DomainModeration() {
       const result = await updateDomainModeration(host, status, reason);
       
       if (result.success) {
-        setSuccess(`Domän ${host} har lagts till i ${status}-listan`);
+        setSuccess(tx("moderation.statusUpdatedDetails", { target: host, status: getStatusLabel(status) }));
         setHost("");
         setReason("");
         fetchDomains();
         
-        toast(tx("ui.domainModeration.domanTillagd"), { description: `${host} har lagts till i ${status}-listan` });
+        toast(tx("ui.domainModeration.domanTillagd"), { description: tx("moderation.statusUpdatedDetails", { target: host, status: getStatusLabel(status) }) });
       } else {
-        setError("Kunde inte lägga till domän");
+        setError(tx("moderation.saveRuleFailed"));
       }
     } catch (err) {
-      setError("Ett fel uppstod vid tillägg av domän");
+      setError(tx("moderation.saveRuleFailed"));
       console.error(err);
     }
   };
@@ -140,7 +140,7 @@ export default function DomainModeration() {
         setIsEditDialogOpen(false);
         fetchDomains();
         
-        toast(tx("ui.domainModeration.domanUppdaterad"), { description: `${currentDomain.host} har uppdaterats till ${editStatus}` });
+        toast(tx("ui.domainModeration.domanUppdaterad"), { description: tx("moderation.statusUpdatedDetails", { target: currentDomain.host, status: getStatusLabel(editStatus) }) });
       } else {
         toast.error(tx("ui.domainModeration.uppdateringMisslyckades"), { description: tx("ui.domainModeration.kundeInteUppdateraDomanstatus") });
       }
@@ -160,7 +160,7 @@ export default function DomainModeration() {
         setIsDeleteDialogOpen(false);
         fetchDomains();
         
-        toast(tx("ui.domainModeration.domanBorttagen"), { description: `${domainToDelete} har tagits bort från moderering` });
+        toast(tx("ui.domainModeration.domanBorttagen"), { description: tx("moderation.entryRemovedDetails", { target: domainToDelete }) });
       } else {
         toast.error(tx("ui.domainModeration.borttagningMisslyckades"), { description: tx("ui.domainModeration.kundeInteTaBort") });
       }
@@ -183,6 +183,8 @@ export default function DomainModeration() {
     setDomainToDelete(host);
     setIsDeleteDialogOpen(true);
   };
+
+  const getStatusLabel = (value: string) => tx(value === "blocked" ? "ui.domainModeration.blockerad" : value === "probation" ? "ui.domainModeration.provotid" : "ui.domainModeration.normal");
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -322,7 +324,7 @@ export default function DomainModeration() {
           <DialogHeader>
             <DialogTitle>{tx("ui.domainModeration.redigeraDomanmoderering")}</DialogTitle>
             <DialogDescription>
-              {tx("ui.domainModeration.uppdateraModereringsinstallningarFor")}{' '}{currentDomain?.host}
+              {tx("moderation.editRuleDescription", { target: currentDomain?.host })}
             </DialogDescription>
           </DialogHeader>
           
@@ -369,7 +371,7 @@ export default function DomainModeration() {
           <DialogHeader>
             <DialogTitle>{tx("ui.domainModeration.bekraftaBorttagning")}</DialogTitle>
             <DialogDescription>
-              {tx("ui.domainModeration.arDuSakerPa")}{' '}{domainToDelete}{' '}{tx("ui.domainModeration.franModerering")}
+              {tx("moderation.removeRuleDescription", { target: domainToDelete })}
             </DialogDescription>
           </DialogHeader>
           

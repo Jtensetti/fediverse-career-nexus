@@ -5,6 +5,7 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
 import { useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 const PrivatePreviewImage = Image.extend({
@@ -49,17 +50,21 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
   {
     value,
     onChange,
-    placeholder = "Skriv din artikel...",
+    placeholder,
     className,
     onFocus,
     onBlur,
     onSelectionChange,
     id,
-    label = "Artikelinnehåll",
+    label,
   },
   ref
 ) {
+  const { t } = useTranslation();
   const isUpdatingRef = useRef(false);
+  const editorPlaceholder = placeholder ?? t("articleForm.editorPlaceholder");
+  const placeholderRef = useRef(editorPlaceholder);
+  placeholderRef.current = editorPlaceholder;
 
   const editor = useEditor({
     extensions: [
@@ -76,7 +81,7 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
         },
       }),
       Placeholder.configure({
-        placeholder,
+        placeholder: () => placeholderRef.current,
         emptyEditorClass: "is-editor-empty",
       }),
       PrivatePreviewImage.configure({
@@ -89,7 +94,7 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
       attributes: {
         ...(id ? { id } : {}),
         role: "textbox",
-        "aria-label": label,
+        "aria-label": label || t("articleForm.editorLabel"),
         "aria-multiline": "true",
         class: cn(
           "prose prose-sm sm:prose dark:prose-invert max-w-none",
@@ -115,6 +120,11 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
       onSelectionChange?.(from !== to);
     },
   });
+
+  // Refresh placeholder decorations on language changes without replacing the editor or its draft.
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) editor.view.dispatch(editor.state.tr);
+  }, [editor, editorPlaceholder]);
 
   // Sync external value changes
   useEffect(() => {

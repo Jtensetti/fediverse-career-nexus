@@ -331,7 +331,11 @@ const ConnectionsPage = () => {
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2">{suggestion.headline}</p>
                       <p className="text-xs text-primary/80 mt-1 font-medium">
-                        {suggestion.suggestionReason || `${suggestion.mutualConnections} ${t("connections.mutualConnections", "mutual connections")}`}
+                        {suggestion.mutualConnections > 0
+                          ? t("reviewUI.suggestionMutual", { count: suggestion.mutualConnections })
+                          : suggestion.suggestionLocation
+                            ? t("reviewUI.suggestionLocation", { location: suggestion.suggestionLocation })
+                            : t("suggestions.title")}
                       </p>
                     </div>
                   </div>

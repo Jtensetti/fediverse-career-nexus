@@ -17,11 +17,11 @@ export default function ConfirmStep({ result, onClose }: ConfirmStepProps) {
   };
 
   const summaryItems = [
-    { icon: User, label: tx("ui.confirmStep.profil"), value: imported.profile ? 'Uppdaterad' : 'Hoppades över', active: imported.profile },
-    { icon: Briefcase, label: tx("ui.confirmStep.arbetslivserfarenhet"), value: `${imported.experiences} tillagda`, active: imported.experiences > 0 },
-    { icon: GraduationCap, label: tx("ui.confirmStep.utbildning"), value: `${imported.education} tillagda`, active: imported.education > 0 },
-    { icon: Sparkles, label: tx("ui.confirmStep.kompetenser"), value: `${imported.skills} tillagda`, active: imported.skills > 0 },
-    { icon: FileText, label: tx("ui.confirmStep.artiklar"), value: `${imported.articles} utkast`, active: imported.articles > 0 },
+    { icon: User, label: tx("ui.confirmStep.profil"), value: imported.profile ? tx("ui.confirmStep.updated") : tx("ui.confirmStep.skipped"), active: imported.profile },
+    { icon: Briefcase, label: tx("ui.confirmStep.arbetslivserfarenhet"), value: tx("ui.confirmStep.addedTotal", { total: imported.experiences }), active: imported.experiences > 0 },
+    { icon: GraduationCap, label: tx("ui.confirmStep.utbildning"), value: tx("ui.confirmStep.addedTotal", { total: imported.education }), active: imported.education > 0 },
+    { icon: Sparkles, label: tx("ui.confirmStep.kompetenser"), value: tx("ui.confirmStep.addedTotal", { total: imported.skills }), active: imported.skills > 0 },
+    { icon: FileText, label: tx("ui.confirmStep.artiklar"), value: tx("ui.confirmStep.draftTotal", { total: imported.articles }), active: imported.articles > 0 },
   ];
 
   return (
@@ -31,7 +31,7 @@ export default function ConfirmStep({ result, onClose }: ConfirmStepProps) {
           <>
             <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center"><Check className="h-8 w-8 text-primary" /></div>
             <h3 className="text-lg font-semibold">{tx("ui.confirmStep.importLyckades")}</h3>
-            <p className="text-muted-foreground mt-1">{getTotalImported()}{' '}{tx("ui.confirmStep.objektImporteradesTillDin")}</p>
+            <p className="text-muted-foreground mt-1">{tx("ui.confirmStep.importedTotal", { total: getTotalImported() })}</p>
           </>
         ) : (
           <>

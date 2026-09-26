@@ -26,7 +26,7 @@ export const subscribeToNewsletter = async (email: string): Promise<NewsletterSu
       .single();
     
     if (error) {
-      toast.error(`Fel vid prenumeration: ${error.message}`);
+      toast.error(tx('ui.newsletterService.kundeIntePrenumereraForsok'));
       return null;
     }
     
@@ -52,7 +52,7 @@ export const unsubscribeFromNewsletter = async (email: string): Promise<Newslett
       .single();
     
     if (error) {
-      toast.error(`Fel vid avprenumeration: ${error.message}`);
+      toast.error(tx('ui.newsletterService.kundeInteAvprenumereraForsok'));
       return null;
     }
     

@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { blockUser } from "@/services/moderation/blockService";
 
-import { tx } from "@/i18n/tx";
+import { useTranslation } from "react-i18next";
 interface BlockUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -27,9 +27,10 @@ export default function BlockUserDialog({
   open,
   onOpenChange,
   userId,
-  userName = "denna användare",
+  userName,
   onBlocked,
 }: BlockUserDialogProps) {
+  const { t: tx } = useTranslation();
   const [reason, setReason] = useState("");
   const [isBlocking, setIsBlocking] = useState(false);
 
@@ -38,7 +39,7 @@ export default function BlockUserDialog({
     const success = await blockUser(userId, reason || undefined);
 
     if (success) {
-      toast.success(`${userName} har blockerats`);
+      toast.success(tx("reviewUI.userBlocked"));
       onOpenChange(false);
       setReason("");
       onBlocked?.();
@@ -54,7 +55,7 @@ export default function BlockUserDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserX className="h-5 w-5 text-destructive" />
-            {tx("ui.blockUserDialog.blockera")}{' '}{userName}
+            {userName ? tx("reviewUI.blockName", { name: userName }) : tx("ui.blockUserDialog.blockeraAnvandare")}
           </DialogTitle>
           <DialogDescription>
             {tx("ui.blockUserDialog.attBlockeraDennaAnvandare")}
