@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import JSZip from 'jszip';
 import { parseCSV, parseLinkedInDate, parseLinkedInYear, cleanText, getFlexibleColumn } from '@/lib/csvParser';
 import { supabase } from '@/lib/supabase';
@@ -298,7 +299,7 @@ export async function submitLinkedInImport(
     return {
       success: false,
       imported: { profile: false, experiences: 0, education: 0, skills: 0, articles: 0 },
-      errors: ['You must be logged in to import data'],
+      errors: [tx('toasts.loginRequired')],
     };
   }
   
@@ -322,7 +323,8 @@ export async function submitLinkedInImport(
         .eq('id', user.id);
       
       if (error) {
-        result.errors.push(`Profile: ${error.message}`);
+        console.error('Profile import failed:', error);
+        result.errors.push(tx('runtimeErrors.importProfile'));
       } else {
         result.imported.profile = true;
       }
@@ -354,7 +356,8 @@ export async function submitLinkedInImport(
           .select();
         
         if (error) {
-          result.errors.push(`Experiences: ${error.message}`);
+          console.error('Experiences import failed:', error);
+          result.errors.push(tx('runtimeErrors.importExperience'));
         } else {
           result.imported.experiences = inserted?.length || 0;
         }
@@ -387,7 +390,8 @@ export async function submitLinkedInImport(
           .select();
         
         if (error) {
-          result.errors.push(`Education: ${error.message}`);
+          console.error('Education import failed:', error);
+          result.errors.push(tx('runtimeErrors.importEducation'));
         } else {
           result.imported.education = inserted?.length || 0;
         }
@@ -420,7 +424,8 @@ export async function submitLinkedInImport(
           .select();
         
         if (error) {
-          result.errors.push(`Skills: ${error.message}`);
+          console.error('Skills import failed:', error);
+          result.errors.push(tx('runtimeErrors.importSkills'));
         } else {
           result.imported.skills = inserted?.length || 0;
         }
@@ -444,7 +449,8 @@ export async function submitLinkedInImport(
         .select();
       
       if (error) {
-        result.errors.push(`Articles: ${error.message}`);
+        console.error('Articles import failed:', error);
+        result.errors.push(tx('runtimeErrors.importArticles'));
       } else {
         result.imported.articles = inserted?.length || 0;
       }
@@ -462,7 +468,8 @@ export async function submitLinkedInImport(
     
   } catch (error) {
     result.success = false;
-    result.errors.push(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Import failed:', error);
+    result.errors.push(tx('runtimeErrors.importFailed'));
   }
   
   result.success = result.errors.length === 0;
@@ -474,16 +481,16 @@ export async function submitLinkedInImport(
  */
 export function validateLinkedInZip(file: File): { valid: boolean; error?: string } {
   if (!file) {
-    return { valid: false, error: 'No file provided' };
+    return { valid: false, error: tx('reviewUI.zipRequired') };
   }
   
   if (!file.name.toLowerCase().endsWith('.zip')) {
-    return { valid: false, error: 'Please upload a ZIP file' };
+    return { valid: false, error: tx('reviewUI.zipRequired') };
   }
   
   const maxSize = 100 * 1024 * 1024; // 100MB
   if (file.size > maxSize) {
-    return { valid: false, error: 'File is too large (max 100MB)' };
+    return { valid: false, error: tx('reviewUI.zipSize') };
   }
   
   return { valid: true };

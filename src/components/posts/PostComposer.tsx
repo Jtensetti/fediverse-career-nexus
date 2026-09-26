@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -95,7 +96,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
     },
     onError: (error: Error) => {
       console.error('Failed to create post:', error);
-      toast.error(error.message || 'Kunde inte skapa inlägg. Försök igen.');
+      toast.error(userFacingErrorMessage(error, 'ui.companyPostService.failedToCreatePost'));
     },
   });
 
@@ -156,7 +157,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
 
       if (!await contentCheck.check([postContent, contentWarning, imageAltText, ...(pollData?.options || [])].join('\n'))) return;
       createPostMutation.mutate(finalPostData);
-    } catch (error) { toast.error(error instanceof Error ? error.message : 'Kunde inte förbereda bilden.'); }
+    } catch (error) { toast.error(userFacingErrorMessage(error, 'runtimeErrors.imageUpload')); }
     finally { setPreparingPost(false); }
   };
 

@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -95,7 +96,7 @@ export default function CompanyPostComposer({ company, className = "" }: Company
         imageAltText: imageAltText.trim() || undefined,
         contentWarning: contentWarning.trim() || undefined,
       });
-    } catch (error) { toast.error(error instanceof Error ? error.message : 'Kunde inte förbereda bilden.'); }
+    } catch (error) { toast.error(userFacingErrorMessage(error, 'runtimeErrors.imageUpload')); }
     finally { setPreparingPost(false); }
   };
 

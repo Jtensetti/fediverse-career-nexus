@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,21 +18,14 @@ interface ContentWarningInputProps {
   className?: string;
 }
 
-const COMMON_CWS = [
-  'politik',
-  'uppsägning',
-  'psykisk hälsa',
-  'våld',
-  'spoilers',
-  'mat',
-  'alkohol'
-];
+const COMMON_CW_KEYS = ['Politics', 'Layoff', 'MentalHealth', 'Violence', 'Spoilers', 'Food', 'Alcohol'];
 
 export default function ContentWarningInput({
   value,
   onChange,
   className
 }: ContentWarningInputProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(!!value);
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -64,7 +58,7 @@ export default function ContentWarningInput({
           )}
         >
           <AlertTriangle className="h-4 w-4" />
-          {value ? 'IVB: ' + value.substring(0, 20) + (value.length > 20 ? '...' : '') : tx("ui.contentWarningInput.laggTillInnehallsvarning")}
+          {value ? t('ui.contentWarningDisplay.contentWarning') + ' ' + value.substring(0, 20) + (value.length > 20 ? '...' : '') : tx("ui.contentWarningInput.laggTillInnehallsvarning")}
           {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </Button>
       </CollapsibleTrigger>
@@ -83,6 +77,7 @@ export default function ContentWarningInput({
               variant="ghost"
               size="icon"
               onClick={handleClear}
+              aria-label={t("common.delete")}
               className="flex-shrink-0"
             >
               <X className="h-4 w-4" />
@@ -91,7 +86,7 @@ export default function ContentWarningInput({
         </div>
 
         <div className="flex flex-wrap gap-1.5">
-          {COMMON_CWS.filter(cw => !value.toLowerCase().includes(cw)).map((suggestion) => (
+          {COMMON_CW_KEYS.map(key => t(`reviewUI.warning${key}`)).filter(cw => !value.toLowerCase().includes(cw)).map((suggestion) => (
             <Badge
               key={suggestion}
               variant="outline"

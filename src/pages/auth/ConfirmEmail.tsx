@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -54,7 +55,7 @@ const ConfirmEmail = () => {
         toast.success(t("toasts.emailConfirmed"));
       } catch (err: any) {
         setStatus("error");
-        setErrorMessage(err.message || t("confirmEmail.failed"));
+        setErrorMessage(userFacingErrorMessage(err, "confirmEmail.failed"));
       }
     };
 

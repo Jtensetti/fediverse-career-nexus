@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Camera, Loader2 } from "lucide-react";
@@ -64,7 +65,7 @@ export default function CompanyImageUpload({
       );
     } catch (error: any) {
       logger.error("Upload failed:", error);
-      toast.error(error.message || t("companyImage.uploadFailed", "Failed to upload image"));
+      toast.error(userFacingErrorMessage(error, "companyImage.uploadFailed"));
     } finally {
       setIsUploading(false);
       if (inputRef.current) inputRef.current.value = "";

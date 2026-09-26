@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,7 +38,7 @@ export default function CommentEditDialog({ open, onOpenChange, commentId, initi
       onUpdated();
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || t("commentEdit.failed"));
+      toast.error(userFacingErrorMessage(err, "commentEdit.failed"));
     } finally {
       setLoading(false);
     }

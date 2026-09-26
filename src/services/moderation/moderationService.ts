@@ -1,3 +1,4 @@
+import { UserFacingError } from '@/lib/userFacingError';
 import { hasRecordId } from "@/lib/records";
 import { requestContentDeletion } from "@/services/privacy/deletionService";
 import { supabase } from "@/lib/supabase";
@@ -111,7 +112,7 @@ export async function getFlaggedContent(
             const postContent = post?.content as Record<string, any> | null;
             const object = postContent?.type === 'Create' ? postContent.object : postContent;
             content_unavailable = !post || object?.type === 'Tombstone';
-            content_preview = typeof object?.content === 'string' ? object.content.slice(0, 200) : "Inlägget är inte tillgängligt";
+            content_preview = typeof object?.content === 'string' ? object.content.slice(0, 200) : tx('postCard.noContent');
           } else if (report.content_type === "article") {
             const { data: article } = await supabase
               .from("articles")
@@ -196,7 +197,7 @@ export async function updateReportStatus(
       });
     }
 
-    toast.success(`Rapport markerad som ${status}`);
+    toast.success(tx('reviewUI.reportStatusUpdated'));
     return true;
   } catch (error) {
     console.error("Error updating report status:", error);
@@ -241,8 +242,7 @@ export async function banUser(
       expires_at: expiresAt,
     });
 
-    const duration = durationDays ? `i ${durationDays} dagar` : "permanent";
-    toast.success(`Användare avstängd ${duration}`);
+    toast.success(tx('reviewUI.suspended'));
     return true;
   } catch (error) {
     console.error("Error banning user:", error);
@@ -430,12 +430,12 @@ export async function deleteFlaggedContent(
     } else if (contentType === "event") {
       ({ error } = await supabase.from("events").delete().eq("id", contentId));
     } else {
-      throw new Error('Den här typen av innehåll kan inte raderas här');
+      throw new UserFacingError('runtimeErrors.unsupportedDeletion');
     }
 
     if (error) throw error;
 
-    toast.success(["post", "article"].includes(contentType) ? "Innehållet är dolt och raderas permanent efter 30 dagar." : "Innehåll raderat");
+    toast.success(tx(['post', 'article'].includes(contentType) ? 'contentCare.deletionRequested' : 'reviewUI.contentDeleted'));
     return true;
   } catch (error) {
     console.error("Error deleting content:", error);

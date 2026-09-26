@@ -1,3 +1,4 @@
+import { UserFacingError } from '@/lib/userFacingError';
 import { publicMediaUrl } from "@/lib/media";
 import { supabase } from "@/lib/supabase";
 
@@ -24,7 +25,7 @@ export async function uploadCompanyImage(
 
   if (uploadError) {
     console.error("Error uploading company image:", uploadError);
-    throw new Error(uploadError.message || "Failed to upload image");
+    throw new UserFacingError('runtimeErrors.imageUpload');
   }
 
   return publicMediaUrl(BUCKET, filePath);
@@ -41,5 +42,5 @@ export async function deleteCompanyImage(imageUrl: string): Promise<void> {
   if (!prefix) return;
   const name = url.pathname.slice(prefix.length).split('/').map(decodeURIComponent).join('/');
   const { error } = await supabase.functions.invoke('request-deletion', { body: { kind: 'file', bucket: BUCKET, name } });
-  if (error) throw new Error('Den tidigare bilden kunde inte läggas i raderingskön.');
+  if (error) throw new UserFacingError('runtimeErrors.imageCleanup');
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from "react";
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function SaveButton({
   showLabel = false,
   className 
 }: SaveButtonProps) {
+  const { t } = useTranslation();
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
@@ -55,7 +57,7 @@ export function SaveButton({
     
     if (result.success) {
       setIsSaved(result.saved);
-      toast.success(result.saved ? "Sparat!" : "Borttaget från sparade");
+      toast.success(tx(result.saved ? 'common.saved' : 'savedItems.removed'));
     } else {
       setIsSaved(isSaved);
       toast.error(tx("ui.saveButton.kundeInteSparaObjektet"));
@@ -64,8 +66,8 @@ export function SaveButton({
     setIsLoading(false);
   };
 
-  const label = isSaved ? "Sparat" : "Spara";
-  const ariaLabel = isSaved ? `Ta bort ${itemType} från sparade` : `Spara ${itemType}`;
+  const label = t(isSaved ? 'savedItems.saved' : 'common.save');
+  const ariaLabel = t(isSaved ? 'reviewUI.removeSaved' : 'common.save');
 
   return (
     <TooltipProvider>

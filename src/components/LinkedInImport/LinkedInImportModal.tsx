@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
@@ -20,6 +21,7 @@ type Step = 'instructions' | 'upload' | 'preview' | 'confirm';
 const STEPS: Step[] = ['instructions', 'upload', 'preview', 'confirm'];
 
 export default function LinkedInImportModal({ open, onOpenChange, onImportComplete }: LinkedInImportModalProps) {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<Step>('instructions');
   const [importData, setImportData] = useState<LinkedInImportData | null>(null);
   const [importOptions, setImportOptions] = useState<ImportOptions>({
@@ -38,7 +40,7 @@ export default function LinkedInImportModal({ open, onOpenChange, onImportComple
       const data = await parseLinkedInExport(file);
       setImportData(data); setCurrentStep('preview');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Kunde inte tolka LinkedIn-exportfilen');
+      setError(t('runtimeErrors.importFailed'));
     } finally { setIsProcessing(false); }
   };
 
@@ -49,7 +51,7 @@ export default function LinkedInImportModal({ open, onOpenChange, onImportComple
       const result = await submitLinkedInImport(importData, importOptions);
       setImportResult(result); setCurrentStep('confirm');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Kunde inte importera data');
+      setError(t('runtimeErrors.importFailed'));
     } finally { setIsProcessing(false); }
   };
 
@@ -62,11 +64,11 @@ export default function LinkedInImportModal({ open, onOpenChange, onImportComple
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 'instructions': return 'Importera från LinkedIn';
-      case 'upload': return 'Ladda upp din export';
-      case 'preview': return 'Granska din data';
-      case 'confirm': return 'Import klar';
-      default: return 'Importera från LinkedIn';
+      case 'instructions': return t('ui.linkedInImportButton.importeraFranLinkedin');
+      case 'upload': return t('reviewUI.importUpload');
+      case 'preview': return t('reviewUI.importReview');
+      case 'confirm': return t('reviewUI.importResult');
+      default: return t('ui.linkedInImportButton.importeraFranLinkedin');
     }
   };
 

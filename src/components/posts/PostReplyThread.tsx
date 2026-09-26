@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { dateLocale } from "@/lib/locale";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -114,7 +115,7 @@ export default function PostReplyThread({
       toast.success(t("comments.deleted", "Kommentar borttagen"));
       onReplyCreated(reply.id);
     } catch (err: any) {
-      toast.error(err.message || "Kunde inte ta bort kommentaren");
+      toast.error(userFacingErrorMessage(err, 'reviewUI.commentDeleteFailed'));
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);

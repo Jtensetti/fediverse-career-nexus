@@ -1,3 +1,4 @@
+import { UserFacingError, userFacingErrorMessage } from '@/lib/userFacingError';
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { decryptIncomingMessage, encryptOutgoingMessage, inboxRevision } from './inboxKeysService';
@@ -245,9 +246,9 @@ export async function getMessagePage(partnerId: string, before?: MessageCursor):
   const { data, error } = await supabase.functions.invoke('encrypt-message', {
     body: { action: 'list', partnerId, before }
   });
-  if (error || data?.error || !Array.isArray(data?.messages)) throw new Error('Kunde inte läsa meddelanden');
+  if (error || data?.error || !Array.isArray(data?.messages)) throw new UserFacingError('ui.messageConversation.felVidLaddningAv');
   const messages = await Promise.all(data.messages.map(readPrivateMessage));
-  if (revision !== inboxRevision()) throw new Error('Inkorgen låstes medan meddelanden hämtades.');
+  if (revision !== inboxRevision()) throw new UserFacingError('runtimeErrors.inboxLocked');
   return { ...data, messages };
 }
 
@@ -289,7 +290,7 @@ export async function sendMessage(recipientId: string, content: string, jobConve
   const { data, error } = await supabase.functions.invoke('encrypt-message', {
     body: { action: 'send', partnerId: recipientId, ...sealed }
   });
-  if (error || data?.error || !data?.message) throw new Error('Kunde inte skicka meddelandet');
+  if (error || data?.error || !data?.message) throw new UserFacingError('ui.messageConversation.kundeInteSkickaMeddelande');
   return readPrivateMessage(data.message);
 }
 
@@ -347,13 +348,14 @@ export function subscribeToMessages(
 
       if (error || !data?.message) {
         console.error('Failed to decrypt real-time message:', error);
-        return { ...message, content: '[Encrypted message]' };
+        return { ...message, content: tx('reviewUI.encryptedUnavailable') };
       }
 
       return await readPrivateMessage(data.message);
     } catch (err) {
       console.error('Decryption error for real-time message:', err);
-      return { ...message, content: '[Encrypted message]' };
+      toast.error(userFacingErrorMessage(err, 'reviewUI.encryptedUnavailable'));
+      return { ...message, content: tx('reviewUI.encryptedUnavailable') };
     }
   };
 
@@ -445,8 +447,9 @@ export async function getConversationWithMessages(partnerId: string): Promise<Co
       conversation,
       ...page
     };
-  } catch {
-    throw new Error('Kunde inte läsa konversationen');
+  } catch (error) {
+    if (error instanceof UserFacingError) throw error;
+    throw new UserFacingError('ui.messageService.kundeInteLaddaKonversationer');
   }
 }
 

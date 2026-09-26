@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { intlLocale } from "@/lib/locale";
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -268,7 +269,7 @@ const ProfilePage = () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (error: any) {
       console.error("Error syncing profile:", error);
-      toast.error(error.message || t("profile.syncFailed", "Failed to sync profile"));
+      toast.error(userFacingErrorMessage(error, "profile.syncFailed"));
     } finally {
       setIsSyncing(false);
     }

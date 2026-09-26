@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
@@ -35,14 +36,14 @@ export default function AuthorizeApp() {
       const result=await mastodonRequest<{redirect:string}>('consent','POST',{...input,decision});
       // Only the service's validated, registered destination is used.
       window.location.assign(result.redirect);
-    } catch(error) { setError(error instanceof Error ? error.message : 'Anslutningen misslyckades.'); setBusy(false); }
+    } catch(error) { setError(userFacingErrorMessage(error, 'reviewUI.appServiceFailed')); setBusy(false); }
   };
   if (window.top !== window.self) return <p role="alert">{tx("ui.authorizeApp.oppnaAppanslutningenIEtt")}</p>;
   return <div className="mx-auto max-w-lg space-y-6 px-5 py-12">
     <Helmet><title>{tx("ui.authorizeApp.anslutEnAppNolto")}</title><meta name="referrer" content="no-referrer" /></Helmet>
     <a href="/" className="font-display text-2xl text-primary">Nolto</a>
     <h1 className="text-2xl font-semibold">{tx("ui.authorizeApp.villDuAnslutaDen")}</h1>
-    {request.isPending ? <p role="status">{tx("ui.authorizeApp.kontrollerarAppensForfragan")}</p> : request.isError ? <p role="alert">{request.error.message}</p> : <>
+    {request.isPending ? <p role="status">{tx("ui.authorizeApp.kontrollerarAppensForfragan")}</p> : request.isError ? <p role="alert">{userFacingErrorMessage(request.error, 'reviewUI.appRequestFailed')}</p> : <>
       <div className="space-y-2 rounded-xl border p-5"><p className="text-xl font-semibold break-words">{request.data.client.name}</p>
         {request.data.client.website && <p className="text-sm break-all text-muted-foreground">{request.data.client.website}</p>}
         <p className="text-sm text-muted-foreground">{tx("ui.authorizeApp.appensNamnOchWebbplats")}</p>
