@@ -109,25 +109,38 @@ export function getSiteUrl(): string {
  * (comma-separated; http is accepted only for localhost/127.0.0.1). Anything else falls
  * back to SITE_URL, so a forged Origin can never redirect a confirmation token elsewhere.
  */
+/** Parses an origin that must already be in exact serialized form (scheme://host[:port]). */
+function exactOrigin(value: string): string | null {
+  let url: URL;
+  try { url = new URL(value); } catch { return null; }
+  if (url.username || url.password || url.search || url.hash || url.origin !== value) return null;
+  const local = url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname);
+  return url.protocol === "https:" || local ? url.origin : null;
+}
+
+/**
+ * Origin used for account-email links. SITE_URL is the canonical default. The request
+ * Origin is used only when it exactly equals SITE_URL or an exact origin listed in
+ * EMAIL_LINK_ORIGINS. No www/apex, suffix or wildcard inference: a hostname sibling may
+ * be delegated to someone else and must be listed explicitly to be trusted.
+ */
 export function emailLinkOrigin(requestOrigin: string | null | undefined): string {
   const site = getSiteUrl();
-  if (!requestOrigin) return site;
-  let origin: URL;
-  try { origin = new URL(requestOrigin); } catch { return site; }
-  if (origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash || requestOrigin !== origin.origin) return site;
-  const siteHost = new URL(site).hostname;
-  const twin = siteHost.startsWith("www.") ? siteHost.slice(4) : `www.${siteHost}`;
-  const allowed = new Set([site, `https://${twin}`]);
+  const origin = requestOrigin ? exactOrigin(requestOrigin) : null;
+  if (!origin) return site;
+  const allowed = new Set([site]);
   for (const entry of (Deno.env.get("EMAIL_LINK_ORIGINS") || "").split(",")) {
-    const value = entry.trim();
-    if (!value) continue;
-    try {
-      const url = new URL(value);
-      const local = url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname);
-      if ((url.protocol === "https:" || local) && !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash) allowed.add(url.origin);
-    } catch { /* ignore malformed entries */ }
+    const listed = exactOrigin(entry.trim());
+    if (listed) allowed.add(listed);
   }
-  return allowed.has(origin.origin) ? origin.origin : site;
+  return allowed.has(origin) ? origin : site;
+}
+
+/** The exact link consumed by the /confirm-email page. */
+export function confirmationLink(requestOrigin: string | null | undefined, token: string): string {
+  const link = new URL("/confirm-email", emailLinkOrigin(requestOrigin));
+  link.searchParams.set("token", token);
+  return link.href;
 }
 
 /** Supabase includes the function name in Request.url, including behind a proxy. */
