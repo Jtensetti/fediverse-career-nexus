@@ -35,6 +35,24 @@ jobs:
           node scripts/test-support/run-actor-provisioning.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/test-support/run-account-boundaries.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/test-support/run-privacy.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
+  fresh-install:
+    # Replays every supabase/migrations file into an empty PostgreSQL 17 cluster with a
+    # documented platform stand-in, then checks RLS, roles, grants and signup provisioning.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Throwaway PostgreSQL 17 with pg_cron/pg_net stand-ins
+        run: |
+          sudo apt-get update -q && sudo apt-get install -yq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -yq postgresql-17
+          sudo cp scripts/test-support/fresh-install/extensions/* /usr/share/postgresql/17/extension/
+          sudo pg_ctlcluster 17 main start
+          sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'ci-throwaway'"
+      - name: Fresh-install replay
+        env: { PGHOST: 127.0.0.1, PGPORT: '5432', PGUSER: postgres, PGPASSWORD: ci-throwaway }
+        run: node scripts/test-support/run-fresh-install.mjs
   container:
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -10,6 +10,7 @@
     "lint": "npm run check:types",
     "preview": "vite preview",
     "test": "node --experimental-strip-types --test scripts/*.test.mjs && npm run test:deno",
+    "test:fresh-install": "node scripts/test-support/run-fresh-install.mjs",
     "test:deno": "deno test --config deno.json --allow-env=FEDERATION_DOMAIN,SITE_URL,EMAIL_LINK_ORIGINS,TOKEN_ENCRYPTION_KEY,SUPABASE_URL,SUPABASE_ANON_KEY,SUPABASE_SERVICE_ROLE_KEY,MASTODON_CLIENT_ENABLED,MASTODON_CLIENT_PILOT_USER_IDS supabase/tests",
     "check:federation": "node scripts/check-federation.mjs",
     "check:gateway": "node scripts/check-gateway.mjs",
