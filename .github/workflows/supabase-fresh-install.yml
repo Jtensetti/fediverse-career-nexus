@@ -6,12 +6,14 @@ on:
     branches: [main]
     paths:
       - supabase/migrations/**
+      - supabase/functions/**
       - supabase/config.toml
       - scripts/test-support/fresh-install/**
       - .github/workflows/supabase-fresh-install.yml
   pull_request:
     paths:
       - supabase/migrations/**
+      - supabase/functions/**
       - supabase/config.toml
       - scripts/test-support/fresh-install/**
       - .github/workflows/supabase-fresh-install.yml
@@ -43,7 +45,10 @@ jobs:
           mkdir -p "$target/supabase"
           cp supabase/config.toml "$target/supabase/config.toml"
           cp -a supabase/migrations "$target/supabase/migrations"
-          # Only the disposable local project name changes. No production .env, link,
+          cp -a supabase/functions "$target/supabase/functions"
+          # No environment file may accompany the source into the disposable stack.
+          find "$target" -type f -name '.env*' -delete
+          # Only the disposable local project name changes. No production link,
           # credentials, seed rows or cached CLI state is copied.
           TARGET="$target" node --input-type=module <<'NODE'
           import { readFileSync, writeFileSync } from 'node:fs';
@@ -65,7 +70,13 @@ jobs:
           cd "$CI_WORKDIR"
           # Real Auth/Storage/Realtime and real pg_cron/pg_net. The internal network
           # prevents migration-installed jobs reaching any production endpoint.
-          npx --yes "supabase@$SUPABASE_CLI_VERSION" start --network-id "$CI_PROJECT"
+          if npx --yes "supabase@$SUPABASE_CLI_VERSION" start --network-id "$CI_PROJECT" > "$RUNNER_TEMP/nolto-start.log" 2>&1; then
+            echo 'PASS: supabase start completed with normal health checks.'
+          else
+            result=$?
+            tail -n 160 "$RUNNER_TEMP/nolto-start.log"
+            exit "$result"
+          fi
           container="supabase_db_$CI_PROJECT"
           test "$(docker inspect -f '{{.Name}}' "$container")" = "/$container"
           docker exec -u postgres "$container" psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 \
