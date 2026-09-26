@@ -3,6 +3,60 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import gateway from '../deploy/nolto-gateway.mjs';
 
+test('protocol proxy isolates upstream cookies while preserving signed requests and streamed responses', async () => {
+  const original = globalThis.fetch;
+  try {
+    for (const mode of ['route', 'split']) {
+      let forwarded, upstream;
+      globalThis.fetch = async (input, init) => {
+        forwarded = init;
+        upstream = new Response('protocol response', { status: 429, statusText: 'Too Many Requests', headers: {
+          'content-type': 'application/json', 'retry-after': '30', 'access-control-allow-origin': '*',
+        } });
+        upstream.headers.append('set-cookie', '__cf_bm=synthetic; Domain=supabase.co; HttpOnly; Secure; SameSite=None');
+        upstream.headers.append('set-cookie', 'upstream-only=synthetic; Path=/');
+        return upstream;
+      };
+      const response = await gateway.fetch(new Request('https://nolto.social/functions/v1/inbox/alice', {
+        method: 'POST', body: '{"type":"Like"}', headers: {
+          cookie: '__cf_bm=nolto-cookie; website-session=private', authorization: 'Bearer synthetic',
+          signature: 'synthetic-signature', digest: 'synthetic-digest',
+        },
+      }), { GATEWAY_MODE: mode, SUPABASE_ORIGIN: 'https://backend.example.com' });
+      assert.equal(forwarded.headers.get('cookie'), null);
+      assert.equal(forwarded.headers.get('authorization'), 'Bearer synthetic');
+      assert.equal(forwarded.headers.get('signature'), 'synthetic-signature');
+      assert.equal(forwarded.headers.get('digest'), 'synthetic-digest');
+      assert.equal(await new Response(forwarded.body).text(), '{"type":"Like"}');
+      assert.equal(response.status, 429);
+      assert.equal(response.statusText, 'Too Many Requests');
+      assert.equal(response.headers.get('set-cookie'), null);
+      assert.equal(response.headers.get('retry-after'), '30');
+      assert.equal(response.headers.get('access-control-allow-origin'), '*');
+      assert.equal(response.headers.get('content-type'), 'application/json');
+      assert.equal(response.body, upstream.body, 'the upstream body must remain a stream');
+      assert.equal(await response.text(), 'protocol response');
+    }
+  } finally { globalThis.fetch = original; }
+});
+
+test('website and managed login retain their own request and response cookies', async () => {
+  const original = globalThis.fetch;
+  try {
+    for (const path of ['/', '/auth/social/callback', '/~oauth/initiate', '/oauth/authorize']) {
+      let forwarded;
+      const upstream = new Response('website', { headers: { 'set-cookie': '__cf_bm=synthetic; Domain=nolto.social; Secure' } });
+      globalThis.fetch = async input => { forwarded = input; return upstream; };
+      const request = new Request('https://nolto.social' + path, { headers: { cookie: 'website-session=synthetic' } });
+      const response = await gateway.fetch(request, { SUPABASE_ORIGIN: 'https://backend.example.com' });
+      assert.equal(forwarded, request);
+      assert.equal(forwarded.headers.get('cookie'), 'website-session=synthetic');
+      assert.equal(response, upstream);
+      assert.equal(response.headers.get('set-cookie'), '__cf_bm=synthetic; Domain=nolto.social; Secure');
+    }
+  } finally { globalThis.fetch = original; }
+});
+
 test('gateway routes discovery and signed inbox bytes while retaining canonical UI/OAuth origin', async () => {
   const original = globalThis.fetch, calls = [];
   globalThis.fetch = async (input, init) => { calls.push({ input, init }); return new Response('ok'); };

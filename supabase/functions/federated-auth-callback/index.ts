@@ -2,7 +2,7 @@ import { HttpError, requireUser } from "../_shared/user-auth.ts";
 import { remoteFetch, readJson } from "../_shared/remote-fetch.ts";
 import { tokenHash, OAUTH_SCOPES } from "../_shared/oauth.ts";
 import { getSiteUrl } from "../_shared/federation-urls.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { encryptToken } from "../_shared/token-encryption.ts";
 
 const corsHeaders = {

@@ -1,5 +1,5 @@
 
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { getSiteUrl } from "../_shared/federation-urls.ts";
 
 const corsHeaders = {

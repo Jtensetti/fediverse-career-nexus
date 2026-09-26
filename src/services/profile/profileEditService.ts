@@ -1,6 +1,7 @@
 import { publicMediaUrl } from "@/lib/media";
 
 import { supabase } from "@/lib/supabase";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 
 import { tx } from "@/i18n/tx";
@@ -50,7 +51,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
     }
 
     // Build update object, only including defined fields
-    const updateData: Record<string, any> = {
+    const updateData: TablesUpdate<'profiles'> = {
       updated_at: new Date().toISOString()
     };
 

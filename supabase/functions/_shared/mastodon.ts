@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.89.0';
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import { serviceClient } from './local-actor.ts';
 import { getFederationBaseUrl, getSiteUrl } from './federation-urls.ts';
 import { tokenHash } from './oauth.ts';
