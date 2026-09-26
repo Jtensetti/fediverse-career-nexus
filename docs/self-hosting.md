@@ -25,7 +25,8 @@ The current migration history has not been validated from an empty backend. Isol
 - Rehearse a clean schema installation and storage policies, then verify all user/admin permissions.
 - Deploy maintained functions and configure Auth callbacks, email delivery, storage, encryption keys and scheduled workers.
 - Set `SITE_URL` and `FEDERATION_DOMAIN` before creating identities. Changing an established federation domain needs a migration plan.
-- Confirmation emails link to the browser origin of the signup request when it is `SITE_URL` or its www/apex twin; other origins (previews, `http://localhost:…`) must be listed in the backend secret `EMAIL_LINK_ORIGINS` (comma-separated), otherwise the link falls back to `SITE_URL`.
+- Confirmation emails link to `SITE_URL`. The signup request's browser origin is used instead only when it exactly equals `SITE_URL` or an exact origin (scheme, host and port, no path) listed in the backend secret `EMAIL_LINK_ORIGINS` (comma-separated). A www/apex sibling of `SITE_URL` is **not** trusted automatically; list it explicitly if you serve both. Previews and `http://localhost:<port>` also need an exact entry.
+- Fresh database: apply `supabase/migrations` to an empty project (`supabase start` / `supabase db push`). See `docs/fresh-install.md`.
 - Replace Nolto-specific domain URLs in hosting rules and instance configuration. The container forwards protocol routes before the SPA fallback and preserves query strings and request methods.
 - Verify WebFinger returns JRD JSON, actor URLs return ActivityPub JSON, and signed follows/posts/deletions work with an independent Mastodon server.
 - Rehearse restoration from encrypted backups and the 30-day deletion queue. Publish your own operator details, rules and privacy notice.
