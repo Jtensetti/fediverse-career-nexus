@@ -196,7 +196,7 @@ const EventForm = ({
               <FormItem>
                 <FormLabel>{t("eventFormLabels.startTime")}</FormLabel>
                 <FormControl>
-                  <Input type="time" step={60} inputMode="numeric" required {...field}
+                  <Input type="time" step={60} inputMode="numeric" {...field}
                     onChange={event => changeStart('start_time', event.target.value)} />
                 </FormControl>
                 <FormMessage />
@@ -215,7 +215,7 @@ const EventForm = ({
               <FormItem>
                 <FormLabel>{t("eventFormLabels.endTime")}</FormLabel>
                 <FormControl>
-                  <Input type="time" step={60} inputMode="numeric" required {...field} />
+                  <Input type="time" step={60} inputMode="numeric" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
