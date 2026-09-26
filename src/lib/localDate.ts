@@ -10,6 +10,17 @@ export function formatLocalDate(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
+/** Strict 24-hour HH:mm with minute precision; no seconds, no normalizing of 24:00 or 10:60. */
+export const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** False for malformed times and for local times skipped by a DST transition. */
+export function isValidLocalDateTime(date: Date | undefined, time: string | undefined): boolean {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime()) || !time || !TIME_PATTERN.test(time)) return false;
+  const [hour, minute] = time.split(':').map(Number);
+  const value = localDateTime(date, time);
+  return value.getHours() === hour && value.getMinutes() === minute && value.getDate() === date.getDate();
+}
+
 export function localDateTime(date: Date, time: string): Date {
   const [hour, minute] = time.split(':').map(Number);
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute);

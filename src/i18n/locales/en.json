@@ -1511,7 +1511,9 @@
     "visibilityControlDesc": "Control who can discover and attend your event",
     "createEvent": "Create Event",
     "endAfterStart": "End time must be after start time",
-    "localTimezone": "All times use your local time zone: {{timezone}}."
+    "localTimezone": "All times use your local time zone: {{timezone}}.",
+    "invalidTime": "Enter a valid time (HH:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "This time does not exist on the selected date because of daylight saving time. Choose another time."
   },
   "jobFormLabels": {
     "jobTitle": "Job Title *",

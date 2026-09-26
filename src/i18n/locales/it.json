@@ -1511,7 +1511,9 @@
     "visibilityControlDesc": "Controlla chi può scoprire e partecipare al tuo evento",
     "createEvent": "Crea Evento",
     "endAfterStart": "L'ora di fine deve essere successiva all'ora di inizio",
-    "localTimezone": "Tutti gli orari utilizzano il tuo fuso orario locale: {{timezone}}."
+    "localTimezone": "Tutti gli orari utilizzano il tuo fuso orario locale: {{timezone}}.",
+    "invalidTime": "Inserisci un orario valido (HH:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "Questo orario non esiste nella data selezionata a causa dell’ora legale. Scegli un altro orario."
   },
   "jobFormLabels": {
     "jobTitle": "Titolo Lavoro *",

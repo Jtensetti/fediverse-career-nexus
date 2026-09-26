@@ -103,6 +103,33 @@ export function getSiteUrl(): string {
   return url.origin;
 }
 
+/**
+ * Origin for links in account emails. The browser Origin of the signup/resend request is
+ * used only when it is SITE_URL, its www/apex twin, or listed in EMAIL_LINK_ORIGINS
+ * (comma-separated; http is accepted only for localhost/127.0.0.1). Anything else falls
+ * back to SITE_URL, so a forged Origin can never redirect a confirmation token elsewhere.
+ */
+export function emailLinkOrigin(requestOrigin: string | null | undefined): string {
+  const site = getSiteUrl();
+  if (!requestOrigin) return site;
+  let origin: URL;
+  try { origin = new URL(requestOrigin); } catch { return site; }
+  if (origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash || requestOrigin !== origin.origin) return site;
+  const siteHost = new URL(site).hostname;
+  const twin = siteHost.startsWith("www.") ? siteHost.slice(4) : `www.${siteHost}`;
+  const allowed = new Set([site, `https://${twin}`]);
+  for (const entry of (Deno.env.get("EMAIL_LINK_ORIGINS") || "").split(",")) {
+    const value = entry.trim();
+    if (!value) continue;
+    try {
+      const url = new URL(value);
+      const local = url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname);
+      if ((url.protocol === "https:" || local) && !url.username && !url.password && url.pathname === "/" && !url.search && !url.hash) allowed.add(url.origin);
+    } catch { /* ignore malformed entries */ }
+  }
+  return allowed.has(origin.origin) ? origin.origin : site;
+}
+
 /** Supabase includes the function name in Request.url, including behind a proxy. */
 export function functionPath(url: URL, name: string): string[] | null {
   const parts = url.pathname.split("/").filter(Boolean);
