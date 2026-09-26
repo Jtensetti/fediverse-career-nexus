@@ -19,9 +19,10 @@ WITH items(kind, object, def) AS (
   UNION ALL
   SELECT 'index', indexname, indexdef FROM pg_indexes WHERE schemaname = 'public'
   UNION ALL
-  SELECT 'grant', table_name || '.' || grantee, string_agg(privilege_type, ',' ORDER BY privilege_type)
-    FROM information_schema.role_table_grants
-    WHERE table_schema = 'public' AND grantee IN ('anon', 'authenticated', 'service_role') GROUP BY table_name, grantee
+  SELECT 'grant', c.relname || '.' || r.rolname, string_agg(a.privilege_type, ',' ORDER BY a.privilege_type)
+    FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace CROSS JOIN LATERAL aclexplode(c.relacl) a
+    JOIN pg_roles r ON r.oid = a.grantee
+    WHERE n.nspname = 'public' AND r.rolname IN ('anon', 'authenticated', 'service_role') GROUP BY c.relname, r.rolname
   UNION ALL
   SELECT 'type', t.typname, coalesce((SELECT string_agg(enumlabel, ',' ORDER BY enumsortorder) FROM pg_enum e WHERE e.enumtypid = t.oid), t.typtype::text)
     FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'public' AND t.typtype IN ('e','d')
