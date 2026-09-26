@@ -219,3 +219,13 @@ test('both deployment modes leave AT Protocol identity unassigned and redact inv
     assert.ok(config.routes.every(route => !route.pattern.startsWith('*')));
   }
 });
+
+test('split gateway GET redirect preserves /confirm-email?token= exactly', async () => {
+  const env = { MODE: 'split', GATEWAY_MODE: 'split', FRONTEND_ORIGIN: 'https://www.nolto.social', SUPABASE_ORIGIN: 'https://backend.example.com' };
+  const response = await gateway.fetch(new Request('https://nolto.social/confirm-email?token=a%2Bb%2Fc%3Dd'), env);
+  assert.equal(response.status, 302);
+  const location = new URL(response.headers.get('location'));
+  assert.equal(location.origin, 'https://www.nolto.social');
+  assert.equal(location.pathname, '/confirm-email');
+  assert.equal(location.searchParams.get('token'), 'a+b/c=d');
+});
