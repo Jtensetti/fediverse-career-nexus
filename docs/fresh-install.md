@@ -1,36 +1,53 @@
-# Fresh install database (issue #48)
+# Fresh-install database verification (issue #48)
+
+Updated 26 September 2026. Verified code: `d0b820c5c23666d8da523b49c33393e2bab50809`. The reported fresh-install failure is fixed and the real Supabase acceptance test passes. This is not a blanket production-readiness or existing-instance upgrade certification.
 
 ## What was wrong
-- `supabase/migrations` contained 15 pre-2026 files (`20250522_…` to `20250617_…`). They were never recorded in the hosted migration ledger (which starts at `20260104070751`), they reference `is_admin`/`is_moderator` before `20260104070753` defines them, and five had names the CLI skips (`<ts>-<uuid>.sql`). A fresh `supabase start` therefore failed at the first one.
-- One migration that is applied on the hosted backend (`20260201085158`, article-covers/article-images buckets and owner-folder policies) was missing from the repository, so a fresh install would have lacked those buckets.
 
-## Scope
-This repair is for **new, empty** databases only. It covers the 2026 chain in `supabase/migrations`.
+`supabase/migrations` contained 15 pre-2026 files, from `20250522_…` to `20250617_…`. The first called `is_admin`/`is_moderator` before the 2026 foundational migration defined them; five filenames used a separator that the CLI skips. These files are absent from the inspected hosted ledger, which starts at `20260104070751`. That observation does not prove that other self-hosted installations never applied them.
 
-## Repair
-- The 15 legacy files moved to `supabase/legacy-migrations-2025/` (kept for history, never applied; see its README). No applied migration was renamed or renumbered.
-- `20260201085158` restored verbatim from the hosted ledger. It is already applied on hosted, so it is a no-op there.
-- Hosted `20260213075004` (an arbitrary-SQL `exec_sql` helper, later dropped by `20260331114811`) was deliberately not restored; final schema is identical without it.
+The article-cover/article-image storage migration `20260201085158`, already present in the inspected hosted ledger, was missing from the repository.
 
-## Verification
-`npm run test:fresh-install` (runs in CI job `fresh-install`) creates a throwaway database, applies `scripts/test-support/fresh-install/platform-stub.sql`, replays every migration in CLI order with one transaction each, then runs `assertions.sql`: RLS on every public table, private buckets, client roles cannot provision actors or self-assign admin, an Auth signup creates profile/role/settings, `is_admin` follows `user_roles`, reserved usernames rejected, server-side actor provisioning.
+## Repair and scope
 
-Structure fingerprint (`fingerprint.sql`, schema metadata only) of the fresh database matched the hosted backend for tables, columns, RLS, policies, storage policies, grants, indexes, types, functions and triggers, except the objects of the not-yet-applied `20260925180809` mobile-push migration.
+The 15 legacy files are retained in `supabase/legacy-migrations-2025/` outside the active CLI migration directory. The missing `20260201085158` storage migration was restored from the hosted ledger. Existing applied migrations were not renumbered, and no permissive role-check stub was added.
 
-## Limitations
-The stub is not Supabase: auth/storage are minimal tables, `pg_cron`/`pg_net` are inert stand-ins (record schedules, no network). Real Auth/Storage/Realtime services are not exercised. A final `npx supabase start` on a Docker runner is still the acceptance step. The runner refuses non-`nolto_fresh_*` databases and hosted hosts.
+The historical arbitrary-SQL `exec_sql` helper migration `20260213075004`, subsequently dropped by `20260331114811`, was deliberately not restored. Its omission is known ledger drift, not an instruction to repair a live ledger automatically.
 
-## Existing installations
-Do not blindly run `supabase db push`, `db reset` or `migration repair` on an existing database.
-- The hosted Nolto backend's ledger has no 2025 versions. Other installations may differ: an old self-hosted database may have applied some 2025 files, all of them, or none.
-- Before deploying to an existing instance, compare its `supabase_migrations.schema_migrations` with `supabase/migrations` and resolve any drift by hand. Known drift:
-  - `20260201085158` was missing from the repository and has now been restored. The hosted backend already has it.
-  - `20260213075004` is in the hosted ledger but deliberately not in the repository.
-  - Local files use +1-second timestamps relative to some hosted versions.
-  - `20260925180809` (mobile push) is in the repository but not yet applied on hosted.
-- Take a backup and verify the schema before any migration command. A schema-only fingerprint query is in `scripts/test-support/fresh-install/fingerprint.sql`.
+This repair covers **new, empty databases using the 2026 migration chain**. No hosted migration or data change was performed.
 
-## Running the fast replay
-`NOLTO_FRESH_INSTALL_TEST=1 PGHOST=127.0.0.1 PGUSER=postgres PGPASSWORD=… npm run test:fresh-install`. `PGHOST` must be `127.0.0.1`, `::1` or an absolute local socket directory. Every other libpq destination override (`PGHOSTADDR`, `PGSERVICE`, `PGSERVICEFILE`, `PGOPTIONS`, `PGDATABASE`, `PGPASSFILE`, …) is removed from child processes, and the connect timeout is 5 s. The replay creates cluster-wide roles, so only use a disposable server.
+## Verified with real Supabase
 
-`assertions.sql` also runs in the separate real Supabase/Docker acceptance test. There the database is `postgres`, and the wrapper sets `nolto.fresh_install_guard=isolated-ci` inside the disposable container. Without that marker or a `nolto_fresh_*` database, it refuses to run. The `pg_cron`/`pg_net` stubs are only for the fast structural replay.
+[Real Supabase acceptance run 36245119540](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36245119540) completed successfully on 26 September at 13:28 UTC. The workflow `.github/workflows/supabase-fresh-install.yml`:
+
+1. Creates an unlinked disposable project from the repository config, migrations and function sources, without production credentials, environment files or seed data.
+2. Blocks outbound container connections before startup and verifies that its firewall rejects a test connection. This prevents historical cron/net jobs from contacting production endpoints.
+3. Runs `supabase@2.118.0 start` with normal health checks and real Auth, Storage, Realtime, PostgreSQL, pg_cron and pg_net services. **All 136 project migration versions are applied and recorded**, with an exact comparison against the directory contents.
+4. Runs transactional RLS, private-storage, role-escalation, function-permission, reserved-name, profile/settings/role and actor-provisioning assertions against the real database.
+5. Creates a disposable account through real Auth, signs in with a password, and reads the owner's profile through PostgREST using the user token.
+6. Runs the actual signup and confirmation handlers against real local Auth/SQL, following generated canonical-apex and explicitly permitted-www email links through token consumption and successful login. Only outbound email delivery is replaced by an in-memory sink.
+7. Deletes its fixture accounts and disposable stack. No production account, email, schema or DNS change occurs.
+
+The Docker workflow can be rerun manually and also runs for its relevant source changes. Its successful run establishes fresh installation and the stated smoke tests; it does not test inbox delivery, native Android clients, external federation or upgrades from an old installation.
+
+## Fast structural regression
+
+The separate `fresh-install` job in [main CI run 292](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36245119547) also passes. `npm run test:fresh-install` creates a throwaway PostgreSQL17 database, applies `scripts/test-support/fresh-install/platform-stub.sql`, replays every migration in order with one transaction each, and runs `assertions.sql`.
+
+That faster test deliberately uses minimal Auth/Storage tables and inert pg_cron/pg_net stand-ins. It does **not** replace the real-platform acceptance test above. The schema-metadata fingerprint query is `scripts/test-support/fresh-install/fingerprint.sql`; a prior comparison found the expected difference for the not-yet-applied hosted mobile-push migration.
+
+To run the fast test, use only a disposable local PostgreSQL server:
+
+```sh
+NOLTO_FRESH_INSTALL_TEST=1 PGHOST=127.0.0.1 PGUSER=postgres PGPASSWORD=… npm run test:fresh-install
+```
+
+`PGHOST` must be literal `127.0.0.1`, `::1` or an absolute local socket directory. The runner requires explicit opt-in, creates only `nolto_fresh_*` test databases, strips inherited libpq destination overrides such as `PGHOSTADDR`, `PGSERVICE`, `PGOPTIONS`, `PGDATABASE` and `PGPASSFILE`, and sets a five-second connection timeout. It creates cluster-wide roles, so do not point it at a local server containing valuable databases.
+
+For the real Supabase database named `postgres`, the workflow sets the test-only marker `nolto.fresh_install_guard=isolated-ci` through `docker exec` into the known disposable container. Without that marker or a `nolto_fresh_*` database name, `assertions.sql` refuses to run.
+
+## Existing installations require separate review
+
+**Do not blindly run `supabase db push`, `db reset` or `migration repair` against an existing database.** Take a backup, compare its actual migration ledger and schema, and reconcile drift before an upgrade.
+
+Known differences in the inspected hosted ledger include the already-applied restored storage migration, the intentionally omitted historical `exec_sql` migration, some one-second timestamp differences, and the repository's `20260925180809` mobile-push migration not yet applied there. Other installations may have some, all or none of the archived 2025 migrations. A successful empty-database replay does not resolve those histories automatically.

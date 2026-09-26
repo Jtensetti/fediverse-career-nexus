@@ -1,18 +1,41 @@
-# Issue verification: #52 and #49 (2026-09-26)
+# Issue verification: #52 and #49
 
-Base: main ffde568 (workspace HEAD 8e66050 contains it). Not published, no functions deployed, no DNS/migration/data changes, no signups or emails sent.
+Updated 26 September 2026. Verified code: `d0b820c5c23666d8da523b49c33393e2bab50809`. Both issues are closed as fixed in the repository. Source changes were not published or deployed by this task. Test accounts existed only in disposable local/CI databases; no production accounts or real emails were created.
 
-## #52 Minute-precision event times — verified locally
-- Start/end are labelled `<input type="time" step=60>` fields; edit keeps saved minutes (08:15, 10:07).
-- Validation: empty → existing required errors; malformed/out-of-range (24:00, 10:60, 7:5, seconds) rejected; end ≤ start → existing `endAfterStart`; DST-skipped local time → new `nonexistentLocalTime` (all 8 locales, plus `invalidTime`). Nothing is normalized silently.
-- End-after-start duration carry-over preserved at minute precision.
-- Evidence: `scripts/events-ux.test.mjs` renders the real EventForm, EventCreate and EventEdit and asserts the captured submission ISO values (7 new tests, incl. Europe/Stockholm DST).
-- Still needs production acceptance: manual create/edit in a real browser while signed in (native time picker UI differs per browser).
+See [the full issue-verification summary](issue-verification-2026-09-26.md) for all issues and test runs.
 
-## #49 Confirmation link origin — fixed in code, not deployed (revised)
-- Reported symptom: a www signup received an apex confirmation link that failed. Before the change `auth-signup` always used `SITE_URL`; that is consistent with the report, but the historical failure itself is **not reproduced or proven** by current tests.
-- Revised trust boundary: `emailLinkOrigin()` returns SITE_URL unless the request Origin exactly equals SITE_URL or an exact origin listed in `EMAIL_LINK_ORIGINS`. The earlier automatic www/apex twin trust was removed (a sibling hostname may be delegated to another party). `confirmationLink()` builds `<origin>/confirm-email?token=…` and is what signup and resend use.
-- Production implication: with `SITE_URL=https://nolto.social` and no `EMAIL_LINK_ORIGINS`, www signups get apex links. To give www signups www links, set `EMAIL_LINK_ORIGINS=https://www.nolto.social` (operator decision, not done).
-- End-to-end handler evidence (mocked, no real services): `supabase/tests/email-confirmation-flow.test.ts` runs the real `auth-signup` and `auth-confirm-email` handlers (now in `handler.ts`; `index.ts` only calls `Deno.serve`) against an in-memory fake backend client and a fake email transport. It captures the generated email, follows its link token through the real confirmation handler, and checks: allow-listed vs forged Origin; resend using the same link and giving identical responses for known and unknown accounts; confirmation updating the account once, while a replay answers success without a second update (the implemented idempotent behaviour); malformed, unknown and expired tokens; validation, missing key, rate limit, provider failure and duplicate account; and no email, password or token in logs. Mocked: the backend client, the RPC and email delivery. Real SQL token issuance, cooldown and privileges are covered by the isolated database test `identity-assertions.sql`. `scripts/confirm-email-page.test.mjs` renders the real ConfirmEmail page and checks the `?token=` value is sent unchanged, plus the missing-token, expired and failure states.
-- Helper evidence: `supabase/tests/email-links.test.ts` (unlisted sibling falls back, listed sibling both directions, malformed/credential/path/query/port/wildcard entries never expand trust, preview/localhost exact-only, token round-trip to `/confirm-email`); `scripts/federation-gateway.test.mjs` asserts the split-mode GET redirect keeps `/confirm-email?token=` intact.
-- Not verified: real email delivery or clicking a real link; hosted Auth settings (no read-only tool). Requires deploying `auth-signup`, then an isolated test signup.
+## #52 — minute-precision event times
+
+Start and end use labelled `<input type="time" step="60">` fields instead of half-hour menus. Create and edit preserve arbitrary minutes such as 08:15 and 10:07. End-after-start duration adjustment remains intact.
+
+Validation rejects empty, malformed and out-of-range values, seconds, end times not later than the start, and local times skipped by a DST transition. Invalid times are not silently normalized. The new error messages exist in all eight locales.
+
+Seven added tests in `scripts/events-ux.test.mjs` render the real EventForm/EventCreate/EventEdit components and assert captured ISO submission values, minute preservation, duration adjustment, validation and Europe/Stockholm DST behavior. These pass in [main CI run 292](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36245119547).
+
+This verifies code and automated component behavior, not a manual signed-in create/edit test on every browser. Native time-picker presentation can vary.
+
+## #49 — confirmation-link origin and token flow
+
+The report described a www signup receiving an apex link that failed. The previous use of SITE_URL is consistent with that symptom, but current tests do not prove the precise historical cause.
+
+`emailLinkOrigin()` uses SITE_URL by default. A different request Origin must exactly match an explicitly configured `EMAIL_LINK_ORIGINS` entry. There is no automatic trust of a www/apex sibling: a sibling could be delegated elsewhere. Credentials, paths, queries, wildcard/suffix matching and unlisted port variants cannot expand trust. Self-hosted domains remain supported; preview/localhost alternatives require exact explicit entries.
+
+`confirmationLink()` builds `<origin>/confirm-email?token=…`; signup and resend both use it. The real ConfirmEmail page sends the query token unchanged to the confirmation handler. A consumed confirmation can be repeated successfully without returning a session or re-confirming the account.
+
+With SITE_URL set to the currently canonical apex and no alternate-origin allowlist, www requests receive apex links. The production www redirect now preserves the path and query. Adding a www allowlist entry is an operator choice, not a required change for current canonical routing.
+
+### Verification layers
+
+- `supabase/tests/email-links.test.ts`: exact-origin trust, forged/unlisted origins, self-hosted and explicit preview/localhost cases, URL/token construction.
+- `supabase/tests/email-confirmation-flow.test.ts`: actual signup/confirmation handlers with isolated database and email fixtures; signup, resend neutrality, token success/replay, malformed/unknown/expired tokens, validation, rate limiting, provider failure and error/logging boundaries.
+- `scripts/confirm-email-page.test.mjs`: actual React confirmation page, exact token consumption, missing-token, expired and failure states.
+- `scripts/federation-gateway.test.mjs`: confirmation path and query preserved through the split-domain GET redirect. Isolated identity SQL tests separately exercise real token issuance, cooldown and privileges.
+- `scripts/test-support/run-email-confirmation.ts`: **actual handlers with real disposable Supabase Auth and PostgreSQL/PostgREST**, not a mocked database. Only outbound email delivery is an in-memory sink. It captures the generated email text, extracts and follows the token, checks the real account and token row before/after confirmation, checks idempotent replay, and completes real password login. Canonical-apex and explicitly allowlisted-www cases both pass; unknown-account resend remains generic and sends no message.
+
+The real integration passed in [Supabase acceptance run 36245119540](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36245119540). All four jobs of [main CI run 292](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36245119547) pass, including 125 Node tests and 72 Deno tests.
+
+[Read-only production probes](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36244002667) also passed 8/8, including www/apex canonical routing and preservation of a nonsecret test confirmation query. Those GET probes do not execute the confirmation page or consume a real token.
+
+### Deployment boundary
+
+No frontend publication, function deployment, production migration, Auth setting or DNS change was performed. Deploy the matching frontend and `auth-signup`/`auth-confirm-email` functions with shared dependencies before claiming the new source is running in production. Real email-provider delivery, inbox arrival and clicking a delivered production email were not tested. The tests prove the stated source behavior, not those external delivery steps.
