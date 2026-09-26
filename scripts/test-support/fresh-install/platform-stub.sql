@@ -6,12 +6,13 @@ DO $$ BEGIN
   IF current_database() NOT LIKE 'nolto_fresh_%' THEN RAISE EXCEPTION 'platform stub refuses database %', current_database(); END IF;
 END $$;
 
-CREATE ROLE anon NOLOGIN NOINHERIT;
-CREATE ROLE authenticated NOLOGIN NOINHERIT;
-CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
-CREATE ROLE supabase_auth_admin NOLOGIN;
-CREATE ROLE supabase_storage_admin NOLOGIN;
-CREATE ROLE authenticator NOLOGIN NOINHERIT;
+-- Roles are cluster-wide; create them once per throwaway cluster.
+DO $$ DECLARE r record; BEGIN
+  FOR r IN SELECT * FROM (VALUES ('anon','NOLOGIN NOINHERIT'),('authenticated','NOLOGIN NOINHERIT'),('service_role','NOLOGIN NOINHERIT BYPASSRLS'),
+    ('supabase_auth_admin','NOLOGIN'),('supabase_storage_admin','NOLOGIN'),('authenticator','NOLOGIN NOINHERIT')) v(name, opts) LOOP
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = r.name) THEN EXECUTE format('CREATE ROLE %I %s', r.name, r.opts); END IF;
+  END LOOP;
+END $$;
 GRANT anon, authenticated, service_role TO authenticator;
 
 CREATE SCHEMA extensions;
