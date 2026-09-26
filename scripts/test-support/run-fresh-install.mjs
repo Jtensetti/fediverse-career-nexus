@@ -5,20 +5,22 @@
 //
 // Requires an EMPTY, isolated PostgreSQL server reachable through PG* env vars whose
 // extension directory includes the pg_cron/pg_net stand-ins from ./fresh-install/extensions
-// (see docs/fresh-install.md). Refuses to run against a hosted Supabase host.
+// (see docs/fresh-install.md). Requires NOLTO_FRESH_INSTALL_TEST=1 and a loopback/local-socket
+// PGHOST; all other libpq destination overrides are stripped (fresh-install/destination.mjs).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { childEnv } from './fresh-install/destination.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const migrations = join(root, 'supabase/migrations');
-const host = process.env.PGHOST || '';
-if (/supabase\.(co|com)|pooler/.test(host)) throw new Error(`Refusing to run against hosted host ${host}`);
+let env;
+try { env = childEnv(process.env); } catch (error) { console.error(error.message); process.exit(2); }
 const keep = process.argv.includes('--keep');
 const allFailures = process.argv.includes('--continue');
 const db = `nolto_fresh_${process.pid}`;
-const psql = (args, database = 'postgres', input) => spawnSync('psql', ['-X', '-q', '-v', 'ON_ERROR_STOP=1', '-d', database, ...args], { encoding: 'utf8', input });
+const psql = (args, database = 'postgres', input) => spawnSync('psql', ['-X', '-q', '-v', 'ON_ERROR_STOP=1', '-d', database, ...args], { encoding: 'utf8', input, env });
 
 export const CLI_PATTERN = /^([0-9]+)_(.*)\.sql$/;
 const files = readdirSync(migrations).filter(name => name.endsWith('.sql')).sort();
@@ -32,7 +34,7 @@ for (const name of selected) {
 }
 if (skipped.length) { console.error('FAIL: files the Supabase CLI would skip:\n  ' + skipped.join('\n  ')); process.exit(1); }
 
-execFileSync('psql', ['-X', '-q', '-d', 'postgres', '-c', `CREATE DATABASE ${db}`]);
+execFileSync('psql', ['-X', '-q', '-d', 'postgres', '-c', `CREATE DATABASE ${db}`], { env });
 let failures = 0;
 try {
   const stub = psql(['--single-transaction', '-f', join(root, 'scripts/test-support/fresh-install/platform-stub.sql')], db);
@@ -52,7 +54,7 @@ try {
     if (checks.status !== 0) { failures++; console.error('FAIL assertions\n' + checks.stderr.trim()); }
   }
 } finally {
-  if (!keep) execFileSync('psql', ['-X', '-q', '-d', 'postgres', '-c', `DROP DATABASE ${db}`]);
+  if (!keep) execFileSync('psql', ['-X', '-q', '-d', 'postgres', '-c', `DROP DATABASE ${db}`], { env });
   else console.log(`kept database ${db}`);
 }
 process.exit(failures ? 1 : 0);

@@ -103,12 +103,6 @@ export function getSiteUrl(): string {
   return url.origin;
 }
 
-/**
- * Origin for links in account emails. The browser Origin of the signup/resend request is
- * used only when it is SITE_URL, its www/apex twin, or listed in EMAIL_LINK_ORIGINS
- * (comma-separated; http is accepted only for localhost/127.0.0.1). Anything else falls
- * back to SITE_URL, so a forged Origin can never redirect a confirmation token elsewhere.
- */
 /** Parses an origin that must already be in exact serialized form (scheme://host[:port]). */
 function exactOrigin(value: string): string | null {
   let url: URL;
