@@ -2,6 +2,12 @@
 # Gateway legacy JWT verification would reject modern Auth JWTs before those checks.
 project_id = "anknmcmqljejabxbeohv"
 
+[functions.mobile-push]
+verify_jwt = false
+
+[functions.send-mobile-push]
+verify_jwt = false
+
 [functions.atproto-auth]
 verify_jwt = false
 

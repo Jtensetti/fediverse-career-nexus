@@ -1,3 +1,9 @@
 .expo/
 android/
 ios/
+google-services.json
+service-account*.json
+credentials.json
+*.p8
+*.p12
+*.mobileprovision

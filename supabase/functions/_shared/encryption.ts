@@ -1,6 +1,6 @@
 const encoder = new TextEncoder();
 const IV_BYTES = 12;
-type Purpose = "message" | "oauth-token" | "retention" | "retained-file";
+type Purpose = "message" | "oauth-token" | "retention" | "retained-file" | "push-token";
 
 export function encryptionSecret(): string {
   const secret = Deno.env.get("TOKEN_ENCRYPTION_KEY");

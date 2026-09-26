@@ -1,108 +1,105 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Platform, Pressable, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { fetchPublicFeed, type PublicPost } from '@nolto/public-feed';
-import { postText } from './content';
+import { useFonts } from 'expo-font';
+import * as Notifications from 'expo-notifications';
+import { Bell, House, UserRound } from 'lucide-react-native';
+import { client } from './client';
+import { configured } from './config';
+import { isUuid } from './notification-content';
+import { clearLocalPushConsent, enablePush, hasPushConsent } from './push';
+import { Timeline } from './Timeline';
+import { AuthScreen } from './AuthScreen';
+import { AccountScreen } from './AccountScreen';
+import { NotificationsScreen } from './NotificationsScreen';
+import { useSession } from './useSession';
+import { fonts, useTheme } from './theme';
+import { ErrorState } from './components';
 
-const backend = { url: process.env.EXPO_PUBLIC_BACKEND_URL ?? '', publishableKey: process.env.EXPO_PUBLIC_BACKEND_KEY ?? '' };
-const site = process.env.EXPO_PUBLIC_SITE_URL ?? '';
-const configured = backend.url.startsWith('https://') && !!backend.publishableKey && site.startsWith('https://');
-const PAGE_SIZE = 12;
-
-function Timeline() {
-  const [scope, setScope] = useState<'local' | 'federated'>('local');
-  const [posts, setPosts] = useState<PublicPost[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
-  const [hasMore, setHasMore] = useState(false);
-  const nextOffset = useRef(0);
-  const active = useRef<AbortController | null>(null);
-
-  const load = useCallback(async (refresh: boolean) => {
-    if (!configured || (!refresh && active.current)) return;
-    active.current?.abort();
-    const controller = new AbortController();
-    active.current = controller;
-    setLoading(true);
-    setRefreshing(refresh);
-    setError('');
-    const offset = refresh ? 0 : nextOffset.current;
-    try {
-      const page = await fetchPublicFeed(backend, { scope, offset, limit: PAGE_SIZE, signal: controller.signal });
-      if (controller.signal.aborted) return;
-      setPosts(current => [...new Map([...(refresh ? [] : current), ...page].map(post => [post.id, post])).values()]);
-      nextOffset.current = offset + PAGE_SIZE;
-      setHasMore(page.length === PAGE_SIZE);
-    } catch {
-      if (!controller.signal.aborted) setError('Flödet kunde inte laddas. Försök igen.');
-    } finally {
-      if (active.current === controller) { active.current = null; setLoading(false); setRefreshing(false); }
-    }
-  }, [scope]);
-
+type Tab = 'home' | 'notifications' | 'account';
+function Shell() {
+  const { colors: c, isDark } = useTheme();
+  const { session, status: auth, verify } = useSession();
+  const [tab, setTab] = useState<Tab>('home');
+  const [revision, setRevision] = useState(0);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [pushError, setPushError] = useState('');
+  const previousUser = useRef<string | null>(null);
+  const lastResponse = useRef<string | null>(null);
+  const refresh = useCallback(() => setRevision(n => n + 1), []);
+  const onHandled = useCallback(() => setPendingId(null), []);
   useEffect(() => {
-    setPosts([]);
-    setHasMore(false);
-    nextOffset.current = 0;
-    void load(true);
-    return () => { active.current?.abort(); active.current = null; };
-  }, [load]);
-
-  const openPost = async (id: string) => {
-    try { await Linking.openURL(new URL(`/post/${encodeURIComponent(id)}`, site).href); }
-    catch { Alert.alert('Länken kunde inte öppnas', 'Försök igen om en stund.'); }
-  };
-
-  return <SafeAreaView style={styles.screen}>
-    <StatusBar style="dark" />
-    <View style={styles.header}><Text style={styles.logo}>Nolto</Text><Text style={styles.subtitle}>Ditt professionella nätverk</Text></View>
-    <FlatList
-      data={posts}
-      keyExtractor={post => post.id}
-      contentContainerStyle={styles.list}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void load(true)} tintColor="#294653" />}
-      ListHeaderComponent={<View>
-        <Text style={styles.heading}>Samtal om arbetslivet.</Text>
-        <Text style={styles.intro}>Titta in. Du behöver inget konto för att läsa.</Text>
-        <View style={styles.tabs}>{(['local', 'federated'] as const).map(value => <Pressable key={value} accessibilityRole="button" accessibilityState={{ selected: scope === value }} onPress={() => setScope(value)} style={[styles.tab, value === scope && styles.selectedTab]}><Text style={value === scope ? styles.selectedLabel : styles.tabLabel}>{value === 'local' ? 'På Nolto' : 'Hela nätverket'}</Text></Pressable>)}</View>
-        {!configured && <Text style={styles.error}>Ange appens publika backend- och webbaddress i den lokala konfigurationen.</Text>}
-        {!!error && <View accessibilityRole="alert"><Text style={styles.error}>{error}</Text><Pressable accessibilityRole="button" style={styles.button} onPress={() => void load(posts.length === 0)}><Text style={styles.buttonLabel}>Försök igen</Text></Pressable></View>}
-      </View>}
-      ListEmptyComponent={configured && !loading && !error ? <View style={styles.empty}><Text style={styles.cardTitle}>Här börjar samtalen.</Text><Text style={styles.body}>Det finns inga offentliga inlägg i det här flödet än.</Text></View> : loading ? <ActivityIndicator color="#294653" accessibilityLabel="Laddar inlägg" /> : null}
-      renderItem={({ item }) => <View style={styles.card}>
-        <Text style={styles.cardTitle}>{item.actor_name || 'Offentligt inlägg'}</Text>
-        {!!item.content_warning ? <Text style={styles.body}>Innehållsvarning: {item.content_warning}</Text> : <Text style={styles.body} numberOfLines={8}>{postText(item.content)}</Text>}
-        <Pressable accessibilityRole="link" onPress={() => void openPost(item.id)} style={styles.postLink}><Text style={styles.linkLabel}>Öppna inlägget på webben ↗</Text></Pressable>
-      </View>}
-      ListFooterComponent={hasMore ? <Pressable accessibilityRole="button" disabled={loading} style={styles.button} onPress={() => void load(false)}><Text style={styles.buttonLabel}>{loading ? 'Laddar…' : 'Visa fler inlägg'}</Text></Pressable> : null}
-    />
+    if (previousUser.current && previousUser.current !== session?.user.id) {
+      setPendingId(null); setPushError('');
+      if (Platform.OS !== 'web') void clearLocalPushConsent().catch(() => undefined);
+    }
+    previousUser.current = session?.user.id ?? null;
+  }, [session?.user.id]);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const handle = (response: Notifications.NotificationResponse | null) => {
+      if (!response || response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
+      const request = response.notification.request;
+      if (request.identifier === lastResponse.current) return;
+      lastResponse.current = request.identifier;
+      if (isUuid(request.content.data?.notificationId)) { setPendingId(request.content.data.notificationId); setTab('notifications'); refresh(); }
+      Notifications.clearLastNotificationResponse();
+    };
+    const response = Notifications.addNotificationResponseReceivedListener(handle);
+    const received = Notifications.addNotificationReceivedListener(refresh);
+    handle(Notifications.getLastNotificationResponse());
+    return () => { response.remove(); received.remove(); };
+  }, [refresh]);
+  const userId = auth === 'verified' ? session?.user.id : undefined;
+  useEffect(() => {
+    if (!userId || !client) return;
+    const channel = client.channel(`mobile-inbox:${userId}`).on('postgres_changes', {
+      event: '*', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userId}`,
+    }, refresh).subscribe();
+    const active = AppState.addEventListener('change', state => { if (state === 'active') refresh(); });
+    return () => { void client?.removeChannel(channel); active.remove(); };
+  }, [userId, refresh]);
+  useEffect(() => {
+    if (!userId || Platform.OS === 'web') return;
+    let cancelled = false; let running = false;
+    const renew = async () => {
+      if (running || cancelled) return;
+      running = true;
+      try {
+        if (await hasPushConsent(userId)) await enablePush(userId, false);
+        if (!cancelled) setPushError('');
+      } catch { if (!cancelled) setPushError('Pushnotiser kunde inte uppdateras. Kontrollera notisinställningen och din uppkoppling.'); }
+      finally { running = false; }
+    };
+    void renew();
+    const token = Notifications.addPushTokenListener(() => { void renew(); });
+    const active = AppState.addEventListener('change', state => { if (state === 'active') void renew(); });
+    return () => { cancelled = true; token.remove(); active.remove(); };
+  }, [userId]);
+  return <SafeAreaView style={{ flex: 1, backgroundColor: c.background }} edges={['top', 'left', 'right']}>
+    <StatusBar style={isDark ? 'light' : 'dark'} />
+    <View style={{ paddingHorizontal: 24, paddingVertical: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Nolto, gå till flödet" onPress={() => setTab('home')} style={{ minHeight: 44, justifyContent: 'center' }}><Text style={{ fontFamily: fonts.display, fontSize: 29, letterSpacing: -1.2, color: c.primary }}>Nolto<Text style={{ color: c.teal }}>.</Text></Text></Pressable>
+      <View style={{ backgroundColor: c.soft, paddingVertical: 7, paddingHorizontal: 12, borderRadius: 20 }}><Text style={{ fontFamily: fonts.semi, fontSize: 11, color: c.muted }}>{tab === 'home' ? 'Ett öppnare arbetsliv' : tab === 'notifications' ? 'Dina notiser' : 'Ditt konto'}</Text></View>
+    </View>
+    <View style={{ flex: 1 }}>
+      {tab === 'home' ? <Timeline /> : !configured ? <View style={{ padding: 24 }}><ErrorState text="Den här appversionen saknar anslutning till Nolto." /></View> : auth === 'loading' ? <View style={{ padding: 40 }}><ActivityIndicator color={c.primary} accessibilityLabel="Kontrollerar inloggning" /></View> : auth === 'error' ? <View style={{ flex: 1, padding: 24 }}><ErrorState text="Din inloggning kunde inte verifieras. Kontrollera uppkopplingen och försök igen." retry={verify} />{session && <AccountScreen userId={session.user.id} email={session.user.email} onSignedOut={() => setTab('home')} pushError="" />}</View> : auth === 'guest' || auth === 'mfa' ? <AuthScreen mfa={auth === 'mfa'} onVerified={verify} /> : session && (tab === 'notifications' ? <NotificationsScreen key={session.user.id} userId={session.user.id} pendingId={pendingId} onHandled={onHandled} revision={revision} /> : <AccountScreen key={session.user.id} userId={session.user.id} email={session.user.email} onSignedOut={() => { setTab('home'); setPendingId(null); }} pushError={pushError} />)}
+    </View>
+    <SafeAreaView edges={['bottom']} style={{ backgroundColor: c.card, borderTopWidth: 1, borderColor: c.border }}>
+      <View accessibilityRole="tablist" style={{ flexDirection: 'row', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 6 }}>
+        {([{ id: 'home', title: 'Flöde', icon: House }, { id: 'notifications', title: 'Notiser', icon: Bell }, { id: 'account', title: 'Konto', icon: UserRound }] as const).map(({ id, title, icon: Icon }) => <Pressable key={id} accessibilityRole="tab" accessibilityState={{ selected: tab === id }} onPress={() => setTab(id)} style={{ flex: 1, minHeight: 59, alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+          <View style={{ minWidth: 56, alignItems: 'center', paddingVertical: 5, borderRadius: 15, backgroundColor: tab === id ? c.soft : 'transparent' }}><Icon size={22} color={tab === id ? c.primary : c.muted} strokeWidth={tab === id ? 2.2 : 1.7} /></View>
+          <Text style={{ fontFamily: tab === id ? fonts.semi : fonts.regular, fontSize: 11, color: tab === id ? c.primary : c.muted }}>{title}</Text>
+        </Pressable>)}
+      </View>
+    </SafeAreaView>
   </SafeAreaView>;
 }
-
-export default function App() { return <SafeAreaProvider><Timeline /></SafeAreaProvider>; }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f7f9fb' },
-  header: { paddingHorizontal: 24, paddingVertical: 18, borderBottomWidth: 1, borderColor: '#e2e8ef' },
-  logo: { fontSize: 28, fontWeight: '700', color: '#294653' },
-  subtitle: { marginTop: 4, fontSize: 12, color: '#5d707a' },
-  list: { padding: 24, flexGrow: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
-  heading: { marginTop: 10, fontSize: 30, fontWeight: '700', letterSpacing: -1, color: '#172c37' },
-  intro: { marginVertical: 16, fontSize: 15, lineHeight: 24, color: '#5d707a' },
-  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 16 },
-  tab: { padding: 14, borderRadius: 24, backgroundColor: '#e7eef0' },
-  selectedTab: { backgroundColor: '#294653' },
-  selectedLabel: { color: '#fff', fontWeight: '600' },
-  tabLabel: { color: '#294653', fontWeight: '600' },
-  card: { padding: 20, marginVertical: 8, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#e2e8ef' },
-  cardTitle: { fontSize: 18, fontWeight: '600', color: '#172c37' },
-  body: { marginTop: 12, fontSize: 16, lineHeight: 25, color: '#425862' },
-  empty: { padding: 28, marginVertical: 24, backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#e2e8ef' },
-  error: { marginVertical: 16, lineHeight: 23, color: '#9b302d' },
-  button: { backgroundColor: '#efbf68', padding: 16, marginVertical: 14, borderRadius: 24, alignItems: 'center' },
-  buttonLabel: { color: '#172c37', fontWeight: '600' },
-  postLink: { paddingTop: 20, paddingBottom: 8 },
-  linkLabel: { color: '#294653', fontSize: 14, fontWeight: '600' },
-});
+export default function App() {
+  const [loaded, error] = useFonts({
+    'Inter-Regular': require('./assets/fonts/Inter-Regular.ttf'), 'Inter-SemiBold': require('./assets/fonts/Inter-SemiBold.ttf'),
+    'Inter-Bold': require('./assets/fonts/Inter-Bold.ttf'), 'Montserrat-Bold': require('./assets/fonts/Montserrat-Bold.ttf'),
+  });
+  return <SafeAreaProvider>{loaded || error ? <Shell /> : <View style={{ flex: 1, justifyContent: 'center' }}><ActivityIndicator color="#294653" /></View>}</SafeAreaProvider>;
+}

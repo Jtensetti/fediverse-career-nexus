@@ -5,9 +5,27 @@
     "version": "0.1.0",
     "orientation": "default",
     "scheme": "nolto",
-    "userInterfaceStyle": "light",
-    "platforms": ["ios", "android"],
-    "ios": { "supportsTablet": true, "bundleIdentifier": "social.nolto.app" },
-    "android": { "package": "social.nolto.app", "permissions": [] }
+    "userInterfaceStyle": "automatic",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "social.nolto.app"
+    },
+    "android": {
+      "package": "social.nolto.app",
+      "permissions": []
+    },
+    "plugins": [
+      "expo-notifications",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "web": {
+      "bundler": "metro"
+    }
   }
 }
