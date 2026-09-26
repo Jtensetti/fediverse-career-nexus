@@ -87,10 +87,31 @@ test('plural forms exist wherever English defines them', () => {
   }
 });
 
-test('translations are not English copies', () => {
+// Reviewed shared vocabulary, loanwords and technical names. Checking only long
+// strings missed untranslated buttons such as "Accept", "Share" and "Saving".
+// A new exception needs a language/context review; do not raise a copy budget.
+const sharedVocabulary = Object.fromEntries(Object.entries({
+  sv: 'Admin|Cache|Cookies|Hybrid|Info|Moderator|Normal|Organisation|Partition|Permanent|Region|Server|Status|System|Tips:|{{count}} server',
+  fr: '15. Contact|Action|Actions|Admin|Article|Articles|Cache|Collaboration|Compatible|Contact|Cookies|Description|Documentation|Freelance|Image|Info|Instances|Message|Messages|Newsletter|Normal|Notification|Notifications|OPEN SOURCE|Open Source|Open source|Organisation|Organisations|Partition|Permanent|Public|Services|Sessions|Suggestions|Suspensions|Tags|Total|Type|Vertical (Stories)|messages|req/24h',
+  de: 'Admin|Cache|Community|Cookies|Domain|Feed|Feeds|Hybrid|Info|Jobs|Moderation|Moderator|Name|Newsletter|Normal|OPEN SOURCE|Open Source|Optional|Organisation|Partition|Permanent|Position|Region|Remote|Server|Status|System|System online|Tags|Team',
+  nl: '1 week|10. Disclaimers|15. Contact|8. Privacy|Cache|Contact|Cookies|Database|Download JSON|Feed|Feeds|Filters|Freelance|Freelancer|Freelancers|Home|Info|Logs|Moderator|Moderators|OPEN SOURCE|Open Source|Open source|Permanent|Posts|Privacy|Privacy by Design|Self-hosting|Server|Status|Tags|Team|Tips:|Trace ID:|Type|Website|Week {{number}}|{{count}} server|{{count}} servers',
+  es: 'Actor|Compatible|Cookies|Editor|Error|Feed|Feeds|Freelance|Freelancer|Freelancers|General|Legal|Normal|Personal|Roles|Total|Total:',
+  ja: '',
+  it: '8. Privacy|Cache|Database|Email|Feed|Freelance|Full-time|Home|Info|Newsletter|Nolto – home|OPEN SOURCE|Open Source|Open source|Part-time|Password|Post|Privacy|Privacy by Design|Self-hosting|Server|Username|follower|{{count}} server',
+}).map(([language, words]) => [language, new Set(words.split('|'))]));
+const sharedNames = new Set(['Nolto', 'Nolto.', 'ActivityPub', 'Fediverse', 'X/Twitter', 'URL', 'ms', 'nolto.social/organisation/', 'organisation.com']);
+
+test('translations contain no unreviewed English copies, including short labels', () => {
   for (const language of languages.filter(language => language !== 'en')) {
-    const copied = [...flat.en].filter(([key, english]) => english.length > 24 && /\s/.test(english) && flat[language].get(key) === english).map(([key]) => key);
-    assert.ok(copied.length <= 10, `${language}: ${copied.length} long strings identical to English, e.g. ${copied.slice(0, 5).join(', ')}`);
+    const copied = [...flat.en].filter(([key, english]) => {
+      if (flat[language].get(key) !== english) return false;
+      if (!/[A-Za-z]/.test(english.replace(/{{[^}]*}}/g, ''))) return false;
+      if (sharedNames.has(english) || sharedVocabulary[language].has(english) || /^https?:\/\//.test(english)) return false;
+      // URL path examples deliberately use ASCII; the field's label/help is localized.
+      if (/\.(urlSlugPlaceholder|slugPlaceholder|addressPlaceholder)$/.test(key) && /^[a-z0-9-]+$/.test(english)) return false;
+      return true;
+    }).map(([key, value]) => `${key}: ${value}`);
+    assert.deepEqual(copied, [], `${language}: review copied English text in context`);
   }
 });
 

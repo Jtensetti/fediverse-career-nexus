@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { intlLocale } from "@/lib/locale";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -262,7 +263,7 @@ const ConnectionsPage = () => {
                       </Link>
                       <p className="text-sm text-muted-foreground line-clamp-2">{request.headline}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {t("connections.sent", "Sent")} {new Date(request.createdAt).toLocaleDateString()}
+                        {t("connections.sent", { date: new Date(request.createdAt).toLocaleDateString(intlLocale()) })}
                       </p>
                     </div>
                   </div>

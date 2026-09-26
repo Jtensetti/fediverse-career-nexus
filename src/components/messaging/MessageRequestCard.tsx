@@ -134,7 +134,7 @@ export default function MessageRequestCard({ request, onAction }: MessageRequest
               {tx("ui.messageRequestCard.avbojDennaForfragan")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {sender?.fullname || sender?.username}{' '}{tx("ui.messageRequestCard.kommerInteKunnaSkicka")}
+              {tx("ui.messageRequestCard.kommerInteKunnaSkicka", { name: sender?.fullname || sender?.username || tx("ui.messageRequestCard.unknown") })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

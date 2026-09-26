@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,14 +36,14 @@ const reportReasons = [
   { value: "other", get label() { return tx("ui.reportDialog.annat"); } },
 ];
 
-const contentTypeLabels: Record<string, string> = {
-  post: "inlägg",
-  article: "artikel",
-  comment: "kommentar",
-  job: "jobbannons",
-  event: "evenemang",
-  user: "användare",
-  company: "företag",
+const contentTitleKeys: Record<string, string> = {
+  post: "ui.reportDialog.reportPost",
+  article: "ui.reportDialog.reportArticle",
+  comment: "ui.reportDialog.reportComment",
+  job: "ui.reportDialog.reportJob",
+  event: "ui.reportDialog.reportEvent",
+  user: "ui.reportDialog.reportUser",
+  company: "ui.reportDialog.reportCompany",
 };
 
 export function ReportDialog({
@@ -53,6 +54,7 @@ export function ReportDialog({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
 }: ReportDialogProps) {
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
@@ -62,7 +64,7 @@ export function ReportDialog({
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
 
-  const localizedType = contentTypeLabels[contentType] || contentType;
+  const title = t(contentTitleKeys[contentType] || "ui.reportDialog.rapportera");
 
   const handleSubmit = async () => {
     if (!reason) {
@@ -88,11 +90,11 @@ export function ReportDialog({
   const dialogContent = (
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>{tx("ui.reportDialog.rapportera")}{' '}{localizedType}</DialogTitle>
+        <DialogTitle>{title}</DialogTitle>
         <DialogDescription>
           {contentTitle 
-            ? `Rapporterar: "${contentTitle.substring(0, 50)}${contentTitle.length > 50 ? '...' : ''}"`
-            : `Hjälp oss förstå vad som är fel med detta ${localizedType}.`
+            ? t("ui.reportDialog.reportingNamed", { title: `${contentTitle.substring(0, 50)}${contentTitle.length > 50 ? '…' : ''}` })
+            : t("ui.reportDialog.explainReason")
           }
         </DialogDescription>
       </DialogHeader>
