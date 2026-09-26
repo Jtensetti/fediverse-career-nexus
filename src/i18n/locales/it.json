@@ -35,7 +35,7 @@
   },
   "accessibility": {
     "skipToContent": "Vai al contenuto",
-    "darkMode": "Attiva/disattiva modalità scura",
+    "darkMode": "Scegli il tema",
     "navigationMenu": "Menu di navigazione",
     "menuOpen": "Apri menu",
     "menuClose": "Chiudi menu",
@@ -91,7 +91,7 @@
     "invitedWithCode": "Invitato con codice",
     "noTracking": "Nessun tracciamento",
     "ownIdentity": "Controlla la tua identità",
-    "connectFediverse": "Connettiti al Fediverso",
+    "connectFediverse": "Segui persone anche su altri servizi del Fediverso",
     "enterEmail": "Inserisci la tua email",
     "enterPassword": "Inserisci la tua password",
     "createPassword": "Crea una password",
@@ -102,7 +102,7 @@
     "lastNameRequired": "Il cognome è obbligatorio",
     "emailRequired": "L'email è obbligatoria",
     "passwordRequired": "La password è obbligatoria",
-    "nameTooLong": "Deve contenere meno di 50 caratteri",
+    "nameTooLong": "Il nome può contenere al massimo 50 caratteri.",
     "nameInvalidChars": "Può contenere solo lettere, spazi, trattini, apostrofi e punti",
     "usernameMinChars": "Almeno 3 caratteri",
     "usernameMaxChars": "Massimo 30 caratteri",
@@ -158,7 +158,7 @@
     "resources": "Risorse",
     "documentation": "Documentazione",
     "helpCenter": "Centro assistenza",
-    "howFederationWorks": "Come funziona la collaborazione",
+    "howFederationWorks": "Come funziona la federazione",
     "federatedInstances": "Server collegati",
     "legal": "Legale",
     "privacyPolicy": "Informativa sulla privacy",
@@ -231,7 +231,7 @@
     "react": "Reagisci",
     "love": "Adoro",
     "celebrate": "Festeggia",
-    "support": "Supporta",
+    "support": "Sostegno",
     "insightful": "Illuminante",
     "empathy": "Empatia",
     "title": "Reazioni",
@@ -383,7 +383,17 @@
     "actionCreated": "Azione di moderazione creata con successo",
     "notAuthorized": "Non sei autorizzato a intraprendere azioni di moderazione",
     "loginRequired": "Devi essere loggato per visualizzare questa pagina",
-    "loadingData": "Caricamento dati di moderazione..."
+    "loadingData": "Caricamento dati di moderazione...",
+    "statusUpdatedDetails": "Nuovo stato di {{target}}: {{status}}.",
+    "entryRemovedDetails": "La regola di moderazione per {{target}} è stata rimossa.",
+    "ruleSaved": "Impostazioni di moderazione salvate",
+    "loadRulesFailed": "Non è stato possibile caricare le regole di moderazione.",
+    "domainRequired": "Inserisci un dominio.",
+    "accountUrlRequired": "Inserisci l’indirizzo web completo dell’account.",
+    "reasonRequired": "Indica un motivo.",
+    "saveRuleFailed": "Non è stato possibile salvare la regola di moderazione. Riprova.",
+    "editRuleDescription": "Modifica la regola di moderazione per {{target}}.",
+    "removeRuleDescription": "Rimuovere la regola di moderazione per {{target}}?"
   },
   "events": {
     "title": "Eventi",
@@ -552,24 +562,23 @@
     "introduceYourself": "Presentati al network",
     "writeArticle": "Scrivi un articolo",
     "shareExpertise": "Condividi la tua esperienza con i colleghi",
-    "connectWithPeers": "Connettiti con i colleghi",
+    "connectWithPeers": "Trova nuovi contatti",
     "buildNetwork": "Costruisci il tuo network professionale",
-    "postJob": "Pubblica un'offerta di lavoro",
+    "postJob": "Pubblica un’offerta di lavoro",
     "reachProfessionals": "Raggiungi professionisti attraverso il network federato",
     "createEvent": "Crea un evento",
     "hostMeetups": "Organizza incontri ed eventi di networking",
-    "doIt": "Fatto",
     "dismissAction": "Ignora suggerimento: {{action}}"
   },
   "openSource": {
     "badge": "Open Source",
-    "title": "Costruito in modo Aperto",
-    "description": "Ogni riga di codice è pubblica. Ogni decisione è documentata. La trasparenza costruisce fiducia.",
+    "title": "Sviluppato in modo aperto",
+    "description": "Il codice sorgente di Nolto è aperto. Esaminalo, segui lo sviluppo o contribuisci con un miglioramento.",
     "repoDescription": "L'alternativa federata a LinkedIn",
     "mitLicense": "Licenza MIT",
     "contributorsWelcome": "Benvenuti i Contributori",
-    "securityAudited": "Sicurezza Verificata",
-    "securityDescription": "Verifiche di sicurezza regolari e divulgazione responsabile",
+    "securityAudited": "Problemi di sicurezza",
+    "securityDescription": "Segnala le vulnerabilità in modo responsabile",
     "activeDevelopment": "Sviluppo Attivo",
     "devDescription": "Aggiornamenti regolari con feedback dalla community",
     "communityDriven": "Guidato dalla Community",
@@ -581,27 +590,27 @@
     "title": "Tutto ciò di cui hai bisogno per il Networking Professionale",
     "subtitle": "Tutti gli strumenti di un moderno network professionale — aperto, federato e senza pubblicità",
     "professionalProfiles": "Profili Professionali",
-    "profilesDesc": "Competenze, esperienza e raccomandazioni — raccolte per l'intera organizzazione",
+    "profilesDesc": "Presenta la tua esperienza, formazione e competenze nel tuo profilo.",
     "portableIdentity": "Esportazione sicura dei dati",
     "jobBoard": "Reclutamento",
     "jobDesc": "Trova e pubblica posizioni attraverso il network federato",
-    "crossInstanceListings": "Annunci tra organizzazioni",
+    "crossInstanceListings": "Offerte nella rete",
     "events": "Eventi",
     "eventsDesc": "Crea eventi e gestisci le iscrizioni",
     "federatedRsvps": "RSVP facili",
     "articles": "Articoli",
     "articlesDesc": "Condividi conoscenze e intuizioni con i colleghi",
-    "reachAnyInstance": "Raggiungi l'intera organizzazione",
+    "reachAnyInstance": "Condividi conoscenze con la tua rete",
     "directMessages": "Messaggi Diretti",
     "dmDesc": "Conversazioni sicure con i tuoi contatti",
     "crossInstanceMessaging": "Messaggistica crittografata",
     "connections": "Contatti",
     "connectionsDesc": "Costruisci relazioni professionali significative",
-    "followAnywhere": "Collabora tra organizzazioni",
+    "followAnywhere": "Segui persone su altri servizi",
     "privacyByDesign": "Privacy by Design",
     "noTracking": "Nessun tracciamento, nessuna pubblicità, nessuna vendita di dati",
-    "fullPortability": "Piena Portabilità",
-    "exportAnytime": "Esporta i tuoi dati in qualsiasi momento",
+    "fullPortability": "Porta con te i tuoi dati",
+    "exportAnytime": "Scarica i tuoi dati",
     "openProtocol": "Standard Aperto",
     "builtOnActivityPub": "Costruito su standard aperti"
   },
@@ -651,7 +660,7 @@
     "contactEmail": "Email di contatto",
     "contactEmailDesc": "Usata per le notifiche email e quando scegli di condividere i recapiti. Disattiva le email nelle impostazioni delle notifiche.",
     "username": "Username",
-    "usernamePlaceholder": "il-tuo-username",
+    "usernamePlaceholder": "il_tuo_nome_utente",
     "usernameDesc": "Il tuo @username su Nolto",
     "saveChanges": "Salva modifiche",
     "saving": "Salvataggio...",
@@ -676,7 +685,7 @@
     },
     "experience": {
       "title": "Esperienza",
-      "company": "Organizzazione",
+      "company": "Azienda o organizzazione",
       "position": "Posizione",
       "startDate": "Data di inizio",
       "endDate": "Data di fine",
@@ -689,7 +698,7 @@
       "loading": "Caricamento...",
       "jobTitle": "Qualifica professionale",
       "jobTitlePlaceholder": "Il tuo ruolo",
-      "companyPlaceholder": "Nome dell'organizzazione",
+      "companyPlaceholder": "Ad es. Acme Srl o lavoro autonomo",
       "companyDomain": "Dominio dell'organizzazione",
       "companyDomainPlaceholder": "organizzazione.com",
       "locationPlaceholder": "ad es. Stoccolma",
@@ -700,7 +709,7 @@
       "startDateRequired": "La data di inizio è obbligatoria",
       "remove": "Rimuovi esperienza {{name}}",
       "current": "Attualmente lavoro qui",
-      "companyRequired": "L'organizzazione è obbligatoria"
+      "companyRequired": "Indica un’azienda, un’organizzazione o un’attività autonoma."
     },
     "education": {
       "title": "Formazione",
@@ -813,7 +822,7 @@
     "adjustFilters": "Prova a modificare i tuoi filtri per scoprire più opportunità.",
     "beFirst": "Sii il primo a pubblicare un annuncio di lavoro!",
     "reachProfessionals": "Raggiungi professionisti in tutta la rete federata. Pubblica annunci di lavoro trasparenti.",
-    "postJob": "Pubblica un lavoro",
+    "postJob": "Pubblica un’offerta di lavoro",
     "signUpToPost": "Iscriviti per pubblicare",
     "clearFilters": "Cancella filtri",
     "allJobTypes": "Tutti i tipi di impiego",
@@ -862,7 +871,7 @@
     "rejectEmployeeTitle": "Rifiutare la rivendicazione del dipendente?",
     "rejectEmployeeDesc": "Questo rimuoverà permanentemente la rivendicazione di impiego di {{name}}. Dovrà inviare una nuova rivendicazione.",
     "removeRoleTitle": "Rimuovere il ruolo?",
-    "removeRoleDesc": "Questo rimuoverà l'accesso di {{name}} alla gestione di questa pagina dell'organizzazione. Potrà essere aggiunto di nuovo in seguito.",
+    "removeRoleDesc": "{{name}} non potrà più gestire la pagina dell’organizzazione. Potrai concedere nuovamente l’accesso in seguito.",
     "removeRole": "Rimuovi Ruolo",
     "noAdditionalRoles": "Nessun ruolo aggiuntivo",
     "onlyOwnerAccess": "Solo il proprietario ha attualmente accesso",
@@ -883,13 +892,13 @@
     "roleRemoveFailed": "Rimozione ruolo fallita"
   },
   "companies": {
-    "title": "Organizzazioni",
+    "title": "Imprese e organizzazioni",
     "subtitle": "Scopri e connettiti con le organizzazioni",
-    "createTitle": "Crea Organizzazione",
-    "createDescription": "Crea una pagina organizzativa per mostrare la tua organizzazione",
-    "createSuccess": "Organizzazione creata con successo!",
-    "createError": "Impossibile creare l'organizzazione",
-    "create": "Crea Organizzazione",
+    "createTitle": "Crea una pagina per un'impresa o un'organizzazione",
+    "createDescription": "Presenta la tua organizzazione, condividi novità e incontra futuri colleghi e partner.",
+    "createSuccess": "La pagina dell’organizzazione è stata creata.",
+    "createError": "Non è stato possibile creare la pagina dell’organizzazione.",
+    "create": "Crea una pagina per l'organizzazione",
     "noMatching": "Nessuna organizzazione corrispondente",
     "beFirst": "Sii il primo a creare una pagina organizzativa",
     "adjustFilters": "Prova a regolare i tuoi filtri",
@@ -936,7 +945,7 @@
     "noPosts": "Nessun post ancora",
     "noPostsDescription": "Questa organizzazione non ha ancora condiviso alcun post.",
     "noJobs": "Nessuna offerta di lavoro",
-    "noJobsDescription": "Questa organizzazione non ha offerte di lavoro al momento.",
+    "noJobsDescription": "Non sono ancora state pubblicate offerte di lavoro qui.",
     "noneAvailable": "Al momento non ci sono organizzazioni disponibili",
     "noneAvailableDescription": "Torna più tardi per scoprire le organizzazioni su Nolto."
   },
@@ -951,8 +960,8 @@
   },
   "companyForm": {
     "basicInfo": "Informazioni di base",
-    "basicInfoDesc": "Inserisci i dettagli principali della tua organizzazione",
-    "companyName": "Nome Organizzazione",
+    "basicInfoDesc": "Aiuta le persone a capire chi siete e di cosa vi occupate.",
+    "companyName": "Nome dell'impresa o dell'organizzazione",
     "companyUrl": "Indirizzo web Nolto",
     "available": "Disponibile",
     "taken": "Occupato",
@@ -972,13 +981,16 @@
     "foundedYear": "Anno di fondazione",
     "nameTooShort": "Inserisci un nome organizzazione di almeno 2 caratteri.",
     "nameTooLong": "Il nome deve contenere 100 caratteri o meno.",
-    "urlTooShort": "L'indirizzo deve contenere almeno 2 caratteri.",
+    "urlTooShort": "L’indirizzo deve contenere almeno 3 caratteri.",
     "urlTooLong": "L'indirizzo deve contenere 50 caratteri o meno.",
-    "urlCharacters": "Usa lettere minuscole (a–z), numeri e trattini.",
+    "urlCharacters": "Usa lettere minuscole (a–z), numeri e trattini. Inizia e termina con una lettera o un numero.",
     "taglineTooLong": "La descrizione deve contenere 140 caratteri o meno.",
     "invalidWebsite": "Inserisci un indirizzo web valido, come https://esempio.com.",
     "organisationType": "Tipo di organizzazione",
-    "selectOrgType": "Seleziona tipo di organizzazione"
+    "selectOrgType": "Scegli il tipo di organizzazione",
+    "httpsRequired": "Inserisci un indirizzo web che inizi con https://.",
+    "maxCharacters": "Usa al massimo {{max}} caratteri.",
+    "validYear": "Inserisci un anno tra {{min}} e {{max}}."
   },
   "companyPost": {
     "deleteTitle": "Eliminare il post?",
@@ -1051,7 +1063,7 @@
     "comments": "Commenti",
     "noSavedItems": "Nessun elemento salvato ancora",
     "noSavedItemsAll": "Salva lavori, articoli, eventi, post e commenti per visualizzarli qui in seguito",
-    "noSavedItemsType": "Non hai ancora salvato nessun {{type}}. Cerca l'icona del segnalibro per salvare gli elementi.",
+    "noSavedItemsType": "Non hai ancora salvato nulla in questa categoria. Usa l’icona del segnalibro per conservare un contenuto per dopo.",
     "browseFeed": "Sfoglia il feed",
     "browseJobs": "Sfoglia offerte di lavoro",
     "browseArticles": "Sfoglia articoli",
@@ -1143,7 +1155,7 @@
     "shareEvent": "Condividi evento",
     "editEvent": "Modifica evento",
     "deleteEvent": "Elimina evento",
-    "deleteConfirmTitle": "Sei sicuro?",
+    "deleteConfirmTitle": "Eliminare questo evento?",
     "deleteConfirmDescription": "Questa azione non può essere annullata. L'evento e tutte le relative conferme di partecipazione (RSVP) verranno eliminati definitivamente.",
     "linkCopied": "Link dell'evento copiato negli appunti!",
     "mustBeLoggedIn": "Devi essere loggato per confermare la partecipazione (RSVP)",
@@ -1222,7 +1234,7 @@
     "companyValidation": "Il nome dell'organizzazione è obbligatorio",
     "locationValidation": "La località è obbligatoria",
     "descriptionValidation": "La descrizione deve contenere almeno 20 caratteri",
-    "salaryValidation": "Il salario minimo deve essere inferiore al salario massimo"
+    "salaryValidation": "La retribuzione minima non può superare quella massima."
   },
   "eventForm": {
     "eventDetails": "Dettagli dell'evento",
@@ -1384,7 +1396,7 @@
     "recoverySend": "Invia richiesta",
     "recoverySending": "Invio in corso...",
     "recoverySent": "Richiesta ricevuta",
-    "recoverySubmittedDesc": "Un amministratore esaminerà la tua richiesta e ti contatterà a breve all'indirizzo email registrato.",
+    "recoverySubmittedDesc": "Un amministratore esaminerà la tua richiesta. Riceverai gli aggiornamenti all’indirizzo email registrato nell’account.",
     "recoveryError": "Impossibile inviare la richiesta. Riprova a breve.",
     "recoveryQueueTitle": "Richieste di recupero MFA",
     "recoveryQueueDesc": "Esamina e gestisci le richieste di recupero a due fattori.",
@@ -1392,7 +1404,7 @@
     "recoveryIssueLink": "Invia link di recupero",
     "recoveryReject": "Rifiuta",
     "recoveryConfirmTitle": "Invia link di recupero?",
-    "recoveryConfirmDesc": "Il link verrà inviato all'**indirizzo email registrato** dell'account, non a quello inserito nel modulo. L'utente dovrà accedere con la propria password per completare il recupero. Il link è valido per 30 minuti.",
+    "recoveryConfirmDesc": "Il link verrà inviato all'indirizzo email registrato dell'account, non a quello inserito nel modulo. L'utente dovrà accedere con la propria password per completare il recupero. Il link è valido per 30 minuti.",
     "recoveryConfirmSend": "Sì, invia link",
     "recoveryLinkSent": "Link di recupero inviato al proprietario dell'account.",
     "recoveryLinkError": "Impossibile inviare il link.",
@@ -1405,7 +1417,7 @@
     "recoveryAttemptedLogin": "Tentativo di accesso:",
     "recoveryEmailMatch": "corrisponde al modulo",
     "recoveryEmailMismatch": "non corrisponde al modulo",
-    "recoveryNoAttemptedLogin": "Nessuna credenziale di accesso silenzioso catturata (modulo aperto senza un precedente tentativo di accesso).",
+    "recoveryNoAttemptedLogin": "Nessun identificativo di accesso disponibile: il modulo è stato aperto senza un precedente tentativo di accesso.",
     "recoveryPageTitle": "Recupera autenticazione a due fattori",
     "recoveryPageDescLoggedOut": "Accedi con la tua password per completare il recupero.",
     "recoveryPageProcessing": "Conferma del recupero in corso...",
@@ -1424,7 +1436,7 @@
     "posting": "Pubblicazione...",
     "failed": "Impossibile pubblicare la risposta",
     "emptyError": "La risposta non può essere vuota",
-    "tooLongError": "La risposta deve contenere meno di {{max}} caratteri",
+    "tooLongError": "La risposta può contenere al massimo {{max}} caratteri.",
     "charactersRemaining": "caratteri rimanenti"
   },
   "commentEdit": {
@@ -1588,7 +1600,7 @@
     "companyRequired": "Il nome dell'organizzazione è obbligatorio",
     "locationRequired": "La posizione è obbligatoria",
     "descriptionValidation": "La descrizione deve contenere almeno 20 caratteri",
-    "salaryValidation": "Il salario minimo deve essere inferiore al salario massimo",
+    "salaryValidation": "La retribuzione minima non può superare quella massima.",
     "linkToCompany": "Collega a Pagina Organizzazione",
     "selectCompany": "Seleziona una pagina organizzazione (opzionale)",
     "linkDescription": "Collega questa offerta di lavoro a una pagina organizzazione che gestisci.",
@@ -1650,9 +1662,9 @@
   "articleReactions": {
     "reactions": "reazioni",
     "signInToReact": "Accedi per reagire agli articoli",
-    "love": "Amore",
-    "celebrate": "Celebra",
-    "support": "Supporto",
+    "love": "Adoro",
+    "celebrate": "Festeggia",
+    "support": "Sostegno",
     "empathy": "Empatia",
     "insightful": "Illuminante"
   },
@@ -1956,8 +1968,8 @@
     "jobs": "Lavori",
     "articles": "Articoli",
     "events": "Eventi",
-    "noResults": "Nessun risultato trovato per",
-    "advancedSearch": "Ricerca avanzata"
+    "advancedSearch": "Ricerca avanzata",
+    "noResultsFor": "Nessun risultato per «{{query}}»"
   },
   "toasts": {
     "connectionRequestSent": "Richiesta di contatto inviata",
@@ -2043,9 +2055,8 @@
     "noConnectionsYet": "Nessun contatto ancora",
     "viewAllConnections": "Visualizza tutti i contatti",
     "followForArticles": "Segui per Articoli",
-    "followForArticlesDesc": "Ricevi una notifica quando",
-    "followForArticlesDescSuffix": "pubblica nuovi articoli",
-    "unknownUser": "Utente Sconosciuto"
+    "unknownUser": "Utente Sconosciuto",
+    "followArticleUpdates": "Ricevi una notifica quando {{name}} pubblica un articolo."
   },
   "messagesPage": {
     "title": "Messaggi",
@@ -2147,7 +2158,6 @@
     "edit": "Modifica {{name}}",
     "unavailablePerson": "Profilo non disponibile",
     "unavailableCompany": "Organizzazione non disponibile",
-    "peopleCount": "{{count}} persone",
     "saveError": "Impossibile caricare o salvare questo feed. Le tue scelte sono ancora qui. Riprova.",
     "emptyTitle": "Nessun post da mostrare",
     "emptyDescription": "Nessun post disponibile corrisponde in questo momento. Modifica la tua selezione sotto Feed o segui più persone.",
@@ -2156,7 +2166,9 @@
     "exploreNolto": "Esplora Nolto",
     "findPeople": "Trova persone",
     "followingEmptyTitle": "Il tuo feed inizia qui",
-    "followingEmptyDescription": "I tuoi post e i post delle persone che segui appaiono qui. Esplora Nolto o trova persone da seguire."
+    "followingEmptyDescription": "I tuoi post e i post delle persone che segui appaiono qui. Esplora Nolto o trova persone da seguire.",
+    "peopleCount_one": "{{count}} persona",
+    "peopleCount_other": "{{count}} persone"
   },
   "profileInline": {
     "hint": "Clicca su ciò che vuoi modificare. Le modifiche vengono pubblicate quando salvi.",
@@ -2884,7 +2896,6 @@
     },
     "notifications": {
       "dinaAviseringarPaNolto": "Le tue notifiche su Nolto.",
-      "olasta": "non lette)",
       "markeraAllaSomLasta": "Segna tutto come letto",
       "olasta2": "Non letto",
       "ingaOlastaAviseringar": "Nessuna notifica non letta",
@@ -2892,7 +2903,8 @@
       "duArHeltIkapp": "Sei in pari con tutto!",
       "narDuFarAviseringar": "Quando riceverai notifiche, appariranno qui",
       "aviseringar": "Notifiche",
-      "alla": "Tutte"
+      "alla": "Tutte",
+      "unreadCount": "Non lette: {{total}}"
     },
     "messageConversation": {
       "kundeInteSkickaMeddelande": "Impossibile inviare il messaggio",
@@ -2920,22 +2932,22 @@
       "harKanDuAterkalla": "Qui puoi revocare l'accesso di un'app esterna al tuo account Nolto. Per utilizzare di nuovo l'app, dovrai riconnetterla.",
       "hamtarAnslutningar": "Recupero connessioni…",
       "duHarIngaGodkanda": "Non hai connessioni ad app autorizzate.",
-      "anslutningArSenastGodkand": "connessione/i. Ultima autorizzazione",
       "aterkallar": "Revoca in corso…",
       "aterkallaAtkomst": "Revoca accesso",
       "omMastodonAppar": "Informazioni sulle app Mastodon",
-      "anslutnaAppar": "App connesse"
+      "anslutnaAppar": "App connesse",
+      "grantSummary": "Connessioni: {{total}}. Ultima autorizzazione: {{date}}.",
+      "revokeFailed": "Non è stato possibile revocare l’accesso. Riprova."
     },
     "sessionExpiryWarning": {
       "dinSessionHarGatt": "La tua sessione è scaduta. Accedi di nuovo.",
       "sessionenHarForlangts": "Sessione estesa",
       "kundeInteForlangaSessionen": "Impossibile estendere la sessione. Accedi di nuovo.",
       "sessionenGarUtSnart": "La sessione scadrà presto",
-      "dinSessionGarUt": "La tua sessione scadrà tra",
-      "villDuForlangaSessionen": ". Vuoi estendere la sessione?",
       "avfarda": "Chiudi",
       "forlanger": "Estensione in corso...",
-      "forlangSession": "Estendi sessione"
+      "forlangSession": "Estendi sessione",
+      "expiryMessage": "La sessione terminerà tra {{time}}. Vuoi restare connesso?"
     },
     "userLookup": {
       "anvandaruppslag": "Ricerca utente",
@@ -3151,7 +3163,7 @@
       "kundeInteUppdateraDomanstatus": "Impossibile aggiornare lo stato del dominio",
       "domanBorttagen": "Dominio rimosso",
       "kundeInteTaBort": "Impossibile rimuovere il dominio",
-      "provotid": "Periodo di prova",
+      "provotid": "Con restrizioni",
       "laggTillDomanmoderering": "Aggiungi moderazione dominio",
       "domanvard": "Host del dominio",
       "valjStatus": "Seleziona stato",
@@ -3162,10 +3174,7 @@
       "atgarder": "Azioni",
       "ingaDomanmodereringsposternaHittades": "Nessuna voce di moderazione dominio trovata",
       "redigeraDomanmoderering": "Modifica moderazione dominio",
-      "uppdateraModereringsinstallningarFor": "Aggiorna impostazioni di moderazione per",
       "bekraftaBorttagning": "Conferma eliminazione",
-      "arDuSakerPa": "Sei sicuro di voler rimuovere",
-      "franModerering": "dalla moderazione?",
       "uppdateringMisslyckades": "Aggiornamento fallito",
       "ettFelUppstodVid": "Si è verificato un errore durante l'aggiornamento",
       "borttagningMisslyckades": "Rimozione fallita",
@@ -3187,11 +3196,10 @@
       "anmaltInnehallSomHar": "Contenuto segnalato che è stato eliminato",
       "atkomstenLoggasTextKan": "L'accesso è registrato. Il testo può essere revisionato se la segnalazione è stata fatta prima dell'eliminazione e il caso è ancora aperto. Immagini e messaggi privati non sono visualizzati qui.",
       "textenArInteTillganglig": "Il testo non è disponibile. Il caso potrebbe essere chiuso, il periodo di conservazione scaduto o l'accesso negato.",
-      "granskningenForlangerInteLagringstiden": ". La revisione non estende il periodo di conservazione.",
       "hamtarTexten": "Recupero del testo in corso…",
       "inlaggetInnehallerIngenGranskbar": "Il post non contiene testo revisionabile.",
       "granskaRaderadText": "Revisiona testo eliminato",
-      "raderasPermanent": "Eliminato in modo permanente"
+      "purgeNotice": "Eliminazione definitiva il {{date}}. La revisione non prolunga il periodo di conservazione."
     },
     "actorModeration": {
       "aktorBlockerad": "Attore bloccato",
@@ -3200,7 +3208,7 @@
       "ettFelIntraffade": "Si è verificato un errore",
       "aktorBorttagen": "Attore rimosso",
       "kundeInteTaBort": "Impossibile rimuovere l'attore",
-      "provotid": "Periodo di prova",
+      "provotid": "Con restrizioni",
       "laggTillAktorblockering": "Aggiungi blocco attore",
       "aktorUrl": "URL attore",
       "valjStatus": "Seleziona stato",
@@ -3211,12 +3219,9 @@
       "atgarder": "Azioni",
       "ingaAktorblockeringarHittades": "Nessun blocco attore trovato",
       "redigeraAktorblockering": "Modifica blocco attore",
-      "uppdateraModereringsinstallningarFor": "Aggiorna impostazioni di moderazione per",
       "avbryt": "Annulla",
       "sparaAndringar": "Salva modifiche",
       "bekraftaBorttagning": "Conferma rimozione",
-      "arDuSakerPa": "Sei sicuro di voler rimuovere",
-      "franModereringen": "dalla moderazione?",
       "taBort": "Rimuovi",
       "uppdateringMisslyckades": "Aggiornamento fallito",
       "borttagningMisslyckades": "Rimozione fallita",
@@ -3272,15 +3277,11 @@
       "atgarder": "Azioni",
       "tillat": "Consenti",
       "tillatInstans": "Consentire questo server?",
-      "dettaTarBortAlla": "Questo rimuoverà tutte le restrizioni per",
       "avbryt": "Annulla",
       "bekrafta": "Conferma",
       "begransa": "Limita",
       "begransaInstans": "Limitare questo server?",
-      "dettaSatter": "Questo imposterà",
-      "underBegransningMedReducerad": "sotto restrizione con funzionalità ridotte.",
       "angeEnAnledningFor": "Fornire un motivo per la restrizione",
-      "dettaBlockerarAllTrafik": "Questo bloccherà tutto il traffico da",
       "angeEnAnledningFor2": "Fornire un motivo per il blocco",
       "ingaInstanserHittadesSom": "Nessuna istanza trovata che superi la soglia.",
       "uppdatera": "Aggiorna",
@@ -3288,7 +3289,11 @@
       "status": "Stato",
       "anledning": "Motivo",
       "blockera": "Blocca",
-      "blockeraInstans": "Bloccare questo server?"
+      "blockeraInstans": "Bloccare questo server?",
+      "rateLimitReason": "Modifica dopo la verifica della frequenza delle richieste del server.",
+      "allowDescription": "Rimuovi tutte le restrizioni per {{server}}.",
+      "restrictDescription": "Limita le funzionalità per {{server}}.",
+      "blockDescription": "Blocca tutto il traffico da {{server}}."
     },
     "quoteRepostDialog": {
       "loggaInForAtt": "Accedi per ripubblicare",
@@ -3363,7 +3368,7 @@
       "tips": "Consigli:"
     },
     "postEditDialog": {
-      "omrostningsalternativKanInteRedigeras": "Le opzioni del sondaggio non possono essere modificate dopo la creazione per preservare l'integrità dei voti. Puoi solo modificare il testo della domanda qui sopra.",
+      "omrostningsalternativKanInteRedigeras": "Le opzioni del sondaggio non possono essere cambiate dopo la pubblicazione, così i voti continuano a riferirsi alle stesse scelte. Puoi modificare la domanda qui sopra.",
       "avbryt": "Annulla",
       "redigeraOmrostning": "Modifica sondaggio",
       "redigeraInlagg": "Modifica post",
@@ -3393,7 +3398,9 @@
       "bekraftaLosenord": "Conferma password",
       "andraLosenord": "Cambia password",
       "verifierarInloggning": "Verifica accesso...",
-      "sparar": "Salvataggio..."
+      "sparar": "Salvataggio...",
+      "passwordMismatch": "Le password devono coincidere.",
+      "updateFailed": "Non è stato possibile cambiare la password. Verifica che contenga almeno 12 caratteri. Richiedi un nuovo link se quello precedente è scaduto."
     },
     "socialCallback": {
       "loggaInPaNolto": "Accedi a Nolto",
@@ -3421,7 +3428,7 @@
       "doljDetaljer": "Nascondi dettagli",
       "visaDetaljer": "Mostra dettagli",
       "okant": "Sconosciuto",
-      "csvFilerHittade": "File CSV trovati (",
+      "csvFilerHittade": "File CSV trovati: {{total}}",
       "profilkolumner": "Colonne profilo:",
       "positionskolumner": "Colonne posizione:",
       "utbildningskolumner": "Colonne istruzione:",
@@ -3438,13 +3445,13 @@
       "bio": "Su di te",
       "plats": "Posizione",
       "importeraArbetslivserfarenhet": "Importa esperienza lavorativa",
-      "hittade": "trovati",
       "importeraUtbildning": "Importa istruzione",
       "importeraKompetenser": "Importa competenze",
       "tillbaka": "Indietro",
       "importerar": "Importazione in corso...",
       "ejAngivet": "Non specificato",
-      "nuvarande": "Oggi"
+      "nuvarande": "Oggi",
+      "foundTotal": "Trovati: {{total}}"
     },
     "companyCard": {
       "foljare": "follower"
@@ -3498,24 +3505,24 @@
       "tillbakaTillNolto": "Torna a Nolto",
       "aterstaller": "Ripristino in corso...",
       "kontrollerarInloggning": "Verifica dell'accesso in corso...",
-      "loggaIn": "Accedi"
+      "loggaIn": "Accedi",
+      "recoveryFailed": "Non è stato possibile completare il recupero. Il link potrebbe essere scaduto o già utilizzato. Contatta l’assistenza per riceverne uno nuovo."
     },
     "instructionsStep": {
       "oppnaLinkedinsDataexport": "Apri l'esportazione dati di LinkedIn",
       "eller": "o",
       "jagHarRedanMin": "Ho già la mia esportazione",
       "dinIntegritetSkyddas": "La tua privacy è protetta",
-      "dataBearbetasIDin": "I dati vengono elaborati nel tuo browser. Non memorizziamo né inviamo mai il tuo file a nessun server.",
+      "dataBearbetasIDin": "Il file ZIP viene elaborato nel browser e non viene inviato a un server. Con l’importazione, le informazioni del profilo che hai selezionato vengono salvate su Nolto.",
       "klickaPaKnappenNedan": "Fai clic sul pulsante qui sotto per andare alle impostazioni di download di LinkedIn.",
       "begarDinData": "Richiedi i tuoi dati",
       "valjDownloadLargerData": "Seleziona \"Scarica archivio dati più grande\" e spunta i dati che desideri esportare.",
       "vantaPaEPost": "Attendi l'email",
-      "linkedinSkickarEttMejl": "LinkedIn invierà un'email quando i tuoi dati saranno pronti. Solitamente pochi minuti, fino a 24 ore.",
+      "linkedinSkickarEttMejl": "LinkedIn ti invierà un’email quando l’esportazione sarà pronta.",
       "laddaNerZipFilen": "Scarica il file ZIP da LinkedIn e caricalo qui.",
       "laddaUppZipFilen": "Carica il file ZIP"
     },
     "confirmStep": {
-      "objektImporteradesTillDin": "elementi sono stati importati nel tuo profilo",
       "slutfordMedProblem": "Completato con problemi",
       "nagraFelUppstod": "Si sono verificati alcuni errori:",
       "visaProfil": "Visualizza profilo",
@@ -3526,7 +3533,12 @@
       "arbetslivserfarenhet": "Esperienza lavorativa",
       "utbildning": "Istruzione",
       "kompetenser": "Competenze",
-      "artiklar": "Articoli"
+      "artiklar": "Articoli",
+      "importedTotal": "Elementi importati: {{total}}",
+      "updated": "Aggiornato",
+      "skipped": "Saltato",
+      "addedTotal": "Aggiunti: {{total}}",
+      "draftTotal": "Bozze: {{total}}"
     },
     "authorizeApp": {
       "oppnaAppanslutningenIEtt": "Apri la connessione dell'app in una finestra separata su Nolto.",
@@ -3545,7 +3557,8 @@
       "godkannOchAnslut": "Approva e connetti",
       "anslutEnAppNolto": "Connetti un'app · Nolto",
       "kontrollerarInloggningen": "Verifica dell'accesso in corso...",
-      "ansluter": "Connessione in corso..."
+      "ansluter": "Connessione in corso...",
+      "storageRequired": "Il browser deve consentire l’archiviazione di sessione per completare l’accesso. Apri Nolto nel tuo browser abituale e riprova."
     },
     "companyForm": {
       "viByggerFramtidenFor": "Stiamo costruendo il futuro per...",
@@ -3558,7 +3571,7 @@
       "size10015000": "1.001-5.000 dipendenti",
       "size500110000": "5.001-10.000 dipendenti",
       "size10001Anstallda": "Oltre 10.001 dipendenti",
-      "organisationsnamn": "Nome dell'organizzazione",
+      "organisationsnamn": "Nome dell'impresa o dell'organizzazione",
       "noltoSocialOrganisation": "nolto.social/organisation/",
       "organisationsnamn2": "nomeorganizzazione",
       "stockholmSverige": "Stoccolma, Svezia"
@@ -3579,7 +3592,8 @@
       "angeEPostadressenFor": "Inserisci l'indirizzo email del tuo account Nolto. Se accedi tramite Mastodon, reimposta la password sul tuo server Mastodon.",
       "skickaAterstallningslank": "Invia link di reimpostazione",
       "ePostadress": "Indirizzo email",
-      "skickar": "Invio in corso…"
+      "skickar": "Invio in corso…",
+      "requestFailed": "Non è stato possibile richiedere la reimpostazione della password. Attendi un momento e riprova."
     },
     "reportDialog": {
       "valjEnAnledningFor": "Seleziona un motivo per la segnalazione",
@@ -3794,8 +3808,8 @@
       "refresh": "Aggiorna"
     },
     "fediverseBadge": {
-      "verifiedVia": "Verificato tramite",
-      "thisUserSIdentity": "L'identità di questo utente è verificata tramite il suo account Fediverse su"
+      "accountOn": "Account su {{server}}",
+      "accountServer": "Questo account del Fediverso è ospitato su {{server}}."
     },
     "quoteCardGenerator": {
       "imageDownloaded": "Immagine scaricata!",
@@ -4056,5 +4070,34 @@
         ]
       ]
     }
+  },
+  "companyTypes": {
+    "groups": {
+      "business": "Imprese",
+      "public": "Settore pubblico",
+      "educationAndCivilSociety": "Istruzione e società civile",
+      "other": "Altro"
+    },
+    "privateCompany": "Impresa",
+    "startup": "Startup",
+    "limitedCompany": "Società di capitali",
+    "listedCompany": "Società quotata",
+    "soleTrader": "Impresa individuale",
+    "partnership": "Società in nome collettivo",
+    "limitedPartnership": "Società in accomandita",
+    "cooperative": "Cooperativa",
+    "consultancy": "Società di consulenza",
+    "municipality": "Comune",
+    "region": "Ente regionale",
+    "governmentAgency": "Ente statale",
+    "stateOwnedCompany": "Società a partecipazione statale",
+    "municipalCompany": "Società a partecipazione comunale",
+    "publicPartnership": "Associazione di enti pubblici",
+    "university": "Università / istituto di istruzione superiore",
+    "adultEducation": "Istituto di formazione per adulti",
+    "nonprofit": "Organizzazione / associazione senza scopo di lucro",
+    "foundation": "Fondazione",
+    "other": "Altra organizzazione",
+    "help": "Scegli l'opzione che descrive meglio la tua organizzazione."
   }
 }

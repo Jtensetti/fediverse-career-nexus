@@ -17,7 +17,7 @@ export default function ConnectedApps() {
   const revoke = async(clientId:string) => {
     setBusy(clientId); setError('');
     try { await mastodonRequest('grants','DELETE',{client_id:clientId}); await apps.refetch(); }
-    catch(error) { setError(error instanceof Error ? error.message : 'Kunde inte återkalla åtkomsten.'); }
+    catch(error) { setError(error instanceof Error ? error.message : tx("ui.connectedApps.revokeFailed")); }
     finally { setBusy(null); }
   };
   return <div className="mx-auto max-w-2xl space-y-6 px-5 py-12">
@@ -28,7 +28,7 @@ export default function ConnectedApps() {
       <h2 className="text-xl font-medium">{grants[0].mastodon_clients.name}</h2>
       {grants[0].mastodon_clients.website && <p className="break-all text-sm text-muted-foreground">{grants[0].mastodon_clients.website}</p>}
       <ul className="list-disc pl-5 text-sm">{[...new Set(grants.flatMap(g=>g.scopes))].map(scope=><li key={scope}>{scopeDescription(scope)}</li>)}</ul>
-      <p className="text-sm text-muted-foreground">{grants.length}{' '}{tx("ui.connectedApps.anslutningArSenastGodkand")}{' '}{new Date(grants[0].created_at).toLocaleDateString(intlLocale())}.</p>
+      <p className="text-sm text-muted-foreground">{tx("ui.connectedApps.grantSummary", { total: grants.length, date: new Date(Math.max(...grants.map(grant => Date.parse(grant.created_at)))).toLocaleDateString(intlLocale()) })}</p>
       <Button variant="destructive" disabled={!!busy} onClick={()=>void revoke(clientId)}>{busy === clientId ? tx("ui.connectedApps.aterkallar") : tx("ui.connectedApps.aterkallaAtkomst")}</Button>
     </div>)}
     {error && <p role="alert" className="text-destructive">{error}</p>}

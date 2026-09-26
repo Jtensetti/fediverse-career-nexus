@@ -17,7 +17,7 @@ export default function UpdatePassword() {
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (password !== confirmation) { setError("Lösenorden måste vara lika."); return; }
+    if (password !== confirmation) { setError(tx("ui.updatePassword.passwordMismatch")); return; }
     setPending(true);
     setError("");
     try {
@@ -27,7 +27,7 @@ export default function UpdatePassword() {
       setConfirmation("");
       setSaved(true);
     } catch {
-      setError("Lösenordet kunde inte ändras. Kontrollera att det är minst 12 tecken. Om länken har gått ut behöver du begära en ny.");
+      setError(tx("ui.updatePassword.updateFailed"));
     } finally { setPending(false); }
   }
 

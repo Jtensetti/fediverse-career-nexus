@@ -35,7 +35,7 @@
   },
   "accessibility": {
     "skipToContent": "Zum Inhalt springen",
-    "darkMode": "Dunkelmodus umschalten",
+    "darkMode": "Farbschema wählen",
     "navigationMenu": "Navigationsmenü",
     "menuOpen": "Menü öffnen",
     "menuClose": "Menü schließen",
@@ -91,7 +91,7 @@
     "invitedWithCode": "Mit Code eingeladen",
     "noTracking": "Kein Tracking",
     "ownIdentity": "Eigene Identität besitzen",
-    "connectFediverse": "Mit dem Fediverse verbinden",
+    "connectFediverse": "Folgen Sie auch Personen auf anderen Fediverse-Diensten",
     "enterEmail": "Ihre E-Mail eingeben",
     "enterPassword": "Ihr Passwort eingeben",
     "createPassword": "Ein Passwort erstellen",
@@ -102,7 +102,7 @@
     "lastNameRequired": "Nachname ist erforderlich",
     "emailRequired": "E-Mail ist erforderlich",
     "passwordRequired": "Passwort ist erforderlich",
-    "nameTooLong": "Muss weniger als 50 Zeichen lang sein",
+    "nameTooLong": "Der Name darf höchstens 50 Zeichen enthalten.",
     "nameInvalidChars": "Darf nur Buchstaben, Leerzeichen, Bindestriche, Apostrophe und Punkte enthalten",
     "usernameMinChars": "Mindestens 3 Zeichen",
     "usernameMaxChars": "Maximal 30 Zeichen",
@@ -158,7 +158,7 @@
     "resources": "Ressourcen",
     "documentation": "Dokumentation",
     "helpCenter": "Hilfe-Center",
-    "howFederationWorks": "Wie die Zusammenarbeit funktioniert",
+    "howFederationWorks": "So funktioniert Föderation",
     "federatedInstances": "Verbundene Server",
     "legal": "Rechtliches",
     "privacyPolicy": "Datenschutzrichtlinie",
@@ -229,11 +229,11 @@
   },
   "reactions": {
     "react": "Reagieren",
-    "love": "Liebe",
-    "celebrate": "Feiern",
-    "support": "Unterstützen",
+    "love": "Wunderbar",
+    "celebrate": "Gratulation",
+    "support": "Unterstützung",
     "insightful": "Aufschlussreich",
-    "empathy": "Empathie",
+    "empathy": "Mitgefühl",
     "title": "Reaktionen",
     "all": "Alle",
     "noReactions": "Noch keine Reaktionen"
@@ -383,7 +383,17 @@
     "actionCreated": "Moderationsaktion erfolgreich erstellt",
     "notAuthorized": "Sie sind nicht berechtigt, Moderationsaktionen durchzuführen",
     "loginRequired": "Sie müssen angemeldet sein, um diese Seite anzuzeigen",
-    "loadingData": "Moderationsdaten werden geladen..."
+    "loadingData": "Moderationsdaten werden geladen...",
+    "statusUpdatedDetails": "Neuer Status für {{target}}: {{status}}.",
+    "entryRemovedDetails": "Die Moderationsregel für {{target}} wurde entfernt.",
+    "ruleSaved": "Moderationseinstellungen gespeichert",
+    "loadRulesFailed": "Die Moderationsregeln konnten nicht geladen werden.",
+    "domainRequired": "Geben Sie eine Domain ein.",
+    "accountUrlRequired": "Geben Sie die vollständige Webadresse des Kontos ein.",
+    "reasonRequired": "Geben Sie einen Grund an.",
+    "saveRuleFailed": "Die Moderationsregel konnte nicht gespeichert werden. Versuchen Sie es erneut.",
+    "editRuleDescription": "Ändern Sie die Moderationsregel für {{target}}.",
+    "removeRuleDescription": "Moderationsregel für {{target}} entfernen?"
   },
   "events": {
     "title": "Veranstaltungen",
@@ -552,24 +562,23 @@
     "introduceYourself": "Stellen Sie sich dem Netzwerk vor",
     "writeArticle": "Verfassen Sie einen Artikel",
     "shareExpertise": "Teilen Sie Ihr Fachwissen mit Kollegen",
-    "connectWithPeers": "Vernetzen Sie sich mit Kollegen",
+    "connectWithPeers": "Neue Kontakte finden",
     "buildNetwork": "Bauen Sie Ihr berufliches Netzwerk auf",
-    "postJob": "Stellenangebot veröffentlichen",
+    "postJob": "Stellenanzeige veröffentlichen",
     "reachProfessionals": "Erreichen Sie Fachkräfte im gesamten föderierten Netzwerk",
     "createEvent": "Eine Veranstaltung erstellen",
     "hostMeetups": "Veranstalten Sie Treffen und Networking-Events",
-    "doIt": "Tun Sie es",
     "dismissAction": "Vorschlag ablehnen: {{action}}"
   },
   "openSource": {
     "badge": "Open Source",
     "title": "Offen entwickelt",
-    "description": "Jede Codezeile ist öffentlich. Jede Entscheidung ist dokumentiert. Transparenz schafft Vertrauen.",
+    "description": "Der Quellcode von Nolto ist offen. Prüfen Sie den Code, verfolgen Sie die Entwicklung oder tragen Sie eine Verbesserung bei.",
     "repoDescription": "Die föderierte Alternative zu LinkedIn",
     "mitLicense": "MIT-Lizenz",
     "contributorsWelcome": "Mitwirkende willkommen",
-    "securityAudited": "Sicherheitsgeprüft",
-    "securityDescription": "Regelmäßige Sicherheitsüberprüfungen und verantwortungsvolle Offenlegung",
+    "securityAudited": "Sicherheitsfragen",
+    "securityDescription": "Sicherheitslücken verantwortungsvoll melden",
     "activeDevelopment": "Aktive Entwicklung",
     "devDescription": "Regelmäßige Updates mit Community-Feedback",
     "communityDriven": "Community-getrieben",
@@ -581,27 +590,27 @@
     "title": "Alles, was Sie für professionelles Networking brauchen",
     "subtitle": "Alle Tools eines modernen Berufsnetzwerks — offen, föderiert und werbefrei",
     "professionalProfiles": "Professionelle Profile",
-    "profilesDesc": "Fähigkeiten, Erfahrungen und Empfehlungen — für die gesamte Organisation gesammelt",
+    "profilesDesc": "Zeigen Sie Ihre Erfahrung, Ausbildung und Kompetenzen in Ihrem Profil.",
     "portableIdentity": "Sicherer Datenexport",
     "jobBoard": "Personalbeschaffung",
     "jobDesc": "Stellen finden und veröffentlichen im gesamten föderierten Netzwerk",
-    "crossInstanceListings": "Instanzübergreifende Angebote",
+    "crossInstanceListings": "Stellen im Netzwerk",
     "events": "Veranstaltungen",
     "eventsDesc": "Veranstaltungen erstellen und Anmeldungen verwalten",
     "federatedRsvps": "Einfache RSVPs",
     "articles": "Artikel",
     "articlesDesc": "Teilen Sie Wissen und Einblicke mit Kollegen",
-    "reachAnyInstance": "Die gesamte Organisation erreichen",
+    "reachAnyInstance": "Wissen im eigenen Netzwerk teilen",
     "directMessages": "Direktnachrichten",
     "dmDesc": "Sichere Gespräche mit Ihren Kontakten",
     "crossInstanceMessaging": "Verschlüsselte Nachrichten",
     "connections": "Kontakte",
     "connectionsDesc": "Bauen Sie bedeutungsvolle berufliche Beziehungen auf",
-    "followAnywhere": "Zusammenarbeit über Organisationen hinweg",
+    "followAnywhere": "Personen auf anderen Diensten folgen",
     "privacyByDesign": "Datenschutz durch Design",
     "noTracking": "Kein Tracking, keine Werbung, kein Datenverkauf",
-    "fullPortability": "Volle Portabilität",
-    "exportAnytime": "Exportieren Sie Ihre Daten jederzeit",
+    "fullPortability": "Ihre Daten mitnehmen",
+    "exportAnytime": "Ihre Daten herunterladen",
     "openProtocol": "Offener Standard",
     "builtOnActivityPub": "Basierend auf offenen Standards"
   },
@@ -651,7 +660,7 @@
     "contactEmail": "Kontakt-E-Mail-Adresse",
     "contactEmailDesc": "Wird für E-Mail-Benachrichtigungen und beim freiwilligen Teilen Ihrer Kontaktdaten verwendet. E-Mail-Benachrichtigungen lassen sich in den Benachrichtigungseinstellungen ausschalten.",
     "username": "Benutzername",
-    "usernamePlaceholder": "ihr-benutzername",
+    "usernamePlaceholder": "Ihr_Benutzername",
     "usernameDesc": "Ihr @Benutzername auf Nolto",
     "saveChanges": "Änderungen speichern",
     "saving": "Speichern...",
@@ -676,7 +685,7 @@
     },
     "experience": {
       "title": "Berufserfahrung",
-      "company": "Organisation",
+      "company": "Unternehmen oder Organisation",
       "position": "Position",
       "startDate": "Startdatum",
       "endDate": "Enddatum",
@@ -689,7 +698,7 @@
       "loading": "Laden...",
       "jobTitle": "Berufsbezeichnung",
       "jobTitlePlaceholder": "Ihre Rolle",
-      "companyPlaceholder": "Name der Organisation",
+      "companyPlaceholder": "z. B. Acme GmbH oder selbstständig",
       "companyDomain": "Organisationsdomäne",
       "companyDomainPlaceholder": "organisation.com",
       "locationPlaceholder": "z.B. Stockholm",
@@ -700,7 +709,7 @@
       "startDateRequired": "Startdatum ist erforderlich",
       "remove": "Berufserfahrung {{name}} entfernen",
       "current": "Ich arbeite derzeit hier",
-      "companyRequired": "Organisation ist erforderlich"
+      "companyRequired": "Geben Sie ein Unternehmen, eine Organisation oder eine selbstständige Tätigkeit an."
     },
     "education": {
       "title": "Ausbildung",
@@ -813,7 +822,7 @@
     "adjustFilters": "Versuchen Sie, Ihre Filter anzupassen, um weitere Möglichkeiten zu entdecken.",
     "beFirst": "Seien Sie der Erste, der eine Stelle ausschreibt!",
     "reachProfessionals": "Erreichen Sie Fachleute im gesamten fediverse Netzwerk. Veröffentlichen Sie transparente Stellenangebote.",
-    "postJob": "Stelle ausschreiben",
+    "postJob": "Stellenanzeige veröffentlichen",
     "signUpToPost": "Registrieren, um zu veröffentlichen",
     "clearFilters": "Filter löschen",
     "allJobTypes": "Alle Anstellungsarten",
@@ -862,7 +871,7 @@
     "rejectEmployeeTitle": "Mitarbeiterantrag ablehnen?",
     "rejectEmployeeDesc": "Dadurch wird die Anstellung von {{name}} dauerhaft entfernt. Er/Sie muss einen neuen Antrag einreichen.",
     "removeRoleTitle": "Rolle entfernen?",
-    "removeRoleDesc": "Dadurch wird der Zugriff von {{name}} zur Verwaltung dieser Organisationsseite entfernt. Er/Sie kann später wieder hinzugefügt werden.",
+    "removeRoleDesc": "{{name}} kann die Organisationsseite nicht mehr verwalten. Sie können den Zugriff später erneut gewähren.",
     "removeRole": "Rolle entfernen",
     "noAdditionalRoles": "Keine zusätzlichen Rollen",
     "onlyOwnerAccess": "Nur der Eigentümer hat derzeit Zugriff",
@@ -883,13 +892,13 @@
     "roleRemoveFailed": "Fehler beim Entfernen der Rolle"
   },
   "companies": {
-    "title": "Organisationen",
+    "title": "Unternehmen und Organisationen",
     "subtitle": "Organisationen entdecken und sich mit ihnen verbinden",
-    "createTitle": "Organisation erstellen",
-    "createDescription": "Erstellen Sie eine Organisationsseite, um Ihre Organisation zu präsentieren",
-    "createSuccess": "Organisation erfolgreich erstellt!",
-    "createError": "Fehler beim Erstellen der Organisation",
-    "create": "Organisation erstellen",
+    "createTitle": "Seite für ein Unternehmen oder eine Organisation erstellen",
+    "createDescription": "Stellen Sie Ihre Organisation vor, teilen Sie Neuigkeiten und erreichen Sie neue Mitarbeitende und Partner.",
+    "createSuccess": "Die Organisationsseite wurde erstellt.",
+    "createError": "Die Organisationsseite konnte nicht erstellt werden.",
+    "create": "Organisationsseite erstellen",
     "noMatching": "Keine passenden Organisationen",
     "beFirst": "Seien Sie der Erste, der eine Organisationsseite erstellt",
     "adjustFilters": "Versuchen Sie, Ihre Filter anzupassen",
@@ -936,7 +945,7 @@
     "noPosts": "Noch keine Beiträge",
     "noPostsDescription": "Diese Organisation hat noch keine Beiträge geteilt.",
     "noJobs": "Keine Stellenangebote",
-    "noJobsDescription": "Diese Organisation hat derzeit keine Stellenangebote.",
+    "noJobsDescription": "Hier wurden noch keine Stellenanzeigen veröffentlicht.",
     "noneAvailable": "Zurzeit sind keine Organisationen verfügbar",
     "noneAvailableDescription": "Schauen Sie später wieder vorbei, um Organisationen auf Nolto zu entdecken."
   },
@@ -951,8 +960,8 @@
   },
   "companyForm": {
     "basicInfo": "Grundlegende Informationen",
-    "basicInfoDesc": "Geben Sie die wichtigsten Details zu Ihrer Organisation ein",
-    "companyName": "Organisationsname",
+    "basicInfoDesc": "Zeigen Sie, wer Sie sind und was Ihre Organisation macht.",
+    "companyName": "Name des Unternehmens oder der Organisation",
     "companyUrl": "Nolto Webadresse",
     "available": "Verfügbar",
     "taken": "Belegt",
@@ -972,13 +981,16 @@
     "foundedYear": "Gründungsjahr",
     "nameTooShort": "Geben Sie einen Organisationsnamen mit mindestens 2 Zeichen ein.",
     "nameTooLong": "Der Name darf höchstens 100 Zeichen lang sein.",
-    "urlTooShort": "Die Adresse muss mindestens 2 Zeichen lang sein.",
+    "urlTooShort": "Die Adresse muss mindestens 3 Zeichen lang sein.",
     "urlTooLong": "Die Adresse darf höchstens 50 Zeichen lang sein.",
-    "urlCharacters": "Verwenden Sie Kleinbuchstaben (a–z), Zahlen und Bindestriche.",
+    "urlCharacters": "Verwenden Sie Kleinbuchstaben (a–z), Zahlen und Bindestriche. Beginnen und enden Sie mit einem Buchstaben oder einer Zahl.",
     "taglineTooLong": "Die Beschreibung darf höchstens 140 Zeichen lang sein.",
     "invalidWebsite": "Geben Sie eine gültige Webadresse ein, z.B. https://example.com.",
-    "organisationType": "Organisationstyp",
-    "selectOrgType": "Organisationstyp auswählen"
+    "organisationType": "Art der Organisation",
+    "selectOrgType": "Art der Organisation wählen",
+    "httpsRequired": "Geben Sie eine Webadresse ein, die mit https:// beginnt.",
+    "maxCharacters": "Verwenden Sie höchstens {{max}} Zeichen.",
+    "validYear": "Geben Sie ein Jahr zwischen {{min}} und {{max}} ein."
   },
   "companyPost": {
     "deleteTitle": "Beitrag löschen?",
@@ -1051,7 +1063,7 @@
     "comments": "Kommentare",
     "noSavedItems": "Noch keine Elemente gespeichert",
     "noSavedItemsAll": "Speichern Sie Stellenanzeigen, Artikel, Veranstaltungen, Beiträge und Kommentare, um sie später hier anzuzeigen",
-    "noSavedItemsType": "Sie haben noch keine {{type}} gespeichert. Suchen Sie nach dem Lesezeichen-Symbol, um Elemente zu speichern.",
+    "noSavedItemsType": "In dieser Kategorie ist noch nichts gespeichert. Mit dem Lesezeichen-Symbol können Sie Inhalte für später speichern.",
     "browseFeed": "Feed durchsuchen",
     "browseJobs": "Stellenanzeigen durchsuchen",
     "browseArticles": "Artikel durchsuchen",
@@ -1143,7 +1155,7 @@
     "shareEvent": "Veranstaltung teilen",
     "editEvent": "Veranstaltung bearbeiten",
     "deleteEvent": "Veranstaltung löschen",
-    "deleteConfirmTitle": "Sind Sie sicher?",
+    "deleteConfirmTitle": "Veranstaltung löschen?",
     "deleteConfirmDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Das Ereignis und alle zugehörigen Anmeldungen werden dauerhaft gelöscht.",
     "linkCopied": "Event-Link in die Zwischenablage kopiert!",
     "mustBeLoggedIn": "Sie müssen angemeldet sein, um sich anzumelden.",
@@ -1222,7 +1234,7 @@
     "companyValidation": "Der Name der Organisation ist erforderlich.",
     "locationValidation": "Der Standort ist erforderlich.",
     "descriptionValidation": "Die Beschreibung muss mindestens 20 Zeichen lang sein.",
-    "salaryValidation": "Das Mindestgehalt muss kleiner als das Höchstgehalt sein."
+    "salaryValidation": "Das Mindestgehalt darf nicht höher als das Höchstgehalt sein."
   },
   "eventForm": {
     "eventDetails": "Event-Details",
@@ -1384,7 +1396,7 @@
     "recoverySend": "Anfrage senden",
     "recoverySending": "Senden...",
     "recoverySent": "Anfrage erhalten",
-    "recoverySubmittedDesc": "Ein Administrator wird Ihre Anfrage prüfen und Sie in Kürze unter Ihrer registrierten E-Mail-Adresse kontaktieren.",
+    "recoverySubmittedDesc": "Ein Administrator prüft Ihre Anfrage. Sie erhalten eine Nachricht an die im Konto hinterlegte E-Mail-Adresse.",
     "recoveryError": "Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es in Kürze erneut.",
     "recoveryQueueTitle": "MFA-Wiederherstellungsanfragen",
     "recoveryQueueDesc": "Überprüfen und verwalten Sie Zwei-Faktor-Wiederherstellungsanfragen.",
@@ -1392,7 +1404,7 @@
     "recoveryIssueLink": "Wiederherstellungslink senden",
     "recoveryReject": "Ablehnen",
     "recoveryConfirmTitle": "Wiederherstellungslink senden?",
-    "recoveryConfirmDesc": "Der Link wird an die **registrierte E-Mail-Adresse** des Kontos gesendet, nicht an die im Formular eingegebene. Der Benutzer muss sich mit seinem Passwort anmelden, um die Wiederherstellung abzuschließen. Der Link ist 30 Minuten lang gültig.",
+    "recoveryConfirmDesc": "Der Link wird an die registrierte E-Mail-Adresse des Kontos gesendet, nicht an die im Formular eingegebene. Der Benutzer muss sich mit seinem Passwort anmelden, um die Wiederherstellung abzuschließen. Der Link ist 30 Minuten lang gültig.",
     "recoveryConfirmSend": "Ja, Link senden",
     "recoveryLinkSent": "Wiederherstellungslink an den Kontoinhaber gesendet.",
     "recoveryLinkError": "Der Link konnte nicht gesendet werden.",
@@ -1424,7 +1436,7 @@
     "posting": "Wird veröffentlicht...",
     "failed": "Veröffentlichen der Antwort fehlgeschlagen",
     "emptyError": "Antwort darf nicht leer sein",
-    "tooLongError": "Antwort muss weniger als {{max}} Zeichen lang sein",
+    "tooLongError": "Ihre Antwort darf höchstens {{max}} Zeichen enthalten.",
     "charactersRemaining": "Zeichen verbleibend"
   },
   "commentEdit": {
@@ -1588,7 +1600,7 @@
     "companyRequired": "Organisationsname ist erforderlich",
     "locationRequired": "Ort ist erforderlich",
     "descriptionValidation": "Beschreibung muss mindestens 20 Zeichen lang sein",
-    "salaryValidation": "Mindestgehalt muss kleiner als das Maximalgehalt sein",
+    "salaryValidation": "Das Mindestgehalt darf nicht höher als das Höchstgehalt sein.",
     "linkToCompany": "Link zur Organisationsseite",
     "selectCompany": "Organisationsseite auswählen (optional)",
     "linkDescription": "Verknüpfen Sie diese Stellenanzeige mit einer von Ihnen verwalteten Organisationsseite.",
@@ -1650,10 +1662,10 @@
   "articleReactions": {
     "reactions": "Reaktionen",
     "signInToReact": "Bitte melden Sie sich an, um auf Artikel zu reagieren",
-    "love": "Liebe",
-    "celebrate": "Feiern",
+    "love": "Wunderbar",
+    "celebrate": "Gratulation",
     "support": "Unterstützung",
-    "empathy": "Empathie",
+    "empathy": "Mitgefühl",
     "insightful": "Aufschlussreich"
   },
   "commentPreview": {
@@ -1956,8 +1968,8 @@
     "jobs": "Jobs",
     "articles": "Artikel",
     "events": "Veranstaltungen",
-    "noResults": "Keine Ergebnisse gefunden für",
-    "advancedSearch": "Erweiterte Suche"
+    "advancedSearch": "Erweiterte Suche",
+    "noResultsFor": "Keine Ergebnisse für „{{query}}“"
   },
   "toasts": {
     "connectionRequestSent": "Kontaktanfrage gesendet",
@@ -2043,9 +2055,8 @@
     "noConnectionsYet": "Noch keine Kontakte",
     "viewAllConnections": "Alle Kontakte anzeigen",
     "followForArticles": "Für Artikel folgen",
-    "followForArticlesDesc": "Benachrichtigung erhalten, wenn",
-    "followForArticlesDescSuffix": "neue Artikel veröffentlicht",
-    "unknownUser": "Unbekannter Benutzer"
+    "unknownUser": "Unbekannter Benutzer",
+    "followArticleUpdates": "Erhalten Sie eine Benachrichtigung, wenn {{name}} einen Artikel veröffentlicht."
   },
   "messagesPage": {
     "title": "Nachrichten",
@@ -2147,7 +2158,6 @@
     "edit": "{{name}} bearbeiten",
     "unavailablePerson": "Profil nicht verfügbar",
     "unavailableCompany": "Organisation nicht verfügbar",
-    "peopleCount": "{{count}} Personen",
     "saveError": "Dieser Feed konnte nicht geladen oder gespeichert werden. Ihre Auswahl ist noch vorhanden. Bitte versuchen Sie es erneut.",
     "emptyTitle": "Keine Beiträge vorhanden",
     "emptyDescription": "Zurzeit stimmen keine verfügbaren Beiträge überein. Ändern Sie Ihre Auswahl unter Feeds oder folgen Sie weiteren Personen.",
@@ -2156,7 +2166,9 @@
     "exploreNolto": "Nolto entdecken",
     "findPeople": "Personen finden",
     "followingEmptyTitle": "Ihr Feed beginnt hier",
-    "followingEmptyDescription": "Ihre Beiträge und Beiträge von Personen, denen Sie folgen, erscheinen hier. Entdecken Sie Nolto oder finden Sie Personen, denen Sie folgen können."
+    "followingEmptyDescription": "Ihre Beiträge und Beiträge von Personen, denen Sie folgen, erscheinen hier. Entdecken Sie Nolto oder finden Sie Personen, denen Sie folgen können.",
+    "peopleCount_one": "{{count}} Person",
+    "peopleCount_other": "{{count}} Personen"
   },
   "profileInline": {
     "hint": "Klicken Sie auf das, was Sie ändern möchten. Änderungen werden beim Speichern veröffentlicht.",
@@ -2884,7 +2896,6 @@
     },
     "notifications": {
       "dinaAviseringarPaNolto": "Ihre Benachrichtigungen auf Nolto.",
-      "olasta": "ungelesen)",
       "markeraAllaSomLasta": "Alle als gelesen markieren",
       "olasta2": "Ungelesen",
       "ingaOlastaAviseringar": "Keine ungelesenen Benachrichtigungen",
@@ -2892,7 +2903,8 @@
       "duArHeltIkapp": "Sie sind auf dem neuesten Stand!",
       "narDuFarAviseringar": "Wenn Sie Benachrichtigungen erhalten, erscheinen diese hier",
       "aviseringar": "Benachrichtigungen",
-      "alla": "Alle"
+      "alla": "Alle",
+      "unreadCount": "Ungelesen: {{total}}"
     },
     "messageConversation": {
       "kundeInteSkickaMeddelande": "Nachricht konnte nicht gesendet werden",
@@ -2920,22 +2932,22 @@
       "harKanDuAterkalla": "Hier können Sie den Zugriff einer externen App auf Ihr Nolto-Konto widerrufen. Um die App erneut zu nutzen, müssen Sie sie erneut verbinden.",
       "hamtarAnslutningar": "Verbindungen werden abgerufen…",
       "duHarIngaGodkanda": "Sie haben keine autorisierten App-Verbindungen.",
-      "anslutningArSenastGodkand": "Verbindung(en). Zuletzt autorisiert am",
       "aterkallar": "Wird widerrufen…",
       "aterkallaAtkomst": "Zugriff widerrufen",
       "omMastodonAppar": "Über Mastodon-Apps",
-      "anslutnaAppar": "Verbundene Apps"
+      "anslutnaAppar": "Verbundene Apps",
+      "grantSummary": "Verbindungen: {{total}}. Zuletzt autorisiert: {{date}}.",
+      "revokeFailed": "Der Zugriff konnte nicht widerrufen werden. Versuchen Sie es erneut."
     },
     "sessionExpiryWarning": {
       "dinSessionHarGatt": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
       "sessionenHarForlangts": "Sitzung wurde verlängert",
       "kundeInteForlangaSessionen": "Sitzung konnte nicht verlängert werden. Bitte melden Sie sich erneut an.",
       "sessionenGarUtSnart": "Sitzung läuft bald ab",
-      "dinSessionGarUt": "Ihre Sitzung läuft in",
-      "villDuForlangaSessionen": ". Möchten Sie die Sitzung verlängern?",
       "avfarda": "Schließen",
       "forlanger": "Wird verlängert...",
-      "forlangSession": "Sitzung verlängern"
+      "forlangSession": "Sitzung verlängern",
+      "expiryMessage": "Sie werden in {{time}} abgemeldet. Möchten Sie angemeldet bleiben?"
     },
     "userLookup": {
       "anvandaruppslag": "Benutzersuche",
@@ -3151,7 +3163,7 @@
       "kundeInteUppdateraDomanstatus": "Domainstatus konnte nicht aktualisiert werden",
       "domanBorttagen": "Domain entfernt",
       "kundeInteTaBort": "Domain konnte nicht entfernt werden",
-      "provotid": "Probezeit",
+      "provotid": "Eingeschränkt",
       "laggTillDomanmoderering": "Domain-Moderation hinzufügen",
       "domanvard": "Domain-Host",
       "valjStatus": "Status auswählen",
@@ -3162,10 +3174,7 @@
       "atgarder": "Aktionen",
       "ingaDomanmodereringsposternaHittades": "Keine Domain-Moderationseinträge gefunden",
       "redigeraDomanmoderering": "Domain-Moderation bearbeiten",
-      "uppdateraModereringsinstallningarFor": "Moderationseinstellungen aktualisieren für",
       "bekraftaBorttagning": "Löschung bestätigen",
-      "arDuSakerPa": "Sind Sie sicher, dass Sie entfernen möchten?",
-      "franModerering": "aus der Moderation entfernen?",
       "uppdateringMisslyckades": "Aktualisierung fehlgeschlagen",
       "ettFelUppstodVid": "Bei der Aktualisierung ist ein Fehler aufgetreten",
       "borttagningMisslyckades": "Entfernung fehlgeschlagen",
@@ -3187,11 +3196,10 @@
       "anmaltInnehallSomHar": "Gemeldeter Inhalt, der gelöscht wurde",
       "atkomstenLoggasTextKan": "Der Zugriff wird protokolliert. Text kann überprüft werden, wenn die Meldung vor der Löschung erfolgte und der Fall noch offen ist. Bilder und private Nachrichten werden hier nicht angezeigt.",
       "textenArInteTillganglig": "Text ist nicht verfügbar. Der Fall kann geschlossen, die Aufbewahrungsfrist abgelaufen oder der Zugriff verweigert worden sein.",
-      "granskningenForlangerInteLagringstiden": "Die Überprüfung verlängert die Speicherfrist nicht.",
       "hamtarTexten": "Text wird abgerufen…",
       "inlaggetInnehallerIngenGranskbar": "Der Beitrag enthält keinen überprüfbaren Text.",
       "granskaRaderadText": "Gelöschten Text überprüfen",
-      "raderasPermanent": "Wird dauerhaft gelöscht"
+      "purgeNotice": "Endgültige Löschung am {{date}}. Die Prüfung verlängert die Aufbewahrungsfrist nicht."
     },
     "actorModeration": {
       "aktorBlockerad": "Akteur blockiert",
@@ -3200,7 +3208,7 @@
       "ettFelIntraffade": "Ein Fehler ist aufgetreten",
       "aktorBorttagen": "Akteur entfernt",
       "kundeInteTaBort": "Akteur konnte nicht entfernt werden",
-      "provotid": "Probezeit",
+      "provotid": "Eingeschränkt",
       "laggTillAktorblockering": "Akteur-Blockierung hinzufügen",
       "aktorUrl": "Akteur-URL",
       "valjStatus": "Status auswählen",
@@ -3211,12 +3219,9 @@
       "atgarder": "Aktionen",
       "ingaAktorblockeringarHittades": "Keine Akteur-Blockierungen gefunden",
       "redigeraAktorblockering": "Akteur-Blockierung bearbeiten",
-      "uppdateraModereringsinstallningarFor": "Moderationseinstellungen aktualisieren für",
       "avbryt": "Abbrechen",
       "sparaAndringar": "Änderungen speichern",
       "bekraftaBorttagning": "Entfernung bestätigen",
-      "arDuSakerPa": "Sind Sie sicher, dass Sie entfernen möchten?",
-      "franModereringen": "aus der Moderation?",
       "taBort": "Entfernen",
       "uppdateringMisslyckades": "Aktualisierung fehlgeschlagen",
       "borttagningMisslyckades": "Entfernung fehlgeschlagen",
@@ -3272,15 +3277,11 @@
       "atgarder": "Aktionen",
       "tillat": "Zulassen",
       "tillatInstans": "Diesen Server zulassen?",
-      "dettaTarBortAlla": "Dies entfernt alle Einschränkungen für",
       "avbryt": "Abbrechen",
       "bekrafta": "Bestätigen",
       "begransa": "Einschränken",
       "begransaInstans": "Diesen Server einschränken?",
-      "dettaSatter": "Dies wird",
-      "underBegransningMedReducerad": "unter Einschränkung mit reduzierter Funktionalität setzen.",
       "angeEnAnledningFor": "Geben Sie einen Grund für die Einschränkung an",
-      "dettaBlockerarAllTrafik": "Dies wird den gesamten Verkehr von",
       "angeEnAnledningFor2": "Geben Sie einen Grund für die Blockierung an",
       "ingaInstanserHittadesSom": "Es wurden keine Instanzen gefunden, die den Schwellenwert überschreiten.",
       "uppdatera": "Aktualisieren",
@@ -3288,7 +3289,11 @@
       "status": "Status",
       "anledning": "Grund",
       "blockera": "Blockieren",
-      "blockeraInstans": "Diesen Server blockieren?"
+      "blockeraInstans": "Diesen Server blockieren?",
+      "rateLimitReason": "Nach Prüfung der Anfragerate des Servers geändert.",
+      "allowDescription": "Alle Einschränkungen für {{server}} aufheben.",
+      "restrictDescription": "Funktionen für {{server}} einschränken.",
+      "blockDescription": "Sämtlichen Datenverkehr von {{server}} blockieren."
     },
     "quoteRepostDialog": {
       "loggaInForAtt": "Zum Reposten anmelden",
@@ -3363,7 +3368,7 @@
       "tips": "Tipps:"
     },
     "postEditDialog": {
-      "omrostningsalternativKanInteRedigeras": "Umfrageoptionen können nach der Erstellung nicht bearbeitet werden, um die Integrität der Abstimmungen zu wahren. Sie können nur den oben stehenden Fragetext bearbeiten.",
+      "omrostningsalternativKanInteRedigeras": "Die Antwortmöglichkeiten können nach der Veröffentlichung nicht geändert werden, damit die Stimmen weiterhin denselben Antworten gelten. Die Frage oben können Sie bearbeiten.",
       "avbryt": "Abbrechen",
       "redigeraOmrostning": "Umfrage bearbeiten",
       "redigeraInlagg": "Beitrag bearbeiten",
@@ -3376,7 +3381,7 @@
     "companySearchFilter": {
       "sokForetag": "Firma suchen...",
       "anstallda": "Mitarbeiter",
-      "typAvOrganisation": "Organisationstyp",
+      "typAvOrganisation": "Art der Organisation",
       "allaTyper": "Alle Typen",
       "storlek": "Größe",
       "allaStorlekar": "Alle Größen",
@@ -3393,7 +3398,9 @@
       "bekraftaLosenord": "Passwort bestätigen",
       "andraLosenord": "Passwort ändern",
       "verifierarInloggning": "Login wird verifiziert…",
-      "sparar": "Speichert…"
+      "sparar": "Speichert…",
+      "passwordMismatch": "Die Passwörter müssen übereinstimmen.",
+      "updateFailed": "Das Passwort konnte nicht geändert werden. Es muss mindestens 12 Zeichen enthalten. Fordern Sie einen neuen Link an, falls der bisherige abgelaufen ist."
     },
     "socialCallback": {
       "loggaInPaNolto": "Bei Nolto anmelden",
@@ -3421,7 +3428,7 @@
       "doljDetaljer": "Details ausblenden",
       "visaDetaljer": "Details anzeigen",
       "okant": "Unbekannt",
-      "csvFilerHittade": "CSV-Dateien gefunden (",
+      "csvFilerHittade": "Gefundene CSV-Dateien: {{total}}",
       "profilkolumner": "Profilspalten:",
       "positionskolumner": "Positionsspalten:",
       "utbildningskolumner": "Ausbildungsspalten:",
@@ -3438,13 +3445,13 @@
       "bio": "Über Sie",
       "plats": "Standort",
       "importeraArbetslivserfarenhet": "Berufserfahrung importieren",
-      "hittade": "gefunden",
       "importeraUtbildning": "Ausbildung importieren",
       "importeraKompetenser": "Kompetenzen importieren",
       "tillbaka": "Zurück",
       "importerar": "Importiere...",
       "ejAngivet": "Nicht angegeben",
-      "nuvarande": "Heute"
+      "nuvarande": "Heute",
+      "foundTotal": "Gefunden: {{total}}"
     },
     "companyCard": {
       "foljare": "Follower"
@@ -3498,24 +3505,24 @@
       "tillbakaTillNolto": "Zurück zu Nolto",
       "aterstaller": "Setze zurück…",
       "kontrollerarInloggning": "Anmeldung wird überprüft…",
-      "loggaIn": "Anmelden"
+      "loggaIn": "Anmelden",
+      "recoveryFailed": "Die Wiederherstellung konnte nicht abgeschlossen werden. Der Link ist möglicherweise abgelaufen oder wurde bereits verwendet. Wenden Sie sich für einen neuen Link an den Support."
     },
     "instructionsStep": {
       "oppnaLinkedinsDataexport": "LinkedIns Datenexport öffnen",
       "eller": "oder",
       "jagHarRedanMin": "Ich habe meinen Export bereits",
       "dinIntegritetSkyddas": "Ihre Privatsphäre ist geschützt",
-      "dataBearbetasIDin": "Daten werden in Ihrem Browser verarbeitet. Wir speichern oder senden Ihre Datei niemals an einen Server.",
+      "dataBearbetasIDin": "Die ZIP-Datei wird in Ihrem Browser verarbeitet und nicht an einen Server gesendet. Beim Import werden die ausgewählten Profildaten in Nolto gespeichert.",
       "klickaPaKnappenNedan": "Klicken Sie auf den Button unten, um zu LinkedIns Download-Einstellungen zu gelangen.",
       "begarDinData": "Ihre Daten anfordern",
       "valjDownloadLargerData": "Wählen Sie \"Download larger data archive\" (Größeres Datenarchiv herunterladen) und markieren Sie die Daten, die Sie exportieren möchten.",
       "vantaPaEPost": "Auf E-Mail warten",
-      "linkedinSkickarEttMejl": "LinkedIn sendet eine E-Mail, wenn Ihre Daten bereit sind. Normalerweise ein paar Minuten, bis zu 24 Stunden.",
+      "linkedinSkickarEttMejl": "LinkedIn informiert Sie per E-Mail, sobald Ihr Export bereitsteht.",
       "laddaNerZipFilen": "Laden Sie die ZIP-Datei von LinkedIn herunter und laden Sie sie hier hoch.",
       "laddaUppZipFilen": "ZIP-Datei hochladen"
     },
     "confirmStep": {
-      "objektImporteradesTillDin": "Element wurden in Ihr Profil importiert",
       "slutfordMedProblem": "Mit Problemen abgeschlossen",
       "nagraFelUppstod": "Einige Fehler sind aufgetreten:",
       "visaProfil": "Profil anzeigen",
@@ -3526,7 +3533,12 @@
       "arbetslivserfarenhet": "Berufserfahrung",
       "utbildning": "Ausbildung",
       "kompetenser": "Kompetenzen",
-      "artiklar": "Artikel"
+      "artiklar": "Artikel",
+      "importedTotal": "Importierte Einträge: {{total}}",
+      "updated": "Aktualisiert",
+      "skipped": "Übersprungen",
+      "addedTotal": "Hinzugefügt: {{total}}",
+      "draftTotal": "Entwürfe: {{total}}"
     },
     "authorizeApp": {
       "oppnaAppanslutningenIEtt": "Öffnen Sie die App-Verbindung in einem separaten Fenster auf Nolto.",
@@ -3545,7 +3557,8 @@
       "godkannOchAnslut": "Genehmigen und verbinden",
       "anslutEnAppNolto": "App verbinden · Nolto",
       "kontrollerarInloggningen": "Anmeldung wird überprüft…",
-      "ansluter": "Verbinde…"
+      "ansluter": "Verbinde…",
+      "storageRequired": "Ihr Browser muss Sitzungsspeicher zulassen, um die Anmeldung abzuschließen. Öffnen Sie Nolto in Ihrem üblichen Browser und versuchen Sie es erneut."
     },
     "companyForm": {
       "viByggerFramtidenFor": "Wir bauen die Zukunft für...",
@@ -3558,7 +3571,7 @@
       "size10015000": "1.001–5.000 Mitarbeiter",
       "size500110000": "5.001–10.000 Mitarbeiter",
       "size10001Anstallda": "10.001+ Mitarbeiter",
-      "organisationsnamn": "Organisationsname",
+      "organisationsnamn": "Name des Unternehmens oder der Organisation",
       "noltoSocialOrganisation": "nolto.social/organisation/",
       "organisationsnamn2": "Organisationsname",
       "stockholmSverige": "Stockholm, Schweden"
@@ -3579,7 +3592,8 @@
       "angeEPostadressenFor": "Geben Sie die E-Mail-Adresse für Ihr Nolto-Konto ein. Wenn Sie sich über Mastodon anmelden, setzen Sie Ihr Passwort bitte auf Ihrem Mastodon-Server zurück.",
       "skickaAterstallningslank": "Link zum Zurücksetzen senden",
       "ePostadress": "E-Mail-Adresse",
-      "skickar": "Senden..."
+      "skickar": "Senden...",
+      "requestFailed": "Das Zurücksetzen des Passworts konnte nicht angefordert werden. Warten Sie einen Moment und versuchen Sie es erneut."
     },
     "reportDialog": {
       "valjEnAnledningFor": "Wählen Sie einen Grund für die Meldung",
@@ -3794,8 +3808,8 @@
       "refresh": "Aktualisieren"
     },
     "fediverseBadge": {
-      "verifiedVia": "Verifiziert über",
-      "thisUserSIdentity": "Die Identität dieses Benutzers ist über sein Fediverse-Konto auf"
+      "accountOn": "Konto auf {{server}}",
+      "accountServer": "Dieses Fediverse-Konto wird auf {{server}} gehostet."
     },
     "quoteCardGenerator": {
       "imageDownloaded": "Bild heruntergeladen!",
@@ -4056,5 +4070,34 @@
         ]
       ]
     }
+  },
+  "companyTypes": {
+    "groups": {
+      "business": "Unternehmen",
+      "public": "Öffentlicher Sektor",
+      "educationAndCivilSociety": "Bildung und Zivilgesellschaft",
+      "other": "Sonstiges"
+    },
+    "privateCompany": "Unternehmen",
+    "startup": "Start-up",
+    "limitedCompany": "Kapitalgesellschaft",
+    "listedCompany": "Börsennotiertes Unternehmen",
+    "soleTrader": "Einzelunternehmen",
+    "partnership": "Offene Handelsgesellschaft",
+    "limitedPartnership": "Kommanditgesellschaft",
+    "cooperative": "Genossenschaft",
+    "consultancy": "Beratungsunternehmen",
+    "municipality": "Kommune",
+    "region": "Regionalverwaltung",
+    "governmentAgency": "Staatliche Behörde",
+    "stateOwnedCompany": "Staatliches Unternehmen",
+    "municipalCompany": "Kommunales Unternehmen",
+    "publicPartnership": "Öffentlich-rechtlicher Verband",
+    "university": "Hochschule / Universität",
+    "adultEducation": "Volkshochschule / Erwachsenenbildung",
+    "nonprofit": "Gemeinnützige Organisation / Verein",
+    "foundation": "Stiftung",
+    "other": "Sonstige Organisation",
+    "help": "Wählen Sie die Kategorie, die Ihre Organisation am besten beschreibt."
   }
 }

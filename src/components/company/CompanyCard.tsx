@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { Company } from "@/services/company/companyService";
+import { useTranslation } from "react-i18next";
+import { getCompanySizeLabel, getOrganisationTypeLabel } from "@/lib/companyOptions";
 
 import { tx } from "@/i18n/tx";
 interface CompanyCardProps {
@@ -11,6 +13,7 @@ interface CompanyCardProps {
 }
 
 export default function CompanyCard({ company }: CompanyCardProps) {
+  const { t } = useTranslation();
   return (
     <Link to={`/organisation/${company.slug}`}>
       <Card className="card-interactive h-full">
@@ -49,7 +52,7 @@ export default function CompanyCard({ company }: CompanyCardProps) {
           <div className="flex flex-wrap items-center gap-2 mt-3 text-sm text-muted-foreground">
             {company.industry && (
               <Badge variant="secondary" className="font-normal">
-                {company.industry}
+                {getOrganisationTypeLabel(company.industry, t)}
               </Badge>
             )}
             {company.location && (
@@ -69,7 +72,7 @@ export default function CompanyCard({ company }: CompanyCardProps) {
             {company.size && (
               <span className="flex items-center gap-1.5">
                 <Building2 className="h-4 w-4" />
-                <span>{company.size}</span>
+                <span>{getCompanySizeLabel(company.size, t)}</span>
               </span>
             )}
           </div>

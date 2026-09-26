@@ -50,6 +50,12 @@ npm run build
 
 The catalog checks inspect every string leaf for key coverage, matching interpolation/markup and unreviewed English copies, including short labels. The shared-vocabulary exceptions in `scripts/translations.test.mjs` require an actual language/context review; do not add a copy quota. Source checks cover literal translation calls and JSX text, but cannot discover every runtime-generated string.
 
-The interaction tests exercise the real account-deletion and report dialogs with all eight resources and mocked services. They verify language changes, confirmation guards and safe interpolation without deleting accounts or submitting reports.
+The interaction tests exercise the real account-deletion, report and organisation forms and import summaries with all eight resources and mocked services. They verify language changes, confirmation guards, safe interpolation, stable organisation values, legacy categories, filter ranges and address/year validation without writing to a live database.
 
 Automated coverage is not a fluency score. Contextual proofreading and visual review must check idiom, grammar, register, truncation, accessible names and all states of each flow. This review improves terminology across all eight catalogs and reviews the Swedish catalog more deeply; it is not a native-speaker certification of every sentence in the other seven languages. Backend-returned messages and the separate native mobile application are not fully covered by the web catalog tests.
+
+## Organisation labels and audit record
+
+Use `src/lib/companyOptions.ts` for organisation categories and company sizes. Persist the option value, never its translated label. Keep legacy values and unknown historical free text intact. Use the same labels in creation, editing, filtering, cards and headers. Category selection is descriptive; it is not legal verification.
+
+The follow-up audit, corrected findings and remaining review work are documented in [localization-review-2026-09.md](localization-review-2026-09.md). Complete technical coverage and full linguistic proofreading are separate review states.

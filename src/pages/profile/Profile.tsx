@@ -942,7 +942,7 @@ const ProfilePage = () => {
               <CardContent className="pt-6">
                 <h3 className="text-sm font-semibold mb-3">{t("profilePage.followForArticles")}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {t("profilePage.followForArticlesDesc")} {profile.displayName?.split(" ")[0] || ""} {t("profilePage.followForArticlesDescSuffix")}
+                  {t("profilePage.followArticleUpdates", { name: profile.displayName || t("profilePage.unknownUser") })}
                 </p>
                 <FollowAuthorButton
                   authorId={profile.id}

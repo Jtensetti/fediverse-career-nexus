@@ -35,7 +35,7 @@
   },
   "accessibility": {
     "skipToContent": "Hoppa till innehåll",
-    "darkMode": "Växla mörkt läge",
+    "darkMode": "Välj färgtema",
     "navigationMenu": "Navigationsmeny",
     "menuOpen": "Öppna meny",
     "menuClose": "Stäng meny",
@@ -65,7 +65,7 @@
     "signOut": "Logga ut",
     "login": "Logga in",
     "logout": "Logga ut",
-    "register": "Registrera",
+    "register": "Skapa konto",
     "forgotPassword": "Glömt lösenord?",
     "resetPassword": "Återställ lösenord",
     "backToHome": "Tillbaka till startsidan",
@@ -91,7 +91,7 @@
     "invitedWithCode": "Inbjuden med kod",
     "noTracking": "Ingen spårning eller dataförsäljning",
     "ownIdentity": "Äg din professionella identitet",
-    "connectFediverse": "Samverka med andra organisationer",
+    "connectFediverse": "Följ personer även på andra Fediverse-tjänster",
     "enterEmail": "Ange din e-postadress",
     "enterPassword": "Ange ditt lösenord",
     "createPassword": "Skapa ett lösenord (minst 12 tecken)",
@@ -102,7 +102,7 @@
     "lastNameRequired": "Efternamn krävs",
     "emailRequired": "E-post krävs",
     "passwordRequired": "Lösenord krävs",
-    "nameTooLong": "Måste vara mindre än 50 tecken",
+    "nameTooLong": "Namnet får ha högst 50 tecken.",
     "nameInvalidChars": "Kan bara innehålla bokstäver, mellanslag, bindestreck, apostrofer och punkter",
     "usernameMinChars": "Minst 3 tecken",
     "usernameMaxChars": "Max 30 tecken",
@@ -158,7 +158,7 @@
     "resources": "Resurser",
     "documentation": "Dokumentation",
     "helpCenter": "Hjälpcenter",
-    "howFederationWorks": "Hur nolto fungerar",
+    "howFederationWorks": "Så fungerar federation",
     "federatedInstances": "Anslutna servrar",
     "legal": "Juridiskt",
     "privacyPolicy": "Integritetspolicy",
@@ -242,9 +242,9 @@
     "following": "Följer",
     "followingDesc": "Inlägg från personer du följer",
     "local": "På Nolto",
-    "localDesc": "Alla inlägg på Nolto",
+    "localDesc": "Offentliga inlägg från Nolto",
     "federated": "Hela nätverket",
-    "federatedDesc": "Lokalt + fjärrföljda",
+    "federatedDesc": "Inlägg från Nolto och konton du följer på andra servrar",
     "feeds": "Flöden",
     "createCustomFeed": "Skapa anpassat flöde",
     "manageFeeds": "Hantera flöden",
@@ -340,13 +340,13 @@
   },
   "codeOfConduct": {
     "title": "Uppförandekod",
-    "description": "Våra gemenskapsriktlinjer och etiska standarder",
+    "description": "Så visar vi hänsyn till varandra på Nolto",
     "principles": "Grundprinciper",
     "respectful": "Var respektfull och inkluderande i alla interaktioner",
     "harassment": "Ingen trakassering eller diskriminering av något slag",
     "privacy": "Respektera integritet och sekretess",
     "truthful": "Dela sanningsenlig information och undvik att sprida desinformation",
-    "constructive": "Delta i konstruktiv kritik och dialog",
+    "constructive": "Bidra till sakliga och konstruktiva samtal",
     "prohibited": "Förbjudet innehåll",
     "hate": "Hatretorik och innehåll som främjar våld eller diskriminering",
     "harassment2": "Trakasserier, mobbning eller hot",
@@ -354,11 +354,11 @@
     "private": "Delning av privat information utan samtycke",
     "spam": "Spam eller bedrägliga metoder",
     "enforcement": "Efterlevnad",
-    "enforcementDesc": "Brott mot dessa riktlinjer kan resultera i borttagning av innehåll, kontovarningar, tillfällig avstängning eller permanent bannlysning beroende på överträdelsens allvar och frekvens.",
+    "enforcementDesc": "Den som bryter mot reglerna kan få innehåll borttaget, bli varnad eller bli tillfälligt eller permanent avstängd. Åtgärden beror på hur allvarlig överträdelsen är och om den har upprepats.",
     "agree": "Jag accepterar att följa uppförandekoden"
   },
   "moderation": {
-    "title": "Gemenskapsmoderering",
+    "title": "Moderering",
     "log": "Modereringslogg",
     "codeOfConduct": "Uppförandekod",
     "action": "Åtgärd",
@@ -372,7 +372,7 @@
     "noActions": "Inga modereringsåtgärder att visa",
     "newAction": "Ny modereringsåtgärd",
     "newActionTitle": "Ny modereringsåtgärd",
-    "newActionDesc": "Vidta modereringsåtgärd mot en användare som har brutit mot gemenskapsriktlinjerna",
+    "newActionDesc": "Välj en åtgärd för ett konto som har brutit mot Noltos regler.",
     "actionType": "Åtgärdstyp",
     "targetUser": "Användare som berörs",
     "reasonLabel": "Motivering som visas offentligt",
@@ -383,11 +383,21 @@
     "actionCreated": "Modereringsåtgärd skapad",
     "notAuthorized": "Du har inte behörighet att vidta modereringsåtgärder",
     "loginRequired": "Du måste vara inloggad för att se denna sida",
-    "loadingData": "Laddar modereringsdata..."
+    "loadingData": "Laddar modereringsdata...",
+    "statusUpdatedDetails": "Ny status för {{target}}: {{status}}.",
+    "entryRemovedDetails": "Modereringsregeln för {{target}} är borttagen.",
+    "ruleSaved": "Modereringen är sparad",
+    "loadRulesFailed": "Kunde inte hämta modereringsreglerna.",
+    "domainRequired": "Ange en domän.",
+    "accountUrlRequired": "Ange kontots fullständiga webbadress.",
+    "reasonRequired": "Ange en motivering.",
+    "saveRuleFailed": "Kunde inte spara modereringsregeln. Försök igen.",
+    "editRuleDescription": "Ändra modereringsregeln för {{target}}.",
+    "removeRuleDescription": "Ta bort modereringsregeln för {{target}}?"
   },
   "events": {
     "title": "Evenemang",
-    "subtitle": "Delta i evenemang, webinarier och livestreams.",
+    "subtitle": "Hitta webbinarier, direktsändningar och möten inom ditt yrkesområde.",
     "create": "Skapa evenemang",
     "upcoming": "Kommande evenemang",
     "past": "Tidigare evenemang",
@@ -422,7 +432,7 @@
     "errorLoading": "Fel vid laddning av profil",
     "errorLoadingDesc": "Ett fel uppstod vid laddning av profilen. Försök igen senare.",
     "syncSuccess": "Profil synkroniserad!",
-    "syncFailed": "Kunde inte synka profil",
+    "syncFailed": "Kunde inte synkronisera profilen",
     "connectFirst": "Ni behöver vara kontakter för att kunna skicka meddelanden till varandra",
     "mustBeLoggedIn": "Logga in för att lägga till kontakter",
     "showWhoViewed": "Visa vem som såg min profil",
@@ -434,7 +444,7 @@
     "accept": "Acceptera",
     "decline": "Avböj",
     "message": "Meddelande",
-    "sync": "Synka",
+    "sync": "Synkronisera profil",
     "stats": {
       "posts": "inlägg",
       "following": "följer",
@@ -538,12 +548,12 @@
     "title": "Bjud in kollegor",
     "colleagueJoined": "kollega har gått med",
     "colleaguesJoined": "kollegor har gått med",
-    "totalReferrals": "totala inbjudningar",
+    "totalReferrals": "inbjudningar totalt",
     "inviteLink": "Din inbjudningslänk",
     "shareMessage": "Dela denna länk för att utöka ert professionella nätverk.",
     "copied": "Inbjudningslänk kopierad!",
     "copyFailed": "Kunde inte kopiera länk",
-    "shareTitle": "Gå med mig på Nolto",
+    "shareTitle": "Vi ses på Nolto",
     "shareText": "Gå med i det federerade alternativet till LinkedIn!"
   },
   "suggestions": {
@@ -552,56 +562,55 @@
     "introduceYourself": "Presentera dig för nätverket",
     "writeArticle": "Skriv en artikel",
     "shareExpertise": "Dela din expertis med kollegor",
-    "connectWithPeers": "Kontakta kollegor",
+    "connectWithPeers": "Hitta kontakter",
     "buildNetwork": "Bygg ditt professionella nätverk",
-    "postJob": "Publicera ett jobb",
+    "postJob": "Publicera en jobbannons",
     "reachProfessionals": "Nå yrkesverksamma i hela det federerade nätverket",
     "createEvent": "Skapa ett evenemang",
     "hostMeetups": "Håll i möten och nätverksevenemang",
-    "doIt": "Gör det",
     "dismissAction": "Dölj förslaget: {{action}}"
   },
   "openSource": {
     "badge": "Öppen källkod",
-    "title": "Byggt i det öppna",
-    "description": "Varje kodrad är publik. Varje beslut är dokumenterat. Transparens bygger förtroende.",
+    "title": "Utvecklas öppet",
+    "description": "Noltos källkod är öppen. Granska koden, följ utvecklingen eller bidra med en förbättring.",
     "repoDescription": "Det federerade alternativet till LinkedIn",
     "mitLicense": "MIT-licens",
     "contributorsWelcome": "Bidragsgivare välkomna",
-    "securityAudited": "Säkerhetsgranskad",
-    "securityDescription": "Regelbundna säkerhetsgranskningar och ansvarsfull rapportering",
+    "securityAudited": "Säkerhetsfrågor",
+    "securityDescription": "Rapportera säkerhetsbrister ansvarsfullt",
     "activeDevelopment": "Aktiv utveckling",
     "devDescription": "Regelbundna uppdateringar med feedback från communityn",
-    "communityDriven": "Community-driven",
+    "communityDriven": "Utvecklas tillsammans",
     "communityDescription": "Funktioner prioriteras av communityn",
     "viewSourceCode": "Visa källkod",
     "contribute": "Bidra"
   },
   "featureShowcase": {
-    "title": "Allt ni behöver för professionellt nätverkande",
+    "title": "Verktyg för ditt arbetsliv",
     "subtitle": "Alla verktyg från ett modernt professionellt nätverk — fritt, federerat och utan annonser",
     "professionalProfiles": "Professionella profiler",
-    "profilesDesc": "Kompetenser, erfarenhet och rekommendationer — samlat för hela organisationen",
+    "profilesDesc": "Visa din erfarenhet, utbildning och kompetens på din profil.",
     "portableIdentity": "Säker dataexport",
     "jobBoard": "Rekrytering",
     "jobDesc": "Hitta och publicera tjänster i hela det federerade nätverket",
-    "crossInstanceListings": "Över organisationsgränser",
+    "crossInstanceListings": "Jobb i nätverket",
     "events": "Evenemang",
     "eventsDesc": "Skapa evenemang och hantera anmälningar",
     "federatedRsvps": "Enkel anmälan",
     "articles": "Artiklar",
     "articlesDesc": "Dela kunskap och insikter med kollegor",
-    "reachAnyInstance": "Nå hela organisationen",
+    "reachAnyInstance": "Dela kunskap i ditt nätverk",
     "directMessages": "Direktmeddelanden",
     "dmDesc": "Säkra samtal med era kontakter",
     "crossInstanceMessaging": "Krypterade meddelanden",
     "connections": "Kontakter",
     "connectionsDesc": "Bygg meningsfulla professionella relationer",
-    "followAnywhere": "Samverka över organisationsgränserna",
-    "privacyByDesign": "Integritet i designen",
+    "followAnywhere": "Följ personer på andra tjänster",
+    "privacyByDesign": "Integritet från början",
     "noTracking": "Ingen spårning, inga annonser, ingen dataförsäljning",
-    "fullPortability": "Full portabilitet",
-    "exportAnytime": "Exportera er data när som helst",
+    "fullPortability": "Ta med dina uppgifter",
+    "exportAnytime": "Ladda ner dina uppgifter",
     "openProtocol": "Öppen standard",
     "builtOnActivityPub": "Byggt på öppna standarder"
   },
@@ -676,7 +685,7 @@
     },
     "experience": {
       "title": "Arbetslivserfarenhet",
-      "company": "Organisation",
+      "company": "Företag eller organisation",
       "position": "Befattning",
       "startDate": "Startdatum",
       "endDate": "Slutdatum",
@@ -689,7 +698,7 @@
       "loading": "Laddar erfarenheter...",
       "jobTitle": "Yrkestitel",
       "jobTitlePlaceholder": "t.ex. Projektledare",
-      "companyPlaceholder": "t.ex. Kommun AB, Frilans, Egenföretagare",
+      "companyPlaceholder": "t.ex. Acme AB eller egen verksamhet",
       "companyDomain": "Organisationens webbdomän",
       "companyDomainPlaceholder": "t.ex. foretag.se",
       "locationPlaceholder": "t.ex. Stockholm",
@@ -700,7 +709,7 @@
       "startDateRequired": "Startdatum krävs",
       "remove": "Ta bort erfarenheten {{name}}",
       "current": "Jag arbetar här för närvarande",
-      "companyRequired": "Organisation är obligatorisk"
+      "companyRequired": "Ange företag, organisation eller egen verksamhet."
     },
     "education": {
       "title": "Utbildning",
@@ -813,7 +822,7 @@
     "adjustFilters": "Prova att justera dina filter för att hitta fler möjligheter.",
     "beFirst": "Bli först att publicera ett jobb!",
     "reachProfessionals": "Nå yrkesverksamma i hela det federerade nätverket. Publicera transparenta jobbannonser.",
-    "postJob": "Publicera jobb",
+    "postJob": "Publicera en jobbannons",
     "signUpToPost": "Registrera dig för att publicera",
     "clearFilters": "Rensa filter",
     "allJobTypes": "Alla anställningstyper",
@@ -846,7 +855,7 @@
     "essentialDesc": "Krävs för autentisering, säkerhet (Cloudflare) och grundläggande funktionalitet."
   },
   "companyAdmin": {
-    "title": "Admin",
+    "title": "Administration",
     "subtitle": "Hantera anställda, roller och visa aktivitet",
     "employees": "Anställda",
     "pendingVerification": "Väntar på verifiering",
@@ -862,7 +871,7 @@
     "rejectEmployeeTitle": "Avslå begäran om att bekräfta anställningen?",
     "rejectEmployeeDesc": "Begäran från {{name}} tas bort. Personen behöver skicka in en ny begäran.",
     "removeRoleTitle": "Ta bort roll?",
-    "removeRoleDesc": "Detta tar bort {{name}}s åtkomst för att hantera denna organisationssida. De kan läggas till igen senare.",
+    "removeRoleDesc": "{{name}} kan inte längre administrera organisationssidan. Du kan ge personen åtkomst igen senare.",
     "removeRole": "Ta bort roll",
     "noAdditionalRoles": "Inga ytterligare roller",
     "onlyOwnerAccess": "Bara ägaren har åtkomst just nu",
@@ -873,7 +882,7 @@
     "searchFailed": "Kunde inte söka användare",
     "roleAdded": "Roll tillagd",
     "roleAddFailed": "Kunde inte lägga till roll",
-    "roleAdmin": "Admin",
+    "roleAdmin": "Administratör",
     "roleEditor": "Redaktör",
     "employeeVerified": "Anställningen har bekräftats",
     "verifyFailed": "Kunde inte verifiera",
@@ -883,13 +892,13 @@
     "roleRemoveFailed": "Kunde inte ta bort roll"
   },
   "companies": {
-    "title": "Organisationer",
+    "title": "Företag och organisationer",
     "subtitle": "Upptäck och följ organisationer på Nolto",
-    "createTitle": "Skapa organisation",
-    "createDescription": "Visa upp din organisation och knyt nya kontakter",
-    "createSuccess": "Organisationen skapades!",
-    "createError": "Kunde inte skapa organisation",
-    "create": "Skapa organisation",
+    "createTitle": "Skapa en sida för företag eller organisation",
+    "createDescription": "Presentera er verksamhet, dela nyheter och nå nya medarbetare och samarbetspartner.",
+    "createSuccess": "Organisationssidan är skapad.",
+    "createError": "Kunde inte skapa organisationssidan.",
+    "create": "Skapa organisationssida",
     "noMatching": "Inga organisationer hittades",
     "beFirst": "Bli först med att skapa en organisationssida",
     "adjustFilters": "Försök justera dina sökfilter",
@@ -936,7 +945,7 @@
     "noPosts": "Inga inlägg ännu",
     "noPostsDescription": "Organisationen har inte delat några inlägg ännu.",
     "noJobs": "Inga lediga jobb",
-    "noJobsDescription": "Organisationen har inga lediga tjänster just nu.",
+    "noJobsDescription": "Inga jobbannonser har publicerats här ännu.",
     "noneAvailable": "Inga organisationer är publicerade just nu",
     "noneAvailableDescription": "Kom tillbaka senare för att upptäcka organisationer på Nolto."
   },
@@ -950,9 +959,9 @@
     "verified": "Verifierad organisation"
   },
   "companyForm": {
-    "basicInfo": "Grundläggande information",
-    "basicInfoDesc": "Ange kärnuppgifterna om din organisation",
-    "companyName": "Organisationsnamn",
+    "basicInfo": "Grunduppgifter",
+    "basicInfoDesc": "Uppgifter som hjälper andra att förstå vilka ni är och vad ni gör.",
+    "companyName": "Namn på företag eller organisation",
     "companyUrl": "Webbadress på Nolto",
     "available": "Ledig",
     "taken": "Upptagen",
@@ -969,16 +978,19 @@
     "selectSize": "Välj storlek",
     "employees": "anställda",
     "headquarters": "Huvudkontor",
-    "foundedYear": "Grundandeår",
+    "foundedYear": "År då verksamheten grundades",
     "nameTooShort": "Skriv ett organisationsnamn med minst 2 tecken.",
     "nameTooLong": "Namnet får vara högst 100 tecken.",
-    "urlTooShort": "Webbadressen måste ha minst 2 tecken.",
+    "urlTooShort": "Webbadressen måste ha minst 3 tecken.",
     "urlTooLong": "Webbadressen får vara högst 50 tecken.",
-    "urlCharacters": "Använd små bokstäver (a–z), siffror och bindestreck.",
+    "urlCharacters": "Använd små bokstäver (a–z), siffror och bindestreck. Börja och sluta med en bokstav eller siffra.",
     "taglineTooLong": "Beskrivningen får vara högst 140 tecken.",
     "invalidWebsite": "Ange en giltig webbadress, till exempel https://example.com.",
-    "organisationType": "Typ av organisation",
-    "selectOrgType": "Välj typ av organisation"
+    "organisationType": "Typ av verksamhet",
+    "selectOrgType": "Välj typ av verksamhet",
+    "httpsRequired": "Ange en webbadress som börjar med https://.",
+    "maxCharacters": "Använd högst {{max}} tecken.",
+    "validYear": "Ange ett år mellan {{min}} och {{max}}."
   },
   "companyPost": {
     "deleteTitle": "Radera inlägg?",
@@ -1000,7 +1012,7 @@
     "follow": "Följ",
     "following": "Följer",
     "followSuccess": "Följer nu denna organisation",
-    "unfollowSuccess": "Slutade följa organisation",
+    "unfollowSuccess": "Du följer inte längre organisationen.",
     "followFailed": "Kunde inte följa organisation",
     "unfollowFailed": "Kunde inte sluta följa organisation"
   },
@@ -1016,7 +1028,7 @@
     "locationLabel": "Plats",
     "locationPlaceholder": "t.ex. Stockholm, Göteborg",
     "worksAt": "Arbetar på",
-    "worksAtPlaceholder": "t.ex. Skatteverket, Region Stockholm",
+    "worksAtPlaceholder": "t.ex. Acme AB eller Malmö stad",
     "studiedAt": "Studerat vid",
     "studiedAtPlaceholder": "t.ex. KTH, Lunds universitet",
     "instance": "Server",
@@ -1040,7 +1052,7 @@
     "noContentResults": "Prova ett annat sökord eller en annan kategori."
   },
   "savedItems": {
-    "title": "Sparade objekt",
+    "title": "Sparat",
     "seoDescription": "Dina sparade jobb, artiklar, evenemang, inlägg och kommentarer på Nolto.",
     "description": "Dina bokmärkta jobb, artiklar, evenemang, inlägg och kommentarer",
     "all": "Alla",
@@ -1049,21 +1061,21 @@
     "jobs": "Jobb",
     "events": "Evenemang",
     "comments": "Kommentarer",
-    "noSavedItems": "Inga sparade objekt ännu",
+    "noSavedItems": "Du har inte sparat något ännu",
     "noSavedItemsAll": "Spara jobb, artiklar, evenemang, inlägg och kommentarer för att se dem här senare",
-    "noSavedItemsType": "Du har inte sparat några {{type}} ännu. Leta efter bokmärkesikonen för att spara objekt.",
+    "noSavedItemsType": "Du har inte sparat något i den här kategorin ännu. Tryck på bokmärket vid det du vill spara.",
     "browseFeed": "Bläddra i flödet",
     "browseJobs": "Bläddra bland jobb",
     "browseArticles": "Bläddra bland artiklar",
-    "removed": "Objekt borttaget från sparade",
-    "removeFailed": "Kunde inte ta bort objekt",
+    "removed": "Borttaget från Sparat",
+    "removeFailed": "Kunde inte ta bort från Sparat",
     "remove": "Ta bort från sparade",
     "saved": "Sparad",
     "view": "Visa"
   },
   "starterPacks": {
     "title": "Startpaket",
-    "seoDescription": "Upptäck kurerade listor med personer att följa på Nolto.",
+    "seoDescription": "Upptäck listor med utvalda personer att följa på Nolto.",
     "description": "Kurerade listor med yrkesverksamma att följa. Välj ett paket som matchar dina intressen och fyll ditt flöde med bra innehåll.",
     "searchPlaceholder": "Sök paket...",
     "createPack": "Skapa paket",
@@ -1082,20 +1094,20 @@
     "packNotFoundDesc": "Startpaketet du letar efter finns inte.",
     "browsePacks": "Bläddra bland paket",
     "backToPacks": "Tillbaka till paket",
-    "members": "medlemmar",
+    "members": "personer",
     "followers": "följare",
     "followAll": "Följ alla",
     "followingAll": "Följer...",
-    "noMembers": "Detta paket har inga medlemmar ännu.",
-    "membersTitle": "Medlemmar",
-    "signInToFollow": "Logga in för att följa detta paket",
+    "noMembers": "Inga personer har lagts till i paketet ännu.",
+    "membersTitle": "Personer i paketet",
+    "signInToFollow": "Logga in för att följa",
     "followed": "Följd!",
     "signInRequired": "Inloggning krävs",
     "signInRequiredDesc": "Du måste vara inloggad för att skapa ett startpaket.",
     "signIn": "Logga in",
     "createTitle": "Skapa ett startpaket",
-    "createSeoDesc": "Kurera en lista med personer för att hjälpa andra upptäcka bra konton på Nolto.",
-    "createDescription": "Kurera en lista med personer för att hjälpa andra upptäcka bra konton",
+    "createSeoDesc": "Samla personer i ett startpaket och hjälp andra att hitta intressanta konton att följa.",
+    "createDescription": "Samla personer i ett startpaket och hjälp andra att hitta konton att följa.",
     "packName": "Paketnamn *",
     "packNamePlaceholder": "t.ex. Frontend-utvecklare att följa",
     "urlSlug": "Paketets webbadress *",
@@ -1110,21 +1122,21 @@
     "createPackButton": "Skapa paket",
     "signInToCreate": "Logga in för att skapa ett paket",
     "fillRequired": "Fyll i alla obligatoriska fält",
-    "afterCreate": "Efter att paketet skapats kan du lägga till medlemmar."
+    "afterCreate": "När paketet är skapat kan du lägga till personer i det."
   },
   "eventCreate": {
     "title": "Skapa evenemang",
-    "description": "Skapa ett nytt evenemang med livestream, talarlista och utförliga detaljer.",
+    "description": "Beskriv evenemanget, ange tid och plats och publicera det när du är klar.",
     "success": "Evenemanget skapades!",
     "failed": "Kunde inte skapa evenemanget. Försök igen."
   },
   "eventView": {
-    "loading": "Laddar evenemangsdetaljer...",
+    "loading": "Hämtar evenemanget…",
     "notFound": "Evenemang hittades inte",
     "notFoundDescription": "Evenemanget du letar efter finns inte eller har tagits bort.",
     "backToEvents": "Tillbaka till evenemang",
     "breadcrumbEvents": "Evenemang",
-    "eventDetails": "Evenemangsdetaljer",
+    "eventDetails": "Om evenemanget",
     "virtual": "Digitalt evenemang",
     "aboutEvent": "Om detta evenemang",
     "meetingLink": "Möteslänk",
@@ -1143,7 +1155,7 @@
     "shareEvent": "Dela evenemang",
     "editEvent": "Redigera evenemang",
     "deleteEvent": "Ta bort evenemang",
-    "deleteConfirmTitle": "Är du säker?",
+    "deleteConfirmTitle": "Ta bort evenemanget?",
     "deleteConfirmDescription": "Denna åtgärd kan inte ångras. Evenemanget och alla anmälningar kommer att raderas permanent.",
     "linkCopied": "Evenemangslänk kopierad!",
     "mustBeLoggedIn": "Du måste vara inloggad för att anmäla dig",
@@ -1162,7 +1174,7 @@
   "jobForm": {
     "jobTitle": "Jobbtitel *",
     "jobTitlePlaceholder": "t.ex. Systemutvecklare",
-    "companyName": "Organisationsnamn *",
+    "companyName": "Arbetsgivare *",
     "companyNamePlaceholder": "t.ex. Region Stockholm",
     "linkCompanyPage": "Koppla till organisationssida",
     "selectCompanyPage": "Välj en organisationssida (valfritt)",
@@ -1222,7 +1234,7 @@
     "companyValidation": "Organisationsnamn krävs",
     "locationValidation": "Plats krävs",
     "descriptionValidation": "Beskrivningen måste vara minst 20 tecken",
-    "salaryValidation": "Minimilönen måste vara lägre än maxlönen"
+    "salaryValidation": "Lön från får inte vara högre än Lön till."
   },
   "eventForm": {
     "eventDetails": "Evenemangsdetaljer",
@@ -1270,7 +1282,7 @@
   },
   "feedSettings": {
     "title": "Flödesinställningar",
-    "seoDescription": "Anpassa dina flödespreferenser, standardflöden och tysta ord.",
+    "seoDescription": "Välj standardflöde och vilka ord och inlägg du vill filtrera bort.",
     "description": "Anpassa hur ditt flöde fungerar",
     "backToFeed": "Tillbaka till flödet",
     "signInRequired": "Inloggning krävs",
@@ -1287,11 +1299,11 @@
     "showRepostsDesc": "Inkludera delade inlägg i ditt flöde",
     "showReplies": "Visa svar",
     "showRepliesDesc": "Inkludera svarsinlägg i ditt flöde",
-    "mutedWords": "Tystade ord",
+    "mutedWords": "Ord att filtrera bort",
     "mutedWordsDesc": "Dölj inlägg som innehåller dessa ord eller fraser",
-    "addWord": "Lägg till ett ord eller fras...",
+    "addWord": "Lägg till ett ord eller en fras",
     "add": "Lägg till",
-    "noMutedWords": "Inga tystade ord ännu",
+    "noMutedWords": "Inga ord har lagts till ännu",
     "wordExists": "Ordet finns redan i listan",
     "saved": "Inställningar sparade!",
     "saveFailed": "Kunde inte spara inställningar",
@@ -1330,7 +1342,7 @@
     "connectionsPlusDesc": "Kontakter och personer som följer dig kan skicka meddelanden",
     "nobody": "Ingen",
     "nobodyDesc": "Inaktivera alla inkommande meddelanden",
-    "updated": "Sekretessinställning uppdaterad",
+    "updated": "Meddelandeinställningarna är uppdaterade.",
     "updateFailed": "Kunde inte uppdatera sekretessinställning"
   },
   "mfa": {
@@ -1348,7 +1360,7 @@
     "disabling": "Inaktiverar...",
     "confirmDisable": "Inaktivera 2FA",
     "loading": "Laddar säkerhetsinställningar...",
-    "enrollTitle": "Konfigurera tvåfaktorsautentisering",
+    "enrollTitle": "Ställ in tvåfaktorsautentisering",
     "enrollDesc": "Skanna QR-koden med din autentiseringsapp (t.ex. Google Authenticator, Authy).",
     "enrollDescMobile": "Kopiera hemlig nyckel och lägg till den i din autentiseringsapp.",
     "enrollError": "Kunde inte starta registrering",
@@ -1384,7 +1396,7 @@
     "recoverySend": "Skicka begäran",
     "recoverySending": "Skickar…",
     "recoverySent": "Begäran mottagen",
-    "recoverySubmittedDesc": "En administratör granskar din begäran och kontaktar dig på din registrerade e-post inom kort.",
+    "recoverySubmittedDesc": "En administratör granskar din begäran. Besked skickas till e-postadressen som är registrerad på kontot.",
     "recoveryError": "Kunde inte skicka begäran. Försök igen om en stund.",
     "recoveryQueueTitle": "MFA-återställningsärenden",
     "recoveryQueueDesc": "Granska och hantera begäranden om återställning av tvåfaktorsautentisering.",
@@ -1392,7 +1404,7 @@
     "recoveryIssueLink": "Skicka återställningslänk",
     "recoveryReject": "Avvisa",
     "recoveryConfirmTitle": "Skicka återställningslänk?",
-    "recoveryConfirmDesc": "Länken skickas till kontots **registrerade e-postadress**, inte adressen som angavs i formuläret. Användaren måste logga in med sitt lösenord för att slutföra återställningen. Länken är giltig i 30 minuter.",
+    "recoveryConfirmDesc": "Länken skickas till kontots registrerade e-postadress, inte adressen som angavs i formuläret. Användaren måste logga in med sitt lösenord för att slutföra återställningen. Länken är giltig i 30 minuter.",
     "recoveryConfirmSend": "Ja, skicka länk",
     "recoveryLinkSent": "Återställningslänk skickad till kontoägaren.",
     "recoveryLinkError": "Kunde inte skicka länken.",
@@ -1424,7 +1436,7 @@
     "posting": "Publicerar...",
     "failed": "Kunde inte publicera svar",
     "emptyError": "Svaret kan inte vara tomt",
-    "tooLongError": "Svaret måste vara kortare än {{max}} tecken",
+    "tooLongError": "Svaret får ha högst {{max}} tecken.",
     "charactersRemaining": "tecken kvar"
   },
   "commentEdit": {
@@ -1448,7 +1460,7 @@
     "pageTitle": "Riktlinjer för serverdrift",
     "seoDescription": "Riktlinjer för att driva en Nolto-server ansvarsfullt.",
     "headerTitle": "Riktlinjer för serverdrift",
-    "headerSubtitle": "Ansvarsfull drift och nätverkshälsa",
+    "headerSubtitle": "Ansvarsfull drift och ett fungerande nätverk",
     "backToHome": "Tillbaka till startsidan"
   },
   "eventFormLabels": {
@@ -1468,7 +1480,7 @@
     "pickDate": "Välj ett datum",
     "selectTime": "Välj en tid",
     "location": "Plats",
-    "onlineEvent": "Onlineevenemang",
+    "onlineEvent": "Digitalt evenemang",
     "onlineEventDesc": "Kommer detta evenemang att hållas online?",
     "physicalLocation": "Fysisk plats",
     "physicalLocationPlaceholder": "t.ex. Stadshuset, Stockholm",
@@ -1497,7 +1509,7 @@
     "startTimeRequired": "Starttid krävs",
     "endDateRequired": "Slutdatum krävs",
     "endTimeRequired": "Sluttid krävs",
-    "invalidUrl": "Ogiltigt URL-format",
+    "invalidUrl": "Ange en giltig webbadress.",
     "endTimeAfterStart": "Sluttid måste vara efter starttid",
     "meetingUrlRecommended": "Ange gärna en möteslänk för digitala evenemang",
     "eventImageDesc": "Webbadress till evenemangets omslagsbild",
@@ -1516,7 +1528,7 @@
   "jobFormLabels": {
     "jobTitle": "Jobbtitel *",
     "jobTitlePlaceholder": "t.ex. Senior Frontend-utvecklare",
-    "companyName": "Organisationsnamn *",
+    "companyName": "Arbetsgivare *",
     "companyNamePlaceholder": "t.ex. Acme AB",
     "linkToCompanyPage": "Länka till organisationssida",
     "selectCompanyPage": "Välj en organisationssida (valfritt)",
@@ -1588,7 +1600,7 @@
     "companyRequired": "Organisationsnamn krävs",
     "locationRequired": "Plats krävs",
     "descriptionValidation": "Beskrivningen måste vara minst 20 tecken",
-    "salaryValidation": "Minimilön måste vara lägre än maxlön",
+    "salaryValidation": "Lön från får inte vara högre än Lön till.",
     "linkToCompany": "Koppla till organisationssida",
     "selectCompany": "Välj en organisationssida (valfritt)",
     "linkDescription": "Koppla jobbannonsen till en organisationssida du hanterar.",
@@ -1630,11 +1642,11 @@
     "showRepostsDesc": "Inkludera delade inlägg i ditt flöde",
     "showReplies": "Visa svar",
     "showRepliesDesc": "Inkludera svarsinlägg i ditt flöde",
-    "mutedWords": "Tystade ord",
+    "mutedWords": "Ord att filtrera bort",
     "mutedWordsDesc": "Dölj inlägg som innehåller dessa ord eller fraser",
     "addWordPlaceholder": "Lägg till ett ord eller fras...",
     "add": "Lägg till",
-    "noMutedWords": "Inga tystade ord ännu",
+    "noMutedWords": "Inga ord har lagts till ännu",
     "wordAlreadyInList": "Ordet finns redan i listan",
     "saveSettings": "Spara inställningar",
     "saving": "Sparar...",
@@ -1650,10 +1662,10 @@
   "articleReactions": {
     "reactions": "reaktioner",
     "signInToReact": "Logga in för att reagera på artiklar",
-    "love": "Gilla",
+    "love": "Älska",
     "celebrate": "Fira",
-    "support": "Stöd",
-    "empathy": "Empati",
+    "support": "Stötta",
+    "empathy": "Medkänsla",
     "insightful": "Insiktsfull"
   },
   "commentPreview": {
@@ -1700,9 +1712,9 @@
     "editButton": "Uppdatera evenemang"
   },
   "migration": {
-    "title": "Kontoöverflyttning",
+    "title": "Flytta konto",
     "description": "Länka alternativa konton eller flytta till en annan server",
-    "movedTitle": "Konto överfört",
+    "movedTitle": "Kontot är flyttat",
     "movedDescription": "Ditt konto har flyttats till en annan server.",
     "alsoKnownAs": "Alternativa konton",
     "alsoKnownAsDescription": "Länka andra konton du kontrollerar. Detta krävs innan du kan flytta TILL detta konto från en annan server.",
@@ -1714,7 +1726,7 @@
     "confirmTitle": "Är du säker på att du vill flytta?",
     "confirmDescription": "Ditt konto markeras som flyttat till den nya adressen och flytten meddelas via federation. Du kan inte ångra detta här.",
     "confirmMigrate": "Ja, flytta mitt konto",
-    "invalidUrl": "Ange en giltig URL",
+    "invalidUrl": "Ange en giltig webbadress.",
     "aliasAdded": "Alternativt konto länkat",
     "aliasRemoved": "Alternativt konto borttaget",
     "aliasFailed": "Kunde inte lägga till alternativt konto",
@@ -1956,8 +1968,8 @@
     "jobs": "Jobb",
     "articles": "Artiklar",
     "events": "Evenemang",
-    "noResults": "Inga resultat hittades för",
-    "advancedSearch": "Avancerad sökning"
+    "advancedSearch": "Avancerad sökning",
+    "noResultsFor": "Inga resultat för ”{{query}}”"
   },
   "toasts": {
     "connectionRequestSent": "Kontaktförfrågan skickad",
@@ -2043,9 +2055,8 @@
     "noConnectionsYet": "Inga kontakter ännu",
     "viewAllConnections": "Visa alla kontakter",
     "followForArticles": "Följ för artiklar",
-    "followForArticlesDesc": "Få notiser när",
-    "followForArticlesDescSuffix": "publicerar nya artiklar",
-    "unknownUser": "Okänd användare"
+    "unknownUser": "Okänd användare",
+    "followArticleUpdates": "Få en notis när {{name}} publicerar en artikel."
   },
   "messagesPage": {
     "title": "Meddelanden",
@@ -2147,16 +2158,17 @@
     "edit": "Redigera {{name}}",
     "unavailablePerson": "Profilen är inte tillgänglig",
     "unavailableCompany": "Organisationen är inte tillgänglig",
-    "peopleCount": "{{count}} personer",
     "saveError": "Kunde inte läsa eller spara flödet. Dina val finns kvar. Försök igen.",
     "emptyTitle": "Inga inlägg att visa",
     "emptyDescription": "Inga tillgängliga inlägg matchar just nu. Du kan ändra urvalet under Flöden eller följa fler personer.",
     "infiniteScroll": "Läs in fler inlägg automatiskt",
     "infiniteScrollDescription": "Avstängt som standard. Då väljer du själv när nästa sida ska hämtas.",
-    "exploreNolto": "Utforska På Nolto",
+    "exploreNolto": "Utforska Nolto",
     "findPeople": "Hitta personer",
     "followingEmptyTitle": "Ditt flöde börjar här",
-    "followingEmptyDescription": "Här visas dina inlägg och inlägg från personer du följer. Utforska Nolto eller hitta personer att följa."
+    "followingEmptyDescription": "Här visas dina inlägg och inlägg från personer du följer. Utforska Nolto eller hitta personer att följa.",
+    "peopleCount_one": "{{count}} person",
+    "peopleCount_other": "{{count}} personer"
   },
   "profileInline": {
     "hint": "Klicka på det du vill ändra. Ändringarna publiceras när du sparar.",
@@ -2186,7 +2198,7 @@
     "edit": "Ändra texten",
     "sendAnyway": "Skicka som det är",
     "submitReview": "Skicka för granskning",
-    "held": "Innehållet är dolt och väntar på en moderators godkännande. Du kan lämna sammanhang under Mina granskningar.",
+    "held": "Innehållet är dolt och väntar på en moderators godkännande. Du kan lämna en förklaring under Mina granskningar.",
     "myReviews": "Mina granskningar",
     "guideTitle": "Plats för olika åsikter",
     "guideIntro": "På Nolto ska det gå att säga emot, diskutera svåra frågor och framföra kritik. Här är några sätt att göra dig förstådd utan att angripa personen du pratar med.",
@@ -2201,8 +2213,8 @@
     "requestText": "Föreslå något som går att svara på. Lyssna också på den andras behov och var beredd på ett annat förslag.",
     "example": "”När mötet flyttades samma morgon blev jag frustrerad, eftersom jag behöver kunna planera mitt arbete. Kan vi bestämma ändringar senast dagen före nästa gång?”",
     "howItWorks": "Så fungerar skrivhjälp och granskning",
-    "process": "Vissa personangrepp ger en påminnelse som du kan välja att gå vidare från. Vissa direkta hot och uppmaningar till våld håller i stället innehållet dolt tills en moderator har granskat det. Det gäller även redigeringar, svar och publicerade artiklar. Du kan lämna sammanhang och be om omprövning under Mina granskningar. Anmälningsfunktionen finns kvar för sådant kontrollen missar. Bilder och alla språk kan inte bedömas automatiskt.",
-    "privacy": "Textkontrollen sker i Noltos backend. Själva kontrollen sparar inte ditt utkast och skickar det inte till någon extern AI-tjänst. Privata meddelanden omfattas inte. En publicering som väntar på granskning sparas dolt, tillsammans med motiveringar och beslut. Begär du radering döljs den direkt och raderas efter 30 dagar enligt vår integritetspolicy.",
+    "process": "Vissa personangrepp ger en påminnelse som du kan välja att gå vidare från. Vissa direkta hot och uppmaningar till våld håller i stället innehållet dolt tills en moderator har granskat det. Det gäller även redigeringar, svar och publicerade artiklar. Du kan lämna en förklaring och be om omprövning under Mina granskningar. Anmälningsfunktionen finns kvar för sådant kontrollen missar. Bilder och alla språk kan inte bedömas automatiskt.",
+    "privacy": "Textkontrollen sker på Noltos server. Själva kontrollen sparar inte ditt utkast och skickar det inte till någon extern AI-tjänst. Privata meddelanden omfattas inte. En publicering som väntar på granskning sparas dolt, tillsammans med motiveringar och beslut. Begär du radering döljs den direkt och raderas efter 30 dagar enligt vår integritetspolicy.",
     "sourceNote": "Guiden är inspirerad av Nonviolent Communication. Nolto är inte anslutet till eller certifierat av CNVC. Läs mer hos",
     "queueTitle": "Före publicering",
     "queueIntro": "Läs hela sammanhanget. En träff i språkreglerna är ingen dom. Motivera beslutet för författaren och skilj på angrepp, citat, kritik och rapportering om övergrepp.",
@@ -2216,13 +2228,13 @@
     "kind_comment": "Kommentar",
     "reviewReason": "En automatisk språkregel har markerat möjlig hotfull formulering eller uppmaning till våld. Innehållet är inte offentligt medan granskningen pågår.",
     "historyFailed": "Tidigare motiveringar kunde inte hämtas. Ladda om innan du fattar beslut.",
-    "action_context": "Författarens sammanhang",
+    "action_context": "Författarens förklaring",
     "action_approve": "Godkänt",
     "action_reject": "Avslag",
-    "action_appeal": "Författarens sammanhang eller begäran om omprövning",
+    "action_appeal": "Författarens förklaring eller begäran om omprövning",
     "contextLabel": "Vad vill du att moderatorn ska känna till?",
     "decisionLabel": "Motivering som författaren kan läsa",
-    "addContext": "Skicka sammanhang / be om omprövning",
+    "addContext": "Förklara eller begär omprövning",
     "approve": "Godkänn publicering",
     "reject": "Avslå publicering",
     "noSelfReview": "En annan moderator behöver granska ditt innehåll.",
@@ -2546,7 +2558,7 @@
         ],
         [
           "Hur anmäler jag ett problem?",
-          "Använd Rapportera där funktionen finns, eller kontakta operatören nedan med en länk och en kort beskrivning. Radering på Nolto kan inte garantera att andra servrar eller personer tar bort sina kopior."
+          "Använd Anmäl där funktionen finns, eller kontakta operatören nedan med en länk och en kort beskrivning. Radering på Nolto kan inte garantera att andra servrar eller personer tar bort sina kopior."
         ]
       ]
     },
@@ -2564,7 +2576,7 @@
         ],
         [
           "3. Välj om du vill federera",
-          "Onboardingen låter dig aktivera federation eller vänta. När federation är aktiverad använder andra servrar WebFinger för att hitta din adress, användarnamn@nolto.social, och ActivityPub för att följa och utbyta offentliga inlägg. Användarnamnet låses när identiteten publiceras."
+          "Kom igång-guiden låter dig aktivera federation eller vänta. När federation är aktiverad använder andra servrar WebFinger för att hitta din adress, användarnamn@nolto.social, och ActivityPub för att följa och utbyta offentliga inlägg. Användarnamnet låses när identiteten publiceras."
         ],
         [
           "4. Hitta människor och jobb",
@@ -2740,7 +2752,7 @@
     "footer": {
       "exploreTheFeed": "Utforska flödet",
       "selfhosting": "Egen drift",
-      "importFromNoltoButton": "Hämta från Nolto-knapp",
+      "importFromNoltoButton": "Nolto i ansökningsformulär",
       "nolto": "Nolto."
     },
     "informationPage": {
@@ -2840,7 +2852,7 @@
       "duMasteVaraInloggad": "Du måste vara inloggad",
       "duKanInteSkicka": "Du kan inte skicka en förfrågan till dig själv",
       "duHarRedanEn": "Du har redan en väntande förfrågan till denna person",
-      "dinTidigareForfraganAvslogs": "Din tidigare förfrågan avslogs",
+      "dinTidigareForfraganAvslogs": "Din tidigare förfrågan avböjdes.",
       "meddelandeforfraganSkickad": "Meddelandeförfrågan skickad!",
       "kundeInteSkickaForfragan": "Kunde inte skicka förfrågan",
       "forfraganAccepteradNiKan": "Förfrågan accepterad! Ni kan nu skicka meddelanden till varandra.",
@@ -2884,7 +2896,6 @@
     },
     "notifications": {
       "dinaAviseringarPaNolto": "Dina notiser på Nolto.",
-      "olasta": "olästa)",
       "markeraAllaSomLasta": "Markera alla som lästa",
       "olasta2": "Olästa",
       "ingaOlastaAviseringar": "Inga olästa notiser",
@@ -2892,7 +2903,8 @@
       "duArHeltIkapp": "Du har läst alla notiser.",
       "narDuFarAviseringar": "Dina notiser visas här",
       "aviseringar": "Notiser",
-      "alla": "Alla"
+      "alla": "Alla",
+      "unreadCount": "Olästa: {{total}}"
     },
     "messageConversation": {
       "kundeInteSkickaMeddelande": "Kunde inte skicka meddelande",
@@ -2920,22 +2932,22 @@
       "harKanDuAterkalla": "Här kan du återkalla en extern apps åtkomst till ditt Nolto-konto. För att använda appen igen behöver du ansluta den på nytt.",
       "hamtarAnslutningar": "Hämtar anslutningar…",
       "duHarIngaGodkanda": "Du har inga godkända appanslutningar.",
-      "anslutningArSenastGodkand": "anslutning(ar). Senast godkänd",
       "aterkallar": "Återkallar…",
       "aterkallaAtkomst": "Återkalla åtkomst",
       "omMastodonAppar": "Om Mastodon-appar",
-      "anslutnaAppar": "Anslutna appar"
+      "anslutnaAppar": "Anslutna appar",
+      "grantSummary": "Antal anslutningar: {{total}}. Senast godkänd: {{date}}.",
+      "revokeFailed": "Kunde inte återkalla åtkomsten. Försök igen."
     },
     "sessionExpiryWarning": {
       "dinSessionHarGatt": "Din session har gått ut. Logga in igen.",
       "sessionenHarForlangts": "Du fortsätter vara inloggad",
       "kundeInteForlangaSessionen": "Kunde inte förlänga sessionen. Logga in igen.",
       "sessionenGarUtSnart": "Du loggas snart ut",
-      "dinSessionGarUt": "Du loggas ut om",
-      "villDuForlangaSessionen": ". Vill du fortsätta vara inloggad?",
       "avfarda": "Stäng",
       "forlanger": "Förlänger inloggningen…",
-      "forlangSession": "Fortsätt vara inloggad"
+      "forlangSession": "Fortsätt vara inloggad",
+      "expiryMessage": "Du loggas ut om {{time}}. Vill du fortsätta vara inloggad?"
     },
     "userLookup": {
       "anvandaruppslag": "Sök användare",
@@ -3067,13 +3079,13 @@
       "modereringslogg": "Modereringslogg"
     },
     "adminFederationHealth": {
-      "kundeInteLaddaHalsodata": "Kunde inte ladda hälsodata",
-      "cacheForvarmningMisslyckades": "Cache-förvärmning misslyckades",
+      "kundeInteLaddaHalsodata": "Kunde inte hämta driftinformationen",
+      "cacheForvarmningMisslyckades": "Kunde inte läsa in uppgifterna i cachen",
       "varningBekraftad": "Varning bekräftad",
       "kundeInteBekraftaVarning": "Kunde inte bekräfta varning",
       "dataUppdaterad": "Data uppdaterad",
       "rensningMisslyckades": "Rensning misslyckades",
-      "federationHealth": "Federationshälsa",
+      "federationHealth": "Federationens driftstatus",
       "monitorAndManageFederation": "Övervaka och hantera federationsinfrastruktur",
       "refresh": "Uppdatera",
       "pending": "Väntande",
@@ -3085,7 +3097,7 @@
       "instances": "Servrar",
       "alerts": "Varningar",
       "queueStatus": "Köstatus",
-      "oldestPendingItem": "Äldsta väntande objekt",
+      "oldestPendingItem": "Äldsta meddelandet i kön",
       "queuePartitions": "Köpartitioner",
       "16Active": "16 aktiva",
       "queueUtilization": "Köutnyttjande",
@@ -3103,7 +3115,7 @@
       "errors": "fel",
       "activeAlerts": "Aktiva varningar",
       "noActiveAlerts": "Inga aktiva varningar",
-      "noPendingItems": "Inga väntande objekt"
+      "noPendingItems": "Inga meddelanden väntar i kön"
     },
     "newsletterSubscribe": {
       "prenumereraPaVartNyhetsbrev": "Prenumerera på vårt nyhetsbrev",
@@ -3151,9 +3163,9 @@
       "kundeInteUppdateraDomanstatus": "Kunde inte uppdatera domänstatus",
       "domanBorttagen": "Domän borttagen",
       "kundeInteTaBort": "Kunde inte ta bort domän",
-      "provotid": "Prövotid",
+      "provotid": "Begränsad",
       "laggTillDomanmoderering": "Lägg till domänmoderering",
-      "domanvard": "Domänvärd",
+      "domanvard": "Domän",
       "valjStatus": "Välj status",
       "anledningTillModerering": "Anledning till moderering",
       "domanmoderationslista": "Domänmoderationslista",
@@ -3162,10 +3174,7 @@
       "atgarder": "Åtgärder",
       "ingaDomanmodereringsposternaHittades": "Inga domäner har lagts till för moderering",
       "redigeraDomanmoderering": "Redigera domänmoderering",
-      "uppdateraModereringsinstallningarFor": "Uppdatera modereringsinställningar för",
       "bekraftaBorttagning": "Bekräfta borttagning",
-      "arDuSakerPa": "Är du säker på att du vill ta bort",
-      "franModerering": "från moderering?",
       "uppdateringMisslyckades": "Uppdatering misslyckades",
       "ettFelUppstodVid": "Ett fel uppstod vid uppdatering",
       "borttagningMisslyckades": "Borttagning misslyckades",
@@ -3187,11 +3196,10 @@
       "anmaltInnehallSomHar": "Anmält innehåll som har raderats",
       "atkomstenLoggasTextKan": "Åtkomsten loggas. Text kan granskas om anmälan gjordes före raderingen och ärendet fortfarande är öppet. Bilder och privata meddelanden visas inte här.",
       "textenArInteTillganglig": "Texten är inte tillgänglig. Ärendet kan vara avslutat, lagringstiden slut eller åtkomsten nekad.",
-      "granskningenForlangerInteLagringstiden": ". Granskningen förlänger inte lagringstiden.",
       "hamtarTexten": "Hämtar texten…",
       "inlaggetInnehallerIngenGranskbar": "Inlägget innehåller ingen granskbar text.",
       "granskaRaderadText": "Granska raderad text",
-      "raderasPermanent": "Raderas permanent"
+      "purgeNotice": "Raderas permanent {{date}}. Granskningen förlänger inte lagringstiden."
     },
     "actorModeration": {
       "aktorBlockerad": "Aktör blockerad",
@@ -3200,7 +3208,7 @@
       "ettFelIntraffade": "Ett fel inträffade",
       "aktorBorttagen": "Aktör borttagen",
       "kundeInteTaBort": "Kunde inte ta bort aktör",
-      "provotid": "Prövotid",
+      "provotid": "Begränsad",
       "laggTillAktorblockering": "Lägg till aktörblockering",
       "aktorUrl": "Aktör-URL",
       "valjStatus": "Välj status",
@@ -3211,12 +3219,9 @@
       "atgarder": "Åtgärder",
       "ingaAktorblockeringarHittades": "Inga aktörblockeringar hittades",
       "redigeraAktorblockering": "Redigera aktörblockering",
-      "uppdateraModereringsinstallningarFor": "Uppdatera modereringsinställningar för",
       "avbryt": "Avbryt",
       "sparaAndringar": "Spara ändringar",
       "bekraftaBorttagning": "Bekräfta borttagning",
-      "arDuSakerPa": "Är du säker på att du vill ta bort",
-      "franModereringen": "från modereringen?",
       "taBort": "Ta bort",
       "uppdateringMisslyckades": "Uppdatering misslyckades",
       "borttagningMisslyckades": "Borttagning misslyckades",
@@ -3272,15 +3277,11 @@
       "atgarder": "Åtgärder",
       "tillat": "Tillåt",
       "tillatInstans": "Tillåt servern?",
-      "dettaTarBortAlla": "Detta tar bort alla restriktioner för",
       "avbryt": "Avbryt",
       "bekrafta": "Bekräfta",
       "begransa": "Begränsa",
       "begransaInstans": "Begränsa servern?",
-      "dettaSatter": "Detta sätter",
-      "underBegransningMedReducerad": "under begränsning med reducerad funktionalitet.",
       "angeEnAnledningFor": "Ange en anledning för begränsningen",
-      "dettaBlockerarAllTrafik": "Detta blockerar all trafik från",
       "angeEnAnledningFor2": "Ange en anledning för blockeringen",
       "ingaInstanserHittadesSom": "Inga servrar överstiger förfrågningsgränsen.",
       "uppdatera": "Uppdatera",
@@ -3288,7 +3289,11 @@
       "status": "Status",
       "anledning": "Anledning",
       "blockera": "Blockera",
-      "blockeraInstans": "Blockera servern?"
+      "blockeraInstans": "Blockera servern?",
+      "rateLimitReason": "Ändrad efter granskning av serverns förfrågningsfrekvens.",
+      "allowDescription": "Ta bort alla begränsningar för {{server}}.",
+      "restrictDescription": "Begränsa funktionerna för {{server}}.",
+      "blockDescription": "Blockera all trafik från {{server}}."
     },
     "quoteRepostDialog": {
       "loggaInForAtt": "Logga in för att dela vidare",
@@ -3313,7 +3318,7 @@
       "avbryt": "Avbryt",
       "taBort": "Ta bort",
       "blockeraAnvandare": "Stäng av användare",
-      "innehalletDoljsDirektOch": "Innehållet döljs direkt och raderas permanent efter 30 dagar. Anmälan markeras som löst.",
+      "innehalletDoljsDirektOch": "Innehållet döljs direkt och raderas permanent efter 30 dagar. Anmälan markeras som hanterad.",
       "dettaTarPermanentBort": "Detta tar permanent bort det rapporterade innehållet. Åtgärden kan inte ångras.",
       "granskade": "Granskade",
       "allaRapporter": "Alla anmälningar",
@@ -3363,7 +3368,7 @@
       "tips": "Tips:"
     },
     "postEditDialog": {
-      "omrostningsalternativKanInteRedigeras": "Omröstningsalternativ kan inte redigeras efter att de skapats för att bevara rösternas integritet. Du kan bara redigera frågetexten ovan.",
+      "omrostningsalternativKanInteRedigeras": "Omröstningsalternativen kan inte ändras efter publicering. Då fortsätter rösterna att avse samma alternativ. Du kan redigera frågetexten ovan.",
       "avbryt": "Avbryt",
       "redigeraOmrostning": "Redigera omröstning",
       "redigeraInlagg": "Redigera inlägg",
@@ -3376,7 +3381,7 @@
     "companySearchFilter": {
       "sokForetag": "Sök organisationer…",
       "anstallda": "anställda",
-      "typAvOrganisation": "Typ av organisation",
+      "typAvOrganisation": "Typ av verksamhet",
       "allaTyper": "Alla typer",
       "storlek": "Storlek",
       "allaStorlekar": "Alla storlekar",
@@ -3393,7 +3398,9 @@
       "bekraftaLosenord": "Bekräfta lösenord",
       "andraLosenord": "Ändra lösenord",
       "verifierarInloggning": "Verifierar inloggning…",
-      "sparar": "Sparar…"
+      "sparar": "Sparar…",
+      "passwordMismatch": "Lösenorden måste vara lika.",
+      "updateFailed": "Kunde inte ändra lösenordet. Kontrollera att det har minst 12 tecken. Begär en ny länk om den gamla har gått ut."
     },
     "socialCallback": {
       "loggaInPaNolto": "Logga in på Nolto",
@@ -3421,7 +3428,7 @@
       "doljDetaljer": "Dölj detaljer",
       "visaDetaljer": "Visa detaljer",
       "okant": "Okänt",
-      "csvFilerHittade": "CSV-filer hittades (",
+      "csvFilerHittade": "Hittade CSV-filer: {{total}}",
       "profilkolumner": "Profilkolumner:",
       "positionskolumner": "Arbetslivserfarenhetskolumner:",
       "utbildningskolumner": "Utbildningskolumner:",
@@ -3438,13 +3445,13 @@
       "bio": "Om dig",
       "plats": "Plats",
       "importeraArbetslivserfarenhet": "Importera arbetslivserfarenhet",
-      "hittade": "hittades",
       "importeraUtbildning": "Importera utbildning",
       "importeraKompetenser": "Importera kompetenser",
       "tillbaka": "Tillbaka",
       "importerar": "Importerar...",
       "ejAngivet": "Ej angivet",
-      "nuvarande": "Nu"
+      "nuvarande": "Nu",
+      "foundTotal": "Hittade: {{total}}"
     },
     "companyCard": {
       "foljare": "följare"
@@ -3498,35 +3505,40 @@
       "tillbakaTillNolto": "Tillbaka till Nolto",
       "aterstaller": "Återställer…",
       "kontrollerarInloggning": "Kontrollerar inloggning…",
-      "loggaIn": "Logga in"
+      "loggaIn": "Logga in",
+      "recoveryFailed": "Kunde inte slutföra återställningen. Länken kan ha gått ut eller redan använts. Kontakta support för att få en ny länk."
     },
     "instructionsStep": {
       "oppnaLinkedinsDataexport": "Öppna LinkedIns dataexport",
       "eller": "eller",
       "jagHarRedanMin": "Jag har redan min export",
       "dinIntegritetSkyddas": "Din integritet skyddas",
-      "dataBearbetasIDin": "Data bearbetas i din webbläsare. Vi lagrar eller skickar aldrig din fil till någon server.",
+      "dataBearbetasIDin": "ZIP-filen bearbetas i din webbläsare och skickas inte till någon server. När du importerar sparas de profiluppgifter du har valt på Nolto.",
       "klickaPaKnappenNedan": "Klicka på knappen nedan för att gå till LinkedIns nedladdningsinställningar.",
       "begarDinData": "Begär din data",
       "valjDownloadLargerData": "Välj \"Download larger data archive\" och markera den data du vill exportera.",
       "vantaPaEPost": "Vänta på e-post",
-      "linkedinSkickarEttMejl": "LinkedIn skickar ett mejl när din data är klar. Vanligtvis några minuter, upp till 24 timmar.",
+      "linkedinSkickarEttMejl": "LinkedIn skickar ett mejl när din export är klar.",
       "laddaNerZipFilen": "Ladda ner ZIP-filen från LinkedIn och ladda upp den här.",
       "laddaUppZipFilen": "Ladda upp ZIP-filen"
     },
     "confirmStep": {
-      "objektImporteradesTillDin": "objekt importerades till din profil",
       "slutfordMedProblem": "Slutförd med problem",
       "nagraFelUppstod": "Några fel uppstod:",
       "visaProfil": "Visa profil",
       "importLyckades": "Import lyckades",
-      "vissaObjektImporteradesMen": "Vissa objekt importerades, men det uppstod fel",
+      "vissaObjektImporteradesMen": "Vissa uppgifter importerades, men allt kunde inte hämtas in.",
       "importsammanfattning": "Importsammanfattning",
       "profil": "Profil",
       "arbetslivserfarenhet": "Arbetslivserfarenhet",
       "utbildning": "Utbildning",
       "kompetenser": "Kompetenser",
-      "artiklar": "Artiklar"
+      "artiklar": "Artiklar",
+      "importedTotal": "Importerade uppgifter: {{total}}",
+      "updated": "Uppdaterad",
+      "skipped": "Hoppades över",
+      "addedTotal": "Tillagda: {{total}}",
+      "draftTotal": "Utkast: {{total}}"
     },
     "authorizeApp": {
       "oppnaAppanslutningenIEtt": "Öppna appanslutningen i ett eget fönster på Nolto.",
@@ -3545,10 +3557,11 @@
       "godkannOchAnslut": "Godkänn och anslut",
       "anslutEnAppNolto": "Anslut en app · Nolto",
       "kontrollerarInloggningen": "Kontrollerar inloggningen…",
-      "ansluter": "Ansluter…"
+      "ansluter": "Ansluter…",
+      "storageRequired": "Webbläsaren behöver tillåta sessionslagring för att återvända från inloggningen. Öppna Nolto i din vanliga webbläsare och försök igen."
     },
     "companyForm": {
-      "viByggerFramtidenFor": "Vi bygger framtiden för...",
+      "viByggerFramtidenFor": "t.ex. Vi utvecklar digitala tjänster för småföretag",
       "berattaOmDinOrganisation": "Berätta om din organisation...",
       "size110Anstallda": "1–10 anställda",
       "size1150Anstallda": "11–50 anställda",
@@ -3558,7 +3571,7 @@
       "size10015000": "1 001–5 000 anställda",
       "size500110000": "5 001–10 000 anställda",
       "size10001Anstallda": "10 001+ anställda",
-      "organisationsnamn": "Organisationsnamn",
+      "organisationsnamn": "Företagets eller organisationens namn",
       "noltoSocialOrganisation": "nolto.social/organisation/",
       "organisationsnamn2": "organisationsnamn",
       "stockholmSverige": "Stockholm, Sverige"
@@ -3579,14 +3592,15 @@
       "angeEPostadressenFor": "Ange e-postadressen för ditt Nolto-konto. Loggar du in via Mastodon återställer du lösenordet hos din Mastodon-server.",
       "skickaAterstallningslank": "Skicka återställningslänk",
       "ePostadress": "E-postadress",
-      "skickar": "Skickar…"
+      "skickar": "Skickar…",
+      "requestFailed": "Kunde inte begära återställning. Vänta en stund och försök igen."
     },
     "reportDialog": {
       "valjEnAnledningFor": "Välj en anledning till anmälan",
       "kundeInteSkickaRapport": "Kunde inte skicka anmälan. Försök igen.",
       "anledningTillRapportering": "Anledning till anmälan",
       "avbryt": "Avbryt",
-      "spamEllerVilseledande": "Spam eller vilseledande",
+      "spamEllerVilseledande": "Skräppost eller vilseledande innehåll",
       "trakasserierEllerMobbning": "Trakasserier eller mobbning",
       "hatretorikEllerDiskriminering": "Hatretorik eller diskriminering",
       "olampligtInnehall": "Olämpligt innehåll",
@@ -3594,7 +3608,7 @@
       "annat": "Annat",
       "rapportInskickadViGranskar": "Anmälan är skickad till moderatorerna.",
       "rapportera": "Anmäl",
-      "ytterligareDetaljerValfritt": "Ytterligare detaljer (valfritt)",
+      "ytterligareDetaljerValfritt": "Beskrivning (valfritt)",
       "geYtterligareSammanhang": "Beskriv vad som har hänt…",
       "skickar": "Skickar...",
       "skickaRapport": "Skicka anmälan",
@@ -3670,7 +3684,7 @@
       "allaDinaInlaggKommentarer": "Alla dina inlägg, kommentarer och reaktioner",
       "dinaKontakterOchMeddelanden": "Dina kontakter och meddelanden",
       "dinErfarenhetUtbildningOch": "Din erfarenhet, utbildning och kompetenser",
-      "allaSparadeObjektOch": "Alla sparade objekt och notiser",
+      "allaSparadeObjektOch": "Allt sparat innehåll och alla notiser",
       "laddaNerDinaUppgifter": "Ladda ner dina uppgifter först om du vill behålla dem. Kopior hos andra servrar och mottagare kan finnas kvar. Organisationer och deras filer behöver överlåtas innan kontot raderas.",
       "loggaUtOchLogga": "Logga ut och logga in igen för att bekräfta din identitet",
       "jagForstarAttKontot": "Jag förstår att kontot stängs direkt och raderas permanent efter 30 dagar",
@@ -3696,8 +3710,8 @@
       "tillbakaTillStartsidan": "Tillbaka till startsidan"
     },
     "saveButton": {
-      "loggaInForAtt": "Logga in för att spara objekt",
-      "kundeInteSparaObjektet": "Kunde inte spara objektet"
+      "loggaInForAtt": "Logga in för att spara innehåll",
+      "kundeInteSparaObjektet": "Kunde inte spara innehållet"
     },
     "emailNotificationPreferences": {
       "duMasteVaraInloggad": "Du måste vara inloggad",
@@ -3714,7 +3728,7 @@
       "failedToProcessYour": "Kunde inte bearbeta din reaktion. Försök igen."
     },
     "useArticleImageUpload": {
-      "pleaseSelectAnImage": "Vänligen välj en bildfil",
+      "pleaseSelectAnImage": "Välj en bildfil.",
       "imageMustBeSmaller": "Bilden måste vara mindre än 5MB",
       "youMustBeLogged": "Du måste vara inloggad för att ladda upp bilder",
       "failedToUploadImage": "Kunde inte ladda upp bild"
@@ -3774,13 +3788,13 @@
       "reposted": "delade vidare"
     },
     "healthCheckStatus": {
-      "systemHealth": "Systemhälsa",
-      "monitorTheHealthOf": "Övervaka hälsostatusen för systemkomponenterna",
-      "failedToLoadHealth": "Kunde inte ladda hälsostatus. Försök igen.",
+      "systemHealth": "Driftstatus",
+      "monitorTheHealthOf": "Kontrollera att systemets olika delar fungerar",
+      "failedToLoadHealth": "Kunde inte hämta driftstatusen. Försök igen.",
       "database": "Databas",
-      "latency": "Latens:",
+      "latency": "Svarstid",
       "ms": "ms",
-      "queueDepth": "Ködjup",
+      "queueDepth": "Antal meddelanden i kön",
       "messages": "meddelanden",
       "lastChecked": "Senast kontrollerad:",
       "traceId": "Spårnings-ID:",
@@ -3794,8 +3808,8 @@
       "refresh": "Uppdatera"
     },
     "fediverseBadge": {
-      "verifiedVia": "Verifierad via",
-      "thisUserSIdentity": "Denna användares identitet är verifierad via hens Fediverse-konto på"
+      "accountOn": "Konto på {{server}}",
+      "accountServer": "Det här Fediverse-kontot finns på {{server}}."
     },
     "quoteCardGenerator": {
       "imageDownloaded": "Bild nedladdad!",
@@ -3826,7 +3840,7 @@
       "image": "Bild"
     },
     "alertBanner": {
-      "dismissAlert": "Stäng avisering"
+      "dismissAlert": "Stäng meddelandet"
     },
     "modeToggle": {
       "failedToSaveTheme": "Kunde inte spara temainställningen"
@@ -4047,7 +4061,7 @@
     "repliedPost": "{{name}} svarade på ditt inlägg",
     "repliedComment": "{{name}} svarade på din kommentar",
     "mention": "{{name}} nämnde dig",
-    "recommendationRequest": "{{name}} begärde en rekommendation",
+    "recommendationRequest": "{{name}} bad om en rekommendation",
     "recommendationReceived": "{{name}} skrev en rekommendation till dig",
     "reactedMessage": "{{name}} reagerade {{emoji}} på ditt meddelande",
     "articlePublished": "{{name}} publicerade en ny artikel",
@@ -4064,5 +4078,34 @@
   "language": {
     "label": "Språk",
     "loadFailed": "Språket kunde inte laddas. Kontrollera anslutningen och försök igen."
+  },
+  "companyTypes": {
+    "groups": {
+      "business": "Näringsliv",
+      "public": "Offentlig sektor",
+      "educationAndCivilSociety": "Utbildning och civilsamhälle",
+      "other": "Övrigt"
+    },
+    "privateCompany": "Företag",
+    "startup": "Startup",
+    "limitedCompany": "Aktiebolag",
+    "listedCompany": "Börsnoterat bolag",
+    "soleTrader": "Enskild firma",
+    "partnership": "Handelsbolag",
+    "limitedPartnership": "Kommanditbolag",
+    "cooperative": "Kooperativ / ekonomisk förening",
+    "consultancy": "Konsultbolag",
+    "municipality": "Kommun",
+    "region": "Region",
+    "governmentAgency": "Statlig myndighet",
+    "stateOwnedCompany": "Statligt bolag",
+    "municipalCompany": "Kommunalt bolag",
+    "publicPartnership": "Förbund / samverkansorgan",
+    "university": "Universitet / högskola",
+    "adultEducation": "Folkhögskola",
+    "nonprofit": "Ideell organisation / förening",
+    "foundation": "Stiftelse",
+    "other": "Annan verksamhet",
+    "help": "Välj det alternativ som bäst beskriver verksamheten."
   }
 }

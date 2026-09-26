@@ -91,7 +91,7 @@ test('plural forms exist wherever English defines them', () => {
 // strings missed untranslated buttons such as "Accept", "Share" and "Saving".
 // A new exception needs a language/context review; do not raise a copy budget.
 const sharedVocabulary = Object.fromEntries(Object.entries({
-  sv: 'Admin|Cache|Cookies|Hybrid|Info|Moderator|Normal|Organisation|Partition|Permanent|Region|Server|Status|System|Tips:|{{count}} server',
+  sv: 'Admin|Cache|Cookies|Hybrid|Info|Moderator|Normal|Organisation|Partition|Permanent|Region|Server|Status|System|Tips:|{{count}} server|{{count}} person',
   fr: '15. Contact|Action|Actions|Admin|Article|Articles|Cache|Collaboration|Compatible|Contact|Cookies|Description|Documentation|Freelance|Image|Info|Instances|Message|Messages|Newsletter|Normal|Notification|Notifications|OPEN SOURCE|Open Source|Open source|Organisation|Organisations|Partition|Permanent|Public|Services|Sessions|Suggestions|Suspensions|Tags|Total|Type|Vertical (Stories)|messages|req/24h',
   de: 'Admin|Cache|Community|Cookies|Domain|Feed|Feeds|Hybrid|Info|Jobs|Moderation|Moderator|Name|Newsletter|Normal|OPEN SOURCE|Open Source|Optional|Organisation|Partition|Permanent|Position|Region|Remote|Server|Status|System|System online|Tags|Team',
   nl: '1 week|10. Disclaimers|15. Contact|8. Privacy|Cache|Contact|Cookies|Database|Download JSON|Feed|Feeds|Filters|Freelance|Freelancer|Freelancers|Home|Info|Logs|Moderator|Moderators|OPEN SOURCE|Open Source|Open source|Permanent|Posts|Privacy|Privacy by Design|Self-hosting|Server|Status|Tags|Team|Tips:|Trace ID:|Type|Website|Week {{number}}|{{count}} server|{{count}} servers',
@@ -99,6 +99,8 @@ const sharedVocabulary = Object.fromEntries(Object.entries({
   ja: '',
   it: '8. Privacy|Cache|Database|Email|Feed|Freelance|Full-time|Home|Info|Newsletter|Nolto – home|OPEN SOURCE|Open Source|Open source|Part-time|Password|Post|Privacy|Privacy by Design|Self-hosting|Server|Username|follower|{{count}} server',
 }).map(([language, words]) => [language, new Set(words.split('|'))]));
+// Startup is an established business term in these locales.
+for (const language of ['sv', 'fr', 'nl', 'es', 'it']) sharedVocabulary[language].add('Startup');
 const sharedNames = new Set(['Nolto', 'Nolto.', 'ActivityPub', 'Fediverse', 'X/Twitter', 'URL', 'ms', 'nolto.social/organisation/', 'organisation.com']);
 
 test('translations contain no unreviewed English copies, including short labels', () => {

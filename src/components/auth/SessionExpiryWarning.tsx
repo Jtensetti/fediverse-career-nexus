@@ -138,11 +138,7 @@ export default function SessionExpiryWarning() {
             {tx("ui.sessionExpiryWarning.sessionenGarUtSnart")}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {tx("ui.sessionExpiryWarning.dinSessionGarUt")}{" "}
-            <span className="font-bold text-foreground">
-              {formatTime(timeRemaining)}
-            </span>
-            {tx("ui.sessionExpiryWarning.villDuForlangaSessionen")}
+            {tx("ui.sessionExpiryWarning.expiryMessage", { time: formatTime(timeRemaining) })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

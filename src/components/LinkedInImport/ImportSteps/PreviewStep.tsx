@@ -57,7 +57,7 @@ export default function PreviewStep({ data, options, onOptionsChange, onConfirm,
         <CollapsibleContent className="mt-2">
           <div className="rounded-lg border bg-muted/30 p-4 text-sm space-y-3">
             <div>
-              <p className="font-medium text-foreground mb-1">{tx("ui.previewStep.csvFilerHittade")}{data.debug?.filesFound?.length || 0}):</p>
+              <p className="font-medium text-foreground mb-1">{tx("ui.previewStep.csvFilerHittade", { total: data.debug?.filesFound?.length || 0 })}</p>
               {data.debug?.filesFound?.length > 0 ? (
                 <ul className="text-muted-foreground space-y-0.5">{data.debug.filesFound.map((file, i) => <li key={i} className="font-mono text-xs">{file}</li>)}</ul>
               ) : <p className="text-muted-foreground italic">{tx("ui.previewStep.ingaCsvFilerHittades")}</p>}
@@ -109,7 +109,7 @@ export default function PreviewStep({ data, options, onOptionsChange, onConfirm,
               <Switch id="include-experiences" checked={options.includeExperiences} onCheckedChange={() => toggleOption('includeExperiences')} />
               <Label htmlFor="include-experiences" className="font-medium">{tx("ui.previewStep.importeraArbetslivserfarenhet")}</Label>
             </div>
-            <Badge variant="secondary">{data.experiences.length}{' '}{tx("ui.previewStep.hittade")}</Badge>
+            <Badge variant="secondary">{tx("ui.previewStep.foundTotal", { total: data.experiences.length })}</Badge>
           </div>
           <div className="space-y-2 max-h-56 overflow-y-auto">
             {data.experiences.length > 0 ? data.experiences.map((exp, i) => (
@@ -130,7 +130,7 @@ export default function PreviewStep({ data, options, onOptionsChange, onConfirm,
               <Switch id="include-education" checked={options.includeEducation} onCheckedChange={() => toggleOption('includeEducation')} />
               <Label htmlFor="include-education" className="font-medium">{tx("ui.previewStep.importeraUtbildning")}</Label>
             </div>
-            <Badge variant="secondary">{data.education.length}{' '}{tx("ui.previewStep.hittade")}</Badge>
+            <Badge variant="secondary">{tx("ui.previewStep.foundTotal", { total: data.education.length })}</Badge>
           </div>
           <div className="space-y-2 max-h-56 overflow-y-auto">
             {data.education.length > 0 ? data.education.map((edu, i) => (
@@ -151,7 +151,7 @@ export default function PreviewStep({ data, options, onOptionsChange, onConfirm,
               <Switch id="include-skills" checked={options.includeSkills} onCheckedChange={() => toggleOption('includeSkills')} />
               <Label htmlFor="include-skills" className="font-medium">{tx("ui.previewStep.importeraKompetenser")}</Label>
             </div>
-            <Badge variant="secondary">{data.skills.length}{' '}{tx("ui.previewStep.hittade")}</Badge>
+            <Badge variant="secondary">{tx("ui.previewStep.foundTotal", { total: data.skills.length })}</Badge>
           </div>
           <div className="flex flex-wrap gap-2 max-h-44 overflow-y-auto">
             {data.skills.length > 0 ? data.skills.map((skill, i) => (
@@ -168,7 +168,7 @@ export default function PreviewStep({ data, options, onOptionsChange, onConfirm,
               <Switch id="include-articles" checked={options.includeArticles} onCheckedChange={() => toggleOption('includeArticles')} />
               <Label htmlFor="include-articles" className="font-medium">{tx("ui.previewStep.importeraSomUtkast")}</Label>
             </div>
-            <Badge variant="secondary">{data.articles.length}{' '}{tx("ui.previewStep.hittade")}</Badge>
+            <Badge variant="secondary">{tx("ui.previewStep.foundTotal", { total: data.articles.length })}</Badge>
           </div>
           <div className="space-y-2 max-h-56 overflow-y-auto">
             {data.articles.length > 0 ? data.articles.map((article, i) => (

@@ -27,7 +27,7 @@ export default function AuthorizeApp() {
       const returnTo = '/oauth/authorize'+search;
       rememberAppAuthorization(returnTo);
       navigate('/auth', { state: { returnTo } });
-    } catch { setError('Webbläsaren behöver tillåta sessionslagring för att återvända från inloggningen. Öppna Nolto i din vanliga webbläsare och försök igen.'); }
+    } catch { setError(tx("ui.authorizeApp.storageRequired")); }
   };
   const decide = async (decision:'allow'|'deny') => {
     setBusy(true); setError('');

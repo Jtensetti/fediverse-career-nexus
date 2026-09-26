@@ -119,7 +119,7 @@ export default function SavedItemsPage() {
                     <Bookmark className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
                     <h3 className="font-semibold text-lg mb-2">{t("savedItems.noSavedItems")}</h3>
                     <p className="text-muted-foreground max-w-sm mx-auto">
-                      {activeTab === "all" ? t("savedItems.noSavedItemsAll") : t("savedItems.noSavedItemsType", { type: activeTab })}
+                      {activeTab === "all" ? t("savedItems.noSavedItemsAll") : t("savedItems.noSavedItemsType")}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 mt-6">
                       <Button variant="outline" asChild><Link to="/feed">{t("savedItems.browseFeed")}</Link></Button>

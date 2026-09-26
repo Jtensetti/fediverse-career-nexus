@@ -11,21 +11,12 @@ import {
 } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
 import type { CompanyFilters } from "@/services/company/companyService";
-import { ORGANISATION_TYPES } from "./CompanyForm";
+import { companySizeOptions } from "@/lib/companyOptions";
+import OrganisationTypeOptions from "./OrganisationTypeOptions";
 import type { Database } from "@/integrations/supabase/types";
 
 import { useTranslation } from "react-i18next";
 type CompanySize = Database['public']['Enums']['company_size'];
-
-const companySizeOptions: { value: CompanySize; label: string }[] = [
-  { value: '1-10', label: '1–10' },
-  { value: '11-50', label: '11–50' },
-  { value: '51-200', label: '51–200' },
-  { value: '201-500', label: '201–1 000' },
-  { value: '1001-5000', label: '1 001–5 000' },
-  { value: '5001-10000', label: '5 001–20 000' },
-  { value: '10000+', label: '20 000+' },
-];
 
 interface CompanySearchFilterProps {
   onFilterChange: (filters: CompanyFilters) => void;
@@ -94,11 +85,7 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("ui.companySearchFilter.allaTyper")}</SelectItem>
-            {ORGANISATION_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type}
-              </SelectItem>
-            ))}
+            <OrganisationTypeOptions selected={industry} />
           </SelectContent>
         </Select>
         </div>
@@ -113,7 +100,7 @@ export default function CompanySearchFilter({ onFilterChange, filters = {} }: Co
             <SelectItem value="all">{t("ui.companySearchFilter.allaStorlekar")}</SelectItem>
             {companySizeOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}{' '}{t("ui.companySearchFilter.anstallda")}
+                {t(opt.labelKey)}
               </SelectItem>
             ))}
           </SelectContent>

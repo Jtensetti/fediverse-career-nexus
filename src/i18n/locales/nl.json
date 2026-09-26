@@ -35,7 +35,7 @@
   },
   "accessibility": {
     "skipToContent": "Naar inhoud springen",
-    "darkMode": "Donkere modus schakelen",
+    "darkMode": "Kleurthema kiezen",
     "navigationMenu": "Navigatiemenu",
     "menuOpen": "Menu openen",
     "menuClose": "Menu sluiten",
@@ -91,7 +91,7 @@
     "invitedWithCode": "Uitgenodigd met code",
     "noTracking": "Geen tracking",
     "ownIdentity": "Behoud uw identiteit",
-    "connectFediverse": "Verbinden met het Fediverse",
+    "connectFediverse": "Volg ook mensen op andere Fediverse-diensten",
     "enterEmail": "Voer uw e-mailadres in",
     "enterPassword": "Voer uw wachtwoord in",
     "createPassword": "Maak een wachtwoord aan",
@@ -102,7 +102,7 @@
     "lastNameRequired": "Achternaam is verplicht",
     "emailRequired": "E-mail is verplicht",
     "passwordRequired": "Wachtwoord is verplicht",
-    "nameTooLong": "Moet minder dan 50 tekens zijn",
+    "nameTooLong": "De naam mag maximaal 50 tekens bevatten.",
     "nameInvalidChars": "Mag alleen letters, spaties, koppeltekens, apostroffen en punten bevatten",
     "usernameMinChars": "Minimaal 3 tekens",
     "usernameMaxChars": "Maximaal 30 tekens",
@@ -158,7 +158,7 @@
     "resources": "Bronnen",
     "documentation": "Documentatie",
     "helpCenter": "Helpcentrum",
-    "howFederationWorks": "Hoe Samenwerking Werkt",
+    "howFederationWorks": "Zo werkt federatie",
     "federatedInstances": "Verbonden servers",
     "legal": "Juridisch",
     "privacyPolicy": "Privacybeleid",
@@ -211,7 +211,7 @@
     "selectTime": "Tijd selecteren",
     "done": "Klaar",
     "whatsOnMind": "Wat houdt u bezig?",
-    "postingToFeed": "Plaatsen op je feed",
+    "postingToFeed": "Publiceren in uw feed",
     "contentLabel": "Berichttekst",
     "addImage": "Afbeelding toevoegen",
     "removeImage": "Afbeelding verwijderen",
@@ -230,8 +230,8 @@
   "reactions": {
     "react": "Reageren",
     "love": "Geweldig",
-    "celebrate": "Vieren",
-    "support": "Ondersteunen",
+    "celebrate": "Gefeliciteerd",
+    "support": "Steun",
     "insightful": "Inzichtelijk",
     "empathy": "Meeleven",
     "title": "Reacties",
@@ -383,7 +383,17 @@
     "actionCreated": "Moderatieactie succesvol aangemaakt",
     "notAuthorized": "U bent niet bevoegd om moderatieacties te ondernemen",
     "loginRequired": "U moet ingelogd zijn om deze pagina te bekijken",
-    "loadingData": "Moderatiegegevens laden..."
+    "loadingData": "Moderatiegegevens laden...",
+    "statusUpdatedDetails": "Nieuwe status voor {{target}}: {{status}}.",
+    "entryRemovedDetails": "De moderatieregel voor {{target}} is verwijderd.",
+    "ruleSaved": "Moderatie-instellingen opgeslagen",
+    "loadRulesFailed": "De moderatieregels konden niet worden geladen.",
+    "domainRequired": "Voer een domein in.",
+    "accountUrlRequired": "Voer het volledige webadres van het account in.",
+    "reasonRequired": "Geef een reden op.",
+    "saveRuleFailed": "De moderatieregel kon niet worden opgeslagen. Probeer het opnieuw.",
+    "editRuleDescription": "Wijzig de moderatieregel voor {{target}}.",
+    "removeRuleDescription": "De moderatieregel voor {{target}} verwijderen?"
   },
   "events": {
     "title": "Evenementen",
@@ -552,24 +562,23 @@
     "introduceYourself": "Introduceer uzelf aan het netwerk",
     "writeArticle": "Schrijf een artikel",
     "shareExpertise": "Deel uw expertise met collega's",
-    "connectWithPeers": "Maak contact met vakgenoten",
+    "connectWithPeers": "Nieuwe contacten vinden",
     "buildNetwork": "Bouw uw professionele netwerk op",
-    "postJob": "Plaats een vacature",
+    "postJob": "Een vacature plaatsen",
     "reachProfessionals": "Bereik professionals binnen het gefedereerde netwerk",
     "createEvent": "Maak een evenement aan",
     "hostMeetups": "Organiseer bijeenkomsten en netwerkevenementen",
-    "doIt": "Doe het",
     "dismissAction": "Suggestie negeren: {{action}}"
   },
   "openSource": {
     "badge": "Open Source",
     "title": "Open ontwikkeld",
-    "description": "Elke coderegel is openbaar. Elke beslissing is gedocumenteerd. Transparantie schept vertrouwen.",
+    "description": "De broncode van Nolto is open. Bekijk de code, volg de ontwikkeling of draag een verbetering bij.",
     "repoDescription": "Het gefedereerde alternatief voor LinkedIn",
     "mitLicense": "MIT-licentie",
     "contributorsWelcome": "Bijdragers welkom",
-    "securityAudited": "Veiligheid geauditeerd",
-    "securityDescription": "Regelmatige beveiligingsaudits en verantwoorde bekendmaking",
+    "securityAudited": "Beveiligingsproblemen",
+    "securityDescription": "Meld kwetsbaarheden op een verantwoorde manier",
     "activeDevelopment": "Actieve ontwikkeling",
     "devDescription": "Regelmatige updates met communityfeedback",
     "communityDriven": "Community-gedreven",
@@ -581,27 +590,27 @@
     "title": "Alles wat u nodig heeft voor professioneel netwerken",
     "subtitle": "Alle tools van een modern professioneel netwerk — open, gefedereerd en advertentievrij",
     "professionalProfiles": "Professionele profielen",
-    "profilesDesc": "Vaardigheden, ervaring en aanbevelingen — verzameld voor de hele organisatie",
+    "profilesDesc": "Laat uw ervaring, opleiding en vaardigheden zien op uw profiel.",
     "portableIdentity": "Veilige gegevensexport",
     "jobBoard": "Werving",
     "jobDesc": "Vind en plaats vacatures binnen het gefedereerde netwerk",
-    "crossInstanceListings": "Vacatures over meerdere organisaties",
+    "crossInstanceListings": "Vacatures in het netwerk",
     "events": "Evenementen",
     "eventsDesc": "Creëer evenementen en beheer aanmeldingen",
     "federatedRsvps": "Eenvoudige RSVP's",
     "articles": "Artikelen",
     "articlesDesc": "Deel kennis en inzichten met collega's",
-    "reachAnyInstance": "Bereik de hele organisatie",
+    "reachAnyInstance": "Deel kennis met uw netwerk",
     "directMessages": "Directe berichten",
     "dmDesc": "Veilige gesprekken met uw contacten",
     "crossInstanceMessaging": "Versleutelde berichten",
     "connections": "Connecties",
     "connectionsDesc": "Bouw zinvolle professionele relaties op",
-    "followAnywhere": "Werk samen over organisaties heen",
+    "followAnywhere": "Mensen op andere diensten volgen",
     "privacyByDesign": "Privacy by Design",
     "noTracking": "Geen tracking, geen advertenties, geen gegevensverkoop",
-    "fullPortability": "Volledige overdraagbaarheid",
-    "exportAnytime": "Exporteer uw gegevens op elk moment",
+    "fullPortability": "Neem uw gegevens mee",
+    "exportAnytime": "Uw gegevens downloaden",
     "openProtocol": "Open Standaard",
     "builtOnActivityPub": "Gebouwd op open standaarden"
   },
@@ -651,7 +660,7 @@
     "contactEmail": "Contactadres voor e-mail",
     "contactEmailDesc": "Wordt gebruikt voor e-mailmeldingen en wanneer u ervoor kiest contactgegevens te delen. Schakel e-mailmeldingen uit in de meldingsinstellingen.",
     "username": "Gebruikersnaam",
-    "usernamePlaceholder": "uw-gebruikersnaam",
+    "usernamePlaceholder": "uw_gebruikersnaam",
     "usernameDesc": "Uw @gebruikersnaam op Nolto",
     "saveChanges": "Wijzigingen opslaan",
     "saving": "Opslaan...",
@@ -676,7 +685,7 @@
     },
     "experience": {
       "title": "Werkervaring",
-      "company": "Organisatie",
+      "company": "Bedrijf of organisatie",
       "position": "Positie",
       "startDate": "Startdatum",
       "endDate": "Einddatum",
@@ -689,7 +698,7 @@
       "loading": "Laden...",
       "jobTitle": "Functie",
       "jobTitlePlaceholder": "Uw functie",
-      "companyPlaceholder": "Naam van de organisatie",
+      "companyPlaceholder": "Bijv. Acme BV of zelfstandig ondernemer",
       "companyDomain": "Organisatiedomein",
       "companyDomainPlaceholder": "organisatie.com",
       "locationPlaceholder": "bijv. Stockholm",
@@ -700,7 +709,7 @@
       "startDateRequired": "Startdatum is verplicht",
       "remove": "Verwijder werkervaring {{name}}",
       "current": "Ik werk hier momenteel",
-      "companyRequired": "Organisatie is verplicht"
+      "companyRequired": "Vul een bedrijf, organisatie of zelfstandige activiteit in."
     },
     "education": {
       "title": "Opleiding",
@@ -813,7 +822,7 @@
     "adjustFilters": "Probeer uw filters aan te passen om meer mogelijkheden te ontdekken.",
     "beFirst": "Wees de eerste die een vacature plaatst!",
     "reachProfessionals": "Bereik professionals binnen het federatieve netwerk. Plaats transparante vacatures.",
-    "postJob": "Plaats een vacature",
+    "postJob": "Een vacature plaatsen",
     "signUpToPost": "Meld u aan om te plaatsen",
     "clearFilters": "Filters wissen",
     "allJobTypes": "Alle dienstverbandtypen",
@@ -829,10 +838,10 @@
     "errorLoading": "Fout bij het laden van gesprekken",
     "tryAgain": "Opnieuw proberen",
     "buildNetworkFirst": "Bouw eerst uw netwerk op",
-    "buildNetworkDesc": "Maak eerst verbinding met andere professionals voordat u hen een bericht kunt sturen. Dit helpt een professionele omgeving te behouden.",
+    "buildNetworkDesc": "Voeg eerst mensen toe aan uw netwerk om hen rechtstreeks een bericht te sturen.",
     "findConnections": "Vind verbindingen",
     "noConversations": "Nog geen gesprekken",
-    "noConversationsDesc": "Begin met berichten sturen naar uw verbindingen om samen te werken en te netwerken.",
+    "noConversationsDesc": "Begin een gesprek met uw connecties om ideeën uit te wisselen of samen te werken.",
     "messageConnection": "Stuur een verbinding een bericht",
     "noRequests": "Geen berichtverzoeken",
     "noRequestsDesc": "Wanneer iemand buiten uw netwerk u een bericht wil sturen, verschijnt hun verzoek hier.",
@@ -860,9 +869,9 @@
     "reject": "Afwijzen",
     "verify": "Verifiëren",
     "rejectEmployeeTitle": "Werknemersclaim afwijzen?",
-    "rejectEmployeeDesc": "Dit zal de dienstverbandclaim van {{name}} permanent verwijderen. Zij moeten een nieuwe claim indienen.",
+    "rejectEmployeeDesc": "De opgegeven arbeidsrelatie van {{name}} wordt definitief verwijderd. Deze persoon moet die opnieuw indienen.",
     "removeRoleTitle": "Rol verwijderen?",
-    "removeRoleDesc": "Dit verwijdert de toegang van {{name}} tot het beheer van deze organisatiepagina. Zij kunnen later opnieuw worden toegevoegd.",
+    "removeRoleDesc": "{{name}} kan de organisatiepagina niet meer beheren. U kunt later opnieuw toegang verlenen.",
     "removeRole": "Rol verwijderen",
     "noAdditionalRoles": "Geen aanvullende rollen",
     "onlyOwnerAccess": "Alleen de eigenaar heeft momenteel toegang",
@@ -883,26 +892,26 @@
     "roleRemoveFailed": "Rol verwijderen mislukt"
   },
   "companies": {
-    "title": "Organisaties",
+    "title": "Bedrijven en organisaties",
     "subtitle": "Ontdek en verbind met organisaties",
-    "createTitle": "Organisatie aanmaken",
-    "createDescription": "Maak een organisatiepagina aan om uw organisatie te presenteren",
-    "createSuccess": "Organisatie succesvol aangemaakt!",
-    "createError": "Organisatie aanmaken mislukt",
-    "create": "Organisatie aanmaken",
+    "createTitle": "Maak een pagina voor een bedrijf of organisatie",
+    "createDescription": "Presenteer uw organisatie, deel nieuws en bereik toekomstige collega's en partners.",
+    "createSuccess": "De organisatiepagina is aangemaakt.",
+    "createError": "De organisatiepagina kon niet worden aangemaakt.",
+    "create": "Organisatiepagina maken",
     "noMatching": "Geen overeenkomende organisaties",
     "beFirst": "Wees de eerste die een organisatiepagina aanmaakt",
     "adjustFilters": "Probeer uw filters aan te passen",
     "iWorkHere": "Ik werk hier",
-    "pendingVerification": "Uw aanspraak op werkverband wacht op verificatie",
-    "pendingVerificationDescription": "Een organisatiebeheerder zal uw aanspraak beoordelen.",
+    "pendingVerification": "Uw arbeidsrelatie wordt nog gecontroleerd.",
+    "pendingVerificationDescription": "Een beheerder van de organisatie beoordeelt uw gegevens.",
     "noPeople": "Geen werknemers vermeld",
     "noPeopleDescription": "Voeg uzelf als eerste toe als werknemer",
     "backToCompanies": "Terug naar organisaties",
     "jobTitlePlaceholder": "bijv. Software Engineer",
     "jobTitleValidation": "Functietitel moet 2–100 tekens bevatten",
     "startDateRequired": "Kies een startdatum",
-    "employmentClaimFailed": "Uw aanspraak op werkverband kon niet worden ingediend. Probeer het opnieuw.",
+    "employmentClaimFailed": "Uw arbeidsgegevens konden niet worden ingediend. Probeer het opnieuw.",
     "employmentTypes": {
       "full_time": "Fulltime",
       "part_time": "Parttime",
@@ -936,7 +945,7 @@
     "noPosts": "Nog geen berichten",
     "noPostsDescription": "Deze organisatie heeft nog geen berichten gedeeld.",
     "noJobs": "Geen openstaande vacatures",
-    "noJobsDescription": "Deze organisatie heeft momenteel geen openstaande vacatures.",
+    "noJobsDescription": "Hier zijn nog geen vacatures gepubliceerd.",
     "noneAvailable": "Er zijn momenteel geen organisaties beschikbaar",
     "noneAvailableDescription": "Kom later terug om organisaties op Nolto te ontdekken."
   },
@@ -951,8 +960,8 @@
   },
   "companyForm": {
     "basicInfo": "Basisgegevens",
-    "basicInfoDesc": "Voer de kerndetails van uw organisatie in",
-    "companyName": "Organisatienaam",
+    "basicInfoDesc": "Laat zien wie u bent en wat uw organisatie doet.",
+    "companyName": "Naam van het bedrijf of de organisatie",
     "companyUrl": "Nolto webadres",
     "available": "Beschikbaar",
     "taken": "Bezet",
@@ -972,13 +981,16 @@
     "foundedYear": "Oprichtingsjaar",
     "nameTooShort": "Voer een organisatienaam van minimaal 2 tekens in.",
     "nameTooLong": "De naam moet 100 tekens of minder bevatten.",
-    "urlTooShort": "Het adres moet minimaal 2 tekens bevatten.",
+    "urlTooShort": "Het adres moet minimaal 3 tekens bevatten.",
     "urlTooLong": "Het adres mag 50 tekens of minder bevatten.",
-    "urlCharacters": "Gebruik kleine letters (a–z), cijfers en koppeltekens.",
+    "urlCharacters": "Gebruik kleine letters (a–z), cijfers en koppeltekens. Begin en eindig met een letter of cijfer.",
     "taglineTooLong": "De beschrijving moet 140 tekens of minder bevatten.",
     "invalidWebsite": "Voer een geldig webadres in, zoals https://example.com.",
-    "organisationType": "Organisatietype",
-    "selectOrgType": "Selecteer organisatietype"
+    "organisationType": "Type organisatie",
+    "selectOrgType": "Kies een type organisatie",
+    "httpsRequired": "Voer een webadres in dat begint met https://.",
+    "maxCharacters": "Gebruik maximaal {{max}} tekens.",
+    "validYear": "Voer een jaar tussen {{min}} en {{max}} in."
   },
   "companyPost": {
     "deleteTitle": "Bericht verwijderen?",
@@ -1051,7 +1063,7 @@
     "comments": "Opmerkingen",
     "noSavedItems": "Nog geen opgeslagen items",
     "noSavedItemsAll": "Sla vacatures, artikelen, evenementen, posts en opmerkingen op om ze later hier te bekijken",
-    "noSavedItemsType": "Je hebt nog geen {{type}}s opgeslagen. Zoek naar het bladwijzerpictogram om items op te slaan.",
+    "noSavedItemsType": "U heeft nog niets opgeslagen in deze categorie. Gebruik het bladwijzerpictogram om iets voor later te bewaren.",
     "browseFeed": "Blader door feed",
     "browseJobs": "Blader door vacatures",
     "browseArticles": "Blader door artikelen",
@@ -1143,7 +1155,7 @@
     "shareEvent": "Deel evenement",
     "editEvent": "Evenement bewerken",
     "deleteEvent": "Evenement verwijderen",
-    "deleteConfirmTitle": "Weet u het zeker?",
+    "deleteConfirmTitle": "Evenement verwijderen?",
     "deleteConfirmDescription": "Deze actie kan niet ongedaan worden gemaakt. Dit zal het evenement en alle bijbehorende RSVP's permanent verwijderen.",
     "linkCopied": "Evenementlink gekopieerd naar klembord!",
     "mustBeLoggedIn": "U moet ingelogd zijn om u aan te melden (RSVP)",
@@ -1222,7 +1234,7 @@
     "companyValidation": "Organisatienaam is verplicht",
     "locationValidation": "Locatie is verplicht",
     "descriptionValidation": "Beschrijving moet minimaal 20 tekens lang zijn",
-    "salaryValidation": "Minimum salaris moet lager zijn dan maximum salaris"
+    "salaryValidation": "Het minimumsalaris mag niet hoger zijn dan het maximumsalaris."
   },
   "eventForm": {
     "eventDetails": "Evenementdetails",
@@ -1284,7 +1296,7 @@
     "contentFilters": "Inhoudsfilters",
     "contentFiltersDesc": "Beheer wat er in uw feed verschijnt",
     "showReposts": "Reposts weergeven",
-    "showRepostsDesc": "Neem geboste posts op in uw feed",
+    "showRepostsDesc": "Toon ook berichten die anderen delen in uw feed",
     "showReplies": "Reacties weergeven",
     "showRepliesDesc": "Neem reactieposts op in uw feed",
     "mutedWords": "Genegeerde woorden",
@@ -1384,7 +1396,7 @@
     "recoverySend": "Verzoek verzenden",
     "recoverySending": "Verzenden...",
     "recoverySent": "Verzoek ontvangen",
-    "recoverySubmittedDesc": "Een beheerder zal uw verzoek beoordelen en spoedig contact met u opnemen via uw geregistreerde e-mailadres.",
+    "recoverySubmittedDesc": "Een beheerder beoordeelt uw verzoek. U ontvangt bericht op het e-mailadres dat bij het account is geregistreerd.",
     "recoveryError": "Kan verzoek niet verzenden. Probeer het over een korte tijd opnieuw.",
     "recoveryQueueTitle": "MFA herstelverzoeken",
     "recoveryQueueDesc": "Beoordeel en beheer twee-factor herstelverzoeken.",
@@ -1392,7 +1404,7 @@
     "recoveryIssueLink": "Herstelkoppeling verzenden",
     "recoveryReject": "Afwijzen",
     "recoveryConfirmTitle": "Herstelkoppeling verzenden?",
-    "recoveryConfirmDesc": "De koppeling wordt verzonden naar het **geregistreerde e-mailadres** van het account, niet degene die in het formulier is ingevuld. De gebruiker moet inloggen met zijn wachtwoord om het herstel te voltooien. De koppeling is 30 minuten geldig.",
+    "recoveryConfirmDesc": "De koppeling wordt verzonden naar het geregistreerde e-mailadres van het account, niet degene die in het formulier is ingevuld. De gebruiker moet inloggen met zijn wachtwoord om het herstel te voltooien. De koppeling is 30 minuten geldig.",
     "recoveryConfirmSend": "Ja, verzend koppeling",
     "recoveryLinkSent": "Herstelkoppeling verzonden naar de accounteigenaar.",
     "recoveryLinkError": "Kan de koppeling niet verzenden.",
@@ -1424,7 +1436,7 @@
     "posting": "Plaatsen...",
     "failed": "Plaatsen van reactie mislukt",
     "emptyError": "Reactie mag niet leeg zijn",
-    "tooLongError": "Reactie moet minder dan {{max}} tekens bevatten",
+    "tooLongError": "Uw antwoord mag maximaal {{max}} tekens bevatten.",
     "charactersRemaining": "tekens resterend"
   },
   "commentEdit": {
@@ -1588,7 +1600,7 @@
     "companyRequired": "Organisatienaam is verplicht",
     "locationRequired": "Locatie is verplicht",
     "descriptionValidation": "Beschrijving moet minstens 20 tekens lang zijn",
-    "salaryValidation": "Minimum salaris moet lager zijn dan maximum salaris",
+    "salaryValidation": "Het minimumsalaris mag niet hoger zijn dan het maximumsalaris.",
     "linkToCompany": "Link naar organisatiepagina",
     "selectCompany": "Selecteer een organisatiepagina (optioneel)",
     "linkDescription": "Koppel deze vacature aan een organisatiepagina die u beheert.",
@@ -1650,10 +1662,10 @@
   "articleReactions": {
     "reactions": "reacties",
     "signInToReact": "Log in om op artikelen te reageren",
-    "love": "Liefde",
-    "celebrate": "Vieren",
+    "love": "Geweldig",
+    "celebrate": "Gefeliciteerd",
     "support": "Steun",
-    "empathy": "Empathie",
+    "empathy": "Meeleven",
     "insightful": "Inzichtelijk"
   },
   "commentPreview": {
@@ -1956,8 +1968,8 @@
     "jobs": "Vacatures",
     "articles": "Artikelen",
     "events": "Evenementen",
-    "noResults": "Geen resultaten gevonden voor",
-    "advancedSearch": "Geavanceerd zoeken"
+    "advancedSearch": "Geavanceerd zoeken",
+    "noResultsFor": "Geen resultaten voor ‘{{query}}’"
   },
   "toasts": {
     "connectionRequestSent": "Connectieverzoek verzonden",
@@ -2043,9 +2055,8 @@
     "noConnectionsYet": "Nog geen connecties",
     "viewAllConnections": "Bekijk alle connecties",
     "followForArticles": "Volgen voor artikelen",
-    "followForArticlesDesc": "Ontvang een melding wanneer",
-    "followForArticlesDescSuffix": "nieuwe artikelen publiceert",
-    "unknownUser": "Onbekende gebruiker"
+    "unknownUser": "Onbekende gebruiker",
+    "followArticleUpdates": "Krijg een melding wanneer {{name}} een artikel publiceert."
   },
   "messagesPage": {
     "title": "Berichten",
@@ -2133,7 +2144,7 @@
     "finish": "Mijn feed openen"
   },
   "publicFeed": {
-    "signInToParticipate": "Meld u aan om te reageren of te participeren"
+    "signInToParticipate": "Log in om te antwoorden of een reactie te geven"
   },
   "personalFeeds": {
     "description": "Uw privéfeed toont berichten van geselecteerde personen of organisaties, of berichten die overeenkomen met uw tags of trefwoorden. Nieuwste eerst. Alleen inhoud die u mag lezen, wordt weergegeven.",
@@ -2147,7 +2158,6 @@
     "edit": "{{name}} bewerken",
     "unavailablePerson": "Profiel niet beschikbaar",
     "unavailableCompany": "Organisatie niet beschikbaar",
-    "peopleCount": "{{count}} personen",
     "saveError": "Deze feed kon niet worden geladen of opgeslagen. Uw keuzes zijn nog steeds aanwezig. Probeer het opnieuw.",
     "emptyTitle": "Geen berichten om te tonen",
     "emptyDescription": "Geen beschikbare berichten komen momenteel overeen. Wijzig uw selectie onder Feeds of volg meer mensen.",
@@ -2156,7 +2166,9 @@
     "exploreNolto": "Verken Nolto",
     "findPeople": "Vind mensen",
     "followingEmptyTitle": "Uw feed begint hier",
-    "followingEmptyDescription": "Uw berichten en berichten van mensen die u volgt, verschijnen hier. Verken Nolto of vind mensen om te volgen."
+    "followingEmptyDescription": "Uw berichten en berichten van mensen die u volgt, verschijnen hier. Verken Nolto of vind mensen om te volgen.",
+    "peopleCount_one": "{{count}} persoon",
+    "peopleCount_other": "{{count}} personen"
   },
   "profileInline": {
     "hint": "Klik op wat u wilt wijzigen. Wijzigingen worden gepubliceerd wanneer u opslaat.",
@@ -2498,7 +2510,7 @@
       "sourceCodeAndDeployment": "Broncode en implementatie-instructies om Nolto zelf te draaien.",
       "openSource": "OPEN SOURCE",
       "aNetworkToBuild": "Een netwerk om op te bouwen.",
-      "noltosCodeIsOpen": "De code van Nolto is openbaar. Je kunt deze bekijken, bijdragen en aanpassen aan je eigen gemeenschap.",
+      "noltosCodeIsOpen": "De code van Nolto is openbaar. U kunt deze bekijken, eraan bijdragen en aanpassen voor uw eigen gemeenschap.",
       "runTheWebApp": "Draai de web-app met Docker",
       "buildAndServeThe": "Bouw en serveer de web-app met de meegeleverde Docker-configuratie. Verbind deze met een reeds geconfigureerde backend.",
       "readTheInstallationGuide": "Lees de installatiehandleiding",
@@ -2506,9 +2518,9 @@
       "improveATranslationReport": "Verbeter een vertaling, meld een bug of werk aan een functie. De broncode en ontwikkelgids zijn te vinden op GitHub.",
       "viewTheSource": "Bekijk de broncode",
       "addANoltoButton": "Voeg een Nolto-knop toe",
-      "letCandidatesFillYour": "Laat kandidaten je sollicitatieformulier invullen met hun Nolto-profiel. Ze kiezen welke gegevens ze delen. Kopieer een paar regels code om te beginnen.",
+      "letCandidatesFillYour": "Laat kandidaten uw sollicitatieformulier invullen met hun Nolto-profiel. Ze kiezen welke gegevens ze delen. Kopieer een paar regels code om te beginnen.",
       "getTheButtonAnd": "Haal de knop en instructies op",
-      "whatDoesYourOwn": "Wat heeft je eigen server nodig?",
+      "whatDoesYourOwn": "Wat heeft uw eigen server nodig?",
       "theDockerPackageContains": "Het Docker-pakket bevat de web-app en zijn proxy. Database, authenticatie, opslag, e-mail en achtergrondtaken vereisen een aparte configuratie. Een complete, nieuwe installatie van Nolto is nog niet geverifieerd. De handleiding legt de resterende stappen uit.",
       "justCuriousExploreNolto": "Gewoon nieuwsgierig? Verken Nolto"
     },
@@ -2552,7 +2564,7 @@
     },
     "documentation": {
       "gettingStartedWithNolto": "Aan de slag met Nolto",
-      "fromYourFirstAccount": "Van je eerste account tot een adres in het fediverse.",
+      "fromYourFirstAccount": "Van uw eerste account tot een adres in het fediverse.",
       "createAndConfirmYour": [
         [
           "1. Maak en bevestig uw account",
@@ -2601,33 +2613,33 @@
       ],
       "backToHome": "Terug naar startpagina",
       "noltoAndMastodon": "Nolto en Mastodon",
-      "yourNoltoAddressLets": "Je Nolto-adres laat mensen je vinden en volgen vanaf andere gefedereerde diensten. Het is geen e-mailadres.",
+      "yourNoltoAddressLets": "Met uw Nolto-adres kunnen mensen u vinden en volgen vanaf andere diensten in het fediverse. Het is geen e-mailadres.",
       "whatIsNotSynchronized": "Wat wordt niet gesynchroniseerd?",
       "accountsAreNotFully": "Accounts worden niet volledig in beide richtingen gespiegeld. Privéberichtgeschiedenis, bladwijzers en alle Mastodon-voorkeuren worden niet gesynchroniseerd. Gefedereerde directe berichten worden niet ondersteund. Bluesky's AT Protocol is een afzonderlijk protocol en vervangt de Mastodon-compatibiliteit niet.",
-      "otherServersMayRetain": "Andere servers kunnen openbare inhoud bewaren. Het uitschakelen van federatie verwijdert bestaande externe kopieën niet. Eenmaal gepubliceerd, is je gefedereerde gebruikersnaam permanent.",
+      "otherServersMayRetain": "Andere servers kunnen openbare inhoud bewaren. Federatie uitschakelen verwijdert bestaande kopieën op andere servers niet. Uw federatieve gebruikersnaam is permanent zodra deze is gepubliceerd.",
       "readThePrivacyPolicy": "Lees het privacybeleid",
       "mastodonAccountMigrationGuide": "Mastodon accountmigratiehandleiding",
       "openProfileSettings": "Open profielinstellingen",
-      "createYourNoltoAddress": "Maak je Nolto-adres aan"
+      "createYourNoltoAddress": "Maak uw Nolto-adres aan"
     },
     "explore": {
       "exploreNolto": "Verken Nolto",
       "readPublicConversationsOn": "Lees openbare conversaties op Nolto. Geen account nodig om te verkennen.",
       "aLookInsideNolto": "EEN KIJKJE IN NOLTO",
       "conversationsAboutWorkingLife": "Gesprekken over het werkende leven.",
-      "takeALookAround": "Neem een kijkje. Word lid wanneer je deel wilt uitmaken van het gesprek.",
+      "takeALookAround": "Neem een kijkje. Maak een account aan wanneer u wilt meepraten.",
       "itStartsWithHello": "Het begint met hallo.",
       "findPeopleToLearn": "Vind mensen om van te leren, mee samen te werken en contact mee te houden.",
-      "createYourAccount": "Maak je account aan",
+      "createYourAccount": "Maak uw account aan",
       "alreadyAMemberSign": "Al lid? Log in",
       "discoverMore": "Ontdek meer",
       "browseJobs": "Blader door vacatures",
       "meetOrganisations": "Ontmoet organisaties",
-      "noltoIsAnOpen": "Nolto is een open-source professioneel netwerk. Jij kiest wat je deelt en wie je volgt."
+      "noltoIsAnOpen": "Nolto is een professioneel netwerk met open broncode. U kiest wat u deelt en wie u volgt."
     },
     "index": {
       "aMoreOpenWorking": "Een opener werkend leven",
-      "meetPeopleShareWhat": "Ontmoet mensen, deel wat je weet en vind je volgende kans. Verken Nolto's openbare feed zonder account.",
+      "meetPeopleShareWhat": "Ontmoet mensen, deel uw kennis en ontdek nieuwe mogelijkheden. Verken de openbare feed van Nolto zonder account.",
       "laddar": "Laden..."
     },
     "publicFeed": {
@@ -2641,16 +2653,16 @@
       "pleaseTryAgainIn": "Probeer het over een moment opnieuw.",
       "tryAgain": "Opnieuw proberen",
       "conversationsStartHere": "Gesprekken beginnen hier.",
-      "thereAreNoPublic": "Er zijn hier nog geen openbare berichten. Deel een idee, stel een vraag of vertel ons waaraan je werkt.",
+      "thereAreNoPublic": "Er zijn hier nog geen openbare berichten. Deel een idee, stel een vraag of vertel waaraan u werkt.",
       "startAConversation": "Start een gesprek",
       "loading": "Laden...",
       "showMorePosts": "Toon meer berichten",
-      "youHaveSeenAll": "Je hebt alle berichten in deze feed gezien.",
+      "youHaveSeenAll": "U heeft alle berichten in deze feed gezien.",
       "couldNotLoadMore": "Kon geen verdere berichten laden. Probeer het opnieuw.",
       "publicPostsNewestFirst": "Openbare berichten · Nieuwste eerst"
     },
     "encryptedInbox": {
-      "couldNotLoadYour": "Kon je sleutel niet laden. Ververs deze pagina.",
+      "couldNotLoadYour": "Uw sleutel kon niet worden geladen. Vernieuw deze pagina.",
       "theRecipientsKeyCould": "De sleutel van de ontvanger kon niet worden geverifieerd.",
       "theBackupFileIs": "Het back-upbestand is te groot.",
       "theKeyPhrasesMust": "De sleutelzinnen moeten overeenkomen.",
@@ -2663,9 +2675,9 @@
       "recipientKey": "Sleutel ontvanger: ",
       "notActivated": "Niet geactiveerd",
       "downloadEncryptedKeyBackup": "Versleutelde sleutelback-up downloaden",
-      "unlockYourInbox": "Ontgrendel je inbox",
+      "unlockYourInbox": "Ontgrendel uw inbox",
       "enableEncryptedMessages": "Versleutelde berichten inschakelen",
-      "yourKeyPhraseIs": "Je sleutelzin wordt alleen in je browser gebruikt. Nolto kan nieuwe berichten niet lezen of herstellen als je de zin verliest. Gebruik een aparte lange zin, bij voorkeur minstens vijf willekeurige woorden.",
+      "yourKeyPhraseIs": "Uw sleutelzin wordt alleen in uw browser gebruikt. Nolto kan nieuwe berichten niet lezen of herstellen als u de zin kwijtraakt. Gebruik een aparte lange zin, bij voorkeur met minstens vijf willekeurige woorden.",
       "loadingEncryptionSettings": "Encryptie-instellingen laden...",
       "keyPhrase": "Sleutelzin",
       "repeatKeyPhrase": "Herhaal sleutelzin",
@@ -2681,21 +2693,21 @@
     },
     "unauthenticatedHomepage": {
       "yourProfessionalNetwork": "JOUW PROFESSIONELE NETWERK",
-      "meetPeopleShareWhat": "Ontmoet mensen, deel wat je weet en vind je volgende kans. Een netwerk dat jij helpt vormgeven.",
+      "meetPeopleShareWhat": "Ontmoet mensen, deel uw kennis en ontdek nieuwe mogelijkheden. Een netwerk waaraan u meebouwt.",
       "joinNolto": "Word lid van Nolto",
       "exploreTheFeed": "Verken de feed",
-      "takeALookYou": "Neem een kijkje. Je hebt geen account nodig om te lezen.",
+      "takeALookYou": "Neem een kijkje. U heeft geen account nodig om te lezen.",
       "whatNoltoStandsFor": "Waar Nolto voor staat",
       "peopleComeFirst": "Mensen staan centraal",
       "partOfTheOpen": "Deel van het open web",
       "openSource": "Open source",
       "conversationsAndNewPerspectives": "CONVERSATIES EN NIEUWE PERSPECTIEVEN",
       "startByTakingA": "Begin met een kijkje te nemen.",
-      "readWhatPeopleShare": "Lees wat mensen delen op Nolto en over het open netwerk. Maak een account aan wanneer je wilt reageren of zelf iets wilt delen.",
+      "readWhatPeopleShare": "Lees wat mensen op Nolto en in het open netwerk delen. Maak een account aan wanneer u wilt reageren of zelf iets wilt delen.",
       "aPlaceForFresh": "Een plek voor frisse perspectieven",
       "noltosPublicFeedWith": "Nolto's openbare feed, met lokale en netwerkweergaven. Open de feed.",
       "peopleAndPossibilities": "MENSEN EN MOGELIJKHEDEN",
-      "yourNextStepStarts": "Je volgende stap begint met nieuwsgierigheid.",
+      "yourNextStepStarts": "Uw volgende stap begint met nieuwsgierigheid.",
       "findJobsAndGet": "Vind banen en leer de organisaties erachter kennen. Op zoek naar een nieuwe rol, een samenwerking of iemand om ideeën mee uit te wisselen? Begin hier.",
       "browseJobs": "Blader door vacatures",
       "discoverOrganisations": "Ontdek organisaties",
@@ -2758,7 +2770,7 @@
       "theExportListsUploaded": "De export toont geüploade bestanden; download de bestanden zelf apart. Nieuwe privéberichten worden geëxporteerd als ciphertext. Sla ook uw versleutelde back-up van de inbox op. Wachtwoorden en inlogtokens zijn uitgesloten. Dit archief kan niet rechtstreeks in Mastodon worden geïmporteerd.",
       "preparingExport": "Export voorbereiden...",
       "downloadJson": "Download JSON",
-      "yourExportIsReady": "Uw export is klaar. Bewaar deze veilig; het bevat privéberichten en contactgegevens."
+      "yourExportIsReady": "Uw export is klaar. Bewaar deze veilig: er staan privéberichten en contactgegevens in."
     },
     "mastodonConnection": {
       "couldNotConnectCheck": "Kon geen verbinding maken. Controleer het adres en probeer het opnieuw.",
@@ -2884,7 +2896,6 @@
     },
     "notifications": {
       "dinaAviseringarPaNolto": "Uw meldingen op Nolto.",
-      "olasta": "ongelezen)",
       "markeraAllaSomLasta": "Alles als gelezen markeren",
       "olasta2": "Ongelezen",
       "ingaOlastaAviseringar": "Geen ongelezen meldingen",
@@ -2892,7 +2903,8 @@
       "duArHeltIkapp": "U bent helemaal bij!",
       "narDuFarAviseringar": "Wanneer u meldingen ontvangt, verschijnen deze hier",
       "aviseringar": "Meldingen",
-      "alla": "Alle"
+      "alla": "Alle",
+      "unreadCount": "Ongelezen: {{total}}"
     },
     "messageConversation": {
       "kundeInteSkickaMeddelande": "Kon bericht niet verzenden",
@@ -2920,22 +2932,22 @@
       "harKanDuAterkalla": "Hier kunt u de toegang van een externe app tot uw Nolto-account intrekken. Om de app opnieuw te gebruiken, moet u deze opnieuw verbinden.",
       "hamtarAnslutningar": "Verbindingen ophalen…",
       "duHarIngaGodkanda": "U heeft geen geautoriseerde app-verbindingen.",
-      "anslutningArSenastGodkand": "verbinding(en). Laatst geautoriseerd op",
       "aterkallar": "Intrekken…",
       "aterkallaAtkomst": "Toegang intrekken",
       "omMastodonAppar": "Over Mastodon-apps",
-      "anslutnaAppar": "Verbonden apps"
+      "anslutnaAppar": "Verbonden apps",
+      "grantSummary": "Verbindingen: {{total}}. Laatst goedgekeurd: {{date}}.",
+      "revokeFailed": "De toegang kon niet worden ingetrokken. Probeer het opnieuw."
     },
     "sessionExpiryWarning": {
       "dinSessionHarGatt": "Uw sessie is verlopen. Log opnieuw in.",
       "sessionenHarForlangts": "Sessie is verlengd",
       "kundeInteForlangaSessionen": "Kon sessie niet verlengen. Log opnieuw in.",
       "sessionenGarUtSnart": "Sessie verloopt binnenkort",
-      "dinSessionGarUt": "Uw sessie verloopt over",
-      "villDuForlangaSessionen": ". Wilt u de sessie verlengen?",
       "avfarda": "Sluiten",
       "forlanger": "Verlengen...",
-      "forlangSession": "Sessie verlengen"
+      "forlangSession": "Sessie verlengen",
+      "expiryMessage": "U wordt over {{time}} uitgelogd. Wilt u ingelogd blijven?"
     },
     "userLookup": {
       "anvandaruppslag": "Gebruikersopzoeking",
@@ -3049,7 +3061,7 @@
       "hanteraBlockeradeOchBegransade": "Geblokkeerde en beperkte domeinen beheren",
       "aktorsmoderering": "Actor-moderatie",
       "hanteraBlockeradeAktorer": "Geblokkeerde actors beheren",
-      "visaBegransadeInstanserOch": "Bekijk beperkte instanties en Nolto-gezondheid",
+      "visaBegransadeInstanserOch": "Bekijk servers met beperkingen en de status van Nolto",
       "oppnaInstanshanteraren": "Instantiebeheerder openen",
       "fullstandigHistorikOverModereringsatgarder": "Volledige geschiedenis van moderatieacties",
       "tillbakaHem": "Terug naar startpagina",
@@ -3073,14 +3085,14 @@
       "kundeInteBekraftaVarning": "Kon waarschuwing niet bevestigen",
       "dataUppdaterad": "Gegevens bijgewerkt",
       "rensningMisslyckades": "Opschonen mislukt",
-      "federationHealth": "Federatie gezondheid",
+      "federationHealth": "Status van de federatie",
       "monitorAndManageFederation": "Monitor en beheer federatie-infrastructuur",
       "refresh": "Verversen",
       "pending": "In afwachting",
       "processing": "Verwerken",
       "failed": "Mislukt",
       "cacheEntries": "Cache-items",
-      "queueHealth": "Wachtrij gezondheid",
+      "queueHealth": "Status van de wachtrij",
       "cache": "Cache",
       "instances": "Instanties",
       "alerts": "Waarschuwingen",
@@ -3151,7 +3163,7 @@
       "kundeInteUppdateraDomanstatus": "Kon de domeinstatus niet bijwerken",
       "domanBorttagen": "Domein verwijderd",
       "kundeInteTaBort": "Kon domein niet verwijderen",
-      "provotid": "Proeftijd",
+      "provotid": "Beperkt",
       "laggTillDomanmoderering": "Domeinmoderatie toevoegen",
       "domanvard": "Domeinhost",
       "valjStatus": "Selecteer status",
@@ -3162,10 +3174,7 @@
       "atgarder": "Acties",
       "ingaDomanmodereringsposternaHittades": "Geen vermeldingen voor domeinmoderatie gevonden",
       "redigeraDomanmoderering": "Domeinmoderatie bewerken",
-      "uppdateraModereringsinstallningarFor": "Moderatie-instellingen bijwerken voor",
       "bekraftaBorttagning": "Verwijdering bevestigen",
-      "arDuSakerPa": "Weet u zeker dat u wilt verwijderen",
-      "franModerering": "uit moderatie?",
       "uppdateringMisslyckades": "Update mislukt",
       "ettFelUppstodVid": "Er is een fout opgetreden tijdens het bijwerken",
       "borttagningMisslyckades": "Verwijdering mislukt",
@@ -3187,11 +3196,10 @@
       "anmaltInnehallSomHar": "Gemelde inhoud die is verwijderd",
       "atkomstenLoggasTextKan": "Toegang wordt gelogd. Tekst kan worden beoordeeld als de melding vóór verwijdering is gedaan en de zaak nog open is. Afbeeldingen en privéberichten worden hier niet weergegeven.",
       "textenArInteTillganglig": "Tekst is niet beschikbaar. De zaak kan gesloten zijn, de opslagperiode verlopen, of toegang is geweigerd.",
-      "granskningenForlangerInteLagringstiden": ". De beoordeling verlengt de opslagperiode niet.",
       "hamtarTexten": "Tekst ophalen…",
       "inlaggetInnehallerIngenGranskbar": "Het bericht bevat geen te beoordelen tekst.",
       "granskaRaderadText": "Verwijderde tekst beoordelen",
-      "raderasPermanent": "Wordt permanent verwijderd"
+      "purgeNotice": "Definitieve verwijdering op {{date}}. Beoordeling verlengt de bewaartermijn niet."
     },
     "actorModeration": {
       "aktorBlockerad": "Acteur geblokkeerd",
@@ -3200,7 +3208,7 @@
       "ettFelIntraffade": "Er is een fout opgetreden",
       "aktorBorttagen": "Acteur verwijderd",
       "kundeInteTaBort": "Kon acteur niet verwijderen",
-      "provotid": "Proeftijd",
+      "provotid": "Beperkt",
       "laggTillAktorblockering": "Acteurblokkering toevoegen",
       "aktorUrl": "Acteur URL",
       "valjStatus": "Selecteer status",
@@ -3211,12 +3219,9 @@
       "atgarder": "Acties",
       "ingaAktorblockeringarHittades": "Geen acteurblokkeringen gevonden",
       "redigeraAktorblockering": "Acteurblokkering bewerken",
-      "uppdateraModereringsinstallningarFor": "Moderatie-instellingen bijwerken voor",
       "avbryt": "Annuleren",
       "sparaAndringar": "Wijzigingen opslaan",
       "bekraftaBorttagning": "Verwijdering bevestigen",
-      "arDuSakerPa": "Weet u zeker dat u wilt verwijderen",
-      "franModereringen": "uit moderatie?",
       "taBort": "Verwijderen",
       "uppdateringMisslyckades": "Update mislukt",
       "borttagningMisslyckades": "Verwijdering mislukt",
@@ -3272,15 +3277,11 @@
       "atgarder": "Acties",
       "tillat": "Toestaan",
       "tillatInstans": "Deze server toestaan?",
-      "dettaTarBortAlla": "Dit verwijdert alle beperkingen voor",
       "avbryt": "Annuleren",
       "bekrafta": "Bevestigen",
       "begransa": "Beperken",
       "begransaInstans": "Deze server beperken?",
-      "dettaSatter": "Dit plaatst",
-      "underBegransningMedReducerad": "onder beperking met gereduceerde functionaliteit.",
       "angeEnAnledningFor": "Geef een reden op voor de beperking",
-      "dettaBlockerarAllTrafik": "Dit blokkeert al het verkeer van",
       "angeEnAnledningFor2": "Geef een reden op voor het blokkeren",
       "ingaInstanserHittadesSom": "Geen instanties gevonden die de drempel overschrijden.",
       "uppdatera": "Bijwerken",
@@ -3288,14 +3289,18 @@
       "status": "Status",
       "anledning": "Reden",
       "blockera": "Blokkeren",
-      "blockeraInstans": "Deze server blokkeren?"
+      "blockeraInstans": "Deze server blokkeren?",
+      "rateLimitReason": "Gewijzigd na beoordeling van het aantal verzoeken van de server.",
+      "allowDescription": "Alle beperkingen voor {{server}} opheffen.",
+      "restrictDescription": "Functionaliteit voor {{server}} beperken.",
+      "blockDescription": "Al het verkeer van {{server}} blokkeren."
     },
     "quoteRepostDialog": {
       "loggaInForAtt": "Log in om te reposten",
       "inlaggetDeladesTillDin": "Bericht gedeeld",
       "kundeInteDelaVidare": "Kon niet reposten. Probeer het opnieuw.",
       "delaTillDinProfil": "Deel dit bericht met uw netwerk",
-      "laggTillDinaTankar": "Voeg je gedachten toe (optioneel)...",
+      "laggTillDinaTankar": "Voeg een eigen reactie toe (optioneel)…",
       "avbryt": "Annuleren",
       "delar": "Deelt...",
       "delaVidare": "Opnieuw plaatsen"
@@ -3324,10 +3329,10 @@
     "blockUserDialog": {
       "kundeInteBlockeraAnvandaren": "Kon gebruiker niet blokkeren",
       "attBlockeraDennaAnvandare": "Deze gebruiker blokkeren zal:",
-      "doljaDerasInlaggFran": "Hun berichten verbergen uit je feed",
-      "forhindraDemFranAtt": "Voorkomen dat ze je berichten sturen",
+      "doljaDerasInlaggFran": "Berichten van deze persoon verbergen in uw feed",
+      "forhindraDemFranAtt": "Voorkomen dat deze persoon u berichten stuurt",
       "taBortDemFran": "Ze verwijderen uit zoekresultaten",
-      "varforBlockerarDuDenna": "Waarom blokkeer je deze gebruiker?",
+      "varforBlockerarDuDenna": "Waarom blokkeert u deze gebruiker?",
       "avbryt": "Annuleren",
       "blockeraAnvandare": "Gebruiker blokkeren",
       "blockera": "Blokkeren",
@@ -3347,11 +3352,11 @@
       "kommentarEjTillganglig": "Reactie niet beschikbaar"
     },
     "uploadStep": {
-      "bearbetarDinData": "Je gegevens verwerken...",
+      "bearbetarDinData": "Uw gegevens worden verwerkt…",
       "dettaKanTaEn": "Dit kan even duren",
-      "slappDinLinkedinZip": "Sleep je LinkedIn ZIP-bestand hierheen",
+      "slappDinLinkedinZip": "Sleep uw ZIP-bestand van LinkedIn hierheen",
       "ellerKlickaForAtt": "of klik om te bladeren",
-      "forvantadeFilerIDin": "Verwachte bestanden in je export:",
+      "forvantadeFilerIDin": "Verwachte bestanden in uw export:",
       "profileCsvGrundlaggandeProfilinfo": "• Profile.csv – Basis profielinformatie",
       "sharesCsvInlaggOch": "• Shares.csv – Berichten en artikelen (optioneel)",
       "narDuExporterarFran": "Bij het exporteren vanuit LinkedIn, selecteer \"Het grotere data-archief\" voor completere gegevens.",
@@ -3363,12 +3368,12 @@
       "tips": "Tips:"
     },
     "postEditDialog": {
-      "omrostningsalternativKanInteRedigeras": "Peilingopties kunnen na creatie niet worden bewerkt om de integriteit van de stemmen te bewaren. Je kunt alleen de vraagtekst hierboven bewerken.",
+      "omrostningsalternativKanInteRedigeras": "U kunt de antwoordopties na publicatie niet wijzigen, zodat stemmen naar dezelfde keuzes blijven verwijzen. U kunt de vraag hierboven wel bewerken.",
       "avbryt": "Annuleren",
       "redigeraOmrostning": "Peiling bewerken",
       "redigeraInlagg": "Bericht bewerken",
-      "redigeraDinOmrostningsfraga": "Bewerk je peilingvraag...",
-      "vadTankerDuPa": "Wat denk je?",
+      "redigeraDinOmrostningsfraga": "Bewerk uw peilingvraag…",
+      "vadTankerDuPa": "Wat houdt u bezig?",
       "sparaAndringar": "Wijzigingen opslaan",
       "sparar": "Opslaan...",
       "updateFailed": "Het bericht kon niet worden bijgewerkt."
@@ -3385,7 +3390,7 @@
     },
     "updatePassword": {
       "valjNyttLosenord": "Kies een nieuw wachtwoord",
-      "dittLosenordHarAndrats": "Je wachtwoord is gewijzigd.",
+      "dittLosenordHarAndrats": "Uw wachtwoord is gewijzigd.",
       "fortsattTillNolto": "Ga verder naar Nolto",
       "aterstallningslankenSaknasHarGatt": "De herstellink ontbreekt, is verlopen, of is al gebruikt.",
       "begarEnNyLank": "Vraag een nieuwe link aan",
@@ -3393,7 +3398,9 @@
       "bekraftaLosenord": "Wachtwoord bevestigen",
       "andraLosenord": "Wachtwoord wijzigen",
       "verifierarInloggning": "Inloggen verifiëren…",
-      "sparar": "Opslaan…"
+      "sparar": "Opslaan…",
+      "passwordMismatch": "De wachtwoorden moeten overeenkomen.",
+      "updateFailed": "Het wachtwoord kon niet worden gewijzigd. Gebruik minimaal 12 tekens. Vraag een nieuwe link aan als de oude is verlopen."
     },
     "socialCallback": {
       "loggaInPaNolto": "Inloggen bij Nolto",
@@ -3402,10 +3409,10 @@
       "slutforInloggningen": "Inloggen voltooien…"
     },
     "previewStep": {
-      "ingenDataHittadesI": "Er zijn geen gegevens gevonden in je export. Dit kan komen doordat de ZIP-bestandsstructuur afwijkt van de verwachting. Klik op \"Details tonen\" hieronder om te zien welke bestanden zijn gedetecteerd.",
+      "ingenDataHittadesI": "Er zijn geen gegevens gevonden in uw export. Mogelijk is het ZIP-bestand anders ingedeeld dan verwacht. Kies hieronder ‘Details tonen’ om te zien welke bestanden zijn gevonden.",
       "ingaCsvFilerHittades": "Geen CSV-bestanden gevonden",
       "inlaggsDelningskolumner": "Post/deel kolommen:",
-      "seTillAttDu": "Zorg ervoor dat je \"Een kopie van je gegevens downloaden\" gebruikt vanuit de LinkedIn-instellingen. Kies \"Het grotere data-archief\" voor completere gegevens.",
+      "seTillAttDu": "Vraag in de instellingen van LinkedIn een kopie van uw gegevens aan. Kies het grotere gegevensarchief voor een zo volledig mogelijke export.",
       "inlagg": "Berichten",
       "ingenProfildataHittadesI": "Geen profielgegevens gevonden in de export",
       "forvantadFilProfileCsv": "Verwacht bestand: Profile.csv",
@@ -3421,7 +3428,7 @@
       "doljDetaljer": "Details verbergen",
       "visaDetaljer": "Details weergeven",
       "okant": "Onbekend",
-      "csvFilerHittade": "CSV-bestanden gevonden (",
+      "csvFilerHittade": "Gevonden CSV-bestanden: {{total}}",
       "profilkolumner": "Profielkolommen:",
       "positionskolumner": "Positiekolommen:",
       "utbildningskolumner": "Onderwijskolommen:",
@@ -3438,13 +3445,13 @@
       "bio": "Over u",
       "plats": "Locatie",
       "importeraArbetslivserfarenhet": "Werkervaring importeren",
-      "hittade": "gevonden",
       "importeraUtbildning": "Opleiding importeren",
       "importeraKompetenser": "Vaardigheden importeren",
       "tillbaka": "Terug",
       "importerar": "Importeren...",
       "ejAngivet": "Niet gespecificeerd",
-      "nuvarande": "Heden"
+      "nuvarande": "Heden",
+      "foundTotal": "Gevonden: {{total}}"
     },
     "companyCard": {
       "foljare": "volgers"
@@ -3498,24 +3505,24 @@
       "tillbakaTillNolto": "Terug naar Nolto",
       "aterstaller": "Resetten…",
       "kontrollerarInloggning": "Inloggen controleren…",
-      "loggaIn": "Inloggen"
+      "loggaIn": "Inloggen",
+      "recoveryFailed": "Het herstel kon niet worden voltooid. De link is mogelijk verlopen of al gebruikt. Neem contact op met de ondersteuning voor een nieuwe link."
     },
     "instructionsStep": {
       "oppnaLinkedinsDataexport": "Open de gegevensexport van LinkedIn",
       "eller": "of",
       "jagHarRedanMin": "Ik heb mijn export al",
       "dinIntegritetSkyddas": "Uw privacy is beschermd",
-      "dataBearbetasIDin": "Gegevens worden in uw browser verwerkt. We slaan uw bestand nooit op of verzenden het nooit naar een server.",
+      "dataBearbetasIDin": "Het ZIP-bestand wordt in uw browser verwerkt en niet naar een server gestuurd. Bij het importeren worden de geselecteerde profielgegevens op Nolto opgeslagen.",
       "klickaPaKnappenNedan": "Klik op de knop hieronder om naar de downloadinstellingen van LinkedIn te gaan.",
       "begarDinData": "Vraag uw gegevens aan",
       "valjDownloadLargerData": "Selecteer \"Download larger data archive\" (groter gegevensarchief downloaden) en vink de gegevens aan die u wilt exporteren.",
       "vantaPaEPost": "Wachten op e-mail",
-      "linkedinSkickarEttMejl": "LinkedIn stuurt een e-mail wanneer uw gegevens klaar zijn. Dit duurt meestal enkele minuten, tot 24 uur.",
+      "linkedinSkickarEttMejl": "LinkedIn stuurt u een e-mail zodra uw export klaar is.",
       "laddaNerZipFilen": "Download het ZIP-bestand van LinkedIn en upload het hier.",
       "laddaUppZipFilen": "ZIP-bestand uploaden"
     },
     "confirmStep": {
-      "objektImporteradesTillDin": "items zijn geïmporteerd naar uw profiel",
       "slutfordMedProblem": "Voltooid met problemen",
       "nagraFelUppstod": "Er zijn enkele fouten opgetreden:",
       "visaProfil": "Profiel bekijken",
@@ -3526,7 +3533,12 @@
       "arbetslivserfarenhet": "Werkervaring",
       "utbildning": "Opleiding",
       "kompetenser": "Vaardigheden",
-      "artiklar": "Artikelen"
+      "artiklar": "Artikelen",
+      "importedTotal": "Geïmporteerde gegevens: {{total}}",
+      "updated": "Bijgewerkt",
+      "skipped": "Overgeslagen",
+      "addedTotal": "Toegevoegd: {{total}}",
+      "draftTotal": "Concepten: {{total}}"
     },
     "authorizeApp": {
       "oppnaAppanslutningenIEtt": "Open de app-verbinding in een apart venster op Nolto.",
@@ -3545,7 +3557,8 @@
       "godkannOchAnslut": "Goedkeuren en verbinden",
       "anslutEnAppNolto": "Een app verbinden · Nolto",
       "kontrollerarInloggningen": "Inloggen controleren…",
-      "ansluter": "Verbinden…"
+      "ansluter": "Verbinden…",
+      "storageRequired": "Uw browser moet sessieopslag toestaan om het inloggen af te ronden. Open Nolto in uw gebruikelijke browser en probeer het opnieuw."
     },
     "companyForm": {
       "viByggerFramtidenFor": "Wij bouwen aan de toekomst voor...",
@@ -3558,7 +3571,7 @@
       "size10015000": "1.001-5.000 werknemers",
       "size500110000": "5.001-10.000 werknemers",
       "size10001Anstallda": "10.001+ werknemers",
-      "organisationsnamn": "Organisatienaam",
+      "organisationsnamn": "Naam van het bedrijf of de organisatie",
       "noltoSocialOrganisation": "nolto.social/organisatie/",
       "organisationsnamn2": "organisatienaam",
       "stockholmSverige": "Stockholm, Zweden"
@@ -3579,7 +3592,8 @@
       "angeEPostadressenFor": "Voer het e-mailadres van uw Nolto-account in. Als u via Mastodon inlogt, herstel dan uw wachtwoord op uw Mastodon-server.",
       "skickaAterstallningslank": "Herstellink verzenden",
       "ePostadress": "E-mailadres",
-      "skickar": "Verzenden…"
+      "skickar": "Verzenden…",
+      "requestFailed": "Het herstellen van uw wachtwoord kon niet worden aangevraagd. Wacht even en probeer het opnieuw."
     },
     "reportDialog": {
       "valjEnAnledningFor": "Kies een reden voor de melding",
@@ -3794,8 +3808,8 @@
       "refresh": "Verversen"
     },
     "fediverseBadge": {
-      "verifiedVia": "Geverifieerd via",
-      "thisUserSIdentity": "De identiteit van deze gebruiker is geverifieerd via hun Fediverse-account op"
+      "accountOn": "Account op {{server}}",
+      "accountServer": "Dit Fediverse-account staat op {{server}}."
     },
     "quoteCardGenerator": {
       "imageDownloaded": "Afbeelding gedownload!",
@@ -3888,16 +3902,16 @@
     "endorsement": "{{name}} heeft uw vaardigheid onderschreven",
     "withText": "{{name}}: {{text}}",
     "message": "{{name}} stuurde u een bericht",
-    "follow": "{{name}} is je gaan volgen",
-    "reactedPost": "{{name}} reageerde {{emoji}} op jouw bericht",
-    "reactedComment": "{{name}} reageerde {{emoji}} op jouw reactie",
-    "boost": "{{name}} deelde jouw bericht door",
-    "repliedPost": "{{name}} reageerde op jouw bericht",
-    "repliedComment": "{{name}} reageerde op jouw reactie",
-    "mention": "{{name}} heeft je vermeld",
+    "follow": "{{name}} is u gaan volgen",
+    "reactedPost": "{{name}} reageerde met {{emoji}} op uw bericht",
+    "reactedComment": "{{name}} reageerde met {{emoji}} op uw reactie",
+    "boost": "{{name}} deelde uw bericht",
+    "repliedPost": "{{name}} antwoordde op uw bericht",
+    "repliedComment": "{{name}} antwoordde op uw reactie",
+    "mention": "{{name}} heeft u vermeld",
     "recommendationRequest": "{{name}} heeft om een aanbeveling gevraagd",
-    "recommendationReceived": "{{name}} heeft een aanbeveling voor je geschreven",
-    "reactedMessage": "{{name}} reageerde {{emoji}} op jouw bericht",
+    "recommendationReceived": "{{name}} heeft een aanbeveling voor u geschreven",
+    "reactedMessage": "{{name}} reageerde met {{emoji}} op uw bericht",
     "articlePublished": "{{name}} heeft een nieuw artikel gepubliceerd",
     "fallback": "Nieuwe melding"
   },
@@ -3911,7 +3925,7 @@
   },
   "language": {
     "label": "Taal",
-    "loadFailed": "De taal kon niet worden geladen. Controleer je verbinding en probeer het opnieuw."
+    "loadFailed": "De taal kon niet worden geladen. Controleer uw verbinding en probeer het opnieuw."
   },
   "legalDocs": {
     "privacy": {
@@ -3952,7 +3966,7 @@
         ],
         [
           "Privéberichten",
-          "Nieuwe privéberichten tussen Nolto-accounts worden versleuteld en ondertekend in de browser. Beide deelnemers moeten hun versleutelde inbox activeren. De sleutelzin wordt nooit naar Nolto gestuurd; de privésleutel wordt alleen in versleutelde vorm geback-upt. Een ontgrendelde sleutel wordt in het browsergeheugen bewaard en vergrendeld bij uitloggen, paginavulling of 15 minuten inactiviteit. Afzender, ontvanger en tijdstempels blijven zichtbaar voor de server. Oudere berichten zijn afzonderlijk gelabeld en kunnen door de server worden ontsleuteld. Openbare inhoud en berichten op andere diensten zijn uitgesloten. Bewaar uw sleutelzin en versleutelde sleutelback-up veilig: het opnieuw instellen van uw accountwachtwoord herstelt de sleutelzin niet. Vergelijk sleutelvingerafdrukken via een ander vertrouwd kanaal. Een aanvaller die uw apparaat of de code die door de dienst wordt geleverd beheert, kan nog steeds toegang krijgen tot inhoud terwijl u de inbox gebruikt."
+          "Nieuwe privéberichten tussen Nolto-accounts worden versleuteld en ondertekend in de browser. Beide deelnemers moeten hun versleutelde inbox activeren. De sleutelzin wordt nooit naar Nolto gestuurd; de privésleutel wordt alleen in versleutelde vorm geback-upt. Een ontgrendelde sleutel wordt in het browsergeheugen bewaard en vergrendeld bij uitloggen, het verlaten van de pagina of 15 minuten inactiviteit. Afzender, ontvanger en tijdstempels blijven zichtbaar voor de server. Oudere berichten zijn afzonderlijk gelabeld en kunnen door de server worden ontsleuteld. Openbare inhoud en berichten op andere diensten zijn uitgesloten. Bewaar uw sleutelzin en versleutelde sleutelback-up veilig: het opnieuw instellen van uw accountwachtwoord herstelt de sleutelzin niet. Vergelijk sleutelvingerafdrukken via een ander vertrouwd kanaal. Een aanvaller die uw apparaat of de code die door de dienst wordt geleverd beheert, kan nog steeds toegang krijgen tot inhoud terwijl u de inbox gebruikt."
         ],
         [
           "Bewaring en rechten",
@@ -4056,5 +4070,34 @@
         ]
       ]
     }
+  },
+  "companyTypes": {
+    "groups": {
+      "business": "Bedrijfsleven",
+      "public": "Publieke sector",
+      "educationAndCivilSociety": "Onderwijs en maatschappelijk middenveld",
+      "other": "Overig"
+    },
+    "privateCompany": "Bedrijf",
+    "startup": "Startup",
+    "limitedCompany": "Kapitaalvennootschap",
+    "listedCompany": "Beursgenoteerd bedrijf",
+    "soleTrader": "Eenmanszaak",
+    "partnership": "Vennootschap onder firma",
+    "limitedPartnership": "Commanditaire vennootschap",
+    "cooperative": "Coöperatie",
+    "consultancy": "Adviesbureau",
+    "municipality": "Gemeente",
+    "region": "Regionale overheid",
+    "governmentAgency": "Overheidsinstantie",
+    "stateOwnedCompany": "Staatsbedrijf",
+    "municipalCompany": "Gemeentelijk bedrijf",
+    "publicPartnership": "Samenwerkingsverband van overheden",
+    "university": "Universiteit / hogeschool",
+    "adultEducation": "Volkshogeschool / volwassenenonderwijs",
+    "nonprofit": "Non-profitorganisatie / vereniging",
+    "foundation": "Stichting",
+    "other": "Andere organisatie",
+    "help": "Kies de optie die uw organisatie het beste beschrijft."
   }
 }

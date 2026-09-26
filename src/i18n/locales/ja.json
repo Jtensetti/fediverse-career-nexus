@@ -35,7 +35,7 @@
   },
   "accessibility": {
     "skipToContent": "コンテンツにスキップ",
-    "darkMode": "ダークモードを切り替える",
+    "darkMode": "配色テーマを選択",
     "navigationMenu": "ナビゲーションメニュー",
     "menuOpen": "メニューを開く",
     "menuClose": "メニューを閉じる",
@@ -91,7 +91,7 @@
     "invitedWithCode": "招待コードで招待されました",
     "noTracking": "追跡なし",
     "ownIdentity": "自身のIDを所有",
-    "connectFediverse": "Fediverseと接続",
+    "connectFediverse": "ほかのFediverseサービスのユーザーもフォローできます",
     "enterEmail": "メールアドレスを入力してください",
     "enterPassword": "パスワードを入力してください",
     "createPassword": "パスワードを作成",
@@ -102,7 +102,7 @@
     "lastNameRequired": "姓は必須です",
     "emailRequired": "メールアドレスは必須です",
     "passwordRequired": "パスワードは必須です",
-    "nameTooLong": "50文字未満である必要があります",
+    "nameTooLong": "名前は50文字以内で入力してください。",
     "nameInvalidChars": "文字、スペース、ハイフン、アポストロフィ、ピリオドのみ使用できます",
     "usernameMinChars": "3文字以上",
     "usernameMaxChars": "最大30文字",
@@ -158,7 +158,7 @@
     "resources": "リソース",
     "documentation": "ドキュメント",
     "helpCenter": "ヘルプセンター",
-    "howFederationWorks": "共同作業の仕組み",
+    "howFederationWorks": "連合の仕組み",
     "federatedInstances": "接続済みサーバー",
     "legal": "法務",
     "privacyPolicy": "プライバシーポリシー",
@@ -230,9 +230,9 @@
   "reactions": {
     "react": "リアクション",
     "love": "気に入った",
-    "celebrate": "祝う",
-    "support": "支持する",
-    "insightful": "洞察に富む",
+    "celebrate": "お祝い",
+    "support": "応援",
+    "insightful": "参考になった",
     "empathy": "共感",
     "title": "リアクション",
     "all": "すべて",
@@ -383,7 +383,17 @@
     "actionCreated": "モデレーションアクションが正常に作成されました",
     "notAuthorized": "モデレーションアクションを実行する権限がありません",
     "loginRequired": "このページを表示するにはログインが必要です",
-    "loadingData": "モデレーションデータを読み込み中..."
+    "loadingData": "モデレーションデータを読み込み中...",
+    "statusUpdatedDetails": "{{target}}の新しい状態：{{status}}。",
+    "entryRemovedDetails": "{{target}}のモデレーションルールを削除しました。",
+    "ruleSaved": "モデレーション設定を保存しました",
+    "loadRulesFailed": "モデレーションルールを読み込めませんでした。",
+    "domainRequired": "ドメインを入力してください。",
+    "accountUrlRequired": "アカウントの完全なウェブアドレスを入力してください。",
+    "reasonRequired": "理由を入力してください。",
+    "saveRuleFailed": "モデレーションルールを保存できませんでした。もう一度お試しください。",
+    "editRuleDescription": "{{target}}のモデレーションルールを変更します。",
+    "removeRuleDescription": "{{target}}のモデレーションルールを削除しますか？"
   },
   "events": {
     "title": "イベント",
@@ -552,24 +562,23 @@
     "introduceYourself": "ネットワークに自己紹介をする",
     "writeArticle": "記事を書く",
     "shareExpertise": "同僚と専門知識を共有する",
-    "connectWithPeers": "同僚とつながる",
+    "connectWithPeers": "つながりを見つける",
     "buildNetwork": "プロフェッショナルネットワークを構築する",
-    "postJob": "求人情報を掲載する",
+    "postJob": "求人を掲載",
     "reachProfessionals": "フェデレーションネットワーク全体でプロフェッショナルにリーチする",
     "createEvent": "イベントを作成する",
     "hostMeetups": "ミーティングやネットワーキングイベントを主催する",
-    "doIt": "実行する",
     "dismissAction": "提案を非表示にする: {{action}}"
   },
   "openSource": {
     "badge": "オープンソース",
-    "title": "オープンに構築",
-    "description": "すべてのコードが公開されています。すべての決定が文書化されています。透明性が信頼を築きます。",
+    "title": "オープンな開発",
+    "description": "Noltoのソースコードは公開されています。コードの確認、開発状況の閲覧、改善への貢献ができます。",
     "repoDescription": "LinkedInに代わるフェデレーション対応ネットワーク",
     "mitLicense": "MITライセンス",
     "contributorsWelcome": "コントリビューター歓迎",
-    "securityAudited": "セキュリティ監査済み",
-    "securityDescription": "定期的なセキュリティレビューと責任ある開示",
+    "securityAudited": "セキュリティに関する問題",
+    "securityDescription": "脆弱性は責任ある方法で報告してください",
     "activeDevelopment": "活発な開発中",
     "devDescription": "コミュニティからのフィードバックを基にした定期的な更新",
     "communityDriven": "コミュニティ主導",
@@ -581,27 +590,27 @@
     "title": "プロフェッショナルネットワーキングに必要なすべて",
     "subtitle": "現代のプロフェッショナルネットワークのすべてのツール — オープンでフェデレーション対応、広告なし",
     "professionalProfiles": "プロフェッショナルプロフィール",
-    "profilesDesc": "スキル、経験、推薦 — 組織全体で集約",
+    "profilesDesc": "プロフィールで経験、学歴、スキルを紹介できます。",
     "portableIdentity": "セキュアなデータエクスポート",
     "jobBoard": "採用",
     "jobDesc": "フェデレーションネットワーク全体で職務を探し、掲載する",
-    "crossInstanceListings": "組織横断的な求人情報",
+    "crossInstanceListings": "ネットワーク内の求人",
     "events": "イベント",
     "eventsDesc": "イベントを作成し、登録を管理する",
     "federatedRsvps": "簡単な出欠確認",
     "articles": "記事",
-    "articlesDesc": "同僚と知識や洞察を共有する",
-    "reachAnyInstance": "組織全体にリーチ",
+    "articlesDesc": "仕事仲間と知識や気づきを共有",
+    "reachAnyInstance": "ネットワークで知識を共有",
     "directMessages": "ダイレクトメッセージ",
     "dmDesc": "連絡先とのセキュアな会話",
     "crossInstanceMessaging": "暗号化されたメッセージング",
     "connections": "つながり",
     "connectionsDesc": "有意義なプロフェッショナル関係を築く",
-    "followAnywhere": "組織を超えて協業",
+    "followAnywhere": "ほかのサービスのユーザーをフォロー",
     "privacyByDesign": "プライバシー・バイ・デザイン",
     "noTracking": "トラッキング、広告、データ販売なし",
-    "fullPortability": "完全なポータビリティ",
-    "exportAnytime": "いつでもデータをエクスポート",
+    "fullPortability": "データを持ち出せます",
+    "exportAnytime": "自分のデータをダウンロード",
     "openProtocol": "オープンスタンダード",
     "builtOnActivityPub": "オープンスタンダード上に構築"
   },
@@ -676,7 +685,7 @@
     },
     "experience": {
       "title": "職務経歴",
-      "company": "組織",
+      "company": "企業・組織名",
       "position": "役職",
       "startDate": "開始日",
       "endDate": "終了日",
@@ -689,7 +698,7 @@
       "loading": "読み込み中...",
       "jobTitle": "職務",
       "jobTitlePlaceholder": "あなたの役割",
-      "companyPlaceholder": "組織名",
+      "companyPlaceholder": "例：株式会社Acme、個人事業",
       "companyDomain": "組織ドメイン",
       "companyDomainPlaceholder": "organisation.com",
       "locationPlaceholder": "例: ストックホルム",
@@ -700,7 +709,7 @@
       "startDateRequired": "開始日は必須です",
       "remove": "職務経歴「{{name}}」を削除",
       "current": "現在ここで働いています",
-      "companyRequired": "組織は必須です"
+      "companyRequired": "企業名、組織名、または個人事業の内容を入力してください。"
     },
     "education": {
       "title": "学歴",
@@ -780,7 +789,7 @@
   },
   "articles": {
     "title": "記事",
-    "subtitle": "ネットワーク内のプロフェッショナルからの洞察を発見",
+    "subtitle": "ネットワーク内の人たちの知識や経験に触れてみましょう",
     "manage": "自分の記事を管理",
     "search": "記事を検索...",
     "all": "すべての記事",
@@ -813,7 +822,7 @@
     "adjustFilters": "より多くの機会を見つけるには、フィルターを調整してみてください。",
     "beFirst": "最初の求人投稿者になりましょう！",
     "reachProfessionals": "フェデレーションネットワーク全体のプロフェッショナルにリーチしましょう。透明性の高い求人情報を投稿してください。",
-    "postJob": "求人を投稿",
+    "postJob": "求人を掲載",
     "signUpToPost": "投稿するにはサインアップ",
     "clearFilters": "フィルターをクリア",
     "allJobTypes": "すべての雇用形態",
@@ -862,7 +871,7 @@
     "rejectEmployeeTitle": "従業員の申請を拒否しますか？",
     "rejectEmployeeDesc": "これにより、{{name}}さんの雇用申請は完全に削除されます。再度申請する必要があります。",
     "removeRoleTitle": "役割を削除しますか？",
-    "removeRoleDesc": "これにより、{{name}}さんのこの組織ページの管理アクセス権が削除されます。後で再度追加することができます。",
+    "removeRoleDesc": "{{name}}さんは組織ページを管理できなくなります。後で管理権限を再度付与できます。",
     "removeRole": "役割を削除",
     "noAdditionalRoles": "追加の役割はありません",
     "onlyOwnerAccess": "現在、所有者のみがアクセス権を持っています",
@@ -883,13 +892,13 @@
     "roleRemoveFailed": "役割の削除に失敗しました"
   },
   "companies": {
-    "title": "組織",
+    "title": "企業・団体",
     "subtitle": "組織を見つけてつながる",
-    "createTitle": "組織を作成する",
-    "createDescription": "あなたの組織を紹介する組織ページを作成しましょう",
-    "createSuccess": "組織が正常に作成されました！",
-    "createError": "組織の作成に失敗しました",
-    "create": "組織を作成する",
+    "createTitle": "企業・団体のページを作成",
+    "createDescription": "活動を紹介し、お知らせを共有して、新しい仲間や協力先とつながりましょう。",
+    "createSuccess": "組織ページを作成しました。",
+    "createError": "組織ページを作成できませんでした。",
+    "create": "組織ページを作成",
     "noMatching": "一致する組織がありません",
     "beFirst": "最初に組織ページを作成しましょう",
     "adjustFilters": "フィルターを調整してみてください",
@@ -936,7 +945,7 @@
     "noPosts": "まだ投稿がありません",
     "noPostsDescription": "この組織はまだ投稿を共有していません。",
     "noJobs": "求人がありません",
-    "noJobsDescription": "この組織は現在、求人を募集していません。",
+    "noJobsDescription": "まだ求人情報は掲載されていません。",
     "noneAvailable": "現在、公開中の組織はありません",
     "noneAvailableDescription": "Noltoの組織を探すには、しばらくしてからもう一度ご確認ください。"
   },
@@ -951,8 +960,8 @@
   },
   "companyForm": {
     "basicInfo": "基本情報",
-    "basicInfoDesc": "組織に関する主要な詳細を入力してください",
-    "companyName": "組織名",
+    "basicInfoDesc": "どのような組織で、何をしているのかを伝えましょう。",
+    "companyName": "企業・団体名",
     "companyUrl": "Nolto ウェブアドレス",
     "available": "利用可能",
     "taken": "使用済み",
@@ -972,13 +981,16 @@
     "foundedYear": "設立年",
     "nameTooShort": "組織名を2文字以上で入力してください。",
     "nameTooLong": "名前は100文字以下である必要があります。",
-    "urlTooShort": "アドレスは2文字以上である必要があります。",
+    "urlTooShort": "アドレスは3文字以上で入力してください。",
     "urlTooLong": "アドレスは50文字以下である必要があります。",
-    "urlCharacters": "小文字 (a–z)、数字、ハイフンを使用してください。",
+    "urlCharacters": "小文字の英字（a–z）、数字、ハイフンを使用し、先頭と末尾は英字か数字にしてください。",
     "taglineTooLong": "説明は140文字以下である必要があります。",
     "invalidWebsite": "https://example.com のような有効なウェブアドレスを入力してください。",
     "organisationType": "組織の種類",
-    "selectOrgType": "組織の種類を選択"
+    "selectOrgType": "組織の種類を選択",
+    "httpsRequired": "https://で始まるウェブアドレスを入力してください。",
+    "maxCharacters": "{{max}}文字以内で入力してください。",
+    "validYear": "{{min}}年から{{max}}年の間で入力してください。"
   },
   "companyPost": {
     "deleteTitle": "投稿を削除しますか？",
@@ -1051,7 +1063,7 @@
     "comments": "コメント",
     "noSavedItems": "まだ保存されたアイテムはありません",
     "noSavedItemsAll": "求人、記事、イベント、投稿、コメントを保存して、後でここで表示します",
-    "noSavedItemsType": "まだ{{type}}は保存していません。ブックマークアイコンを探してアイテムを保存してください。",
+    "noSavedItemsType": "このカテゴリーにはまだ保存した項目がありません。ブックマークアイコンで後から見たい内容を保存できます。",
     "browseFeed": "フィードを閲覧",
     "browseJobs": "求人を閲覧",
     "browseArticles": "記事を閲覧",
@@ -1143,7 +1155,7 @@
     "shareEvent": "イベントを共有",
     "editEvent": "イベントを編集",
     "deleteEvent": "イベントを削除",
-    "deleteConfirmTitle": "よろしいですか？",
+    "deleteConfirmTitle": "このイベントを削除しますか？",
     "deleteConfirmDescription": "この操作は元に戻せません。イベントとその関連する全ての出欠確認が完全に削除されます。",
     "linkCopied": "イベントリンクをクリップボードにコピーしました！",
     "mustBeLoggedIn": "出欠確認をするにはログインが必要です",
@@ -1222,7 +1234,7 @@
     "companyValidation": "組織名は必須です",
     "locationValidation": "勤務地は必須です",
     "descriptionValidation": "説明は20文字以上である必要があります",
-    "salaryValidation": "最低給与は最高給与より低い必要があります"
+    "salaryValidation": "給与の下限は上限以下にしてください。"
   },
   "eventForm": {
     "eventDetails": "イベント詳細",
@@ -1375,8 +1387,8 @@
     "contactSupport": "サポートに連絡",
     "loginSuccess": "正常に確認されました！",
     "invalidCode": "無効なコードです。もう一度お試しください。",
-    "recoveryTitle": "アカウント回復をリクエスト",
-    "recoveryDesc": "認証アプリへのアクセスを失いましたか？連絡先をお知らせいただければ、管理者がアクセス回復をお手伝いします。",
+    "recoveryTitle": "アカウントの復旧を依頼",
+    "recoveryDesc": "認証アプリを使えなくなった場合は、連絡先をお知らせください。管理者がアカウントへのアクセス復旧をお手伝いします。",
     "recoveryEmail": "あなたのメールアドレス",
     "recoveryUsername": "ユーザー名（任意）",
     "recoveryMessage": "追加情報（任意）",
@@ -1384,17 +1396,17 @@
     "recoverySend": "リクエストを送信",
     "recoverySending": "送信中…",
     "recoverySent": "リクエストを受信しました",
-    "recoverySubmittedDesc": "管理者があなたのリクエストを確認し、まもなく登録されているメールアドレスにご連絡いたします。",
+    "recoverySubmittedDesc": "管理者がリクエストを確認し、アカウントに登録されたメールアドレスに結果をお知らせします。",
     "recoveryError": "リクエストを送信できませんでした。しばらくしてからもう一度お試しください。",
-    "recoveryQueueTitle": "MFA回復リクエスト",
-    "recoveryQueueDesc": "二段階認証回復リクエストを確認・管理します。",
+    "recoveryQueueTitle": "二要素認証の復旧依頼",
+    "recoveryQueueDesc": "二要素認証の復旧依頼を確認・管理します。",
     "recoveryNoRequests": "保留中のリクエストはありません。",
-    "recoveryIssueLink": "回復リンクを送信",
+    "recoveryIssueLink": "復旧用リンクを送信",
     "recoveryReject": "拒否",
-    "recoveryConfirmTitle": "回復リンクを送信しますか？",
-    "recoveryConfirmDesc": "リンクはフォームに入力されたものではなく、アカウントの**登録済みメールアドレス**に送信されます。ユーザーは回復を完了するためにパスワードでサインインする必要があります。リンクは30分間有効です。",
+    "recoveryConfirmTitle": "復旧用リンクを送信しますか？",
+    "recoveryConfirmDesc": "リンクはフォームに入力されたアドレスではなく、アカウントに登録されたメールアドレスに送信されます。復旧を完了するには、本人がパスワードでログインする必要があります。リンクの有効期限は30分です。",
     "recoveryConfirmSend": "はい、リンクを送信",
-    "recoveryLinkSent": "回復リンクがアカウント所有者に送信されました。",
+    "recoveryLinkSent": "アカウントの所有者に復旧用リンクを送信しました。",
     "recoveryLinkError": "リンクを送信できませんでした。",
     "recoveryRejected": "リクエストが拒否されました。",
     "recoveryStatusPending": "保留中",
@@ -1406,9 +1418,9 @@
     "recoveryEmailMatch": "フォームと一致",
     "recoveryEmailMismatch": "フォームと一致しません",
     "recoveryNoAttemptedLogin": "サイレントログイン認証情報がキャプチャされていません（事前のログイン試行なしでフォームが開かれました）。",
-    "recoveryPageTitle": "二段階認証を回復",
-    "recoveryPageDescLoggedOut": "回復を完了するには、パスワードでサインインしてください。",
-    "recoveryPageProcessing": "回復を確認中…",
+    "recoveryPageTitle": "二要素認証を復旧",
+    "recoveryPageDescLoggedOut": "復旧を完了するには、パスワードでログインしてください。",
+    "recoveryPageProcessing": "復旧手続きを確認中…",
     "recoveryPageSuccess": "二段階認証をリセットしました",
     "recoveryPageSuccessDesc": "これでコードなしでサインインできます。すぐに2段階認証を再有効化することをお勧めします。",
     "recoveryPageInvalid": "リンクが無効であるか、期限が切れています。",
@@ -1424,7 +1436,7 @@
     "posting": "投稿中...",
     "failed": "返信の投稿に失敗しました",
     "emptyError": "返信は空にできません",
-    "tooLongError": "返信は{{max}}文字未満である必要があります",
+    "tooLongError": "返信は{{max}}文字以内で入力してください。",
     "charactersRemaining": "残り文字数"
   },
   "commentEdit": {
@@ -1588,7 +1600,7 @@
     "companyRequired": "組織名は必須です",
     "locationRequired": "勤務地は必須です",
     "descriptionValidation": "説明は20文字以上である必要があります",
-    "salaryValidation": "最低給与は最高給与より低い必要があります",
+    "salaryValidation": "給与の下限は上限以下にしてください。",
     "linkToCompany": "組織ページへのリンク",
     "selectCompany": "組織ページを選択（任意）",
     "linkDescription": "この求人情報を、あなたが管理する組織ページにリンクします。",
@@ -1650,11 +1662,11 @@
   "articleReactions": {
     "reactions": "リアクション",
     "signInToReact": "記事にリアクションするにはサインインしてください",
-    "love": "いいね",
+    "love": "気に入った",
     "celebrate": "お祝い",
     "support": "応援",
     "empathy": "共感",
-    "insightful": "洞察"
+    "insightful": "参考になった"
   },
   "commentPreview": {
     "signInToComment": "コメントするにはサインインしてください",
@@ -1956,8 +1968,8 @@
     "jobs": "求人",
     "articles": "記事",
     "events": "イベント",
-    "noResults": "検索結果なし:",
-    "advancedSearch": "詳細検索"
+    "advancedSearch": "詳細検索",
+    "noResultsFor": "「{{query}}」に一致する結果はありません"
   },
   "toasts": {
     "connectionRequestSent": "つながり申請を送信しました",
@@ -2043,9 +2055,8 @@
     "noConnectionsYet": "まだつながりがありません",
     "viewAllConnections": "すべてのつながりを見る",
     "followForArticles": "記事をフォロー",
-    "followForArticlesDesc": "新しい記事が公開された際に通知を受け取ります",
-    "followForArticlesDescSuffix": "が新しい記事を公開しました",
-    "unknownUser": "不明なユーザー"
+    "unknownUser": "不明なユーザー",
+    "followArticleUpdates": "{{name}}さんが記事を公開すると通知を受け取れます。"
   },
   "messagesPage": {
     "title": "メッセージ",
@@ -2147,7 +2158,6 @@
     "edit": "{{name}}を編集",
     "unavailablePerson": "プロフィールを利用できません",
     "unavailableCompany": "組織を利用できません",
-    "peopleCount": "{{count}}人",
     "saveError": "このフィードを読み込んだり保存したりできませんでした。選択内容は保持されています。もう一度お試しください。",
     "emptyTitle": "表示する投稿がありません",
     "emptyDescription": "現在、一致する投稿はありません。フィードの設定を変更するか、フォローする人を増やしてください。",
@@ -2156,7 +2166,9 @@
     "exploreNolto": "Noltoを探索する",
     "findPeople": "人を探す",
     "followingEmptyTitle": "あなたのフィードはここから始まります",
-    "followingEmptyDescription": "あなたの投稿やフォローしている人の投稿がここに表示されます。Noltoを探索するか、フォローする人を探してください。"
+    "followingEmptyDescription": "あなたの投稿やフォローしている人の投稿がここに表示されます。Noltoを探索するか、フォローする人を探してください。",
+    "peopleCount_one": "{{count}}人",
+    "peopleCount_other": "{{count}}人"
   },
   "profileInline": {
     "hint": "変更したい箇所をクリックしてください。変更は保存時に公開されます。",
@@ -2884,7 +2896,6 @@
     },
     "notifications": {
       "dinaAviseringarPaNolto": "Noltoでの通知",
-      "olasta": "未読)",
       "markeraAllaSomLasta": "すべて既読にする",
       "olasta2": "未読",
       "ingaOlastaAviseringar": "未読の通知はありません",
@@ -2892,7 +2903,8 @@
       "duArHeltIkapp": "すべて確認済みです！",
       "narDuFarAviseringar": "通知を受け取ると、ここに表示されます",
       "aviseringar": "通知",
-      "alla": "すべて"
+      "alla": "すべて",
+      "unreadCount": "未読：{{total}}"
     },
     "messageConversation": {
       "kundeInteSkickaMeddelande": "メッセージを送信できませんでした",
@@ -2918,24 +2930,24 @@
     },
     "connectedApps": {
       "harKanDuAterkalla": "ここで、外部アプリのNoltoアカウントへのアクセスを取り消すことができます。アプリを再度使用するには、再接続する必要があります。",
-      "hamtarAnslutningar": "接続を取得中…",
-      "duHarIngaGodkanda": "承認済みのアプリ接続はありません。",
-      "anslutningArSenastGodkand": "接続。最終承認日",
+      "hamtarAnslutningar": "連携中のアプリを確認中…",
+      "duHarIngaGodkanda": "アクセスを許可したアプリはありません。",
       "aterkallar": "取り消し中…",
       "aterkallaAtkomst": "アクセスを取り消す",
       "omMastodonAppar": "Mastodonアプリについて",
-      "anslutnaAppar": "接続済みアプリ"
+      "anslutnaAppar": "連携中のアプリ",
+      "grantSummary": "接続数：{{total}}。最終承認日：{{date}}。",
+      "revokeFailed": "アクセス権を取り消せませんでした。もう一度お試しください。"
     },
     "sessionExpiryWarning": {
       "dinSessionHarGatt": "セッションの有効期限が切れました。再度ログインしてください。",
       "sessionenHarForlangts": "セッションが延長されました",
       "kundeInteForlangaSessionen": "セッションを延長できませんでした。再度ログインしてください。",
       "sessionenGarUtSnart": "セッションの有効期限がまもなく切れます",
-      "dinSessionGarUt": "セッションの有効期限は残り",
-      "villDuForlangaSessionen": "です。セッションを延長しますか？",
       "avfarda": "閉じる",
       "forlanger": "延長中...",
-      "forlangSession": "セッションを延長"
+      "forlangSession": "セッションを延長",
+      "expiryMessage": "{{time}}後にログアウトします。ログイン状態を維持しますか？"
     },
     "userLookup": {
       "anvandaruppslag": "ユーザー検索",
@@ -3096,7 +3108,7 @@
       "expiredEntries": "期限切れのエントリ",
       "totalHits": "合計ヒット数",
       "avgHitsEntry": "平均ヒット数/エントリ",
-      "preWarmPopularActors": "人気のあるアクターを事前ウォームアップ",
+      "preWarmPopularActors": "よく参照されるアカウントをキャッシュに読み込む",
       "remoteInstances": "リモートインスタンス",
       "noInstanceDataYet": "インスタンスデータはまだありません",
       "req24h": "リクエスト/24時間",
@@ -3119,7 +3131,7 @@
     "profileEdit": {
       "hanteraVilkaExternaAppar": "Noltoアカウントを使用できる外部アプリを管理します。",
       "hanteraAppatkomst": "アプリのアクセスを管理",
-      "anslutnaAppar": "接続済みアプリ"
+      "anslutnaAppar": "連携中のアプリ"
     },
     "userBanDialog": {
       "blockeraAnvandare": "アカウントを利用停止",
@@ -3151,7 +3163,7 @@
       "kundeInteUppdateraDomanstatus": "ドメインのステータスを更新できませんでした",
       "domanBorttagen": "ドメインを削除しました",
       "kundeInteTaBort": "ドメインを削除できませんでした",
-      "provotid": "試用期間",
+      "provotid": "制限あり",
       "laggTillDomanmoderering": "ドメインモデレーションを追加",
       "domanvard": "ドメインホスト",
       "valjStatus": "ステータスを選択",
@@ -3162,10 +3174,7 @@
       "atgarder": "アクション",
       "ingaDomanmodereringsposternaHittades": "ドメインモデレーションのエントリーは見つかりませんでした",
       "redigeraDomanmoderering": "ドメインモデレーションを編集",
-      "uppdateraModereringsinstallningarFor": "モデレーション設定の更新:",
       "bekraftaBorttagning": "削除の確認",
-      "arDuSakerPa": "本当に削除しますか？",
-      "franModerering": "モデレーションから削除しますか？",
       "uppdateringMisslyckades": "更新に失敗しました",
       "ettFelUppstodVid": "更新中にエラーが発生しました",
       "borttagningMisslyckades": "削除に失敗しました",
@@ -3187,11 +3196,10 @@
       "anmaltInnehallSomHar": "削除された報告済みのコンテンツ",
       "atkomstenLoggasTextKan": "アクセスはログに記録されます。報告が削除前に行われ、ケースがまだ開いている場合、テキストはレビュー可能です。画像とプライベートメッセージはここには表示されません。",
       "textenArInteTillganglig": "テキストは利用できません。ケースがクローズされたか、保存期間が終了したか、アクセスが拒否された可能性があります。",
-      "granskningenForlangerInteLagringstiden": "レビューによって保存期間が延長されることはありません。",
       "hamtarTexten": "テキストを取得中…",
       "inlaggetInnehallerIngenGranskbar": "この投稿にはレビュー可能なテキストが含まれていません。",
       "granskaRaderadText": "削除されたテキストをレビュー",
-      "raderasPermanent": "完全に削除されます"
+      "purgeNotice": "{{date}}に完全に削除されます。内容を審査しても保存期間は延長されません。"
     },
     "actorModeration": {
       "aktorBlockerad": "アクターがブロックされました",
@@ -3200,7 +3208,7 @@
       "ettFelIntraffade": "エラーが発生しました",
       "aktorBorttagen": "アクターを削除しました",
       "kundeInteTaBort": "アクターを削除できませんでした",
-      "provotid": "試用期間",
+      "provotid": "制限あり",
       "laggTillAktorblockering": "アクターのブロックを追加",
       "aktorUrl": "アクターURL",
       "valjStatus": "ステータスを選択",
@@ -3211,12 +3219,9 @@
       "atgarder": "アクション",
       "ingaAktorblockeringarHittades": "アクターのブロックは見つかりませんでした",
       "redigeraAktorblockering": "アクターのブロックを編集",
-      "uppdateraModereringsinstallningarFor": "モデレーション設定の更新:",
       "avbryt": "キャンセル",
       "sparaAndringar": "変更を保存",
       "bekraftaBorttagning": "削除の確認",
-      "arDuSakerPa": "本当に削除しますか？",
-      "franModereringen": "モデレーションから削除しますか？",
       "taBort": "削除",
       "uppdateringMisslyckades": "更新に失敗しました",
       "borttagningMisslyckades": "削除に失敗しました",
@@ -3236,7 +3241,7 @@
       "duKanNarSom": "アプリへのアクセスはいつでも以下で取り消すことができます。その場合、アプリは再接続して再認証する必要があります。",
       "egnaNoltoKontonI": "BlueskyアプリでのネイティブNoltoアカウントはまだ利用できません。ただし、既存のBlueskyアカウントを使用してNoltoにログインすることは可能です。",
       "noltoIEnMastodon": "MastodonアプリでのNolto",
-      "hanteraAnslutnaAppar": "接続されたアプリを管理"
+      "hanteraAnslutnaAppar": "連携中のアプリを管理"
     },
     "integrations": {
       "hamtaFranNoltoFor": "Noltoから取得 — 採用担当者向け",
@@ -3272,15 +3277,11 @@
       "atgarder": "アクション",
       "tillat": "許可",
       "tillatInstans": "このサーバーを許可しますか？",
-      "dettaTarBortAlla": "これにより、すべての制限が削除されます。",
       "avbryt": "キャンセル",
       "bekrafta": "確認",
       "begransa": "制限",
       "begransaInstans": "このサーバーを制限しますか？",
-      "dettaSatter": "これにより、",
-      "underBegransningMedReducerad": "は機能が制限された状態で制限下に置かれます。",
       "angeEnAnledningFor": "制限の理由を提供してください",
-      "dettaBlockerarAllTrafik": "これにより、からのすべてのトラフィックがブロックされます。",
       "angeEnAnledningFor2": "ブロックの理由を提供してください",
       "ingaInstanserHittadesSom": "閾値を超過するインスタンスは見つかりませんでした。",
       "uppdatera": "更新",
@@ -3288,7 +3289,11 @@
       "status": "ステータス",
       "anledning": "理由",
       "blockera": "ブロック",
-      "blockeraInstans": "このサーバーをブロックしますか？"
+      "blockeraInstans": "このサーバーをブロックしますか？",
+      "rateLimitReason": "サーバーのリクエスト頻度を確認したうえで変更しました。",
+      "allowDescription": "{{server}}のすべての制限を解除します。",
+      "restrictDescription": "{{server}}の機能を制限します。",
+      "blockDescription": "{{server}}からのすべての通信をブロックします。"
     },
     "quoteRepostDialog": {
       "loggaInForAtt": "再投稿するにはログインしてください",
@@ -3363,7 +3368,7 @@
       "tips": "ヒント:"
     },
     "postEditDialog": {
-      "omrostningsalternativKanInteRedigeras": "投票の整合性を保つため、投票オプションは作成後に編集できません。質問テキストのみ編集可能です。",
+      "omrostningsalternativKanInteRedigeras": "投票済みの票が同じ選択肢を指すように、公開後は選択肢を変更できません。上の質問文は編集できます。",
       "avbryt": "キャンセル",
       "redigeraOmrostning": "投票を編集",
       "redigeraInlagg": "投稿を編集",
@@ -3393,7 +3398,9 @@
       "bekraftaLosenord": "パスワードを確認",
       "andraLosenord": "パスワードを変更",
       "verifierarInloggning": "ログインを確認中...",
-      "sparar": "保存中..."
+      "sparar": "保存中...",
+      "passwordMismatch": "同じパスワードを入力してください。",
+      "updateFailed": "パスワードを変更できませんでした。12文字以上であることを確認してください。リンクの有効期限が切れている場合は、新しいリンクをリクエストしてください。"
     },
     "socialCallback": {
       "loggaInPaNolto": "Noltoにログイン",
@@ -3421,7 +3428,7 @@
       "doljDetaljer": "詳細を非表示",
       "visaDetaljer": "詳細を表示",
       "okant": "不明",
-      "csvFilerHittade": "CSVファイルが見つかりました (",
+      "csvFilerHittade": "見つかったCSVファイル：{{total}}",
       "profilkolumner": "プロフィール列:",
       "positionskolumner": "役職列:",
       "utbildningskolumner": "学歴列:",
@@ -3438,13 +3445,13 @@
       "bio": "自己紹介",
       "plats": "場所",
       "importeraArbetslivserfarenhet": "職務経歴をインポート",
-      "hittade": "見つかりました",
       "importeraUtbildning": "学歴をインポート",
       "importeraKompetenser": "スキルをインポート",
       "tillbaka": "戻る",
       "importerar": "インポート中…",
       "ejAngivet": "未指定",
-      "nuvarande": "現在"
+      "nuvarande": "現在",
+      "foundTotal": "見つかった項目：{{total}}"
     },
     "companyCard": {
       "foljare": "フォロワー"
@@ -3498,24 +3505,24 @@
       "tillbakaTillNolto": "Noltoに戻る",
       "aterstaller": "リセット中…",
       "kontrollerarInloggning": "ログインを確認中…",
-      "loggaIn": "ログイン"
+      "loggaIn": "ログイン",
+      "recoveryFailed": "復旧を完了できませんでした。リンクの期限が切れているか、使用済みの可能性があります。新しいリンクについてサポートにお問い合わせください。"
     },
     "instructionsStep": {
       "oppnaLinkedinsDataexport": "LinkedInのデータエクスポートを開く",
       "eller": "または",
       "jagHarRedanMin": "すでにエクスポートがあります",
       "dinIntegritetSkyddas": "お客様のプライバシーは保護されています",
-      "dataBearbetasIDin": "データはブラウザで処理されます。お客様のファイルがサーバーに保存または送信されることはありません。",
+      "dataBearbetasIDin": "ZIPファイルはブラウザー内で処理され、サーバーには送信されません。インポートすると、選択したプロフィール情報がNoltoに保存されます。",
       "klickaPaKnappenNedan": "以下のボタンをクリックして、LinkedInのダウンロード設定に移動してください。",
       "begarDinData": "データをリクエスト",
       "valjDownloadLargerData": "「Download larger data archive」を選択し、エクスポートしたいデータにチェックを入れてください。",
       "vantaPaEPost": "メールを待つ",
-      "linkedinSkickarEttMejl": "LinkedInからデータ準備完了のメールが届きます。通常は数分ですが、最大24時間かかる場合があります。",
+      "linkedinSkickarEttMejl": "エクスポートの準備ができると、LinkedInからメールが届きます。",
       "laddaNerZipFilen": "LinkedInからZIPファイルをダウンロードして、ここにアップロードしてください。",
       "laddaUppZipFilen": "ZIPファイルをアップロード"
     },
     "confirmStep": {
-      "objektImporteradesTillDin": "件のアイテムがプロフィールにインポートされました",
       "slutfordMedProblem": "問題が発生したため完了",
       "nagraFelUppstod": "いくつかのエラーが発生しました:",
       "visaProfil": "プロフィールを表示",
@@ -3526,11 +3533,16 @@
       "arbetslivserfarenhet": "職務経歴",
       "utbildning": "学歴",
       "kompetenser": "スキル",
-      "artiklar": "記事"
+      "artiklar": "記事",
+      "importedTotal": "インポートした項目：{{total}}",
+      "updated": "更新済み",
+      "skipped": "スキップしました",
+      "addedTotal": "追加した項目：{{total}}",
+      "draftTotal": "下書き：{{total}}"
     },
     "authorizeApp": {
       "oppnaAppanslutningenIEtt": "Noltoの別のウィンドウでアプリ接続を開きます。",
-      "villDuAnslutaDen": "このアプリを接続しますか？",
+      "villDuAnslutaDen": "このアプリとの連携を許可しますか？",
       "kontrollerarAppensForfragan": "アプリのリクエストを確認中…",
       "appensNamnOchWebbplats": "アプリの名前とウェブサイトは開発者によって提供されており、Noltoによって検証されたものではありません。ご自身で接続を選択したアプリのみを承認してください。",
       "appenBegarAttFa": "アプリは以下の許可をリクエストしています:",
@@ -3542,10 +3554,11 @@
       "kundeInteLasaDitt": "アカウントを読み取れませんでした。ページを再読み込みして再試行してください。",
       "avbryt": "キャンセル",
       "dittNoltoKonto": "あなたのNoltoアカウント",
-      "godkannOchAnslut": "承認して接続",
+      "godkannOchAnslut": "連携を許可",
       "anslutEnAppNolto": "アプリを接続 · Nolto",
       "kontrollerarInloggningen": "ログインを確認中…",
-      "ansluter": "接続中…"
+      "ansluter": "接続中…",
+      "storageRequired": "ログインを完了するには、ブラウザーでセッションストレージを許可する必要があります。普段お使いのブラウザーでNoltoを開き、もう一度お試しください。"
     },
     "companyForm": {
       "viByggerFramtidenFor": "私たちは未来を築きます...",
@@ -3558,7 +3571,7 @@
       "size10015000": "従業員数1,001～5,000人",
       "size500110000": "5,001～10,000人",
       "size10001Anstallda": "10,001人以上",
-      "organisationsnamn": "組織名",
+      "organisationsnamn": "企業・団体名",
       "noltoSocialOrganisation": "nolto.social/organisation/",
       "organisationsnamn2": "組織名",
       "stockholmSverige": "ストックホルム、スウェーデン"
@@ -3579,7 +3592,8 @@
       "angeEPostadressenFor": "Noltoアカウントのメールアドレスを入力してください。Mastodon経由でログインしている場合は、Mastodonサーバーでパスワードをリセットしてください。",
       "skickaAterstallningslank": "リセットリンクを送信",
       "ePostadress": "メールアドレス",
-      "skickar": "送信中…"
+      "skickar": "送信中…",
+      "requestFailed": "パスワードの再設定をリクエストできませんでした。しばらくしてからもう一度お試しください。"
     },
     "reportDialog": {
       "valjEnAnledningFor": "報告の理由を選択してください",
@@ -3794,8 +3808,8 @@
       "refresh": "更新"
     },
     "fediverseBadge": {
-      "verifiedVia": "認証元",
-      "thisUserSIdentity": "このユーザーのIDは、彼らのFediverseアカウントで認証されています。"
+      "accountOn": "{{server}}のアカウント",
+      "accountServer": "このFediverseアカウントは{{server}}で運用されています。"
     },
     "quoteCardGenerator": {
       "imageDownloaded": "画像をダウンロードしました！",
@@ -3895,8 +3909,8 @@
     "repliedPost": "{{name}}があなたの投稿に返信しました",
     "repliedComment": "{{name}}があなたのコメントに返信しました",
     "mention": "{{name}}があなたに言及しました",
-    "recommendationRequest": "{{name}}が推薦状を依頼しました",
-    "recommendationReceived": "{{name}}があなたの推薦状を作成しました",
+    "recommendationRequest": "{{name}}さんから推薦文の依頼が届きました",
+    "recommendationReceived": "{{name}}さんがあなたへの推薦文を書きました",
     "reactedMessage": "{{name}}があなたのメッセージに{{emoji}}でリアクションしました",
     "articlePublished": "{{name}}が新しい記事を公開しました",
     "fallback": "新しい通知"
@@ -4056,5 +4070,34 @@
         ]
       ]
     }
+  },
+  "companyTypes": {
+    "groups": {
+      "business": "企業・事業者",
+      "public": "公共機関",
+      "educationAndCivilSociety": "教育・非営利団体",
+      "other": "その他"
+    },
+    "privateCompany": "企業",
+    "startup": "スタートアップ",
+    "limitedCompany": "株式会社などの法人企業",
+    "listedCompany": "上場企業",
+    "soleTrader": "個人事業主",
+    "partnership": "合名会社",
+    "limitedPartnership": "合資会社",
+    "cooperative": "協同組合",
+    "consultancy": "コンサルティング会社",
+    "municipality": "基礎自治体",
+    "region": "広域自治体",
+    "governmentAgency": "政府機関",
+    "stateOwnedCompany": "国有企業",
+    "municipalCompany": "自治体出資企業",
+    "publicPartnership": "公共機関の連合組織",
+    "university": "大学・高等教育機関",
+    "adultEducation": "成人教育機関",
+    "nonprofit": "非営利団体",
+    "foundation": "財団",
+    "other": "その他の組織",
+    "help": "活動内容に最も合う種類を選んでください。"
   }
 }
