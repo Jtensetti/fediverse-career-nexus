@@ -39,6 +39,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 24
+          cache: npm
+      - name: Install locked application and Deno dependencies
+        run: npm ci
       - name: Prepare unlinked copy and block container egress before startup
         shell: bash
         run: |
@@ -165,7 +168,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes deno@2.9.6 run --config deno.json \
+          npx --no-install deno run --config deno.json \
             --allow-read="$RUNNER_TEMP/nolto-local-status.json" \
             --allow-env=NOLTO_FRESH_INSTALL_TEST,SITE_URL,EMAIL_LINK_ORIGINS,FEDERATION_DOMAIN,SUPABASE_URL,SUPABASE_ANON_KEY,SUPABASE_SERVICE_ROLE_KEY \
             --allow-net=127.0.0.1:54321,localhost:54321 \
