@@ -49,9 +49,11 @@ jobs:
           sudo apt-get install -yq postgresql-17
           sudo cp scripts/test-support/fresh-install/extensions/* /usr/share/postgresql/17/extension/
           sudo pg_ctlcluster 17 main start
-          sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'ci-throwaway'"
+          port=$(pg_lsclusters -h | awk '$1=="17"{print $3}')
+          sudo -u postgres psql -p "$port" -c "ALTER USER postgres PASSWORD 'ci-throwaway'"
+          echo "PGPORT=$port" >> "$GITHUB_ENV"
       - name: Fresh-install replay
-        env: { PGHOST: 127.0.0.1, PGPORT: '5432', PGUSER: postgres, PGPASSWORD: ci-throwaway }
+        env: { PGHOST: 127.0.0.1, PGUSER: postgres, PGPASSWORD: ci-throwaway }
         run: node scripts/test-support/run-fresh-install.mjs
   container:
     runs-on: ubuntu-latest
