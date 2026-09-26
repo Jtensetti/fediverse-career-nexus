@@ -53,8 +53,9 @@ jobs:
           sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
           sudo apt-get install -yq postgresql-17
           sudo cp scripts/test-support/fresh-install/extensions/* /usr/share/postgresql/17/extension/
-          # Installing server binaries does not create a cluster on hosted runners.
-          sudo pg_createcluster --port 55432 --start 17 nolto-ci
+          # A test process, not a persistent systemd service. No existing cluster is touched.
+          sudo pg_createcluster --port 55432 17 noltoci
+          sudo pg_ctlcluster --skip-systemctl-redirect 17 noltoci start
           sudo -u postgres psql -p 55432 -v ON_ERROR_STOP=1 -c "ALTER USER postgres PASSWORD 'ci-throwaway'"
       - name: Fresh-install replay
         env:
@@ -66,7 +67,9 @@ jobs:
         run: node scripts/test-support/run-fresh-install.mjs
       - name: Remove only the disposable test cluster
         if: always()
-        run: sudo pg_dropcluster --stop 17 nolto-ci || true
+        run: |
+          sudo pg_ctlcluster --skip-systemctl-redirect 17 noltoci stop || true
+          sudo pg_dropcluster 17 noltoci || true
   container:
     runs-on: ubuntu-latest
     timeout-minutes: 15
