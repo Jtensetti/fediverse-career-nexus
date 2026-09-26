@@ -72,7 +72,7 @@ export default function InlineReplyComposer({
     }
 
     if (trimmedContent.length > MAX_REPLY_LENGTH) {
-      toast.error(t("comments.replyTooLong", `Reply must be less than ${MAX_REPLY_LENGTH} characters`));
+      toast.error(t("comments.replyTooLong", { max: MAX_REPLY_LENGTH }));
       return;
     }
 

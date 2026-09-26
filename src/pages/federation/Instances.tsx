@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/layout/Navbar";
@@ -26,6 +27,7 @@ interface FederatedInstance {
 }
 
 const Instances = () => {
+  const { t } = useTranslation();
   const [instances, setInstances] = useState<FederatedInstance[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,11 +75,11 @@ const Instances = () => {
   );
 
   const getInstanceCategory = (host: string): string => {
-    if (host.includes("mastodon")) return "Allmän";
-    if (host.includes("fosstodon") || host.includes("tech")) return "Teknik";
-    if (host.includes("art") || host.includes("creative")) return "Kreativ";
-    if (host.includes("hachyderm")) return "Teknik";
-    return "Allmän";
+    if (host.includes("mastodon")) return t("ui.instances.categoryGeneral");
+    if (host.includes("fosstodon") || host.includes("tech")) return t("ui.instances.categoryTechnology");
+    if (host.includes("art") || host.includes("creative")) return t("ui.instances.categoryCreative");
+    if (host.includes("hachyderm")) return t("ui.instances.categoryTechnology");
+    return t("ui.instances.categoryGeneral");
   };
 
   return (
@@ -105,7 +107,7 @@ const Instances = () => {
               <div className="flex flex-wrap justify-center gap-6 text-sm">
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <Server className="h-4 w-4" />
-                  <span>{instances.length}{' '}{tx("ui.instances.anslutnaInstanser2")}</span>
+                  <span>{t("ui.instances.serverCount", { count: instances.length })}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-primary-foreground/10 px-4 py-2 rounded-full">
                   <Shield className="h-4 w-4" />
@@ -201,7 +203,7 @@ const Instances = () => {
                         <div className="space-y-3">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Users className="h-4 w-4" />
-                            <span>{instance.actor_count} {instance.actor_count === 1 ? 'användare' : 'användare'}{' '}{tx("ui.instances.anslutna")}</span>
+                            <span>{t("ui.instances.accountCount", { count: instance.actor_count })}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Shield className="h-4 w-4" />

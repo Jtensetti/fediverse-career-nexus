@@ -16,7 +16,7 @@ Set up a separate development backend using the instructions in [README.md](READ
 
 ## Conventions
 
-Use existing feature modules before adding a new abstraction or dependency. Keep TypeScript strict; handle absent data instead of casting it away. Translate user-facing text through the existing Swedish/English language files. Use the shared renderer for untrusted post text and the shared notification component for status messages.
+Use existing feature modules before adding a new abstraction or dependency. Keep TypeScript strict; handle absent data instead of casting it away. Translate user-facing text through all eight language files, following [the localization guide](docs/localization.md). Translate the function in context, including its action, pending state and result. Use the shared renderer for untrusted post text and the shared notification component for status messages.
 
 Authorization belongs in database policies and server handlers. UI visibility is not authorization. Never derive administration from an email address, username or user-editable metadata. See [SECURITY.md](SECURITY.md) before changing grants, policies, authentication, media or encryption.
 

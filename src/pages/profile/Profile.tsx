@@ -340,7 +340,7 @@ const ProfilePage = () => {
       {/* SEO Meta Tags for social sharing */}
       <SEOHead
         title={`${profile.displayName} (@${profile.username})`}
-        description={profile.headline || profile.bio || `${profile.displayName}s professionella profil på Nolto`}
+        description={profile.headline || profile.bio || t("profile.seoDescription", { name: profile.displayName })}
         image={profile.avatarUrl || "/og-image.png"}
         url={`${window.location.origin}/profile/${profile.username}`}
         type="profile"
@@ -397,7 +397,7 @@ const ProfilePage = () => {
           {!viewingOwnProfile && !isAuthenticated && (
             <Button size="sm" asChild>
               <Link to="/auth/signup">
-                <UserPlus className="h-4 w-4 mr-1" /> {t("profile.signUpToConnect", "Registrera dig för att ansluta")}
+                <UserPlus className="h-4 w-4 mr-1" /> {t("profile.signUpToConnect")}
               </Link>
             </Button>
           )}
@@ -557,7 +557,7 @@ const ProfilePage = () => {
                   )}
                   <ShareButton
                     url={`${window.location.origin}/profile/${profile.username}`}
-                    title={`${profile.displayName} på Nolto`}
+                    title={t("profile.shareTitle", { name: profile.displayName })}
                     description={profile.headline || profile.bio || undefined}
                     variant="outline"
                     size="icon"
@@ -567,12 +567,12 @@ const ProfilePage = () => {
                 <>
                   <Button asChild>
                     <Link to="/auth/signup">
-                      <UserPlus className="h-4 w-4 mr-2" /> {t("profile.signUpToConnect", "Registrera dig för att ansluta")}
+                      <UserPlus className="h-4 w-4 mr-2" /> {t("profile.signUpToConnect")}
                     </Link>
                   </Button>
                   <ShareButton
                     url={`${window.location.origin}/profile/${profile.username}`}
-                    title={`${profile.displayName} på Nolto`}
+                    title={t("profile.shareTitle", { name: profile.displayName })}
                     description={profile.headline || profile.bio || undefined}
                     variant="outline"
                     size="icon"

@@ -1,6 +1,7 @@
 import { intlLocale } from "@/lib/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -22,13 +23,15 @@ import { useNavigate } from "react-router-dom";
 
 import { tx } from "@/i18n/tx";
 export default function DeleteAccountSection() {
+  const { t } = useTranslation();
   const [confirmText, setConfirmText] = useState("");
   const [understood, setUnderstood] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { signOut } = useAuth();
 
-  const canDelete = confirmText === "RADERA" && understood;
+  const confirmationWord = t("ui.deleteAccountSection.radera");
+  const canDelete = confirmText === confirmationWord && understood;
 
   const handleDelete = async () => {
     if (isDeleting || !canDelete) return;
@@ -36,10 +39,12 @@ export default function DeleteAccountSection() {
     const result = await deleteAccount();
 
     if (result.success) {
-      toast.success(`Kontot är dolt. Permanent radering sker efter 30 dagar${result.purgeAfter ? ", från " + new Date(result.purgeAfter).toLocaleDateString(intlLocale()) : ""}.`);
+      toast.success(result.purgeAfter
+        ? t("ui.deleteAccountSection.deletionScheduled", { date: new Date(result.purgeAfter).toLocaleDateString(intlLocale()) })
+        : t("ui.deleteAccountSection.deletionRequested"));
       navigate("/");
     } else {
-      toast.error(result.error || "Kunde inte radera kontot");
+      toast.error(result.error || t("ui.deleteAccountSection.deletionFailed"));
       setIsDeleting(false);
     }
   };
@@ -82,12 +87,12 @@ export default function DeleteAccountSection() {
 
         <div className="space-y-2">
           <label htmlFor="delete-confirmation" className="text-sm font-medium">
-            {tx("ui.deleteAccountSection.skriv")}{' '}<span className="font-mono bg-muted px-1 rounded">{tx("ui.deleteAccountSection.radera")}</span>{' '}{tx("ui.deleteAccountSection.forAttBekrafta")}
+            {t("ui.deleteAccountSection.confirmationPrompt", { word: confirmationWord })}
           </label>
           <Input id="delete-confirmation"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
-            placeholder={tx("ui.deleteAccountSection.radera")}
+            placeholder={confirmationWord}
             className="font-mono"
           />
         </div>
