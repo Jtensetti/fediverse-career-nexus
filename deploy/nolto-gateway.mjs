@@ -111,17 +111,16 @@ export async function ipGuard(request, env, url, now = Date.now()) {
   if (!env.GATEWAY_GUARD_SECRET || !ip || isFederationPath(url.pathname)) return null;
   const blocked = () => new Response('Access temporarily blocked', { status: 403, headers: { 'Cache-Control': 'no-store', 'Content-Type': 'text/plain; charset=utf-8' } });
   if (isHoneypotPath(url.pathname)) {
-    try { blockCache.set(ip, await guardCall(env, 'hit', ip, `honeypot ${url.pathname.slice(0, 60)}`)); } catch { /* fail open */ }
+    try { blockCache.set(ip, { until: await guardCall(env, 'hit', ip, `honeypot ${url.pathname.slice(0, 60)}`), checked: now }); } catch { /* fail open */ }
     return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
   }
   let entry = blockCache.get(ip);
-  if (entry === undefined || (typeof entry === 'object' && entry.checked < now - 60000)) {
+  if (entry === undefined || entry.checked < now - 60000) {
     try { entry = { until: await guardCall(env, 'check', ip), checked: now }; } catch { return null; }
     if (blockCache.size > 5000) blockCache.clear();
     blockCache.set(ip, entry);
   }
-  const until = typeof entry === 'number' ? entry : entry.until;
-  return until > now ? blocked() : null;
+  return entry.until > now ? blocked() : null;
 }
 export default {
   async fetch(request, env) {
