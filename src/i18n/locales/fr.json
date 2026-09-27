@@ -3927,6 +3927,28 @@
           ]
         ]
       }
+    },
+    "autoBlocks": {
+      "title": "Blocages automatiques",
+      "description": "Les pièges et la protection anti-spam bloquent temporairement des adresses IP et des serveurs.",
+      "ipTitle": "Adresses IP bloquées",
+      "ipHelp": "Adresses tombées dans un piège. Affichées uniquement sous forme d’empreinte abrégée. La fédération n’est jamais affectée.",
+      "serverTitle": "Serveurs bloqués automatiquement",
+      "serverHelp": "Serveurs ayant trop envoyé ou livré depuis des comptes bloqués. Les grands serveurs sont seulement signalés.",
+      "empty": "Aucun blocage pour le moment.",
+      "count": "Nombre : {{n}}",
+      "until": "Bloqué jusqu’au {{date}}",
+      "flagged": "Signalé",
+      "expired": "Expiré",
+      "lift": "Lever le blocage",
+      "liftTitle": "Lever ce blocage ?",
+      "liftIp": "L’adresse IP {{name}} retrouve immédiatement l’accès.",
+      "liftServer": "Le serveur {{name}} peut à nouveau livrer immédiatement. Pour un blocage permanent, utilisez le blocage de serveur.",
+      "cancel": "Annuler",
+      "lifted": "Le blocage a été levé.",
+      "liftFailed": "Le blocage n’a pas pu être levé. Réessayez.",
+      "loading": "Chargement des blocages…",
+      "loadFailed": "Les blocages n’ont pas pu être chargés."
     }
   },
   "notificationText": {

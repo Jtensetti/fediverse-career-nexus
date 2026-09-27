@@ -3927,6 +3927,28 @@
           ]
         ]
       }
+    },
+    "autoBlocks": {
+      "title": "Automatiska spärrar",
+      "description": "Fällor och spamskydd spärrar tillfälligt IP-adresser och servrar.",
+      "ipTitle": "Spärrade IP-adresser",
+      "ipHelp": "Adresser som gick i en honeypot. Visas endast som förkortat fingeravtryck. Federation påverkas aldrig.",
+      "serverTitle": "Automatiskt spärrade servrar",
+      "serverHelp": "Servrar som skickade för mycket eller levererade från blockerade konton. Stora servrar flaggas bara.",
+      "empty": "Inga spärrar just nu.",
+      "count": "Antal: {{n}}",
+      "until": "Spärrad till {{date}}",
+      "flagged": "Flaggad",
+      "expired": "Utgången",
+      "lift": "Häv spärr",
+      "liftTitle": "Häva spärren?",
+      "liftIp": "IP-adressen {{name}} får åtkomst igen direkt.",
+      "liftServer": "Servern {{name}} kan leverera igen direkt. För permanent blockering, använd serverblockeringen.",
+      "cancel": "Avbryt",
+      "lifted": "Spärren är hävd.",
+      "liftFailed": "Spärren kunde inte hävas. Försök igen.",
+      "loading": "Laddar spärrar…",
+      "loadFailed": "Spärrarna kunde inte laddas."
     }
   },
   "legalDocs": {

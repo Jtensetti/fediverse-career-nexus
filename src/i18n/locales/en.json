@@ -3927,6 +3927,28 @@
           ]
         ]
       }
+    },
+    "autoBlocks": {
+      "title": "Automatic blocks",
+      "description": "Traps and spam protection temporarily block IP addresses and servers.",
+      "ipTitle": "Blocked IP addresses",
+      "ipHelp": "Addresses that hit a honeypot. Shown only as a shortened fingerprint. Federation is never affected.",
+      "serverTitle": "Automatically blocked servers",
+      "serverHelp": "Servers that sent too much or delivered from blocked accounts. Large servers are only flagged.",
+      "empty": "No blocks right now.",
+      "count": "Count: {{n}}",
+      "until": "Blocked until {{date}}",
+      "flagged": "Flagged",
+      "expired": "Expired",
+      "lift": "Lift block",
+      "liftTitle": "Lift this block?",
+      "liftIp": "The IP address {{name}} regains access immediately.",
+      "liftServer": "The server {{name}} can deliver again immediately. For a permanent block, use server blocking.",
+      "cancel": "Cancel",
+      "lifted": "The block has been lifted.",
+      "liftFailed": "The block could not be lifted. Try again.",
+      "loading": "Loading blocks…",
+      "loadFailed": "The blocks could not be loaded."
     }
   },
   "notificationText": {

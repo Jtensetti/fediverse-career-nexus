@@ -40,7 +40,7 @@ function BlockTable({ rows, kind, onLift }: { rows: Row[]; kind: 'ip' | 'server'
           <li key={row.key} className="flex flex-wrap items-center justify-between gap-3 py-3">
             <div className="min-w-0">
               <p className="font-mono text-sm break-all">{row.label}</p>
-              <p className="text-xs text-muted-foreground">{row.reason} · {tx('ui.autoBlocks.count', { count: row.count })}</p>
+              <p className="text-xs text-muted-foreground">{row.reason} · {tx('ui.autoBlocks.count', { n: row.count })}</p>
               {row.until && active && <p className="text-xs text-muted-foreground">{tx('ui.autoBlocks.until', { date: fmt.format(new Date(row.until)) })}</p>}
             </div>
             <div className="flex items-center gap-2">
