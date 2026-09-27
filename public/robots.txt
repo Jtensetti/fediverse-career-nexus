@@ -1,10 +1,12 @@
 User-agent: Googlebot
 Allow: /
 Disallow: /functions/
+Disallow: /nolto-trap-7f3a/
 
 User-agent: Bingbot
 Allow: /
 Disallow: /functions/
+Disallow: /nolto-trap-7f3a/
 
 User-agent: Twitterbot
 Allow: /
@@ -17,6 +19,7 @@ Allow: /
 User-agent: *
 Allow: /
 Disallow: /functions/
+Disallow: /nolto-trap-7f3a/
 Disallow: /api/
 
 Sitemap: https://nolto.social/sitemap.xml
