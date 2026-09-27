@@ -1,4 +1,5 @@
-import { userHandler } from "../_shared/user-auth.ts";
+import { outboundBudget } from "../_shared/outbound-budget.ts";
+import { userHandler, requestBody } from "../_shared/user-auth.ts";
 import { serviceClient, jsonResponse, federationHeaders } from "../_shared/local-actor.ts";
 import { buildActorUrl, buildActivityId } from "../_shared/federation-urls.ts";
 import { fetchActorDocument, remoteFetch, readJson, remoteUrl } from "../_shared/remote-fetch.ts";
@@ -25,9 +26,11 @@ Deno.serve(userHandler(async (req) => {
   const db = serviceClient();
   const { data: { user }, error: authError } = await db.auth.getUser(token);
   if (authError || !user) return jsonResponse({ error: "Invalid session" }, 401);
+  await outboundBudget(db, "send-follow", user.id, 30);
+  const body = await requestBody(req, 4096);
   try {
-    const { localActorId, remoteActorUrl: requestedUrl, acct, action = "follow" } = await req.json();
-    if (!["follow", "unfollow"].includes(action)) return jsonResponse({ error: "Invalid action" }, 400);
+    const { localActorId, remoteActorUrl: requestedUrl, acct, action = "follow" } = body;
+    if (typeof action !== "string" || !["follow", "unfollow"].includes(action)) return jsonResponse({ error: "Invalid action" }, 400);
     const { data: actor, error } = await db.from("actors").select("id, preferred_username, moved_to")
       .eq("id", localActorId).eq("user_id", user.id).eq("is_remote", false).eq("status", "active").maybeSingle();
     if (error) throw error;
