@@ -24,6 +24,66 @@ function identityResponse(request, body, status, extra = {}) {
   });
 }
 const unavailable = () => new Response('Invalid gateway configuration', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+// Enforced on HTML from the existing website origin. Keep protocol responses
+// and managed authentication cookies intact. The hash is next-themes 0.3.0's
+// bootstrap with App.tsx's ThemeProvider props (covered by a regression test).
+export function websitePolicy(backend) {
+  let connect = "'self'";
+  try {
+    const origin = httpsOrigin(backend);
+    connect += ` ${origin.origin} ${origin.origin.replace('https:', 'wss:')}`;
+  } catch { /* No arbitrary source strings can enter a response header. */ }
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'sha256-eMuh8xiwcX72rRYNAGENurQBAcH7kLlAUQcoOri3BIo=' https://static.cloudflareinsights.com https://challenges.cloudflare.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' https: data: blob:",
+    "font-src 'self' data:",
+    `connect-src ${connect} https://cloudflareinsights.com`,
+    "media-src 'self' https: blob:",
+    // Event hosts are selected by users (YouTube/Jitsi/meeting providers).
+    "frame-src https:",
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    'upgrade-insecure-requests',
+  ].join('; ');
+}
+function hardenWebsite(upstream, env) {
+  if (!/^text\/html(?:;|$)/i.test(upstream.headers.get('content-type') || '')) return upstream;
+  const response = new Response(upstream.body, upstream);
+  // Append instead of weakening any independent policy supplied by the origin.
+  response.headers.append('Content-Security-Policy', websitePolicy(env.SUPABASE_ORIGIN));
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  return response;
+}
+async function realtimeResponse(request, env, url) {
+  if (url.pathname !== '/realtime/v1/websocket') return identityResponse(request, 'Not found', 404);
+  if (request.method !== 'GET') return identityResponse(request, 'Method not allowed', 405, { Allow: 'GET' });
+  if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') return identityResponse(request, 'WebSocket required', 426);
+  // Browser subscriptions are same-origin. Non-browser callers may omit Origin;
+  // upstream API keys/JWTs and subscription authorization still apply to both.
+  const origin = request.headers.get('origin');
+  if (origin && origin !== url.origin) return identityResponse(request, 'Forbidden origin', 403);
+  let backend;
+  try {
+    backend = httpsOrigin(env.SUPABASE_ORIGIN);
+    if (backend.origin === url.origin) throw new Error();
+  } catch { return unavailable(); }
+  const headers = new Headers(request.headers);
+  for (const name of ['host', 'cookie', 'forwarded', 'x-forwarded-host', 'x-forwarded-for']) headers.delete(name);
+  const upstream = await fetch(new URL(url.pathname + url.search, backend), { headers, redirect: 'manual' });
+  // Copy the upgrade response without accepting the socket: Workers forwards it
+  // transparently, retaining subprotocol, close and backpressure behavior.
+  const response = new Response(upstream.body, upstream);
+  response.headers.delete('set-cookie');
+  response.headers.set('Cache-Control', 'no-store');
+  return response;
+}
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -43,6 +103,7 @@ export default {
       // This is public handle verification, not a PDS or an account bridge.
       return identityResponse(request, did, 200);
     }
+    if (url.pathname.startsWith('/realtime/')) return realtimeResponse(request, env, url);
     const discovery = {
       "/.well-known/webfinger": "/functions/v1/webfinger",
       "/.well-known/nodeinfo": "/functions/v1/nodeinfo",
@@ -97,6 +158,6 @@ export default {
     }
     // A Worker Route forwards unmatched requests to the existing origin. Keep
     // the canonical browser origin for OAuth state, storage and callbacks.
-    return fetch(request);
+    return hardenWebsite(await fetch(request), env);
   },
 };

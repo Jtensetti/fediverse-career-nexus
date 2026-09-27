@@ -10,6 +10,10 @@ import { JSDOM } from 'jsdom';
 const sourceUrl = new URL('../src/lib/supabase.ts', import.meta.url);
 let sequence = 0;
 registerHooks({
+  resolve(specifier, context, next) {
+    if (specifier === '@/lib/realtimeTransport') return { url: new URL('../src/lib/realtimeTransport.ts', import.meta.url).href, shortCircuit: true };
+    return next(specifier, context);
+  },
   load(url, context, next) {
     if (url.split('?')[0] === sourceUrl.href) {
       const api = 'https://auth-regression-' + new URL(url).searchParams.get('fixture') + '.supabase.co';

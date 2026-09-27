@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { dateLocale } from "@/lib/locale";
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
@@ -202,7 +203,7 @@ export default function EventView() {
 
         {event.cover_image_url && (
           <div className="w-full aspect-video rounded-lg overflow-hidden">
-            <img
+            <PublicImage
               src={event.cover_image_url}
               alt={event.title}
               className="w-full h-full object-cover"

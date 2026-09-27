@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { Link } from "react-router-dom";
 import { Building2, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,7 +19,7 @@ export default function CompanyCard({ company }: CompanyCardProps) {
           {/* Banner placeholder */}
           <div className="h-16 -mx-4 -mt-4 mb-4 rounded-t-lg bg-gradient-to-r from-primary/20 to-secondary/20 overflow-hidden">
             {company.banner_url && (
-              <img 
+              <PublicImage
                 src={company.banner_url} 
                 alt="" 
                 className="w-full h-full object-cover"

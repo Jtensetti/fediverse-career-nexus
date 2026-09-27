@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react';
-import DOMPurify from 'dompurify';
+import { articleHtml } from '@/lib/articleHtml';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchOwnMedia, isNoltoMedia } from '@/lib/media';
 
 export function ArticleContent({ html }: { html: string }) {
   const { user } = useAuth();
   const ref = useRef<HTMLDivElement>(null);
-  const safe = useMemo(() => DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code', 'img', 'hr'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'class'],
-  }), [html]);
+  const safe = useMemo(() => articleHtml(html, import.meta.env.VITE_SUPABASE_URL), [html]);
   useEffect(() => {
     if (!user) return;
     const controller = new AbortController();

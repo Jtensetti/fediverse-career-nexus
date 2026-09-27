@@ -125,7 +125,10 @@ test('the deployed Worker routes cover every protocol path, including token quer
       assert.equal(calls.at(-1).init.redirect, 'manual');
     }
     for (const path of ['/oauth/authorize?client_id=example', '/~oauth/initiate?provider=apple', '/auth/atproto/callback', '/auth/social/callback', '/feed', '/assets/main.js']) {
-      assert.equal(routes('https://nolto.social'+path), false, 'Browser path must remain on the existing host');
+      assert.equal(routes('https://nolto.social'+path), true, 'Website HTML must receive the response policy');
+      const request = new Request('https://nolto.social'+path);
+      await gateway.fetch(request, env);
+      assert.equal(calls.at(-1).input, request, 'Browser paths must still reach the original website');
     }
     assert.equal(routes('https://elsewhere.example/api/v1/instance'), false);
     assert.ok(routes('https://nolto.social/.well-known/atproto-did?probe=1'));

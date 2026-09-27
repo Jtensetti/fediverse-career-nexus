@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { useState, useEffect, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { ExternalLink, Globe, X, Loader2 } from "lucide-react";
@@ -210,7 +211,7 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
         {/* Main image (non-compact mode) */}
         {hasImage && !compact && (
           <div className="w-full sm:w-40 md:w-48 aspect-video sm:aspect-square md:aspect-auto shrink-0 bg-muted relative overflow-hidden border-b sm:border-b-0 sm:border-r">
-            <img
+            <PublicImage
               src={preview.image}
               alt={displayTitle || ""}
               className="absolute inset-0 w-full h-full object-cover object-top"
@@ -224,7 +225,7 @@ export const LinkPreview = memo(function LinkPreview({ url, onRemove, className,
         {/* Thumbnail for compact mode */}
         {hasImage && compact && (
           <div className="w-16 h-16 shrink-0 bg-muted relative overflow-hidden rounded-l-lg">
-            <img
+            <PublicImage
               src={preview.image}
               alt=""
               className="w-full h-full object-cover object-top"

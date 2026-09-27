@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "wrangler deploy --dry-run && wrangler deploy --dry-run --config wrangler.split.jsonc",
+    "check": "wrangler deploy --dry-run && wrangler deploy --dry-run --config wrangler.split.jsonc && node test-gateway-runtime.mjs",
     "deploy": "wrangler deploy",
     "deploy:split": "wrangler deploy --config wrangler.split.jsonc",
     "types": "wrangler types --include-runtime=false"
