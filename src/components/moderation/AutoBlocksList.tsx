@@ -11,7 +11,7 @@ import {
 import { toast } from 'sonner';
 
 type Row = { key: string; label: string; reason: string; count: number; until: string | null; flagged?: boolean };
-const table = (name: 'ip_blocks' | 'instance_auto_blocks') => supabase.from(name as never) as unknown as ReturnType<typeof supabase.from>;
+const table = (name: 'ip_blocks' | 'instance_auto_blocks') => supabase.from(name);
 
 async function loadBlocks(): Promise<{ ips: Row[]; servers: Row[] }> {
   const [ips, servers] = await Promise.all([
@@ -72,8 +72,8 @@ export default function AutoBlocksList() {
   const { data, isLoading, error } = useQuery({ queryKey: ['auto-blocks'], queryFn: loadBlocks });
   const lift = (kind: 'ip' | 'server') => async (row: Row) => {
     const { error: liftError } = kind === 'ip'
-      ? await table('ip_blocks').delete().eq('ip_hash', row.key)
-      : await table('instance_auto_blocks').delete().eq('host', row.key);
+      ? await supabase.from('ip_blocks').delete().eq('ip_hash', row.key)
+      : await supabase.from('instance_auto_blocks').delete().eq('host', row.key);
     if (liftError) { toast.error(tx('ui.autoBlocks.liftFailed')); return; }
     toast.success(tx('ui.autoBlocks.lifted'));
     queryClient.invalidateQueries({ queryKey: ['auto-blocks'] });
