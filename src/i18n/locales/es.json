@@ -3927,6 +3927,28 @@
           ]
         ]
       }
+    },
+    "autoBlocks": {
+      "title": "Bloqueos automáticos",
+      "description": "Las trampas y la protección antispam bloquean temporalmente direcciones IP y servidores.",
+      "ipTitle": "Direcciones IP bloqueadas",
+      "ipHelp": "Direcciones que cayeron en una trampa. Solo se muestran como huella abreviada. La federación nunca se ve afectada.",
+      "serverTitle": "Servidores bloqueados automáticamente",
+      "serverHelp": "Servidores que enviaron demasiado o entregaron desde cuentas bloqueadas. Los servidores grandes solo se marcan.",
+      "empty": "No hay bloqueos ahora.",
+      "count": "Cantidad: {{n}}",
+      "until": "Bloqueado hasta {{date}}",
+      "flagged": "Marcado",
+      "expired": "Caducado",
+      "lift": "Levantar bloqueo",
+      "liftTitle": "¿Levantar este bloqueo?",
+      "liftIp": "La dirección IP {{name}} recupera el acceso de inmediato.",
+      "liftServer": "El servidor {{name}} puede volver a entregar de inmediato. Para un bloqueo permanente, usa el bloqueo de servidores.",
+      "cancel": "Cancelar",
+      "lifted": "Se ha levantado el bloqueo.",
+      "liftFailed": "No se pudo levantar el bloqueo. Inténtalo de nuevo.",
+      "loading": "Cargando bloqueos…",
+      "loadFailed": "No se pudieron cargar los bloqueos."
     }
   },
   "notificationText": {

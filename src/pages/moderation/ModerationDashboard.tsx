@@ -44,6 +44,7 @@ const AlertManager = lazy(() => import('@/components/layout/AlertManager').then(
 const MfaRecoveryQueue = lazy(() => import('@/components/moderation/MfaRecoveryQueue'));
 
 import StatCard from '@/components/moderation/StatCard';
+const AutoBlocksList = lazy(() => import('@/components/moderation/AutoBlocksList'));
 
 import { tx } from "@/i18n/tx";
 function QuickAction({ 
@@ -377,6 +378,20 @@ export default function ModerationDashboard() {
                 <CardContent>
                   <Suspense fallback={<LoadingFallback />}>
                     <BannedUsersList />
+                  </Suspense>
+                </CardContent>
+              </Card>
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-destructive" />
+                    {tx("ui.autoBlocks.title")}
+                  </CardTitle>
+                  <CardDescription>{tx("ui.autoBlocks.description")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <AutoBlocksList />
                   </Suspense>
                 </CardContent>
               </Card>

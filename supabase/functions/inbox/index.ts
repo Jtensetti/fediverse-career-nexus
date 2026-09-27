@@ -48,6 +48,15 @@ async function isActorBlocked(actorUrl: string): Promise<boolean> {
   return data?.status === 'blocked';
 }
 
+// Large servers are only flagged for moderators, never auto-blocked.
+const PROTECTED_HOSTS = new Set(['mastodon.social', 'mastodon.online', 'mstdn.social', 'fosstodon.org', 'hachyderm.io', 'infosec.exchange', 'mas.to', 'mastodon.world', 'social.vivaldi.net', 'threads.net', 'bsky.brid.gy', 'pixelfed.social', 'lemmy.world']);
+// Counts verified behaviour per server; over the threshold within 10 minutes
+// the server is auto-blocked (24 h, then 7 days). Never blocks the request on failure.
+async function instanceOffense(host: string, reason: string, threshold: number) {
+  const { error } = await supabaseClient.rpc('record_instance_offense', { p_host: host, p_reason: reason, p_threshold: threshold, p_protected: PROTECTED_HOSTS.has(host) });
+  if (error) console.error('Instance offense counter unavailable');
+}
+
 // Initialize the Supabase client
 const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -175,6 +184,11 @@ Deno.serve(async (req) => {
     if (!verified) return new Response(JSON.stringify({ error: "Invalid signature or actor ownership" }), { status: 401, headers: corsHeaders });
 
     if (isLocalUrl(activity.actor)) return new Response(null, { status: 403 });
+    // Verified sender only: an unsigned request cannot frame another server.
+    const senderHost = new URL(activity.actor).hostname.toLowerCase();
+    const { data: autoBlocked } = await supabaseClient.rpc('instance_auto_blocked', { p_host: senderHost });
+    if (autoBlocked === true) return new Response(JSON.stringify({ error: "Server temporarily blocked" }), { status: 403, headers: { ...corsHeaders, "Retry-After": "3600" } });
+    await instanceOffense(senderHost, 'volume', 600);
     const { data: received, error: receiptError } = await supabaseClient.from("federation_receipts").select("activity_id").eq("activity_id", activity.id).maybeSingle();
     if (receiptError) throw receiptError;
     if (received) return new Response(null, { status: 202 });
@@ -249,6 +263,7 @@ Deno.serve(async (req) => {
     }
 
     if (await isActorBlocked(activity.actor)) {
+      await instanceOffense(senderHost, 'blocked actor deliveries', 30);
       return new Response(
         JSON.stringify({ error: "Actor blocked" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }

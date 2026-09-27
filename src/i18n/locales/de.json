@@ -3927,6 +3927,28 @@
           ]
         ]
       }
+    },
+    "autoBlocks": {
+      "title": "Automatische Sperren",
+      "description": "Fallen und Spamschutz sperren IP-Adressen und Server vorübergehend.",
+      "ipTitle": "Gesperrte IP-Adressen",
+      "ipHelp": "Adressen, die in einen Honeypot geraten sind. Nur als gekürzter Fingerabdruck angezeigt. Die Föderation ist nie betroffen.",
+      "serverTitle": "Automatisch gesperrte Server",
+      "serverHelp": "Server, die zu viel gesendet oder von gesperrten Konten zugestellt haben. Große Server werden nur markiert.",
+      "empty": "Derzeit keine Sperren.",
+      "count": "Anzahl: {{n}}",
+      "until": "Gesperrt bis {{date}}",
+      "flagged": "Markiert",
+      "expired": "Abgelaufen",
+      "lift": "Sperre aufheben",
+      "liftTitle": "Diese Sperre aufheben?",
+      "liftIp": "Die IP-Adresse {{name}} erhält sofort wieder Zugriff.",
+      "liftServer": "Der Server {{name}} kann sofort wieder zustellen. Für eine dauerhafte Sperre die Serversperre verwenden.",
+      "cancel": "Abbrechen",
+      "lifted": "Die Sperre wurde aufgehoben.",
+      "liftFailed": "Die Sperre konnte nicht aufgehoben werden. Bitte erneut versuchen.",
+      "loading": "Sperren werden geladen…",
+      "loadFailed": "Die Sperren konnten nicht geladen werden."
     }
   },
   "notificationText": {

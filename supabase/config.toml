@@ -193,3 +193,6 @@ verify_jwt = false
 
 [functions.privacy-maintenance]
 verify_jwt = false
+
+[functions.ip-guard]
+verify_jwt = false

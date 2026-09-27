@@ -3927,6 +3927,28 @@
           ]
         ]
       }
+    },
+    "autoBlocks": {
+      "title": "Blocchi automatici",
+      "description": "Trappole e protezione antispam bloccano temporaneamente indirizzi IP e server.",
+      "ipTitle": "Indirizzi IP bloccati",
+      "ipHelp": "Indirizzi finiti in una trappola. Mostrati solo come impronta abbreviata. La federazione non viene mai toccata.",
+      "serverTitle": "Server bloccati automaticamente",
+      "serverHelp": "Server che hanno inviato troppo o consegnato da account bloccati. I server grandi vengono solo segnalati.",
+      "empty": "Nessun blocco al momento.",
+      "count": "Numero: {{n}}",
+      "until": "Bloccato fino al {{date}}",
+      "flagged": "Segnalato",
+      "expired": "Scaduto",
+      "lift": "Rimuovi blocco",
+      "liftTitle": "Rimuovere questo blocco?",
+      "liftIp": "L’indirizzo IP {{name}} riottiene subito l’accesso.",
+      "liftServer": "Il server {{name}} può di nuovo consegnare subito. Per un blocco permanente usa il blocco dei server.",
+      "cancel": "Annulla",
+      "lifted": "Il blocco è stato rimosso.",
+      "liftFailed": "Impossibile rimuovere il blocco. Riprova.",
+      "loading": "Caricamento dei blocchi…",
+      "loadFailed": "Impossibile caricare i blocchi."
     }
   },
   "notificationText": {

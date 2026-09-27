@@ -86,9 +86,47 @@ async function realtimeResponse(request, env, url) {
   response.headers.set('Cache-Control', 'no-store');
   return response;
 }
+// Paths only scanners probe. Never a real Nolto page or protocol route.
+const HONEYPOT = /^\/(?:wp-login\.php|wp-admin(?:\/|$)|xmlrpc\.php|\.env(?:\.|$)|\.git(?:\/|$)|phpmyadmin(?:\/|$)|pma(?:\/|$)|admin\.php|config\.php|server-status|actuator(?:\/|$)|cgi-bin\/|vendor\/phpunit\/|nolto-trap-7f3a(?:\/|$))/i;
+export const isHoneypotPath = (path) => HONEYPOT.test(path);
+// Federation and client API routes always bypass IP blocks, so a shared
+// address can never break delivery from other servers or native apps.
+export const isFederationPath = (path) => path.startsWith('/.well-known/') || path.startsWith('/nodeinfo/') ||
+  /^\/(?:api\/v[12]|oauth\/(?:token|revoke)|functions\/v1\/(?:actor|inbox|outbox|followers|following|objects|activities|nodeinfo))(?:\/|$)/.test(path);
+const blockCache = new Map();
+async function guardCall(env, action, ip, reason) {
+  const backend = httpsOrigin(env.SUPABASE_ORIGIN);
+  const response = await fetch(new URL('/functions/v1/ip-guard', backend.origin), {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-gateway-secret': env.GATEWAY_GUARD_SECRET },
+    body: JSON.stringify({ action, ip, reason }),
+  });
+  if (!response.ok) throw new Error('guard unavailable');
+  const { blockedUntil } = await response.json();
+  return blockedUntil ? Date.parse(blockedUntil) : 0;
+}
+/** Returns a response when the request is trapped or blocked. Fails open:
+ * a guard outage must never take the website down. */
+export async function ipGuard(request, env, url, now = Date.now()) {
+  const ip = request.headers.get('cf-connecting-ip');
+  if (!env.GATEWAY_GUARD_SECRET || !ip || isFederationPath(url.pathname)) return null;
+  const blocked = () => new Response('Access temporarily blocked', { status: 403, headers: { 'Cache-Control': 'no-store', 'Content-Type': 'text/plain; charset=utf-8' } });
+  if (isHoneypotPath(url.pathname)) {
+    try { blockCache.set(ip, { until: await guardCall(env, 'hit', ip, `honeypot ${url.pathname.slice(0, 60)}`), checked: now }); } catch { /* fail open */ }
+    return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
+  }
+  let entry = blockCache.get(ip);
+  if (entry === undefined || entry.checked < now - 60000) {
+    try { entry = { until: await guardCall(env, 'check', ip), checked: now }; } catch { return null; }
+    if (blockCache.size > 5000) blockCache.clear();
+    blockCache.set(ip, entry);
+  }
+  return entry.until > now ? blocked() : null;
+}
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const trapped = await ipGuard(request, env, url);
+    if (trapped) return trapped;
     const mode = env.GATEWAY_MODE || 'route';
     if (!['route', 'split'].includes(mode)) return unavailable();
     const domain = env.FEDERATION_DOMAIN === undefined ? 'nolto.social' : env.FEDERATION_DOMAIN;

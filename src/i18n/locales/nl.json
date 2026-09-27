@@ -3927,6 +3927,28 @@
           ]
         ]
       }
+    },
+    "autoBlocks": {
+      "title": "Automatische blokkades",
+      "description": "Vallen en spambescherming blokkeren tijdelijk IP-adressen en servers.",
+      "ipTitle": "Geblokkeerde IP-adressen",
+      "ipHelp": "Adressen die in een honeypot liepen. Alleen getoond als verkorte vingerafdruk. Federatie wordt nooit geraakt.",
+      "serverTitle": "Automatisch geblokkeerde servers",
+      "serverHelp": "Servers die te veel stuurden of afleverden vanaf geblokkeerde accounts. Grote servers worden alleen gemarkeerd.",
+      "empty": "Momenteel geen blokkades.",
+      "count": "Aantal: {{n}}",
+      "until": "Geblokkeerd tot {{date}}",
+      "flagged": "Gemarkeerd",
+      "expired": "Verlopen",
+      "lift": "Blokkade opheffen",
+      "liftTitle": "Deze blokkade opheffen?",
+      "liftIp": "Het IP-adres {{name}} krijgt direct weer toegang.",
+      "liftServer": "De server {{name}} kan direct weer afleveren. Gebruik serverblokkering voor een permanente blokkade.",
+      "cancel": "Annuleren",
+      "lifted": "De blokkade is opgeheven.",
+      "liftFailed": "De blokkade kon niet worden opgeheven. Probeer het opnieuw.",
+      "loading": "Blokkades laden…",
+      "loadFailed": "De blokkades konden niet worden geladen."
     }
   },
   "notificationText": {
