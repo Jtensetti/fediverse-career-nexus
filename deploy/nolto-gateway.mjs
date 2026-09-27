@@ -27,8 +27,10 @@ const unavailable = () => new Response('Invalid gateway configuration', { status
 // Enforced on HTML from the existing website origin. Keep protocol responses
 // and managed authentication cookies intact. The hash is next-themes 0.3.0's
 // bootstrap with App.tsx's ThemeProvider props (covered by a regression test).
-export function websitePolicy(backend) {
+export function websitePolicy(backend, domain = 'nolto.social') {
+  // Some browsers do not include WebSockets in connect-src 'self'.
   let connect = "'self'";
+  if (publicHostname(domain)) connect += ` wss://${domain}`;
   try {
     const origin = httpsOrigin(backend);
     connect += ` ${origin.origin} ${origin.origin.replace('https:', 'wss:')}`;
@@ -55,7 +57,7 @@ function hardenWebsite(upstream, env) {
   if (!/^text\/html(?:;|$)/i.test(upstream.headers.get('content-type') || '')) return upstream;
   const response = new Response(upstream.body, upstream);
   // Append instead of weakening any independent policy supplied by the origin.
-  response.headers.append('Content-Security-Policy', websitePolicy(env.SUPABASE_ORIGIN));
+  response.headers.append('Content-Security-Policy', websitePolicy(env.SUPABASE_ORIGIN, env.FEDERATION_DOMAIN));
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');

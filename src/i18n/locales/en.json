@@ -4066,11 +4066,11 @@
   "trust": {
     "title": "Trust Center",
     "eyebrow": "Security & transparency",
-    "intro": "What we have checked, what we have fixed, and what still needs work. A dated account of Nolto’s security and privacy.",
+    "intro": "Nolto’s security review, completed fixes and the limits of its protections.",
     "reviewed": "Last reviewed:",
     "operator": "Operator: Jonatan Tensetti",
     "navigation": "On this page",
-    "findings": "Audit findings",
+    "findings": "Open findings",
     "limits": "Protection and limitations",
     "report": "Report a vulnerability",
     "evidence": "Technical audit and evidence",
@@ -4078,7 +4078,7 @@
     "policies": "Policies and security contact",
     "securityFile": "Security contact file",
     "scope": "Internal code review, production permission checks, public HTTP checks and automated regressions. This is not an independent penetration test, certification or live monitoring. RLS being enabled does not establish that every policy is correct. The dependency result is a dated advisory scan of the web application.",
-    "findingsIntro": "Status describes the specific finding, not the security of the entire service. Open items remain visible until verified.",
+    "findingsIntro": "This list contains findings awaiting remediation and verification. Status applies to the dated review, not a guarantee of the entire service’s security.",
     "reportText": "Email the affected URL, impact and steps to reproduce. Please avoid accessing other people’s data, service disruption and public disclosure of an unfixed exploit. Send no passwords, session tokens or private user data.",
     "response": "Reports are handled by the operator. No response-time guarantee or paid bounty is currently offered.",
     "checks": {
@@ -4104,18 +4104,18 @@
       },
       "media": {
         "title": "Cookies on public media requests",
-        "text": "Known Nolto media and avatar components now request backend images anonymously, including avatar preloads. This avoids third-party cookies on those image requests while preserving other image sources.",
-        "validation": "The backend media response supports CORS. URL-boundary tests cover the change. This does not remove cookies added by providers or cover every external image."
+        "text": "Public backend images now use anonymous CORS across shared image components, avatar preloads and sanitized article content. Private previews retain their authorization checks.",
+        "validation": "Images with crossorigin=anonymous loaded successfully in the published feed. Tests cover URL boundaries, preloads and sanitized HTML. Other image providers’ cookie policies are outside this fix."
       },
       "websocket": {
-        "title": "Reported realtime cookie warning",
-        "text": "A browser warning about __cf_bm on WebSocket connections remains unresolved. The checked image cookie matches its backend domain; a cross-origin request alone does not prove an invalid cookie domain.",
-        "validation": "WebFinger and OAuth discovery returned no upstream cookies after today’s Worker update. The reported authenticated WebSocket handshake and Firefox behavior have not been reproduced."
+        "title": "Realtime connection cookie boundary",
+        "text": "Realtime connections on nolto.social now use the site’s own domain. The gateway removes cookies sent to the backend and Set-Cookie from connection responses while preserving API keys and authorization checks.",
+        "validation": "Production: HTTP 101 without Set-Cookie; subscription, heartbeat and leave acknowledged. Invalid API keys and foreign origins are rejected. The original Firefox session was not reproduced."
       },
       "headers": {
-        "title": "Browser response policy needs strengthening",
-        "text": "The homepage response includes HSTS, nosniff and a referrer policy. A Content-Security-Policy and anti-framing response header were absent from the checked response.",
-        "validation": "Observed on the public deployment. Hosting configuration, compatibility testing and a fresh response check are required before closing this finding."
+        "title": "Browser response security policy",
+        "text": "Website HTML responses now carry an enforcing Content-Security-Policy and X-Frame-Options: DENY. The policy restricts scripts and connections and prevents Nolto from being framed.",
+        "validation": "Live response headers checked for home, trust center, sign-in, feed and integrations. Feed and images load under the policy. Tests verify that sign-in cookies remain intact."
       }
     },
     "boundaries": {
@@ -4131,6 +4131,9 @@
         "title": "Operational evidence still needed",
         "text": "Backup restore testing, provider retention, alert delivery, rate-limit coverage and the retained federation signing identity require further verification. These are not certified by this review."
       }
-    }
+    },
+    "noOpenFindings": "No open findings",
+    "resolvedFindings": "Resolved findings",
+    "closedSummary": "All four findings from the 27 September 2026 review are fixed and verified in production. History and supporting evidence are available below."
   }
 }

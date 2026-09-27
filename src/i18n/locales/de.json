@@ -4066,11 +4066,11 @@
   "trust": {
     "title": "Sicherheitszentrum",
     "eyebrow": "Sicherheit und Transparenz",
-    "intro": "Was wir geprüft und behoben haben und was noch offen ist. Eine datierte Übersicht zu Sicherheit und Datenschutz bei Nolto.",
+    "intro": "Noltos Sicherheitsprüfung, abgeschlossene Korrekturen und die Grenzen der Schutzmaßnahmen.",
     "reviewed": "Zuletzt geprüft:",
     "operator": "Verantwortlich: Jonatan Tensetti",
     "navigation": "Auf dieser Seite",
-    "findings": "Prüfergebnisse",
+    "findings": "Offene Befunde",
     "limits": "Schutz und Grenzen",
     "report": "Schwachstelle melden",
     "evidence": "Technischer Bericht und Nachweise",
@@ -4078,7 +4078,7 @@
     "policies": "Richtlinien und Sicherheitskontakt",
     "securityFile": "Sicherheitskontakt als Textdatei",
     "scope": "Interne Codeprüfung, Berechtigungsprüfungen im Produktivsystem, öffentliche HTTP-Prüfungen und automatisierte Regressionstests. Kein unabhängiger Penetrationstest, keine Zertifizierung und keine laufende Überwachung. Aktiviertes RLS belegt nicht die Korrektheit jeder Regel. Die Abhängigkeitsprüfung erfasst bekannte Hinweise zur Webanwendung zum Prüfzeitpunkt.",
-    "findingsIntro": "Der Status gilt für den einzelnen Befund, nicht für die Sicherheit des gesamten Dienstes. Offene Punkte bleiben bis zur Überprüfung sichtbar.",
+    "findingsIntro": "Diese Liste zeigt Befunde, deren Behebung und Überprüfung noch aussteht. Der Status gilt für die datierte Prüfung, nicht als Sicherheitsgarantie für den gesamten Dienst.",
     "reportText": "Bitte senden Sie die betroffene URL, mögliche Auswirkungen und Schritte zur Reproduktion per E-Mail. Greifen Sie nicht auf fremde Daten zu, stören Sie den Dienst nicht und veröffentlichen Sie keine Anleitung zu einer ungeklärten Schwachstelle. Senden Sie keine Passwörter, Sitzungstoken oder privaten Nutzerdaten.",
     "response": "Meldungen bearbeitet der Betreiber. Es gibt derzeit weder eine garantierte Antwortzeit noch ein bezahltes Prämienprogramm.",
     "checks": {
@@ -4103,19 +4103,19 @@
         "validation": "Produktive Berechtigungen und Lesezugriffe nach der Korrektur geprüft; isolierte SQL-Tests weisen Schreibzugriffe ab. Ob der frühere Zugriff ausgenutzt wurde, wurde nicht festgestellt."
       },
       "media": {
-        "title": "Cookies bei öffentlichen Medienabrufen",
-        "text": "Bekannte Nolto-Medien- und Avatar-Komponenten laden Backendbilder jetzt anonym, auch beim Vorladen von Avataren. Diese Abrufe verwenden damit keine Drittanbieter-Cookies; andere Bildquellen bleiben nutzbar.",
-        "validation": "Die Medienantwort unterstützt CORS. Tests prüfen die URL-Grenzen. Die Änderung entfernt keine Cookies beim Anbieter und deckt nicht jedes externe Bild ab."
+        "title": "Cookies bei öffentlichen Bildanfragen",
+        "text": "Öffentliche Backend-Bilder verwenden jetzt anonymes CORS in gemeinsamen Bildkomponenten, beim Vorladen von Avataren und in bereinigtem Artikel-HTML. Private Vorschauen behalten ihre Berechtigungsprüfungen.",
+        "validation": "Bilder mit crossorigin=anonymous werden im veröffentlichten Feed geladen. Tests decken URL-Grenzen, Vorladen und bereinigtes HTML ab. Cookie-Richtlinien anderer Bildanbieter sind nicht Gegenstand dieser Korrektur."
       },
       "websocket": {
-        "title": "Gemeldete Cookiewarnung bei Echtzeitverbindungen",
-        "text": "Die Browserwarnung zu __cf_bm bei WebSocket-Verbindungen ist noch offen. Das geprüfte Bild-Cookie passt zur Backend-Domain. Ein ursprungsübergreifender Abruf allein beweist keine ungültige Cookie-Domain.",
-        "validation": "WebFinger und OAuth-Discovery lieferten nach dem heutigen Worker-Update keine weitergeleiteten Cookies. Der gemeldete authentifizierte WebSocket-Verbindungsaufbau und Firefox wurden nicht reproduziert."
+        "title": "Cookie-Abgrenzung für Echtzeitverbindungen",
+        "text": "Echtzeitverbindungen auf nolto.social verwenden jetzt die eigene Domain. Das Gateway entfernt Cookies zum Backend und Set-Cookie aus Verbindungsantworten. API-Schlüssel und Berechtigungsprüfungen bleiben erhalten.",
+        "validation": "Im Produktivsystem: HTTP 101 ohne Set-Cookie; Abonnement, Heartbeat und Abmeldung bestätigt. Ungültige API-Schlüssel und fremde Origins werden abgewiesen. Die ursprüngliche Firefox-Sitzung wurde nicht reproduziert."
       },
       "headers": {
-        "title": "HTTP-Sicherheitsrichtlinien müssen ergänzt werden",
-        "text": "Die Startseite liefert HSTS, nosniff und eine Referrer-Richtlinie. Content-Security-Policy und ein Header zum Schutz vor Einbettung fehlten in der geprüften Antwort.",
-        "validation": "Im veröffentlichten Dienst beobachtet. Hosting-Konfiguration, Kompatibilitätstests und eine erneute Antwortprüfung stehen aus."
+        "title": "Sicherheitsrichtlinie für Browserantworten",
+        "text": "HTML-Antworten der Website enthalten jetzt eine durchgesetzte Content-Security-Policy und X-Frame-Options: DENY. Die Richtlinie begrenzt Skripte und Verbindungen und verhindert die Einbettung von Nolto in Frames.",
+        "validation": "Antwort-Header für Startseite, Sicherheitszentrum, Anmeldung, Feed und Integrationen im Produktivsystem geprüft. Feed und Bilder laden unter dieser Richtlinie. Tests bestätigen den Erhalt der Anmelde-Cookies."
       }
     },
     "boundaries": {
@@ -4131,6 +4131,9 @@
         "title": "Noch ausstehende Betriebsnachweise",
         "text": "Backup-Wiederherstellung, Aufbewahrungsfristen der Anbieter, Alarmzustellung, Abdeckung der Ratenbegrenzung und die bestehende Signierungsidentität müssen weiter geprüft werden. Diese Prüfung bestätigt sie nicht."
       }
-    }
+    },
+    "noOpenFindings": "Keine offenen Befunde",
+    "resolvedFindings": "Behobene Befunde",
+    "closedSummary": "Alle vier Befunde der Prüfung vom 27. September 2026 wurden behoben und im Produktivsystem überprüft. Verlauf und Nachweise stehen unten."
   }
 }

@@ -6,16 +6,29 @@ import Footer from '@/components/layout/Footer';
 import { SEOHead } from '@/components/common/SEOHead';
 
 const reviewed = '2026-09-27';
-const findings = [
+type Finding = { id: string; key: 'views' | 'media' | 'websocket' | 'headers'; status: 'fixed' | 'mitigated' | 'open'; severity: 'high' | 'medium' | 'low' };
+const findings: Finding[] = [
   { id: 'TC-01', key: 'views', status: 'fixed', severity: 'high' },
-  { id: 'TC-02', key: 'media', status: 'mitigated', severity: 'low' },
-  { id: 'TC-03', key: 'websocket', status: 'open', severity: 'low' },
-  { id: 'TC-04', key: 'headers', status: 'open', severity: 'medium' },
-] as const;
+  { id: 'TC-02', key: 'media', status: 'fixed', severity: 'low' },
+  { id: 'TC-03', key: 'websocket', status: 'fixed', severity: 'low' },
+  { id: 'TC-04', key: 'headers', status: 'fixed', severity: 'medium' },
+];
 
 export default function TrustCenter() {
   const { t } = useTranslation();
+  const openFindings = findings.filter(f => f.status !== 'fixed');
+  const resolvedFindings = findings.filter(f => f.status === 'fixed');
   const report = 'https://github.com/Jtensetti/fediverse-career-nexus/blob/main/docs/trust-center-audit-2026-09-27.md';
+  const renderFinding = (f: Finding) => <article key={f.id} id={f.id.toLowerCase()} className="scroll-mt-24 p-5 sm:p-6">
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      <span className="font-mono text-muted-foreground">{f.id}</span>
+      <span className={`rounded-full border px-2.5 py-1 font-medium ${f.status === 'fixed' ? 'border-primary/20 bg-primary/10 text-primary' : f.status === 'open' ? 'border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200' : 'bg-muted text-foreground'}`}>{t(`trust.status.${f.status}`)}</span>
+      <span className="text-muted-foreground">{t(`trust.severity.${f.severity}`)}</span>
+    </div>
+    <h3 className="mt-3 text-lg font-semibold">{t(`trust.items.${f.key}.title`)}</h3>
+    <p className="mt-2 leading-relaxed text-muted-foreground">{t(`trust.items.${f.key}.text`)}</p>
+    <p className="mt-3 text-sm leading-relaxed"><span className="font-semibold">{t('trust.validation')} </span>{t(`trust.items.${f.key}.validation`)}</p>
+  </article>;
   return <div className="min-h-screen bg-background">
     <SEOHead title={t('trust.title')} description={t('trust.intro')} url="https://nolto.social/trust-center" modifiedTime={reviewed} />
     <Navbar />
@@ -45,21 +58,19 @@ export default function TrustCenter() {
         <a className="inline-flex items-center gap-1 underline" href={report}>{t('trust.evidence')}<ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a>
       </nav>
       <section id="findings" className="scroll-mt-24" aria-labelledby="findings-title">
-        <h2 id="findings-title" className="text-2xl font-semibold">{t('trust.findings')}</h2>
+        <h2 id="findings-title" className="text-2xl font-semibold">{t('trust.findings')} <span className="ml-2 rounded-full bg-primary/10 px-3 py-1 text-lg tabular-nums text-primary">{openFindings.length}</span></h2>
         <p className="mt-3 max-w-3xl text-muted-foreground">{t('trust.findingsIntro')}</p>
         <div className="mt-6 divide-y rounded-xl border">
-          {findings.map(f => <article key={f.id} id={f.id.toLowerCase()} className="scroll-mt-24 p-5 sm:p-6">
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="font-mono text-muted-foreground">{f.id}</span>
-              <span className={`rounded-full border px-2.5 py-1 font-medium ${f.status === 'fixed' ? 'border-primary/20 bg-primary/10 text-primary' : f.status === 'open' ? 'border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200' : 'bg-muted text-foreground'}`}>{t(`trust.status.${f.status}`)}</span>
-              <span className="text-muted-foreground">{t(`trust.severity.${f.severity}`)}</span>
-            </div>
-            <h3 className="mt-3 text-lg font-semibold">{t(`trust.items.${f.key}.title`)}</h3>
-            <p className="mt-2 leading-relaxed text-muted-foreground">{t(`trust.items.${f.key}.text`)}</p>
-            <p className="mt-3 text-sm leading-relaxed"><span className="font-semibold">{t('trust.validation')} </span>{t(`trust.items.${f.key}.validation`)}</p>
-          </article>)}
+          {openFindings.length > 0 ? openFindings.map(renderFinding) : <div className="flex items-start gap-3 p-5 sm:p-6">
+            <ShieldCheck aria-hidden="true" className="mt-1 h-5 w-5 shrink-0 text-primary" />
+            <div><p className="font-semibold">{t('trust.noOpenFindings')}</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t('trust.closedSummary')}</p></div>
+          </div>}
         </div>
       </section>
+      {resolvedFindings.length > 0 && <details className="mt-6 rounded-xl border">
+        <summary className="cursor-pointer px-5 py-4 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">{t('trust.resolvedFindings')} ({resolvedFindings.length})</summary>
+        <div className="divide-y border-t">{resolvedFindings.map(renderFinding)}</div>
+      </details>}
       <section id="limits" className="mt-12 scroll-mt-24" aria-labelledby="limits-title">
         <h2 id="limits-title" className="text-2xl font-semibold">{t('trust.limits')}</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-3">

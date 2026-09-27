@@ -4066,11 +4066,11 @@
   "trust": {
     "title": "Vertrouwenscentrum",
     "eyebrow": "Veiligheid en transparantie",
-    "intro": "Wat we hebben gecontroleerd en opgelost en wat nog aandacht nodig heeft. Een gedateerd overzicht van de veiligheid en privacy van Nolto.",
+    "intro": "De beveiligingscontrole van Nolto, uitgevoerde verbeteringen en de grenzen van de bescherming.",
     "reviewed": "Laatst gecontroleerd:",
     "operator": "Beheerder: Jonatan Tensetti",
     "navigation": "Op deze pagina",
-    "findings": "Auditbevindingen",
+    "findings": "Open bevindingen",
     "limits": "Bescherming en beperkingen",
     "report": "Een kwetsbaarheid melden",
     "evidence": "Technisch verslag en onderbouwing",
@@ -4078,7 +4078,7 @@
     "policies": "Beleid en beveiligingscontact",
     "securityFile": "Beveiligingscontact als tekstbestand",
     "scope": "Interne codebeoordeling, controle van productierechten, openbare HTTP-controles en geautomatiseerde regressietests. Geen onafhankelijke penetratietest, certificering of doorlopende bewaking. Ingeschakelde RLS bewijst niet dat elke regel klopt. De afhankelijkhedencontrole betreft bekende meldingen voor de webapp op het controlemoment.",
-    "findingsIntro": "De status geldt voor de afzonderlijke bevinding, niet voor de veiligheid van de hele dienst. Open punten blijven zichtbaar totdat ze zijn gecontroleerd.",
+    "findingsIntro": "Deze lijst bevat bevindingen die nog moeten worden opgelost en geverifieerd. De status geldt voor de gedateerde controle en is geen veiligheidsgarantie voor de hele dienst.",
     "reportText": "Mail de betreffende URL, impact en stappen om het probleem te reproduceren. Vermijd toegang tot andermans gegevens, verstoring van de dienst en publicatie van misbruik van een onopgeloste kwetsbaarheid. Stuur geen wachtwoorden, sessietokens of privégegevens.",
     "response": "De beheerder behandelt meldingen. Er geldt momenteel geen gegarandeerde reactietijd en er is geen betaald beloningsprogramma.",
     "checks": {
@@ -4103,19 +4103,19 @@
         "validation": "Productierechten en leesbaarheid na de correctie gecontroleerd; geïsoleerde SQL-tests weigeren schrijfacties. Er is niet vastgesteld of de eerdere toegang is misbruikt."
       },
       "media": {
-        "title": "Cookies bij openbare media-aanvragen",
-        "text": "Bekende media- en avatarcomponenten van Nolto vragen backendafbeeldingen nu anoniem op, ook bij het vooraf laden van avatars. Deze aanvragen gebruiken zo geen cookies van derden; andere afbeeldingsbronnen blijven werken.",
-        "validation": "De mediarespons ondersteunt CORS. Tests controleren de URL-grenzen. Dit verwijdert geen providercookies en omvat niet elke externe afbeelding."
+        "title": "Cookies bij openbare afbeeldingsverzoeken",
+        "text": "Openbare backendafbeeldingen gebruiken nu anonieme CORS in gedeelde afbeeldingscomponenten, het vooraf laden van avatars en opgeschoonde artikel-HTML. Privévoorbeelden behouden hun toegangscontroles.",
+        "validation": "Afbeeldingen met crossorigin=anonymous laden in de gepubliceerde feed. Tests dekken URL-grenzen, vooraf laden en opgeschoonde HTML. Het cookiebeleid van andere afbeeldingsaanbieders valt buiten deze oplossing."
       },
       "websocket": {
-        "title": "Gemelde cookiewaarschuwing bij realtimeverbindingen",
-        "text": "De browserwaarschuwing over __cf_bm bij WebSocket-verbindingen is nog niet opgelost. De gecontroleerde afbeeldingscookie past bij het backenddomein. Een aanvraag tussen verschillende origins bewijst op zichzelf geen onjuist cookiedomein.",
-        "validation": "WebFinger en OAuth-discovery stuurden na de Worker-update van vandaag geen upstreamcookies door. De gemelde aangemelde WebSocket-handshake en het Firefox-gedrag zijn niet gereproduceerd."
+        "title": "Cookiegrens voor realtimeverbindingen",
+        "text": "Realtimeverbindingen op nolto.social gebruiken nu het eigen domein. De gateway verwijdert cookies naar de backend en Set-Cookie uit verbindingsantwoorden, met behoud van API-sleutels en autorisatiecontroles.",
+        "validation": "In productie: HTTP 101 zonder Set-Cookie; abonnement, heartbeat en afsluiting bevestigd. Ongeldige API-sleutels en vreemde origins worden geweigerd. De oorspronkelijke Firefox-sessie is niet gereproduceerd."
       },
       "headers": {
-        "title": "Aanvullend beleid voor browserresponsen nodig",
-        "text": "De startpagina bevat HSTS, nosniff en een verwijzerbeleid. Content-Security-Policy en een header tegen inbedding in frames ontbraken in de gecontroleerde respons.",
-        "validation": "Waargenomen op de gepubliceerde dienst. Hostinginstellingen, compatibiliteitstests en een nieuwe responscontrole zijn nog nodig."
+        "title": "Beveiligingsbeleid voor browserantwoorden",
+        "text": "HTML-antwoorden van de website bevatten nu een afgedwongen Content-Security-Policy en X-Frame-Options: DENY. Het beleid beperkt scripts en verbindingen en voorkomt dat Nolto in een frame wordt ingebed.",
+        "validation": "Antwoordheaders in productie gecontroleerd voor de startpagina, het beveiligingscentrum, aanmelden, de feed en integraties. Feed en afbeeldingen laden onder dit beleid. Tests bevestigen het behoud van aanmeldcookies."
       }
     },
     "boundaries": {
@@ -4131,6 +4131,9 @@
         "title": "Nog te controleren beheermaatregelen",
         "text": "Back-upherstel, bewaartermijnen van providers, aflevering van waarschuwingen, dekking van aanvraaglimieten en de bestaande ondertekeningsidentiteit moeten verder worden gecontroleerd. Deze beoordeling certificeert ze niet."
       }
-    }
+    },
+    "noOpenFindings": "Geen open bevindingen",
+    "resolvedFindings": "Opgeloste bevindingen",
+    "closedSummary": "Alle vier bevindingen uit de controle van 27 september 2026 zijn opgelost en in productie geverifieerd. De geschiedenis en onderbouwing staan hieronder."
   }
 }

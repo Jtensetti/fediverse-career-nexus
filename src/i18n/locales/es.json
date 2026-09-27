@@ -4066,11 +4066,11 @@
   "trust": {
     "title": "Centro de confianza",
     "eyebrow": "Seguridad y transparencia",
-    "intro": "Qué hemos revisado y corregido y qué queda pendiente. Un informe fechado sobre la seguridad y privacidad de Nolto.",
+    "intro": "La revisión de seguridad de Nolto, las correcciones realizadas y los límites de sus protecciones.",
     "reviewed": "Última revisión:",
     "operator": "Responsable: Jonatan Tensetti",
     "navigation": "En esta página",
-    "findings": "Resultados de la auditoría",
+    "findings": "Hallazgos abiertos",
     "limits": "Protección y limitaciones",
     "report": "Informar de una vulnerabilidad",
     "evidence": "Informe técnico y pruebas",
@@ -4078,7 +4078,7 @@
     "policies": "Políticas y contacto de seguridad",
     "securityFile": "Contacto de seguridad en texto",
     "scope": "Revisión interna del código, comprobaciones de permisos en producción, verificaciones HTTP públicas y pruebas de regresión automatizadas. No es una prueba de penetración independiente, una certificación ni una supervisión continua. Activar RLS no demuestra que cada regla sea correcta. El análisis de dependencias recoge los avisos conocidos de la aplicación web en la fecha indicada.",
-    "findingsIntro": "El estado corresponde a cada hallazgo, no a la seguridad del servicio completo. Los puntos abiertos siguen visibles hasta su verificación.",
+    "findingsIntro": "Esta lista muestra los hallazgos pendientes de corrección y verificación. El estado corresponde a la revisión fechada, no a una garantía de seguridad de todo el servicio.",
     "reportText": "Envía por correo la URL afectada, el impacto y los pasos para reproducir el problema. Evita acceder a datos ajenos, interrumpir el servicio o publicar cómo explotar una vulnerabilidad sin corregir. No envíes contraseñas, tokens de sesión ni datos privados.",
     "response": "El responsable atiende los informes. Actualmente no se garantiza un plazo de respuesta ni se ofrecen recompensas económicas.",
     "checks": {
@@ -4103,19 +4103,19 @@
         "validation": "Permisos y lectura comprobados en producción tras la corrección; las pruebas SQL aisladas rechazan escrituras. La revisión no determinó si se había aprovechado el acceso anterior."
       },
       "media": {
-        "title": "Cookies al solicitar imágenes públicas",
-        "text": "Los componentes conocidos de medios y avatares de Nolto solicitan ahora las imágenes del backend de forma anónima, incluida la precarga. Así evitan cookies de terceros en esas solicitudes y conservan otras fuentes de imágenes.",
-        "validation": "La respuesta del backend admite CORS. Las pruebas comprueban los límites de URL. El cambio no elimina cookies del proveedor ni abarca todas las imágenes externas."
+        "title": "Cookies en solicitudes de imágenes públicas",
+        "text": "Las imágenes públicas del backend ahora usan CORS anónimo en los componentes compartidos, la precarga de avatares y el HTML saneado de los artículos. Las vistas previas privadas conservan sus controles de acceso.",
+        "validation": "Las imágenes con crossorigin=anonymous cargan en el feed publicado. Las pruebas cubren los límites de URL, la precarga y el HTML saneado. Las políticas de cookies de otros proveedores de imágenes quedan fuera de esta corrección."
       },
       "websocket": {
-        "title": "Aviso de cookies en conexiones en tiempo real",
-        "text": "El aviso del navegador sobre __cf_bm en conexiones WebSocket sigue sin resolverse. La cookie de imagen comprobada coincide con el dominio del backend. Una petición entre orígenes no prueba por sí sola que el dominio de la cookie sea inválido.",
-        "validation": "WebFinger y el descubrimiento OAuth no reenviaron cookies tras la actualización de hoy del Worker. No se han reproducido el handshake WebSocket autenticado informado ni el comportamiento en Firefox."
+        "title": "Límite de cookies en conexiones en tiempo real",
+        "text": "Las conexiones en tiempo real en nolto.social ahora usan el dominio del sitio. La pasarela elimina las cookies enviadas al backend y Set-Cookie de las respuestas, conservando las claves API y los controles de autorización.",
+        "validation": "En producción: HTTP 101 sin Set-Cookie; suscripción, heartbeat y salida confirmados. Se rechazan las claves API inválidas y los orígenes ajenos. No se reprodujo la sesión original de Firefox."
       },
       "headers": {
-        "title": "Reforzar la política de respuesta del navegador",
-        "text": "La portada incluye HSTS, nosniff y una política de referencia. En la respuesta comprobada faltaban Content-Security-Policy y una cabecera para impedir la inclusión en marcos.",
-        "validation": "Observado en el servicio publicado. Se requiere configurar el alojamiento, probar la compatibilidad y volver a comprobar la respuesta."
+        "title": "Política de seguridad de las respuestas del navegador",
+        "text": "Las respuestas HTML del sitio ahora aplican Content-Security-Policy y X-Frame-Options: DENY. La política restringe scripts y conexiones e impide incluir Nolto en marcos.",
+        "validation": "Cabeceras verificadas en producción para inicio, centro de confianza, acceso, feed e integraciones. El feed y las imágenes cargan con esta política. Las pruebas verifican que se conservan las cookies de acceso."
       }
     },
     "boundaries": {
@@ -4131,6 +4131,9 @@
         "title": "Comprobaciones operativas pendientes",
         "text": "La restauración de copias, la retención de los proveedores, la entrega de alertas, la cobertura de límites de peticiones y la identidad de firma existente requieren más verificación. Esta revisión no las certifica."
       }
-    }
+    },
+    "noOpenFindings": "No hay hallazgos abiertos",
+    "resolvedFindings": "Hallazgos resueltos",
+    "closedSummary": "Los cuatro hallazgos de la revisión del 27 de septiembre de 2026 están corregidos y verificados en producción. El historial y las pruebas figuran a continuación."
   }
 }
