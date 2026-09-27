@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useState, type ImgHTMLAttributes } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchOwnMedia, isNoltoMedia } from '@/lib/media';
+import { mediaCrossOrigin } from '@/lib/mediaCredentials';
 
 export function useMediaSource(src?: string): string | undefined {
   const { user } = useAuth();
@@ -21,5 +22,5 @@ export function useMediaSource(src?: string): string | undefined {
 
 export const MediaImage = forwardRef<HTMLImageElement, ImgHTMLAttributes<HTMLImageElement>>(function MediaImage({ src, ...props }, ref) {
   const resolved = useMediaSource(src);
-  return <img ref={ref} {...props} src={resolved} />;
+  return <img ref={ref} crossOrigin={mediaCrossOrigin(resolved, import.meta.env?.VITE_SUPABASE_URL)} {...props} src={resolved} />;
 });

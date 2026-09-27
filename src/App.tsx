@@ -74,6 +74,7 @@ const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
 const CodeOfConductPage = lazy(() => import("./pages/legal/CodeOfConductPage"));
 const InstanceGuidelinesPage = lazy(() => import("./pages/legal/InstanceGuidelines"));
+const TrustCenter = lazy(() => import("./pages/info/TrustCenter"));
 const CookiesPage = lazy(() => import("./pages/legal/CookiesPage"));
 const Instances = lazy(() => import("./pages/federation/Instances"));
 const AdminFederationHealth = lazy(() => import("./pages/federation/AdminFederationHealth"));
@@ -200,6 +201,7 @@ function RoutedContent() {
                     <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
                     <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
                     <Route path="/cookies" element={<CookiesPage />} />
+                    <Route path="/trust-center" element={<TrustCenter />} />
                     <Route path="/instances" element={<Instances />} />
                     <Route path="/packs" element={<StarterPacks />} />
                     <Route path="/packs/:slug" element={<StarterPackView />} />

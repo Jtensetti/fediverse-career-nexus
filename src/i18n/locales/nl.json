@@ -4015,6 +4015,10 @@
         [
           "Andere diensten",
           "De applicatiecode omvat geen reclametracking of Google Analytics. Hosting- en beveiligingsproviders kunnen technische opslag gebruiken, afhankelijk van de implementatie. Externe afbeeldingen en links kunnen contact opnemen met andere diensten met hun eigen beleid. Toestemming moet worden verkregen voordat opslag die dit vereist wordt ingeschakeld."
+        ],
+        [
+          "Beveiligingscookies",
+          "Cloudflare kan __cf_bm instellen voor botbescherming op Nolto of op het domein van de backend- en mediaprovider. Volgens Cloudflare verloopt deze na 30 minuten inactiviteit. Browsers kunnen cookies van derden weigeren. De Nolto-aanmeldsessie staat afzonderlijk in localStorage. Het vertrouwenscentrum toont gedateerde controles en resterende waarschuwingen."
         ]
       ]
     },
@@ -4057,6 +4061,76 @@
           "Handhaaf updates, toegangscontroles, ondertekeningssleutels, back-ups, hersteltests en leveringsmonitoring. Stel misbruik- en incidentprocedures op. Test detectie, volgers, publiceren, bewerken en verwijderen tegen een afzonderlijke server voordat u opent. ActivityPub en AT Protocol zijn verschillend; beschrijf de interoperabiliteit die daadwerkelijk beschikbaar is."
         ]
       ]
+    }
+  },
+  "trust": {
+    "title": "Vertrouwenscentrum",
+    "eyebrow": "Veiligheid en transparantie",
+    "intro": "Wat we hebben gecontroleerd en opgelost en wat nog aandacht nodig heeft. Een gedateerd overzicht van de veiligheid en privacy van Nolto.",
+    "reviewed": "Laatst gecontroleerd:",
+    "operator": "Beheerder: Jonatan Tensetti",
+    "navigation": "Op deze pagina",
+    "findings": "Auditbevindingen",
+    "limits": "Bescherming en beperkingen",
+    "report": "Een kwetsbaarheid melden",
+    "evidence": "Technisch verslag en onderbouwing",
+    "validation": "Controle:",
+    "policies": "Beleid en beveiligingscontact",
+    "securityFile": "Beveiligingscontact als tekstbestand",
+    "scope": "Interne codebeoordeling, controle van productierechten, openbare HTTP-controles en geautomatiseerde regressietests. Geen onafhankelijke penetratietest, certificering of doorlopende bewaking. Ingeschakelde RLS bewijst niet dat elke regel klopt. De afhankelijkhedencontrole betreft bekende meldingen voor de webapp op het controlemoment.",
+    "findingsIntro": "De status geldt voor de afzonderlijke bevinding, niet voor de veiligheid van de hele dienst. Open punten blijven zichtbaar totdat ze zijn gecontroleerd.",
+    "reportText": "Mail de betreffende URL, impact en stappen om het probleem te reproduceren. Vermijd toegang tot andermans gegevens, verstoring van de dienst en publicatie van misbruik van een onopgeloste kwetsbaarheid. Stuur geen wachtwoorden, sessietokens of privégegevens.",
+    "response": "De beheerder behandelt meldingen. Er geldt momenteel geen gegarandeerde reactietijd en er is geen betaald beloningsprogramma.",
+    "checks": {
+      "rls": "Tabellen in het openbare schema met toegangscontrole per rij. In productie gecontroleerd.",
+      "storage": "Privéopslagruimten. Gepubliceerde media worden via toegangscontrole beschikbaar gesteld.",
+      "dependencies": "Bekende npm-beveiligingsmeldingen voor vastgelegde webafhankelijkheden tijdens de controle."
+    },
+    "status": {
+      "fixed": "Opgelost · in productie gecontroleerd",
+      "mitigated": "Beperkt · afgebakende maatregel",
+      "open": "Nog open"
+    },
+    "severity": {
+      "high": "Hoge ernst",
+      "medium": "Gemiddelde ernst",
+      "low": "Lage ernst"
+    },
+    "items": {
+      "views": {
+        "title": "Onbedoelde schrijftoegang via openbare views",
+        "text": "Openbare profiel- en cv-views hadden te ruime schrijfrechten. Browserrollen hebben nu geen schrijfrechten meer op alle 13 openbare views. Gewone bewerkingen verlopen nog steeds via beschermde tabellen en functies.",
+        "validation": "Productierechten en leesbaarheid na de correctie gecontroleerd; geïsoleerde SQL-tests weigeren schrijfacties. Er is niet vastgesteld of de eerdere toegang is misbruikt."
+      },
+      "media": {
+        "title": "Cookies bij openbare media-aanvragen",
+        "text": "Bekende media- en avatarcomponenten van Nolto vragen backendafbeeldingen nu anoniem op, ook bij het vooraf laden van avatars. Deze aanvragen gebruiken zo geen cookies van derden; andere afbeeldingsbronnen blijven werken.",
+        "validation": "De mediarespons ondersteunt CORS. Tests controleren de URL-grenzen. Dit verwijdert geen providercookies en omvat niet elke externe afbeelding."
+      },
+      "websocket": {
+        "title": "Gemelde cookiewaarschuwing bij realtimeverbindingen",
+        "text": "De browserwaarschuwing over __cf_bm bij WebSocket-verbindingen is nog niet opgelost. De gecontroleerde afbeeldingscookie past bij het backenddomein. Een aanvraag tussen verschillende origins bewijst op zichzelf geen onjuist cookiedomein.",
+        "validation": "WebFinger en OAuth-discovery stuurden na de Worker-update van vandaag geen upstreamcookies door. De gemelde aangemelde WebSocket-handshake en het Firefox-gedrag zijn niet gereproduceerd."
+      },
+      "headers": {
+        "title": "Aanvullend beleid voor browserresponsen nodig",
+        "text": "De startpagina bevat HSTS, nosniff en een verwijzerbeleid. Content-Security-Policy en een header tegen inbedding in frames ontbraken in de gecontroleerde respons.",
+        "validation": "Waargenomen op de gepubliceerde dienst. Hostinginstellingen, compatibiliteitstests en een nieuwe responscontrole zijn nog nodig."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Privéberichten",
+        "text": "Nieuwe lokale berichten worden in de browser versleuteld en ondertekend. Metadata over deelnemers blijft zichtbaar. Forward secrecy, sleutelrotatie en een onafhankelijke cryptografische beoordeling ontbreken."
+      },
+      "deletion": {
+        "title": "Verwijdering en federatie",
+        "text": "Een verwijderingsverzoek verbergt gegevens en plant definitieve verwijdering na 30 dagen. Providerback-ups en kopieën op andere servers vereisen aparte afhandeling. Terughalen van federatieve kopieën kan niet worden gegarandeerd."
+      },
+      "operations": {
+        "title": "Nog te controleren beheermaatregelen",
+        "text": "Back-upherstel, bewaartermijnen van providers, aflevering van waarschuwingen, dekking van aanvraaglimieten en de bestaande ondertekeningsidentiteit moeten verder worden gecontroleerd. Deze beoordeling certificeert ze niet."
+      }
     }
   }
 }

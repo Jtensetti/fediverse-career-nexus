@@ -4015,6 +4015,10 @@
         [
           "Other services",
           "The application code does not include advertising tracking or Google Analytics. Hosting and security providers may use technical storage depending on the deployment. External images and links may contact other services with their own policies. Consent must be obtained before enabling any storage that requires it."
+        ],
+        [
+          "Security cookies",
+          "Cloudflare may set the __cf_bm cookie for bot protection on Nolto or on the backend and media provider’s domain. Cloudflare documents a 30-minute lifetime after inactivity. Browser restrictions can reject third-party cookies. Nolto’s own sign-in session is stored separately in localStorage. See the Trust Center for the dated checks and remaining warnings."
         ]
       ]
     },
@@ -4057,6 +4061,76 @@
           "Maintain updates, access controls, signing keys, backups, recovery tests and delivery monitoring. Establish abuse and incident procedures. Test discovery, follows, publishing, editing and deletion against a separate server before opening. ActivityPub and AT Protocol are distinct; describe the interoperability actually available."
         ]
       ]
+    }
+  },
+  "trust": {
+    "title": "Trust Center",
+    "eyebrow": "Security & transparency",
+    "intro": "What we have checked, what we have fixed, and what still needs work. A dated account of Nolto’s security and privacy.",
+    "reviewed": "Last reviewed:",
+    "operator": "Operator: Jonatan Tensetti",
+    "navigation": "On this page",
+    "findings": "Audit findings",
+    "limits": "Protection and limitations",
+    "report": "Report a vulnerability",
+    "evidence": "Technical audit and evidence",
+    "validation": "Verification:",
+    "policies": "Policies and security contact",
+    "securityFile": "Security contact file",
+    "scope": "Internal code review, production permission checks, public HTTP checks and automated regressions. This is not an independent penetration test, certification or live monitoring. RLS being enabled does not establish that every policy is correct. The dependency result is a dated advisory scan of the web application.",
+    "findingsIntro": "Status describes the specific finding, not the security of the entire service. Open items remain visible until verified.",
+    "reportText": "Email the affected URL, impact and steps to reproduce. Please avoid accessing other people’s data, service disruption and public disclosure of an unfixed exploit. Send no passwords, session tokens or private user data.",
+    "response": "Reports are handled by the operator. No response-time guarantee or paid bounty is currently offered.",
+    "checks": {
+      "rls": "Public-schema tables with row-level security enabled. Checked in production.",
+      "storage": "Private storage buckets. Published media is released through an access-controlled gateway.",
+      "dependencies": "Known npm advisories in the locked web dependency graph at review time."
+    },
+    "status": {
+      "fixed": "Fixed · production verified",
+      "mitigated": "Mitigated · limited scope",
+      "open": "Open"
+    },
+    "severity": {
+      "high": "High severity",
+      "medium": "Medium severity",
+      "low": "Low severity"
+    },
+    "items": {
+      "views": {
+        "title": "Unintended write access through public views",
+        "text": "Public profile and CV views had excessive write permissions. Browser roles now have no write permissions on any of the 13 public views. Normal edits continue through the protected tables and functions.",
+        "validation": "Production grants and readable projections checked after the fix; isolated SQL tests reject writes. This review did not determine whether the earlier access was used."
+      },
+      "media": {
+        "title": "Cookies on public media requests",
+        "text": "Known Nolto media and avatar components now request backend images anonymously, including avatar preloads. This avoids third-party cookies on those image requests while preserving other image sources.",
+        "validation": "The backend media response supports CORS. URL-boundary tests cover the change. This does not remove cookies added by providers or cover every external image."
+      },
+      "websocket": {
+        "title": "Reported realtime cookie warning",
+        "text": "A browser warning about __cf_bm on WebSocket connections remains unresolved. The checked image cookie matches its backend domain; a cross-origin request alone does not prove an invalid cookie domain.",
+        "validation": "WebFinger and OAuth discovery returned no upstream cookies after today’s Worker update. The reported authenticated WebSocket handshake and Firefox behavior have not been reproduced."
+      },
+      "headers": {
+        "title": "Browser response policy needs strengthening",
+        "text": "The homepage response includes HSTS, nosniff and a referrer policy. A Content-Security-Policy and anti-framing response header were absent from the checked response.",
+        "validation": "Observed on the public deployment. Hosting configuration, compatibility testing and a fresh response check are required before closing this finding."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Private messages",
+        "text": "New local messages are encrypted and signed in the browser. Participant metadata remains visible. Forward secrecy, key rotation and an independent cryptographic review are not provided."
+      },
+      "deletion": {
+        "title": "Deletion and federation",
+        "text": "Requested deletion hides data and queues permanent erasure after 30 days. Provider backups and copies on other servers need separate handling; deletion cannot guarantee recall of federated copies."
+      },
+      "operations": {
+        "title": "Operational evidence still needed",
+        "text": "Backup restore testing, provider retention, alert delivery, rate-limit coverage and the retained federation signing identity require further verification. These are not certified by this review."
+      }
     }
   }
 }

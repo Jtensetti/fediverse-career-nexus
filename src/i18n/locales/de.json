@@ -4015,6 +4015,10 @@
         [
           "Andere Dienste",
           "Der Anwendungscode enthält keine Werbeverfolgung oder Google Analytics. Hosting- und Sicherheitsanbieter können je nach Implementierung technischen Speicher verwenden. Externe Bilder und Links können andere Dienste mit deren eigenen Richtlinien kontaktieren. Die Zustimmung muss eingeholt werden, bevor jeglicher Speicher aktiviert wird, der dies erfordert."
+        ],
+        [
+          "Sicherheitscookies",
+          "Cloudflare kann __cf_bm zum Bot-Schutz auf Nolto oder auf der Domain des Backend- und Medienanbieters setzen. Laut Cloudflare läuft es nach 30 Minuten Inaktivität ab. Browser können Drittanbieter-Cookies ablehnen. Die Nolto-Anmeldesitzung wird separat in localStorage gespeichert. Datierte Prüfungen und offene Warnungen stehen im Sicherheitszentrum."
         ]
       ]
     },
@@ -4057,6 +4061,76 @@
           "Pflegen Sie Updates, Zugriffskontrollen, Signierschlüssel, Backups, Wiederherstellungstests und Überwachung der Bereitstellung. Etablieren Sie Verfahren für Missbrauch und Vorfälle. Testen Sie Discovery, Follows, Veröffentlichung, Bearbeitung und Löschung gegen einen separaten Server, bevor Sie ihn öffnen. ActivityPub und AT Protocol sind unterschiedlich; beschreiben Sie die tatsächlich verfügbare Interoperabilität."
         ]
       ]
+    }
+  },
+  "trust": {
+    "title": "Sicherheitszentrum",
+    "eyebrow": "Sicherheit und Transparenz",
+    "intro": "Was wir geprüft und behoben haben und was noch offen ist. Eine datierte Übersicht zu Sicherheit und Datenschutz bei Nolto.",
+    "reviewed": "Zuletzt geprüft:",
+    "operator": "Verantwortlich: Jonatan Tensetti",
+    "navigation": "Auf dieser Seite",
+    "findings": "Prüfergebnisse",
+    "limits": "Schutz und Grenzen",
+    "report": "Schwachstelle melden",
+    "evidence": "Technischer Bericht und Nachweise",
+    "validation": "Überprüfung:",
+    "policies": "Richtlinien und Sicherheitskontakt",
+    "securityFile": "Sicherheitskontakt als Textdatei",
+    "scope": "Interne Codeprüfung, Berechtigungsprüfungen im Produktivsystem, öffentliche HTTP-Prüfungen und automatisierte Regressionstests. Kein unabhängiger Penetrationstest, keine Zertifizierung und keine laufende Überwachung. Aktiviertes RLS belegt nicht die Korrektheit jeder Regel. Die Abhängigkeitsprüfung erfasst bekannte Hinweise zur Webanwendung zum Prüfzeitpunkt.",
+    "findingsIntro": "Der Status gilt für den einzelnen Befund, nicht für die Sicherheit des gesamten Dienstes. Offene Punkte bleiben bis zur Überprüfung sichtbar.",
+    "reportText": "Bitte senden Sie die betroffene URL, mögliche Auswirkungen und Schritte zur Reproduktion per E-Mail. Greifen Sie nicht auf fremde Daten zu, stören Sie den Dienst nicht und veröffentlichen Sie keine Anleitung zu einer ungeklärten Schwachstelle. Senden Sie keine Passwörter, Sitzungstoken oder privaten Nutzerdaten.",
+    "response": "Meldungen bearbeitet der Betreiber. Es gibt derzeit weder eine garantierte Antwortzeit noch ein bezahltes Prämienprogramm.",
+    "checks": {
+      "rls": "Tabellen im öffentlichen Schema mit aktiviertem zeilenbasiertem Zugriffsschutz. Im Produktivsystem geprüft.",
+      "storage": "Private Speicherbereiche. Veröffentlichte Medien werden über eine Zugriffskontrolle bereitgestellt.",
+      "dependencies": "Bekannte npm-Sicherheitsmeldungen in den festgeschriebenen Webabhängigkeiten zum Prüfzeitpunkt."
+    },
+    "status": {
+      "fixed": "Behoben · im Betrieb geprüft",
+      "mitigated": "Abgemildert · begrenzter Umfang",
+      "open": "Offen"
+    },
+    "severity": {
+      "high": "Hoher Schweregrad",
+      "medium": "Mittlerer Schweregrad",
+      "low": "Niedriger Schweregrad"
+    },
+    "items": {
+      "views": {
+        "title": "Unbeabsichtigter Schreibzugriff über öffentliche Views",
+        "text": "Öffentliche Profil- und Lebenslauf-Views hatten zu weitreichende Schreibrechte. Browserrollen haben jetzt auf keine der 13 öffentlichen Views Schreibzugriff. Reguläre Änderungen erfolgen weiterhin über geschützte Tabellen und Funktionen.",
+        "validation": "Produktive Berechtigungen und Lesezugriffe nach der Korrektur geprüft; isolierte SQL-Tests weisen Schreibzugriffe ab. Ob der frühere Zugriff ausgenutzt wurde, wurde nicht festgestellt."
+      },
+      "media": {
+        "title": "Cookies bei öffentlichen Medienabrufen",
+        "text": "Bekannte Nolto-Medien- und Avatar-Komponenten laden Backendbilder jetzt anonym, auch beim Vorladen von Avataren. Diese Abrufe verwenden damit keine Drittanbieter-Cookies; andere Bildquellen bleiben nutzbar.",
+        "validation": "Die Medienantwort unterstützt CORS. Tests prüfen die URL-Grenzen. Die Änderung entfernt keine Cookies beim Anbieter und deckt nicht jedes externe Bild ab."
+      },
+      "websocket": {
+        "title": "Gemeldete Cookiewarnung bei Echtzeitverbindungen",
+        "text": "Die Browserwarnung zu __cf_bm bei WebSocket-Verbindungen ist noch offen. Das geprüfte Bild-Cookie passt zur Backend-Domain. Ein ursprungsübergreifender Abruf allein beweist keine ungültige Cookie-Domain.",
+        "validation": "WebFinger und OAuth-Discovery lieferten nach dem heutigen Worker-Update keine weitergeleiteten Cookies. Der gemeldete authentifizierte WebSocket-Verbindungsaufbau und Firefox wurden nicht reproduziert."
+      },
+      "headers": {
+        "title": "HTTP-Sicherheitsrichtlinien müssen ergänzt werden",
+        "text": "Die Startseite liefert HSTS, nosniff und eine Referrer-Richtlinie. Content-Security-Policy und ein Header zum Schutz vor Einbettung fehlten in der geprüften Antwort.",
+        "validation": "Im veröffentlichten Dienst beobachtet. Hosting-Konfiguration, Kompatibilitätstests und eine erneute Antwortprüfung stehen aus."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Private Nachrichten",
+        "text": "Neue lokale Nachrichten werden im Browser verschlüsselt und signiert. Metadaten der Beteiligten bleiben sichtbar. Vorwärtsgeheimnis, Schlüsselrotation und eine unabhängige kryptografische Prüfung fehlen."
+      },
+      "deletion": {
+        "title": "Löschung und Föderation",
+        "text": "Eine angeforderte Löschung blendet Daten aus und plant ihre endgültige Löschung nach 30 Tagen. Anbieterbackups und Kopien auf anderen Servern müssen gesondert behandelt werden. Föderierte Kopien lassen sich nicht garantiert zurückrufen."
+      },
+      "operations": {
+        "title": "Noch ausstehende Betriebsnachweise",
+        "text": "Backup-Wiederherstellung, Aufbewahrungsfristen der Anbieter, Alarmzustellung, Abdeckung der Ratenbegrenzung und die bestehende Signierungsidentität müssen weiter geprüft werden. Diese Prüfung bestätigt sie nicht."
+      }
     }
   }
 }

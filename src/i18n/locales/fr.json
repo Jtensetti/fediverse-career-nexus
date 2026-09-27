@@ -4015,6 +4015,10 @@
         [
           "Autres services",
           "Le code de l'application n'inclut pas de suivi publicitaire ni Google Analytics. Les fournisseurs d'hébergement et de sécurité peuvent utiliser le stockage technique en fonction du déploiement. Les images et liens externes peuvent contacter d'autres services avec leurs propres politiques. Le consentement doit être obtenu avant d'activer tout stockage qui le nécessite."
+        ],
+        [
+          "Cookies de sécurité",
+          "Cloudflare peut définir __cf_bm pour la protection contre les robots sur Nolto ou sur le domaine du fournisseur du backend et des médias. Cloudflare indique une expiration après 30 minutes d’inactivité. Le navigateur peut refuser les cookies tiers. La session de connexion Nolto est stockée séparément dans localStorage. Le centre de confiance présente les vérifications datées et les avertissements restants."
         ]
       ]
     },
@@ -4057,6 +4061,76 @@
           "Maintenez les mises à jour, les contrôles d'accès, les clés de signature, les sauvegardes, les tests de récupération et la surveillance de la livraison. Établissez des procédures d'abus et d'incidents. Testez la découverte, les suivis, la publication, la modification et la suppression par rapport à un serveur séparé avant l'ouverture. ActivityPub et AT Protocol sont distincts ; décrivez l'interopérabilité réellement disponible."
         ]
       ]
+    }
+  },
+  "trust": {
+    "title": "Centre de confiance",
+    "eyebrow": "Sécurité et transparence",
+    "intro": "Ce que nous avons vérifié et corrigé, et ce qui reste à faire. Un état daté de la sécurité et de la confidentialité de Nolto.",
+    "reviewed": "Dernière vérification :",
+    "operator": "Responsable : Jonatan Tensetti",
+    "navigation": "Sur cette page",
+    "findings": "Résultats de l’audit",
+    "limits": "Protections et limites",
+    "report": "Signaler une vulnérabilité",
+    "evidence": "Rapport technique et preuves",
+    "validation": "Vérification :",
+    "policies": "Politiques et contact sécurité",
+    "securityFile": "Contact sécurité au format texte",
+    "scope": "Revue interne du code, contrôle des permissions en production, vérifications HTTP publiques et tests de régression automatisés. Ce n’est ni un test d’intrusion indépendant, ni une certification, ni une surveillance continue. Activer RLS ne prouve pas que chaque règle est correcte. L’analyse des dépendances porte sur les alertes connues de l’application web à la date indiquée.",
+    "findingsIntro": "Le statut concerne chaque constat, pas la sécurité globale du service. Les points ouverts restent visibles jusqu’à leur vérification.",
+    "reportText": "Envoyez par e-mail l’URL concernée, l’impact et les étapes de reproduction. Évitez d’accéder aux données d’autrui, de perturber le service ou de publier une méthode d’exploitation non corrigée. N’envoyez aucun mot de passe, jeton de session ou donnée privée.",
+    "response": "Les signalements sont traités par le responsable. Aucun délai de réponse garanti ni programme de récompense rémunéré n’est proposé actuellement.",
+    "checks": {
+      "rls": "Tables du schéma public avec contrôle d’accès par ligne activé. Vérifié en production.",
+      "storage": "Espaces de stockage privés. Les médias publiés passent par une passerelle contrôlant l’accès.",
+      "dependencies": "Alertes npm connues dans les dépendances web verrouillées au moment de l’audit."
+    },
+    "status": {
+      "fixed": "Corrigé · vérifié en production",
+      "mitigated": "Atténué · portée limitée",
+      "open": "Ouvert"
+    },
+    "severity": {
+      "high": "Gravité élevée",
+      "medium": "Gravité moyenne",
+      "low": "Gravité faible"
+    },
+    "items": {
+      "views": {
+        "title": "Droits d’écriture involontaires via les vues publiques",
+        "text": "Les vues publiques de profils et de CV avaient des droits d’écriture excessifs. Les rôles du navigateur ne peuvent désormais écrire dans aucune des 13 vues publiques. Les modifications normales utilisent toujours les tables et fonctions protégées.",
+        "validation": "Permissions et lecture vérifiées en production après correction ; les tests SQL isolés refusent les écritures. L’audit n’a pas déterminé si cet accès avait été exploité."
+      },
+      "media": {
+        "title": "Cookies lors du chargement des médias publics",
+        "text": "Les composants de médias et d’avatars connus de Nolto chargent désormais les images du backend anonymement, préchargement compris. Ces requêtes évitent les cookies tiers tout en conservant les autres sources d’images.",
+        "validation": "La réponse média prend en charge CORS. Les tests vérifient les limites d’URL. Cela ne supprime pas les cookies des fournisseurs et ne couvre pas toutes les images externes."
+      },
+      "websocket": {
+        "title": "Avertissement de cookie signalé en temps réel",
+        "text": "L’avertissement du navigateur concernant __cf_bm sur les connexions WebSocket reste non résolu. Le cookie de l’image contrôlée correspond au domaine du backend. Une requête entre origines ne prouve pas à elle seule un domaine de cookie invalide.",
+        "validation": "WebFinger et la découverte OAuth n’ont transmis aucun cookie du backend après la mise à jour du Worker aujourd’hui. La connexion WebSocket authentifiée signalée et le comportement de Firefox n’ont pas été reproduits."
+      },
+      "headers": {
+        "title": "Renforcer la politique de sécurité des réponses",
+        "text": "La page d’accueil inclut HSTS, nosniff et une politique de référent. Content-Security-Policy et un en-tête empêchant l’intégration dans un cadre étaient absents de la réponse contrôlée.",
+        "validation": "Observé sur le service publié. La configuration de l’hébergement, les tests de compatibilité et une nouvelle vérification restent nécessaires."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Messages privés",
+        "text": "Les nouveaux messages locaux sont chiffrés et signés dans le navigateur. Les métadonnées des participants restent visibles. La confidentialité persistante, la rotation des clés et une revue cryptographique indépendante ne sont pas fournies."
+      },
+      "deletion": {
+        "title": "Suppression et fédération",
+        "text": "Une demande de suppression masque les données et programme leur effacement définitif après 30 jours. Les sauvegardes des fournisseurs et les copies sur d’autres serveurs nécessitent un traitement séparé. Le rappel des copies fédérées ne peut être garanti."
+      },
+      "operations": {
+        "title": "Preuves opérationnelles encore nécessaires",
+        "text": "Restauration des sauvegardes, durées de conservation des fournisseurs, réception des alertes, couverture des limites de requêtes et identité de signature existante restent à vérifier. Cet audit ne les certifie pas."
+      }
     }
   }
 }
