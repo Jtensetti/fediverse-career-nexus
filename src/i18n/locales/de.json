@@ -3881,6 +3881,52 @@
       "contract": "Auftragsarbeit",
       "intern": "Praktikant",
       "freelance": "Freiberuflich"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – eine föderierte Alternative zu LinkedIn",
+        "intro": "Sie suchen eine Alternative zu LinkedIn oder Xing? Nolto ist ein offenes, föderiertes berufliches Netzwerk – ohne Werbung, ohne Tracking und ohne Algorithmus, der bestimmt, was Sie sehen.",
+        "sections": [
+          [
+            "Warum eine Alternative zu LinkedIn?",
+            "Viele Berufstätige wünschen sich eine Plattform, bei der sie selbst über ihre Inhalte und ihren Feed bestimmen. Bei Nolto gibt es keine Werbung, kein Tracking und keinen Algorithmus, der Beiträge versteckt oder hervorhebt. Ihr Feed ist chronologisch, und Ihre Daten gehören Ihnen."
+          ],
+          [
+            "Was macht Nolto anders?",
+            "Nolto basiert auf dem offenen Protokoll ActivityPub. Ihr Profil kann Menschen auf anderen Servern im Fediverse erreichen, einschließlich Mastodon. Ihre Identität ist portabel – Sie sind nicht an einen einzigen Dienst gebunden."
+          ],
+          [
+            "Funktionen für das Berufsleben",
+            "Nolto vereint, was Sie im Arbeitsleben brauchen: Profile mit Lebenslauf, Stellenanzeigen, Veranstaltungen, Organisationsseiten, Artikel und einen öffentlichen Feed. Sie wählen selbst, welche Angaben Sie teilen und wer sie sehen darf."
+          ],
+          [
+            "Jetzt starten",
+            "Die Kontoerstellung ist kostenlos. Sie können Ihr Profil aus einem LinkedIn-Export importieren und sind in wenigen Minuten startklar."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – ein föderiertes berufliches Netzwerk",
+        "intro": "Nolto ist ein berufliches Netzwerk, das auf offenen Protokollen basiert. Föderation bedeutet, dass kein einzelnes Unternehmen das Netzwerk besitzt – und dass Ihre Identität portabel ist.",
+        "sections": [
+          [
+            "Was ist ein föderiertes Netzwerk?",
+            "Ein föderiertes Netzwerk besteht aus vielen unabhängigen Servern, die über offene Protokolle miteinander kommunizieren. Statt dass ein Unternehmen alles kontrolliert, arbeiten verschiedene Instanzen zusammen – ähnlich wie E-Mail zwischen verschiedenen Anbietern funktioniert."
+          ],
+          [
+            "Basierend auf ActivityPub",
+            "Nolto verwendet ActivityPub, dasselbe Protokoll wie Mastodon und viele andere Dienste im Fediverse. Öffentliche Beiträge und Profile können ein größeres Publikum erreichen, ohne dass Sie ein Konto bei jedem Dienst benötigen."
+          ],
+          [
+            "Ihre Identität ist portabel",
+            "Bei Nolto ist Ihre Adresse beständig und an Sie gebunden, nicht an das Geschäftsmodell einer einzelnen Plattform. Offene Protokolle ermöglichen es, Ihre Präsenz zu verschieben oder zu spiegeln, ohne von vorn anzufangen."
+          ],
+          [
+            "Offen und transparent",
+            "Keine Werbung, kein Tracking, keine versteckten Algorithmen. Noltos Quellcode und Richtlinien sind offen, und Sie können Ihre Daten jederzeit exportieren."
+          ]
+        ]
+      }
     }
   },
   "notificationText": {
