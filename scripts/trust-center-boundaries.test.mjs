@@ -52,6 +52,9 @@ test('HTML response policy blocks framing and scripts without changing managed l
       assert.equal(response.headers.get('content-security-policy'), websitePolicy(backend));
       assert.match(websitePolicy(backend), /frame-ancestors 'none'/);
       assert.match(websitePolicy(backend), /object-src 'none'/);
+      assert.match(websitePolicy(backend), /connect-src 'self' wss:\/\/nolto\.social /);
+      assert.match(websitePolicy(backend, 'community.social'), /wss:\/\/community\.social/);
+      assert.doesNotMatch(websitePolicy(backend, 'bad; script-src *'), /bad;|script-src \*/);
       assert.doesNotMatch(websitePolicy(backend).split(';').find(s => s.trim().startsWith('script-src')), /unsafe-inline|unsafe-eval/);
     }
   } finally { globalThis.fetch = original; }

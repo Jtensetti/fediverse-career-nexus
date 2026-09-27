@@ -4074,11 +4074,11 @@
   "trust": {
     "title": "Säkerhetscenter",
     "eyebrow": "Säkerhet och insyn",
-    "intro": "Det här har vi granskat och åtgärdat – och det här återstår. En daterad redovisning av Noltos säkerhet och integritet.",
+    "intro": "Här redovisar vi Noltos säkerhetsgranskning, genomförda åtgärder och skyddens begränsningar.",
     "reviewed": "Senast granskat:",
     "operator": "Ansvarig: Jonatan Tensetti",
     "navigation": "På den här sidan",
-    "findings": "Resultat från granskningen",
+    "findings": "Öppna fynd",
     "limits": "Skydd och begränsningar",
     "report": "Rapportera en sårbarhet",
     "evidence": "Teknisk granskning och underlag",
@@ -4086,7 +4086,7 @@
     "policies": "Policyer och säkerhetskontakt",
     "securityFile": "Säkerhetskontakt i textformat",
     "scope": "Intern kodgranskning, behörighetskontroller i produktion, publika HTTP-kontroller och automatiserade regressionstester. Detta är inget oberoende penetrationstest, ingen certifiering och ingen löpande övervakning. Aktiverad RLS bevisar inte att varje regel är korrekt. Beroenderesultatet gäller webbapplikationens kända säkerhetsvarningar vid granskningstillfället.",
-    "findingsIntro": "Status gäller det enskilda fyndet, inte hela tjänstens säkerhet. Öppna punkter ligger kvar tills de har verifierats.",
+    "findingsIntro": "Listan visar fynd som ännu inte är åtgärdade och verifierade. Statusen gäller den daterade granskningen, inte en garanti för hela tjänstens säkerhet.",
     "reportText": "Mejla berörd adress, möjlig påverkan och steg för att återskapa problemet. Undvik att läsa andras uppgifter, störa tjänsten eller publicera hur en olöst sårbarhet utnyttjas. Skicka inga lösenord, sessionstoken eller privata användaruppgifter.",
     "response": "Rapporter hanteras av den ansvarige. Vi lämnar för närvarande ingen garanterad svarstid och erbjuder ingen betald hittelön.",
     "checks": {
@@ -4112,18 +4112,18 @@
       },
       "media": {
         "title": "Cookies vid hämtning av publika bilder",
-        "text": "Noltos kända medie- och avatarkomponenter hämtar nu backendbilder anonymt, även vid förladdning av avatarer. Det undviker tredjepartscookies i dessa bildanrop och bevarar stödet för andra bildkällor.",
-        "validation": "Mediesvaret från backend stöder CORS. Tester kontrollerar vilka adresser som omfattas. Åtgärden tar inte bort leverantörernas cookies och omfattar inte alla externa bilder."
+        "text": "Publika backendbilder hämtas nu med anonym CORS i gemensamma bildkomponenter, avatarförladdning och sanerat artikelinnehåll. Privata förhandsvisningar behåller sin behörighetskontroll.",
+        "validation": "Bildladdning med crossorigin=anonymous är kontrollerad på det publicerade flödet. Tester täcker bildadresser, förladdning och sanerad HTML. Andra bildleverantörers cookiepolicy omfattas inte."
       },
       "websocket": {
-        "title": "Rapporterad cookievarning för realtid",
-        "text": "Webbläsarvarningen om __cf_bm vid WebSocket-anslutningar är ännu inte löst. Den kontrollerade bildcookien matchar backendens domän. Att ett anrop går till en annan domän bevisar i sig inte att cookiens domän är fel.",
-        "validation": "WebFinger och OAuth-discovery svarade utan vidarebefordrade cookies efter dagens Worker-uppdatering. Den rapporterade inloggade WebSocket-anslutningen och beteendet i Firefox har inte återskapats."
+        "title": "Cookiegräns för realtidsanslutningar",
+        "text": "Realtidsanslutningar på nolto.social går nu via den egna domänen. Gatewayen tar bort cookies mot backend och Set-Cookie från anslutningssvaret, medan API-nycklar och behörighetskontroller bevaras.",
+        "validation": "I drift: HTTP 101 utan Set-Cookie, godkänd prenumeration, heartbeat och avslut. Fel API-nyckel och främmande origin avvisas. Den ursprungliga Firefox-sessionen har inte återskapats."
       },
       "headers": {
-        "title": "Webbläsarens svarspolicy behöver stärkas",
-        "text": "Startsidan svarar med HSTS, nosniff och en hänvisningspolicy. Content-Security-Policy och en svarshuvudregel mot inramning saknades i det kontrollerade svaret.",
-        "validation": "Observerat i den publicerade tjänsten. Driftinställningar, kompatibilitetstester och en ny kontroll av svaret krävs innan punkten kan stängas."
+        "title": "Säkerhetspolicy i webbläsarens svar",
+        "text": "Webbplatsens HTML-svar har nu en verkställande Content-Security-Policy och X-Frame-Options: DENY. Policyn begränsar skript och anslutningar och förhindrar inramning av Nolto.",
+        "validation": "Svarshuvuden kontrollerade i drift för startsida, säkerhetscenter, inloggning, flöde och integrationer. Flöde och bilder fungerar under policyn. Tester kontrollerar att inloggningscookies bevaras."
       }
     },
     "boundaries": {
@@ -4139,6 +4139,9 @@
         "title": "Driftkontroller som återstår",
         "text": "Återläsning av backup, leverantörernas lagringstider, larm, täckning för anropsbegränsningar och den befintliga signeringsidentiteten för federation behöver verifieras vidare. De godkänns inte genom denna granskning."
       }
-    }
+    },
+    "noOpenFindings": "Inga öppna fynd",
+    "resolvedFindings": "Åtgärdade fynd",
+    "closedSummary": "Samtliga fyra fynd från granskningen den 27 september 2026 är åtgärdade och verifierade i drift. Historik och underlag finns nedan."
   }
 }
