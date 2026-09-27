@@ -111,3 +111,5 @@ BEGIN
     END LOOP;
   END LOOP;
 END $$;
+
+\ir security-scan.sql

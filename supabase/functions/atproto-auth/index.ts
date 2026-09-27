@@ -1,3 +1,4 @@
+import { outboundBudget, requestAddress } from '../_shared/outbound-budget.ts';
 import { serviceClient, jsonResponse, federationHeaders } from '../_shared/local-actor.ts';
 import { getSiteUrl } from '../_shared/federation-urls.ts';
 import { HttpError, requireUser, requestBody } from '../_shared/user-auth.ts';
@@ -39,13 +40,7 @@ Deno.serve(async req => {
     const body = await requestBody(req, 10000);
     const proof = browserProof(body.browserProof);
     const db = serviceClient();
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const { count, error: rateError } = await db.from('auth_request_logs').select('id', { count: 'exact', head: true })
-      .eq('ip', ip).eq('endpoint', 'atproto-auth').gte('timestamp', new Date(Date.now() - 60000).toISOString());
-    if (rateError) throw rateError;
-    if ((count || 0) >= 10) return respond({ error: 'Too many sign-in attempts. Try again shortly.' }, 429);
-    const { error: logError } = await db.from('auth_request_logs').insert({ ip, endpoint: 'atproto-auth' });
-    if (logError) throw logError;
+    await outboundBudget(db, 'atproto-auth', requestAddress(req), 10);
     stage = 'client';
     const runtime = await createAtprotoClient(db, proof);
     try {

@@ -1,7 +1,6 @@
 import { MediaImage } from "@/components/content/MediaImage";
 import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
 import { useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from "react";
@@ -64,15 +63,12 @@ export const TipTapEditor = forwardRef<TipTapEditorHandle, TipTapEditorProps>(fu
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        link: false,
+        link: {
+          openOnClick: false,
+          HTMLAttributes: { class: "text-primary underline cursor-pointer" },
+        },
         heading: {
           levels: [1, 2, 3, 4, 5],
-        },
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: "text-primary underline cursor-pointer",
         },
       }),
       Placeholder.configure({

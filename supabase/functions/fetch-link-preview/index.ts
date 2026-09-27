@@ -1,3 +1,5 @@
+import { outboundBudget } from "../_shared/outbound-budget.ts";
+import { serviceClient } from "../_shared/local-actor.ts";
 import { remoteUrl, remoteFetch, readBody } from "../_shared/remote-fetch.ts";
 import { postHandler, requestBody, requireUser } from "../_shared/user-auth.ts";
 const corsHeaders = {
@@ -46,7 +48,8 @@ function resolveUrl(base: string, relative: string | undefined): string | undefi
 }
 
 Deno.serve(postHandler(async (req) => {
-  await requireUser(req);
+  const { user } = await requireUser(req);
+  await outboundBudget(serviceClient(), "fetch-link-preview", user.id, 30);
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });

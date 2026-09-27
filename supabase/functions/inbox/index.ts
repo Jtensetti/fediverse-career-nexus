@@ -1,4 +1,6 @@
-import { remoteFetch, fetchActorDocument, readBody } from "../_shared/remote-fetch.ts";
+import { outboundBudget, requestAddress } from '../_shared/outbound-budget.ts';
+import { HttpError } from '../_shared/user-auth.ts';
+import { remoteFetch, fetchActorDocument, readBody, readJson } from "../_shared/remote-fetch.ts";
 import { linkRemoteReply, localObjectId, resolveKnownObject } from '../_shared/federated-interactions.ts';
 
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
@@ -53,23 +55,6 @@ const supabaseClient = createClient(
 );
 
 
-// Rate limit configuration
-const RATE_LIMIT_MAX_REQUESTS = 100; // Max requests per minute per host
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-
-// Check rate limiting for a host
-async function checkRateLimit(remoteHost: string): Promise<boolean> {
-  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-
-  const { count } = await supabaseClient
-    .from("federation_request_logs")
-    .select("id", { count: "exact", head: true })
-    .eq("remote_host", remoteHost)
-    .gte("timestamp", windowStart);
-
-  return (count || 0) < RATE_LIMIT_MAX_REQUESTS;
-}
-
 // Log federation request (fire-and-forget: never blocks the inbox response).
 function logFederationRequest(remoteHost: string, endpoint: string, requestPath: string) {
   const insertPromise = supabaseClient
@@ -104,26 +89,13 @@ Deno.serve(async (req) => {
     const pathParts = functionPath(url, "inbox");
     if (!pathParts) return new Response(null, { status: 404 });
 
-    // Extract remote host for rate limiting
-    const forwardedFor = req.headers.get("x-forwarded-for");
-    const remoteHost = forwardedFor?.split(",")[0].trim() ||
-                       req.headers.get("x-real-ip") ||
-                       "unknown";
-
-    // Check rate limit before processing
-    const withinLimit = await checkRateLimit(remoteHost);
-    if (!withinLimit) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Try again later." }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-            "Retry-After": "60"
-          }
-        }
-      );
+    const remoteHost = requestAddress(req);
+    try { await outboundBudget(supabaseClient, 'inbox', remoteHost, 100, 10000); }
+    catch (error) {
+      if (error instanceof HttpError) return new Response(JSON.stringify({ error: error.message }), {
+        status: error.status, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' },
+      });
+      throw error;
     }
 
     // Log the request

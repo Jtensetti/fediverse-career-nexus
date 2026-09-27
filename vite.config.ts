@@ -60,7 +60,6 @@ export default defineConfig(({ mode }) => {
             "vendor-tiptap": [
               "@tiptap/react",
               "@tiptap/starter-kit",
-              "@tiptap/extension-link",
               "@tiptap/extension-image",
             ],
             "vendor-query": ["@tanstack/react-query"],
