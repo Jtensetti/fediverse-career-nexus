@@ -61,6 +61,8 @@ const Messages = lazy(() => import("./pages/messaging/Messages"));
 const MessageConversation = lazy(() => import("./pages/messaging/MessageConversation"));
 const Notifications = lazy(() => import("./pages/social/Notifications"));
 const Mission = lazy(() => import("./pages/info/Mission"));
+const LinkedInAlternative = lazy(() => import("./pages/info/LinkedInAlternative"));
+const FederatedNetwork = lazy(() => import("./pages/info/FederatedNetwork"));
 const Documentation = lazy(() => import("./pages/info/Documentation"));
 const Integrations = lazy(() => import("./pages/info/Integrations"));
 const ShareProfile = lazy(() => import("./pages/auth/ShareProfile"));
@@ -188,6 +190,8 @@ function RoutedContent() {
                     {/* Public routes */}
                     <Route path="/" element={<Index />} />
                     <Route path="/mission" element={<Mission />} />
+                    <Route path="/linkedin-alternativ" element={<LinkedInAlternative />} />
+                    <Route path="/federerat-natverk" element={<FederatedNetwork />} />
                     <Route path="/documentation" element={<Documentation />} />
                     <Route path="/hosting" element={<Hosting />} />
                     <Route path="/integrations" element={<Integrations />} />

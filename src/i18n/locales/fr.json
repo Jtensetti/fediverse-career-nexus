@@ -3881,6 +3881,52 @@
       "contract": "Mission contractuelle",
       "intern": "Stagiaire",
       "freelance": "Freelance"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – une alternative fédérée à LinkedIn",
+        "intro": "Vous cherchez une alternative à LinkedIn ? Nolto est un réseau professionnel ouvert et fédéré – sans publicité, sans pistage et sans algorithme qui décide de ce que vous voyez.",
+        "sections": [
+          [
+            "Pourquoi une alternative à LinkedIn ?",
+            "De nombreux professionnels souhaitent une plateforme où ils contrôlent leurs contenus et leur fil d'actualité. Sur Nolto, il n'y a ni publicité, ni pistage, ni algorithme qui masque ou met en avant les publications. Votre fil est chronologique et vos données vous appartiennent."
+          ],
+          [
+            "Qu'est-ce qui rend Nolto différent ?",
+            "Nolto repose sur le protocole ouvert ActivityPub. Votre profil peut toucher des personnes sur d'autres serveurs du Fediverse, notamment Mastodon. Votre identité est portable – vous n'êtes pas enfermé dans un seul service."
+          ],
+          [
+            "Des fonctionnalités pour la vie professionnelle",
+            "Nolto réunit ce dont vous avez besoin au travail : profils avec CV, offres d'emploi, événements, pages d'organisations, articles et un fil public. Vous choisissez ce que vous partagez et qui peut le voir."
+          ],
+          [
+            "Commencer",
+            "La création d'un compte est gratuite. Vous pouvez importer votre profil depuis un export LinkedIn et être opérationnel en quelques minutes."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – un réseau professionnel fédéré",
+        "intro": "Nolto est un réseau professionnel construit sur des protocoles ouverts. La fédération signifie qu'aucune entreprise unique ne possède le réseau – et que votre identité est portable.",
+        "sections": [
+          [
+            "Qu'est-ce qu'un réseau fédéré ?",
+            "Un réseau fédéré est composé de nombreux serveurs indépendants qui communiquent via des protocoles ouverts. Au lieu qu'une entreprise contrôle tout, différentes instances coopèrent – un peu comme le courrier électronique entre fournisseurs."
+          ],
+          [
+            "Construit sur ActivityPub",
+            "Nolto utilise ActivityPub, le même protocole que Mastodon et de nombreux autres services du Fediverse. Les publications et profils publics peuvent toucher un public plus large sans compte sur chaque service."
+          ],
+          [
+            "Votre identité est portable",
+            "Sur Nolto, votre adresse est durable et liée à vous, pas au modèle économique d'une plateforme. Les protocoles ouverts permettent de déplacer ou de refléter votre présence sans repartir de zéro."
+          ],
+          [
+            "Ouvert et transparent",
+            "Pas de publicité, pas de pistage, pas d'algorithmes cachés. Le code source et les règles de Nolto sont ouverts, et vous pouvez toujours exporter vos données."
+          ]
+        ]
+      }
     }
   },
   "notificationText": {

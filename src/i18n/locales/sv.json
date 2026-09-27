@@ -3881,6 +3881,52 @@
       "contract": "Konsultuppdrag",
       "intern": "Praktikant",
       "freelance": "Frilans"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – ett federerat alternativ till LinkedIn",
+        "intro": "Letar du efter ett alternativ till LinkedIn? Nolto är ett öppet och federerat professionellt nätverk – utan annonser, utan spårning och utan algoritm som bestämmer vad du ser.",
+        "sections": [
+          [
+            "Varför ett alternativ till LinkedIn?",
+            "Många yrkesverksamma vill ha en plattform där de själva bestämmer över sitt innehåll och sitt flöde. På Nolto finns inga annonser, ingen spårning och ingen algoritm som döljer eller lyfter inlägg. Ditt flöde visas i tidsordning, och du äger din egen data."
+          ],
+          [
+            "Vad gör Nolto annorlunda?",
+            "Nolto bygger på det öppna protokollet ActivityPub. Det gör att din profil kan nå människor på andra servrar i fediversum, bland annat Mastodon. Din identitet är portabel – du är inte låst till en enda tjänst."
+          ],
+          [
+            "Funktioner för yrkeslivet",
+            "Nolto samlar det du behöver i arbetslivet: profiler med CV, jobbannonser, evenemang, organisationssidor, artiklar och ett offentligt flöde. Du väljer själv vilka uppgifter du delar och vem som får se dem."
+          ],
+          [
+            "Kom igång",
+            "Det är kostnadsfritt att skapa ett konto. Du kan importera din profil från en LinkedIn-export och vara igång på några minuter."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – ett federerat professionellt nätverk",
+        "intro": "Nolto är ett professionellt nätverk byggt på öppna protokoll. Federation betyder att ingen enskild aktör äger nätverket – och att din identitet är portabel.",
+        "sections": [
+          [
+            "Vad är ett federerat nätverk?",
+            "Ett federerat nätverk består av många oberoende servrar som kommunicerar med varandra via öppna protokoll. I stället för att ett företag kontrollerar allt kan olika instanser samverka – ungefär som e-post fungerar mellan olika leverantörer."
+          ],
+          [
+            "Byggt på ActivityPub",
+            "Nolto använder ActivityPub, samma protokoll som Mastodon och många andra tjänster i fediversum. Det gör att offentliga inlägg och profiler kan nå en större publik utan att du behöver konto på varje tjänst."
+          ],
+          [
+            "Din identitet är portabel",
+            "På Nolto är din adress beständig och knuten till dig, inte till en enskild plattforms affärsmodell. Öppna protokoll gör det möjligt att flytta eller spegla din närvaro utan att börja om från noll."
+          ],
+          [
+            "Öppet och transparent",
+            "Inga annonser, ingen spårning och inga dolda algoritmer. Noltos källkod och riktlinjer är öppna, och du kan alltid exportera din data."
+          ]
+        ]
+      }
     }
   },
   "legalDocs": {

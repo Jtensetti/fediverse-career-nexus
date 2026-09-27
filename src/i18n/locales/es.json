@@ -3881,6 +3881,52 @@
       "contract": "Trabajo por contrato",
       "intern": "Practicante",
       "freelance": "Freelance"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – una alternativa federada a LinkedIn",
+        "intro": "¿Buscas una alternativa a LinkedIn? Nolto es una red profesional abierta y federada: sin anuncios, sin rastreo y sin un algoritmo que decida lo que ves.",
+        "sections": [
+          [
+            "¿Por qué una alternativa a LinkedIn?",
+            "Muchos profesionales quieren una plataforma donde controlen su contenido y su feed. En Nolto no hay anuncios, ni rastreo, ni un algoritmo que oculte o destaque publicaciones. Tu feed es cronológico y tus datos te pertenecen."
+          ],
+          [
+            "¿Qué hace diferente a Nolto?",
+            "Nolto se basa en el protocolo abierto ActivityPub. Tu perfil puede llegar a personas en otros servidores del Fediverso, incluido Mastodon. Tu identidad es portátil: no estás atado a un solo servicio."
+          ],
+          [
+            "Funciones para la vida laboral",
+            "Nolto reúne lo que necesitas en el trabajo: perfiles con CV, ofertas de empleo, eventos, páginas de organizaciones, artículos y un feed público. Tú eliges qué compartir y quién puede verlo."
+          ],
+          [
+            "Empieza ahora",
+            "Crear una cuenta es gratis. Puedes importar tu perfil desde una exportación de LinkedIn y estar listo en pocos minutos."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – una red profesional federada",
+        "intro": "Nolto es una red profesional construida sobre protocolos abiertos. La federación significa que ninguna empresa es dueña de la red y que tu identidad es portátil.",
+        "sections": [
+          [
+            "¿Qué es una red federada?",
+            "Una red federada está formada por muchos servidores independientes que se comunican mediante protocolos abiertos. En lugar de que una empresa lo controle todo, distintas instancias cooperan, de forma parecida a como funciona el correo electrónico entre proveedores."
+          ],
+          [
+            "Basado en ActivityPub",
+            "Nolto utiliza ActivityPub, el mismo protocolo que Mastodon y muchos otros servicios del Fediverso. Las publicaciones y los perfiles públicos pueden llegar a un público más amplio sin necesidad de una cuenta en cada servicio."
+          ],
+          [
+            "Tu identidad es portátil",
+            "En Nolto tu dirección es duradera y está vinculada a ti, no al modelo de negocio de una plataforma. Los protocolos abiertos permiten mover o reflejar tu presencia sin empezar de cero."
+          ],
+          [
+            "Abierto y transparente",
+            "Sin anuncios, sin rastreo y sin algoritmos ocultos. El código fuente y las normas de Nolto son abiertos, y siempre puedes exportar tus datos."
+          ]
+        ]
+      }
     }
   },
   "notificationText": {

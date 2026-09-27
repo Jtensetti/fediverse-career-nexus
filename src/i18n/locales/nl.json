@@ -3881,6 +3881,52 @@
       "contract": "Opdracht",
       "intern": "Stagiair",
       "freelance": "Freelance"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – een gefedereerd alternatief voor LinkedIn",
+        "intro": "Zoek je een alternatief voor LinkedIn? Nolto is een open, gefedereerd professioneel netwerk – zonder advertenties, zonder tracking en zonder algoritme dat bepaalt wat je ziet.",
+        "sections": [
+          [
+            "Waarom een alternatief voor LinkedIn?",
+            "Veel professionals willen een platform waar ze zelf over hun content en feed bepalen. Op Nolto zijn er geen advertenties, geen tracking en geen algoritme dat berichten verbergt of uitlicht. Je feed is chronologisch en je gegevens zijn van jou."
+          ],
+          [
+            "Wat maakt Nolto anders?",
+            "Nolto is gebouwd op het open ActivityPub-protocol. Je profiel kan mensen op andere servers in het Fediverse bereiken, waaronder Mastodon. Je identiteit is overdraagbaar – je zit niet vast aan één dienst."
+          ],
+          [
+            "Functies voor het werkleven",
+            "Nolto brengt samen wat je nodig hebt op het werk: profielen met cv, vacatures, evenementen, organisatiepagina's, artikelen en een openbare feed. Jij kiest wat je deelt en wie het mag zien."
+          ],
+          [
+            "Aan de slag",
+            "Een account aanmaken is gratis. Je kunt je profiel importeren uit een LinkedIn-export en bent binnen enkele minuten klaar."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – een gefedereerd professioneel netwerk",
+        "intro": "Nolto is een professioneel netwerk gebouwd op open protocollen. Federatie betekent dat geen enkel bedrijf het netwerk bezit – en dat je identiteit overdraagbaar is.",
+        "sections": [
+          [
+            "Wat is een gefedereerd netwerk?",
+            "Een gefedereerd netwerk bestaat uit vele onafhankelijke servers die via open protocollen met elkaar communiceren. In plaats van één bedrijf dat alles beheert, werken verschillende instanties samen – vergelijkbaar met hoe e-mail tussen providers werkt."
+          ],
+          [
+            "Gebouwd op ActivityPub",
+            "Nolto gebruikt ActivityPub, hetzelfde protocol als Mastodon en vele andere diensten in het Fediverse. Openbare berichten en profielen kunnen een breder publiek bereiken zonder account op elke dienst."
+          ],
+          [
+            "Je identiteit is overdraagbaar",
+            "Op Nolto is je adres duurzaam en aan jou gekoppeld, niet aan het verdienmodel van een platform. Open protocollen maken het mogelijk je aanwezigheid te verplaatsen of te spiegelen zonder opnieuw te beginnen."
+          ],
+          [
+            "Open en transparant",
+            "Geen advertenties, geen tracking, geen verborgen algoritmen. De broncode en richtlijnen van Nolto zijn open en je kunt je gegevens altijd exporteren."
+          ]
+        ]
+      }
     }
   },
   "notificationText": {
