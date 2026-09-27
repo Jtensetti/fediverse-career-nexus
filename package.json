@@ -23,7 +23,7 @@
     "@lovable.dev/cloud-auth-js": "1.1.2",
     "@nolto/public-feed": "file:packages/public-feed",
     "@radix-ui/react-alert-dialog": "1.1.2",
-    "@radix-ui/react-avatar": "1.1.1",
+    "@radix-ui/react-avatar": "1.2.6",
     "@radix-ui/react-checkbox": "1.1.2",
     "@radix-ui/react-collapsible": "1.1.1",
     "@radix-ui/react-dialog": "1.1.2",

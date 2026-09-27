@@ -95,3 +95,19 @@ RESET ROLE;
 ROLLBACK;
 
 SELECT 'PASS: fresh-install assertions' AS result;
+
+-- Public projections must not become a second write API after schema replay.
+DO $$
+DECLARE v record; r text;
+BEGIN
+  FOR v IN SELECT c.oid,c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND c.relkind='v'
+  LOOP
+    FOREACH r IN ARRAY ARRAY['anon','authenticated'] LOOP
+      IF has_table_privilege(r,v.oid,'INSERT,UPDATE,DELETE')
+        OR has_any_column_privilege(r,v.oid,'INSERT,UPDATE') THEN
+        RAISE EXCEPTION 'Public view % is writable by %',v.relname,r;
+      END IF;
+    END LOOP;
+  END LOOP;
+END $$;

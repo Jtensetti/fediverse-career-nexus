@@ -17,7 +17,8 @@ export default function LegalDocument({ kind, embedded = false }: { kind: LegalK
   return <div className="container max-w-3xl px-4 py-10 sm:py-16">
     <SEOHead title={doc.title} description={doc.intro} />
     <Link to="/" className="text-sm underline">← {t("ui.legalDocument.backToHome")}</Link>
-    <header className="my-8 space-y-3"><h1 className="text-3xl font-bold">{doc.title}</h1><p className="text-lg text-muted-foreground">{doc.intro}</p><p className="text-sm text-muted-foreground">{t("ui.legalDocument.lastRevised")}: 2026-09-22</p>{!sv && !i18n.language.startsWith("en") && <p className="text-sm text-muted-foreground">{t("ui.legalDocument.translationNotice")}</p>}</header>
+    <header className="my-8 space-y-3"><h1 className="text-3xl font-bold">{doc.title}</h1><p className="text-lg text-muted-foreground">{doc.intro}</p><p className="text-sm text-muted-foreground">{t("ui.legalDocument.lastRevised")}: {kind === "cookies" ? "2026-09-27" : "2026-09-22"}</p>{!sv && !i18n.language.startsWith("en") && <p className="text-sm text-muted-foreground">{t("ui.legalDocument.translationNotice")}</p>}</header>
+    <p className="mb-6"><Link className="text-primary underline" to="/trust-center">{t("trust.title")}</Link></p>
     <nav aria-label={t("ui.legalDocument.policies")} className="flex flex-wrap gap-x-5 gap-y-2 border-y py-4 mb-8 text-sm">
       {(Object.keys(legalPaths) as LegalKind[]).map(key => [key, { ...load(key), path: legalPaths[key] }] as const).map(([key, value]) => <NavLink key={key} to={value.path} className={({ isActive }) => isActive ? "font-semibold underline" : "text-muted-foreground hover:underline"}>{value.title}</NavLink>)}
     </nav>
