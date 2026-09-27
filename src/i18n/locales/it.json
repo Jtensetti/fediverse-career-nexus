@@ -4066,11 +4066,11 @@
   "trust": {
     "title": "Centro fiducia",
     "eyebrow": "Sicurezza e trasparenza",
-    "intro": "Cosa abbiamo verificato e corretto e cosa resta da fare. Un resoconto datato sulla sicurezza e sulla privacy di Nolto.",
+    "intro": "La revisione di sicurezza di Nolto, le correzioni completate e i limiti delle protezioni.",
     "reviewed": "Ultima verifica:",
     "operator": "Responsabile: Jonatan Tensetti",
     "navigation": "In questa pagina",
-    "findings": "Risultati della verifica",
+    "findings": "Rilievi aperti",
     "limits": "Protezioni e limiti",
     "report": "Segnala una vulnerabilità",
     "evidence": "Rapporto tecnico e riscontri",
@@ -4078,7 +4078,7 @@
     "policies": "Informative e contatto sicurezza",
     "securityFile": "Contatto sicurezza in formato testo",
     "scope": "Revisione interna del codice, controlli dei permessi in produzione, verifiche HTTP pubbliche e test di regressione automatizzati. Non è un penetration test indipendente, una certificazione o un monitoraggio continuo. RLS attivo non dimostra che ogni regola sia corretta. Il controllo delle dipendenze riguarda gli avvisi noti dell’applicazione web alla data indicata.",
-    "findingsIntro": "Lo stato riguarda il singolo rilievo, non la sicurezza dell’intero servizio. Le questioni aperte restano visibili fino alla verifica.",
+    "findingsIntro": "Questo elenco contiene i rilievi in attesa di correzione e verifica. Lo stato riguarda la revisione datata e non garantisce la sicurezza dell’intero servizio.",
     "reportText": "Invia via e-mail l’URL interessato, l’impatto e i passaggi per riprodurre il problema. Evita di accedere ai dati altrui, interrompere il servizio o pubblicare come sfruttare una vulnerabilità non risolta. Non inviare password, token di sessione o dati privati degli utenti.",
     "response": "Le segnalazioni sono gestite dal responsabile. Al momento non sono previsti tempi di risposta garantiti né ricompense a pagamento.",
     "checks": {
@@ -4104,18 +4104,18 @@
       },
       "media": {
         "title": "Cookie nelle richieste di immagini pubbliche",
-        "text": "I componenti noti di Nolto per immagini e avatar ora richiedono le immagini del backend in forma anonima, incluso il precaricamento degli avatar. Queste richieste evitano cookie di terze parti e mantengono il supporto per altre fonti.",
-        "validation": "La risposta del backend supporta CORS. I test verificano i limiti degli URL. La modifica non elimina i cookie dei fornitori e non copre ogni immagine esterna."
+        "text": "Le immagini pubbliche del backend ora usano CORS anonimo nei componenti condivisi, nel precaricamento degli avatar e nell’HTML sanificato degli articoli. Le anteprime private mantengono i controlli di accesso.",
+        "validation": "Le immagini con crossorigin=anonymous si caricano nel feed pubblicato. I test coprono i limiti degli URL, il precaricamento e l’HTML sanificato. Le politiche sui cookie di altri fornitori di immagini non rientrano nella correzione."
       },
       "websocket": {
-        "title": "Avviso sui cookie nelle connessioni in tempo reale",
-        "text": "L’avviso del browser relativo a __cf_bm nelle connessioni WebSocket resta irrisolto. Il cookie dell’immagine controllata corrisponde al dominio del backend. Una richiesta tra origini diverse non dimostra da sola un dominio cookie non valido.",
-        "validation": "WebFinger e la discovery OAuth non hanno inoltrato cookie dopo l’aggiornamento odierno del Worker. L’handshake WebSocket autenticato segnalato e il comportamento di Firefox non sono stati riprodotti."
+        "title": "Separazione dei cookie nelle connessioni in tempo reale",
+        "text": "Le connessioni in tempo reale su nolto.social ora usano il dominio del sito. Il gateway rimuove i cookie inviati al backend e Set-Cookie dalle risposte, mantenendo le chiavi API e i controlli di autorizzazione.",
+        "validation": "In produzione: HTTP 101 senza Set-Cookie; iscrizione, heartbeat e uscita confermati. Chiavi API non valide e origini estranee vengono rifiutate. La sessione Firefox originale non è stata riprodotta."
       },
       "headers": {
-        "title": "Rafforzare le intestazioni di sicurezza",
-        "text": "La homepage include HSTS, nosniff e una politica sul referrer. Nella risposta controllata mancavano Content-Security-Policy e un’intestazione contro l’incorporamento in frame.",
-        "validation": "Osservato sul servizio pubblicato. Servono configurazione dell’hosting, test di compatibilità e un nuovo controllo della risposta."
+        "title": "Politica di sicurezza delle risposte del browser",
+        "text": "Le risposte HTML del sito ora applicano Content-Security-Policy e X-Frame-Options: DENY. La politica limita script e connessioni e impedisce di incorporare Nolto in frame.",
+        "validation": "Intestazioni controllate in produzione per homepage, centro fiducia, accesso, feed e integrazioni. Feed e immagini si caricano con questa politica. I test verificano che i cookie di accesso siano conservati."
       }
     },
     "boundaries": {
@@ -4131,6 +4131,9 @@
         "title": "Verifiche operative ancora necessarie",
         "text": "Ripristino dei backup, conservazione presso i fornitori, ricezione degli avvisi, copertura dei limiti di richiesta e identità di firma esistente richiedono ulteriori verifiche. Questa revisione non li certifica."
       }
-    }
+    },
+    "noOpenFindings": "Nessun rilievo aperto",
+    "resolvedFindings": "Rilievi risolti",
+    "closedSummary": "Tutti e quattro i rilievi della revisione del 27 settembre 2026 sono stati corretti e verificati in produzione. Cronologia e riscontri sono disponibili qui sotto."
   }
 }
