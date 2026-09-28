@@ -4365,8 +4365,8 @@
           "text": "Il clone esponeva diritti di esecuzione per 121 funzioni server. Un controllo con chiave sintetica ha confermato un accesso non autorizzato nel clone; i metadati di produzione indicavano che tale accesso era limitato."
         },
         "authorship": {
-          "title": "Un collaboratore poteva ottenere diritti di modifica",
-          "text": "Un collaboratore poteva modificare attributi protetti di paternità e superare un controllo di proprietà. La policy esisteva anche in produzione; la riproduzione usava una transazione annullata nel test."
+          "title": "Un utente poteva attribuirsi la paternità dell’articolo",
+          "text": "Un utente autenticato senza legami con l’articolo poteva attribuirsene la paternità e superare un controllo di proprietà. La policy esisteva anche in produzione; la riproduzione usava una transazione annullata nel test."
         },
         "remoteFetch": {
           "title": "Gli aggiornamenti della cache aggiravano i controlli",

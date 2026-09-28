@@ -4373,8 +4373,8 @@
           "text": "Klonen exponerade körbehörighet för 121 serverfunktioner. En syntetisk nyckelkontroll bekräftade obehörig åtkomst där; produktionsmetadata visade att motsvarande åtkomst var begränsad."
         },
         "authorship": {
-          "title": "Medförfattare kunde få redigeringsrätt",
-          "text": "En medförfattare kunde ändra skyddade författarskapsflaggor och passera en ägarkontroll. Policyn fanns även i produktion; reproduktionen gjordes med en återställd transaktion i test."
+          "title": "Användare kunde tilldela sig författarskap",
+          "text": "En orelaterad inloggad användare kunde tilldela sig författarskap och passera en ägarkontroll. Policyn fanns även i produktion; reproduktionen gjordes med en återställd transaktion i test."
         },
         "remoteFetch": {
           "title": "Cacheuppdatering kringgick anropskontroller",

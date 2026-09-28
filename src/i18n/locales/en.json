@@ -4365,8 +4365,8 @@
           "text": "The clone exposed execution rights for 121 server functions. A synthetic key check confirmed unauthorized access there; production permission metadata showed the relevant access was restricted."
         },
         "authorship": {
-          "title": "Contributor could gain editing rights",
-          "text": "A contributor could change protected authorship flags and pass an ownership check. The policy also existed in production; reproduction used a rolled-back transaction in test."
+          "title": "Users could assign themselves authorship",
+          "text": "An unrelated signed-in user could assign itself authorship and pass an ownership check. The policy also existed in production; reproduction used a rolled-back transaction in test."
         },
         "remoteFetch": {
           "title": "Cache updates bypassed request checks",

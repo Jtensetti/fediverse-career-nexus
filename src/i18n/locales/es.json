@@ -4365,8 +4365,8 @@
           "text": "El clon exponía permisos de ejecución para 121 funciones del servidor. Una comprobación con una clave sintética confirmó acceso no autorizado allí; los metadatos de producción mostraron que ese acceso estaba restringido."
         },
         "authorship": {
-          "title": "Un colaborador podía obtener permisos de edición",
-          "text": "Un colaborador podía cambiar atributos de autoría protegidos y superar un control de propietario. La política también existía en producción; la reproducción utilizó una transacción revertida en pruebas."
+          "title": "Un usuario podía atribuirse la autoría",
+          "text": "Un usuario con sesión iniciada y sin relación con el artículo podía atribuirse la autoría y superar un control de propietario. La política también existía en producción; la reproducción utilizó una transacción revertida en pruebas."
         },
         "remoteFetch": {
           "title": "Las actualizaciones de caché omitían controles",

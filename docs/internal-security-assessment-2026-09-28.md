@@ -52,7 +52,9 @@ The field is now explicitly labeled unverified in the review interface and notif
 - Local rendering, article-media and encryption checks passed **10/10**; translation checks passed **6/6**. Privacy regressions, TypeScript checks and a production frontend build passed. The build retains its existing bundle-size advisory.
 - `npm audit` reported **0 advisories across 471 dependencies** at the time checked. This is a registry-advisory result, not proof of dependency safety.
 
-Deployment and real Supabase fresh-install CI results will be recorded here after completion. Earlier trust-center figures (99/99, 8/8 and TC-01–TC-05) belong to the separate 27–28 September review and must not be interpreted as totals for this assessment.
+All five CI jobs passed for the remediation code at `f7fd6e2`: [application, container, structural fresh-install and mobile checks](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36424431164), and [real Supabase fresh-install acceptance](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36424431223). The latter exercised real local Auth, password login, owner-profile access and signup email confirmation in a disposable stack. These local CI flows do not remove the hosted-clone authentication limitation above.
+
+Deployment results will be recorded here after verification. Earlier trust-center figures (99/99, 8/8 and TC-01–TC-05) belong to the separate 27–28 September review and must not be interpreted as totals for this assessment.
 
 ## Limits
 

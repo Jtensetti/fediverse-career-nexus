@@ -4365,8 +4365,8 @@
           "text": "Le clone exposait les droits d’exécution de 121 fonctions serveur. Un contrôle de clé synthétique y a confirmé un accès non autorisé ; les métadonnées de production indiquaient que cet accès était restreint."
         },
         "authorship": {
-          "title": "Droits de modification obtenus par un contributeur",
-          "text": "Un contributeur pouvait modifier des attributs d’auteur protégés et satisfaire un contrôle de propriétaire. La politique existait aussi en production ; la reproduction utilisait une transaction annulée dans le test."
+          "title": "Un utilisateur pouvait s’attribuer le statut d’auteur",
+          "text": "Un utilisateur connecté sans lien avec l’article pouvait s’attribuer le statut d’auteur et satisfaire un contrôle de propriétaire. La politique existait aussi en production ; la reproduction utilisait une transaction annulée dans le test."
         },
         "remoteFetch": {
           "title": "Contrôles contournés lors de la mise à jour du cache",

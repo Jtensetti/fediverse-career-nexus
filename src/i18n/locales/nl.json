@@ -4365,8 +4365,8 @@
           "text": "De kopie stelde uitvoerrechten voor 121 serverfuncties beschikbaar. Een synthetische sleutelcontrole bevestigde daar onbevoegde toegang; productiemetadata liet zien dat die toegang beperkt was."
         },
         "authorship": {
-          "title": "Bijdrager kon bewerkingsrechten krijgen",
-          "text": "Een bijdrager kon beschermde auteurskenmerken wijzigen en een eigenaarscontrole doorstaan. Het beleid bestond ook in productie; de reproductie gebruikte een teruggedraaide transactie in de testomgeving."
+          "title": "Gebruikers konden zichzelf als auteur toevoegen",
+          "text": "Een ingelogde gebruiker zonder relatie tot het artikel kon zichzelf als auteur toevoegen en een eigenaarscontrole doorstaan. Het beleid bestond ook in productie; de reproductie gebruikte een teruggedraaide transactie in de testomgeving."
         },
         "remoteFetch": {
           "title": "Cache-updates omzeilden verzoekcontroles",

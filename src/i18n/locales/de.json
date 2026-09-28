@@ -4365,8 +4365,8 @@
           "text": "Der Klon stellte Ausführungsrechte für 121 Serverfunktionen bereit. Ein synthetischer Schlüsseltest bestätigte dort unbefugten Zugriff; die Berechtigungsmetadaten der Produktion zeigten eingeschränkten Zugriff."
         },
         "authorship": {
-          "title": "Mitwirkende konnten Bearbeitungsrechte erlangen",
-          "text": "Mitwirkende konnten geschützte Autorenmerkmale ändern und eine Eigentümerprüfung bestehen. Die Richtlinie bestand auch in Produktion; die Reproduktion erfolgte in einer zurückgerollten Testtransaktion."
+          "title": "Nutzer konnten sich selbst als Autoren eintragen",
+          "text": "Ein angemeldeter Nutzer ohne Bezug zum Artikel konnte sich selbst als Autor eintragen und eine Eigentümerprüfung bestehen. Die Richtlinie bestand auch in Produktion; die Reproduktion erfolgte in einer zurückgerollten Testtransaktion."
         },
         "remoteFetch": {
           "title": "Cacheaktualisierung umging Anfrageprüfungen",
