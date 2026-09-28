@@ -29,6 +29,7 @@ Deno.serve(async (req) => {
     const email = (body.email ?? "").trim().toLowerCase();
     const username = (body.username ?? "").trim().slice(0, 120) || null;
     const message = (body.message ?? "").trim().slice(0, 2000) || null;
+    // Legacy client context only: this field is not proof of a login or password.
     const attemptedLoginEmailRaw = (body.attempted_login_email ?? "").trim().toLowerCase();
     const attemptedLoginEmail =
       attemptedLoginEmailRaw && isEmail(attemptedLoginEmailRaw)
@@ -106,19 +107,11 @@ Deno.serve(async (req) => {
       const resendKey = Deno.env.get("RESEND_API_KEY");
 
       if (adminEmails.length > 0 && resendKey) {
-        const emailsMatch =
-          attemptedLoginEmail !== null && attemptedLoginEmail === email;
-        const matchBadge = attemptedLoginEmail
-          ? emailsMatch
-            ? `<p style="color:#0a7a2f;"><strong>✓ Matchar:</strong> formuläret och inloggningsförsöket använder samma e-post.</p>`
-            : `<p style="color:#b00020;"><strong>⚠ Matchar inte:</strong> e-posten i formuläret skiljer sig från det senaste inloggningsförsöket.</p>`
-          : `<p style="color:#666;"><em>Ingen tyst inloggningsuppgift fångades (användaren öppnade kanske formuläret utan att först försöka logga in).</em></p>`;
-
         const html = `
           <h2>New MFA recovery request</h2>
           <p><strong>Form email:</strong> ${escapeHtml(email)}</p>
-          ${attemptedLoginEmail ? `<p><strong>Attempted login email (silent):</strong> ${escapeHtml(attemptedLoginEmail)}</p>` : ""}
-          ${matchBadge}
+          ${attemptedLoginEmail ? `<p><strong>User-supplied email context (unverified):</strong> ${escapeHtml(attemptedLoginEmail)}</p>` : ""}
+          <p>Form details are unverified and do not prove a successful login or ownership of an account.</p>
           ${username ? `<p><strong>Username:</strong> ${escapeHtml(username)}</p>` : ""}
           ${message ? `<p><strong>Message:</strong></p><blockquote>${escapeHtml(message).replace(/\n/g, "<br>")}</blockquote>` : ""}
           <p><strong>Submitted:</strong> ${inserted.created_at}</p>

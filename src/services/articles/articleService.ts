@@ -118,7 +118,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
         user_id: user.id,
         is_primary: true,
         can_edit: true
-      }, { onConflict: 'article_id,user_id' });
+      }, { onConflict: 'article_id,user_id', ignoreDuplicates: true });
     
     if (authorError) {
       console.warn('Failed to create article_authors entry:', authorError);
@@ -148,7 +148,7 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
       .single();
     
     if (error) {
-      toast.error(i18n.t('toasts.articleUpdateFailed'));
+      toast.error(`${i18n.t('toasts.articleUpdateFailed')}: ${error.message}`);
       return null;
     }
     
@@ -369,7 +369,7 @@ export const addCoAuthor = async (articleId: string, userId: string, canEdit: bo
       });
     
     if (error) {
-      toast.error(i18n.t('toasts.coAuthorAddFailed'));
+      toast.error(`${i18n.t('toasts.coAuthorAddFailed')}: ${error.message}`);
       return false;
     }
     
@@ -393,7 +393,7 @@ export const removeCoAuthor = async (articleId: string, userId: string): Promise
       .eq('is_primary', false);
     
     if (error) {
-      toast.error(i18n.t('toasts.coAuthorRemoveFailed'));
+      toast.error(`${i18n.t('toasts.coAuthorRemoveFailed')}: ${error.message}`);
       return false;
     }
     
@@ -415,7 +415,7 @@ export const updateAuthorPermissions = async (authorId: string, canEdit: boolean
       .eq('id', authorId);
     
     if (error) {
-      toast.error(i18n.t('toasts.authorPermissionsFailed'));
+      toast.error(`${i18n.t('toasts.authorPermissionsFailed')}: ${error.message}`);
       return false;
     }
     

@@ -1405,7 +1405,8 @@
     "recoveryPageInvalid": "The link is invalid or has expired.",
     "recoveryPageWrongUser": "This link does not belong to your signed-in account.",
     "recoveryPageEnableNew": "Enable new 2FA",
-    "recoveryTab": "MFA cases"
+    "recoveryTab": "MFA cases",
+    "recoveryUnverifiedEmail": "User-supplied email (unverified):"
   },
   "postReply": {
     "title": "Reply to Post",
@@ -4346,6 +4347,36 @@
     },
     "noOpenFindings": "No open findings",
     "resolvedFindings": "Resolved findings",
-    "closedSummary": "All five findings from the 27–28 September 2026 review are resolved within their documented scope. History and verification evidence are available below."
+    "closedSummary": "All five findings from the 27–28 September 2026 review are resolved within their documented scope. History and verification evidence are available below.",
+    "assessment": {
+      "type": "Internal AI-assisted assessment",
+      "title": "Security assessment: 28 September 2026",
+      "intro": "The assessment covered Nolto’s isolated test environment and application source. Four findings are documented below; the report separates test evidence, production metadata checks and remediation status.",
+      "scopeLabel": "Scope:",
+      "scope": "Source review, bounded HTTP and authentication-rejection checks, SQL role/claim tests with synthetic data and rollback, local regressions and npm audit: 471 dependencies, 0 reported advisories.",
+      "limitations": "Authenticated browser tests were not completed. SQL role tests are not authenticated HTTP tests. Aikido was not run. This internal assessment is not an independent certification or proof that every attack path is covered.",
+      "status": "Remediation and deployment verification status is recorded per finding in the report.",
+      "report": "Read the dated assessment and evidence",
+      "historyTitle": "Historical review: 27–28 September 2026",
+      "historyText": "The 99/99 and 8/8 figures and TC-01–TC-05 below belong to the earlier review. Their dated statuses do not summarize the new assessment.",
+      "items": {
+        "cloneGrants": {
+          "title": "Broader permissions in the test clone",
+          "text": "The clone exposed execution rights for 121 server functions. A synthetic key check confirmed unauthorized access there; production permission metadata showed the relevant access was restricted."
+        },
+        "authorship": {
+          "title": "Contributor could gain editing rights",
+          "text": "A contributor could change protected authorship flags and pass an ownership check. The policy also existed in production; reproduction used a rolled-back transaction in test."
+        },
+        "remoteFetch": {
+          "title": "Cache updates bypassed request checks",
+          "text": "Mocked local tests demonstrated missing redirect, DNS, timeout, response-size and actor-identity checks during cache updates. No live cache prewarming or third-party requests were used."
+        },
+        "recovery": {
+          "title": "Unverified MFA recovery context",
+          "text": "An anonymous request could supply email context presented as login evidence without verification. This did not demonstrate account takeover or a bypass of MFA."
+        }
+      }
+    }
   }
 }

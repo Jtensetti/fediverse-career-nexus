@@ -9,6 +9,7 @@ on:
       - supabase/functions/**
       - supabase/config.toml
       - scripts/test-support/fresh-install/**
+      - scripts/test-support/article-author-assertions.sql
       - scripts/test-support/run-email-confirmation.ts
       - .github/workflows/supabase-fresh-install.yml
   pull_request:
@@ -17,6 +18,7 @@ on:
       - supabase/functions/**
       - supabase/config.toml
       - scripts/test-support/fresh-install/**
+      - scripts/test-support/article-author-assertions.sql
       - scripts/test-support/run-email-confirmation.ts
       - .github/workflows/supabase-fresh-install.yml
 
@@ -126,6 +128,8 @@ jobs:
           NODE
           docker exec -u postgres -e PGOPTIONS=-cnolto.fresh_install_guard=isolated-ci -i "supabase_db_$CI_PROJECT" \
             psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-support/fresh-install/assertions.sql
+          docker exec -u postgres -e PGOPTIONS=-cnolto.fresh_install_guard=isolated-ci -i "supabase_db_$CI_PROJECT" \
+            psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-support/article-author-assertions.sql
       - name: Exercise real Auth provisioning, password login and owner-profile access
         shell: bash
         run: |

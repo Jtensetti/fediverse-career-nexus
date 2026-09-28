@@ -91,7 +91,7 @@ Deno.serve(postHandler(async (req) => {
     // Load the request
     const { data: request, error: reqErr } = await admin
       .from("mfa_recovery_requests")
-      .select("id, user_id, email, username, attempted_login_email, status")
+      .select("id, user_id, email, username, status")
       .eq("id", request_id)
       .single();
 
@@ -106,7 +106,6 @@ Deno.serve(postHandler(async (req) => {
     let userId: string | null = null;
     let matchSource:
       | "user_id"
-      | "attempted_login_email"
       | "username"
       | "form_email"
       | null = null;
@@ -116,18 +115,10 @@ Deno.serve(postHandler(async (req) => {
       matchSource = "user_id";
     }
 
-    // Try attempted_login_email (silent capture, password-validated)
-    if (!userId && request.attempted_login_email) {
-      const { data } = await admin.rpc("get_user_id_by_email", {
-        _email: String(request.attempted_login_email).toLowerCase(),
-      });
-      if (data) {
-        userId = data as unknown as string;
-        matchSource = "attempted_login_email";
-      }
-    }
-
-    // Try username lookup via profiles
+    // Form details can identify a candidate, never prove ownership. Ignore the
+    // legacy attempted_login_email claim, including on existing requests.
+    // Recovery still goes only to the account's registered address below.
+    // Try username lookup via profiles.
     if (!userId && request.username) {
       const { data } = await admin
         .from("profiles")

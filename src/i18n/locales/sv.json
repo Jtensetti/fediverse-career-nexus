@@ -1405,7 +1405,8 @@
     "recoveryPageInvalid": "Länken är ogiltig eller har gått ut.",
     "recoveryPageWrongUser": "Den här länken tillhör inte ditt inloggade konto.",
     "recoveryPageEnableNew": "Aktivera ny 2FA",
-    "recoveryTab": "MFA-ärenden"
+    "recoveryTab": "MFA-ärenden",
+    "recoveryUnverifiedEmail": "E-post från formuläret (obekräftad):"
   },
   "postReply": {
     "title": "Svara på inlägg",
@@ -4354,6 +4355,36 @@
     },
     "noOpenFindings": "Inga öppna fynd",
     "resolvedFindings": "Åtgärdade fynd",
-    "closedSummary": "Samtliga fem fynd från granskningen den 27–28 september 2026 är åtgärdade inom den dokumenterade omfattningen. Historik och verifieringsunderlag finns nedan."
+    "closedSummary": "Samtliga fem fynd från granskningen den 27–28 september 2026 är åtgärdade inom den dokumenterade omfattningen. Historik och verifieringsunderlag finns nedan.",
+    "assessment": {
+      "type": "Intern granskning med AI-stöd",
+      "title": "Säkerhetsgranskning: 28 september 2026",
+      "intro": "Granskningen omfattade Noltos isolerade testmiljö och applikationens källkod. Fyra fynd redovisas nedan; rapporten skiljer testbevis, kontroller av produktionsmetadata och åtgärdsstatus åt.",
+      "scopeLabel": "Omfattning:",
+      "scope": "Källkodsrevision, begränsade HTTP- och autentiseringsavvisningstester, SQL-tester med roller och claims, syntetiska data och rollback, lokala regressioner samt npm audit: 471 beroenden, 0 rapporterade säkerhetsvarningar.",
+      "limitations": "Autentiserade webbläsartester slutfördes inte. SQL-rolltester är inte autentiserade HTTP-tester. Aikido kördes inte. Den interna granskningen är ingen oberoende certifiering eller bevis för att alla angreppsvägar täcks.",
+      "status": "Status för åtgärd och verifiering av driftsättning anges per fynd i rapporten.",
+      "report": "Läs den daterade granskningen och bevisen",
+      "historyTitle": "Historisk granskning: 27–28 september 2026",
+      "historyText": "Siffrorna 99/99 och 8/8 samt TC-01–TC-05 nedan tillhör den tidigare granskningen. Deras daterade status sammanfattar inte den nya granskningen.",
+      "items": {
+        "cloneGrants": {
+          "title": "Utökade behörigheter i testklonen",
+          "text": "Klonen exponerade körbehörighet för 121 serverfunktioner. En syntetisk nyckelkontroll bekräftade obehörig åtkomst där; produktionsmetadata visade att motsvarande åtkomst var begränsad."
+        },
+        "authorship": {
+          "title": "Medförfattare kunde få redigeringsrätt",
+          "text": "En medförfattare kunde ändra skyddade författarskapsflaggor och passera en ägarkontroll. Policyn fanns även i produktion; reproduktionen gjordes med en återställd transaktion i test."
+        },
+        "remoteFetch": {
+          "title": "Cacheuppdatering kringgick anropskontroller",
+          "text": "Lokala mocktester visade saknade kontroller av redirects, DNS, timeout, svarsstorlek och aktörsidentitet vid cacheuppdatering. Ingen liveuppvärmning eller trafik mot tredje part användes."
+        },
+        "recovery": {
+          "title": "Obekräftat underlag för MFA-återställning",
+          "text": "En anonym begäran kunde ange e-postuppgifter som visades som inloggningsbevis utan verifiering. Detta visade varken kontoövertagning eller en väg förbi MFA."
+        }
+      }
+    }
   }
 }

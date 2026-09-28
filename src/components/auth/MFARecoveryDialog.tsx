@@ -21,9 +21,8 @@ interface MFARecoveryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /**
-   * Silently captured: the email of the account that authenticated with
-   * password but failed/abandoned MFA. Sent to admins so they can verify
-   * whether the form email matches the account that tried to sign in.
+   * Optional client context. The server and admins must treat this as an
+   * unverified claim, never as proof of a login or password verification.
    */
   attemptedLoginEmail?: string | null;
 }

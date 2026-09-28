@@ -1405,7 +1405,8 @@
     "recoveryPageInvalid": "Der Link ist ungültig oder abgelaufen.",
     "recoveryPageWrongUser": "Dieser Link gehört nicht zu Ihrem angemeldeten Konto.",
     "recoveryPageEnableNew": "Neue 2FA aktivieren",
-    "recoveryTab": "Kontowiederherstellung"
+    "recoveryTab": "Kontowiederherstellung",
+    "recoveryUnverifiedEmail": "Angegebene E-Mail-Adresse (unbestätigt):"
   },
   "postReply": {
     "title": "Auf Beitrag antworten",
@@ -4346,6 +4347,36 @@
     },
     "noOpenFindings": "Keine offenen Befunde",
     "resolvedFindings": "Behobene Befunde",
-    "closedSummary": "Alle fünf Befunde der Prüfung vom 27.–28. September 2026 sind im dokumentierten Umfang behoben. Verlauf und Nachweise stehen unten."
+    "closedSummary": "Alle fünf Befunde der Prüfung vom 27.–28. September 2026 sind im dokumentierten Umfang behoben. Verlauf und Nachweise stehen unten.",
+    "assessment": {
+      "type": "Interne Prüfung mit KI-Unterstützung",
+      "title": "Sicherheitsprüfung: 28. September 2026",
+      "intro": "Die Prüfung umfasste Noltos isolierte Testumgebung und den Anwendungscode. Vier Befunde stehen unten; der Bericht unterscheidet Testnachweise, Prüfungen der Produktionsmetadaten und den Bearbeitungsstand.",
+      "scopeLabel": "Umfang:",
+      "scope": "Codeprüfung, begrenzte HTTP- und Authentifizierungsablehnungstests, SQL-Tests mit Rollen und Claims, synthetischen Daten und Rollback, lokale Regressionstests sowie npm audit: 471 Abhängigkeiten, 0 gemeldete Sicherheitshinweise.",
+      "limitations": "Authentifizierte Browsertests wurden nicht abgeschlossen. SQL-Rollentests sind keine authentifizierten HTTP-Tests. Aikido wurde nicht ausgeführt. Diese interne Prüfung ist weder eine unabhängige Zertifizierung noch ein Nachweis, dass alle Angriffswege abgedeckt sind.",
+      "status": "Der Stand der Behebung und der Prüfung der Bereitstellung ist für jeden Befund im Bericht angegeben.",
+      "report": "Datierte Prüfung und Nachweise lesen",
+      "historyTitle": "Frühere Prüfung: 27.–28. September 2026",
+      "historyText": "Die Werte 99/99 und 8/8 sowie TC-01–TC-05 unten gehören zur früheren Prüfung. Ihr datierter Status fasst die neue Prüfung nicht zusammen.",
+      "items": {
+        "cloneGrants": {
+          "title": "Erweiterte Rechte im Testklon",
+          "text": "Der Klon stellte Ausführungsrechte für 121 Serverfunktionen bereit. Ein synthetischer Schlüsseltest bestätigte dort unbefugten Zugriff; die Berechtigungsmetadaten der Produktion zeigten eingeschränkten Zugriff."
+        },
+        "authorship": {
+          "title": "Mitwirkende konnten Bearbeitungsrechte erlangen",
+          "text": "Mitwirkende konnten geschützte Autorenmerkmale ändern und eine Eigentümerprüfung bestehen. Die Richtlinie bestand auch in Produktion; die Reproduktion erfolgte in einer zurückgerollten Testtransaktion."
+        },
+        "remoteFetch": {
+          "title": "Cacheaktualisierung umging Anfrageprüfungen",
+          "text": "Lokale Tests mit simulierten Diensten zeigten fehlende Prüfungen für Weiterleitungen, DNS, Zeitlimits, Antwortgröße und Akteursidentität. Es gab kein Live-Vorladen des Caches und keine Anfragen an Dritte."
+        },
+        "recovery": {
+          "title": "Unbestätigte Angaben zur MFA-Wiederherstellung",
+          "text": "Eine anonyme Anfrage konnte E-Mail-Angaben liefern, die ohne Prüfung als Anmeldenachweis erschienen. Damit wurde weder eine Kontoübernahme noch eine Umgehung von MFA nachgewiesen."
+        }
+      }
+    }
   }
 }
