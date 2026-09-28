@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useState, type ImgHTMLAttributes } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchOwnMedia, isNoltoMedia } from '@/lib/media';
+import { PublicImage } from '@/components/content/PublicImage';
 
 export function useMediaSource(src?: string): string | undefined {
   const { user } = useAuth();
@@ -19,7 +20,7 @@ export function useMediaSource(src?: string): string | undefined {
   return resolved && resolved.src === src && resolved.userId === user?.id ? resolved.url : src;
 }
 
-export const MediaImage = forwardRef<HTMLImageElement, ImgHTMLAttributes<HTMLImageElement>>(function MediaImage({ src, ...props }, ref) {
+export const MediaImage = forwardRef<HTMLImageElement, ImgHTMLAttributes<HTMLImageElement>>(function MediaImage({ src, crossOrigin, ...props }, ref) {
   const resolved = useMediaSource(src);
-  return <img ref={ref} {...props} src={resolved} />;
+  return <PublicImage ref={ref} {...props} crossOrigin={crossOrigin} src={resolved} />;
 });

@@ -1,7 +1,9 @@
-import { remoteFetch, fetchActorDocument, readBody } from "../_shared/remote-fetch.ts";
+import { outboundBudget, requestAddress } from '../_shared/outbound-budget.ts';
+import { HttpError } from '../_shared/user-auth.ts';
+import { remoteFetch, fetchActorDocument, readBody, readJson } from "../_shared/remote-fetch.ts";
 import { linkRemoteReply, localObjectId, resolveKnownObject } from '../_shared/federated-interactions.ts';
 
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { functionPath, isLocalUrl, buildActorUrl, buildActivityId } from "../_shared/federation-urls.ts";
 import { verifySignature, fetchPublicKey } from "../_shared/http-signature.ts";
 
@@ -46,29 +48,21 @@ async function isActorBlocked(actorUrl: string): Promise<boolean> {
   return data?.status === 'blocked';
 }
 
+// Large servers are only flagged for moderators, never auto-blocked.
+const PROTECTED_HOSTS = new Set(['mastodon.social', 'mastodon.online', 'mstdn.social', 'fosstodon.org', 'hachyderm.io', 'infosec.exchange', 'mas.to', 'mastodon.world', 'social.vivaldi.net', 'threads.net', 'bsky.brid.gy', 'pixelfed.social', 'lemmy.world']);
+// Counts verified behaviour per server; over the threshold within 10 minutes
+// the server is auto-blocked (24 h, then 7 days). Never blocks the request on failure.
+async function instanceOffense(host: string, reason: string, threshold: number) {
+  const { error } = await supabaseClient.rpc('record_instance_offense', { p_host: host, p_reason: reason, p_threshold: threshold, p_protected: PROTECTED_HOSTS.has(host) });
+  if (error) console.error('Instance offense counter unavailable');
+}
+
 // Initialize the Supabase client
 const supabaseClient = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-
-// Rate limit configuration
-const RATE_LIMIT_MAX_REQUESTS = 100; // Max requests per minute per host
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-
-// Check rate limiting for a host
-async function checkRateLimit(remoteHost: string): Promise<boolean> {
-  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-
-  const { count } = await supabaseClient
-    .from("federation_request_logs")
-    .select("id", { count: "exact", head: true })
-    .eq("remote_host", remoteHost)
-    .gte("timestamp", windowStart);
-
-  return (count || 0) < RATE_LIMIT_MAX_REQUESTS;
-}
 
 // Log federation request (fire-and-forget: never blocks the inbox response).
 function logFederationRequest(remoteHost: string, endpoint: string, requestPath: string) {
@@ -104,26 +98,13 @@ Deno.serve(async (req) => {
     const pathParts = functionPath(url, "inbox");
     if (!pathParts) return new Response(null, { status: 404 });
 
-    // Extract remote host for rate limiting
-    const forwardedFor = req.headers.get("x-forwarded-for");
-    const remoteHost = forwardedFor?.split(",")[0].trim() ||
-                       req.headers.get("x-real-ip") ||
-                       "unknown";
-
-    // Check rate limit before processing
-    const withinLimit = await checkRateLimit(remoteHost);
-    if (!withinLimit) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Try again later." }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-            "Retry-After": "60"
-          }
-        }
-      );
+    const remoteHost = requestAddress(req);
+    try { await outboundBudget(supabaseClient, 'inbox', remoteHost, 100, 10000); }
+    catch (error) {
+      if (error instanceof HttpError) return new Response(JSON.stringify({ error: error.message }), {
+        status: error.status, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' },
+      });
+      throw error;
     }
 
     // Log the request
@@ -203,6 +184,11 @@ Deno.serve(async (req) => {
     if (!verified) return new Response(JSON.stringify({ error: "Invalid signature or actor ownership" }), { status: 401, headers: corsHeaders });
 
     if (isLocalUrl(activity.actor)) return new Response(null, { status: 403 });
+    // Verified sender only: an unsigned request cannot frame another server.
+    const senderHost = new URL(activity.actor).hostname.toLowerCase();
+    const { data: autoBlocked } = await supabaseClient.rpc('instance_auto_blocked', { p_host: senderHost });
+    if (autoBlocked === true) return new Response(JSON.stringify({ error: "Server temporarily blocked" }), { status: 403, headers: { ...corsHeaders, "Retry-After": "3600" } });
+    await instanceOffense(senderHost, 'volume', 600);
     const { data: received, error: receiptError } = await supabaseClient.from("federation_receipts").select("activity_id").eq("activity_id", activity.id).maybeSingle();
     if (receiptError) throw receiptError;
     if (received) return new Response(null, { status: 202 });
@@ -277,6 +263,7 @@ Deno.serve(async (req) => {
     }
 
     if (await isActorBlocked(activity.actor)) {
+      await instanceOffense(senderHost, 'blocked actor deliveries', 30);
       return new Response(
         JSON.stringify({ error: "Actor blocked" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }

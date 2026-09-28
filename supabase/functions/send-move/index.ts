@@ -1,4 +1,5 @@
-import { userHandler } from "../_shared/user-auth.ts";
+import { outboundBudget } from "../_shared/outbound-budget.ts";
+import { userHandler, requestBody } from "../_shared/user-auth.ts";
 import { serviceClient, federationHeaders, jsonResponse } from "../_shared/local-actor.ts";
 import { buildActorUrl, buildActivityId } from "../_shared/federation-urls.ts";
 import { fetchActorDocument } from "../_shared/remote-fetch.ts";
@@ -10,8 +11,11 @@ Deno.serve(userHandler(async req => {
   const db = serviceClient();
   const { data: { user }, error: authError } = await db.auth.getUser(token);
   if (authError || !user) return jsonResponse({ error: "Invalid session" }, 401);
+  await outboundBudget(db, "send-move", user.id, 5);
+  const body = await requestBody(req, 4096);
   try {
-    const { new_account_url } = await req.json();
+    const { new_account_url } = body;
+    if (typeof new_account_url !== "string" || new_account_url.length > 2048) return jsonResponse({ error: "Invalid destination URL" }, 400);
     const { data: actor, error } = await db.from("actors").select("id, preferred_username, moved_to")
       .eq("user_id", user.id).eq("is_remote", false).eq("status", "active").single();
     if (error) throw error;

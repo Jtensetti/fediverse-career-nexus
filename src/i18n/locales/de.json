@@ -1502,7 +1502,9 @@
     "visibilityControlDesc": "Kontrollieren Sie, wer Ihr Event entdecken und daran teilnehmen kann",
     "createEvent": "Event erstellen",
     "endAfterStart": "Endzeit muss nach der Startzeit liegen",
-    "localTimezone": "Alle Zeiten verwenden Ihre lokale Zeitzone: {{timezone}}."
+    "localTimezone": "Alle Zeiten verwenden Ihre lokale Zeitzone: {{timezone}}.",
+    "invalidTime": "Geben Sie eine gültige Uhrzeit ein (HH:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "Diese Uhrzeit existiert am gewählten Datum wegen der Zeitumstellung nicht. Wählen Sie eine andere Uhrzeit."
   },
   "jobFormLabels": {
     "jobTitle": "Berufsbezeichnung *",
@@ -3872,6 +3874,74 @@
       "contract": "Auftragsarbeit",
       "intern": "Praktikant",
       "freelance": "Freiberuflich"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – eine föderierte Alternative zu LinkedIn",
+        "intro": "Sie suchen eine Alternative zu LinkedIn oder Xing? Nolto ist ein offenes, föderiertes berufliches Netzwerk – ohne Werbung, ohne Tracking und ohne Algorithmus, der bestimmt, was Sie sehen.",
+        "sections": [
+          [
+            "Warum eine Alternative zu LinkedIn?",
+            "Viele Berufstätige wünschen sich eine Plattform, bei der sie selbst über ihre Inhalte und ihren Feed bestimmen. Bei Nolto gibt es keine Werbung, kein Tracking und keinen Algorithmus, der Beiträge versteckt oder hervorhebt. Ihr Feed ist chronologisch, und Ihre Daten gehören Ihnen."
+          ],
+          [
+            "Was macht Nolto anders?",
+            "Nolto basiert auf dem offenen Protokoll ActivityPub. Ihr Profil kann Menschen auf anderen Servern im Fediverse erreichen, einschließlich Mastodon. Ihre Identität ist portabel – Sie sind nicht an einen einzigen Dienst gebunden."
+          ],
+          [
+            "Funktionen für das Berufsleben",
+            "Nolto vereint, was Sie im Arbeitsleben brauchen: Profile mit Lebenslauf, Stellenanzeigen, Veranstaltungen, Organisationsseiten, Artikel und einen öffentlichen Feed. Sie wählen selbst, welche Angaben Sie teilen und wer sie sehen darf."
+          ],
+          [
+            "Jetzt starten",
+            "Die Kontoerstellung ist kostenlos. Sie können Ihr Profil aus einem LinkedIn-Export importieren und sind in wenigen Minuten startklar."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – ein föderiertes berufliches Netzwerk",
+        "intro": "Nolto ist ein berufliches Netzwerk, das auf offenen Protokollen basiert. Föderation bedeutet, dass kein einzelnes Unternehmen das Netzwerk besitzt – und dass Ihre Identität portabel ist.",
+        "sections": [
+          [
+            "Was ist ein föderiertes Netzwerk?",
+            "Ein föderiertes Netzwerk besteht aus vielen unabhängigen Servern, die über offene Protokolle miteinander kommunizieren. Statt dass ein Unternehmen alles kontrolliert, arbeiten verschiedene Instanzen zusammen – ähnlich wie E-Mail zwischen verschiedenen Anbietern funktioniert."
+          ],
+          [
+            "Basierend auf ActivityPub",
+            "Nolto verwendet ActivityPub, dasselbe Protokoll wie Mastodon und viele andere Dienste im Fediverse. Öffentliche Beiträge und Profile können ein größeres Publikum erreichen, ohne dass Sie ein Konto bei jedem Dienst benötigen."
+          ],
+          [
+            "Ihre Identität ist portabel",
+            "Bei Nolto ist Ihre Adresse beständig und an Sie gebunden, nicht an das Geschäftsmodell einer einzelnen Plattform. Offene Protokolle ermöglichen es, Ihre Präsenz zu verschieben oder zu spiegeln, ohne von vorn anzufangen."
+          ],
+          [
+            "Offen und transparent",
+            "Keine Werbung, kein Tracking, keine versteckten Algorithmen. Noltos Quellcode und Richtlinien sind offen, und Sie können Ihre Daten jederzeit exportieren."
+          ]
+        ]
+      }
+    },
+    "autoBlocks": {
+      "title": "Automatische Sperren",
+      "description": "Fallen und Spamschutz sperren IP-Adressen und Server vorübergehend.",
+      "ipTitle": "Gesperrte IP-Adressen",
+      "ipHelp": "Adressen, die in einen Honeypot geraten sind. Nur als gekürzter Fingerabdruck angezeigt. Die Föderation ist nie betroffen.",
+      "serverTitle": "Automatisch gesperrte Server",
+      "serverHelp": "Server, die zu viel gesendet oder von gesperrten Konten zugestellt haben. Große Server werden nur markiert.",
+      "empty": "Derzeit keine Sperren.",
+      "count": "Anzahl: {{n}}",
+      "until": "Gesperrt bis {{date}}",
+      "flagged": "Markiert",
+      "expired": "Abgelaufen",
+      "lift": "Sperre aufheben",
+      "liftTitle": "Diese Sperre aufheben?",
+      "liftIp": "Die IP-Adresse {{name}} erhält sofort wieder Zugriff.",
+      "liftServer": "Der Server {{name}} kann sofort wieder zustellen. Für eine dauerhafte Sperre die Serversperre verwenden.",
+      "cancel": "Abbrechen",
+      "lifted": "Die Sperre wurde aufgehoben.",
+      "liftFailed": "Die Sperre konnte nicht aufgehoben werden. Bitte erneut versuchen.",
+      "loading": "Sperren werden geladen…",
+      "loadFailed": "Die Sperren konnten nicht geladen werden."
     }
   },
   "notificationText": {
@@ -4006,6 +4076,10 @@
         [
           "Andere Dienste",
           "Der Anwendungscode enthält keine Werbeverfolgung oder Google Analytics. Hosting- und Sicherheitsanbieter können je nach Implementierung technischen Speicher verwenden. Externe Bilder und Links können andere Dienste mit deren eigenen Richtlinien kontaktieren. Die Zustimmung muss eingeholt werden, bevor jeglicher Speicher aktiviert wird, der dies erfordert."
+        ],
+        [
+          "Sicherheitscookies",
+          "Cloudflare kann __cf_bm zum Bot-Schutz auf Nolto oder auf der Domain des Backend- und Medienanbieters setzen. Laut Cloudflare läuft es nach 30 Minuten Inaktivität ab. Browser können Drittanbieter-Cookies ablehnen. Die Nolto-Anmeldesitzung wird separat in localStorage gespeichert. Datierte Prüfungen und offene Warnungen stehen im Sicherheitszentrum."
         ]
       ]
     },
@@ -4195,5 +4269,83 @@
     "reportStatusUpdated": "Der Status der Meldung wurde aktualisiert.",
     "welcomeName": "Willkommen, {{name}}!",
     "postCreateFailed": "Ihr Beitrag konnte nicht veröffentlicht werden. Versuchen Sie es erneut."
+  },
+  "trust": {
+    "title": "Sicherheitszentrum",
+    "eyebrow": "Sicherheit und Transparenz",
+    "intro": "Noltos Sicherheitsprüfung, abgeschlossene Korrekturen und die Grenzen der Schutzmaßnahmen.",
+    "reviewed": "Zuletzt geprüft:",
+    "operator": "Verantwortlich: Jonatan Tensetti",
+    "navigation": "Auf dieser Seite",
+    "findings": "Offene Befunde",
+    "limits": "Schutz und Grenzen",
+    "report": "Schwachstelle melden",
+    "evidence": "Technischer Bericht und Nachweise",
+    "validation": "Überprüfung:",
+    "policies": "Richtlinien und Sicherheitskontakt",
+    "securityFile": "Sicherheitskontakt als Textdatei",
+    "scope": "Interne Codeprüfung, Berechtigungsprüfungen im Produktivsystem, öffentliche HTTP-Prüfungen und automatisierte Regressionstests. Kein unabhängiger Penetrationstest, keine Zertifizierung und keine laufende Überwachung. Aktiviertes RLS belegt nicht die Korrektheit jeder Regel. Die Abhängigkeitsprüfung erfasst bekannte Hinweise zur Webanwendung zum Prüfzeitpunkt. Datenbank- und Abhängigkeitszahlen stammen vom 27. September 2026; die Nachprüfung vom 28. September betrifft die CSP-Kompatibilität.",
+    "findingsIntro": "Diese Liste zeigt Befunde, deren Behebung und Überprüfung noch aussteht. Der Status gilt für die datierte Prüfung, nicht als Sicherheitsgarantie für den gesamten Dienst.",
+    "reportText": "Bitte senden Sie die betroffene URL, mögliche Auswirkungen und Schritte zur Reproduktion per E-Mail. Greifen Sie nicht auf fremde Daten zu, stören Sie den Dienst nicht und veröffentlichen Sie keine Anleitung zu einer ungeklärten Schwachstelle. Senden Sie keine Passwörter, Sitzungstoken oder privaten Nutzerdaten.",
+    "response": "Meldungen bearbeitet der Betreiber. Es gibt derzeit weder eine garantierte Antwortzeit noch ein bezahltes Prämienprogramm.",
+    "checks": {
+      "rls": "Tabellen im öffentlichen Schema mit aktiviertem zeilenbasiertem Zugriffsschutz. Im Produktivsystem geprüft.",
+      "storage": "Private Speicherbereiche. Veröffentlichte Medien werden über eine Zugriffskontrolle bereitgestellt.",
+      "dependencies": "Bekannte npm-Sicherheitsmeldungen in den festgeschriebenen Webabhängigkeiten zum Prüfzeitpunkt."
+    },
+    "status": {
+      "fixed": "Behoben · im Betrieb geprüft",
+      "mitigated": "Abgemildert · begrenzter Umfang",
+      "open": "Offen"
+    },
+    "severity": {
+      "high": "Hoher Schweregrad",
+      "medium": "Mittlerer Schweregrad",
+      "low": "Niedriger Schweregrad"
+    },
+    "items": {
+      "views": {
+        "title": "Unbeabsichtigter Schreibzugriff über öffentliche Views",
+        "text": "Öffentliche Profil- und Lebenslauf-Views hatten zu weitreichende Schreibrechte. Browserrollen haben jetzt auf keine der 13 öffentlichen Views Schreibzugriff. Reguläre Änderungen erfolgen weiterhin über geschützte Tabellen und Funktionen.",
+        "validation": "Produktive Berechtigungen und Lesezugriffe nach der Korrektur geprüft; isolierte SQL-Tests weisen Schreibzugriffe ab. Ob der frühere Zugriff ausgenutzt wurde, wurde nicht festgestellt."
+      },
+      "media": {
+        "title": "Cookies bei öffentlichen Bildanfragen",
+        "text": "Öffentliche Backend-Bilder verwenden jetzt anonymes CORS in gemeinsamen Bildkomponenten, beim Vorladen von Avataren und in bereinigtem Artikel-HTML. Private Vorschauen behalten ihre Berechtigungsprüfungen.",
+        "validation": "Bilder mit crossorigin=anonymous werden im veröffentlichten Feed geladen. Tests decken URL-Grenzen, Vorladen und bereinigtes HTML ab. Cookie-Richtlinien anderer Bildanbieter sind nicht Gegenstand dieser Korrektur."
+      },
+      "websocket": {
+        "title": "Cookie-Abgrenzung für Echtzeitverbindungen",
+        "text": "Echtzeitverbindungen auf nolto.social verwenden jetzt die eigene Domain. Das Gateway entfernt Cookies zum Backend und Set-Cookie aus Verbindungsantworten. API-Schlüssel und Berechtigungsprüfungen bleiben erhalten.",
+        "validation": "Im Produktivsystem: HTTP 101 ohne Set-Cookie; Abonnement, Heartbeat und Abmeldung bestätigt. Ungültige API-Schlüssel und fremde Origins werden abgewiesen. Die ursprüngliche Firefox-Sitzung wurde nicht reproduziert."
+      },
+      "headers": {
+        "title": "Sicherheitsrichtlinie für Browserantworten",
+        "text": "HTML-Antworten der Website enthalten jetzt eine durchgesetzte Content-Security-Policy und X-Frame-Options: DENY. Die Richtlinie begrenzt Skripte und Verbindungen und verhindert die Einbettung von Nolto in Frames.",
+        "validation": "Antwort-Header für Startseite, Sicherheitszentrum, Anmeldung, Feed und Integrationen im Produktivsystem geprüft. Feed und Bilder laden unter dieser Richtlinie. Tests bestätigen den Erhalt der Anmelde-Cookies."
+      },
+      "csp": {
+        "title": "CSP blockiert Cloudflare-Skripte",
+        "text": "Cloudflares dynamische Skripte erhalten jetzt bei jeder HTML-Antwort dieselbe neue Nonce wie der CSP-Header. Der Theme-Hash und die Einschränkungen für andere Inline-Skripte und eval bleiben bestehen. Der aktualisierte Worker ist bereitgestellt.",
+        "validation": "Am 28. September lieferten sechs Live-Antworten von Startseite, Anmeldung und Sicherheitscenter sechs verschiedene Nonces, passende Cloudflare-Skript-Nonces und no-store. Startseite, Theme-Wechsel, öffentlicher Feed und Anmeldeseite wurden im Browser geprüft. Eine vollständige Kontoanmeldung wurde nicht getestet."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Private Nachrichten",
+        "text": "Neue lokale Nachrichten werden im Browser verschlüsselt und signiert. Metadaten der Beteiligten bleiben sichtbar. Vorwärtsgeheimnis, Schlüsselrotation und eine unabhängige kryptografische Prüfung fehlen."
+      },
+      "deletion": {
+        "title": "Löschung und Föderation",
+        "text": "Eine angeforderte Löschung blendet Daten aus und plant ihre endgültige Löschung nach 30 Tagen. Anbieterbackups und Kopien auf anderen Servern müssen gesondert behandelt werden. Föderierte Kopien lassen sich nicht garantiert zurückrufen."
+      },
+      "operations": {
+        "title": "Noch ausstehende Betriebsnachweise",
+        "text": "Backup-Wiederherstellung, Aufbewahrungsfristen der Anbieter, Alarmzustellung, Abdeckung der Ratenbegrenzung und die bestehende Signierungsidentität müssen weiter geprüft werden. Diese Prüfung bestätigt sie nicht."
+      }
+    },
+    "noOpenFindings": "Keine offenen Befunde",
+    "resolvedFindings": "Behobene Befunde",
+    "closedSummary": "Alle fünf Befunde der Prüfung vom 27.–28. September 2026 sind im dokumentierten Umfang behoben. Verlauf und Nachweise stehen unten."
   }
 }

@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { dateLocale } from "@/lib/locale";
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -131,7 +132,7 @@ function EventCard({ event }: EventCardProps) {
     <Card className="overflow-hidden flex flex-col">
       {event.cover_image_url ? (
         <div className="aspect-video w-full overflow-hidden">
-          <img 
+          <PublicImage
             src={event.cover_image_url} 
             alt={event.title} 
             className="object-cover w-full h-full"

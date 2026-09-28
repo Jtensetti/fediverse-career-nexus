@@ -1,4 +1,5 @@
-import { HttpError, requireUser } from "../_shared/user-auth.ts";
+import { outboundBudget, requestAddress } from "../_shared/outbound-budget.ts";
+import { HttpError, requireUser, requestBody } from "../_shared/user-auth.ts";
 import { serviceClient, jsonResponse, federationHeaders } from "../_shared/local-actor.ts";
 import { getSiteUrl } from "../_shared/federation-urls.ts";
 import { remoteUrl, remoteFetch, readJson } from "../_shared/remote-fetch.ts";
@@ -8,7 +9,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: { ...federationHeaders, "Access-Control-Allow-Methods": "POST, OPTIONS" } });
   if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
   try {
-    const { handle, redirectUri, link = false } = await req.json();
+    const { handle, redirectUri, link = false } = await requestBody(req, 4096);
     const callback = `${getSiteUrl()}/auth/callback`;
     if (redirectUri !== callback) return jsonResponse({ error: `Start sign-in at ${getSiteUrl()} to keep your session on the same site.` }, 400);
     const parsed = typeof handle === "string" ? /^@?([a-zA-Z0-9_]+)@([^\s/@]+)$/.exec(handle.trim()) : null;
@@ -21,12 +22,7 @@ Deno.serve(async (req) => {
       const { user } = await requireUser(req);
       linkUserId = user.id;
     }
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
-    const { count, error: limitError } = await db.from("auth_request_logs").select("id", { count: "exact", head: true })
-      .eq("ip", ip).eq("endpoint", "federated-auth").gte("timestamp", new Date(Date.now() - 60000).toISOString());
-    if (limitError) throw limitError;
-    if ((count || 0) >= 10) return jsonResponse({ error: "Too many sign-in attempts. Try again shortly." }, 429);
-    await db.from("auth_request_logs").insert({ ip, endpoint: "federated-auth" });
+    await outboundBudget(db, "federated-auth", requestAddress(req), 10);
     const { data: existing, error } = await db.from("oauth_clients").select("*").eq("instance_domain", domain).maybeSingle();
     if (error) throw error;
     let client = existing;

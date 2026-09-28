@@ -1,4 +1,6 @@
-import { federationHeaders, jsonResponse } from "../_shared/local-actor.ts";
+import { outboundBudget, requestAddress } from "../_shared/outbound-budget.ts";
+import { HttpError } from "../_shared/user-auth.ts";
+import { serviceClient, federationHeaders, jsonResponse } from "../_shared/local-actor.ts";
 import { remoteFetch, remoteUrl } from "../_shared/remote-fetch.ts";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -11,6 +13,7 @@ Deno.serve(async req => {
     const input = new URL(req.url).searchParams.get("url");
     if (!input || input.length > 2048) return jsonResponse({ error: "Invalid URL" }, 400);
     const url = remoteUrl(input);
+    await outboundBudget(serviceClient(), "proxy-media", requestAddress(req), 300, 15000);
     const response = await remoteFetch(url.href, { headers: { Accept: [...imageTypes].join(",") } });
     const type = response.headers.get("content-type")?.split(";")[0].trim().toLowerCase();
     if (!response.ok || !type || !imageTypes.has(type)) {
@@ -41,5 +44,7 @@ Deno.serve(async req => {
       ...federationHeaders, "Content-Type": type, "Cache-Control": "public, max-age=3600",
       "Content-Security-Policy": "default-src 'none'; sandbox", "Referrer-Policy": "no-referrer",
     } });
-  } catch { return jsonResponse({ error: "Image unavailable" }, 422); }
+  } catch (error) {
+    if (error instanceof HttpError) return jsonResponse({ error: error.message }, error.status);
+    return jsonResponse({ error: "Image unavailable" }, 422); }
 });

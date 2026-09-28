@@ -1,6 +1,6 @@
 import { createLogger } from "../_shared/logger.ts";
 import { adminHandler } from "../_shared/user-auth.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { z } from "npm:zod@3.25.76";
 
 // Common headers to be used by all endpoints

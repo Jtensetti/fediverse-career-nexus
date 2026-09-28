@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { dateLocale } from "@/lib/locale";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -134,7 +135,7 @@ export default function CompanyPostCard({ post, canDelete = false, onDelete }: C
               attachments.length === 1 ? "grid-cols-1" : "grid-cols-2"
             )}>
               {attachments.map((att: any, idx: number) => (
-                <img
+                <PublicImage
                   key={idx}
                   src={att.url}
                   alt={att.name || tx("ui.companyPostCard.postImage")}

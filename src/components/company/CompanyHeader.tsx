@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Building2, Globe, MapPin, Calendar, Settings, CheckCircle2, Shield } from "lucide-react";
@@ -30,7 +31,7 @@ export default function CompanyHeader({ company, userRole, onCompanyUpdate }: Co
   const bannerContent = (
     <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/20 via-secondary/10 to-primary/20 rounded-lg overflow-hidden">
       {company.banner_url && (
-        <img 
+        <PublicImage
           src={company.banner_url} 
           alt="" 
           className="w-full h-full object-cover"

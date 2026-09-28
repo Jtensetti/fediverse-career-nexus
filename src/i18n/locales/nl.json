@@ -1502,7 +1502,9 @@
     "visibilityControlDesc": "Bepaal wie uw evenement kan ontdekken en bijwonen",
     "createEvent": "Evenement aanmaken",
     "endAfterStart": "Eindtijd moet na de starttijd liggen",
-    "localTimezone": "Alle tijden gebruiken uw lokale tijdzone: {{timezone}}."
+    "localTimezone": "Alle tijden gebruiken uw lokale tijdzone: {{timezone}}.",
+    "invalidTime": "Voer een geldige tijd in (UU:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "Deze tijd bestaat niet op de gekozen datum vanwege de zomertijd. Kies een andere tijd."
   },
   "jobFormLabels": {
     "jobTitle": "Functietitel *",
@@ -3872,6 +3874,74 @@
       "contract": "Opdracht",
       "intern": "Stagiair",
       "freelance": "Freelance"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – een gefedereerd alternatief voor LinkedIn",
+        "intro": "Zoek je een alternatief voor LinkedIn? Nolto is een open, gefedereerd professioneel netwerk – zonder advertenties, zonder tracking en zonder algoritme dat bepaalt wat je ziet.",
+        "sections": [
+          [
+            "Waarom een alternatief voor LinkedIn?",
+            "Veel professionals willen een platform waar ze zelf over hun content en feed bepalen. Op Nolto zijn er geen advertenties, geen tracking en geen algoritme dat berichten verbergt of uitlicht. Je feed is chronologisch en je gegevens zijn van jou."
+          ],
+          [
+            "Wat maakt Nolto anders?",
+            "Nolto is gebouwd op het open ActivityPub-protocol. Je profiel kan mensen op andere servers in het Fediverse bereiken, waaronder Mastodon. Je identiteit is overdraagbaar – je zit niet vast aan één dienst."
+          ],
+          [
+            "Functies voor het werkleven",
+            "Nolto brengt samen wat je nodig hebt op het werk: profielen met cv, vacatures, evenementen, organisatiepagina's, artikelen en een openbare feed. Jij kiest wat je deelt en wie het mag zien."
+          ],
+          [
+            "Aan de slag",
+            "Een account aanmaken is gratis. Je kunt je profiel importeren uit een LinkedIn-export en bent binnen enkele minuten klaar."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – een gefedereerd professioneel netwerk",
+        "intro": "Nolto is een professioneel netwerk gebouwd op open protocollen. Federatie betekent dat geen enkel bedrijf het netwerk bezit – en dat je identiteit overdraagbaar is.",
+        "sections": [
+          [
+            "Wat is een gefedereerd netwerk?",
+            "Een gefedereerd netwerk bestaat uit vele onafhankelijke servers die via open protocollen met elkaar communiceren. In plaats van één bedrijf dat alles beheert, werken verschillende instanties samen – vergelijkbaar met hoe e-mail tussen providers werkt."
+          ],
+          [
+            "Gebouwd op ActivityPub",
+            "Nolto gebruikt ActivityPub, hetzelfde protocol als Mastodon en vele andere diensten in het Fediverse. Openbare berichten en profielen kunnen een breder publiek bereiken zonder account op elke dienst."
+          ],
+          [
+            "Je identiteit is overdraagbaar",
+            "Op Nolto is je adres duurzaam en aan jou gekoppeld, niet aan het verdienmodel van een platform. Open protocollen maken het mogelijk je aanwezigheid te verplaatsen of te spiegelen zonder opnieuw te beginnen."
+          ],
+          [
+            "Open en transparant",
+            "Geen advertenties, geen tracking, geen verborgen algoritmen. De broncode en richtlijnen van Nolto zijn open en je kunt je gegevens altijd exporteren."
+          ]
+        ]
+      }
+    },
+    "autoBlocks": {
+      "title": "Automatische blokkades",
+      "description": "Vallen en spambescherming blokkeren tijdelijk IP-adressen en servers.",
+      "ipTitle": "Geblokkeerde IP-adressen",
+      "ipHelp": "Adressen die in een honeypot liepen. Alleen getoond als verkorte vingerafdruk. Federatie wordt nooit geraakt.",
+      "serverTitle": "Automatisch geblokkeerde servers",
+      "serverHelp": "Servers die te veel stuurden of afleverden vanaf geblokkeerde accounts. Grote servers worden alleen gemarkeerd.",
+      "empty": "Momenteel geen blokkades.",
+      "count": "Aantal: {{n}}",
+      "until": "Geblokkeerd tot {{date}}",
+      "flagged": "Gemarkeerd",
+      "expired": "Verlopen",
+      "lift": "Blokkade opheffen",
+      "liftTitle": "Deze blokkade opheffen?",
+      "liftIp": "Het IP-adres {{name}} krijgt direct weer toegang.",
+      "liftServer": "De server {{name}} kan direct weer afleveren. Gebruik serverblokkering voor een permanente blokkade.",
+      "cancel": "Annuleren",
+      "lifted": "De blokkade is opgeheven.",
+      "liftFailed": "De blokkade kon niet worden opgeheven. Probeer het opnieuw.",
+      "loading": "Blokkades laden…",
+      "loadFailed": "De blokkades konden niet worden geladen."
     }
   },
   "notificationText": {
@@ -4006,6 +4076,10 @@
         [
           "Andere diensten",
           "De applicatiecode omvat geen reclametracking of Google Analytics. Hosting- en beveiligingsproviders kunnen technische opslag gebruiken, afhankelijk van de implementatie. Externe afbeeldingen en links kunnen contact opnemen met andere diensten met hun eigen beleid. Toestemming moet worden verkregen voordat opslag die dit vereist wordt ingeschakeld."
+        ],
+        [
+          "Beveiligingscookies",
+          "Cloudflare kan __cf_bm instellen voor botbescherming op Nolto of op het domein van de backend- en mediaprovider. Volgens Cloudflare verloopt deze na 30 minuten inactiviteit. Browsers kunnen cookies van derden weigeren. De Nolto-aanmeldsessie staat afzonderlijk in localStorage. Het vertrouwenscentrum toont gedateerde controles en resterende waarschuwingen."
         ]
       ]
     },
@@ -4195,5 +4269,83 @@
     "reportStatusUpdated": "De status van de melding is bijgewerkt.",
     "welcomeName": "Welkom, {{name}}!",
     "postCreateFailed": "Uw bericht kon niet worden gepubliceerd. Probeer het opnieuw."
+  },
+  "trust": {
+    "title": "Vertrouwenscentrum",
+    "eyebrow": "Veiligheid en transparantie",
+    "intro": "De beveiligingscontrole van Nolto, uitgevoerde verbeteringen en de grenzen van de bescherming.",
+    "reviewed": "Laatst gecontroleerd:",
+    "operator": "Beheerder: Jonatan Tensetti",
+    "navigation": "Op deze pagina",
+    "findings": "Open bevindingen",
+    "limits": "Bescherming en beperkingen",
+    "report": "Een kwetsbaarheid melden",
+    "evidence": "Technisch verslag en onderbouwing",
+    "validation": "Controle:",
+    "policies": "Beleid en beveiligingscontact",
+    "securityFile": "Beveiligingscontact als tekstbestand",
+    "scope": "Interne codebeoordeling, controle van productierechten, openbare HTTP-controles en geautomatiseerde regressietests. Geen onafhankelijke penetratietest, certificering of doorlopende bewaking. Ingeschakelde RLS bewijst niet dat elke regel klopt. De afhankelijkhedencontrole betreft bekende meldingen voor de webapp op het controlemoment. De cijfers over de database en afhankelijkheden zijn van 27 september 2026; de vervolgcontrole van 28 september betreft CSP-compatibiliteit.",
+    "findingsIntro": "Deze lijst bevat bevindingen die nog moeten worden opgelost en geverifieerd. De status geldt voor de gedateerde controle en is geen veiligheidsgarantie voor de hele dienst.",
+    "reportText": "Mail de betreffende URL, impact en stappen om het probleem te reproduceren. Vermijd toegang tot andermans gegevens, verstoring van de dienst en publicatie van misbruik van een onopgeloste kwetsbaarheid. Stuur geen wachtwoorden, sessietokens of privégegevens.",
+    "response": "De beheerder behandelt meldingen. Er geldt momenteel geen gegarandeerde reactietijd en er is geen betaald beloningsprogramma.",
+    "checks": {
+      "rls": "Tabellen in het openbare schema met toegangscontrole per rij. In productie gecontroleerd.",
+      "storage": "Privéopslagruimten. Gepubliceerde media worden via toegangscontrole beschikbaar gesteld.",
+      "dependencies": "Bekende npm-beveiligingsmeldingen voor vastgelegde webafhankelijkheden tijdens de controle."
+    },
+    "status": {
+      "fixed": "Opgelost · in productie gecontroleerd",
+      "mitigated": "Beperkt · afgebakende maatregel",
+      "open": "Nog open"
+    },
+    "severity": {
+      "high": "Hoge ernst",
+      "medium": "Gemiddelde ernst",
+      "low": "Lage ernst"
+    },
+    "items": {
+      "views": {
+        "title": "Onbedoelde schrijftoegang via openbare views",
+        "text": "Openbare profiel- en cv-views hadden te ruime schrijfrechten. Browserrollen hebben nu geen schrijfrechten meer op alle 13 openbare views. Gewone bewerkingen verlopen nog steeds via beschermde tabellen en functies.",
+        "validation": "Productierechten en leesbaarheid na de correctie gecontroleerd; geïsoleerde SQL-tests weigeren schrijfacties. Er is niet vastgesteld of de eerdere toegang is misbruikt."
+      },
+      "media": {
+        "title": "Cookies bij openbare afbeeldingsverzoeken",
+        "text": "Openbare backendafbeeldingen gebruiken nu anonieme CORS in gedeelde afbeeldingscomponenten, het vooraf laden van avatars en opgeschoonde artikel-HTML. Privévoorbeelden behouden hun toegangscontroles.",
+        "validation": "Afbeeldingen met crossorigin=anonymous laden in de gepubliceerde feed. Tests dekken URL-grenzen, vooraf laden en opgeschoonde HTML. Het cookiebeleid van andere afbeeldingsaanbieders valt buiten deze oplossing."
+      },
+      "websocket": {
+        "title": "Cookiegrens voor realtimeverbindingen",
+        "text": "Realtimeverbindingen op nolto.social gebruiken nu het eigen domein. De gateway verwijdert cookies naar de backend en Set-Cookie uit verbindingsantwoorden, met behoud van API-sleutels en autorisatiecontroles.",
+        "validation": "In productie: HTTP 101 zonder Set-Cookie; abonnement, heartbeat en afsluiting bevestigd. Ongeldige API-sleutels en vreemde origins worden geweigerd. De oorspronkelijke Firefox-sessie is niet gereproduceerd."
+      },
+      "headers": {
+        "title": "Beveiligingsbeleid voor browserantwoorden",
+        "text": "HTML-antwoorden van de website bevatten nu een afgedwongen Content-Security-Policy en X-Frame-Options: DENY. Het beleid beperkt scripts en verbindingen en voorkomt dat Nolto in een frame wordt ingebed.",
+        "validation": "Antwoordheaders in productie gecontroleerd voor de startpagina, het beveiligingscentrum, aanmelden, de feed en integraties. Feed en afbeeldingen laden onder dit beleid. Tests bevestigen het behoud van aanmeldcookies."
+      },
+      "csp": {
+        "title": "CSP blokkeert Cloudflare-scripts",
+        "text": "De dynamische scripts van Cloudflare krijgen nu bij elk HTML-antwoord dezelfde nieuwe nonce als de CSP-header. De themahash en de beperkingen voor andere inline-scripts en eval blijven behouden. De bijgewerkte Worker is uitgerold.",
+        "validation": "Op 28 september hadden zes productieantwoorden van de startpagina, aanmeldpagina en het veiligheidscentrum zes verschillende nonces, overeenkomende nonces in de Cloudflare-scripts en no-store. Startpagina, themawisseling, openbare feed en aanmeldpagina zijn in de browser gecontroleerd. Volledig aanmelden met een account is niet getest."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Privéberichten",
+        "text": "Nieuwe lokale berichten worden in de browser versleuteld en ondertekend. Metadata over deelnemers blijft zichtbaar. Forward secrecy, sleutelrotatie en een onafhankelijke cryptografische beoordeling ontbreken."
+      },
+      "deletion": {
+        "title": "Verwijdering en federatie",
+        "text": "Een verwijderingsverzoek verbergt gegevens en plant definitieve verwijdering na 30 dagen. Providerback-ups en kopieën op andere servers vereisen aparte afhandeling. Terughalen van federatieve kopieën kan niet worden gegarandeerd."
+      },
+      "operations": {
+        "title": "Nog te controleren beheermaatregelen",
+        "text": "Back-upherstel, bewaartermijnen van providers, aflevering van waarschuwingen, dekking van aanvraaglimieten en de bestaande ondertekeningsidentiteit moeten verder worden gecontroleerd. Deze beoordeling certificeert ze niet."
+      }
+    },
+    "noOpenFindings": "Geen open bevindingen",
+    "resolvedFindings": "Opgeloste bevindingen",
+    "closedSummary": "Alle vijf bevindingen uit de beoordeling van 27–28 september 2026 zijn binnen de gedocumenteerde reikwijdte opgelost. Geschiedenis en verificatiegegevens staan hieronder."
   }
 }

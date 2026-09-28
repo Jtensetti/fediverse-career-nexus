@@ -1,6 +1,6 @@
 import { adminHandler } from "../_shared/user-auth.ts";
 
-import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.89.0';
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.117.2';
 
 // Define CORS headers for browser access
 const corsHeaders = {

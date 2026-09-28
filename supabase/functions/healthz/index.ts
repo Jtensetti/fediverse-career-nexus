@@ -1,5 +1,5 @@
 import { createLogger } from "../_shared/logger.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 // Common headers to be used by all endpoints
 const corsHeaders = {

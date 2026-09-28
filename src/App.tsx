@@ -61,6 +61,8 @@ const Messages = lazy(() => import("./pages/messaging/Messages"));
 const MessageConversation = lazy(() => import("./pages/messaging/MessageConversation"));
 const Notifications = lazy(() => import("./pages/social/Notifications"));
 const Mission = lazy(() => import("./pages/info/Mission"));
+const LinkedInAlternative = lazy(() => import("./pages/info/LinkedInAlternative"));
+const FederatedNetwork = lazy(() => import("./pages/info/FederatedNetwork"));
 const Documentation = lazy(() => import("./pages/info/Documentation"));
 const Integrations = lazy(() => import("./pages/info/Integrations"));
 const ShareProfile = lazy(() => import("./pages/auth/ShareProfile"));
@@ -74,6 +76,7 @@ const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
 const CodeOfConductPage = lazy(() => import("./pages/legal/CodeOfConductPage"));
 const InstanceGuidelinesPage = lazy(() => import("./pages/legal/InstanceGuidelines"));
+const TrustCenter = lazy(() => import("./pages/info/TrustCenter"));
 const CookiesPage = lazy(() => import("./pages/legal/CookiesPage"));
 const Instances = lazy(() => import("./pages/federation/Instances"));
 const AdminFederationHealth = lazy(() => import("./pages/federation/AdminFederationHealth"));
@@ -187,6 +190,8 @@ function RoutedContent() {
                     {/* Public routes */}
                     <Route path="/" element={<Index />} />
                     <Route path="/mission" element={<Mission />} />
+                    <Route path="/linkedin-alternativ" element={<LinkedInAlternative />} />
+                    <Route path="/federerat-natverk" element={<FederatedNetwork />} />
                     <Route path="/documentation" element={<Documentation />} />
                     <Route path="/hosting" element={<Hosting />} />
                     <Route path="/integrations" element={<Integrations />} />
@@ -200,6 +205,7 @@ function RoutedContent() {
                     <Route path="/code-of-conduct" element={<CodeOfConductPage />} />
                     <Route path="/instance-guidelines" element={<InstanceGuidelinesPage />} />
                     <Route path="/cookies" element={<CookiesPage />} />
+                    <Route path="/trust-center" element={<TrustCenter />} />
                     <Route path="/instances" element={<Instances />} />
                     <Route path="/packs" element={<StarterPacks />} />
                     <Route path="/packs/:slug" element={<StarterPackView />} />

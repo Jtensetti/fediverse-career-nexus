@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -98,7 +99,7 @@ export function QuotedPostPreview({ quotedPost, className }: QuotedPostPreviewPr
             
             {firstImage && (
               <div className="mt-2 rounded-md overflow-hidden max-h-32">
-                <img 
+                <PublicImage
                   src={firstImage} 
                   alt={tx("ui.quotedPostPreview.postAttachment")} 
                   className="w-full h-full object-cover"

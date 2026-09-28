@@ -1502,7 +1502,9 @@
     "visibilityControlDesc": "Styr vem som kan upptäcka och delta i ditt evenemang",
     "createEvent": "Skapa evenemang",
     "endAfterStart": "Sluttiden måste vara efter starttiden",
-    "localTimezone": "Alla tider visas i din lokala tidszon: {{timezone}}."
+    "localTimezone": "Alla tider visas i din lokala tidszon: {{timezone}}.",
+    "invalidTime": "Ange en giltig tid (TT:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "Den här tiden finns inte på det valda datumet på grund av sommartid. Välj en annan tid."
   },
   "jobFormLabels": {
     "jobTitle": "Jobbtitel *",
@@ -3872,6 +3874,74 @@
       "contract": "Konsultuppdrag",
       "intern": "Praktikant",
       "freelance": "Frilans"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – ett federerat alternativ till LinkedIn",
+        "intro": "Letar du efter ett alternativ till LinkedIn? Nolto är ett öppet och federerat professionellt nätverk – utan annonser, utan spårning och utan algoritm som bestämmer vad du ser.",
+        "sections": [
+          [
+            "Varför ett alternativ till LinkedIn?",
+            "Många yrkesverksamma vill ha en plattform där de själva bestämmer över sitt innehåll och sitt flöde. På Nolto finns inga annonser, ingen spårning och ingen algoritm som döljer eller lyfter inlägg. Ditt flöde visas i tidsordning, och du äger din egen data."
+          ],
+          [
+            "Vad gör Nolto annorlunda?",
+            "Nolto bygger på det öppna protokollet ActivityPub. Det gör att din profil kan nå människor på andra servrar i fediversum, bland annat Mastodon. Din identitet är portabel – du är inte låst till en enda tjänst."
+          ],
+          [
+            "Funktioner för yrkeslivet",
+            "Nolto samlar det du behöver i arbetslivet: profiler med CV, jobbannonser, evenemang, organisationssidor, artiklar och ett offentligt flöde. Du väljer själv vilka uppgifter du delar och vem som får se dem."
+          ],
+          [
+            "Kom igång",
+            "Det är kostnadsfritt att skapa ett konto. Du kan importera din profil från en LinkedIn-export och vara igång på några minuter."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – ett federerat professionellt nätverk",
+        "intro": "Nolto är ett professionellt nätverk byggt på öppna protokoll. Federation betyder att ingen enskild aktör äger nätverket – och att din identitet är portabel.",
+        "sections": [
+          [
+            "Vad är ett federerat nätverk?",
+            "Ett federerat nätverk består av många oberoende servrar som kommunicerar med varandra via öppna protokoll. I stället för att ett företag kontrollerar allt kan olika instanser samverka – ungefär som e-post fungerar mellan olika leverantörer."
+          ],
+          [
+            "Byggt på ActivityPub",
+            "Nolto använder ActivityPub, samma protokoll som Mastodon och många andra tjänster i fediversum. Det gör att offentliga inlägg och profiler kan nå en större publik utan att du behöver konto på varje tjänst."
+          ],
+          [
+            "Din identitet är portabel",
+            "På Nolto är din adress beständig och knuten till dig, inte till en enskild plattforms affärsmodell. Öppna protokoll gör det möjligt att flytta eller spegla din närvaro utan att börja om från noll."
+          ],
+          [
+            "Öppet och transparent",
+            "Inga annonser, ingen spårning och inga dolda algoritmer. Noltos källkod och riktlinjer är öppna, och du kan alltid exportera din data."
+          ]
+        ]
+      }
+    },
+    "autoBlocks": {
+      "title": "Automatiska spärrar",
+      "description": "Fällor och spamskydd spärrar tillfälligt IP-adresser och servrar.",
+      "ipTitle": "Spärrade IP-adresser",
+      "ipHelp": "Adresser som gick i en honeypot. Visas endast som förkortat fingeravtryck. Federation påverkas aldrig.",
+      "serverTitle": "Automatiskt spärrade servrar",
+      "serverHelp": "Servrar som skickade för mycket eller levererade från blockerade konton. Stora servrar flaggas bara.",
+      "empty": "Inga spärrar just nu.",
+      "count": "Antal: {{n}}",
+      "until": "Spärrad till {{date}}",
+      "flagged": "Flaggad",
+      "expired": "Utgången",
+      "lift": "Häv spärr",
+      "liftTitle": "Häva spärren?",
+      "liftIp": "IP-adressen {{name}} får åtkomst igen direkt.",
+      "liftServer": "Servern {{name}} kan leverera igen direkt. För permanent blockering, använd serverblockeringen.",
+      "cancel": "Avbryt",
+      "lifted": "Spärren är hävd.",
+      "liftFailed": "Spärren kunde inte hävas. Försök igen.",
+      "loading": "Laddar spärrar…",
+      "loadFailed": "Spärrarna kunde inte laddas."
     }
   },
   "legalDocs": {
@@ -3978,6 +4048,10 @@
         [
           "Tredje parter",
           "Koden innehåller ingen annonseringsspårning eller Google Analytics. Drift- och säkerhetsleverantörer kan använda teknisk lagring beroende på driftsättningen. När du hämtar externa bilder eller följer en extern länk kan din webbläsare kontakta en annan tjänst, vars egna regler gäller där. Samtycke ska inhämtas innan eventuell lagring som kräver det aktiveras."
+        ],
+        [
+          "Säkerhetscookies",
+          "Cloudflare kan sätta cookien __cf_bm för botskydd på Nolto eller på backend- och medieleverantörens domän. Enligt Cloudflare upphör den efter 30 minuters inaktivitet. Webbläsarens regler kan avvisa tredjepartscookies. Noltos egen inloggningssession lagras separat i localStorage. Säkerhetscentret visar daterade kontroller och kvarstående varningar."
         ]
       ]
     },
@@ -4203,5 +4277,83 @@
     "reportStatusUpdated": "Anmälans status har uppdaterats.",
     "welcomeName": "Välkommen, {{name}}!",
     "postCreateFailed": "Ditt inlägg kunde inte publiceras. Försök igen."
+  },
+  "trust": {
+    "title": "Säkerhetscenter",
+    "eyebrow": "Säkerhet och insyn",
+    "intro": "Här redovisar vi Noltos säkerhetsgranskning, genomförda åtgärder och skyddens begränsningar.",
+    "reviewed": "Senast granskat:",
+    "operator": "Ansvarig: Jonatan Tensetti",
+    "navigation": "På den här sidan",
+    "findings": "Öppna fynd",
+    "limits": "Skydd och begränsningar",
+    "report": "Rapportera en sårbarhet",
+    "evidence": "Teknisk granskning och underlag",
+    "validation": "Verifiering:",
+    "policies": "Policyer och säkerhetskontakt",
+    "securityFile": "Säkerhetskontakt i textformat",
+    "scope": "Intern kodgranskning, behörighetskontroller i produktion, publika HTTP-kontroller och automatiserade regressionstester. Detta är inget oberoende penetrationstest, ingen certifiering och ingen löpande övervakning. Aktiverad RLS bevisar inte att varje regel är korrekt. Beroenderesultatet gäller webbapplikationens kända säkerhetsvarningar vid granskningstillfället. Databas- och beroendesiffrorna är från den 27 september 2026; uppföljningen den 28 september gäller CSP-kompatibilitet.",
+    "findingsIntro": "Listan visar fynd som ännu inte är åtgärdade och verifierade. Statusen gäller den daterade granskningen, inte en garanti för hela tjänstens säkerhet.",
+    "reportText": "Mejla berörd adress, möjlig påverkan och steg för att återskapa problemet. Undvik att läsa andras uppgifter, störa tjänsten eller publicera hur en olöst sårbarhet utnyttjas. Skicka inga lösenord, sessionstoken eller privata användaruppgifter.",
+    "response": "Rapporter hanteras av den ansvarige. Vi lämnar för närvarande ingen garanterad svarstid och erbjuder ingen betald hittelön.",
+    "checks": {
+      "rls": "Tabeller i det publika schemat med radbaserat åtkomstskydd. Kontrollerat i produktion.",
+      "storage": "Privata lagringsytor. Publicerade medier lämnas ut via en åtkomstkontrollerad funktion.",
+      "dependencies": "Kända npm-säkerhetsvarningar i webbappens låsta beroenden vid granskningen."
+    },
+    "status": {
+      "fixed": "Åtgärdat · verifierat i drift",
+      "mitigated": "Begränsat · avgränsad åtgärd",
+      "open": "Öppet"
+    },
+    "severity": {
+      "high": "Hög allvarlighetsgrad",
+      "medium": "Medelhög allvarlighetsgrad",
+      "low": "Låg allvarlighetsgrad"
+    },
+    "items": {
+      "views": {
+        "title": "Oavsiktlig skrivåtkomst via publika vyer",
+        "text": "Publika profil- och CV-vyer hade för omfattande skrivbehörigheter. Webbläsarrollerna saknar nu skrivbehörighet till samtliga 13 publika vyer. Vanlig redigering går fortsatt via skyddade tabeller och funktioner.",
+        "validation": "Behörigheter och läsning har kontrollerats i produktion efter rättningen. Isolerade SQL-tester avvisar skrivningar. Granskningen har inte fastställt om den tidigare åtkomsten har utnyttjats."
+      },
+      "media": {
+        "title": "Cookies vid hämtning av publika bilder",
+        "text": "Publika backendbilder hämtas nu med anonym CORS i gemensamma bildkomponenter, avatarförladdning och sanerat artikelinnehåll. Privata förhandsvisningar behåller sin behörighetskontroll.",
+        "validation": "Bildladdning med crossorigin=anonymous är kontrollerad på det publicerade flödet. Tester täcker bildadresser, förladdning och sanerad HTML. Andra bildleverantörers cookiepolicy omfattas inte."
+      },
+      "websocket": {
+        "title": "Cookiegräns för realtidsanslutningar",
+        "text": "Realtidsanslutningar på nolto.social går nu via den egna domänen. Gatewayen tar bort cookies mot backend och Set-Cookie från anslutningssvaret, medan API-nycklar och behörighetskontroller bevaras.",
+        "validation": "I drift: HTTP 101 utan Set-Cookie, godkänd prenumeration, heartbeat och avslut. Fel API-nyckel och främmande origin avvisas. Den ursprungliga Firefox-sessionen har inte återskapats."
+      },
+      "headers": {
+        "title": "Säkerhetspolicy i webbläsarens svar",
+        "text": "Webbplatsens HTML-svar har nu en verkställande Content-Security-Policy och X-Frame-Options: DENY. Policyn begränsar skript och anslutningar och förhindrar inramning av Nolto.",
+        "validation": "Svarshuvuden kontrollerade i drift för startsida, säkerhetscenter, inloggning, flöde och integrationer. Flöde och bilder fungerar under policyn. Tester kontrollerar att inloggningscookies bevaras."
+      },
+      "csp": {
+        "title": "Cloudflare-skript blockeras av CSP",
+        "text": "Cloudflares dynamiska skript får nu samma nya nonce som CSP-headern i varje HTML-svar. Temahashen och begränsningarna för övriga inline-skript och eval finns kvar. Den uppdaterade workern är driftsatt.",
+        "validation": "Den 28 september kontrollerades sex svar från startsidan, inloggningssidan och trust center: samtliga hade olika nonce, matchande nonce för Cloudflare-skripten och no-store. Startsidan, temaväxling, det offentliga flödet och inloggningssidan kontrollerades i webbläsare. Fullständig inloggning med konto ingick inte."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Privata meddelanden",
+        "text": "Nya lokala meddelanden krypteras och signeras i webbläsaren. Uppgifter om deltagarna är fortfarande synliga. Framåtsekretess, nyckelrotation och oberoende kryptografisk granskning saknas."
+      },
+      "deletion": {
+        "title": "Radering och federation",
+        "text": "Begärd radering döljer uppgifter och köar permanent radering efter 30 dagar. Leverantörsbackuper och kopior på andra servrar behöver hanteras separat. Federerade kopior kan inte garanteras bli återkallade."
+      },
+      "operations": {
+        "title": "Driftkontroller som återstår",
+        "text": "Återläsning av backup, leverantörernas lagringstider, larm, täckning för anropsbegränsningar och den befintliga signeringsidentiteten för federation behöver verifieras vidare. De godkänns inte genom denna granskning."
+      }
+    },
+    "noOpenFindings": "Inga öppna fynd",
+    "resolvedFindings": "Åtgärdade fynd",
+    "closedSummary": "Samtliga fem fynd från granskningen den 27–28 september 2026 är åtgärdade inom den dokumenterade omfattningen. Historik och verifieringsunderlag finns nedan."
   }
 }

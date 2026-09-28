@@ -25,6 +25,8 @@ jobs:
       - run: npm run check:source
       - run: npm audit --audit-level=high
       - run: npm run check:types
+      - run: npm --prefix deploy ci
+      - run: npm --prefix deploy run check
       - run: npm test
       - run: npm run check:edge
       - run: npm run build
@@ -35,6 +37,41 @@ jobs:
           node scripts/test-support/run-actor-provisioning.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/test-support/run-account-boundaries.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/test-support/run-privacy.mjs "$RUNNER_TEMP/nolto-pg/node_modules/@electric-sql/pglite/dist/index.js"
+  fresh-install:
+    # Fast structural replay; real platform acceptance is a separate workflow.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Throwaway PostgreSQL 17 with pg_cron/pg_net stand-ins
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -q
+          sudo apt-get install -yq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -yq postgresql-17
+          sudo cp scripts/test-support/fresh-install/extensions/* /usr/share/postgresql/17/extension/
+          # A test process, not a persistent systemd service. No existing cluster is touched.
+          sudo pg_createcluster --port 55432 17 noltoci
+          sudo pg_ctlcluster --skip-systemctl-redirect 17 noltoci start
+          sudo -u postgres psql -p 55432 -v ON_ERROR_STOP=1 -c "ALTER USER postgres PASSWORD 'ci-throwaway'"
+      - name: Fresh-install replay
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: '55432'
+          PGUSER: postgres
+          PGPASSWORD: ci-throwaway
+          NOLTO_FRESH_INSTALL_TEST: '1'
+        run: node scripts/test-support/run-fresh-install.mjs
+      - name: Remove only the disposable test cluster
+        if: always()
+        run: |
+          sudo pg_ctlcluster --skip-systemctl-redirect 17 noltoci stop || true
+          sudo pg_dropcluster 17 noltoci || true
   container:
     runs-on: ubuntu-latest
     timeout-minutes: 15

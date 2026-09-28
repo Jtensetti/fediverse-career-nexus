@@ -1,4 +1,5 @@
 import { userFacingErrorMessage } from '@/lib/userFacingError';
+import { PublicImage } from "@/components/content/PublicImage";
 import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -168,7 +169,7 @@ export default function CompanyPostComposer({ company, className = "" }: Company
                   className="space-y-2"
                 >
                   <div className="relative rounded-lg overflow-hidden bg-muted">
-                    <img 
+                    <PublicImage
                       src={imagePreview} 
                       alt={imageAltText || tx("ui.companyPostComposer.preview")} 
                       className="w-full max-h-48 object-cover"

@@ -4,7 +4,7 @@ import { getSiteUrl } from "../_shared/federation-urls.ts";
 // Caller: src/components/moderation/MfaRecoveryQueue.tsx (admin only)
 // Generates a single-use signed token, stores its hash, and emails a
 // recovery link to the user's REGISTERED email (not the form email).
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -1502,7 +1502,9 @@
     "visibilityControlDesc": "Control who can discover and attend your event",
     "createEvent": "Create Event",
     "endAfterStart": "End time must be after start time",
-    "localTimezone": "All times use your local time zone: {{timezone}}."
+    "localTimezone": "All times use your local time zone: {{timezone}}.",
+    "invalidTime": "Enter a valid time (HH:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "This time does not exist on the selected date because of daylight saving time. Choose another time."
   },
   "jobFormLabels": {
     "jobTitle": "Job Title *",
@@ -3872,6 +3874,74 @@
       "contract": "Contract work",
       "intern": "Intern",
       "freelance": "Freelance"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – a federated alternative to LinkedIn",
+        "intro": "Looking for an alternative to LinkedIn? Nolto is an open, federated professional network – no ads, no tracking, and no algorithm deciding what you see.",
+        "sections": [
+          [
+            "Why an alternative to LinkedIn?",
+            "Many professionals want a platform where they control their own content and feed. On Nolto there are no ads, no tracking, and no algorithm hiding or boosting posts. Your feed is chronological, and you own your data."
+          ],
+          [
+            "What makes Nolto different?",
+            "Nolto is built on the open ActivityPub protocol. Your profile can reach people on other servers across the Fediverse, including Mastodon. Your identity is portable – you are not locked into a single service."
+          ],
+          [
+            "Features for working life",
+            "Nolto brings together what you need at work: profiles with CVs, job listings, events, organisation pages, articles, and a public feed. You choose what to share and who can see it."
+          ],
+          [
+            "Get started",
+            "Creating an account is free. You can import your profile from a LinkedIn export and be up and running in minutes."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – a federated professional network",
+        "intro": "Nolto is a professional network built on open protocols. Federation means no single company owns the network – and your identity is portable.",
+        "sections": [
+          [
+            "What is a federated network?",
+            "A federated network consists of many independent servers communicating through open protocols. Instead of one company controlling everything, different instances cooperate – much like email works across providers."
+          ],
+          [
+            "Built on ActivityPub",
+            "Nolto uses ActivityPub, the same protocol as Mastodon and many other Fediverse services. Public posts and profiles can reach a wider audience without needing an account on every service."
+          ],
+          [
+            "Your identity is portable",
+            "On Nolto your address is durable and tied to you, not to a single platform's business model. Open protocols make it possible to move or mirror your presence without starting over."
+          ],
+          [
+            "Open and transparent",
+            "No ads, no tracking, no hidden algorithms. Nolto's source code and guidelines are open, and you can always export your data."
+          ]
+        ]
+      }
+    },
+    "autoBlocks": {
+      "title": "Automatic blocks",
+      "description": "Traps and spam protection temporarily block IP addresses and servers.",
+      "ipTitle": "Blocked IP addresses",
+      "ipHelp": "Addresses that hit a honeypot. Shown only as a shortened fingerprint. Federation is never affected.",
+      "serverTitle": "Automatically blocked servers",
+      "serverHelp": "Servers that sent too much or delivered from blocked accounts. Large servers are only flagged.",
+      "empty": "No blocks right now.",
+      "count": "Count: {{n}}",
+      "until": "Blocked until {{date}}",
+      "flagged": "Flagged",
+      "expired": "Expired",
+      "lift": "Lift block",
+      "liftTitle": "Lift this block?",
+      "liftIp": "The IP address {{name}} regains access immediately.",
+      "liftServer": "The server {{name}} can deliver again immediately. For a permanent block, use server blocking.",
+      "cancel": "Cancel",
+      "lifted": "The block has been lifted.",
+      "liftFailed": "The block could not be lifted. Try again.",
+      "loading": "Loading blocks…",
+      "loadFailed": "The blocks could not be loaded."
     }
   },
   "notificationText": {
@@ -4006,6 +4076,10 @@
         [
           "Other services",
           "The application code does not include advertising tracking or Google Analytics. Hosting and security providers may use technical storage depending on the deployment. External images and links may contact other services with their own policies. Consent must be obtained before enabling any storage that requires it."
+        ],
+        [
+          "Security cookies",
+          "Cloudflare may set the __cf_bm cookie for bot protection on Nolto or on the backend and media provider’s domain. Cloudflare documents a 30-minute lifetime after inactivity. Browser restrictions can reject third-party cookies. Nolto’s own sign-in session is stored separately in localStorage. See the Trust Center for the dated checks and remaining warnings."
         ]
       ]
     },
@@ -4195,5 +4269,83 @@
     "reportStatusUpdated": "Report status updated.",
     "welcomeName": "Welcome, {{name}}!",
     "postCreateFailed": "Your post could not be published. Try again."
+  },
+  "trust": {
+    "title": "Trust Center",
+    "eyebrow": "Security & transparency",
+    "intro": "Nolto’s security review, completed fixes and the limits of its protections.",
+    "reviewed": "Last reviewed:",
+    "operator": "Operator: Jonatan Tensetti",
+    "navigation": "On this page",
+    "findings": "Open findings",
+    "limits": "Protection and limitations",
+    "report": "Report a vulnerability",
+    "evidence": "Technical audit and evidence",
+    "validation": "Verification:",
+    "policies": "Policies and security contact",
+    "securityFile": "Security contact file",
+    "scope": "Internal code review, production permission checks, public HTTP checks and automated regressions. This is not an independent penetration test, certification or live monitoring. RLS being enabled does not establish that every policy is correct. The dependency result is a dated advisory scan of the web application. Database and dependency figures are from 27 September 2026; the 28 September follow-up covers CSP compatibility.",
+    "findingsIntro": "This list contains findings awaiting remediation and verification. Status applies to the dated review, not a guarantee of the entire service’s security.",
+    "reportText": "Email the affected URL, impact and steps to reproduce. Please avoid accessing other people’s data, service disruption and public disclosure of an unfixed exploit. Send no passwords, session tokens or private user data.",
+    "response": "Reports are handled by the operator. No response-time guarantee or paid bounty is currently offered.",
+    "checks": {
+      "rls": "Public-schema tables with row-level security enabled. Checked in production.",
+      "storage": "Private storage buckets. Published media is released through an access-controlled gateway.",
+      "dependencies": "Known npm advisories in the locked web dependency graph at review time."
+    },
+    "status": {
+      "fixed": "Fixed · production verified",
+      "mitigated": "Mitigated · limited scope",
+      "open": "Open"
+    },
+    "severity": {
+      "high": "High severity",
+      "medium": "Medium severity",
+      "low": "Low severity"
+    },
+    "items": {
+      "views": {
+        "title": "Unintended write access through public views",
+        "text": "Public profile and CV views had excessive write permissions. Browser roles now have no write permissions on any of the 13 public views. Normal edits continue through the protected tables and functions.",
+        "validation": "Production grants and readable projections checked after the fix; isolated SQL tests reject writes. This review did not determine whether the earlier access was used."
+      },
+      "media": {
+        "title": "Cookies on public media requests",
+        "text": "Public backend images now use anonymous CORS across shared image components, avatar preloads and sanitized article content. Private previews retain their authorization checks.",
+        "validation": "Images with crossorigin=anonymous loaded successfully in the published feed. Tests cover URL boundaries, preloads and sanitized HTML. Other image providers’ cookie policies are outside this fix."
+      },
+      "websocket": {
+        "title": "Realtime connection cookie boundary",
+        "text": "Realtime connections on nolto.social now use the site’s own domain. The gateway removes cookies sent to the backend and Set-Cookie from connection responses while preserving API keys and authorization checks.",
+        "validation": "Production: HTTP 101 without Set-Cookie; subscription, heartbeat and leave acknowledged. Invalid API keys and foreign origins are rejected. The original Firefox session was not reproduced."
+      },
+      "headers": {
+        "title": "Browser response security policy",
+        "text": "Website HTML responses now carry an enforcing Content-Security-Policy and X-Frame-Options: DENY. The policy restricts scripts and connections and prevents Nolto from being framed.",
+        "validation": "Live response headers checked for home, trust center, sign-in, feed and integrations. Feed and images load under the policy. Tests verify that sign-in cookies remain intact."
+      },
+      "csp": {
+        "title": "Cloudflare scripts blocked by CSP",
+        "text": "Cloudflare’s dynamic scripts now receive the same fresh nonce as the CSP header on each HTML response. The theme hash and restrictions on other inline scripts and eval remain in place. The updated Worker is deployed.",
+        "validation": "On 28 September, six live responses from home, sign-in and trust center had six different nonces, matching Cloudflare script nonces and no-store caching. Browser checks covered the home page, theme switching, public feed and sign-in page. Full authenticated login was not tested."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Private messages",
+        "text": "New local messages are encrypted and signed in the browser. Participant metadata remains visible. Forward secrecy, key rotation and an independent cryptographic review are not provided."
+      },
+      "deletion": {
+        "title": "Deletion and federation",
+        "text": "Requested deletion hides data and queues permanent erasure after 30 days. Provider backups and copies on other servers need separate handling; deletion cannot guarantee recall of federated copies."
+      },
+      "operations": {
+        "title": "Operational evidence still needed",
+        "text": "Backup restore testing, provider retention, alert delivery, rate-limit coverage and the retained federation signing identity require further verification. These are not certified by this review."
+      }
+    },
+    "noOpenFindings": "No open findings",
+    "resolvedFindings": "Resolved findings",
+    "closedSummary": "All five findings from the 27–28 September 2026 review are resolved within their documented scope. History and verification evidence are available below."
   }
 }

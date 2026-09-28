@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
@@ -121,7 +122,7 @@ export default function ImageLightbox({
           )}
           onClick={() => setIsZoomed(!isZoomed)}
         >
-          <img
+          <PublicImage
             src={currentImage.url}
             alt={currentImage.altText || tx("ui.imageLightbox.image")}
             className={cn(

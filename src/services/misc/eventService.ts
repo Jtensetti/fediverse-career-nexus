@@ -164,7 +164,11 @@ export async function getEvent(id: string): Promise<EventWithRSVPCount | null> {
     return eventWithCount;
 }
 
-export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Event | null> {
+// Legacy display aliases are not writable columns in the current events table.
+type EventInput = Pick<Event, 'title' | 'description' | 'location' | 'start_date' | 'end_date' |
+  'cover_image_url' | 'max_attendees' | 'is_online' | 'meeting_url' | 'visibility'>;
+
+export async function createEvent(eventData: EventInput): Promise<Event | null> {
   try {
     const session = await supabase.auth.getSession();
     const user_id = session.data.session?.user.id;
@@ -222,7 +226,7 @@ export async function createEvent(eventData: Omit<Event, 'id' | 'created_at' | '
   }
 }
 
-export async function updateEvent(id: string, eventData: Partial<Omit<Event, 'id' | 'created_at' | 'updated_at' | 'user_id'>>): Promise<Event | null> {
+export async function updateEvent(id: string, eventData: Partial<EventInput>): Promise<Event | null> {
   try {
     const { data, error } = await supabase
       .from('events')

@@ -1,4 +1,5 @@
 import { userFacingErrorMessage } from '@/lib/userFacingError';
+import { PublicImage } from "@/components/content/PublicImage";
 import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -246,7 +247,7 @@ export default function PostComposer({ className = "", open, onOpenChange, onPos
                       className="space-y-2"
                     >
                       <div className="relative rounded-xl overflow-hidden bg-muted">
-                        <img 
+                        <PublicImage
                           src={imagePreview} 
                           alt={imageAltText || tx("ui.postComposer.preview")} 
                           className="w-full max-h-64 object-cover"

@@ -1985,6 +1985,66 @@ export type Database = {
           },
         ]
       }
+      instance_auto_blocks: {
+        Row: {
+          blocked_until: string | null
+          flagged_only: boolean
+          host: string
+          offense_count: number
+          reason: string
+          strikes: number
+          updated_at: string
+          window_started_at: string
+        }
+        Insert: {
+          blocked_until?: string | null
+          flagged_only?: boolean
+          host: string
+          offense_count?: number
+          reason: string
+          strikes?: number
+          updated_at?: string
+          window_started_at?: string
+        }
+        Update: {
+          blocked_until?: string | null
+          flagged_only?: boolean
+          host?: string
+          offense_count?: number
+          reason?: string
+          strikes?: number
+          updated_at?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
+      ip_blocks: {
+        Row: {
+          blocked_until: string
+          created_at: string
+          hit_count: number
+          ip_hash: string
+          last_hit_at: string
+          reason: string
+        }
+        Insert: {
+          blocked_until: string
+          created_at?: string
+          hit_count?: number
+          ip_hash: string
+          last_hit_at?: string
+          reason: string
+        }
+        Update: {
+          blocked_until?: string
+          created_at?: string
+          hit_count?: number
+          ip_hash?: string
+          last_hit_at?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       job_conversations: {
         Row: {
           applicant_id: string
@@ -5115,6 +5175,8 @@ export type Database = {
           option_index: number
         }[]
       }
+      instance_auto_blocked: { Args: { p_host: string }; Returns: boolean }
+      ip_block_until: { Args: { p_ip_hash: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_moderator: { Args: { _user_id: string }; Returns: boolean }
       is_slug_reserved: { Args: { _slug: string }; Returns: boolean }
@@ -5339,6 +5401,19 @@ export type Database = {
       recalc_company_counts: {
         Args: { _company_id: string }
         Returns: undefined
+      }
+      record_honeypot_hit: {
+        Args: { p_ip_hash: string; p_reason: string }
+        Returns: string
+      }
+      record_instance_offense: {
+        Args: {
+          p_host: string
+          p_protected: boolean
+          p_reason: string
+          p_threshold: number
+        }
+        Returns: boolean
       }
       record_remote_like: {
         Args: { p_activity_id: string; p_actor_id: string; p_target_id: string }

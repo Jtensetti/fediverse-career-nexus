@@ -1502,7 +1502,9 @@
     "visibilityControlDesc": "Contrôlez qui peut découvrir et participer à votre événement",
     "createEvent": "Créer un événement",
     "endAfterStart": "L'heure de fin doit être postérieure à l'heure de début",
-    "localTimezone": "Toutes les heures utilisent votre fuseau horaire local : {{timezone}}."
+    "localTimezone": "Toutes les heures utilisent votre fuseau horaire local : {{timezone}}.",
+    "invalidTime": "Saisissez une heure valide (HH:MM, 00:00–23:59)",
+    "nonexistentLocalTime": "Cette heure n’existe pas à la date choisie en raison du changement d’heure. Choisissez une autre heure."
   },
   "jobFormLabels": {
     "jobTitle": "Titre du poste *",
@@ -3872,6 +3874,74 @@
       "contract": "Mission contractuelle",
       "intern": "Stagiaire",
       "freelance": "Freelance"
+    },
+    "seoPages": {
+      "linkedinAlternative": {
+        "title": "Nolto – une alternative fédérée à LinkedIn",
+        "intro": "Vous cherchez une alternative à LinkedIn ? Nolto est un réseau professionnel ouvert et fédéré – sans publicité, sans pistage et sans algorithme qui décide de ce que vous voyez.",
+        "sections": [
+          [
+            "Pourquoi une alternative à LinkedIn ?",
+            "De nombreux professionnels souhaitent une plateforme où ils contrôlent leurs contenus et leur fil d'actualité. Sur Nolto, il n'y a ni publicité, ni pistage, ni algorithme qui masque ou met en avant les publications. Votre fil est chronologique et vos données vous appartiennent."
+          ],
+          [
+            "Qu'est-ce qui rend Nolto différent ?",
+            "Nolto repose sur le protocole ouvert ActivityPub. Votre profil peut toucher des personnes sur d'autres serveurs du Fediverse, notamment Mastodon. Votre identité est portable – vous n'êtes pas enfermé dans un seul service."
+          ],
+          [
+            "Des fonctionnalités pour la vie professionnelle",
+            "Nolto réunit ce dont vous avez besoin au travail : profils avec CV, offres d'emploi, événements, pages d'organisations, articles et un fil public. Vous choisissez ce que vous partagez et qui peut le voir."
+          ],
+          [
+            "Commencer",
+            "La création d'un compte est gratuite. Vous pouvez importer votre profil depuis un export LinkedIn et être opérationnel en quelques minutes."
+          ]
+        ]
+      },
+      "federatedNetwork": {
+        "title": "Nolto – un réseau professionnel fédéré",
+        "intro": "Nolto est un réseau professionnel construit sur des protocoles ouverts. La fédération signifie qu'aucune entreprise unique ne possède le réseau – et que votre identité est portable.",
+        "sections": [
+          [
+            "Qu'est-ce qu'un réseau fédéré ?",
+            "Un réseau fédéré est composé de nombreux serveurs indépendants qui communiquent via des protocoles ouverts. Au lieu qu'une entreprise contrôle tout, différentes instances coopèrent – un peu comme le courrier électronique entre fournisseurs."
+          ],
+          [
+            "Construit sur ActivityPub",
+            "Nolto utilise ActivityPub, le même protocole que Mastodon et de nombreux autres services du Fediverse. Les publications et profils publics peuvent toucher un public plus large sans compte sur chaque service."
+          ],
+          [
+            "Votre identité est portable",
+            "Sur Nolto, votre adresse est durable et liée à vous, pas au modèle économique d'une plateforme. Les protocoles ouverts permettent de déplacer ou de refléter votre présence sans repartir de zéro."
+          ],
+          [
+            "Ouvert et transparent",
+            "Pas de publicité, pas de pistage, pas d'algorithmes cachés. Le code source et les règles de Nolto sont ouverts, et vous pouvez toujours exporter vos données."
+          ]
+        ]
+      }
+    },
+    "autoBlocks": {
+      "title": "Blocages automatiques",
+      "description": "Les pièges et la protection anti-spam bloquent temporairement des adresses IP et des serveurs.",
+      "ipTitle": "Adresses IP bloquées",
+      "ipHelp": "Adresses tombées dans un piège. Affichées uniquement sous forme d’empreinte abrégée. La fédération n’est jamais affectée.",
+      "serverTitle": "Serveurs bloqués automatiquement",
+      "serverHelp": "Serveurs ayant trop envoyé ou livré depuis des comptes bloqués. Les grands serveurs sont seulement signalés.",
+      "empty": "Aucun blocage pour le moment.",
+      "count": "Nombre : {{n}}",
+      "until": "Bloqué jusqu’au {{date}}",
+      "flagged": "Signalé",
+      "expired": "Expiré",
+      "lift": "Lever le blocage",
+      "liftTitle": "Lever ce blocage ?",
+      "liftIp": "L’adresse IP {{name}} retrouve immédiatement l’accès.",
+      "liftServer": "Le serveur {{name}} peut à nouveau livrer immédiatement. Pour un blocage permanent, utilisez le blocage de serveur.",
+      "cancel": "Annuler",
+      "lifted": "Le blocage a été levé.",
+      "liftFailed": "Le blocage n’a pas pu être levé. Réessayez.",
+      "loading": "Chargement des blocages…",
+      "loadFailed": "Les blocages n’ont pas pu être chargés."
     }
   },
   "notificationText": {
@@ -4006,6 +4076,10 @@
         [
           "Autres services",
           "Le code de l'application n'inclut pas de suivi publicitaire ni Google Analytics. Les fournisseurs d'hébergement et de sécurité peuvent utiliser le stockage technique en fonction du déploiement. Les images et liens externes peuvent contacter d'autres services avec leurs propres politiques. Le consentement doit être obtenu avant d'activer tout stockage qui le nécessite."
+        ],
+        [
+          "Cookies de sécurité",
+          "Cloudflare peut définir __cf_bm pour la protection contre les robots sur Nolto ou sur le domaine du fournisseur du backend et des médias. Cloudflare indique une expiration après 30 minutes d’inactivité. Le navigateur peut refuser les cookies tiers. La session de connexion Nolto est stockée séparément dans localStorage. Le centre de confiance présente les vérifications datées et les avertissements restants."
         ]
       ]
     },
@@ -4195,5 +4269,83 @@
     "reportStatusUpdated": "Le statut du signalement a été mis à jour.",
     "welcomeName": "Bienvenue, {{name}} !",
     "postCreateFailed": "Votre publication n’a pas pu être publiée. Réessayez."
+  },
+  "trust": {
+    "title": "Centre de confiance",
+    "eyebrow": "Sécurité et transparence",
+    "intro": "La revue de sécurité de Nolto, les corrections apportées et les limites de ses protections.",
+    "reviewed": "Dernière vérification :",
+    "operator": "Responsable : Jonatan Tensetti",
+    "navigation": "Sur cette page",
+    "findings": "Constats ouverts",
+    "limits": "Protections et limites",
+    "report": "Signaler une vulnérabilité",
+    "evidence": "Rapport technique et preuves",
+    "validation": "Vérification :",
+    "policies": "Politiques et contact sécurité",
+    "securityFile": "Contact sécurité au format texte",
+    "scope": "Revue interne du code, contrôle des permissions en production, vérifications HTTP publiques et tests de régression automatisés. Ce n’est ni un test d’intrusion indépendant, ni une certification, ni une surveillance continue. Activer RLS ne prouve pas que chaque règle est correcte. L’analyse des dépendances porte sur les alertes connues de l’application web à la date indiquée. Les chiffres sur la base de données et les dépendances datent du 27 septembre 2026 ; le suivi du 28 septembre porte sur la compatibilité CSP.",
+    "findingsIntro": "Cette liste présente les constats en attente de correction et de vérification. Le statut concerne la revue datée, pas une garantie de sécurité de l’ensemble du service.",
+    "reportText": "Envoyez par e-mail l’URL concernée, l’impact et les étapes de reproduction. Évitez d’accéder aux données d’autrui, de perturber le service ou de publier une méthode d’exploitation non corrigée. N’envoyez aucun mot de passe, jeton de session ou donnée privée.",
+    "response": "Les signalements sont traités par le responsable. Aucun délai de réponse garanti ni programme de récompense rémunéré n’est proposé actuellement.",
+    "checks": {
+      "rls": "Tables du schéma public avec contrôle d’accès par ligne activé. Vérifié en production.",
+      "storage": "Espaces de stockage privés. Les médias publiés passent par une passerelle contrôlant l’accès.",
+      "dependencies": "Alertes npm connues dans les dépendances web verrouillées au moment de l’audit."
+    },
+    "status": {
+      "fixed": "Corrigé · vérifié en production",
+      "mitigated": "Atténué · portée limitée",
+      "open": "Ouvert"
+    },
+    "severity": {
+      "high": "Gravité élevée",
+      "medium": "Gravité moyenne",
+      "low": "Gravité faible"
+    },
+    "items": {
+      "views": {
+        "title": "Droits d’écriture involontaires via les vues publiques",
+        "text": "Les vues publiques de profils et de CV avaient des droits d’écriture excessifs. Les rôles du navigateur ne peuvent désormais écrire dans aucune des 13 vues publiques. Les modifications normales utilisent toujours les tables et fonctions protégées.",
+        "validation": "Permissions et lecture vérifiées en production après correction ; les tests SQL isolés refusent les écritures. L’audit n’a pas déterminé si cet accès avait été exploité."
+      },
+      "media": {
+        "title": "Cookies lors du chargement des médias publics",
+        "text": "Les images publiques du backend utilisent désormais CORS anonyme dans les composants partagés, le préchargement des avatars et le contenu HTML assaini des articles. Les aperçus privés conservent leurs contrôles d’accès.",
+        "validation": "Les images avec crossorigin=anonymous se chargent dans le flux publié. Les tests couvrent les limites d’URL, le préchargement et le HTML assaini. Les politiques de cookies des autres fournisseurs d’images ne sont pas couvertes."
+      },
+      "websocket": {
+        "title": "Isolation des cookies des connexions temps réel",
+        "text": "Les connexions temps réel sur nolto.social passent désormais par le domaine du site. La passerelle retire les cookies envoyés au backend et Set-Cookie des réponses, tout en préservant les clés API et les contrôles d’autorisation.",
+        "validation": "En production : HTTP 101 sans Set-Cookie ; abonnement, heartbeat et départ confirmés. Les clés API invalides et les origines étrangères sont rejetées. La session Firefox initiale n’a pas été reproduite."
+      },
+      "headers": {
+        "title": "Politique de sécurité des réponses du navigateur",
+        "text": "Les réponses HTML du site appliquent désormais Content-Security-Policy et X-Frame-Options: DENY. La politique limite les scripts et les connexions et interdit l’intégration de Nolto dans un cadre.",
+        "validation": "En-têtes vérifiés en production sur l’accueil, le centre de confiance, la connexion, le flux et les intégrations. Le flux et les images se chargent sous cette politique. Les tests vérifient la conservation des cookies de connexion."
+      },
+      "csp": {
+        "title": "Scripts Cloudflare bloqués par la CSP",
+        "text": "Les scripts dynamiques de Cloudflare reçoivent désormais, pour chaque réponse HTML, le même nouveau nonce que l’en-tête CSP. Le hachage du thème et les restrictions sur les autres scripts intégrés et eval sont conservés. Le Worker mis à jour est déployé.",
+        "validation": "Le 28 septembre, six réponses en production des pages d’accueil, de connexion et du centre de sécurité présentaient six nonces différents, concordant avec ceux des scripts Cloudflare, et no-store. L’accueil, le changement de thème, le fil public et la page de connexion ont été vérifiés dans le navigateur. La connexion complète à un compte n’a pas été testée."
+      }
+    },
+    "boundaries": {
+      "messages": {
+        "title": "Messages privés",
+        "text": "Les nouveaux messages locaux sont chiffrés et signés dans le navigateur. Les métadonnées des participants restent visibles. La confidentialité persistante, la rotation des clés et une revue cryptographique indépendante ne sont pas fournies."
+      },
+      "deletion": {
+        "title": "Suppression et fédération",
+        "text": "Une demande de suppression masque les données et programme leur effacement définitif après 30 jours. Les sauvegardes des fournisseurs et les copies sur d’autres serveurs nécessitent un traitement séparé. Le rappel des copies fédérées ne peut être garanti."
+      },
+      "operations": {
+        "title": "Preuves opérationnelles encore nécessaires",
+        "text": "Restauration des sauvegardes, durées de conservation des fournisseurs, réception des alertes, couverture des limites de requêtes et identité de signature existante restent à vérifier. Cet audit ne les certifie pas."
+      }
+    },
+    "noOpenFindings": "Aucun constat ouvert",
+    "resolvedFindings": "Constats résolus",
+    "closedSummary": "Les cinq constats de la revue des 27–28 septembre 2026 sont résolus dans le périmètre documenté. L’historique et les éléments de vérification figurent ci-dessous."
   }
 }

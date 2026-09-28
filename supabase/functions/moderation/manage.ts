@@ -1,5 +1,5 @@
 import { HttpError, requireAdmin } from "../_shared/user-auth.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,11 +45,9 @@ Deno.serve(async (req) => {
 
   if (req.method === 'POST') {
     const body = await req.json();
-    const table = type === 'domain' ? 'blocked_domains' : 'blocked_actors';
-    const payload = type === 'domain'
-      ? { host: body.host, reason: body.reason }
-      : { actor_url: body.actor_url, reason: body.reason };
-    const { error } = await supabase.from(table).upsert(payload);
+    const { error } = type === 'domain'
+      ? await supabase.from('blocked_domains').upsert({ host: body.host, reason: body.reason })
+      : await supabase.from('blocked_actors').upsert({ actor_url: body.actor_url, reason: body.reason });
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

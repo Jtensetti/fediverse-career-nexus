@@ -1,7 +1,7 @@
 import { sendEmail } from "../_shared/email.ts";
 // Caller: src/components/auth/MFARecoveryDialog.tsx
 // Stores an MFA recovery request and notifies all admins via email.
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

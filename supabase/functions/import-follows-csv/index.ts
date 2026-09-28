@@ -5,7 +5,7 @@ import { userHandler } from "../_shared/user-auth.ts";
  * Nolto" flow so users moving from another instance can rebuild
  * their following list automatically.
  */
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

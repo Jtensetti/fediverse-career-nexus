@@ -1,0 +1,107 @@
+name: Read-only issue acceptance probes
+
+# Deliberately separate live availability from deterministic code tests.
+# No schedule, credentials, account creation, email delivery or mutations.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/issue-live-probes.yml
+
+permissions:
+  contents: read
+
+jobs:
+  live-routing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - name: Check canonical email navigation and native-client discovery without signing in
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { appendFileSync } from 'node:fs';
+          const apex = 'https://nolto.social';
+          const www = 'https://www.nolto.social';
+          const probePath = '/confirm-email?token=issue-probe-not-a-real-token';
+          const results = [];
+          async function check(name, run) {
+            try { await run(); results.push({ name, ok: true }); console.log('PASS:', name); }
+            catch (error) { results.push({ name, ok: false }); console.error('FAIL:', name, error.message); }
+          }
+          async function get(url) {
+            // Intentionally GET only. No JS execution and no token consumer called.
+            const parsed = new URL(url);
+            assert.ok(['nolto.social', 'www.nolto.social'].includes(parsed.hostname));
+            return fetch(parsed, { redirect: 'manual', signal: AbortSignal.timeout(15000),
+              headers: { 'User-Agent': 'NoltoReadOnlyIssueProbe/1.0' } });
+          }
+          await check('www HTTPS preserves confirmation path and query in its canonical 308', async () => {
+            const response = await get(www + probePath);
+            assert.equal(response.status, 308);
+            assert.equal(new URL(response.headers.get('location'), www).href, apex + probePath);
+            await response.body?.cancel();
+          });
+          await check('HTTP www reaches HTTPS apex without losing the confirmation query or looping', async () => {
+            let current = 'http://www.nolto.social' + probePath;
+            const seen = new Set();
+            for (let hop = 0; hop < 5; hop++) {
+              assert.ok(!seen.has(current), 'Redirect loop'); seen.add(current);
+              const response = await get(current);
+              if (response.status === 200) {
+                assert.equal(current, apex + probePath);
+                assert.match(response.headers.get('content-type') || '', /text\/html/i);
+                await response.body?.cancel(); return;
+              }
+              assert.ok([301, 302, 307, 308].includes(response.status), `Unexpected status ${response.status}`);
+              const location = response.headers.get('location'); assert.ok(location);
+              const next = new URL(location, current);
+              assert.equal(next.pathname + next.search, probePath);
+              assert.equal(next.protocol, 'https:');
+              current = next.href; await response.body?.cancel();
+            }
+            throw new Error('Too many redirects');
+          });
+          await check('apex confirmation page serves HTML directly (not email consumption)', async () => {
+            const response = await get(apex + probePath);
+            assert.equal(response.status, 200);
+            assert.match(response.headers.get('content-type') || '', /text\/html/i);
+            await response.body?.cancel();
+          });
+          for (const version of ['v1', 'v2']) await check(`Mastodon ${version} instance discovery returns the canonical JSON identity`, async () => {
+            const response = await get(`${apex}/api/${version}/instance`);
+            assert.equal(response.status, 200);
+            assert.match(response.headers.get('content-type') || '', /json/i);
+            const body = await response.json();
+            assert.equal(body[version === 'v1' ? 'uri' : 'domain'], 'nolto.social');
+            for (const field of ['title', 'description', 'version']) assert.equal(typeof body[field], 'string');
+            assert.equal(body.nolto.experimental, true);
+          });
+          await check('OAuth discovery keeps issuer, consent and token exchange on the configured domains', async () => {
+            const response = await get(apex + '/.well-known/oauth-authorization-server');
+            assert.equal(response.status, 200);
+            const body = await response.json();
+            assert.equal(body.issuer, apex);
+            assert.equal(body.authorization_endpoint, apex + '/oauth/authorize');
+            assert.equal(body.token_endpoint, apex + '/oauth/token');
+            assert.ok(body.code_challenge_methods_supported.includes('S256'));
+          });
+          for (const path of ['/api/v1/accounts/verify_credentials', '/api/v1/timelines/home']) {
+            await check(`${path} rejects access without user authorization`, async () => {
+              const response = await get(apex + path);
+              assert.equal(response.status, 401);
+              await response.body?.cancel();
+            });
+          }
+          const passed = results.filter(result => result.ok).length;
+          const summary = `## Read-only production checks\n\nChecked at ${new Date().toISOString()}: ${passed}/${results.length} passed.\n\n` +
+            results.map(result => `- ${result.ok ? 'PASS' : 'FAIL'}: ${result.name}`).join('\n') +
+            '\n\nThese probes do not create an account, send an email, consume a real confirmation token, authorize an app, or run Android. They do not prove full email delivery/login or native-device compatibility. The workflow commit identifies the checker, not the deployed application revision.\n';
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+          if (passed !== results.length) process.exitCode = 1;
+          NODE

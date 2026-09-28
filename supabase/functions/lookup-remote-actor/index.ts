@@ -1,9 +1,11 @@
+import { outboundBudget } from "../_shared/outbound-budget.ts";
 import { serviceClient, jsonResponse } from "../_shared/local-actor.ts";
 import { postHandler, requestBody, requireUser, HttpError } from "../_shared/user-auth.ts";
 import { remoteUrl, remoteFetch, readJson, fetchActorDocument } from "../_shared/remote-fetch.ts";
 
 Deno.serve(postHandler(async req => {
-  await requireUser(req);
+  const { user } = await requireUser(req);
+  await outboundBudget(serviceClient(), "lookup-remote-actor", user.id, 30);
   const { resource } = await requestBody(req, 2048);
   if (typeof resource !== "string" || resource.length > 320) throw new HttpError(400, "Invalid account address");
   const match = resource.replace(/^acct:/, "").replace(/^@/, "").match(/^([^@\s/:?#]+)@([^@\s/:?#]+)$/);

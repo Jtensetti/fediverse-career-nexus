@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/content/PublicImage";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -152,7 +153,7 @@ export default function PostCardContent({
                     setLightboxOpen(true);
                   }}
                 >
-                  <img
+                  <PublicImage
                     src={post.source === 'remote' ? getProxiedMediaUrl(att.url) : att.url}
                     alt={att.altText || att.name || tx("ui.postCardContent.mediaAttachment")}
                     className="w-full h-full object-cover group-hover/image:scale-105 transition-transform duration-300"

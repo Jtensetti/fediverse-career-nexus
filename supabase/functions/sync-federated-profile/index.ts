@@ -1,6 +1,6 @@
 import { userHandler } from "../_shared/user-auth.ts";
 import { remoteFetch, readJson } from "../_shared/remote-fetch.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.89.0";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { decryptToken } from "../_shared/token-encryption.ts";
 
 const corsHeaders = {

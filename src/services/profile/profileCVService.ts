@@ -1,5 +1,6 @@
 
 import { supabase } from "@/lib/supabase";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import i18n from "@/i18n";
 
@@ -143,7 +144,7 @@ export const createExperience = async (experience: Experience) => {
 export const updateExperience = async (id: string, experience: Partial<Experience>) => {
   try {
     // Build a sanitized payload with only valid columns (exclude id, created_at, updated_at, user_id)
-    const payload: Record<string, any> = {};
+    const payload: TablesUpdate<'experiences'> = {};
 
     if (experience.title !== undefined) payload.title = normalizeText(experience.title) || '';
     if (experience.company !== undefined) payload.company = normalizeText(experience.company) || '';
@@ -274,7 +275,7 @@ export const createEducation = async (education: Education) => {
 export const updateEducation = async (id: string, education: Partial<Education>) => {
   try {
     // Build a sanitized payload with only valid columns
-    const payload: Record<string, any> = {};
+    const payload: TablesUpdate<'education'> = {};
 
     if (education.institution !== undefined) payload.institution = normalizeText(education.institution) || '';
     if (education.degree !== undefined) payload.degree = normalizeText(education.degree) || '';
