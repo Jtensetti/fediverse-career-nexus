@@ -148,7 +148,7 @@ export const updateArticle = async (id: string, articleData: Partial<ArticleForm
       .single();
     
     if (error) {
-      toast.error(`${i18n.t('toasts.articleUpdateFailed')}: ${error.message}`);
+      toast.error(i18n.t('toasts.articleUpdateFailed'));
       return null;
     }
     
@@ -369,7 +369,7 @@ export const addCoAuthor = async (articleId: string, userId: string, canEdit: bo
       });
     
     if (error) {
-      toast.error(`${i18n.t('toasts.coAuthorAddFailed')}: ${error.message}`);
+      toast.error(i18n.t('toasts.coAuthorAddFailed'));
       return false;
     }
     
@@ -393,7 +393,7 @@ export const removeCoAuthor = async (articleId: string, userId: string): Promise
       .eq('is_primary', false);
     
     if (error) {
-      toast.error(`${i18n.t('toasts.coAuthorRemoveFailed')}: ${error.message}`);
+      toast.error(i18n.t('toasts.coAuthorRemoveFailed'));
       return false;
     }
     
@@ -415,7 +415,7 @@ export const updateAuthorPermissions = async (authorId: string, canEdit: boolean
       .eq('id', authorId);
     
     if (error) {
-      toast.error(`${i18n.t('toasts.authorPermissionsFailed')}: ${error.message}`);
+      toast.error(i18n.t('toasts.authorPermissionsFailed'));
       return false;
     }
     
