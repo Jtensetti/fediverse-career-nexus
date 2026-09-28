@@ -4187,8 +4187,8 @@
       },
       "csp": {
         "title": "Scripts Cloudflare bloqués par la CSP",
-        "text": "Cloudflare ajoute des scripts dont le contenu change à chaque requête. Le correctif de la passerelle attribue un nonce unique à chaque réponse HTML, tout en conservant le hachage du thème et le blocage des autres scripts intégrés et de eval. Le déploiement du Worker corrigé reste à effectuer.",
-        "validation": "Les tests automatisés et les vérifications dans le moteur Workers réussissent. La nouvelle politique n’a pas encore été vérifiée en production ; le constat reste ouvert jusqu’au déploiement et aux contrôles dans le navigateur."
+        "text": "Les scripts dynamiques de Cloudflare reçoivent désormais, pour chaque réponse HTML, le même nouveau nonce que l’en-tête CSP. Le hachage du thème et les restrictions sur les autres scripts intégrés et eval sont conservés. Le Worker mis à jour est déployé.",
+        "validation": "Le 28 septembre, six réponses en production des pages d’accueil, de connexion et du centre de sécurité présentaient six nonces différents, concordant avec ceux des scripts Cloudflare, et no-store. L’accueil, le changement de thème, le fil public et la page de connexion ont été vérifiés dans le navigateur. La connexion complète à un compte n’a pas été testée."
       }
     },
     "boundaries": {
@@ -4207,6 +4207,6 @@
     },
     "noOpenFindings": "Aucun constat ouvert",
     "resolvedFindings": "Constats résolus",
-    "closedSummary": "Les quatre constats du 27 septembre 2026 ont été résolus. Un constat ultérieur sur la compatibilité CSP figure dans la liste des constats ouverts ci-dessus."
+    "closedSummary": "Les cinq constats de la revue des 27–28 septembre 2026 sont résolus dans le périmètre documenté. L’historique et les éléments de vérification figurent ci-dessous."
   }
 }

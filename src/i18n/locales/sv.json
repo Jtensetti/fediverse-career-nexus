@@ -4195,8 +4195,8 @@
       },
       "csp": {
         "title": "Cloudflare-skript blockeras av CSP",
-        "text": "Cloudflare lägger till skript vars innehåll ändras vid varje anrop. Rättningen i gatewayn ger varje HTML-svar en ny nonce och behåller temahashen samt blockeringen av övriga inline-skript och eval. Driftsättning av den uppdaterade workern återstår.",
-        "validation": "Automatiska tester och kontroller i Workers körmiljö passerar. Den nya policyn är ännu inte verifierad i produktion; fyndet ligger kvar öppet tills driftsättning och webbläsarkontroll är klara."
+        "text": "Cloudflares dynamiska skript får nu samma nya nonce som CSP-headern i varje HTML-svar. Temahashen och begränsningarna för övriga inline-skript och eval finns kvar. Den uppdaterade workern är driftsatt.",
+        "validation": "Den 28 september kontrollerades sex svar från startsidan, inloggningssidan och trust center: samtliga hade olika nonce, matchande nonce för Cloudflare-skripten och no-store. Startsidan, temaväxling, det offentliga flödet och inloggningssidan kontrollerades i webbläsare. Fullständig inloggning med konto ingick inte."
       }
     },
     "boundaries": {
@@ -4215,6 +4215,6 @@
     },
     "noOpenFindings": "Inga öppna fynd",
     "resolvedFindings": "Åtgärdade fynd",
-    "closedSummary": "De fyra fynden från den 27 september 2026 har åtgärdats. Ett senare fynd om CSP-kompatibilitet visas i listan över öppna fynd ovan."
+    "closedSummary": "Samtliga fem fynd från granskningen den 27–28 september 2026 är åtgärdade inom den dokumenterade omfattningen. Historik och verifieringsunderlag finns nedan."
   }
 }

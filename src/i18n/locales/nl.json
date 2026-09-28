@@ -4187,8 +4187,8 @@
       },
       "csp": {
         "title": "CSP blokkeert Cloudflare-scripts",
-        "text": "Cloudflare voegt scripts toe waarvan de inhoud bij elk verzoek verandert. De gatewaycorrectie geeft elk HTML-antwoord een nieuwe nonce en behoudt de themahash en de blokkering van andere inline-scripts en eval. De bijgewerkte Worker moet nog in productie worden uitgerold.",
-        "validation": "Geautomatiseerde tests en controles in de Workers-runtime slagen. Het nieuwe beleid is nog niet in productie geverifieerd; deze bevinding blijft open totdat de uitrol en browsercontroles zijn afgerond."
+        "text": "De dynamische scripts van Cloudflare krijgen nu bij elk HTML-antwoord dezelfde nieuwe nonce als de CSP-header. De themahash en de beperkingen voor andere inline-scripts en eval blijven behouden. De bijgewerkte Worker is uitgerold.",
+        "validation": "Op 28 september hadden zes productieantwoorden van de startpagina, aanmeldpagina en het veiligheidscentrum zes verschillende nonces, overeenkomende nonces in de Cloudflare-scripts en no-store. Startpagina, themawisseling, openbare feed en aanmeldpagina zijn in de browser gecontroleerd. Volledig aanmelden met een account is niet getest."
       }
     },
     "boundaries": {
@@ -4207,6 +4207,6 @@
     },
     "noOpenFindings": "Geen open bevindingen",
     "resolvedFindings": "Opgeloste bevindingen",
-    "closedSummary": "De vier bevindingen van 27 september 2026 zijn opgelost. Een latere bevinding over CSP-compatibiliteit staat hierboven bij de openstaande bevindingen."
+    "closedSummary": "Alle vijf bevindingen uit de beoordeling van 27–28 september 2026 zijn binnen de gedocumenteerde reikwijdte opgelost. Geschiedenis en verificatiegegevens staan hieronder."
   }
 }
