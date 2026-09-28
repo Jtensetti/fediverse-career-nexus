@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -67,7 +68,7 @@ export default function MFASettings() {
       setDisableCode("");
       await loadFactors();
     } catch (error: any) {
-      toast.error(error.message || t("mfa.disableError", "Failed to disable 2FA. Check your code."));
+      toast.error(userFacingErrorMessage(error, "mfa.disableError"));
       setDisableCode("");
     } finally {
       setIsDisabling(false);

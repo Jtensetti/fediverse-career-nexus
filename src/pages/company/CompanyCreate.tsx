@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -39,7 +40,7 @@ export default function CompanyCreate() {
       }
     } catch (error: any) {
       console.error("Failed to create company:", error);
-      toast.error(error.message || t("companies.createError", "Failed to create company"));
+      toast.error(userFacingErrorMessage(error, "companies.createError"));
     } finally {
       setIsSubmitting(false);
     }

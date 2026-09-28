@@ -1,3 +1,4 @@
+import { UserFacingError } from '@/lib/userFacingError';
 import type { PrivateKey } from 'openpgp';
 import { supabase } from '@/lib/supabase';
 import {
@@ -16,31 +17,31 @@ export function lockInbox() { unlocked = null; notify(); }
 
 async function currentUserId() {
   const { data } = await supabase.auth.getSession();
-  if (!data.session) throw new Error('Logga in för att använda meddelanden.');
+  if (!data.session) throw new UserFacingError('toasts.loginRequiredMessage');
   return data.session.user.id;
 }
 
 export async function getInboxBackup(): Promise<InboxKeyBackup | null> {
   const userId = await currentUserId();
   const { data, error } = await supabase.from('message_key_backups').select('encrypted_private_key').eq('user_id', userId).maybeSingle();
-  if (error) throw new Error('Kunde inte läsa din krypterade nyckelbackup.');
+  if (error) throw new UserFacingError('runtimeErrors.backupLoad');
   if (!data) return null;
   const publicKey = await getInboxPublicKey(userId, userId);
-  if (!publicKey) throw new Error('Nyckelparet saknas. Kontakta support.');
+  if (!publicKey) throw new UserFacingError('runtimeErrors.missingKeyPair');
   return { ...publicKey, encrypted_private_key: data.encrypted_private_key };
 }
 
 function checkFingerprint(ownerId: string, userId: string, fingerprint: string) {
   const storageKey = `nolto:message-key:${ownerId}:${userId}`;
   const pinned = localStorage.getItem(storageKey);
-  if (pinned && pinned !== fingerprint) throw new Error('Meddelandenyckeln har ändrats. Skicka inget innan ni har kontrollerat nyckeln via en annan kanal.');
+  if (pinned && pinned !== fingerprint) throw new UserFacingError('runtimeErrors.keyChanged');
   localStorage.setItem(storageKey, fingerprint);
 }
 
 export async function getInboxPublicKey(userId: string, ownerId?: string) {
   const current = ownerId || await currentUserId();
   const { data, error } = await supabase.from('message_public_keys').select('user_id,fingerprint,public_key').eq('user_id', userId).maybeSingle();
-  if (error) throw new Error('Kunde inte läsa meddelandenyckeln.');
+  if (error) throw new UserFacingError('runtimeErrors.keyLoad');
   if (!data) return null;
   await readInboxPublicKey(data.public_key, data.fingerprint);
   checkFingerprint(current, userId, data.fingerprint);
@@ -53,12 +54,12 @@ export async function prepareInbox(passphrase: string): Promise<InboxKeyBackup> 
 
 export async function activateInbox(backup: InboxKeyBackup, passphrase: string) {
   const userId = await currentUserId();
-  if (backup.user_id !== userId) throw new Error('Nyckeln tillhör ett annat konto.');
+  if (backup.user_id !== userId) throw new UserFacingError('runtimeErrors.wrongKeyAccount');
   const version = revision;
   const key = await unlockInboxKey(backup, passphrase);
   const { data, error } = await supabase.functions.invoke('message-keys', { body: { action: 'register', ...backup } });
-  if (error || data?.error) throw new Error('Kunde inte aktivera meddelandenyckeln. Ladda om och försök igen.');
-  if (revision !== version || await currentUserId() !== userId) throw new Error('Sessionen har ändrats. Lås upp inkorgen igen.');
+  if (error || data?.error) throw new UserFacingError('runtimeErrors.activateKey');
+  if (revision !== version || await currentUserId() !== userId) throw new UserFacingError('runtimeErrors.sessionChanged');
   checkFingerprint(userId, userId, backup.fingerprint);
   unlocked = { userId, key }; notify();
 }
@@ -66,29 +67,32 @@ export async function activateInbox(backup: InboxKeyBackup, passphrase: string) 
 export async function unlockInbox(passphrase: string) {
   const version = revision;
   const backup = await getInboxBackup();
-  if (!backup) throw new Error('Aktivera din krypterade inkorg först.');
+  if (!backup) throw new UserFacingError('runtimeErrors.activateFirst');
   let key: PrivateKey;
   try { key = await unlockInboxKey(backup, passphrase); }
-  catch { throw new Error('Nyckelfrasen stämmer inte eller nyckelbackupen är skadad.'); }
-  if (revision !== version || await currentUserId() !== backup.user_id) throw new Error('Sessionen har ändrats. Lås upp inkorgen igen.');
+  catch (error) {
+    if (error instanceof UserFacingError) throw error;
+    throw new UserFacingError('runtimeErrors.wrongPassphrase');
+  }
+  if (revision !== version || await currentUserId() !== backup.user_id) throw new UserFacingError('runtimeErrors.sessionChanged');
   unlocked = { userId: backup.user_id, key }; notify();
 }
 
 export async function unlockInboxFromBackup(value: unknown, passphrase: string): Promise<InboxKeyBackup> {
   const version = revision;
   const userId = await currentUserId();
-  if (!value || typeof value !== 'object') throw new Error('Ogiltig nyckelbackup.');
+  if (!value || typeof value !== 'object') throw new UserFacingError('runtimeErrors.invalidBackup');
   const backup = value as InboxKeyBackup & { schema?: string };
   if (backup.schema !== 'nolto-inbox-key/1' || backup.user_id !== userId ||
       typeof backup.encrypted_private_key !== 'string' || backup.encrypted_private_key.length > 32768) {
-    throw new Error('Backupen tillhör inte detta konto eller har fel format.');
+    throw new UserFacingError('runtimeErrors.backupAccountFormat');
   }
   const registered = await getInboxPublicKey(userId, userId);
   if (!registered || registered.fingerprint !== backup.fingerprint || registered.public_key !== backup.public_key) {
-    throw new Error('Backupen stämmer inte med kontots registrerade meddelandenyckel.');
+    throw new UserFacingError('runtimeErrors.backupMismatch');
   }
   const key = await unlockInboxKey(backup, passphrase);
-  if (revision !== version || await currentUserId() !== userId) throw new Error('Sessionen har ändrats. Lås upp inkorgen igen.');
+  if (revision !== version || await currentUserId() !== userId) throw new UserFacingError('runtimeErrors.sessionChanged');
   unlocked = { userId, key }; notify();
   return backup;
 }
@@ -96,9 +100,9 @@ export async function unlockInboxFromBackup(value: unknown, passphrase: string):
 export async function encryptOutgoingMessage(recipientId: string, content: string, jobConversationId: string | null = null): Promise<SealedMessage> {
   const userId = await currentUserId();
   const sessionKey = unlocked;
-  if (sessionKey?.userId !== userId) throw new Error('Lås upp din inkorg på meddelandesidan först.');
+  if (sessionKey?.userId !== userId) throw new UserFacingError('runtimeErrors.unlockFirst');
   const [sender, recipient] = await Promise.all([getInboxPublicKey(userId, userId), getInboxPublicKey(recipientId, userId)]);
-  if (!sender || !recipient) throw new Error('Båda behöver aktivera sin krypterade inkorg innan ni kan skicka meddelanden.');
+  if (!sender || !recipient) throw new UserFacingError('runtimeErrors.bothActivate');
   return sealPrivateMessage({ id: crypto.randomUUID(), sender_id: userId, recipient_id: recipientId,
     job_conversation_id: jobConversationId, sender_key_fingerprint: sender.fingerprint, recipient_key_fingerprint: recipient.fingerprint },
     content, sessionKey.key, await readInboxPublicKey(sender.public_key, sender.fingerprint), await readInboxPublicKey(recipient.public_key, recipient.fingerprint));
@@ -108,11 +112,11 @@ export async function decryptIncomingMessage(message: SealedMessage): Promise<st
   const userId = await currentUserId();
   const version = revision;
   const sessionKey = unlocked;
-  if (sessionKey?.userId !== userId) throw new Error('Lås upp din inkorg först.');
+  if (sessionKey?.userId !== userId) throw new UserFacingError('runtimeErrors.unlockFirst');
   const sender = await getInboxPublicKey(message.sender_id, userId);
-  if (!sender) throw new Error('Avsändarens meddelandenyckel saknas.');
+  if (!sender) throw new UserFacingError('runtimeErrors.senderKeyMissing');
   const content = await openPrivateMessage(message, sessionKey.key, await readInboxPublicKey(sender.public_key, sender.fingerprint));
-  if (revision !== version) throw new Error('Inkorgen är låst.');
+  if (revision !== version) throw new UserFacingError('runtimeErrors.inboxLocked');
   return content;
 }
 

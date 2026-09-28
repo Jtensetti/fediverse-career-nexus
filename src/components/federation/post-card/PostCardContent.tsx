@@ -83,7 +83,7 @@ export default function PostCardContent({
         <ContentWarningDisplay warning={post.content_warning || post.content?.summary || ''}>
           {post.content && isPoll(post.content as Record<string, unknown>) ? (
             <div className="space-y-3">
-              {displayContent && displayContent !== 'Inget innehåll tillgängligt' && (
+              {displayContent && (
                 <div
                   className="prose prose-sm max-w-none dark:prose-invert"
                   dangerouslySetInnerHTML={{ __html: displayContent }}
@@ -109,7 +109,7 @@ export default function PostCardContent({
             </div>
           ) : (
             <>
-              {displayContent && displayContent !== 'Inget innehåll tillgängligt' && (
+              {displayContent && (
                 <div
                   className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-primary [&_a]:break-all whitespace-pre-line"
                   dangerouslySetInnerHTML={{ __html: displayContent }}

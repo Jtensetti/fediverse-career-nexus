@@ -19,7 +19,7 @@ export default function MastodonConnection() {
       sessionStorage.setItem("federated_auth_state", data.state);
       sessionStorage.setItem("federated_auth_redirect", redirectUri);
       window.location.assign(data.authorizationUrl);
-    } catch (e) { setError(e instanceof Error ? e.message : "Connection failed"); setBusy(false); }
+    } catch (e) { setError(t('ui.mastodonConnection.couldNotConnectCheck')); setBusy(false); }
   };
   return <Card><CardHeader><CardTitle>{t("ui.mastodonConnection.linkMastodon")}</CardTitle></CardHeader><CardContent>
     <p className="text-sm text-muted-foreground mb-4">{t("ui.mastodonConnection.linkAnAccountTo")}</p>

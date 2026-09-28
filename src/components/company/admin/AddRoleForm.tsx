@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { UserPlus, Loader2, Search } from "lucide-react";
@@ -77,7 +78,7 @@ export default function AddRoleForm({ companyId, onRoleAdded }: AddRoleFormProps
       setResults([]);
       onRoleAdded();
     } catch (err: any) {
-      toast.error(err.message || t("companyAdmin.roleAddFailed", "Failed to add role"));
+      toast.error(userFacingErrorMessage(err, "companyAdmin.roleAddFailed"));
     } finally {
       setAdding(false);
     }

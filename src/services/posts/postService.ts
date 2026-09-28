@@ -175,15 +175,15 @@ export const createPost = async (postData: CreatePostData): Promise<boolean> => 
 
     if (postError) {
       const { data: existing } = await supabase.from('ap_objects').select('id,moderation_status').eq('id', postId).eq('attributed_to', actor.id).maybeSingle();
-      if (existing) { notifyPublication(existing.moderation_status || 'published', 'Inlägget skapades!'); return true; }
+      if (existing) { notifyPublication(existing.moderation_status || 'published', tx('reviewUI.postCreated')); return true; }
       console.error('Post creation error:', postError);
-      toast.error(`Failed to create post: ${postError.message}`);
+      toast.error(tx('reviewUI.postCreateFailed'));
       return false;
     }
 
     // A database trigger queues federation in the same transaction as this insert.
 
-    notifyPublication(savedPost.moderation_status, "Inlägget skapades!");
+    notifyPublication(savedPost.moderation_status, tx('reviewUI.postCreated'));
     return true;
 
   } catch (error) {
@@ -259,7 +259,7 @@ export const updatePost = async (postId: string, updates: { content: string }): 
       throw new Error(`Failed to update post: ${updateError.message}`);
     }
 
-    notifyPublication(savedPost.moderation_status, 'Inlägget uppdaterades!');
+    notifyPublication(savedPost.moderation_status, tx('reviewUI.postUpdated'));
   } catch (error) {
     console.error('Error updating post:', error);
     throw error;

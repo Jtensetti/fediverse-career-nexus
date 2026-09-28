@@ -44,7 +44,7 @@ export function RetainedReportReview({ reportId }: { reportId: string }) {
         </DialogHeader>
         {error ? <p role="alert">{tx("ui.retainedReportReview.textenArInteTillganglig")}</p>
           : value ? <div className="max-h-[60vh] overflow-y-auto space-y-4">
-            <p className="text-sm text-muted-foreground">{tx("ui.retainedReportReview.raderasPermanent")}{' '}{new Date(value.purge_after).toLocaleString(intlLocale())}{tx("ui.retainedReportReview.granskningenForlangerInteLagringstiden")}</p>
+            <p className="text-sm text-muted-foreground">{tx("ui.retainedReportReview.purgeNotice", { date: new Date(value.purge_after).toLocaleString(intlLocale()) })}</p>
             {value.title && <h3 className="font-semibold">{textOnly(value.title)}</h3>}
             <p className="whitespace-pre-wrap break-words">{textOnly(value.content) || tx("ui.retainedReportReview.inlaggetInnehallerIngenGranskbar")}</p>
           </div> : <p role="status">{tx("ui.retainedReportReview.hamtarTexten")}</p>}

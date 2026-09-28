@@ -85,7 +85,7 @@ export const toggleReaction = async (articleId: string, emoji: string): Promise<
         .eq('id', existingReaction.id);
       
       if (error) {
-        toast.error(`Error removing reaction: ${error.message}`);
+        toast.error(tx('ui.articleReactionsService.failedToProcessYour'));
         return false;
       }
       
@@ -101,7 +101,7 @@ export const toggleReaction = async (articleId: string, emoji: string): Promise<
         });
       
       if (error) {
-        toast.error(`Error adding reaction: ${error.message}`);
+        toast.error(tx('ui.articleReactionsService.failedToProcessYour'));
         return false;
       }
       

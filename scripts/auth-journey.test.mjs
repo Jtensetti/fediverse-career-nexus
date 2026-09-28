@@ -5,11 +5,15 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { JSDOM } from 'jsdom';
+import i18next from 'i18next';
+import { Trans as RealTrans } from 'react-i18next';
 
 const dom = new JSDOM('<div id="root"></div>', { url: 'https://example.invalid/auth/signup', pretendToBeVisual: true });
 for (const key of ['window', 'document', 'HTMLElement', 'HTMLInputElement', 'Node', 'NodeFilter', 'Event', 'MouseEvent', 'CustomEvent', 'MutationObserver', 'getComputedStyle', 'localStorage', 'sessionStorage', 'requestAnimationFrame', 'cancelAnimationFrame']) globalThis[key] = dom.window[key];
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const translations = JSON.parse(readFileSync(new URL('../src/i18n/locales/sv.json', import.meta.url)));
+const authI18n = i18next.createInstance();
+await authI18n.init({ lng: 'sv', resources: { sv: { translation: translations } }, interpolation: { escapeValue: false } });
 globalThis.authTestTranslate = (key, options) => {
   let value = key.split('.').reduce((part, name) => part?.[name], translations) ?? (typeof options === 'string' ? options : key);
   if (typeof value !== 'string') return key;
@@ -24,7 +28,7 @@ const mocks = {
   '@/components/auth/SocialSignIn': 'export default ()=>globalThis.authTestReact.createElement(globalThis.authTestReact.Fragment,null,...["Google","Apple"].map(name=>globalThis.authTestReact.createElement("button",{key:name,type:"button"},name)));',
   '@/components/auth/BlueskySignIn': 'export default ()=>globalThis.authTestReact.createElement("button",{type:"button","data-testid":"bluesky"},"Bluesky");',
   '@/components/common/SEOHead': 'export const SEOHead=()=>null;',
-  'react-i18next': 'export const useTranslation=()=>({t:globalThis.authTestTranslate});',
+  'react-i18next': 'export const useTranslation=()=>({t:globalThis.authTestTranslate}); export const Trans=props=>globalThis.authTestRenderTrans(props);',
   'sonner': 'export const toast={error:()=>{},success:()=>{},warning:()=>{}};',
 };
 registerHooks({
@@ -46,6 +50,7 @@ registerHooks({
 });
 const React = await import('react');
 globalThis.authTestReact = React;
+globalThis.authTestRenderTrans = props => React.createElement(RealTrans, { ...props, i18n: authI18n });
 const { createRoot } = await import('react-dom/client');
 const { MemoryRouter, useLocation, useNavigate } = await import('react-router-dom');
 const { default: Auth } = await import('../src/pages/auth/Auth.tsx');
@@ -90,6 +95,8 @@ async function fillSignup(username = 'new_person') {
 
 test('email method has only its own form, tabs preserve referral and return route', async t => {
   const fixture = await mount(); t.after(fixture.unmount);
+  assert.ok(document.querySelector('a[href="/terms"]')?.textContent);
+  assert.ok(document.querySelector('a[href="/privacy"]')?.textContent);
   assert.ok(document.getElementById('signup-email'));
   assert.equal(document.getElementById('mastodon-handle'), null);
   assert.equal(document.querySelector('[data-testid="bluesky"]'), null);

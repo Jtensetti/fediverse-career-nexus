@@ -240,7 +240,7 @@ export function GlobalSearch({ autoFocus = false, onResultClick, fullWidth = fal
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
-              {query.trim().length < 2 ? t("search.minimumQuery") : <>{t("globalSearch.noResults")} "{query}"</>}
+              {query.trim().length < 2 ? t("search.minimumQuery") : t("globalSearch.noResultsFor", { query })}
             </div>
           )}
           {!!results?.failedSources?.length && results.failedSources.length < 4 && (

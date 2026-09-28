@@ -1,3 +1,4 @@
+import { UserFacingError } from './userFacingError.ts';
 export const PROFILE_FIELDS = ['name', 'headline', 'location', 'bio', 'profileUrl', 'handle', 'email', 'phone', 'website', 'experience', 'education', 'skills'] as const;
 export type ProfileField = typeof PROFILE_FIELDS[number];
 export type SharedProfile = Partial<Record<ProfileField, string | Record<string, unknown>[] | string[]>>;
@@ -5,12 +6,13 @@ export type SharedProfile = Partial<Record<ProfileField, string | Record<string,
 export function profileShareRequest(search: string) {
   const params = new URLSearchParams(search);
   const rawOrigin = params.get('origin') || '';
-  const origin = new URL(rawOrigin);
-  if (origin.origin !== rawOrigin || origin.username || origin.password || (origin.protocol !== 'https:' && !(origin.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(origin.hostname)))) throw new Error('Ogiltig mottagaradress.');
+  let origin: URL;
+  try { origin = new URL(rawOrigin); } catch { throw new UserFacingError('runtimeErrors.shareRequest'); }
+  if (origin.origin !== rawOrigin || origin.username || origin.password || (origin.protocol !== 'https:' && !(origin.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(origin.hostname)))) throw new UserFacingError('runtimeErrors.shareRequest');
   const request = params.get('request') || '';
-  if (!/^[a-f0-9]{32}$/.test(request)) throw new Error('Ogiltig förfrågan.');
+  if (!/^[a-f0-9]{32}$/.test(request)) throw new UserFacingError('runtimeErrors.shareRequest');
   const fields = [...new Set((params.get('fields') || '').split(','))];
-  if (!fields.length || fields.some(field => !(PROFILE_FIELDS as readonly string[]).includes(field))) throw new Error('Okända profilfält.');
+  if (!fields.length || fields.some(field => !(PROFILE_FIELDS as readonly string[]).includes(field))) throw new UserFacingError('runtimeErrors.shareFields');
   return { origin: origin.origin, request, fields: fields as ProfileField[] };
 }
 

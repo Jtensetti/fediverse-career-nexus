@@ -26,7 +26,7 @@ export interface NetworkSuggestion {
   avatarUrl: string;
   connectionDegree: ConnectionDegree;
   mutualConnections: number;
-  suggestionReason?: string;
+  suggestionLocation?: string;
 }
 
 export const getUserConnections = async (targetUserId?: string): Promise<NetworkConnection[]> => {
@@ -125,7 +125,10 @@ export const getConnectionSuggestions = async (): Promise<NetworkSuggestion[]> =
       connectionDegree: profile.mutual_count > 0 ? 2 as ConnectionDegree : 3 as ConnectionDegree,
       isVerified: profile.is_verified || false,
       mutualConnections: Number(profile.mutual_count) || 0,
-      suggestionReason: profile.suggestion_reason || "Förslag för dig"
+      // The legacy RPC returns this location hint as an English sentence.
+      // Keep only its data so the UI can translate it on every render.
+      suggestionLocation: typeof profile.suggestion_reason === 'string' && profile.suggestion_reason.startsWith('Also in ')
+        ? profile.suggestion_reason.slice(8) : undefined
     }));
   } catch (error) {
     console.error("Error fetching connection suggestions:", error);
@@ -176,7 +179,6 @@ const getSimpleSuggestions = async (userId: string): Promise<NetworkSuggestion[]
     connectionDegree: 3 as ConnectionDegree,
     isVerified: profile.is_verified || false,
     mutualConnections: 0,
-    suggestionReason: "Förslag för dig"
   }));
 };
 

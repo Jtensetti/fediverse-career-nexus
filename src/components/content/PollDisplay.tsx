@@ -218,7 +218,7 @@ export function PollDisplay({ pollId, content, className }: PollDisplayProps) {
           {results && (
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              {results.totalVotes} {results.totalVotes !== 1 ? "röster" : "röst"}
+              {tx("reviewUI.votes", { count: results.totalVotes })}
             </span>
           )}
           {endTime && (

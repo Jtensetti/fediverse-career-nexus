@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -73,7 +74,7 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
       const result = await enrollTOTP('Nolto');
       setEnrollment(result);
     } catch (error: any) {
-      toast.error(error.message || t("mfa.enrollError", "Failed to start enrollment"));
+      toast.error(userFacingErrorMessage(error, "mfa.enrollError"));
       onOpenChange(false);
     } finally {
       setIsLoading(false);
@@ -96,7 +97,7 @@ export default function MFAEnrollDialog({ open, onOpenChange, onSuccess }: MFAEn
       // Best-effort: stash on window so re-renders don't lose handle (cleanup happens on unmount via effect)
       successTimerRef.current = successTimer;
     } catch (error: any) {
-      toast.error(error.message || t("mfa.verifyError", "Invalid code. Please try again."));
+      toast.error(userFacingErrorMessage(error, "mfa.verifyError"));
       setCode("");
     } finally {
       setIsVerifying(false);

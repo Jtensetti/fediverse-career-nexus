@@ -23,7 +23,7 @@ export default function MfaRecover() {
       setDone(true);
       window.history.replaceState(null, "", "/aterstall-mfa");
     } catch {
-      setError("Återställningen kunde inte slutföras. Länken kan ha gått ut eller redan använts. Kontakta support för en ny länk.");
+      setError(tx("ui.mfaRecover.recoveryFailed"));
     } finally { setPending(false); }
   }
   return <div className="mx-auto max-w-md space-y-5 px-6 py-16">

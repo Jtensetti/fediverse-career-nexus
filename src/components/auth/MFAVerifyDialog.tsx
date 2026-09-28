@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -66,7 +67,7 @@ export default function MFAVerifyDialog({
       toast.success(t("mfa.loginSuccess", "Verified successfully!"));
       onSuccess();
     } catch (err: any) {
-      setError(err.message || t("mfa.invalidCode", "Invalid code. Please try again."));
+      setError(userFacingErrorMessage(err, "mfa.invalidCode"));
       setCode("");
     } finally {
       setIsVerifying(false);

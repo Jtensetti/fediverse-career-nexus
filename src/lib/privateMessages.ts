@@ -1,3 +1,4 @@
+import { UserFacingError } from './userFacingError.ts';
 import type { Key, PrivateKey } from 'openpgp';
 
 export const MESSAGE_ENCRYPTION = 'openpgp-v1';
@@ -28,7 +29,7 @@ export interface SealedMessage extends MessageBinding {
 }
 
 export async function createInboxKey(userId: string, passphrase: string): Promise<InboxKeyBackup> {
-  if (passphrase.length < 16 || passphrase.length > 1024) throw new Error('Använd en separat nyckelfras med minst 16 tecken.');
+  if (passphrase.length < 16 || passphrase.length > 1024) throw new UserFacingError('runtimeErrors.passphraseLength');
   const openpgp = await pgp();
   const key = await openpgp.generateKey({
     type: 'ecc', curve: 'nistP256', userIDs: [{ name: `Nolto ${userId}` }],
@@ -40,9 +41,9 @@ export async function createInboxKey(userId: string, passphrase: string): Promis
 }
 
 export async function readInboxPublicKey(armored: string, fingerprint: string): Promise<Key> {
-  if (armored.length > 16384 || !/^[a-f0-9]{40,64}$/.test(fingerprint)) throw new Error('Ogiltig meddelandenyckel.');
+  if (armored.length > 16384 || !/^[a-f0-9]{40,64}$/.test(fingerprint)) throw new UserFacingError('runtimeErrors.invalidKey');
   const key = await (await pgp()).readKey({ armoredKey: armored });
-  if (key.isPrivate() || key.getFingerprint() !== fingerprint) throw new Error('Nyckelns fingeravtryck stämmer inte.');
+  if (key.isPrivate() || key.getFingerprint() !== fingerprint) throw new UserFacingError('runtimeErrors.fingerprintMismatch');
   await key.getEncryptionKey();
   return key;
 }
@@ -50,19 +51,21 @@ export async function readInboxPublicKey(armored: string, fingerprint: string): 
 export async function unlockInboxKey(backup: InboxKeyBackup, passphrase: string): Promise<PrivateKey> {
   const openpgp = await pgp();
   const stored = await openpgp.readPrivateKey({ armoredKey: backup.encrypted_private_key });
-  if (stored.getFingerprint() !== backup.fingerprint || stored.isDecrypted()) throw new Error('Ogiltig nyckelbackup.');
-  const key = await openpgp.decryptKey({ privateKey: stored, passphrase });
+  if (stored.getFingerprint() !== backup.fingerprint || stored.isDecrypted()) throw new UserFacingError('runtimeErrors.invalidBackup');
+  let key: PrivateKey;
+  try { key = await openpgp.decryptKey({ privateKey: stored, passphrase }); }
+  catch { throw new UserFacingError('runtimeErrors.wrongPassphrase'); }
   if (key.toPublic().armor() !== (await readInboxPublicKey(backup.public_key, backup.fingerprint)).armor()) {
-    throw new Error('Nyckelparet stämmer inte.');
+    throw new UserFacingError('runtimeErrors.keyPairMismatch');
   }
   return key;
 }
 
 export async function sealPrivateMessage(binding: MessageBinding, text: string, privateKey: PrivateKey,
   senderKey: Key, recipientKey: Key): Promise<SealedMessage> {
-  if (!text.trim() || encoder.encode(text).length > MAX_MESSAGE_BYTES) throw new Error('Meddelandet är för långt eller tomt.');
+  if (!text.trim() || encoder.encode(text).length > MAX_MESSAGE_BYTES) throw new UserFacingError('runtimeErrors.messageSize');
   if (privateKey.getFingerprint() !== binding.sender_key_fingerprint || senderKey.getFingerprint() !== binding.sender_key_fingerprint ||
-      recipientKey.getFingerprint() !== binding.recipient_key_fingerprint) throw new Error('Meddelandenyckeln har ändrats.');
+      recipientKey.getFingerprint() !== binding.recipient_key_fingerprint) throw new UserFacingError('runtimeErrors.keyChanged');
   const openpgp = await pgp();
   const encrypted = await openpgp.encrypt({
     message: await openpgp.createMessage({ text: JSON.stringify({ schema: 'nolto-private-message/1', ...binding, text }) }),
@@ -76,7 +79,7 @@ export async function openPrivateMessage(message: SealedMessage, privateKey: Pri
   if (message.encryption_version !== MESSAGE_ENCRYPTION || message.encrypted_content.length > MAX_CIPHERTEXT_BYTES ||
       senderKey.getFingerprint() !== message.sender_key_fingerprint ||
       ![message.sender_key_fingerprint, message.recipient_key_fingerprint].includes(privateKey.getFingerprint())) {
-    throw new Error('Meddelandets nyckel eller format stämmer inte.');
+    throw new UserFacingError('runtimeErrors.invalidMessage');
   }
   const openpgp = await pgp();
   const opened = await openpgp.decrypt({
@@ -87,10 +90,10 @@ export async function openPrivateMessage(message: SealedMessage, privateKey: Pri
   await Promise.all(opened.signatures.map(signature => signature.verified));
   const payload = JSON.parse(opened.data);
   for (const field of ['id', 'sender_id', 'recipient_id', 'job_conversation_id', 'sender_key_fingerprint', 'recipient_key_fingerprint'] as const) {
-    if (payload[field] !== message[field]) throw new Error('Meddelandet hör inte till denna konversation.');
+    if (payload[field] !== message[field]) throw new UserFacingError('runtimeErrors.wrongConversation');
   }
   if (payload.schema !== 'nolto-private-message/1' || typeof payload.text !== 'string' || encoder.encode(payload.text).length > MAX_MESSAGE_BYTES) {
-    throw new Error('Ogiltigt meddelande.');
+    throw new UserFacingError('runtimeErrors.invalidMessage');
   }
   return payload.text;
 }

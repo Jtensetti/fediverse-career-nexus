@@ -58,7 +58,7 @@ export default function ActorModeration() {
         .map(item => ({ ...item, status: item.status as 'normal' | 'probation' | 'blocked' })) : [];
       setActors(actorEntries);
     } catch (err) {
-      setError("Kunde inte ladda aktörmoderationsdata");
+      setError(tx("moderation.loadRulesFailed"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -68,21 +68,21 @@ export default function ActorModeration() {
   const handleAddActor = async () => {
     setError(null);
     setSuccess(null);
-    if (!actorUrl) { setError("Aktör-URL krävs"); return; }
-    if (!reason) { setError("Anledning krävs"); return; }
+    if (!actorUrl) { setError(tx("moderation.accountUrlRequired")); return; }
+    if (!reason) { setError(tx("moderation.reasonRequired")); return; }
     try {
       const result = await updateActorModeration(actorUrl, status, reason);
       if (result.success) {
-        setSuccess(`${actorUrl} har blockerats`);
+        setSuccess(tx("moderation.statusUpdatedDetails", { target: actorUrl, status: getStatusLabel(status) }));
         setActorUrl("");
         setReason("");
         fetchActors();
-        toast(tx("ui.actorModeration.aktorBlockerad"), { description: `${actorUrl} har lagts till` });
+        toast(tx("moderation.ruleSaved"), { description: tx("moderation.statusUpdatedDetails", { target: actorUrl, status: getStatusLabel(status) }) });
       } else {
-        setError("Kunde inte blockera aktör");
+        setError(tx("moderation.saveRuleFailed"));
       }
     } catch (err) {
-      setError("Ett fel inträffade vid blockering av aktör");
+      setError(tx("moderation.saveRuleFailed"));
       console.error(err);
     }
   };
@@ -94,7 +94,7 @@ export default function ActorModeration() {
       if (result.success) {
         setIsEditDialogOpen(false);
         fetchActors();
-        toast(tx("ui.actorModeration.aktorUppdaterad"), { description: `${currentActor.actor_url} uppdaterad` });
+        toast(tx("ui.actorModeration.aktorUppdaterad"), { description: tx("moderation.statusUpdatedDetails", { target: currentActor.actor_url, status: getStatusLabel(editStatus) }) });
       } else {
         toast.error(tx("ui.actorModeration.uppdateringMisslyckades"), { description: tx("ui.actorModeration.kundeInteUppdateraAktor") });
       }
@@ -111,7 +111,7 @@ export default function ActorModeration() {
       if (result.success) {
         setIsDeleteDialogOpen(false);
         fetchActors();
-        toast(tx("ui.actorModeration.aktorBorttagen"), { description: `${actorToDelete} borttagen` });
+        toast(tx("ui.actorModeration.aktorBorttagen"), { description: tx("moderation.entryRemovedDetails", { target: actorToDelete }) });
       } else {
         toast.error(tx("ui.actorModeration.borttagningMisslyckades"), { description: tx("ui.actorModeration.kundeInteTaBort") });
       }
@@ -134,6 +134,8 @@ export default function ActorModeration() {
     setActorToDelete(url);
     setIsDeleteDialogOpen(true);
   };
+
+  const getStatusLabel = (value: string) => tx(value === "blocked" ? "ui.actorModeration.blockerad" : value === "probation" ? "ui.actorModeration.provotid" : "ui.actorModeration.normal");
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -247,7 +249,7 @@ export default function ActorModeration() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{tx("ui.actorModeration.redigeraAktorblockering")}</DialogTitle>
-            <DialogDescription>{tx("ui.actorModeration.uppdateraModereringsinstallningarFor")}{' '}{currentActor?.actor_url}</DialogDescription>
+            <DialogDescription>{tx("moderation.editRuleDescription", { target: currentActor?.actor_url })}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -278,7 +280,7 @@ export default function ActorModeration() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{tx("ui.actorModeration.bekraftaBorttagning")}</DialogTitle>
-            <DialogDescription>{tx("ui.actorModeration.arDuSakerPa")}{' '}{actorToDelete}{' '}{tx("ui.actorModeration.franModereringen")}</DialogDescription>
+            <DialogDescription>{tx("moderation.removeRuleDescription", { target: actorToDelete })}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>{tx("ui.actorModeration.avbryt")}</Button>

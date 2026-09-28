@@ -1,3 +1,4 @@
+import { UserFacingError, userFacingErrorMessage } from '@/lib/userFacingError';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -31,19 +32,19 @@ export default function EncryptedInbox({ partnerId }: { partnerId?: string }) {
   const [confirmation, setConfirmation] = useState('');
   const [backupFile, setBackupFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<unknown>(null);
   const [peerFingerprint, setPeerFingerprint] = useState<string | null>(null);
   useEffect(() => {
     let current = true;
     setExisting(undefined); setPending(null); setBackupFile(null); setPassphrase(''); setConfirmation(''); setError('');
-    if (user) getInboxBackup().then(value => { if (current) setExisting(value); }).catch(() => { if (current) setError(t("ui.encryptedInbox.couldNotLoadYour")); });
+    if (user) getInboxBackup().then(value => { if (current) setExisting(value); }).catch(reason => { if (current) setError(reason instanceof UserFacingError ? reason : new UserFacingError("ui.encryptedInbox.couldNotLoadYour")); });
     return () => { current = false; };
   }, [user?.id]);
   useEffect(() => {
     if (!ready || !partnerId) return;
     let current = true;
     getInboxPublicKey(partnerId).then(value => { if (current) setPeerFingerprint(value?.fingerprint || null); })
-      .catch(() => { if (current) setError(t("ui.encryptedInbox.theRecipientsKeyCould")); });
+      .catch(reason => { if (current) setError(reason instanceof UserFacingError ? reason : new UserFacingError("ui.encryptedInbox.theRecipientsKeyCould")); });
     return () => { current = false; };
   }, [ready, partnerId]);
   useEffect(() => {
@@ -56,20 +57,20 @@ export default function EncryptedInbox({ partnerId }: { partnerId?: string }) {
     setBusy(true); setError('');
     try {
       if (backupFile) {
-        if (backupFile.size > 50000) throw new Error(t("ui.encryptedInbox.theBackupFileIs"));
+        if (backupFile.size > 50000) throw new UserFacingError("ui.encryptedInbox.theBackupFileIs");
         setExisting(await unlockInboxFromBackup(JSON.parse(await backupFile.text()), passphrase));
         setBackupFile(null); setPassphrase(''); setConfirmation('');
       }
       else if (existing) { await unlockInbox(passphrase); setPassphrase(''); }
       else if (!pending) {
-        if (passphrase !== confirmation) throw new Error(t("ui.encryptedInbox.theKeyPhrasesMust"));
+        if (passphrase !== confirmation) throw new UserFacingError("ui.encryptedInbox.theKeyPhrasesMust");
         setPending(await prepareInbox(passphrase));
       } else {
         if (!saved) return;
         await activateInbox(pending, passphrase);
         setExisting(pending); setPending(null); setPassphrase(''); setConfirmation('');
       }
-    } catch (reason) { setError(reason instanceof Error ? reason.message : (t("ui.encryptedInbox.pleaseRetry"))); }
+    } catch (reason) { setError(reason); }
     finally { setBusy(false); }
   }
   if (!user) return null;
@@ -80,7 +81,7 @@ export default function EncryptedInbox({ partnerId }: { partnerId?: string }) {
       <p className="break-all mt-2">{t("ui.encryptedInbox.yourKey")}{existing?.fingerprint}</p>
       {partnerId && <p className="break-all mt-2">{t("ui.encryptedInbox.recipientKey")}{peerFingerprint || (t("ui.encryptedInbox.notActivated"))}</p>}
       {existing && <Button className="mt-3" variant="outline" onClick={() => downloadInboxBackup(existing)}>{t("ui.encryptedInbox.downloadEncryptedKeyBackup")}</Button>}
-    </details>{error && <p role="alert" className="text-destructive">{error}</p>}
+    </details>{!!error && <p role="alert" className="text-destructive">{userFacingErrorMessage(error, "runtimeErrors.invalidBackup")}</p>}
   </div>;
   return <Card className="mb-5"><CardHeader><CardTitle>{existing ? (t("ui.encryptedInbox.unlockYourInbox")) : (t("ui.encryptedInbox.enableEncryptedMessages"))}</CardTitle></CardHeader>
     <CardContent className="space-y-4">
@@ -92,7 +93,7 @@ export default function EncryptedInbox({ partnerId }: { partnerId?: string }) {
         {pending && <><Button type="button" variant="outline" onClick={() => downloadInboxBackup(pending)}>{t("ui.encryptedInbox.downloadEncryptedKeyBackup")}</Button><label className="flex items-start gap-3"><Checkbox checked={saved} onCheckedChange={value => setSaved(value === true)} /><span>{t("ui.encryptedInbox.iHaveStoredThe")}</span></label></>}
         <Button type="submit" disabled={busy || (!!pending && !saved)}>{busy ? (t("ui.encryptedInbox.working")) : existing || backupFile ? (t("ui.encryptedInbox.unlock")) : pending ? (t("ui.encryptedInbox.activateInbox")) : (t("ui.encryptedInbox.createMessageKey"))}</Button>
       </form>}
-      {error && <p role="alert" className="text-destructive">{error}</p>}
+      {!!error && <p role="alert" className="text-destructive">{userFacingErrorMessage(error, "runtimeErrors.invalidBackup")}</p>}
       <p className="text-sm text-muted-foreground">{t("ui.encryptedInbox.publicPostsAreExcluded")}<Link to="/privacy" className="underline">{t("ui.encryptedInbox.readAboutPrivacyAnd")}</Link></p>
     </CardContent></Card>;
 }

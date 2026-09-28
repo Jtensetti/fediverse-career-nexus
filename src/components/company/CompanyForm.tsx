@@ -26,52 +26,27 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Building2 } from "lucide-react";
 import { generateSlug, isSlugAvailable } from "@/services/company/companyService";
-import type { Database } from "@/integrations/supabase/types";
+import { companySizeOptions } from "@/lib/companyOptions";
+import OrganisationTypeOptions from "./OrganisationTypeOptions";
 
 import { tx } from "@/i18n/tx";
-type CompanySize = Database['public']['Enums']['company_size'];
 
-// Storleksspann för organisationer av olika storlekar.
-// Mappar till befintliga enum-värden i DB (ingen schemaändring).
-const companySizeOptions: { value: CompanySize; label: string }[] = [
-  { value: '1-10', get label() { return tx("ui.companyForm.size110Anstallda"); } },
-  { value: '11-50', get label() { return tx("ui.companyForm.size1150Anstallda"); } },
-  { value: '51-200', get label() { return tx("ui.companyForm.size51200Anstallda"); } },
-  { value: '201-500', get label() { return tx("ui.companyForm.size201500Anstallda"); } },
-  { value: '501-1000', get label() { return tx("ui.companyForm.size5011000Anstallda"); } },
-  { value: '1001-5000', get label() { return tx("ui.companyForm.size10015000"); } },
-  { value: '5001-10000', get label() { return tx("ui.companyForm.size500110000"); } },
-  { value: '10000+', get label() { return tx("ui.companyForm.size10001Anstallda"); } },
-];
-
-// Strukturerade organisationstyper.
-// Sparas som text i samma `industry`-kolumn (ingen schemaändring).
-export const ORGANISATION_TYPES = [
-  'Kommun',
-  'Region',
-  'Statlig myndighet',
-  'Statligt bolag',
-  'Kommunalt bolag',
-  'Förbund / samverkansorgan',
-  'Universitet & högskola',
-  'Folkhögskola',
-  'Civilsamhälle / ideell organisation',
-  'Konsultbolag',
-  'Annat',
-] as const;
-
-const createCompanyFormSchema = (t: TFunction) => z.object({
-  name: z.string().trim().min(2, t("companyForm.nameTooShort")).max(100, t("companyForm.nameTooLong")),
-  slug: z.string().min(2, t("companyForm.urlTooShort")).max(50, t("companyForm.urlTooLong"))
-    .regex(/^[a-z0-9-]+$/, t("companyForm.urlCharacters")),
-  tagline: z.string().max(140, t("companyForm.taglineTooLong")).optional(),
-  description: z.string().max(5000).optional(),
-  website: z.string().url(t("companyForm.invalidWebsite")).optional().or(z.literal("")),
-  industry: z.string().max(50).optional(),
-  size: z.enum(['1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5001-10000', '10000+'] as const).optional().nullable(),
-  location: z.string().max(100).optional(),
-  founded_year: z.coerce.number().min(1800).max(new Date().getFullYear()).optional().nullable(),
-});
+const createCompanyFormSchema = (t: TFunction) => {
+  const yearMessage = t("companyForm.validYear", { min: 1000, max: new Date().getFullYear() });
+  return z.object({
+    name: z.string().trim().min(2, t("companyForm.nameTooShort")).max(100, t("companyForm.nameTooLong")),
+    slug: z.string().min(3, t("companyForm.urlTooShort")).max(50, t("companyForm.urlTooLong"))
+      .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/, t("companyForm.urlCharacters")),
+    tagline: z.string().max(140, t("companyForm.taglineTooLong")).optional(),
+    description: z.string().max(5000, t("companyForm.maxCharacters", { max: 5000 })).optional(),
+    website: z.string().url(t("companyForm.invalidWebsite")).refine(value => value.startsWith("https://"), t("companyForm.httpsRequired")).optional().or(z.literal("")),
+    industry: z.string().max(240, t("companyForm.maxCharacters", { max: 240 })).optional(),
+    size: z.enum(['1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5001-10000', '10000+'] as const).optional().nullable(),
+    location: z.string().max(100, t("companyForm.maxCharacters", { max: 100 })).optional(),
+    founded_year: z.coerce.number({ invalid_type_error: yearMessage })
+      .int(yearMessage).min(1000, yearMessage).max(new Date().getFullYear(), yearMessage).optional().nullable(),
+  });
+};
 
 export type CompanyFormData = z.infer<ReturnType<typeof createCompanyFormSchema>>;
 
@@ -133,7 +108,7 @@ export default function CompanyForm({
     let cancelled = false;
     setSlugAvailable(null);
     setCheckingSlug(false);
-    if (!watchSlug || watchSlug.length < 2) {
+    if (!watchSlug || watchSlug.length < 3) {
       setSlugAvailable(null);
       return;
     }
@@ -315,13 +290,10 @@ export default function CompanyForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {ORGANISATION_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
+                      <OrganisationTypeOptions selected={field.value} />
                     </SelectContent>
                   </Select>
+                  <FormDescription>{t("companyTypes.help")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -345,7 +317,7 @@ export default function CompanyForm({
                     <SelectContent>
                       {companySizeOptions.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
+                          {t(opt.labelKey)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -379,7 +351,7 @@ export default function CompanyForm({
                     <Input 
                       type="number" 
                       placeholder={new Date().getFullYear().toString()}
-                      min={1800}
+                      min={1000}
                       max={new Date().getFullYear()}
                       {...field}
                       value={field.value || ""}

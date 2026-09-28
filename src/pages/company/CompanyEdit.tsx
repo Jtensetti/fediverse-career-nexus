@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -53,7 +54,7 @@ export default function CompanyEdit() {
       confirmDiscard(() => navigate(`/organisation/${slug}`), true);
     },
     onError: (error: Error) => {
-      toast.error(error.message || t("companies.updateError", "Failed to update company"));
+      toast.error(userFacingErrorMessage(error, "companies.updateError"));
     },
   });
   const confirmDiscard = useUnsavedChanges({ dirty: isDirty && !updateMutation.isPending, message: t("profileEdit.unsavedChanges") });

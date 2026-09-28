@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import { supabase } from "@/lib/supabase";
 
 export const deleteAccount = async (): Promise<{ success: boolean; error?: string; purgeAfter?: string }> => {
@@ -9,12 +10,12 @@ export const deleteAccount = async (): Promise<{ success: boolean; error?: strin
     if (error) {
       const response = error.context instanceof Response ? await error.context.clone().json().catch(() => null) : null;
       return { success: false, error: response?.error === 'recent_login_required'
-        ? 'Logga ut och logga in igen innan du raderar kontot. Inloggningen får vara högst 15 minuter gammal.'
-        : response?.error || 'Raderingen kunde inte slutföras. Försök igen eller kontakta support.' };
+        ? tx('ui.deleteAccountSection.loggaUtOchLogga')
+        : tx('ui.deleteAccountSection.deletionFailed') };
     }
 
     if (data?.error) {
-      return { success: false, error: data.error };
+      return { success: false, error: tx('ui.deleteAccountSection.deletionFailed') };
     }
 
     // Sign out the user locally after successful deletion
@@ -23,6 +24,6 @@ export const deleteAccount = async (): Promise<{ success: boolean; error?: strin
     return { success: true, purgeAfter: data.purge_after };
   } catch (error) {
     console.error('Unexpected error deleting account:', error);
-    return { success: false, error: 'An unexpected error occurred' };
+    return { success: false, error: tx('ui.deleteAccountSection.deletionFailed') };
   }
 };

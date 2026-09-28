@@ -1,9 +1,10 @@
+import { UserFacingError } from './userFacingError.ts';
 export interface UploadedPostImage { id: string; path: string; url: string; mediaType: string; size: number }
 export interface ImageDraftState {
   file: File | null;
   phase: 'empty' | 'compressing' | 'uploading' | 'ready' | 'error';
   upload?: UploadedPostImage;
-  error?: string;
+  error?: Error;
   compressedSize?: number;
 }
 interface Dependencies {
@@ -38,7 +39,7 @@ export class ImageDraft {
         if (generation !== this.generation) { this.discard(upload); return; }
         this.emit({ file, phase: 'ready', upload, compressedSize: compressed.size });
       } catch (error) {
-        if (generation === this.generation) this.emit({ file, phase: 'error', error: error instanceof Error ? error.message : 'Bilden kunde inte laddas upp.' });
+        if (generation === this.generation) this.emit({ file, phase: 'error', error: error instanceof Error ? error : new UserFacingError('runtimeErrors.imageUpload') });
       }
     })();
   }
@@ -46,8 +47,8 @@ export class ImageDraft {
   async ready() {
     const generation = this.generation;
     await this.task;
-    if (generation !== this.generation) throw new Error('Bilden ändrades. Försök publicera igen.');
-    if (this.state.phase === 'error') throw new Error(this.state.error);
+    if (generation !== this.generation) throw new UserFacingError('runtimeErrors.imageChanged');
+    if (this.state.phase === 'error') throw this.state.error;
     return this.state.upload;
   }
   clear() { ++this.generation; this.discard(this.state.upload); this.emit({ file: null, phase: 'empty' }); }

@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { intlLocale } from "@/lib/locale";
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -268,7 +269,7 @@ const ProfilePage = () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (error: any) {
       console.error("Error syncing profile:", error);
-      toast.error(error.message || t("profile.syncFailed", "Failed to sync profile"));
+      toast.error(userFacingErrorMessage(error, "profile.syncFailed"));
     } finally {
       setIsSyncing(false);
     }
@@ -942,7 +943,7 @@ const ProfilePage = () => {
               <CardContent className="pt-6">
                 <h3 className="text-sm font-semibold mb-3">{t("profilePage.followForArticles")}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {t("profilePage.followForArticlesDesc")} {profile.displayName?.split(" ")[0] || ""} {t("profilePage.followForArticlesDescSuffix")}
+                  {t("profilePage.followArticleUpdates", { name: profile.displayName || t("profilePage.unknownUser") })}
                 </p>
                 <FollowAuthorButton
                   authorId={profile.id}

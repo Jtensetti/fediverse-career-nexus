@@ -125,9 +125,9 @@ export default function AdminFederationHealth() {
       if (error) throw error;
       
       if (dryRun) {
-        toast.info(`Would clean ${data.totalCleaned} items`);
+        toast.info(tx('reviewUI.cleanupPreview', { count: data.totalCleaned }));
       } else {
-        toast.success(`Cleaned ${data.totalCleaned} items`);
+        toast.success(tx('reviewUI.cleanupComplete', { count: data.totalCleaned }));
         await loadData();
       }
     } catch (error) {
@@ -142,7 +142,7 @@ export default function AdminFederationHealth() {
       });
       
       if (error) throw error;
-      toast.success(`Pre-warmed ${data.refreshed} actor caches`);
+      toast.success(tx('reviewUI.cacheRefreshed', { count: data.refreshed }));
       await loadData();
     } catch (error) {
       toast.error(tx("ui.adminFederationHealth.cacheForvarmningMisslyckades"));

@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useContentCheck } from '@/hooks/useContentCheck';
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -59,7 +60,7 @@ export default function PostEditDialog({ open, onOpenChange, post, onUpdated }: 
       onUpdated();
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err.message || tx("ui.postEditDialog.updateFailed"));
+      toast.error(userFacingErrorMessage(err, "ui.postEditDialog.updateFailed"));
     } finally {
       setLoading(false);
     }

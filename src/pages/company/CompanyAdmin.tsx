@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useParams, Navigate, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -93,7 +94,7 @@ export default function CompanyAdmin() {
       queryClient.invalidateQueries({ queryKey: ["allEmployees", company.id] });
       queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
-      toast.error(err.message || t("companyAdmin.verifyFailed", "Failed to verify"));
+      toast.error(userFacingErrorMessage(err, "companyAdmin.verifyFailed"));
     }
   };
 
@@ -106,7 +107,7 @@ export default function CompanyAdmin() {
       queryClient.invalidateQueries({ queryKey: ["allEmployees", company.id] });
       queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
-      toast.error(err.message || t("companyAdmin.rejectFailed", "Failed to remove"));
+      toast.error(userFacingErrorMessage(err, "companyAdmin.rejectFailed"));
     }
   };
 
@@ -118,7 +119,7 @@ export default function CompanyAdmin() {
       queryClient.invalidateQueries({ queryKey: ["companyRoles", company.id] });
       queryClient.invalidateQueries({ queryKey: ["companyAuditLog", company.id] });
     } catch (err: any) {
-      toast.error(err.message || t("companyAdmin.roleRemoveFailed", "Failed to remove role"));
+      toast.error(userFacingErrorMessage(err, "companyAdmin.roleRemoveFailed"));
     }
   };
 

@@ -10,6 +10,7 @@ import { Article } from "@/services/articles/articleService";
 import FollowAuthorButton from "../social/FollowAuthorButton";
 import ArticleCardReactions from "./ArticleCardReactions";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface ArticlePreviewCardProps {
@@ -30,6 +31,7 @@ const ArticlePreviewCard = ({
   hasFullAccess,
   onFollowChange 
 }: ArticlePreviewCardProps) => {
+  const { t: tx } = useTranslation();
   const publishDate = article.published_at 
     ? format(new Date(article.published_at), 'd MMM yyyy', { locale: dateLocale() })
     : format(new Date(article.created_at), 'd MMM yyyy', { locale: dateLocale() });
@@ -38,7 +40,7 @@ const ArticlePreviewCard = ({
     ? authorInfo.fullname.split(' ').map(n => n[0]).join('').toUpperCase()
     : authorInfo?.username?.[0]?.toUpperCase() || '?';
 
-  const displayName = authorInfo?.fullname || authorInfo?.username || 'Okänd författare';
+  const displayName = authorInfo?.fullname || authorInfo?.username || tx('profilePage.unknownUser');
 
   return (
     <motion.div
@@ -143,7 +145,7 @@ const ArticlePreviewCard = ({
       </Card>
 
       <div className="flex items-center gap-4 px-1 text-muted-foreground">
-        <Link to={`/articles/${article.slug}#reactions`} aria-label={`Visa reaktioner på ${article.title}`} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Link to={`/articles/${article.slug}#reactions`} aria-label={tx("reviewUI.viewReactions", { title: article.title })} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <ArticleCardReactions articleId={article.id} />
         </Link>
         <ShareButton

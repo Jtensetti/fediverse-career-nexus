@@ -1,3 +1,4 @@
+import { tx } from '@/i18n/tx';
 import DOMPurify from "dompurify";
 import { getProxiedMediaUrl } from "@/services/federation/federationService";
 import { getNoltoInstanceDomain } from "@/lib/federation";
@@ -17,7 +18,7 @@ export function getRawContent(post: FederatedPost): string {
     const contentValue = post.content.content;
     rawContent = typeof contentValue === 'string' ? contentValue : '';
   } else {
-    rawContent = 'Inget innehåll tillgängligt';
+    rawContent = '';
   }
 
   return DOMPurify.sanitize(rawContent, {
@@ -32,11 +33,11 @@ export function getActorName(post: FederatedPost): string {
   if (post.company) return post.company.name;
 
   if (post.source === 'local' && post.profile) {
-    return post.profile.fullname || post.profile.username || post.actor_name || 'Okänd användare';
+    return post.profile.fullname || post.profile.username || post.actor_name || tx('profilePage.unknownUser');
   }
 
   const actor = post.actor;
-  return actor?.name || actor?.preferredUsername || post.actor_name || 'Okänd användare';
+  return actor?.name || actor?.preferredUsername || post.actor_name || tx('profilePage.unknownUser');
 }
 
 /** Get username for the post author */

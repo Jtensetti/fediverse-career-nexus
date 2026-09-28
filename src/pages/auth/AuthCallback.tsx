@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -55,7 +56,7 @@ export default function AuthCallback() {
         const response = await exchange.current;
 
         if (response.error) {
-          throw new Error(response.error.message || t("authCallback.failed"));
+          throw new Error(t("authCallback.failed"));
         }
 
         const { success, error: callbackError, profile: userProfile, auth, isNewUser } = response.data;
@@ -88,7 +89,7 @@ export default function AuthCallback() {
         if (isNewUser) {
           toast.success(t("authCallback.welcome"));
         } else {
-          toast.success(`${t("authCallback.welcome")} ${userProfile.fullname || userProfile.username}!`);
+          toast.success(t('reviewUI.welcomeName', { name: userProfile.fullname || userProfile.username }));
         }
 
         navigateTimer = window.setTimeout(() => {
@@ -98,7 +99,7 @@ export default function AuthCallback() {
       } catch (error: any) {
         if (cancelled) return;
         setStatus('error');
-        setErrorMessage(error.message || t("authCallback.failed"));
+        setErrorMessage(userFacingErrorMessage(error, "authCallback.failed"));
       }
     };
 

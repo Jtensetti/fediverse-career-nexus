@@ -54,7 +54,7 @@ export default function PostView() {
   const loadPostWithReplies = async () => {
     // Validate postId before fetching
     if (!postId || postId === 'undefined' || postId === 'null' || postId.trim() === '') {
-      setError('Ogiltigt inläggs-ID');
+      setError('ui.postView.inlaggHittadesInte');
       setLoading(false);
       return;
     }
@@ -81,13 +81,13 @@ export default function PostView() {
 
       if (postError) {
         console.error('Error fetching post:', postError);
-        setError('Kunde inte ladda inlägget');
+        setError('runtimeErrors.postLoad');
         setLoading(false);
         return;
       }
       
       if (!postData) {
-        setError('Inlägget hittades inte');
+        setError('ui.postView.inlaggHittadesInte');
         setLoading(false);
         return;
       }
@@ -170,7 +170,7 @@ export default function PostView() {
       const repliesData = await getPostReplies(postId);
       setReplies(repliesData);
     } catch (err) {
-      setError('Kunde inte ladda inlägget');
+      setError('runtimeErrors.postLoad');
     } finally {
       setLoading(false);
       
@@ -233,7 +233,7 @@ export default function PostView() {
             </Button>
           </Link>
           <div className="text-center py-12">
-            <p className="text-muted-foreground">{error || tx("ui.postView.inlaggetHittadesInte")}</p>
+            <p className="text-muted-foreground">{error ? tx(error) : tx("ui.postView.inlaggetHittadesInte")}</p>
           </div>
         </div>
       </DashboardLayout>

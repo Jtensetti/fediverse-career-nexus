@@ -1,3 +1,4 @@
+import { userFacingErrorMessage } from '@/lib/userFacingError';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,6 @@ export function ImageUploadStatus({ draft, retry }: { draft: ImageDraftState; re
     {draft.phase === 'compressing' && t('posts.optimizingImage', 'Bilden komprimeras…')}
     {draft.phase === 'uploading' && t('posts.uploadingImage', 'Bilden laddas upp. Du kan fortsätta skriva.')}
     {draft.phase === 'ready' && <span>{t('posts.imageReady', 'Bilden är redo')} · {formatFileSize(draft.compressedSize || 0)}</span>}
-    {draft.phase === 'error' && <><span className="text-destructive">{draft.error}</span><Button type="button" variant="outline" size="sm" onClick={retry}>{t('common.retry', 'Försök igen')}</Button></>}
+    {draft.phase === 'error' && <><span className="text-destructive">{userFacingErrorMessage(draft.error, 'runtimeErrors.imageUpload')}</span><Button type="button" variant="outline" size="sm" onClick={retry}>{t('common.retry', 'Försök igen')}</Button></>}
   </div>;
 }

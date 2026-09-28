@@ -23,7 +23,7 @@ export default function AuthRecovery() {
       if (error) throw error;
       setSent(true);
     } catch {
-      setError("Det gick inte att begära återställning. Vänta en stund och försök igen.");
+      setError(tx("ui.authRecovery.requestFailed"));
     } finally { setPending(false); }
   }
 

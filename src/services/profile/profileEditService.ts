@@ -1,3 +1,4 @@
+import { UserFacingError } from '@/lib/userFacingError';
 import { publicMediaUrl } from "@/lib/media";
 
 import { supabase } from "@/lib/supabase";
@@ -70,7 +71,7 @@ export const updateUserProfile = async (profileData: ProfileUpdateData): Promise
 
     if (error) {
       console.error('Profile update error:', error);
-      toast.error(`Kunde inte uppdatera profil: ${error.message}`);
+      toast.error(tx('ui.profileEditService.kundeInteUppdateraProfil'));
       return false;
     }
 
@@ -111,7 +112,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (uploadError) {
       console.error('Avatar upload error:', uploadError);
-      toast.error(`Kunde inte ladda upp avatar: ${uploadError.message}`);
+      toast.error(tx('ui.profileEditService.kundeInteLaddaUpp'));
       return null;
     }
 
@@ -129,7 +130,7 @@ export const uploadProfileAvatar = async (file: File): Promise<string | null> =>
 
     if (updateError) {
       console.error('Avatar URL update error:', updateError);
-      toast.error(`Kunde inte uppdatera profilbild: ${updateError.message}`);
+      toast.error(tx('ui.profileEditService.kundeInteUppdateraProfil'));
       return null;
     }
 
@@ -149,7 +150,7 @@ export const updateProfile = async (profileData: any) => {
     if (!user) {
       console.error('No user found in updateProfile');
       toast.error(tx("ui.profileEditService.duMasteVaraInloggad"));
-      throw new Error('Du måste vara inloggad');
+      throw new UserFacingError('toasts.loginRequiredProfile');
     }
 
     // Make sure we're updating the right fields
@@ -167,7 +168,7 @@ export const updateProfile = async (profileData: any) => {
 
     if (error) {
       console.error('Profile update error:', error);
-      toast.error(`Failed to update profile: ${error.message}`);
+      toast.error(tx('ui.profileEditService.kundeInteUppdateraProfil'));
       throw error;
     }
 

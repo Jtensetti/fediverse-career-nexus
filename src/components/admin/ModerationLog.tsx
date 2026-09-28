@@ -82,7 +82,7 @@ const ModerationLog = ({ isAdmin = false }: ModerationLogProps) => {
         }
       } catch (err) {
         console.error('Error fetching moderation actions:', err);
-        setError('Failed to load moderation actions');
+        setError('runtimeErrors.moderationLog');
       } finally {
         setLoading(false);
       }
@@ -109,7 +109,7 @@ const ModerationLog = ({ isAdmin = false }: ModerationLogProps) => {
   }
   
   if (error) {
-    return <div className="p-8 text-center text-destructive">{error}</div>;
+    return <div className="p-8 text-center text-destructive">{t(error)}</div>;
   }
 
   return (
