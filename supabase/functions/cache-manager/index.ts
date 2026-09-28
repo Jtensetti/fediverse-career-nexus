@@ -1,4 +1,5 @@
 import { adminHandler } from "../_shared/user-auth.ts";
+import { fetchActorDocument } from "../_shared/remote-fetch.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 const corsHeaders = {
@@ -54,26 +55,17 @@ Deno.serve(adminHandler(async (req) => {
         let refreshed = 0;
         for (const actor of popularActors || []) {
           try {
-            const response = await fetch(actor.actor_url, {
-              headers: {
-                "Accept": "application/activity+json, application/ld+json",
-                "User-Agent": "ActivityPub-CacheManager/1.0"
-              }
-            });
-
-            if (response.ok) {
-              const actorData = await response.json();
-
-              await supabaseClient
-                .from("remote_actors_cache")
-                .upsert({
-                  actor_url: actor.actor_url,
-                  actor_data: actorData,
-                  expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-                });
-
-              refreshed++;
-            }
+            // A previously valid peer can change its DNS, redirects or identity.
+            const actorData = await fetchActorDocument(actor.actor_url);
+            const { error: saveError } = await supabaseClient
+              .from("remote_actors_cache")
+              .upsert({
+                actor_url: actor.actor_url,
+                actor_data: actorData,
+                expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+              });
+            if (saveError) throw saveError;
+            refreshed++;
           } catch (error) {
             console.error(`Failed to refresh cache for ${actor.actor_url}:`, error);
           }

@@ -1405,7 +1405,8 @@
     "recoveryPageInvalid": "De koppeling is ongeldig of verlopen.",
     "recoveryPageWrongUser": "Deze koppeling behoort niet tot uw ingelogde account.",
     "recoveryPageEnableNew": "Nieuwe 2FA inschakelen",
-    "recoveryTab": "Accountherstel"
+    "recoveryTab": "Accountherstel",
+    "recoveryUnverifiedEmail": "Opgegeven e-mailadres (niet geverifieerd):"
   },
   "postReply": {
     "title": "Reageren op een bericht",
@@ -4346,6 +4347,36 @@
     },
     "noOpenFindings": "Geen open bevindingen",
     "resolvedFindings": "Opgeloste bevindingen",
-    "closedSummary": "Alle vijf bevindingen uit de beoordeling van 27–28 september 2026 zijn binnen de gedocumenteerde reikwijdte opgelost. Geschiedenis en verificatiegegevens staan hieronder."
+    "closedSummary": "Alle vijf bevindingen uit de beoordeling van 27–28 september 2026 zijn binnen de gedocumenteerde reikwijdte opgelost. Geschiedenis en verificatiegegevens staan hieronder.",
+    "assessment": {
+      "type": "Interne beoordeling met AI-ondersteuning",
+      "title": "Beveiligingsbeoordeling: 28 september 2026",
+      "intro": "De beoordeling omvatte Nolto’s geïsoleerde testomgeving en de broncode. Hieronder staan vier bevindingen; het rapport maakt onderscheid tussen testbewijs, controles van productiemetadata en de herstelstatus.",
+      "scopeLabel": "Reikwijdte:",
+      "scope": "Broncodecontrole, beperkte HTTP- en authenticatieafwijzingstests, SQL-tests met rollen en claims, synthetische gegevens en rollback, lokale regressietests en npm audit: 471 afhankelijkheden, 0 gemelde beveiligingswaarschuwingen.",
+      "limitations": "Browsertests met authenticatie zijn niet afgerond. SQL-roltests zijn geen geauthenticeerde HTTP-tests. Aikido is niet uitgevoerd. Deze interne beoordeling is geen onafhankelijke certificering of bewijs dat alle aanvalsroutes zijn afgedekt.",
+      "status": "De herstelstatus en verificatie van de uitrol staan per bevinding in het rapport.",
+      "report": "Lees de gedateerde beoordeling en het bewijs",
+      "historyTitle": "Eerdere beoordeling: 27–28 september 2026",
+      "historyText": "De cijfers 99/99 en 8/8 en TC-01–TC-05 hieronder horen bij de eerdere beoordeling. Hun gedateerde status vat de nieuwe beoordeling niet samen.",
+      "items": {
+        "cloneGrants": {
+          "title": "Ruimere rechten in de testkopie",
+          "text": "De kopie stelde uitvoerrechten voor 121 serverfuncties beschikbaar. Een synthetische sleutelcontrole bevestigde daar onbevoegde toegang; productiemetadata liet zien dat die toegang beperkt was."
+        },
+        "authorship": {
+          "title": "Gebruikers konden zichzelf als auteur toevoegen",
+          "text": "Een ingelogde gebruiker zonder relatie tot het artikel kon zichzelf als auteur toevoegen en een eigenaarscontrole doorstaan. Het beleid bestond ook in productie; de reproductie gebruikte een teruggedraaide transactie in de testomgeving."
+        },
+        "remoteFetch": {
+          "title": "Cache-updates omzeilden verzoekcontroles",
+          "text": "Lokale tests met gesimuleerde diensten toonden ontbrekende controles op redirects, DNS, time-outs, antwoordgrootte en actoridentiteit. Er was geen live cache-opwarming of verkeer naar derden."
+        },
+        "recovery": {
+          "title": "Ongeverifieerde context voor MFA-herstel",
+          "text": "Een anoniem verzoek kon e-mailcontext aanleveren die zonder verificatie als inlogbewijs werd getoond. Dit toonde geen accountovername of omzeiling van MFA aan."
+        }
+      }
+    }
   }
 }

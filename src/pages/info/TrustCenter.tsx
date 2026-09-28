@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { SEOHead } from '@/components/common/SEOHead';
 
 const reviewed = '2026-09-28';
+const assessmentFindings = ['cloneGrants', 'authorship', 'remoteFetch', 'recovery'] as const;
 type Finding = { id: string; key: 'views' | 'media' | 'websocket' | 'headers' | 'csp'; status: 'fixed' | 'mitigated' | 'open'; severity: 'high' | 'medium' | 'low' };
 const findings: Finding[] = [
   { id: 'TC-01', key: 'views', status: 'fixed', severity: 'high' },
@@ -20,6 +21,7 @@ export default function TrustCenter() {
   const openFindings = findings.filter(f => f.status !== 'fixed');
   const resolvedFindings = findings.filter(f => f.status === 'fixed');
   const report = 'https://github.com/Jtensetti/fediverse-career-nexus/blob/main/docs/trust-center-audit-2026-09-27.md';
+  const assessmentReport = 'https://github.com/Jtensetti/fediverse-career-nexus/blob/main/docs/internal-security-assessment-2026-09-28.md';
   const renderFinding = (f: Finding) => <article key={f.id} id={f.id.toLowerCase()} className="scroll-mt-24 p-5 sm:p-6">
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <span className="font-mono text-muted-foreground">{f.id}</span>
@@ -40,6 +42,25 @@ export default function TrustCenter() {
         <p className="text-lg leading-relaxed text-muted-foreground">{t('trust.intro')}</p>
         <p className="text-sm text-muted-foreground">{t('trust.reviewed')} <time dateTime={reviewed}>{reviewed}</time> · {t('trust.operator')}</p>
       </header>
+      <section id="assessment-2026-09-28" className="mt-10 scroll-mt-24 rounded-2xl border bg-card p-5 sm:p-8" aria-labelledby="assessment-title">
+        <p className="text-sm font-medium text-primary">{t('trust.assessment.type')} · <time dateTime="2026-09-28">2026-09-28</time></p>
+        <h2 id="assessment-title" className="mt-3 text-2xl font-semibold">{t('trust.assessment.title')}</h2>
+        <p className="mt-3 leading-relaxed text-muted-foreground">{t('trust.assessment.intro')}</p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {assessmentFindings.map(key => <article key={key} className="rounded-xl border bg-background p-5">
+            <h3 className="font-semibold">{t(`trust.assessment.items.${key}.title`)}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(`trust.assessment.items.${key}.text`)}</p>
+          </article>)}
+        </div>
+        <p className="mt-6 text-sm leading-relaxed"><span className="font-semibold">{t('trust.assessment.scopeLabel')} </span>{t('trust.assessment.scope')}</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t('trust.assessment.limitations')}</p>
+        <p className="mt-4 text-sm font-medium">{t('trust.assessment.status')}</p>
+        <a className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary underline" href={assessmentReport}>{t('trust.assessment.report')}<ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a>
+      </section>
+      <aside className="mt-10 border-l-2 border-primary/30 pl-4" aria-label={t('trust.assessment.historyTitle')}>
+        <p className="font-semibold">{t('trust.assessment.historyTitle')}</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t('trust.assessment.historyText')}</p>
+      </aside>
       <div className="my-9 grid gap-3 sm:grid-cols-3">
         {[
           { value: '99/99', key: 'rls', Icon: LockKeyhole },
@@ -53,7 +74,8 @@ export default function TrustCenter() {
       </div>
       <p className="text-sm leading-relaxed text-muted-foreground">{t('trust.scope')}</p>
       <nav aria-label={t('trust.navigation')} className="my-9 flex flex-wrap gap-x-6 gap-y-3 border-y py-4 text-sm font-medium">
-        <a className="hover:underline" href="#findings">{t('trust.findings')}</a>
+        <a className="hover:underline" href="#assessment-2026-09-28">{t('trust.assessment.title')}</a>
+        <a className="hover:underline" href="#findings">{t('trust.assessment.historyTitle')}</a>
         <a className="hover:underline" href="#limits">{t('trust.limits')}</a>
         <a className="hover:underline" href="#report">{t('trust.report')}</a>
         <a className="inline-flex items-center gap-1 underline" href={report}>{t('trust.evidence')}<ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a>

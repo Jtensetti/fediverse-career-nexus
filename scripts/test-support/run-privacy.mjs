@@ -51,5 +51,7 @@ try {
   }
   await db.exec(await readFile(new URL('./mobile-push-assertions.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('./public-view-assertions.sql', import.meta.url), 'utf8'));
+  await db.exec("SET nolto.fresh_install_guard='isolated-ci'");
+  await db.exec(await readFile(new URL('./article-author-assertions.sql', import.meta.url), 'utf8'));
   console.log('PASS: privacy migrations, deletion visibility and retention, private media, encrypted messages and mobile push boundaries.');
 } finally { await db.close(); }

@@ -1405,7 +1405,8 @@
     "recoveryPageInvalid": "El enlace no es válido o ha expirado.",
     "recoveryPageWrongUser": "Este enlace no pertenece a tu cuenta de inicio de sesión.",
     "recoveryPageEnableNew": "Activar nueva 2FA",
-    "recoveryTab": "Recuperación de cuenta"
+    "recoveryTab": "Recuperación de cuenta",
+    "recoveryUnverifiedEmail": "Correo proporcionado (sin verificar):"
   },
   "postReply": {
     "title": "Responder a publicación",
@@ -4346,6 +4347,36 @@
     },
     "noOpenFindings": "No hay hallazgos abiertos",
     "resolvedFindings": "Hallazgos resueltos",
-    "closedSummary": "Los cinco hallazgos de la revisión del 27–28 de septiembre de 2026 están resueltos dentro del alcance documentado. El historial y las pruebas de verificación están disponibles abajo."
+    "closedSummary": "Los cinco hallazgos de la revisión del 27–28 de septiembre de 2026 están resueltos dentro del alcance documentado. El historial y las pruebas de verificación están disponibles abajo.",
+    "assessment": {
+      "type": "Evaluación interna asistida por IA",
+      "title": "Evaluación de seguridad: 28 de septiembre de 2026",
+      "intro": "La evaluación abarcó el entorno de prueba aislado de Nolto y el código de la aplicación. Se documentan cuatro hallazgos; el informe distingue las pruebas, los controles de metadatos de producción y el estado de las correcciones.",
+      "scopeLabel": "Alcance:",
+      "scope": "Revisión de código, comprobaciones limitadas de HTTP y rechazo de autenticación, pruebas SQL de roles y claims con datos sintéticos y transacciones revertidas, regresiones locales y npm audit: 471 dependencias, 0 alertas notificadas.",
+      "limitations": "No se completaron las pruebas de navegador autenticado. Las pruebas de roles SQL no son pruebas HTTP autenticadas. No se ejecutó Aikido. Esta evaluación interna no es una certificación independiente ni demuestra que se cubran todas las vías de ataque.",
+      "status": "El estado de corrección y verificación del despliegue se indica para cada hallazgo en el informe.",
+      "report": "Leer la evaluación fechada y las pruebas",
+      "historyTitle": "Revisión histórica: 27–28 de septiembre de 2026",
+      "historyText": "Las cifras 99/99 y 8/8 y TC-01–TC-05 que aparecen abajo pertenecen a la revisión anterior. Sus estados fechados no resumen la nueva evaluación.",
+      "items": {
+        "cloneGrants": {
+          "title": "Permisos ampliados en el clon de prueba",
+          "text": "El clon exponía permisos de ejecución para 121 funciones del servidor. Una comprobación con una clave sintética confirmó acceso no autorizado allí; los metadatos de producción mostraron que ese acceso estaba restringido."
+        },
+        "authorship": {
+          "title": "Un usuario podía atribuirse la autoría",
+          "text": "Un usuario con sesión iniciada y sin relación con el artículo podía atribuirse la autoría y superar un control de propietario. La política también existía en producción; la reproducción utilizó una transacción revertida en pruebas."
+        },
+        "remoteFetch": {
+          "title": "Las actualizaciones de caché omitían controles",
+          "text": "Las pruebas locales simuladas demostraron la ausencia de controles de redirección, DNS, tiempo de espera, tamaño de respuesta e identidad del actor. No se precargó la caché en vivo ni se hicieron peticiones a terceros."
+        },
+        "recovery": {
+          "title": "Contexto de recuperación MFA sin verificar",
+          "text": "Una petición anónima podía aportar datos de correo presentados como prueba de inicio de sesión sin verificación. Esto no demostró una toma de cuenta ni una evasión de MFA."
+        }
+      }
+    }
   }
 }

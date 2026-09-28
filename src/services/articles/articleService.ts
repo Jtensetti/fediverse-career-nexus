@@ -118,7 +118,7 @@ export const createArticle = async (articleData: ArticleFormData): Promise<Artic
         user_id: user.id,
         is_primary: true,
         can_edit: true
-      }, { onConflict: 'article_id,user_id' });
+      }, { onConflict: 'article_id,user_id', ignoreDuplicates: true });
     
     if (authorError) {
       console.warn('Failed to create article_authors entry:', authorError);

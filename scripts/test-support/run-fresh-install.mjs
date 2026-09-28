@@ -49,9 +49,11 @@ try {
   }
   if (!failures) {
     console.log(`PASS: ${selected.length} migrations replayed into an empty database.`);
-    const checks = psql(['-f', join(root, 'scripts/test-support/fresh-install/assertions.sql')], db);
-    process.stdout.write(checks.stdout);
-    if (checks.status !== 0) { failures++; console.error('FAIL assertions\n' + checks.stderr.trim()); }
+    for (const script of ['fresh-install/assertions.sql', 'article-author-assertions.sql']) {
+      const checks = psql(['-f', join(root, 'scripts/test-support', script)], db);
+      process.stdout.write(checks.stdout);
+      if (checks.status !== 0) { failures++; console.error('FAIL '+script+'\n' + checks.stderr.trim()); break; }
+    }
   }
 } finally {
   if (!keep) execFileSync('psql', ['-X', '-q', '-d', 'postgres', '-c', `DROP DATABASE ${db}`], { env });
