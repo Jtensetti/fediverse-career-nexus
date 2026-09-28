@@ -4187,8 +4187,8 @@
       },
       "csp": {
         "title": "CSP blockiert Cloudflare-Skripte",
-        "text": "Cloudflare fügt Skripte ein, deren Inhalt sich mit jeder Anfrage ändert. Die Gateway-Korrektur gibt jeder HTML-Antwort eine neue Nonce. Der Theme-Hash sowie die Sperren für andere Inline-Skripte und eval bleiben erhalten. Die Bereitstellung des aktualisierten Workers steht noch aus.",
-        "validation": "Automatisierte Tests und Prüfungen in der Workers-Laufzeit sind erfolgreich. Die neue Richtlinie wurde noch nicht im Produktivbetrieb geprüft; der Befund bleibt bis zur Bereitstellung und Browserprüfung offen."
+        "text": "Cloudflares dynamische Skripte erhalten jetzt bei jeder HTML-Antwort dieselbe neue Nonce wie der CSP-Header. Der Theme-Hash und die Einschränkungen für andere Inline-Skripte und eval bleiben bestehen. Der aktualisierte Worker ist bereitgestellt.",
+        "validation": "Am 28. September lieferten sechs Live-Antworten von Startseite, Anmeldung und Sicherheitscenter sechs verschiedene Nonces, passende Cloudflare-Skript-Nonces und no-store. Startseite, Theme-Wechsel, öffentlicher Feed und Anmeldeseite wurden im Browser geprüft. Eine vollständige Kontoanmeldung wurde nicht getestet."
       }
     },
     "boundaries": {
@@ -4207,6 +4207,6 @@
     },
     "noOpenFindings": "Keine offenen Befunde",
     "resolvedFindings": "Behobene Befunde",
-    "closedSummary": "Die vier Befunde vom 27. September 2026 wurden behoben. Ein späterer Befund zur CSP-Kompatibilität steht oben unter den offenen Befunden."
+    "closedSummary": "Alle fünf Befunde der Prüfung vom 27.–28. September 2026 sind im dokumentierten Umfang behoben. Verlauf und Nachweise stehen unten."
   }
 }

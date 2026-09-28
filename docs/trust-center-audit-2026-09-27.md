@@ -2,9 +2,10 @@
 
 Public summary: https://nolto.social/trust-center
 
-**28 September update:** TC-05 below records a CSP compatibility regression. The
-four earlier closures remain dated evidence, not a claim that no findings are
-currently open. Database and dependency metrics still refer to 27 September.
+**28 September update:** TC-05's CSP compatibility fix is now verified in
+production and closed. All five findings are resolved within their documented
+scope. Database and dependency metrics still refer to 27 September; the follow-up
+checks below concern the CSP deployment, not a new comprehensive security audit.
 
 This is an internal, assisted code and configuration review, not an independent penetration test, compliance certification, exhaustive vulnerability assessment or live status service. Baseline source: `e2a26fcf637a19af8c550411c4a6dc50222bbeed`. No production user content was changed during testing. We inspected schema metadata and aggregate/readability checks, with write-rejection tests in an isolated database. No conclusion about past exploitation is established by this review.
 
@@ -64,7 +65,7 @@ Live GET responses for `/`, `/trust-center`, `/auth`, `/feed` and `/integrations
 
 ## Remediation and deployment record
 
-All four findings **TC-01 through TC-04 were closed on 27 September**. The public center now also lists the open CSP compatibility finding TC-05 from 28 September and retains the four resolved findings as expandable history. The operational limits below remain visible and are not represented as verified controls.
+Findings **TC-01 through TC-04 were closed on 27 September**, and **TC-05 was closed after live verification on 28 September**. The public center retains all five resolved findings as expandable history. The operational limits below remain visible and are not represented as verified controls.
 
 - [PR #88](https://github.com/Jtensetti/fediverse-career-nexus/pull/88), merged as `8e52742773d2569d696307f0998d8c1927c1896b`, contains the media, realtime and response-policy fixes.
 - Cloudflare Worker version `802c92d1` introduced the deployed fixes; follow-up version `3ae3d3da` explicitly permits the configured site's secure WebSocket origin. The live `nolto.social/*` route is active; the prior narrower routes point to the same Worker.
@@ -72,7 +73,7 @@ All four findings **TC-01 through TC-04 were closed on 27 September**. The publi
 - Validation for the remediation: **139 Node tests**, **72 Deno tests**, source/type/edge checks, production build, both Worker dry runs and the real Workers WebSocket test passed. Locked web and Worker dependency audits returned zero advisories.
 - [GitHub Actions run 36304139964](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36304139964) passed validation, fresh-install database replay, container and mobile jobs. Live federation and gateway checks passed.
 
-## TC-05 — Medium — code fixed; Worker deployment and live verification pending (28 September)
+## TC-05 — Medium — fixed and verified in production (28 September)
 
 User feedback on 27 September reported blocked inline scripts. A fresh HTTPS GET
 on 28 September confirmed the hash-only `script-src` and an injected Cloudflare
@@ -99,23 +100,43 @@ Validation covers nonce length and per-response freshness, invalid nonce rejecti
 unchanged arbitrary inline HTML, preservation of independent CSPs and login
 cookies, and unchanged caching for JavaScript assets. A real Workers runtime
 regression covers the nonce and cache behavior alongside the existing HTTP 101
-and bidirectional WebSocket tests. This does not simulate Cloudflare's outer JSD
-injection; only post-deployment live checks can close that boundary.
+and bidirectional WebSocket tests. These tests do not simulate Cloudflare's outer
+JSD injection; the post-deployment checks below supply that evidence.
 
-**Deployment status:** the Worker patch is ready in the repository. The available
-Wrangler session is unauthenticated and the Cloudflare dashboard is blocked by a
-human-verification loop in the review browser. The CSP fix has therefore not been
-claimed as deployed. The public Trust Center keeps TC-05 open until both deployment
-and live browser/header verification succeed.
+**Deployment and closure evidence:** the patch in [PR #91](https://github.com/Jtensetti/fediverse-career-nexus/pull/91),
+merged as `d6aff952292885f446724901a2563970eaf002f4`, was initially kept open because
+the review environment could not deploy to Cloudflare. The operator subsequently
+updated the Worker. Live behavior now confirms the new policy; the deployment's
+internal Worker version ID was not retrieved.
 
-To complete: deploy `deploy/nolto-gateway.mjs` to the existing `nolto-federation`
-Worker in route mode using the existing account, routes, variables and secrets.
-Do not switch to split mode or overwrite dashboard settings. Check two independent
-GETs to `/`, `/auth` and `/trust-center`: each must have a fresh nonce, no-store
-HTML, preserved security headers, and nonce-authorized Cloudflare JSD injection.
-Then verify the production theme, public feed and sign-in page in a clean browser
-without CSP violations before changing TC-05 to fixed. Authenticated login
-acceptance remains a separate check.
+At **07:11:57–07:12:05 UTC on 28 September 2026** (09:11:57–09:12:05 in Sweden),
+two independent GETs to each route passed these checks:
+
+| Route | Responses | Fresh 128-bit nonces | Cloudflare nonce matches | HTML caching |
+| --- | --- | --- | --- | --- |
+| `/` | 2 × HTTP 200 | 2 distinct values | Outer script and both generated scripts | `private, no-store` |
+| `/auth` | 2 × HTTP 200 | 2 distinct values | Outer script and both generated scripts | `private, no-store` |
+| `/trust-center` | 2 × HTTP 200 | 2 distinct values | Outer script and both generated scripts | `private, no-store` |
+
+All **six nonces were different**. Every inline script in these HTTP responses
+was authorized by its response's CSP. The Cloudflare bootstrap carries the header
+nonce and explicitly propagates it to the iframe bootstrap and the JSD script at
+`/cdn-cgi/challenge-platform/scripts/jsd/main.js`. The responses retained
+`X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff`, with no ETag or
+Last-Modified validators and no `unsafe-inline` or `unsafe-eval` in `script-src`.
+
+Browser checks confirmed that the homepage, public feed and sign-in page render,
+and changing from system/light to dark and back changes the document's theme.
+The nonce-bearing Cloudflare bootstrap and its iframe were present in the live
+DOM. No CSP violations or application warning/error entries were captured; an
+unrelated browser-extension metadata error was excluded. Closure relies on the
+matching header/script nonces and rendered behavior, not solely an empty console.
+No credentials were entered, no account was created, and full authenticated login
+or every supported browser was not tested.
+
+[GitHub Actions run 36378136335](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36378136335)
+passed validation (including Node/Deno tests), fresh-install replay, container and
+mobile checks for the patch. TC-05 is now closed for this documented CSP issue.
 
 Reference: [Cloudflare JSD and CSP response-header nonces](https://developers.cloudflare.com/cloudflare-challenges/challenge-types/javascript-detections/#if-you-have-a-content-security-policy-csp).
 

@@ -12,7 +12,7 @@ const findings: Finding[] = [
   { id: 'TC-02', key: 'media', status: 'fixed', severity: 'low' },
   { id: 'TC-03', key: 'websocket', status: 'fixed', severity: 'low' },
   { id: 'TC-04', key: 'headers', status: 'fixed', severity: 'medium' },
-  { id: 'TC-05', key: 'csp', status: 'open', severity: 'medium' },
+  { id: 'TC-05', key: 'csp', status: 'fixed', severity: 'medium' },
 ];
 
 export default function TrustCenter() {

@@ -4187,8 +4187,8 @@
       },
       "csp": {
         "title": "Cloudflare scripts blocked by CSP",
-        "text": "Cloudflare adds scripts whose content changes on each request. The gateway fix gives each HTML response a fresh nonce while retaining the theme hash and the block on other inline scripts and eval. Deployment to the production Worker is pending.",
-        "validation": "Automated tests and Workers runtime checks pass. The new policy has not yet been verified in production; this finding remains open until deployment and browser checks are complete."
+        "text": "Cloudflare’s dynamic scripts now receive the same fresh nonce as the CSP header on each HTML response. The theme hash and restrictions on other inline scripts and eval remain in place. The updated Worker is deployed.",
+        "validation": "On 28 September, six live responses from home, sign-in and trust center had six different nonces, matching Cloudflare script nonces and no-store caching. Browser checks covered the home page, theme switching, public feed and sign-in page. Full authenticated login was not tested."
       }
     },
     "boundaries": {
@@ -4207,6 +4207,6 @@
     },
     "noOpenFindings": "No open findings",
     "resolvedFindings": "Resolved findings",
-    "closedSummary": "The four findings from 27 September 2026 were resolved. A later CSP compatibility finding is shown in the open list above."
+    "closedSummary": "All five findings from the 27–28 September 2026 review are resolved within their documented scope. History and verification evidence are available below."
   }
 }

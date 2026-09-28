@@ -4187,8 +4187,8 @@
       },
       "csp": {
         "title": "Script Cloudflare bloccati dalla CSP",
-        "text": "Cloudflare aggiunge script il cui contenuto cambia a ogni richiesta. La correzione del gateway assegna un nuovo nonce a ogni risposta HTML, mantenendo l’hash del tema e il blocco degli altri script inline e di eval. Resta da distribuire il Worker aggiornato in produzione.",
-        "validation": "I test automatici e le verifiche nell’ambiente di esecuzione Workers passano. La nuova policy non è ancora stata verificata in produzione; il rilievo resta aperto fino al completamento della distribuzione e dei controlli nel browser."
+        "text": "Gli script dinamici di Cloudflare ricevono ora lo stesso nuovo nonce dell’intestazione CSP per ogni risposta HTML. Restano l’hash del tema e le restrizioni per gli altri script inline e per eval. Il Worker aggiornato è distribuito in produzione.",
+        "validation": "Il 28 settembre, sei risposte in produzione da home, accesso e centro di sicurezza contenevano sei nonce diversi, corrispondenti a quelli degli script Cloudflare, e no-store. Nel browser sono stati verificati home, cambio di tema, feed pubblico e pagina di accesso. L’accesso completo con un account non è stato testato."
       }
     },
     "boundaries": {
@@ -4207,6 +4207,6 @@
     },
     "noOpenFindings": "Nessun rilievo aperto",
     "resolvedFindings": "Rilievi risolti",
-    "closedSummary": "I quattro rilievi del 27 settembre 2026 sono stati risolti. Un rilievo successivo sulla compatibilità CSP è riportato sopra tra quelli aperti."
+    "closedSummary": "Tutti e cinque i rilievi della verifica del 27–28 settembre 2026 sono risolti entro l’ambito documentato. Cronologia e prove di verifica sono disponibili di seguito."
   }
 }
