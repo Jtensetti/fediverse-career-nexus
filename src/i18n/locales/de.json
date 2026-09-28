@@ -4355,7 +4355,7 @@
       "scopeLabel": "Umfang:",
       "scope": "Codeprüfung, begrenzte HTTP- und Authentifizierungsablehnungstests, SQL-Tests mit Rollen und Claims, synthetischen Daten und Rollback, lokale Regressionstests sowie npm audit: 471 Abhängigkeiten, 0 gemeldete Sicherheitshinweise.",
       "limitations": "Authentifizierte Browsertests wurden nicht abgeschlossen. SQL-Rollentests sind keine authentifizierten HTTP-Tests. Aikido wurde nicht ausgeführt. Diese interne Prüfung ist weder eine unabhängige Zertifizierung noch ein Nachweis, dass alle Angriffswege abgedeckt sind.",
-      "status": "Der Stand der Behebung und der Prüfung der Bereitstellung ist für jeden Befund im Bericht angegeben.",
+      "status": "Die vier Befunde wurden im beschriebenen Umfang behoben. Die Testumgebung wurde erneut geprüft; Angaben zur Bereitstellung und verbleibende Einschränkungen sind für jeden Befund im Bericht aufgeführt.",
       "report": "Datierte Prüfung und Nachweise lesen",
       "historyTitle": "Frühere Prüfung: 27.–28. September 2026",
       "historyText": "Die Werte 99/99 und 8/8 sowie TC-01–TC-05 unten gehören zur früheren Prüfung. Ihr datierter Status fasst die neue Prüfung nicht zusammen.",

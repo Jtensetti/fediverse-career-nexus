@@ -4355,7 +4355,7 @@
       "scopeLabel": "Reikwijdte:",
       "scope": "Broncodecontrole, beperkte HTTP- en authenticatieafwijzingstests, SQL-tests met rollen en claims, synthetische gegevens en rollback, lokale regressietests en npm audit: 471 afhankelijkheden, 0 gemelde beveiligingswaarschuwingen.",
       "limitations": "Browsertests met authenticatie zijn niet afgerond. SQL-roltests zijn geen geauthenticeerde HTTP-tests. Aikido is niet uitgevoerd. Deze interne beoordeling is geen onafhankelijke certificering of bewijs dat alle aanvalsroutes zijn afgedekt.",
-      "status": "De herstelstatus en verificatie van de uitrol staan per bevinding in het rapport.",
+      "status": "De vier bevindingen zijn binnen de beschreven reikwijdte verholpen. De testomgeving is opnieuw gecontroleerd; de uitrol en resterende beperkingen staan per bevinding in het rapport.",
       "report": "Lees de gedateerde beoordeling en het bewijs",
       "historyTitle": "Eerdere beoordeling: 27–28 september 2026",
       "historyText": "De cijfers 99/99 en 8/8 en TC-01–TC-05 hieronder horen bij de eerdere beoordeling. Hun gedateerde status vat de nieuwe beoordeling niet samen.",

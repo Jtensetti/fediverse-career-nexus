@@ -4355,7 +4355,7 @@
       "scopeLabel": "Ambito:",
       "scope": "Revisione del codice, controlli limitati HTTP e di rifiuto dell’autenticazione, test SQL di ruoli e claims con dati sintetici e rollback, regressioni locali e npm audit: 471 dipendenze, 0 avvisi segnalati.",
       "limitations": "I test con browser autenticato non sono stati completati. I test dei ruoli SQL non sono test HTTP autenticati. Aikido non è stato eseguito. Questa valutazione interna non è una certificazione indipendente né dimostra la copertura di tutti i percorsi di attacco.",
-      "status": "Lo stato della correzione e della verifica del rilascio è indicato per ogni riscontro nel rapporto.",
+      "status": "I quattro riscontri sono stati risolti nell’ambito descritto. L’ambiente di test è stato controllato nuovamente; il rilascio e le limitazioni residue sono indicati per ogni riscontro nel rapporto.",
       "report": "Leggi la valutazione datata e le prove",
       "historyTitle": "Revisione storica: 27–28 settembre 2026",
       "historyText": "I valori 99/99 e 8/8 e TC-01–TC-05 sotto appartengono alla revisione precedente. I loro stati datati non riassumono la nuova valutazione.",

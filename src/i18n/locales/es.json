@@ -4355,7 +4355,7 @@
       "scopeLabel": "Alcance:",
       "scope": "Revisión de código, comprobaciones limitadas de HTTP y rechazo de autenticación, pruebas SQL de roles y claims con datos sintéticos y transacciones revertidas, regresiones locales y npm audit: 471 dependencias, 0 alertas notificadas.",
       "limitations": "No se completaron las pruebas de navegador autenticado. Las pruebas de roles SQL no son pruebas HTTP autenticadas. No se ejecutó Aikido. Esta evaluación interna no es una certificación independiente ni demuestra que se cubran todas las vías de ataque.",
-      "status": "El estado de corrección y verificación del despliegue se indica para cada hallazgo en el informe.",
+      "status": "Los cuatro hallazgos se han corregido dentro del alcance descrito. El entorno de prueba se ha comprobado de nuevo; el despliegue y las limitaciones restantes se detallan para cada hallazgo en el informe.",
       "report": "Leer la evaluación fechada y las pruebas",
       "historyTitle": "Revisión histórica: 27–28 de septiembre de 2026",
       "historyText": "Las cifras 99/99 y 8/8 y TC-01–TC-05 que aparecen abajo pertenecen a la revisión anterior. Sus estados fechados no resumen la nueva evaluación.",

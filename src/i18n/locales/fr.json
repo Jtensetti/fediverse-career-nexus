@@ -4355,7 +4355,7 @@
       "scopeLabel": "Périmètre :",
       "scope": "Revue du code, contrôles HTTP et de rejet d’authentification limités, tests SQL de rôles et de claims avec données synthétiques et annulation des transactions, régressions locales et npm audit : 471 dépendances, 0 alerte signalée.",
       "limitations": "Les tests de navigateur authentifié n’ont pas été achevés. Les tests de rôles SQL ne sont pas des tests HTTP authentifiés. Aikido n’a pas été exécuté. Cette évaluation interne n’est ni une certification indépendante ni la preuve que toutes les voies d’attaque sont couvertes.",
-      "status": "L’état des corrections et de la vérification du déploiement est indiqué pour chaque constat dans le rapport.",
+      "status": "Les quatre constats ont été corrigés dans le périmètre décrit. L’environnement de test a été vérifié à nouveau ; le déploiement et les limites restantes sont précisés pour chaque constat dans le rapport.",
       "report": "Lire l’évaluation datée et les preuves",
       "historyTitle": "Évaluation historique : 27–28 septembre 2026",
       "historyText": "Les chiffres 99/99 et 8/8 ainsi que TC-01–TC-05 ci-dessous proviennent de l’évaluation précédente. Leurs statuts datés ne résument pas la nouvelle évaluation.",

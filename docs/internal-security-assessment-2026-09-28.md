@@ -15,9 +15,9 @@ Methods included bounded HTTP requests, invalid/missing-token checks, real test-
 | ID | Finding | Assessed severity and reach | Status |
 | --- | --- | --- | --- |
 | IA-01 | Broader function and column permissions in the test clone | High, isolated test environment | Fixed and independently verified in test; corresponding sensitive production permissions were already restricted |
-| IA-02 | Self-assigned article authorship passed an ownership check | High, authorization boundary; common policy also present in production | Source fix and local regression verified; deployment verification pending |
-| IA-03 | Cache refresh bypassed existing remote-fetch validation | Medium, administrator-triggered refresh | Source fix and mocked handler regressions verified; deployment verification pending |
-| IA-04 | Client-supplied MFA recovery context treated as login evidence | Medium, misleading recovery-review evidence | Source fix and mocked handler regressions verified; deployment verification pending |
+| IA-02 | Self-assigned article authorship passed an ownership check | High, authorization boundary; common policy also present in production | Fixed and deployed to test and production; live test role regressions passed and production policy metadata verified |
+| IA-03 | Cache refresh bypassed existing remote-fetch validation | Medium, administrator-triggered refresh | Fixed and deployed to test and production; mocked handler regressions passed; no live remote cache prewarm performed |
+| IA-04 | Client-supplied MFA recovery context treated as login evidence | Medium, misleading recovery-review evidence | Fixed and deployed to test and production; handler regressions passed and anonymous test submission still worked |
 
 ### IA-01 — test-clone permissions
 
@@ -41,7 +41,7 @@ Refresh now uses the existing helper and treats failed cache writes as failures.
 
 One anonymous request to the isolated test backend confirmed that a requester could supply the field formerly described as password-validated login context. Application email delivery was disabled for that test. The finding concerned trust in that field and its priority when identifying an account; recovery links still went to the registered account address. No recovery token was issued or consumed, and no MFA bypass or account takeover was demonstrated.
 
-The field is now explicitly labeled unverified in the review interface and notification. The issuance handler ignores it when identifying an account, including on older requests. Anonymous support submission remains available. Retaining the field as unverified context is intentional.
+The field is now explicitly labeled unverified in the review interface and notification. The issuance handler ignores it when identifying an account, including on older requests. Anonymous support submission remains available. Retaining the field as unverified context is intentional. A second synthetic request after deployment returned success; both assessment requests were deleted afterward and their absence verified. No token was issued or consumed.
 
 ## Verification results
 
@@ -52,12 +52,21 @@ The field is now explicitly labeled unverified in the review interface and notif
 - Local rendering, article-media and encryption checks passed **10/10**; translation checks passed **6/6**. Privacy regressions, TypeScript checks and a production frontend build passed. The build retains its existing bundle-size advisory.
 - `npm audit` reported **0 advisories across 471 dependencies** at the time checked. This is a registry-advisory result, not proof of dependency safety.
 
-All five CI jobs passed for the remediation code at `f7fd6e2`: [application, container, structural fresh-install and mobile checks](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36424431164), and [real Supabase fresh-install acceptance](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36424431223). The latter exercised real local Auth, password login, owner-profile access and signup email confirmation in a disposable stack. These local CI flows do not remove the hosted-clone authentication limitation above.
+All five CI jobs passed for the final reviewed remediation code at `a971667`: [application, container, structural fresh-install and mobile checks](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36425487834), and [real Supabase fresh-install acceptance](https://github.com/Jtensetti/fediverse-career-nexus/actions/runs/36425487887). The latter exercised real local Auth, password login, owner-profile access and signup email confirmation in a disposable stack. The [test report/translation checks](https://github.com/Jtensetti/nolto-security-test-20260927/actions/runs/36425529850) also passed. These local CI flows do not remove the hosted-clone authentication limitation above.
 
-Deployment results will be recorded here after verification. Earlier trust-center figures (99/99, 8/8 and TC-01–TC-05) belong to the separate 27–28 September review and must not be interpreted as totals for this assessment.
+Earlier trust-center figures (99/99, 8/8 and TC-01–TC-05) belong to the separate 27–28 September review and must not be interpreted as totals for this assessment.
+
+## Deployment verification — 28 September 2026
+
+- [Test PR #2](https://github.com/Jtensetti/nolto-security-test-20260927/pull/2) was merged before backend deployment. The deployed article policies passed all 11 positive/negative control groups and the complete live SQL role matrix. All synthetic article fixtures were rolled back, with absence checked. The 63 HTTP checks passed again after deployment.
+- [Production PR #93](https://github.com/Jtensetti/fediverse-career-nexus/pull/93) was merged as `7c3a513` after green CI and successful test deployment. The production deployment service confirmed deployment of `cache-manager`, `request-mfa-recovery` and `admin-issue-mfa-recovery` from that source. It does not expose function version numbers in its response. Production exploit requests were not used to validate those functions; the source-level handler tests and deployment confirmation are the evidence.
+- The hosted migration service recorded the policy change under versions `20260928125712` in test and `20260928130503` in production. Its generated copies retain idempotent policy guards. The canonical migration and hosted copies are retained in source; replaying the final chain passed the local privacy regression.
+- An independent read-only comparison confirmed the full production article policy expressions match the verified test policies. The old permissive write policy is absent; existing read/session policies, grants and the ownership helper are unchanged. Production was not used for synthetic attack fixtures.
+
+The trust-center update labels this as an internal assessment, separates the earlier review, and links this dated evidence and its limits.
 
 ## Limits
 
-This assessment did not cover every route, role, integration, business-logic sequence or authenticated browser flow. The production Cloudflare perimeter was not attacked. Load resistance, third-party federation behavior, full MFA recovery end-to-end behavior and social engineering were outside the executed tests. Aikido was prepared but not run; its paid assessment was not purchased.
+This assessment did not cover every route, role, integration, business-logic sequence or authenticated browser flow. The production Cloudflare perimeter was not attacked. Load resistance, third-party federation behavior, full MFA recovery end-to-end behavior and social engineering were outside the executed tests. Existing automated platform warnings were not comprehensively triaged; the four findings above are the confirmed findings within this assessment, not a total of every possible or automatically flagged issue. Aikido was prepared but not run; its paid assessment was not purchased.
 
 Reproducible local regressions are included in `supabase/tests/cache-recovery-security.test.ts` and `scripts/test-support/article-author-assertions.sql`. Raw operational evidence is retained privately by the operator rather than publishing account/session identifiers or internal database snapshots.

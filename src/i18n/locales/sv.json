@@ -4363,7 +4363,7 @@
       "scopeLabel": "Omfattning:",
       "scope": "Källkodsrevision, begränsade HTTP- och autentiseringsavvisningstester, SQL-tester med roller och claims, syntetiska data och rollback, lokala regressioner samt npm audit: 471 beroenden, 0 rapporterade säkerhetsvarningar.",
       "limitations": "Autentiserade webbläsartester slutfördes inte. SQL-rolltester är inte autentiserade HTTP-tester. Aikido kördes inte. Den interna granskningen är ingen oberoende certifiering eller bevis för att alla angreppsvägar täcks.",
-      "status": "Status för åtgärd och verifiering av driftsättning anges per fynd i rapporten.",
+      "status": "De fyra fynden har åtgärdats inom den beskrivna omfattningen. Testmiljön har kontrollerats igen; driftsättning och kvarvarande begränsningar redovisas per fynd i rapporten.",
       "report": "Läs den daterade granskningen och bevisen",
       "historyTitle": "Historisk granskning: 27–28 september 2026",
       "historyText": "Siffrorna 99/99 och 8/8 samt TC-01–TC-05 nedan tillhör den tidigare granskningen. Deras daterade status sammanfattar inte den nya granskningen.",

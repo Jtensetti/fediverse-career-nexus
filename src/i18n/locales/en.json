@@ -4355,7 +4355,7 @@
       "scopeLabel": "Scope:",
       "scope": "Source review, bounded HTTP and authentication-rejection checks, SQL role/claim tests with synthetic data and rollback, local regressions and npm audit: 471 dependencies, 0 reported advisories.",
       "limitations": "Authenticated browser tests were not completed. SQL role tests are not authenticated HTTP tests. Aikido was not run. This internal assessment is not an independent certification or proof that every attack path is covered.",
-      "status": "Remediation and deployment verification status is recorded per finding in the report.",
+      "status": "The four findings have been addressed within the documented scope. The test environment has been checked again; deployment details and remaining limitations are recorded for each finding in the report.",
       "report": "Read the dated assessment and evidence",
       "historyTitle": "Historical review: 27–28 September 2026",
       "historyText": "The 99/99 and 8/8 figures and TC-01–TC-05 below belong to the earlier review. Their dated statuses do not summarize the new assessment.",
