@@ -5,13 +5,14 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { SEOHead } from '@/components/common/SEOHead';
 
-const reviewed = '2026-09-27';
-type Finding = { id: string; key: 'views' | 'media' | 'websocket' | 'headers'; status: 'fixed' | 'mitigated' | 'open'; severity: 'high' | 'medium' | 'low' };
+const reviewed = '2026-09-28';
+type Finding = { id: string; key: 'views' | 'media' | 'websocket' | 'headers' | 'csp'; status: 'fixed' | 'mitigated' | 'open'; severity: 'high' | 'medium' | 'low' };
 const findings: Finding[] = [
   { id: 'TC-01', key: 'views', status: 'fixed', severity: 'high' },
   { id: 'TC-02', key: 'media', status: 'fixed', severity: 'low' },
   { id: 'TC-03', key: 'websocket', status: 'fixed', severity: 'low' },
   { id: 'TC-04', key: 'headers', status: 'fixed', severity: 'medium' },
+  { id: 'TC-05', key: 'csp', status: 'open', severity: 'medium' },
 ];
 
 export default function TrustCenter() {

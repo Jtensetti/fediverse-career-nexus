@@ -27,7 +27,12 @@ const unavailable = () => new Response('Invalid gateway configuration', { status
 // Enforced on HTML from the existing website origin. Keep protocol responses
 // and managed authentication cookies intact. The hash is next-themes 0.3.0's
 // bootstrap with App.tsx's ThemeProvider props (covered by a regression test).
-export function websitePolicy(backend, domain = 'nolto.social') {
+// Cloudflare reads the response-header nonce and applies it to its own JSD
+// injection after the Worker. Its request-specific script cannot use a hash.
+// Do not add nonces to arbitrary scripts from the origin or user content.
+export function websitePolicy(backend, domain = 'nolto.social', nonce) {
+  if (nonce !== undefined && !/^[A-Za-z0-9+/]{22}==$/.test(nonce)) throw new Error('Invalid CSP nonce');
+  const nonceSource = nonce === undefined ? '' : ` 'nonce-${nonce}'`;
   // Some browsers do not include WebSockets in connect-src 'self'.
   let connect = "'self'";
   if (publicHostname(domain)) connect += ` wss://${domain}`;
@@ -37,7 +42,7 @@ export function websitePolicy(backend, domain = 'nolto.social') {
   } catch { /* No arbitrary source strings can enter a response header. */ }
   return [
     "default-src 'self'",
-    "script-src 'self' 'sha256-eMuh8xiwcX72rRYNAGENurQBAcH7kLlAUQcoOri3BIo=' https://static.cloudflareinsights.com https://challenges.cloudflare.com",
+    `script-src 'self' 'sha256-eMuh8xiwcX72rRYNAGENurQBAcH7kLlAUQcoOri3BIo='${nonceSource} https://static.cloudflareinsights.com https://challenges.cloudflare.com`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' https: data: blob:",
     "font-src 'self' data:",
@@ -56,8 +61,16 @@ export function websitePolicy(backend, domain = 'nolto.social') {
 function hardenWebsite(upstream, env) {
   if (!/^text\/html(?:;|$)/i.test(upstream.headers.get('content-type') || '')) return upstream;
   const response = new Response(upstream.body, upstream);
+  const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
   // Append instead of weakening any independent policy supplied by the origin.
-  response.headers.append('Content-Security-Policy', websitePolicy(env.SUPABASE_ORIGIN, env.FEDERATION_DOMAIN));
+  response.headers.append('Content-Security-Policy', websitePolicy(env.SUPABASE_ORIGIN, env.FEDERATION_DOMAIN, nonce));
+  // A nonce belongs to one response. Do not cache/revalidate the transformed
+  // document downstream; the origin's static assets keep their cache headers.
+  response.headers.set('Cache-Control', 'private, no-store');
+  response.headers.set('CDN-Cache-Control', 'no-store');
+  response.headers.set('Cloudflare-CDN-Cache-Control', 'no-store');
+  response.headers.delete('ETag');
+  response.headers.delete('Last-Modified');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');

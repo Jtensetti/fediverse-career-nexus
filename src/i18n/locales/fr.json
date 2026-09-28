@@ -4145,7 +4145,7 @@
     "validation": "Vérification :",
     "policies": "Politiques et contact sécurité",
     "securityFile": "Contact sécurité au format texte",
-    "scope": "Revue interne du code, contrôle des permissions en production, vérifications HTTP publiques et tests de régression automatisés. Ce n’est ni un test d’intrusion indépendant, ni une certification, ni une surveillance continue. Activer RLS ne prouve pas que chaque règle est correcte. L’analyse des dépendances porte sur les alertes connues de l’application web à la date indiquée.",
+    "scope": "Revue interne du code, contrôle des permissions en production, vérifications HTTP publiques et tests de régression automatisés. Ce n’est ni un test d’intrusion indépendant, ni une certification, ni une surveillance continue. Activer RLS ne prouve pas que chaque règle est correcte. L’analyse des dépendances porte sur les alertes connues de l’application web à la date indiquée. Les chiffres sur la base de données et les dépendances datent du 27 septembre 2026 ; le suivi du 28 septembre porte sur la compatibilité CSP.",
     "findingsIntro": "Cette liste présente les constats en attente de correction et de vérification. Le statut concerne la revue datée, pas une garantie de sécurité de l’ensemble du service.",
     "reportText": "Envoyez par e-mail l’URL concernée, l’impact et les étapes de reproduction. Évitez d’accéder aux données d’autrui, de perturber le service ou de publier une méthode d’exploitation non corrigée. N’envoyez aucun mot de passe, jeton de session ou donnée privée.",
     "response": "Les signalements sont traités par le responsable. Aucun délai de réponse garanti ni programme de récompense rémunéré n’est proposé actuellement.",
@@ -4184,6 +4184,11 @@
         "title": "Politique de sécurité des réponses du navigateur",
         "text": "Les réponses HTML du site appliquent désormais Content-Security-Policy et X-Frame-Options: DENY. La politique limite les scripts et les connexions et interdit l’intégration de Nolto dans un cadre.",
         "validation": "En-têtes vérifiés en production sur l’accueil, le centre de confiance, la connexion, le flux et les intégrations. Le flux et les images se chargent sous cette politique. Les tests vérifient la conservation des cookies de connexion."
+      },
+      "csp": {
+        "title": "Scripts Cloudflare bloqués par la CSP",
+        "text": "Cloudflare ajoute des scripts dont le contenu change à chaque requête. Le correctif de la passerelle attribue un nonce unique à chaque réponse HTML, tout en conservant le hachage du thème et le blocage des autres scripts intégrés et de eval. Le déploiement du Worker corrigé reste à effectuer.",
+        "validation": "Les tests automatisés et les vérifications dans le moteur Workers réussissent. La nouvelle politique n’a pas encore été vérifiée en production ; le constat reste ouvert jusqu’au déploiement et aux contrôles dans le navigateur."
       }
     },
     "boundaries": {
@@ -4202,6 +4207,6 @@
     },
     "noOpenFindings": "Aucun constat ouvert",
     "resolvedFindings": "Constats résolus",
-    "closedSummary": "Les quatre constats de la revue du 27 septembre 2026 ont été corrigés et vérifiés en production. L’historique et les preuves figurent ci-dessous."
+    "closedSummary": "Les quatre constats du 27 septembre 2026 ont été résolus. Un constat ultérieur sur la compatibilité CSP figure dans la liste des constats ouverts ci-dessus."
   }
 }

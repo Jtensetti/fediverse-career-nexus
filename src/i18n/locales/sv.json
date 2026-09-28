@@ -4153,7 +4153,7 @@
     "validation": "Verifiering:",
     "policies": "Policyer och säkerhetskontakt",
     "securityFile": "Säkerhetskontakt i textformat",
-    "scope": "Intern kodgranskning, behörighetskontroller i produktion, publika HTTP-kontroller och automatiserade regressionstester. Detta är inget oberoende penetrationstest, ingen certifiering och ingen löpande övervakning. Aktiverad RLS bevisar inte att varje regel är korrekt. Beroenderesultatet gäller webbapplikationens kända säkerhetsvarningar vid granskningstillfället.",
+    "scope": "Intern kodgranskning, behörighetskontroller i produktion, publika HTTP-kontroller och automatiserade regressionstester. Detta är inget oberoende penetrationstest, ingen certifiering och ingen löpande övervakning. Aktiverad RLS bevisar inte att varje regel är korrekt. Beroenderesultatet gäller webbapplikationens kända säkerhetsvarningar vid granskningstillfället. Databas- och beroendesiffrorna är från den 27 september 2026; uppföljningen den 28 september gäller CSP-kompatibilitet.",
     "findingsIntro": "Listan visar fynd som ännu inte är åtgärdade och verifierade. Statusen gäller den daterade granskningen, inte en garanti för hela tjänstens säkerhet.",
     "reportText": "Mejla berörd adress, möjlig påverkan och steg för att återskapa problemet. Undvik att läsa andras uppgifter, störa tjänsten eller publicera hur en olöst sårbarhet utnyttjas. Skicka inga lösenord, sessionstoken eller privata användaruppgifter.",
     "response": "Rapporter hanteras av den ansvarige. Vi lämnar för närvarande ingen garanterad svarstid och erbjuder ingen betald hittelön.",
@@ -4192,6 +4192,11 @@
         "title": "Säkerhetspolicy i webbläsarens svar",
         "text": "Webbplatsens HTML-svar har nu en verkställande Content-Security-Policy och X-Frame-Options: DENY. Policyn begränsar skript och anslutningar och förhindrar inramning av Nolto.",
         "validation": "Svarshuvuden kontrollerade i drift för startsida, säkerhetscenter, inloggning, flöde och integrationer. Flöde och bilder fungerar under policyn. Tester kontrollerar att inloggningscookies bevaras."
+      },
+      "csp": {
+        "title": "Cloudflare-skript blockeras av CSP",
+        "text": "Cloudflare lägger till skript vars innehåll ändras vid varje anrop. Rättningen i gatewayn ger varje HTML-svar en ny nonce och behåller temahashen samt blockeringen av övriga inline-skript och eval. Driftsättning av den uppdaterade workern återstår.",
+        "validation": "Automatiska tester och kontroller i Workers körmiljö passerar. Den nya policyn är ännu inte verifierad i produktion; fyndet ligger kvar öppet tills driftsättning och webbläsarkontroll är klara."
       }
     },
     "boundaries": {
@@ -4210,6 +4215,6 @@
     },
     "noOpenFindings": "Inga öppna fynd",
     "resolvedFindings": "Åtgärdade fynd",
-    "closedSummary": "Samtliga fyra fynd från granskningen den 27 september 2026 är åtgärdade och verifierade i drift. Historik och underlag finns nedan."
+    "closedSummary": "De fyra fynden från den 27 september 2026 har åtgärdats. Ett senare fynd om CSP-kompatibilitet visas i listan över öppna fynd ovan."
   }
 }

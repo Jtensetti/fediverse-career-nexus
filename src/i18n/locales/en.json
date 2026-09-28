@@ -4145,7 +4145,7 @@
     "validation": "Verification:",
     "policies": "Policies and security contact",
     "securityFile": "Security contact file",
-    "scope": "Internal code review, production permission checks, public HTTP checks and automated regressions. This is not an independent penetration test, certification or live monitoring. RLS being enabled does not establish that every policy is correct. The dependency result is a dated advisory scan of the web application.",
+    "scope": "Internal code review, production permission checks, public HTTP checks and automated regressions. This is not an independent penetration test, certification or live monitoring. RLS being enabled does not establish that every policy is correct. The dependency result is a dated advisory scan of the web application. Database and dependency figures are from 27 September 2026; the 28 September follow-up covers CSP compatibility.",
     "findingsIntro": "This list contains findings awaiting remediation and verification. Status applies to the dated review, not a guarantee of the entire service’s security.",
     "reportText": "Email the affected URL, impact and steps to reproduce. Please avoid accessing other people’s data, service disruption and public disclosure of an unfixed exploit. Send no passwords, session tokens or private user data.",
     "response": "Reports are handled by the operator. No response-time guarantee or paid bounty is currently offered.",
@@ -4184,6 +4184,11 @@
         "title": "Browser response security policy",
         "text": "Website HTML responses now carry an enforcing Content-Security-Policy and X-Frame-Options: DENY. The policy restricts scripts and connections and prevents Nolto from being framed.",
         "validation": "Live response headers checked for home, trust center, sign-in, feed and integrations. Feed and images load under the policy. Tests verify that sign-in cookies remain intact."
+      },
+      "csp": {
+        "title": "Cloudflare scripts blocked by CSP",
+        "text": "Cloudflare adds scripts whose content changes on each request. The gateway fix gives each HTML response a fresh nonce while retaining the theme hash and the block on other inline scripts and eval. Deployment to the production Worker is pending.",
+        "validation": "Automated tests and Workers runtime checks pass. The new policy has not yet been verified in production; this finding remains open until deployment and browser checks are complete."
       }
     },
     "boundaries": {
@@ -4202,6 +4207,6 @@
     },
     "noOpenFindings": "No open findings",
     "resolvedFindings": "Resolved findings",
-    "closedSummary": "All four findings from the 27 September 2026 review are fixed and verified in production. History and supporting evidence are available below."
+    "closedSummary": "The four findings from 27 September 2026 were resolved. A later CSP compatibility finding is shown in the open list above."
   }
 }
