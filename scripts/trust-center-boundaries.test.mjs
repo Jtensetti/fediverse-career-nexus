@@ -49,7 +49,11 @@ test('HTML response policy blocks framing and scripts without changing managed l
       assert.equal(response.body, source.body);
       assert.equal(response.headers.get('set-cookie'), 'login=synthetic; Secure; HttpOnly');
       assert.equal(response.headers.get('x-frame-options'), 'DENY');
-      assert.equal(response.headers.get('content-security-policy'), websitePolicy(backend));
+      const policy = response.headers.get('content-security-policy');
+      const nonce = policy.match(/'nonce-([A-Za-z0-9+/]{22}==)'/)[1];
+      assert.equal(Buffer.from(nonce, 'base64').length, 16);
+      assert.equal(policy, websitePolicy(backend, 'nolto.social', nonce));
+      assert.equal(response.headers.get('cache-control'), 'private, no-store');
       assert.match(websitePolicy(backend), /frame-ancestors 'none'/);
       assert.match(websitePolicy(backend), /object-src 'none'/);
       assert.match(websitePolicy(backend), /connect-src 'self' wss:\/\/nolto\.social /);
@@ -66,6 +70,41 @@ test('the CSP allows the exact theme bootstrap from App, without allowing other 
   const hash = createHash('sha256').update(script).digest('base64');
   assert.ok(websitePolicy(backend).includes(`'sha256-${hash}'`));
   assert.doesNotMatch(websitePolicy('https://bad.example/path; script-src *'), /bad.example|script-src \*/);
+});
+
+test('HTML nonces vary per response, preserve upstream policies and never authorize arbitrary inline scripts', async () => {
+  const original = globalThis.fetch;
+  const body = '<html><script>untrusted()</script><p>unchanged</p></html>';
+  globalThis.fetch = async () => new Response(body, { headers: {
+    'content-type': 'text/html', 'content-security-policy': "form-action 'self'",
+    'cache-control': 'public, max-age=3600', 'etag': '"origin-v1"',
+    'last-modified': 'Sun, 27 Sep 2026 12:00:00 GMT',
+  } });
+  try {
+    const nonces = new Set();
+    for (let i = 0; i < 8; i++) {
+      const response = await gateway.fetch(new Request('https://nolto.social/'), { SUPABASE_ORIGIN: backend });
+      const policy = response.headers.get('content-security-policy');
+      assert.ok(policy.startsWith("form-action 'self', "));
+      const nonce = policy.match(/'nonce-([A-Za-z0-9+/]{22}==)'/)[1];
+      nonces.add(nonce);
+      assert.doesNotMatch(policy.split(';').find(s => s.includes('script-src')), /unsafe-inline|unsafe-eval/);
+      assert.equal(response.headers.get('cdn-cache-control'), 'no-store');
+      assert.equal(response.headers.get('cloudflare-cdn-cache-control'), 'no-store');
+      assert.equal(response.headers.get('etag'), null);
+      assert.equal(response.headers.get('last-modified'), null);
+      assert.equal(await response.text(), body);
+    }
+    assert.equal(nonces.size, 8);
+    const asset = new Response('export default 1', { headers: { 'content-type': 'application/javascript', 'cache-control': 'public, max-age=31536000, immutable', 'etag': '"asset"' } });
+    globalThis.fetch = async () => asset;
+    assert.equal(await gateway.fetch(new Request('https://nolto.social/assets/app.js'), { SUPABASE_ORIGIN: backend }), asset);
+    assert.equal(asset.headers.get('content-security-policy'), null);
+    assert.equal(asset.headers.get('etag'), '"asset"');
+    for (const invalid of ['', 'fixed-nonce', "'; script-src *", 'A'.repeat(22)+'==\r\nx-test: yes']) {
+      assert.throws(() => websitePolicy(backend, 'nolto.social', invalid), /Invalid CSP nonce/);
+    }
+  } finally { globalThis.fetch = original; }
 });
 
 test('realtime proxy strips cookies, preserves authorization and upstream rejection; fails closed outside its endpoint', async () => {

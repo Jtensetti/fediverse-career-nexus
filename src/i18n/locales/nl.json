@@ -4145,7 +4145,7 @@
     "validation": "Controle:",
     "policies": "Beleid en beveiligingscontact",
     "securityFile": "Beveiligingscontact als tekstbestand",
-    "scope": "Interne codebeoordeling, controle van productierechten, openbare HTTP-controles en geautomatiseerde regressietests. Geen onafhankelijke penetratietest, certificering of doorlopende bewaking. Ingeschakelde RLS bewijst niet dat elke regel klopt. De afhankelijkhedencontrole betreft bekende meldingen voor de webapp op het controlemoment.",
+    "scope": "Interne codebeoordeling, controle van productierechten, openbare HTTP-controles en geautomatiseerde regressietests. Geen onafhankelijke penetratietest, certificering of doorlopende bewaking. Ingeschakelde RLS bewijst niet dat elke regel klopt. De afhankelijkhedencontrole betreft bekende meldingen voor de webapp op het controlemoment. De cijfers over de database en afhankelijkheden zijn van 27 september 2026; de vervolgcontrole van 28 september betreft CSP-compatibiliteit.",
     "findingsIntro": "Deze lijst bevat bevindingen die nog moeten worden opgelost en geverifieerd. De status geldt voor de gedateerde controle en is geen veiligheidsgarantie voor de hele dienst.",
     "reportText": "Mail de betreffende URL, impact en stappen om het probleem te reproduceren. Vermijd toegang tot andermans gegevens, verstoring van de dienst en publicatie van misbruik van een onopgeloste kwetsbaarheid. Stuur geen wachtwoorden, sessietokens of privégegevens.",
     "response": "De beheerder behandelt meldingen. Er geldt momenteel geen gegarandeerde reactietijd en er is geen betaald beloningsprogramma.",
@@ -4184,6 +4184,11 @@
         "title": "Beveiligingsbeleid voor browserantwoorden",
         "text": "HTML-antwoorden van de website bevatten nu een afgedwongen Content-Security-Policy en X-Frame-Options: DENY. Het beleid beperkt scripts en verbindingen en voorkomt dat Nolto in een frame wordt ingebed.",
         "validation": "Antwoordheaders in productie gecontroleerd voor de startpagina, het beveiligingscentrum, aanmelden, de feed en integraties. Feed en afbeeldingen laden onder dit beleid. Tests bevestigen het behoud van aanmeldcookies."
+      },
+      "csp": {
+        "title": "CSP blokkeert Cloudflare-scripts",
+        "text": "Cloudflare voegt scripts toe waarvan de inhoud bij elk verzoek verandert. De gatewaycorrectie geeft elk HTML-antwoord een nieuwe nonce en behoudt de themahash en de blokkering van andere inline-scripts en eval. De bijgewerkte Worker moet nog in productie worden uitgerold.",
+        "validation": "Geautomatiseerde tests en controles in de Workers-runtime slagen. Het nieuwe beleid is nog niet in productie geverifieerd; deze bevinding blijft open totdat de uitrol en browsercontroles zijn afgerond."
       }
     },
     "boundaries": {
@@ -4202,6 +4207,6 @@
     },
     "noOpenFindings": "Geen open bevindingen",
     "resolvedFindings": "Opgeloste bevindingen",
-    "closedSummary": "Alle vier bevindingen uit de controle van 27 september 2026 zijn opgelost en in productie geverifieerd. De geschiedenis en onderbouwing staan hieronder."
+    "closedSummary": "De vier bevindingen van 27 september 2026 zijn opgelost. Een latere bevinding over CSP-compatibiliteit staat hierboven bij de openstaande bevindingen."
   }
 }

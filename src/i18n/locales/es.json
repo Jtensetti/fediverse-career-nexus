@@ -4145,7 +4145,7 @@
     "validation": "Verificación:",
     "policies": "Políticas y contacto de seguridad",
     "securityFile": "Contacto de seguridad en texto",
-    "scope": "Revisión interna del código, comprobaciones de permisos en producción, verificaciones HTTP públicas y pruebas de regresión automatizadas. No es una prueba de penetración independiente, una certificación ni una supervisión continua. Activar RLS no demuestra que cada regla sea correcta. El análisis de dependencias recoge los avisos conocidos de la aplicación web en la fecha indicada.",
+    "scope": "Revisión interna del código, comprobaciones de permisos en producción, verificaciones HTTP públicas y pruebas de regresión automatizadas. No es una prueba de penetración independiente, una certificación ni una supervisión continua. Activar RLS no demuestra que cada regla sea correcta. El análisis de dependencias recoge los avisos conocidos de la aplicación web en la fecha indicada. Las cifras de la base de datos y las dependencias son del 27 de septiembre de 2026; el seguimiento del día 28 abarca la compatibilidad con CSP.",
     "findingsIntro": "Esta lista muestra los hallazgos pendientes de corrección y verificación. El estado corresponde a la revisión fechada, no a una garantía de seguridad de todo el servicio.",
     "reportText": "Envía por correo la URL afectada, el impacto y los pasos para reproducir el problema. Evita acceder a datos ajenos, interrumpir el servicio o publicar cómo explotar una vulnerabilidad sin corregir. No envíes contraseñas, tokens de sesión ni datos privados.",
     "response": "El responsable atiende los informes. Actualmente no se garantiza un plazo de respuesta ni se ofrecen recompensas económicas.",
@@ -4184,6 +4184,11 @@
         "title": "Política de seguridad de las respuestas del navegador",
         "text": "Las respuestas HTML del sitio ahora aplican Content-Security-Policy y X-Frame-Options: DENY. La política restringe scripts y conexiones e impide incluir Nolto en marcos.",
         "validation": "Cabeceras verificadas en producción para inicio, centro de confianza, acceso, feed e integraciones. El feed y las imágenes cargan con esta política. Las pruebas verifican que se conservan las cookies de acceso."
+      },
+      "csp": {
+        "title": "La CSP bloquea scripts de Cloudflare",
+        "text": "Cloudflare añade scripts cuyo contenido cambia con cada solicitud. La corrección de la pasarela asigna un nonce nuevo a cada respuesta HTML y conserva el hash del tema y el bloqueo de otros scripts en línea y de eval. Falta desplegar el Worker actualizado en producción.",
+        "validation": "Las pruebas automatizadas y las comprobaciones en el entorno de ejecución de Workers pasan. La nueva política aún no se ha verificado en producción; el hallazgo seguirá abierto hasta completar el despliegue y las comprobaciones en el navegador."
       }
     },
     "boundaries": {
@@ -4202,6 +4207,6 @@
     },
     "noOpenFindings": "No hay hallazgos abiertos",
     "resolvedFindings": "Hallazgos resueltos",
-    "closedSummary": "Los cuatro hallazgos de la revisión del 27 de septiembre de 2026 están corregidos y verificados en producción. El historial y las pruebas figuran a continuación."
+    "closedSummary": "Los cuatro hallazgos del 27 de septiembre de 2026 se resolvieron. Un hallazgo posterior sobre compatibilidad con CSP figura arriba entre los pendientes."
   }
 }

@@ -4145,7 +4145,7 @@
     "validation": "Überprüfung:",
     "policies": "Richtlinien und Sicherheitskontakt",
     "securityFile": "Sicherheitskontakt als Textdatei",
-    "scope": "Interne Codeprüfung, Berechtigungsprüfungen im Produktivsystem, öffentliche HTTP-Prüfungen und automatisierte Regressionstests. Kein unabhängiger Penetrationstest, keine Zertifizierung und keine laufende Überwachung. Aktiviertes RLS belegt nicht die Korrektheit jeder Regel. Die Abhängigkeitsprüfung erfasst bekannte Hinweise zur Webanwendung zum Prüfzeitpunkt.",
+    "scope": "Interne Codeprüfung, Berechtigungsprüfungen im Produktivsystem, öffentliche HTTP-Prüfungen und automatisierte Regressionstests. Kein unabhängiger Penetrationstest, keine Zertifizierung und keine laufende Überwachung. Aktiviertes RLS belegt nicht die Korrektheit jeder Regel. Die Abhängigkeitsprüfung erfasst bekannte Hinweise zur Webanwendung zum Prüfzeitpunkt. Datenbank- und Abhängigkeitszahlen stammen vom 27. September 2026; die Nachprüfung vom 28. September betrifft die CSP-Kompatibilität.",
     "findingsIntro": "Diese Liste zeigt Befunde, deren Behebung und Überprüfung noch aussteht. Der Status gilt für die datierte Prüfung, nicht als Sicherheitsgarantie für den gesamten Dienst.",
     "reportText": "Bitte senden Sie die betroffene URL, mögliche Auswirkungen und Schritte zur Reproduktion per E-Mail. Greifen Sie nicht auf fremde Daten zu, stören Sie den Dienst nicht und veröffentlichen Sie keine Anleitung zu einer ungeklärten Schwachstelle. Senden Sie keine Passwörter, Sitzungstoken oder privaten Nutzerdaten.",
     "response": "Meldungen bearbeitet der Betreiber. Es gibt derzeit weder eine garantierte Antwortzeit noch ein bezahltes Prämienprogramm.",
@@ -4184,6 +4184,11 @@
         "title": "Sicherheitsrichtlinie für Browserantworten",
         "text": "HTML-Antworten der Website enthalten jetzt eine durchgesetzte Content-Security-Policy und X-Frame-Options: DENY. Die Richtlinie begrenzt Skripte und Verbindungen und verhindert die Einbettung von Nolto in Frames.",
         "validation": "Antwort-Header für Startseite, Sicherheitszentrum, Anmeldung, Feed und Integrationen im Produktivsystem geprüft. Feed und Bilder laden unter dieser Richtlinie. Tests bestätigen den Erhalt der Anmelde-Cookies."
+      },
+      "csp": {
+        "title": "CSP blockiert Cloudflare-Skripte",
+        "text": "Cloudflare fügt Skripte ein, deren Inhalt sich mit jeder Anfrage ändert. Die Gateway-Korrektur gibt jeder HTML-Antwort eine neue Nonce. Der Theme-Hash sowie die Sperren für andere Inline-Skripte und eval bleiben erhalten. Die Bereitstellung des aktualisierten Workers steht noch aus.",
+        "validation": "Automatisierte Tests und Prüfungen in der Workers-Laufzeit sind erfolgreich. Die neue Richtlinie wurde noch nicht im Produktivbetrieb geprüft; der Befund bleibt bis zur Bereitstellung und Browserprüfung offen."
       }
     },
     "boundaries": {
@@ -4202,6 +4207,6 @@
     },
     "noOpenFindings": "Keine offenen Befunde",
     "resolvedFindings": "Behobene Befunde",
-    "closedSummary": "Alle vier Befunde der Prüfung vom 27. September 2026 wurden behoben und im Produktivsystem überprüft. Verlauf und Nachweise stehen unten."
+    "closedSummary": "Die vier Befunde vom 27. September 2026 wurden behoben. Ein späterer Befund zur CSP-Kompatibilität steht oben unter den offenen Befunden."
   }
 }
