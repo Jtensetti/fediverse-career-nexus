@@ -40,3 +40,7 @@ node scripts/test-support/run-privacy.mjs /tmp/nolto-pg/node_modules/@electric-s
 These tests reproduce schema and policy behavior with Auth/Storage stand-ins. They do not replace browser, hosted-service or federation integration tests. Remove unused exports, components and documentation when replacing a feature, but retain deployed migration history and third-party licence notices.
 
 Be respectful in reviews. Report security issues privately and do not post personal data, credentials or message contents in issues.
+
+## Email test safety
+
+Never run email-producing Auth tests (signup, reset, resend or magic links) against a hosted backend with fabricated recipients. Use local Supabase with Mailpit or mocked delivery. A localhost frontend does not isolate a hosted Auth backend. Use the digest worker's authorized `{ "dryRun": true }` mode for non-sending checks, and never enable mail schedules as part of a test.

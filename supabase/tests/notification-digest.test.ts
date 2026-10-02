@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "jsr:@std/assert@1";
+import { ok as assert, deepStrictEqual as assertEquals } from "node:assert/strict";
 import { deliverableEmail, digestOptions, runDigest, type DigestDeps, type DigestNotification, type DigestTracking } from "../functions/send-notification-digest/handler.ts";
 
 const NOW = Date.parse("2026-10-02T12:00:00Z");
@@ -52,6 +52,12 @@ function harness(f: Fixture) {
   return { deps, tracking, sends, logs };
 }
 
+async function sendDigest(deps: DigestDeps) {
+  const result = await runDigest(deps, { dryRun: false });
+  assert("sent" in result && "failed" in result, "send mode returns delivery counts");
+  return result;
+}
+
 const note = (id: string, h: number): DigestNotification => ({ id, type: "like", content: null, created_at: hoursAgo(h), actor_id: "actor" });
 const opted = { email_digest_enabled: true, deleted_at: null };
 const confirmed = (email: string) => ({ email, email_confirmed_at: hoursAgo(1000) });
@@ -65,7 +71,7 @@ Deno.test("digest: only confirmed Auth emails of active opted-in users receive m
     deleted: { profile: { email_digest_enabled: true, deleted_at: hoursAgo(1) }, auth: confirmed("d@mail.example.org"), notes: [note("5", 40)] },
     banned: { profile: opted, auth: { ...confirmed("b@mail.example.org"), banned_until: hoursAgo(-10) }, notes: [note("6", 40)] },
   } });
-  const result = await runDigest(h.deps, { dryRun: false });
+  const result = await sendDigest(h.deps);
   assertEquals(h.sends.map(s => s.to), [["ada@mail.example.org"]]);
   assertEquals(result.skipped, { unconfirmed_email: 1, undeliverable_email: 1, not_opted_in: 1, deleted: 1, banned: 1 });
   assert(!h.sends[0].html.includes("<b>Ada</b>"), "actor names are escaped");
@@ -74,20 +80,20 @@ Deno.test("digest: only confirmed Auth emails of active opted-in users receive m
 Deno.test("digest: unchanged unread set is never re-sent, new old notification is", async () => {
   const f: Fixture = { users: { u: { profile: opted, auth: confirmed("u@mail.example.org"), notes: [note("1", 40)] } } };
   const h = harness(f);
-  assertEquals((await runDigest(h.deps, { dryRun: false })).sent, 1);
+  assertEquals((await sendDigest(h.deps)).sent, 1);
   // Pretend the 36h interval passed: the same unread set must not be mailed again.
   h.tracking.get("u")!.last_digest_sent_at = hoursAgo(100);
-  const again = await runDigest(h.deps, { dryRun: false });
+  const again = await sendDigest(h.deps);
   assertEquals([again.sent, again.skipped.no_new_notifications], [0, 1]);
   f.users.u.notes.push(note("2", 37));
-  assertEquals((await runDigest(h.deps, { dryRun: false })).sent, 1);
+  assertEquals((await sendDigest(h.deps)).sent, 1);
   assertEquals(h.sends.length, 2);
   assert(h.sends[0].key !== h.sends[1].key);
 });
 
 Deno.test("digest: concurrent invocations send once", async () => {
   const h = harness({ users: { u: { profile: opted, auth: confirmed("u@mail.example.org"), notes: [note("1", 40)] } } });
-  const [a, b] = await Promise.all([runDigest(h.deps, { dryRun: false }), runDigest(h.deps, { dryRun: false })]);
+  const [a, b] = await Promise.all([sendDigest(h.deps), sendDigest(h.deps)]);
   assertEquals(h.sends.length, 1);
   assertEquals(a.sent! + b.sent!, 1);
 });
@@ -95,12 +101,12 @@ Deno.test("digest: concurrent invocations send once", async () => {
 Deno.test("digest: provider failure is recorded as failure, not sent, and backs off", async () => {
   const f: Fixture = { users: { u: { profile: opted, auth: confirmed("u@mail.example.org"), notes: [note("1", 40)] } }, sendFails: true };
   const h = harness(f);
-  const result = await runDigest(h.deps, { dryRun: false });
+  const result = await sendDigest(h.deps);
   assertEquals([result.sent, result.failed], [0, 1]);
   const t = h.tracking.get("u")!;
   assertEquals([t.last_digest_sent_at, t.last_digest_watermark, t.claim_token, t.failure_count], [null, null, null, 1]);
   f.sendFails = false;
-  assertEquals((await runDigest(h.deps, { dryRun: false })).skipped.not_due, 1, "retry waits for backoff");
+  assertEquals((await sendDigest(h.deps)).skipped.not_due, 1, "retry waits for backoff");
   assert(!h.logs.some(l => l.includes("@")), "logs contain no addresses");
 });
 
