@@ -1,428 +1,53 @@
 import { workerHandler } from "../_shared/user-auth.ts";
+import { jsonResponse } from "../_shared/local-actor.ts";
 import { getSiteUrl } from "../_shared/federation-urls.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import { sendEmail } from "../_shared/email.ts";
-import { createLogger } from "../_shared/logger.ts";
+import { digestOptions, runDigest } from "./handler.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "", {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
 
-const supabase = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-);
-
-// Notification type to human-readable text
-function getNotificationDescription(type: string, content: string | null): string {
-  switch (type) {
-    case 'connection_request':
-      return 'sent you a connection request';
-    case 'connection_accepted':
-      return 'accepted your connection request';
-    case 'endorsement':
-      return content || 'endorsed your skill';
-    case 'message':
-      return 'sent you a message';
-    case 'message_reaction':
-      return 'reacted to your message';
-    case 'follow':
-      return 'started following you';
-    case 'like':
-      return 'liked your post';
-    case 'boost':
-      return 'boosted your post';
-    case 'reply':
-      return 'replied to your post';
-    case 'mention':
-      return 'mentioned you';
-    case 'recommendation_request':
-      return 'requested a recommendation from you';
-    case 'recommendation_received':
-      return 'wrote you a recommendation';
-    case 'article_published':
-      return 'published a new article';
-    case 'job_application':
-      return 'applied to your job posting';
-    default:
-      return 'sent you a notification';
-  }
-}
-
-// Get notification icon emoji for email
-function getNotificationEmoji(type: string): string {
-  switch (type) {
-    case 'connection_request':
-    case 'connection_accepted':
-    case 'follow':
-      return '👤';
-    case 'endorsement':
-      return '👍';
-    case 'message':
-      return '💬';
-    case 'message_reaction':
-      return '😊';
-    case 'like':
-      return '❤️';
-    case 'boost':
-      return '🔄';
-    case 'reply':
-      return '💭';
-    case 'mention':
-      return '@';
-    case 'recommendation_request':
-    case 'recommendation_received':
-      return '📝';
-    case 'article_published':
-      return '📰';
-    case 'job_application':
-      return '💼';
-    default:
-      return '🔔';
-  }
-}
-
-interface NotificationWithActor {
-  id: string;
-  type: string;
-  content: string | null;
-  created_at: string;
-  actor_name: string | null;
-}
+const must = <T>({ data, error }: { data: T; error: unknown }) => { if (error) throw new Error("Database request failed"); return data; };
 
 Deno.serve(workerHandler(async (req) => {
-  const traceId = crypto.randomUUID();
-  const logger = createLogger("send-notification-digest", traceId);
+  const options = await digestOptions(req);
+  if (!options) return jsonResponse({ error: "Body must be empty or {\"dryRun\": boolean}" }, 400);
+  const apiKey = Deno.env.get("RESEND_API_KEY");
+  if (!options.dryRun && !apiKey) return jsonResponse({ error: "Email delivery is not configured" }, 503);
 
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    logger.info({ traceId }, "Starting notification digest job");
-
-    const siteUrl = getSiteUrl();
-    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Nolto <noreply@nolto.social>";
-
-    // Find users with unread notifications older than 36 hours
-    // who haven't received a digest email in the last 36 hours
-    const thirtyySixHoursAgo = new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString();
-
-    // Get users with old unread notifications
-    const { data: usersWithNotifications, error: usersError } = await supabase
-      .from('notifications')
-      .select('recipient_id')
-      .eq('read', false)
-      .lt('created_at', thirtyySixHoursAgo)
-      .order('created_at', { ascending: false });
-
-    if (usersError) {
-      logger.error({ error: usersError, traceId }, "Error fetching users with notifications");
-      throw usersError;
-    }
-
-    // Get unique user IDs
-    const uniqueUserIds = [...new Set(usersWithNotifications?.map(n => n.recipient_id) || [])];
-
-    if (uniqueUserIds.length === 0) {
-      logger.info({ traceId }, "No users with old unread notifications");
-      return new Response(JSON.stringify({ success: true, emailsSent: 0 }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    logger.info({ userCount: uniqueUserIds.length, traceId }, "Found users with unread notifications");
-
-    let emailsSent = 0;
-    let errorsEncountered = 0;
-
-    for (const userId of uniqueUserIds) {
-      try {
-        // Check if we've already sent a digest recently (within 36 hours)
-        const { data: tracking } = await supabase
-          .from('notification_digest_tracking')
-          .select('last_digest_sent_at')
-          .eq('user_id', userId)
-          .single();
-
-        if (tracking?.last_digest_sent_at) {
-          const lastSent = new Date(tracking.last_digest_sent_at);
-          const hoursSinceLastDigest = (Date.now() - lastSent.getTime()) / (1000 * 60 * 60);
-
-          if (hoursSinceLastDigest < 36) {
-            logger.debug({ userId, hoursSinceLastDigest, traceId }, "Skipping - digest sent recently");
-            continue;
-          }
-        }
-
-        // Get user's email and preferences - first check profiles.contact_email, then fall back to auth email
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('contact_email, email_digest_enabled, deleted_at')
-          .eq('id', userId)
-          .single();
-
-        // Only send to active accounts that explicitly have digests enabled.
-        if (!userProfile || userProfile.deleted_at || userProfile.email_digest_enabled !== true) {
-          logger.debug({ userId, traceId }, "Skipping - user opted out of digest emails");
-          continue;
-        }
-
-        const contactEmail = userProfile?.contact_email;
-
-        // If user has a contact_email set, use that; otherwise try auth email
-        let userEmail: string | null = null;
-
-        if (contactEmail) {
-          // Skip federated local emails
-          if (contactEmail.endsWith('.federated.local')) {
-            logger.debug({ userId, traceId }, "Skipping - federated.local email");
-            continue;
-          }
-          userEmail = contactEmail;
-        } else {
-          // Fall back to auth email
-          const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
-          if (!userError && user?.email) {
-            // Skip federated local emails
-            if (user.email.endsWith('.federated.local')) {
-              logger.debug({ userId, traceId }, "Skipping - federated.local email");
-              continue;
-            }
-            // Validate it looks like a real email domain (not a Fediverse handle)
-            const emailDomain = user.email.split('@')[1];
-            // Check if domain has MX-like structure (contains at least one dot after @)
-            if (emailDomain && emailDomain.includes('.')) {
-              userEmail = user.email;
-            }
-          }
-        }
-
-        if (!userEmail) {
-          logger.debug({ userId, traceId }, "Skipping - no valid email found");
-          continue;
-        }
-
-        // Get the user's unread notifications with actor info
-        const { data: notifications, error: notifError } = await supabase
-          .from('notifications')
-          .select(`
-            id,
-            type,
-            content,
-            created_at,
-            actor_id
-          `)
-          .eq('recipient_id', userId)
-          .eq('read', false)
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        if (notifError || !notifications || notifications.length === 0) {
-          continue;
-        }
-
-        // Enrich with actor names from public_profiles
-        const actorIds = [...new Set(notifications.map(n => n.actor_id).filter(Boolean))];
-        let actorMap = new Map<string, string>();
-
-        if (actorIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from('public_profiles')
-            .select('id, fullname, username')
-            .in('id', actorIds);
-
-          if (profiles) {
-            profiles.forEach(p => {
-              actorMap.set(p.id, p.fullname || p.username || 'Someone');
-            });
-          }
-        }
-
-        const enrichedNotifications: NotificationWithActor[] = notifications.map(n => ({
-          id: n.id,
-          type: n.type,
-          content: n.content,
-          created_at: n.created_at,
-          actor_name: n.actor_id ? actorMap.get(n.actor_id) || 'Someone' : 'Someone'
-        }));
-
-        // Build the email HTML
-        const notificationListHtml = enrichedNotifications.map(n => {
-          const emoji = getNotificationEmoji(n.type);
-          const description = getNotificationDescription(n.type, n.content);
-          const timeAgo = formatTimeAgo(new Date(n.created_at));
-
-          return `
-            <tr>
-              <td style="padding: 12px 0; border-bottom: 1px solid #e5e5e5;">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                  <tr>
-                    <td width="40" style="vertical-align: top; padding-right: 12px;">
-                      <span style="font-size: 20px;">${emoji}</span>
-                    </td>
-                    <td style="vertical-align: top;">
-                      <p style="margin: 0; font-size: 15px; color: #1a1a1a; line-height: 1.4;">
-                        <strong>${escapeHtml(n.actor_name || 'Someone')}</strong> ${escapeHtml(description)}
-                      </p>
-                      <p style="margin: 4px 0 0 0; font-size: 13px; color: #6a6a6a;">
-                        ${timeAgo}
-                      </p>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          `;
-        }).join('');
-
-        const totalUnread = notifications.length;
-        const moreText = totalUnread >= 10 ? ' (and possibly more)' : '';
-
-        const emailHtml = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>You have notifications waiting</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f5; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 520px; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
-          <!-- Header -->
-          <tr>
-            <td style="background-color: #1a1a1a; padding: 24px 32px;">
-              <h1 style="margin: 0; font-size: 22px; font-weight: 600; color: #ffffff;">Nolto</h1>
-            </td>
-          </tr>
-
-          <!-- Main Content -->
-          <tr>
-            <td style="padding: 32px;">
-              <h2 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600; color: #1a1a1a;">
-                You have ${totalUnread} unread notification${totalUnread > 1 ? 's' : ''}${moreText}
-              </h2>
-              <p style="margin: 0 0 24px 0; font-size: 15px; color: #6a6a6a; line-height: 1.5;">
-                Here's what you've missed on Nolto:
-              </p>
-
-              <!-- Notifications List -->
-              <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                ${notificationListHtml}
-              </table>
-
-              <!-- CTA Button -->
-              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top: 32px;">
-                <tr>
-                  <td align="center">
-                    <a href="${siteUrl}/notifications"
-                       style="display: inline-block; background-color: #1a1a1a; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 15px; font-weight: 500;">
-                      View your notifications
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="padding: 24px 32px; background-color: #fafafa; border-top: 1px solid #e5e5e5;">
-              <p style="margin: 0 0 8px 0; font-size: 13px; color: #9a9a9a; text-align: center;">
-                You're receiving this because you have unread notifications on Nolto.
-              </p>
-              <p style="margin: 0; font-size: 13px; color: #9a9a9a; text-align: center;">
-                <a href="${siteUrl}/profile/edit" style="color: #6a6a6a; text-decoration: underline;">Manage email preferences</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-        `;
-
-        // Send the email
-        await sendEmail(Deno.env.get("RESEND_API_KEY")!, {
-          from: fromEmail,
-          to: [userEmail],
-          subject: `You have ${totalUnread} unread notification${totalUnread > 1 ? 's' : ''} on Nolto`,
-          html: emailHtml,
-        });
-
-        // Update tracking record
-        await supabase
-          .from('notification_digest_tracking')
-          .upsert({
-            user_id: userId,
-            last_digest_sent_at: new Date().toISOString(),
-            last_notification_check_at: new Date().toISOString(),
-          }, { onConflict: 'user_id' });
-
-        emailsSent++;
-        logger.info({ userId, notificationCount: totalUnread, traceId }, "Digest email sent");
-
-      } catch (userError) {
-        logger.error({ userId, error: userError, traceId }, "Error processing user for digest");
-        errorsEncountered++;
-      }
-    }
-
-    logger.info({ emailsSent, errorsEncountered, traceId }, "Notification digest job complete");
-
-    return new Response(JSON.stringify({
-      success: true,
-      emailsSent,
-      errorsEncountered,
-      traceId
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-
-  } catch (error) {
-    logger.error({ error: (error instanceof Error ? error.message : "Request failed"), traceId }, "Error in notification digest function");
-    return new Response(JSON.stringify({ error: (error instanceof Error ? error.message : "Request failed"), traceId }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+  const result = await runDigest({
+    now: () => Date.now(),
+    siteUrl: getSiteUrl(),
+    fromEmail: Deno.env.get("RESEND_FROM_EMAIL") || "Nolto <noreply@nolto.social>",
+    candidateUserIds: async cutoff => (must(await supabase.from("notifications").select("recipient_id")
+      .eq("read", false).lt("created_at", cutoff).limit(5000)) ?? []).map((n: { recipient_id: string }) => n.recipient_id),
+    profile: async id => must(await supabase.from("profiles").select("email_digest_enabled, deleted_at").eq("id", id).maybeSingle()),
+    authUser: async id => {
+      const { data, error } = await supabase.auth.admin.getUserById(id);
+      if (error) { if ((error as { status?: number }).status === 404) return null; throw new Error("Auth lookup failed"); }
+      return data.user ? { email: data.user.email, email_confirmed_at: data.user.email_confirmed_at, banned_until: (data.user as { banned_until?: string }).banned_until } : null;
+    },
+    tracking: async id => must(await supabase.from("notification_digest_tracking")
+      .select("last_digest_sent_at, last_digest_watermark, claim_token, claimed_at, last_failure_at, failure_count").eq("user_id", id).maybeSingle()),
+    unread: async (id, limit) => must(await supabase.from("notifications").select("id, type, content, created_at, actor_id")
+      .eq("recipient_id", id).eq("read", false).order("created_at", { ascending: false }).limit(limit)) ?? [],
+    actorNames: async ids => {
+      const map = new Map<string, string>();
+      if (!ids.length) return map;
+      const rows = must(await supabase.from("public_profiles").select("id, fullname, username").in("id", ids)) ?? [];
+      for (const p of rows as { id: string; fullname: string | null; username: string | null }[]) map.set(p.id, p.fullname || p.username || "Someone");
+      return map;
+    },
+    claim: async (id, claim) => {
+      const rows = must(await supabase.rpc("claim_notification_digest", { _user_id: id, _claim: claim })) as { claimed: boolean; watermark: string | null }[] | null;
+      return rows?.[0] ?? { claimed: false, watermark: null };
+    },
+    finish: async (id, claim, sent, watermark) => must(await supabase.rpc("finish_notification_digest", { _user_id: id, _claim: claim, _sent: sent, _watermark: watermark })) === true,
+    send: (message, idempotencyKey) => sendEmail(apiKey!, message, { idempotencyKey }),
+    newClaim: () => crypto.randomUUID(),
+    log: (level, message) => console[level](`[send-notification-digest] ${message}`),
+  }, options);
+  return jsonResponse(result);
 }));
-
-// Helper to escape HTML
-function escapeHtml(text: string): string {
-  const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
-  return text.replace(/[&<>"']/g, m => map[m]);
-}
-
-// Format time ago for emails
-function formatTimeAgo(date: Date): string {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
-  if (seconds < 60) return 'Just now';
-
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
-
-  const weeks = Math.floor(days / 7);
-  return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
-}
