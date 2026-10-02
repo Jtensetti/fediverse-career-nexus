@@ -39,7 +39,7 @@ export function deliverableEmail(email: string | null | undefined): boolean {
 const failureBackoff = (count: number) => Math.min(HOUR * 2 ** Math.min(count, 6), 48 * HOUR);
 
 type Reason = "no_profile" | "deleted" | "not_opted_in" | "no_auth_user" | "unconfirmed_email" | "undeliverable_email" | "banned"
-  | "recently_sent" | "in_progress" | "failure_backoff" | "no_new_notifications" | "claim_lost" | "lookup_failed";
+  | "recently_sent" | "in_progress" | "failure_backoff" | "no_new_notifications" | "not_due" | "claim_lost" | "lookup_failed";
 
 export async function runDigest(deps: DigestDeps, options: { dryRun: boolean }) {
   const now = deps.now();
@@ -81,7 +81,7 @@ export async function runDigest(deps: DigestDeps, options: { dryRun: boolean }) 
     let watermark: string | null = null;
     try {
       const result = await deps.claim(userId, claim);
-      if (!result.claimed) { skip("recently_sent"); continue; }
+      if (!result.claimed) { skip("not_due"); continue; }
       const items = await deps.unread(userId, 10);
       if (!hasNewOldItem(items, result.watermark, cutoff)) {
         await deps.finish(userId, claim, false, null);
