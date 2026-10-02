@@ -2861,20 +2861,35 @@ export type Database = {
       }
       notification_digest_tracking: {
         Row: {
+          claim_token: string | null
+          claimed_at: string | null
           created_at: string
+          failure_count: number
           last_digest_sent_at: string | null
+          last_digest_watermark: string | null
+          last_failure_at: string | null
           last_notification_check_at: string | null
           user_id: string
         }
         Insert: {
+          claim_token?: string | null
+          claimed_at?: string | null
           created_at?: string
+          failure_count?: number
           last_digest_sent_at?: string | null
+          last_digest_watermark?: string | null
+          last_failure_at?: string | null
           last_notification_check_at?: string | null
           user_id: string
         }
         Update: {
+          claim_token?: string | null
+          claimed_at?: string | null
           created_at?: string
+          failure_count?: number
           last_digest_sent_at?: string | null
+          last_digest_watermark?: string | null
+          last_failure_at?: string | null
           last_notification_check_at?: string | null
           user_id?: string
         }
@@ -4850,6 +4865,13 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_notification_digest: {
+        Args: { _claim: string; _user_id: string }
+        Returns: {
+          claimed: boolean
+          watermark: string
+        }[]
+      }
       claim_post_image_cleanup: {
         Args: { p_limit?: number }
         Returns: {
@@ -4962,6 +4984,15 @@ export type Database = {
       finish_content_deletion: {
         Args: { p_lease_id: string; p_request_id: string }
         Returns: undefined
+      }
+      finish_notification_digest: {
+        Args: {
+          _claim: string
+          _sent: boolean
+          _user_id: string
+          _watermark: string
+        }
+        Returns: boolean
       }
       finish_post_image_cleanup: { Args: { p_id: string }; Returns: undefined }
       generate_referral_code: { Args: never; Returns: string }
